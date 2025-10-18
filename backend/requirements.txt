@@ -5,6 +5,7 @@ pydantic-settings==2.5.2
 sqlalchemy==2.0.35
 uvicorn[standard]==0.31.0
 python-multipart==0.0.12
+tenacity==8.5.0
 
 # OpenAI Integration
 openai==1.51.0
