@@ -45,8 +45,9 @@ async def health():
 
     if database_url:
         try:
-            # Simple connection test
-            engine = create_engine(database_url.replace("postgresql://", "postgresql+asyncpg://", 1))
+            # Use synchronous engine for health check (not async)
+            sync_url = database_url.replace("postgresql+asyncpg://", "postgresql://")
+            engine = create_engine(sync_url)
             with engine.connect() as conn:
                 result = conn.execute(text("SELECT 1"))
                 db_status = "connected"
