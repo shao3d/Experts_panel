@@ -87,10 +87,10 @@ jobs:
       run: |
         cd backend/prompts
         for prompt in map_prompt.txt reduce_prompt.txt comment_group_drift_prompt.txt comment_synthesis_prompt.txt; do
-          if [ -f \"\$prompt\" ]; then
-            echo \"✅ \$prompt exists\"
+          if [ -f "$prompt" ]; then
+            echo "✅ $prompt exists"
           else
-            echo \"❌ \$prompt missing\"
+            echo "❌ $prompt missing"
             exit 1
           fi
         done

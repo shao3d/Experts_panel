@@ -72,3 +72,7 @@ temp/
 Thumbs.db
 .DS_Store
 .aider*
+
+# Telegram session files
+*.session
+*.session*

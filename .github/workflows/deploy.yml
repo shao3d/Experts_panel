@@ -18,7 +18,7 @@ jobs:
   deploy:
     name: Deploy to Railway
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && secrets.RAILWAY_TOKEN != '' || github.event_name == 'workflow_dispatch'
+    if: (github.ref == 'refs/heads/main' && secrets.RAILWAY_TOKEN != '') || github.event_name == 'workflow_dispatch'
 
     steps:
     - uses: actions/checkout@v4
