@@ -63,7 +63,7 @@ def copy_table_data(sqlite_conn: sqlite3.Connection, pg_conn: psycopg2.extension
         raise
 
 def copy_posts(sqlite_conn: sqlite3.Connection, pg_conn: psycopg2.extensions.connection):
-    """Копирование таблицы posts с обработкой JSON полей"""
+    """Копирование таблицы posts"""
 
     cursor = pg_conn.cursor()
 
@@ -72,11 +72,13 @@ def copy_posts(sqlite_conn: sqlite3.Connection, pg_conn: psycopg2.extensions.con
         cursor.execute("TRUNCATE TABLE posts CASCADE")
         pg_conn.commit()
 
-        # Получение данных из SQLite
+        # Получение данных из SQLite с правильными именами полей
         sqlite_cursor = sqlite_conn.cursor()
         sqlite_cursor.execute("""
-            SELECT post_id, telegram_message_id, text, author, created_at,
-                   channel_id, channel_username, expert_id
+            SELECT post_id, telegram_message_id, message_text, author_name, created_at,
+                   channel_id, channel_username, expert_id, channel_name, author_id,
+                   edited_at, view_count, forward_count, reply_count, media_metadata,
+                   is_forwarded, forward_from_channel
             FROM posts
         """)
         rows = sqlite_cursor.fetchall()
@@ -85,26 +87,41 @@ def copy_posts(sqlite_conn: sqlite3.Connection, pg_conn: psycopg2.extensions.con
             print("  ✅ Таблица posts пуста, пропускаем")
             return
 
-        # Подготовка данных
+        # Подготовка данных с правильными полями
         processed_rows = []
         for row in rows:
-            post_id, telegram_message_id, text, author, created_at, channel_id, channel_username, expert_id = row
+            (post_id, telegram_message_id, message_text, author_name, created_at,
+             channel_id, channel_username, expert_id, channel_name, author_id,
+             edited_at, view_count, forward_count, reply_count, media_metadata,
+             is_forwarded, forward_from_channel) = row
+
             processed_rows.append((
                 post_id,
                 telegram_message_id,
-                text,
-                author,
+                message_text,
+                author_name,
                 created_at,
                 channel_id,
                 channel_username,
-                expert_id
+                expert_id,
+                channel_name,
+                author_id,
+                edited_at,
+                view_count,
+                forward_count,
+                reply_count,
+                media_metadata,
+                is_forwarded,
+                forward_from_channel
             ))
 
-        # Копирование данных
+        # Копирование данных с правильными именами полей
         sql = """
-            INSERT INTO posts (post_id, telegram_message_id, text, author, created_at,
-                             channel_id, channel_username, expert_id)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO posts (post_id, telegram_message_id, message_text, author_name, created_at,
+                             channel_id, channel_username, expert_id, channel_name, author_id,
+                             edited_at, view_count, forward_count, reply_count, media_metadata,
+                             is_forwarded, forward_from_channel)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
         execute_values(cursor, sql, processed_rows)
         pg_conn.commit()

@@ -39,6 +39,20 @@ sqlite3 data/experts.db "SELECT COUNT(*) FROM comments;"
 sqlite3 data/experts.db "SELECT COUNT(*) FROM comment_group_drift WHERE has_drift=1;"
 ```
 
+### 4. Примените миграции к PostgreSQL
+
+Перед синхронизацией данных нужно применить все миграции схемы:
+
+```bash
+cd backend
+DATABASE_URL="postgresql://user:password@host:port/dbname" python apply_postgres_migrations.py
+```
+
+Этот скрипт:
+- Создаст таблицу `applied_migrations` для отслеживания примененных миграций
+- Применит все файлы миграций из `migrations/` директории
+- Отследит какие миграции уже применены и не будет применять их повторно
+
 ## Использование
 
 ### Способ 1: Через переменные окружения
@@ -73,6 +87,11 @@ SQLITE_DB_PATH="data/experts.db"
 
 ```bash
 cd backend
+
+# 1. Сначала примените миграции
+DATABASE_URL="postgresql://user:password@host:port/dbname" python apply_postgres_migrations.py
+
+# 2. Затем синхронизируйте данные
 python sync_to_postgres.py
 ```
 
