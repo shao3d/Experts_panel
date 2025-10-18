@@ -2,6 +2,8 @@
 
 from fastapi import FastAPI
 import time
+import os
+from sqlalchemy import create_engine, text
 
 # Create minimal FastAPI application
 app = FastAPI(
@@ -36,10 +38,31 @@ async def root():
 @app.get("/ready")
 async def health():
     """Health check endpoint - multiple paths for Railway compatibility."""
+
+    # Check database connection
+    db_status = "not_configured"
+    database_url = os.getenv("DATABASE_URL", "")
+
+    if database_url:
+        try:
+            # Simple connection test
+            engine = create_engine(database_url.replace("postgresql://", "postgresql+asyncpg://", 1))
+            with engine.connect() as conn:
+                result = conn.execute(text("SELECT 1"))
+                db_status = "connected"
+        except Exception as e:
+            db_status = f"error: {str(e)[:100]}"
+
     return {
         "status": "healthy",
         "version": "1.0.0",
-        "timestamp": time.time()
+        "timestamp": time.time(),
+        "database": {
+            "url_configured": bool(database_url),
+            "status": db_status,
+            "url_prefix": database_url.split("@")[0] + "@" if database_url else ""
+        },
+        "environment": os.getenv("RAILWAY_ENVIRONMENT", "unknown")
     }
 
 
