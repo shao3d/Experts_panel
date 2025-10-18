@@ -169,17 +169,29 @@ async def general_exception_handler(request: Request, exc: Exception):
     )
 
 
+# Simple ping endpoint for basic connectivity test
+@app.get("/ping", tags=["health"])
+async def ping():
+    """Simple ping endpoint."""
+    logger.info("Ping requested")
+    return {"message": "pong", "status": "alive"}
+
 # Health check endpoint
 @app.get("/health", tags=["health"])
 async def health_check() -> Dict[str, Any]:
     """Health check endpoint."""
+    logger.info("Health check requested")
+
     try:
         # Check database connection
-        from ..models.base import SessionLocal
+        from ..models.base import SessionLocal, DATABASE_URL
+        logger.info(f"Database URL configured: {DATABASE_URL[:20]}..." if DATABASE_URL else "No DATABASE_URL")
+
         db = SessionLocal()
-        db.execute(text("SELECT 1"))
+        result = db.execute(text("SELECT 1"))
         db.close()
         db_status = "healthy"
+        logger.info("Database health check passed")
     except Exception as e:
         logger.error(f"Database health check failed: {e}")
         db_status = "unhealthy"
@@ -194,13 +206,16 @@ async def health_check() -> Dict[str, Any]:
     else:
         logger.warning("OpenAI API key not found - application will run in degraded mode")
 
-    return {
+    response = {
         "status": "healthy" if db_status == "healthy" and openai_configured else "degraded",
         "version": "1.0.0",
         "database": db_status,
         "openai_configured": openai_configured,
         "timestamp": time.time()
     }
+
+    logger.info(f"Health check response: {response}")
+    return response
 
 
 # API info endpoint

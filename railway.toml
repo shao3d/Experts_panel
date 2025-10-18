@@ -6,7 +6,7 @@ dockerfilePath = "backend/Dockerfile"
 
 [deploy]
 # Use health check for zero-downtime deployments
-healthcheckPath = "/health"
+healthcheckPath = "/ping"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
