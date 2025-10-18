@@ -200,13 +200,14 @@ jobs:
 
     - name: Check built files
       run: |
-        cd frontend/dist
+        cd frontend
         if [ -d "dist" ]; then
-          cd dist
-          ls -la
-          [ -f "index.html" ] && echo "✅ Frontend index.html exists" || echo "❌ index.html missing"
+          echo "✅ Frontend build completed successfully"
+          ls -la dist/
+          [ -f "dist/index.html" ] && echo "✅ Frontend index.html exists" || echo "❌ index.html missing"
         else
-          echo "✅ Build completed (check build structure)"
+          echo "❌ Frontend build failed - no dist directory created"
+          exit 1
         fi
 
   # Security and Quality Checks
