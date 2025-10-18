@@ -37,6 +37,12 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting up Experts Panel API...")
 
+    # Log environment variables status
+    logger.info(f"Environment check:")
+    logger.info(f"- OPENAI_API_KEY: {'configured' if os.getenv('OPENAI_API_KEY') else 'missing'}")
+    logger.info(f"- PRODUCTION_ORIGIN: {os.getenv('PRODUCTION_ORIGIN', 'not set')}")
+    logger.info(f"- Working directory: {os.getcwd()}")
+
     # Create database tables if they don't exist
     try:
         Base.metadata.create_all(bind=engine)
@@ -179,7 +185,14 @@ async def health_check() -> Dict[str, Any]:
         db_status = "unhealthy"
 
     # Check OpenAI API key
-    openai_configured = bool(os.getenv("OPENAI_API_KEY"))
+    openai_key = os.getenv("OPENAI_API_KEY")
+    openai_configured = bool(openai_key)
+
+    # Log key status (without revealing the key)
+    if openai_key:
+        logger.info("OpenAI API key found")
+    else:
+        logger.warning("OpenAI API key not found - application will run in degraded mode")
 
     return {
         "status": "healthy" if db_status == "healthy" and openai_configured else "degraded",
