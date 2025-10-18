@@ -5,15 +5,13 @@ builder = "dockerfile"
 dockerfilePath = "backend/Dockerfile"
 
 [deploy]
-# Use health check for zero-downtime deployments
-healthcheckPath = "/health"
-healthcheckTimeout = 300
+# Disable Railway health check and use Docker internal health check
+# healthcheckPath = "/health"
+# healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
 
-# Alternative health check paths for debugging
-# healthcheckPath = "/api/health"
-# healthcheckPath = "/healthz"
+# Use Docker internal health check instead of Railway external check
 
 # Environment variables will be set in Railway dashboard
 # These are just documentation for required variables
