@@ -1,0 +1,26 @@
+{
+  "total_pending_groups": 25,
+  "groups_processed": 25,
+  "by_expert": {
+    "ai_architect": {
+      "processed": 6,
+      "with_drift": 5,
+      "without_drift": 1
+    },
+    "neuraldeep": {
+      "processed": 10,
+      "with_drift": 10,
+      "without_drift": 0
+    },
+    "refat": {
+      "processed": 9,
+      "with_drift": 6,
+      "without_drift": 3
+    }
+  },
+  "drift_summary": {
+    "total_with_drift": 21,
+    "total_without_drift": 4,
+    "success_rate": "100.0%"
+  }
+}

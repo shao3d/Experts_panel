@@ -1,0 +1,118 @@
+# Performance Validation Configuration
+# Defines test scenarios and performance targets
+
+api:
+  base_url: "http://localhost:8000"
+  timeout_seconds: 300  # 5 minutes maximum timeout
+
+performance_targets:
+  max_response_time_seconds: 180  # 3 minutes as per requirement
+  max_memory_mb: 500               # Maximum memory usage
+  success_rate_percent: 95         # 95% of tests must pass
+  p95_target_seconds: 150          # 95th percentile should be under 2.5 minutes
+  p99_target_seconds: 180          # 99th percentile should be under 3 minutes
+
+# Number of concurrent tests to run in parallel testing
+concurrent_tests: 3
+
+# Test scenarios - from simple to complex
+test_scenarios:
+  # Simple queries (should be fast)
+  - name: "simple_topic"
+    query: "What are the main topics discussed in this channel?"
+    expected_posts: 5
+    max_time: 60
+
+  - name: "simple_greeting"
+    query: "Show me welcome messages"
+    expected_posts: 2
+    max_time: 30
+
+  # Medium complexity queries
+  - name: "medium_research"
+    query: "What research insights have been shared?"
+    expected_posts: 2
+    max_time: 90
+
+  - name: "medium_ml_topic"
+    query: "Tell me about machine learning discussions"
+    expected_posts: 1
+    max_time: 60
+
+  # Complex queries (testing limits)
+  - name: "complex_full_discussion"
+    query: "Find the complete discussion about research findings including all responses and related comments"
+    expected_posts: 4
+    max_time: 120
+
+  - name: "complex_all_experts"
+    query: "What are all the experts discussing? Include their contributions, responses, and any forwarded content"
+    expected_posts: 7
+    max_time: 150
+
+  - name: "complex_temporal"
+    query: "Show me the most recent conversations with all their context and relationships"
+    expected_posts: 5
+    max_time: 120
+
+  # Edge case queries
+  - name: "edge_empty_result"
+    query: "Find posts about quantum computing and blockchain"
+    expected_posts: 0
+    max_time: 30
+
+  - name: "edge_very_broad"
+    query: "Tell me everything that was discussed"
+    expected_posts: 7
+    max_time: 180
+
+# Load test configuration
+load_test:
+  concurrent_users: 5
+  requests_per_user: 3
+  ramp_up_seconds: 5
+  batch_size: 5
+
+# Memory monitoring
+memory_monitoring:
+  check_interval_seconds: 1
+  alert_threshold_mb: 400
+  track_delta: true
+
+# Performance thresholds for different query types
+query_type_thresholds:
+  simple:
+    max_response_seconds: 60
+    max_memory_mb: 50
+  medium:
+    max_response_seconds: 120
+    max_memory_mb: 100
+  complex:
+    max_response_seconds: 180
+    max_memory_mb: 200
+
+# Bottleneck detection
+bottleneck_detection:
+  slow_query_threshold: 120  # Queries over 2 minutes are considered slow
+  memory_spike_threshold: 100  # Memory increase over 100MB is a spike
+
+# Report configuration
+reporting:
+  save_raw_results: true
+  save_detailed_report: true
+  max_results_in_report: 20
+  include_system_info: true
+  include_recommendations: true
+
+# Test data sizes for scalability testing
+data_sizes:
+  small: 10    # 10 posts
+  medium: 100  # 100 posts
+  large: 1000  # 1000 posts
+  # Note: Current test DB has only 7 posts
+
+# API rate limiting tests
+rate_limiting:
+  requests_per_second: 10
+  burst_size: 20
+  test_duration_seconds: 10

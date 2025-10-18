@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: experts-panel-backend
+    ports:
+      - "8000:8000"
+    environment:
+      # Database
+      - DATABASE_URL=sqlite:///data/experts.db
+
+      # OpenAI API (required)
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-sk-your-openai-api-key-here}
+
+      # Production settings
+      - PRODUCTION_ORIGIN=http://localhost:3000
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - LOG_LEVEL=INFO
+
+      # Railway specific (will be overridden in production)
+      - PORT=8000
+      - RAILWAY_ENVIRONMENT=production
+
+    volumes:
+      # Mount database directory for persistence
+      - ./data:/app/data
+    networks:
+      - experts-panel-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: experts-panel-frontend
+    ports:
+      - "3000:80"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - experts-panel-network
+    restart: unless-stopped
+
+networks:
+  experts-panel-network:
+    driver: bridge
+
+volumes:
+  experts-panel-data:
+    driver: local

@@ -1,0 +1,373 @@
+[
+  {
+    "test": {
+      "id": "q001",
+      "name": "General topic overview",
+      "query": "What are the main topics discussed in this Telegram channel?",
+      "type": "topic_discovery",
+      "expected": {
+        "min_sources": 5,
+        "keywords": [
+          "topics",
+          "discussed",
+          "main",
+          "themes"
+        ],
+        "phases_required": [
+          "map",
+          "resolve",
+          "reduce"
+        ],
+        "description": "Should identify and summarize major discussion themes"
+      }
+    },
+    "result": {
+      "success": false,
+      "error": "HTTP 500: {\"error\":\"http_error\",\"message\":\"OpenAI API key not configured\",\"request_id\":\"c64b1fcc-f2c0-4025-8b7f-b26528938ed5\"}",
+      "response_time": 0.04275107383728027,
+      "status_code": 500
+    },
+    "validation": {
+      "passed": false,
+      "checks": [
+        "\u001b[91m\u2717 Query failed: HTTP 500: {\"error\":\"http_error\",\"message\":\"OpenAI API key not configured\",\"request_id\":\"c64b1fcc-f2c0-4025-8b7f-b26528938ed5\"}\u001b[0m"
+      ],
+      "warnings": []
+    },
+    "timestamp": "2025-09-28T20:18:05.898599"
+  },
+  {
+    "test": {
+      "id": "q002",
+      "name": "Technical question",
+      "query": "What technical decisions and architecture choices were made in this project?",
+      "type": "technical_analysis",
+      "expected": {
+        "min_sources": 3,
+        "keywords": [
+          "technical",
+          "architecture",
+          "decisions",
+          "implementation"
+        ],
+        "phases_required": [
+          "map",
+          "resolve",
+          "reduce"
+        ],
+        "description": "Should find technical discussions and decisions"
+      }
+    },
+    "result": {
+      "success": false,
+      "error": "HTTP 500: {\"error\":\"http_error\",\"message\":\"OpenAI API key not configured\",\"request_id\":\"7a870723-5f7f-47fc-8f37-3e6b643ed537\"}",
+      "response_time": 0.016752004623413086,
+      "status_code": 500
+    },
+    "validation": {
+      "passed": false,
+      "checks": [
+        "\u001b[91m\u2717 Query failed: HTTP 500: {\"error\":\"http_error\",\"message\":\"OpenAI API key not configured\",\"request_id\":\"7a870723-5f7f-47fc-8f37-3e6b643ed537\"}\u001b[0m"
+      ],
+      "warnings": []
+    },
+    "timestamp": "2025-09-28T20:18:06.915924"
+  },
+  {
+    "test": {
+      "id": "q003",
+      "name": "Expert opinion search",
+      "query": "What do the experts think about the future direction of the project?",
+      "type": "opinion_extraction",
+      "expected": {
+        "min_sources": 2,
+        "keywords": [
+          "future",
+          "direction",
+          "opinion",
+          "think",
+          "experts"
+        ],
+        "phases_required": [
+          "map",
+          "resolve",
+          "reduce"
+        ],
+        "description": "Should extract expert opinions and predictions"
+      }
+    },
+    "result": {
+      "success": false,
+      "error": "HTTP 500: {\"error\":\"http_error\",\"message\":\"OpenAI API key not configured\",\"request_id\":\"e87b62c9-4983-4967-b526-13ccbe6860e5\"}",
+      "response_time": 0.005366802215576172,
+      "status_code": 500
+    },
+    "validation": {
+      "passed": false,
+      "checks": [
+        "\u001b[91m\u2717 Query failed: HTTP 500: {\"error\":\"http_error\",\"message\":\"OpenAI API key not configured\",\"request_id\":\"e87b62c9-4983-4967-b526-13ccbe6860e5\"}\u001b[0m"
+      ],
+      "warnings": []
+    },
+    "timestamp": "2025-09-28T20:18:07.922866"
+  },
+  {
+    "test": {
+      "id": "q004",
+      "name": "Specific feature query",
+      "query": "How does the Map-Resolve-Reduce pipeline work in this system?",
+      "type": "feature_explanation",
+      "expected": {
+        "min_sources": 3,
+        "keywords": [
+          "map",
+          "resolve",
+          "reduce",
+          "pipeline",
+          "process"
+        ],
+        "phases_required": [
+          "map",
+          "resolve",
+          "reduce"
+        ],
+        "description": "Should explain specific system features"
+      }
+    },
+    "result": {
+      "success": false,
+      "error": "HTTP 500: {\"error\":\"http_error\",\"message\":\"OpenAI API key not configured\",\"request_id\":\"1db7b1f5-de4d-4205-af70-89a278e7c64e\"}",
+      "response_time": 0.007636070251464844,
+      "status_code": 500
+    },
+    "validation": {
+      "passed": false,
+      "checks": [
+        "\u001b[91m\u2717 Query failed: HTTP 500: {\"error\":\"http_error\",\"message\":\"OpenAI API key not configured\",\"request_id\":\"1db7b1f5-de4d-4205-af70-89a278e7c64e\"}\u001b[0m"
+      ],
+      "warnings": []
+    },
+    "timestamp": "2025-09-28T20:18:08.931539"
+  },
+  {
+    "test": {
+      "id": "q005",
+      "name": "Problem resolution",
+      "query": "What problems or challenges were discussed and how were they solved?",
+      "type": "problem_solving",
+      "expected": {
+        "min_sources": 4,
+        "keywords": [
+          "problems",
+          "challenges",
+          "solved",
+          "solution",
+          "fixed"
+        ],
+        "phases_required": [
+          "map",
+          "resolve",
+          "reduce"
+        ],
+        "description": "Should identify problems and their solutions"
+      }
+    },
+    "result": {
+      "success": false,
+      "error": "HTTP 500: {\"error\":\"http_error\",\"message\":\"OpenAI API key not configured\",\"request_id\":\"09e15202-2cce-4b16-be39-458fe83d00c9\"}",
+      "response_time": 0.0054628849029541016,
+      "status_code": 500
+    },
+    "validation": {
+      "passed": false,
+      "checks": [
+        "\u001b[91m\u2717 Query failed: HTTP 500: {\"error\":\"http_error\",\"message\":\"OpenAI API key not configured\",\"request_id\":\"09e15202-2cce-4b16-be39-458fe83d00c9\"}\u001b[0m"
+      ],
+      "warnings": []
+    },
+    "timestamp": "2025-09-28T20:18:09.942607"
+  },
+  {
+    "test": {
+      "id": "q006",
+      "name": "Comparison query",
+      "query": "What are the advantages of this approach compared to traditional RAG systems?",
+      "type": "comparative_analysis",
+      "expected": {
+        "min_sources": 2,
+        "keywords": [
+          "advantages",
+          "compared",
+          "RAG",
+          "traditional",
+          "better"
+        ],
+        "phases_required": [
+          "map",
+          "resolve",
+          "reduce"
+        ],
+        "description": "Should compare different approaches"
+      }
+    },
+    "result": {
+      "success": false,
+      "error": "HTTP 500: {\"error\":\"http_error\",\"message\":\"OpenAI API key not configured\",\"request_id\":\"1cc7d6b8-0efd-4339-bbfb-104221360ba8\"}",
+      "response_time": 0.006330251693725586,
+      "status_code": 500
+    },
+    "validation": {
+      "passed": false,
+      "checks": [
+        "\u001b[91m\u2717 Query failed: HTTP 500: {\"error\":\"http_error\",\"message\":\"OpenAI API key not configured\",\"request_id\":\"1cc7d6b8-0efd-4339-bbfb-104221360ba8\"}\u001b[0m"
+      ],
+      "warnings": []
+    },
+    "timestamp": "2025-09-28T20:18:10.950319"
+  },
+  {
+    "test": {
+      "id": "q007",
+      "name": "Timeline query",
+      "query": "What was discussed in the most recent conversations?",
+      "type": "temporal_search",
+      "expected": {
+        "min_sources": 5,
+        "keywords": [
+          "recent",
+          "latest",
+          "discussed"
+        ],
+        "phases_required": [
+          "map",
+          "reduce"
+        ],
+        "description": "Should focus on recent posts"
+      }
+    },
+    "result": {
+      "success": false,
+      "error": "HTTP 500: {\"error\":\"http_error\",\"message\":\"OpenAI API key not configured\",\"request_id\":\"a11350bc-f47c-4c46-96df-21f9f012a2e7\"}",
+      "response_time": 0.014101028442382812,
+      "status_code": 500
+    },
+    "validation": {
+      "passed": false,
+      "checks": [
+        "\u001b[91m\u2717 Query failed: HTTP 500: {\"error\":\"http_error\",\"message\":\"OpenAI API key not configured\",\"request_id\":\"a11350bc-f47c-4c46-96df-21f9f012a2e7\"}\u001b[0m"
+      ],
+      "warnings": []
+    },
+    "timestamp": "2025-09-28T20:18:11.965517"
+  },
+  {
+    "test": {
+      "id": "q008",
+      "name": "Link following test",
+      "query": "Find all related discussions about API design and their follow-up implementations",
+      "type": "link_traversal",
+      "expected": {
+        "min_sources": 3,
+        "keywords": [
+          "API",
+          "design",
+          "implementation",
+          "related"
+        ],
+        "phases_required": [
+          "map",
+          "resolve",
+          "reduce"
+        ],
+        "description": "Should follow links between related posts"
+      }
+    },
+    "result": {
+      "success": false,
+      "error": "HTTP 500: {\"error\":\"http_error\",\"message\":\"OpenAI API key not configured\",\"request_id\":\"68c5c99d-2345-40fe-89d1-235b16922b3d\"}",
+      "response_time": 0.009935855865478516,
+      "status_code": 500
+    },
+    "validation": {
+      "passed": false,
+      "checks": [
+        "\u001b[91m\u2717 Query failed: HTTP 500: {\"error\":\"http_error\",\"message\":\"OpenAI API key not configured\",\"request_id\":\"68c5c99d-2345-40fe-89d1-235b16922b3d\"}\u001b[0m"
+      ],
+      "warnings": []
+    },
+    "timestamp": "2025-09-28T20:18:12.976959"
+  },
+  {
+    "test": {
+      "id": "q009",
+      "name": "Summary request",
+      "query": "Provide a brief summary of the key insights from expert comments",
+      "type": "summarization",
+      "expected": {
+        "min_sources": 2,
+        "keywords": [
+          "summary",
+          "insights",
+          "expert",
+          "key"
+        ],
+        "phases_required": [
+          "map",
+          "reduce"
+        ],
+        "description": "Should synthesize expert comments"
+      }
+    },
+    "result": {
+      "success": false,
+      "error": "HTTP 500: {\"error\":\"http_error\",\"message\":\"OpenAI API key not configured\",\"request_id\":\"772e53ff-e325-4dc5-98b0-090a73fd9663\"}",
+      "response_time": 0.03532910346984863,
+      "status_code": 500
+    },
+    "validation": {
+      "passed": false,
+      "checks": [
+        "\u001b[91m\u2717 Query failed: HTTP 500: {\"error\":\"http_error\",\"message\":\"OpenAI API key not configured\",\"request_id\":\"772e53ff-e325-4dc5-98b0-090a73fd9663\"}\u001b[0m"
+      ],
+      "warnings": []
+    },
+    "timestamp": "2025-09-28T20:18:14.020227"
+  },
+  {
+    "test": {
+      "id": "q010",
+      "name": "Specific author query",
+      "query": "What contributions and ideas were shared by the main participants?",
+      "type": "author_analysis",
+      "expected": {
+        "min_sources": 4,
+        "keywords": [
+          "contributions",
+          "ideas",
+          "participants",
+          "shared"
+        ],
+        "phases_required": [
+          "map",
+          "resolve",
+          "reduce"
+        ],
+        "description": "Should identify contributions by different authors"
+      }
+    },
+    "result": {
+      "success": false,
+      "error": "HTTP 500: {\"error\":\"http_error\",\"message\":\"OpenAI API key not configured\",\"request_id\":\"afa17a99-79d5-45a3-a8c2-9ada448795ea\"}",
+      "response_time": 0.0637359619140625,
+      "status_code": 500
+    },
+    "validation": {
+      "passed": false,
+      "checks": [
+        "\u001b[91m\u2717 Query failed: HTTP 500: {\"error\":\"http_error\",\"message\":\"OpenAI API key not configured\",\"request_id\":\"afa17a99-79d5-45a3-a8c2-9ada448795ea\"}\u001b[0m"
+      ],
+      "warnings": []
+    },
+    "timestamp": "2025-09-28T20:18:15.104503"
+  }
+]

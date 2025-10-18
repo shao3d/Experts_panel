@@ -1,0 +1,160 @@
+# Topic Search Validation Scenarios
+# Tests the system's ability to find posts related to specific topics
+# Per constitution Principle III: Validation-First Development
+
+test_suite:
+  name: "Topic Search Validation"
+  description: "Validates the Map phase's ability to identify relevant content by topic"
+  version: "1.0.0"
+  created: "2025-09-28"
+
+test_cases:
+  - id: "TOPIC-001"
+    name: "Research and Insights Query"
+    query: "What research insights have been shared?"
+    description: "Should find posts about research projects and insights"
+    expected:
+      post_ids: [4, 6]
+      relevance_criteria:
+        - "Post 4: Author explicitly mentions 'insights from my recent research project'"
+        - "Post 6: Direct response to research with 'fascinating findings'"
+      min_relevance_score: 0.7
+    tags:
+      - research
+      - insights
+      - findings
+
+  - id: "TOPIC-002"
+    name: "Machine Learning Content"
+    query: "Tell me about machine learning discussions"
+    description: "Should identify posts mentioning ML/AI topics"
+    expected:
+      post_ids: [3]
+      relevance_criteria:
+        - "Post 3: Explicitly mentions 'machine learning trends' and shares article"
+      min_relevance_score: 0.8
+    tags:
+      - machine_learning
+      - artificial_intelligence
+      - trends
+
+  - id: "TOPIC-003"
+    name: "Welcome and Introductions"
+    query: "Show me welcome messages and introductions"
+    description: "Should find initial greeting and welcome posts"
+    expected:
+      post_ids: [1, 2]
+      relevance_criteria:
+        - "Post 1: Welcome message to channel"
+        - "Post 2: Response greeting 'Great to be here'"
+      min_relevance_score: 0.7
+      follow_links: true  # Post 2 is a reply to Post 1
+    tags:
+      - welcome
+      - introduction
+      - greetings
+
+  - id: "TOPIC-004"
+    name: "Reports and Documentation"
+    query: "Find reports and formal documentation"
+    description: "Should locate posts containing reports or formal documents"
+    expected:
+      post_ids: [8]
+      relevance_criteria:
+        - "Post 8: Mentions 'annual report for everyone to review'"
+      min_relevance_score: 0.8
+    tags:
+      - reports
+      - documentation
+      - annual_report
+
+  - id: "TOPIC-005"
+    name: "Broad Expert Discussion"
+    query: "What are the experts discussing?"
+    description: "Broad query that should return multiple relevant posts"
+    expected:
+      post_ids: [1, 2, 3, 4, 6]  # Excludes forwarded (5) and report (8)
+      relevance_criteria:
+        - "Posts showing active expert participation and discussion"
+        - "Includes various topics: welcome, ML, research"
+        - "Includes discussion threads (replies)"
+      min_relevance_score: 0.5  # Lower threshold for broad query
+    tags:
+      - general
+      - expert_discussion
+      - broad_search
+
+edge_cases:
+  - id: "EDGE-001"
+    name: "Ambiguous Topic - Information"
+    query: "Find valuable information"
+    description: "Ambiguous query that could match multiple contexts"
+    expected:
+      post_ids: [3, 4, 5, 8]
+      relevance_criteria:
+        - "Post 3: 'helpful' article implies valuable info"
+        - "Post 4: Research insights are valuable information"
+        - "Post 5: Explicitly mentions 'valuable information'"
+        - "Post 8: Annual report contains valuable data"
+      min_relevance_score: 0.4  # Lower threshold for ambiguous query
+      note: "Tests system's ability to handle vague queries"
+
+  - id: "EDGE-002"
+    name: "Synonym Matching"
+    query: "Show me scientific studies and experiments"
+    description: "Should match 'research' posts using synonyms"
+    expected:
+      post_ids: [4, 6]
+      relevance_criteria:
+        - "Should recognize 'research' as synonym for 'studies'"
+        - "Should recognize 'findings' relates to experiments"
+      min_relevance_score: 0.6
+      note: "Tests semantic understanding beyond exact matches"
+
+  - id: "EDGE-003"
+    name: "Negative Query"
+    query: "Find posts NOT about research"
+    description: "Should exclude research-related posts"
+    expected:
+      post_ids: [1, 2, 3, 5, 8]  # Excludes 4 and 6
+      relevance_criteria:
+        - "Should exclude posts 4 and 6 which mention research"
+        - "Should include all other posts"
+      min_relevance_score: 0.5
+      note: "Tests negative filtering capability"
+
+  - id: "EDGE-004"
+    name: "Empty Result Query"
+    query: "Show me posts about quantum computing"
+    description: "Topic not present in data - should return empty/low relevance"
+    expected:
+      post_ids: []
+      relevance_criteria:
+        - "No posts should have high relevance for this topic"
+        - "System should handle absence of results gracefully"
+      max_relevance_score: 0.3
+      note: "Tests handling of topics not in dataset"
+
+validation_criteria:
+  success_threshold: 0.8  # 80% of tests must pass
+  relevance_calculation:
+    - "Exact keyword match: 0.4 weight"
+    - "Semantic similarity: 0.4 weight"
+    - "Context awareness: 0.2 weight"
+
+  performance_metrics:
+    max_processing_time_ms: 5000  # Per query
+    max_tokens_per_query: 2000
+
+  quality_checks:
+    - "No false positives with relevance < 0.3"
+    - "Must follow reply chains when specified"
+    - "Should handle synonyms and related terms"
+    - "Graceful handling of empty results"
+
+notes:
+  - "Based on actual posts in test database (7 posts total)"
+  - "Tests cover broad and narrow searches"
+  - "Includes edge cases for ambiguous and negative queries"
+  - "Post IDs based on telegram_message_id field"
+  - "Link relationships: Post 2→1 (reply), Post 6→4 (reply)"

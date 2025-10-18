@@ -1,0 +1,672 @@
+"""Simplified query endpoint with Map + (Resolve-Reduce) architecture."""
+
+import asyncio
+import json
+import uuid
+import time
+from typing import AsyncGenerator
+import logging
+import os
+
+from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy.orm import Session
+from sse_starlette.sse import EventSourceResponse
+
+from .models import (
+    QueryRequest,
+    QueryResponse,
+    ProgressEvent,
+    TokenUsage,
+    SimplifiedPostDetailResponse,
+    CommentResponse,
+    CommentGroupResponse,
+    AnchorPost
+)
+from ..models.base import SessionLocal
+from ..models.post import Post
+from ..models.comment import Comment
+from ..services.map_service import MapService
+from ..services.simple_resolve_service import SimpleResolveService
+from ..services.reduce_service import ReduceService
+from ..services.comment_group_map_service import CommentGroupMapService
+
+logger = logging.getLogger(__name__)
+
+# Create router
+router = APIRouter(prefix="/api/v1", tags=["query"])
+
+
+def sanitize_for_json(obj):
+    """Recursively sanitize all strings in nested data structures for safe JSON transmission.
+
+    Removes invalid escape sequences that would break JSON.parse() on frontend.
+    """
+    import re
+
+    if isinstance(obj, str):
+        # Remove invalid escape sequences, keep only valid JSON escapes: \n \t \r \" \/ \\
+        return re.sub(r'\\(?![ntr"\\/])', '', obj)
+    elif isinstance(obj, dict):
+        return {k: sanitize_for_json(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [sanitize_for_json(item) for item in obj]
+    else:
+        return obj
+
+
+def get_db():
+    """Database dependency."""
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+def get_openai_key() -> str:
+    """Get OpenAI API key from environment."""
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise HTTPException(
+            status_code=500,
+            detail="OpenAI API key not configured"
+        )
+    return api_key
+
+
+async def event_generator(
+    request: QueryRequest,
+    db: Session,
+    api_key: str,
+    request_id: str
+) -> AsyncGenerator[str, None]:
+    """Generate SSE events for simplified query processing.
+
+    Two phases only:
+    1. Map - find relevant posts
+    2. Resolve+Reduce - expand with links and synthesize answer
+
+    Args:
+        request: Query request
+        db: Database session
+        api_key: OpenAI API key
+        request_id: Unique request ID
+
+    Yields:
+        SSE formatted events
+    """
+    start_time = time.time()
+
+    try:
+        # Initial event
+        event = ProgressEvent(
+            event_type="start",
+            phase="initialization",
+            status="starting",
+            message="Starting simplified query processing",
+            data={"request_id": request_id, "query": request.query}
+        )
+        sanitized = sanitize_for_json(event.model_dump(mode='json'))
+        yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+
+        # Get all posts from database
+        query = db.query(Post).order_by(Post.created_at.desc())
+        if request.max_posts is not None:
+            query = query.limit(request.max_posts)
+        posts = query.all()
+
+        if not posts:
+            error_event = ProgressEvent(
+                event_type="error",
+                phase="initialization",
+                status="error",
+                message="No posts found in database",
+                data={"request_id": request_id}
+            )
+            yield f"data: {json.dumps(error_event.model_dump(mode='json'), ensure_ascii=False)}\n\n"
+            return
+
+        # Phase 1: Map - Find relevant posts
+        event = ProgressEvent(
+            event_type="phase_start",
+            phase="map",
+            status="starting",
+            message=f"Map phase: searching {len(posts)} posts"
+        )
+        sanitized = sanitize_for_json(event.model_dump(mode='json'))
+        yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+
+        map_service = MapService(api_key=api_key)
+        progress_events = []
+
+        async def map_progress_callback(data: dict):
+            event = ProgressEvent(
+                event_type="progress",
+                phase="map",
+                status=data.get("status", "processing"),
+                message=data.get("message", "Processing..."),
+                data=data
+            )
+            progress_events.append(event)
+
+        map_results = await map_service.process(
+            posts=posts,
+            query=request.query,
+            progress_callback=map_progress_callback
+        )
+
+        # Yield map progress events
+        for event in progress_events:
+            sanitized = sanitize_for_json(event.model_dump(mode='json'))
+            yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+        progress_events.clear()
+
+        relevant_posts = map_results.get("relevant_posts", [])
+
+        # Filter: Keep only HIGH + MEDIUM (remove LOW)
+        filtered_posts = [
+            p for p in relevant_posts
+            if p.get("relevance") in ["HIGH", "MEDIUM"]
+        ]
+
+        logger.info(
+            f"Filtered: {len(relevant_posts)} → {len(filtered_posts)} "
+            f"(removed {len(relevant_posts) - len(filtered_posts)} LOW posts)"
+        )
+
+        event = ProgressEvent(
+            event_type="phase_complete",
+            phase="map",
+            status="completed",
+            message=f"Map complete: found {len(relevant_posts)} posts ({len(filtered_posts)} HIGH+MEDIUM)",
+            data={
+                "relevant_count": len(relevant_posts),
+                "filtered_count": len(filtered_posts),
+                "removed_low": len(relevant_posts) - len(filtered_posts)
+            }
+        )
+        sanitized = sanitize_for_json(event.model_dump(mode='json'))
+        yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+
+        # Phase 2: Combined Resolve+Reduce
+        event = ProgressEvent(
+            event_type="phase_start",
+            phase="resolve_reduce",
+            status="starting",
+            message="Expanding context and synthesizing answer"
+        )
+        sanitized = sanitize_for_json(event.model_dump(mode='json'))
+        yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+
+        # Resolve: Expand with author's links (no GPT!)
+        resolve_service = SimpleResolveService()
+
+        async def resolve_progress_callback(data: dict):
+            event = ProgressEvent(
+                event_type="progress",
+                phase="resolve_reduce",
+                status="expanding",
+                message=data.get("message", "Expanding context..."),
+                data=data
+            )
+            progress_events.append(event)
+
+        resolve_results = await resolve_service.process(
+            relevant_posts=filtered_posts,
+            query=request.query,
+            progress_callback=resolve_progress_callback
+        )
+
+        # Yield resolve progress
+        for event in progress_events:
+            sanitized = sanitize_for_json(event.model_dump(mode='json'))
+            yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+        progress_events.clear()
+
+        enriched_posts = resolve_results.get("enriched_posts", [])
+
+        event = ProgressEvent(
+            event_type="progress",
+            phase="resolve_reduce",
+            status="synthesizing",
+            message=f"Synthesizing answer from {len(enriched_posts)} posts",
+            data={"post_count": len(enriched_posts)}
+        )
+        sanitized = sanitize_for_json(event.model_dump(mode='json'))
+        yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+
+        # Reduce: Synthesize the answer
+        reduce_service = ReduceService(api_key=api_key)
+
+        async def reduce_progress_callback(data: dict):
+            event = ProgressEvent(
+                event_type="progress",
+                phase="resolve_reduce",
+                status="synthesizing",
+                message=data.get("message", "Creating answer..."),
+                data=data
+            )
+            progress_events.append(event)
+
+        reduce_results = await reduce_service.process(
+            enriched_posts=enriched_posts,
+            query=request.query,
+            progress_callback=reduce_progress_callback
+        )
+
+        # Yield reduce progress
+        for event in progress_events:
+            sanitized = sanitize_for_json(event.model_dump(mode='json'))
+            yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+        progress_events.clear()
+
+        event = ProgressEvent(
+            event_type="phase_complete",
+            phase="resolve_reduce",
+            status="completed",
+            message="Answer synthesis completed",
+            data={
+                "confidence": reduce_results.get("confidence", "MEDIUM"),
+                "posts_analyzed": len(enriched_posts)
+            }
+        )
+        sanitized = sanitize_for_json(event.model_dump(mode='json'))
+        yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+
+        # Pipeline B: Comment Groups (if enabled) - MOVED HERE after Reduce
+        comment_groups = []
+        if request.include_comment_groups:
+            # Exclude only main_sources from Reduce (not all HIGH+MEDIUM)
+            main_sources = reduce_results.get("main_sources", [])
+
+            event = ProgressEvent(
+                event_type="phase_start",
+                phase="comment_groups",
+                status="starting",
+                message=f"Searching comment groups (excluding {len(main_sources)} main sources)"
+            )
+            sanitized = sanitize_for_json(event.model_dump(mode='json'))
+            yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+
+            comment_group_service = CommentGroupMapService(api_key=api_key)
+
+            async def comment_group_progress_callback(data: dict):
+                event = ProgressEvent(
+                    event_type="progress",
+                    phase="comment_groups",
+                    status=data.get("status", "processing"),
+                    message=data.get("message", "Analyzing comment groups..."),
+                    data=data
+                )
+                progress_events.append(event)
+
+            comment_group_results = await comment_group_service.process(
+                query=request.query,
+                db=db,
+                exclude_post_ids=main_sources,
+                progress_callback=comment_group_progress_callback
+            )
+
+            # Yield comment group progress events
+            for event in progress_events:
+                sanitized = sanitize_for_json(event.model_dump(mode='json'))
+                yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+            progress_events.clear()
+
+            # Convert to response format
+            for group in comment_group_results:
+                anchor_post_data = group["anchor_post"]
+
+                # Convert comments to CommentResponse objects
+                from .models import CommentResponse
+                comments = [
+                    CommentResponse(
+                        comment_id=c["comment_id"],
+                        comment_text=c["comment_text"],
+                        author_name=c["author_name"],
+                        created_at=c["created_at"],
+                        updated_at=c["updated_at"]
+                    )
+                    for c in group.get("comments", [])
+                ]
+
+                comment_groups.append(CommentGroupResponse(
+                    parent_telegram_message_id=group["parent_telegram_message_id"],
+                    relevance=group["relevance"],
+                    reason=group["reason"],
+                    comments_count=group["comments_count"],
+                    anchor_post=AnchorPost(
+                        telegram_message_id=anchor_post_data["telegram_message_id"],
+                        message_text=anchor_post_data["message_text"],
+                        created_at=anchor_post_data["created_at"],
+                        author_name=anchor_post_data["author_name"],
+                        channel_username=anchor_post_data["channel_username"]
+                    ),
+                    comments=comments
+                ))
+
+            event = ProgressEvent(
+                event_type="phase_complete",
+                phase="comment_groups",
+                status="completed",
+                message=f"Found {len(comment_groups)} relevant comment groups",
+                data={"comment_groups_count": len(comment_groups)}
+            )
+            sanitized = sanitize_for_json(event.model_dump(mode='json'))
+            yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+
+        # Calculate processing time
+        processing_time_ms = int((time.time() - start_time) * 1000)
+
+        # Prepare final response
+        token_usage = None
+        if reduce_results.get("token_usage"):
+            usage = reduce_results["token_usage"]
+            token_usage = TokenUsage(
+                prompt_tokens=usage.get("prompt_tokens", 0),
+                completion_tokens=usage.get("completion_tokens", 0),
+                total_tokens=usage.get("total_tokens", 0)
+            )
+
+        response = QueryResponse(
+            query=request.query,
+            answer=reduce_results.get("answer", ""),
+            main_sources=reduce_results.get("main_sources", []),
+            confidence=reduce_results.get("confidence", "MEDIUM"),
+            language=reduce_results.get("language", "ru"),
+            has_expert_comments=reduce_results.get("has_expert_comments", False),
+            posts_analyzed=reduce_results.get("posts_analyzed", 0),
+            expert_comments_included=reduce_results.get("expert_comments_included", 0),
+            relevance_distribution=reduce_results.get("relevance_distribution", {}),
+            token_usage=token_usage,
+            processing_time_ms=processing_time_ms,
+            request_id=request_id,
+            relevant_comment_groups=comment_groups
+        )
+
+        # Send final result with sanitized JSON
+        event = ProgressEvent(
+            event_type="complete",
+            phase="final",
+            status="success",
+            message="Query processing completed successfully",
+            data={"response": response.model_dump(mode='json')}
+        )
+
+        # Debug logging to catch JSON issues
+        try:
+            # First, try to dump the response without sanitization to see if it works
+            raw_event_dict = event.model_dump(mode='json')
+            logger.debug(f"Event dict keys: {raw_event_dict.keys()}")
+
+            # Test JSON serialization without sanitization
+            try:
+                test_dump = json.dumps(raw_event_dict, ensure_ascii=False)
+                logger.info(f"Raw JSON serialization succeeded (length: {len(test_dump)})")
+            except Exception as raw_error:
+                logger.error(f"Raw JSON serialization failed: {raw_error}")
+                logger.error(f"Problem likely in response data")
+
+                # Log specific fields to find the problematic one
+                if 'data' in raw_event_dict and 'response' in raw_event_dict['data']:
+                    resp_data = raw_event_dict['data']['response']
+                    for key in ['answer', 'relevant_comment_groups', 'relevance_distribution']:
+                        if key in resp_data:
+                            try:
+                                json.dumps({key: resp_data[key]}, ensure_ascii=False)
+                                logger.debug(f"Field {key} serializes OK")
+                            except Exception as field_error:
+                                logger.error(f"Field {key} fails JSON: {field_error}")
+                                if isinstance(resp_data[key], str):
+                                    # Show problematic part of the string
+                                    problem_str = resp_data[key][:1100] if len(resp_data[key]) > 1100 else resp_data[key]
+                                    logger.error(f"Problematic content in {key}: {repr(problem_str)}")
+
+            # Now sanitize and serialize
+            sanitized_event = sanitize_for_json(raw_event_dict)
+            final_json = json.dumps(sanitized_event, ensure_ascii=False)
+            logger.info(f"Sanitized JSON serialization succeeded (length: {len(final_json)})")
+            logger.info("Yielding final 'complete' event to client.")
+            yield f"data: {final_json}\n\n"
+
+        except Exception as json_error:
+            logger.error(f"CRITICAL: Final JSON serialization failed: {json_error}")
+            logger.error(f"This should not happen after sanitization!")
+            # Send minimal success event
+            minimal_event = {
+                "event_type": "complete",
+                "phase": "final",
+                "status": "success",
+                "message": "Query completed (JSON serialization issue)",
+                "data": {"request_id": request_id}
+            }
+            yield f"data: {json.dumps(minimal_event, ensure_ascii=False)}\n\n"
+
+    except Exception as e:
+        logger.error(f"Error processing query {request_id}: {str(e)}")
+        error_event = ProgressEvent(
+            event_type="error",
+            phase="error",
+            status="failed",
+            message=f"Error processing query: {str(e)}",
+            data={"request_id": request_id, "error": str(e)}
+        )
+        yield f"data: {json.dumps(error_event.model_dump(mode='json'), ensure_ascii=False)}\n\n"
+
+
+@router.post("/query", response_model=QueryResponse)
+async def process_simplified_query(
+    request: QueryRequest,
+    db: Session = Depends(get_db),
+    api_key: str = Depends(get_openai_key)
+):
+    """Process a query through the simplified Map + Resolve-Reduce pipeline.
+
+    Key improvements:
+    - No GPT evaluation of links (trusts author's decisions)
+    - Depth 1 expansion only (prevents drift)
+    - Faster processing (one less GPT call)
+
+    Args:
+        request: Query request with user's question
+        db: Database session
+        api_key: OpenAI API key
+
+    Returns:
+        QueryResponse with answer or SSE stream
+    """
+    request_id = str(uuid.uuid4())
+    logger.info(f"Processing simplified query {request_id}: {request.query[:50]}...")
+
+    # If streaming is disabled, process synchronously
+    if not request.stream_progress:
+        start_time = time.time()
+
+        try:
+            # Get posts from database
+            query = db.query(Post).order_by(Post.created_at.desc())
+            if request.max_posts is not None:
+                query = query.limit(request.max_posts)
+            posts = query.all()
+
+            if not posts:
+                raise HTTPException(
+                    status_code=404,
+                    detail="No posts found in database"
+                )
+
+            # Phase 1: Map
+            map_service = MapService(api_key=api_key)
+            map_results = await map_service.process(posts=posts, query=request.query)
+
+            relevant_posts = map_results.get("relevant_posts", [])
+
+            # Filter: Keep only HIGH + MEDIUM (remove LOW)
+            filtered_posts = [
+                p for p in relevant_posts
+                if p.get("relevance") in ["HIGH", "MEDIUM"]
+            ]
+
+            logger.info(
+                f"Filtered: {len(relevant_posts)} → {len(filtered_posts)} "
+                f"(removed {len(relevant_posts) - len(filtered_posts)} LOW posts)"
+            )
+
+            # Phase 2: Simplified Resolve (no GPT)
+            resolve_service = SimpleResolveService()
+            resolve_results = await resolve_service.process(
+                relevant_posts=filtered_posts,
+                query=request.query
+            )
+
+            # Phase 3: Reduce
+            reduce_service = ReduceService(api_key=api_key)
+            reduce_results = await reduce_service.process(
+                enriched_posts=resolve_results.get("enriched_posts", []),
+                query=request.query
+            )
+
+            # Pipeline B: Comment Groups (if enabled) - MOVED after Reduce
+            comment_groups = []
+            if request.include_comment_groups:
+                # Exclude only main_sources from Reduce
+                main_sources = reduce_results.get("main_sources", [])
+
+                comment_group_service = CommentGroupMapService(api_key=api_key)
+                comment_group_results = await comment_group_service.process(
+                    query=request.query,
+                    db=db,
+                    exclude_post_ids=main_sources
+                )
+
+                # Convert to response format
+                for group in comment_group_results:
+                    anchor_post_data = group["anchor_post"]
+
+                    # Convert comments to CommentResponse objects
+                    from .models import CommentResponse
+                    comments = [
+                        CommentResponse(
+                            comment_id=c["comment_id"],
+                            comment_text=c["comment_text"],
+                            author_name=c["author_name"],
+                            created_at=c["created_at"],
+                            updated_at=c["updated_at"]
+                        )
+                        for c in group.get("comments", [])
+                    ]
+
+                    comment_groups.append(CommentGroupResponse(
+                        parent_telegram_message_id=group["parent_telegram_message_id"],
+                        relevance=group["relevance"],
+                        reason=group["reason"],
+                        comments_count=group["comments_count"],
+                        anchor_post=AnchorPost(
+                            telegram_message_id=anchor_post_data["telegram_message_id"],
+                            message_text=anchor_post_data["message_text"],
+                            created_at=anchor_post_data["created_at"],
+                            author_name=anchor_post_data["author_name"],
+                            channel_username=anchor_post_data["channel_username"]
+                        ),
+                        comments=comments
+                    ))
+
+            processing_time_ms = int((time.time() - start_time) * 1000)
+
+            # Prepare response
+            token_usage = None
+            if reduce_results.get("token_usage"):
+                usage = reduce_results["token_usage"]
+                token_usage = TokenUsage(
+                    prompt_tokens=usage.get("prompt_tokens", 0),
+                    completion_tokens=usage.get("completion_tokens", 0),
+                    total_tokens=usage.get("total_tokens", 0)
+                )
+
+            return QueryResponse(
+                query=request.query,
+                answer=reduce_results.get("answer", ""),
+                main_sources=reduce_results.get("main_sources", []),
+                confidence=reduce_results.get("confidence", "MEDIUM"),
+                language=reduce_results.get("language", "ru"),
+                has_expert_comments=reduce_results.get("has_expert_comments", False),
+                posts_analyzed=reduce_results.get("posts_analyzed", 0),
+                expert_comments_included=reduce_results.get("expert_comments_included", 0),
+                relevance_distribution=reduce_results.get("relevance_distribution", {}),
+                token_usage=token_usage,
+                processing_time_ms=processing_time_ms,
+                request_id=request_id,
+                relevant_comment_groups=comment_groups
+            )
+
+        except Exception as e:
+            logger.error(f"Error processing query {request_id}: {str(e)}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Error processing query: {str(e)}"
+            )
+
+    # Return SSE stream for real-time progress
+    return EventSourceResponse(
+        event_generator(request, db, api_key, request_id),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Request-ID": request_id
+        }
+    )
+
+
+@router.get("/posts/{post_id}", response_model=SimplifiedPostDetailResponse)
+async def get_post_detail(
+    post_id: int,
+    db: Session = Depends(get_db)
+):
+    """Get detailed information about a specific post.
+
+    Args:
+        post_id: Telegram message ID of the post
+        db: Database session
+
+    Returns:
+        SimplifiedPostDetailResponse with post content and comments
+    """
+    # Find post in database
+    post = db.query(Post).filter(Post.telegram_message_id == post_id).first()
+
+    if not post:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Post with ID {post_id} not found"
+        )
+
+    # Convert comments to response format
+    comments = []
+    if post.comments:
+        for comment in post.comments:
+            comments.append(CommentResponse(
+                comment_id=comment.comment_id,
+                author_name=comment.author_name,
+                comment_text=comment.comment_text,
+                created_at=comment.created_at,
+                updated_at=comment.updated_at
+            ))
+
+    # Map channel name to username for Telegram links
+    # TODO: Store channel username in database for proper solution
+    channel_username_map = {
+        "Refat Talks: Tech & AI": "nobilix"
+    }
+    channel_username = channel_username_map.get(post.channel_name, post.channel_name)
+
+    # Create response
+    return SimplifiedPostDetailResponse(
+        telegram_message_id=post.telegram_message_id,
+        author_name=post.author_name or "Unknown",
+        message_text=post.message_text or "",
+        created_at=post.created_at.isoformat() if post.created_at else "",
+        channel_name=channel_username,  # Use username for Telegram links
+        comments=comments,
+        relevance_score=None  # Not available for individual post fetch
+    )

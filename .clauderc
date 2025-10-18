@@ -1,0 +1,16 @@
+{
+  "autoApproveTools": [
+    "Bash(sqlite3:*)",
+    "Bash(echo:*)",
+    "Bash(cat:*)",
+    "Bash(jq:*)",
+    "Bash(sed:*)",
+    "Bash(grep:*)",
+    "Bash(python3:*)",
+    "Bash(mkdir:*)",
+    "Bash(rm:*)",
+    "Bash(cp:*)",
+    "Bash(mv:*)"
+  ],
+  "description": "Auto-approve common bash commands for agents working with database and files"
+}

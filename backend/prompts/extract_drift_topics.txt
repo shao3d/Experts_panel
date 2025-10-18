@@ -1,0 +1,199 @@
+You are analyzing a Telegram discussion to detect TOPIC DRIFT in comments.
+
+CRITICAL RULE: Extract ALL drift topics, even minor ones. Missing topics breaks the search system.
+
+CONTEXT:
+- You receive an anchor post and its comments
+- Topic drift = when comments discuss topics NOT in the original post
+- Your task: extract EVERY drift topic with keywords, phrases, and context
+
+ANCHOR POST:
+$anchor_post
+
+COMMENTS:
+$comments
+
+ANALYSIS STEPS:
+1. Read anchor post carefully - identify its MAIN topic(s)
+2. For EACH comment - does it introduce something NEW?
+3. Group related comments into drift topics
+4. Extract keywords, phrases, context for each topic
+
+WHAT IS DRIFT:
+✅ DRIFT (must include):
+- New tools/technologies/services mentioned (e.g., post about A, comment mentions B)
+- Alternative solutions/approaches suggested
+- Related but different topics (e.g., post about coding, comment about deployment)
+- Specific products/implementations not in original post
+- Questions that spawn NEW discussions
+- Real-world use cases/examples adding new context
+- Technical debates introducing new concepts
+- Comparison with alternatives not mentioned in post
+
+❌ NOT DRIFT (exclude):
+- Simple agreement ("Круто!", "Спасибо", "Да!")
+- Questions clarifying SAME topic as post
+- Direct praise without new info
+- Reactions without substance
+
+EXTRACTION RULES:
+1. **One topic per distinct thread** - if 3 comments discuss same new thing → ONE drift topic
+2. **Separate clearly different topics** - don't merge unrelated discussions
+3. **Be specific** - use exact names (tools, technologies, products, people)
+4. **Key phrases = direct quotes** - copy actual text from comments
+5. **Context explains drift** - how this differs from anchor post topic
+
+GROUPING STRATEGY (критично для эффективности):
+✅ ОБЪЕДИНЯЙ родственные темы в одну:
+- Несколько альтернатив одной категории → один topic с multiple keywords
+  Пример: 3 STT инструмента для Windows → "Windows STT альтернативы"
+- Разные аспекты одного продукта → один topic
+  Пример: Cursor подписка + Cursor API ключи → "Cursor модели оплаты"
+- Инструменты для одной задачи → один topic
+  Пример: Несколько парсеров PDF → "PDF парсинг инструменты"
+
+❌ НЕ ОБЪЕДИНЯЙ:
+- Темы из разных категорий (STT ≠ TTS, кодинг ≠ дизайн)
+- Независимые продукты без общей цели
+- Противоположные мнения (критика vs похвала = разные topics)
+
+ПРИМЕРЫ ПРАВИЛЬНОГО ГРУППИРОВАНИЯ:
+
+❌ Bad (избыточная детализация):
+→ Topic 1: "AHK Whisper для Windows"
+→ Topic 2: "Aqua Voice для Windows"
+→ Topic 3: "whispertyping.com проблемы"
+→ 3 отдельных topics = 3× токенов при поиске
+
+✅ Good (умное объединение):
+→ Topic: "Windows STT альтернативы: AHK Whisper, Aqua Voice, whispertyping"
+   Keywords: ["AHK Whisper", "Aqua Voice", "whispertyping", "Windows", "STT", "диктовка"]
+   Key_phrases: ["ahk whisper валяется на гитхабе", "установил Aqua Voice", "whispertyping ужасна"]
+   Context: "Обсуждение альтернативных STT инструментов для Windows из-за задержки релиза SuperWhisper"
+
+❌ Bad (объединение разных категорий):
+→ Topic: "Инструменты для работы с голосом"
+   Keywords: ["SuperWhisper STT", "ElevenLabs TTS", "NotebookLM подкасты"]
+→ STT, TTS, подкасты - разные задачи!
+
+✅ Good (правильное разделение):
+→ Topic 1: "STT инструменты для диктовки: SuperWhisper, Aqua Voice"
+→ Topic 2: "TTS сервисы для озвучки: ElevenLabs, Google AI Studio"
+→ Topic 3: "NotebookLM для генерации подкастов"
+
+MULTIPLE TOPICS IN ONE GROUP:
+If comments discuss 3 different new things → create 3 separate drift topics.
+Example: Comment about TypeScript + another about Docker + another about AWS → 3 topics
+
+EDGE CASES:
+- **Author continues in comments** - if author adds NEW topic → it's drift
+- **Subtle drift** - even small detours count (e.g., mention of related tool)
+- **Partial overlap** - post about X, comment adds Y aspect of X → drift if Y is new
+- **Examples/implementations** - post is generic, comment gives specific tool → drift
+
+RETURN JSON:
+{
+  "has_drift": true/false,
+  "drift_topics": [
+    {
+      "topic": "Clear descriptive name in Russian",
+      "keywords": ["specific", "tool", "technology", "product", "names"],
+      "key_phrases": ["direct quotes from comments showing this topic"],
+      "context": "What was discussed, how it differs from anchor post, why it matters"
+    }
+  ]
+}
+
+EXAMPLES:
+
+Example 1 - Simple drift:
+Anchor: "TypeScript помогает с типобезопасностью"
+Comments:
+- "Согласен, использую каждый день" ← NOT DRIFT
+- "А Rust вообще лучше для системного программирования" ← DRIFT
+- "Rust действительно крут для performance-critical задач" ← SAME DRIFT
+
+Output:
+{
+  "has_drift": true,
+  "drift_topics": [
+    {
+      "topic": "Rust как альтернатива для системного программирования",
+      "keywords": ["Rust", "системное программирование", "performance-critical"],
+      "key_phrases": ["Rust вообще лучше для системного программирования", "крут для performance-critical задач"],
+      "context": "Обсуждение Rust как альтернативы TypeScript для задач требующих максимальной производительности и системного уровня"
+    }
+  ]
+}
+
+Example 2 - Multiple drift topics:
+Anchor: "Cursor IDE отлично подходит для AI coding"
+Comments:
+- "Да, пользуюсь постоянно!" ← NOT DRIFT
+- "Кстати, есть llmstxt плагин для Cursor" ← DRIFT #1
+- "llmstxt это как robots.txt для AI" ← SAME DRIFT #1
+- "А OpenAI скоро MCP протокол заинтегрирует" ← DRIFT #2
+- "MCP уже работает в Cursor через облачные модели" ← SAME DRIFT #2
+
+Output:
+{
+  "has_drift": true,
+  "drift_topics": [
+    {
+      "topic": "llmstxt плагин для Cursor как стандарт для AI",
+      "keywords": ["llmstxt", "Cursor плагин", "robots.txt для AI", "стандарт"],
+      "key_phrases": ["есть llmstxt плагин для Cursor", "это как robots.txt для AI"],
+      "context": "Обсуждение llmstxt плагина для Cursor как нового стандарта описания кодовой базы для AI, аналог robots.txt"
+    },
+    {
+      "topic": "Интеграция MCP протокола в OpenAI и Cursor",
+      "keywords": ["MCP", "Model Context Protocol", "OpenAI", "Cursor", "интеграция"],
+      "key_phrases": ["OpenAI скоро MCP протокол заинтегрирует", "MCP уже работает в Cursor через облачные модели"],
+      "context": "Обсуждение планов интеграции MCP (Model Context Protocol) в OpenAI и текущей поддержки в Cursor"
+    }
+  ]
+}
+
+Example 3 - No drift:
+Anchor: "AI coding assistants экономят время разработчиков"
+Comments:
+- "Полностью согласен, использую каждый день"
+- "Какую подписку лучше выбрать?"
+- "Сколько стоит в месяц?"
+- "Спасибо за пост!"
+
+Output:
+{
+  "has_drift": false,
+  "drift_topics": []
+}
+
+Example 4 - Edge case (author adds new topic):
+Anchor: "Cursor - AI IDE для разработчиков"
+Comments:
+- "Как подключить свой API ключ?" ← NOT DRIFT (clarification)
+- Author: "Кстати, можно использовать Cursor подписку или свои OpenAI/Anthropic ключи. Cursor подписка включает API в цену, экономия если много используешь" ← DRIFT (new topic)
+
+Output:
+{
+  "has_drift": true,
+  "drift_topics": [
+    {
+      "topic": "Cursor подписка vs собственные API ключи - сравнение стоимости",
+      "keywords": ["Cursor подписка", "API ключи", "OpenAI", "Anthropic", "стоимость", "экономия"],
+      "key_phrases": ["можно использовать Cursor подписку или свои OpenAI/Anthropic ключи", "Cursor подписка включает API в цену", "экономия если много используешь"],
+      "context": "Объяснение разницы между использованием платной подписки Cursor (включает API) vs подключением собственных ключей OpenAI/Anthropic, сравнение экономической эффективности"
+    }
+  ]
+}
+
+QUALITY CHECKLIST before returning:
+□ Did I read ALL comments?
+□ Did I extract EVERY new topic mentioned?
+□ Are keywords specific (not generic)?
+□ Do key_phrases contain actual quotes?
+□ Is context clear and explains the drift?
+□ Did I separate clearly different topics?
+□ Did I merge comments discussing the same topic?
+
+REMEMBER: Missing a drift topic breaks user search. Be thorough!

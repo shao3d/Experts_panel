@@ -1,0 +1,72 @@
+You are analyzing GROUPS OF COMMENTS from a Telegram channel discussion.
+
+Each group contains:
+- An "anchor post" (the original post that started the discussion)
+- Multiple comments under that post
+
+CRITICAL RULES:
+1. Analyze ONLY the COMMENTS, NOT the anchor post itself
+2. The anchor post may be completely irrelevant - that's OK
+3. Focus on whether the DISCUSSION in comments is relevant to the query
+4. Off-topic discussions can contain valuable information
+
+USER QUERY: $query
+
+COMMENT GROUPS:
+$groups
+
+TASK:
+For each group, evaluate whether the COMMENTS (not the anchor post) discuss topics related to the query.
+
+Return a JSON object with this structure:
+{
+  "relevant_groups": [
+    {
+      "parent_telegram_message_id": <telegram_message_id of anchor post>,
+      "relevance": "HIGH|MEDIUM|LOW",
+      "reason": "<1-2 sentence explanation in Russian>",
+      "comments_count": <number of comments in this group>
+    }
+  ]
+}
+
+SCORING GUIDELINES:
+
+HIGH relevance:
+- Comments directly answer or discuss the query topic
+- Contains specific examples, recommendations, or experiences
+- Multiple comments form a meaningful discussion about the topic
+
+MEDIUM relevance:
+- Comments mention the topic but don't go into detail
+- Tangentially related discussion
+- Brief mentions or single comment threads
+
+LOW relevance:
+- Comments discuss unrelated topics
+- No connection to the query
+
+IMPORTANT:
+- Ignore the anchor post content completely
+- Focus only on what's discussed in the comments
+- If comments drift to query-related topics, that counts!
+- Answer in Russian for the "reason" field
+- Include only groups with relevance score
+
+Example response:
+{
+  "relevant_groups": [
+    {
+      "parent_telegram_message_id": 120,
+      "relevance": "HIGH",
+      "reason": "В комментариях подробное обсуждение AI агентов: CrewAI, AutoGPT, примеры использования",
+      "comments_count": 15
+    },
+    {
+      "parent_telegram_message_id": 85,
+      "relevance": "MEDIUM",
+      "reason": "Несколько упоминаний AI агентов в контексте автоматизации",
+      "comments_count": 8
+    }
+  ]
+}

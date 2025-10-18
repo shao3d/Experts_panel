@@ -1,0 +1,95 @@
+You are evaluating linked posts for a Telegram channel with interconnected knowledge network.
+The author uses MENTIONS (98.9%) to create a web of related ideas, not linear discussions.
+
+CONTEXT ABOUT THIS CHANNEL:
+- Author develops themes through cross-references between posts
+- Posts often return to and expand on previous topics
+- #ReDigest posts are knowledge hubs linking multiple ideas
+- Topics: AI agents, coding, observability, startups, tools
+
+INPUT:
+- User question (in Russian)
+- Relevant posts found by Map phase
+- Links from database (mostly MENTION type)
+
+EVALUATION FRAMEWORK:
+
+1. FIRST, classify the user's intent:
+   - TOOL_SPECIFIC: Asking about specific tool/service (SigNoz, Claude, etc.)
+   - CONCEPT_EXPLORATION: Asking about approaches/methodologies (observability, monitoring)
+   - KNOWLEDGE_SYNTHESIS: Asking for overview/comparison/recommendations
+
+2. THEN, evaluate each linked post considering:
+
+   For MENTION links (98.9% of all links):
+   - These represent THEMATIC connections, not conversations
+   - Author intentionally linked these as related knowledge
+   - Even tangential mentions often provide valuable context
+   - Multiple mentions from same post = strong thematic cluster
+
+   For rare REPLY/FORWARD links (1.1%):
+   - These are direct continuations, highly important
+
+3. INCLUSION THRESHOLDS:
+
+   TOOL_SPECIFIC queries:
+   - Include if: directly mentions the tool OR discusses same category
+   - Confidence needed: 60%
+   - Prefer depth 1, use depth 2 only for direct tool comparisons
+
+   CONCEPT_EXPLORATION queries:
+   - Include if: relates to the concept domain OR provides examples
+   - Confidence needed: 40%
+   - Default to depth 2 to capture full concept network
+
+   KNOWLEDGE_SYNTHESIS queries:
+   - Include if: adds any perspective to the synthesis
+   - Confidence needed: 30%
+   - Always use depth 2 for comprehensive coverage
+
+OUTPUT FORMAT:
+Return a simple JSON object:
+{
+  "important_post_ids": [<list of telegram_message_ids that should be included>],
+  "expand_depth": <1 or 2 - how many levels deep to follow links>,
+  "reason": "<brief explanation in Russian why these posts add value>",
+  "query_type": "<TOOL_SPECIFIC|CONCEPT_EXPLORATION|KNOWLEDGE_SYNTHESIS>"
+}
+
+CRITICAL RULES:
+- MENTION links are FEATURES, not noise - the author uses them to build knowledge networks
+- When you see multiple MENTIONs from one post = that's a knowledge hub, include targets
+- For CONCEPT queries, err on the side of inclusion (author's style is exploratory)
+- Maximum 15 posts for synthesis, 10 for concepts, 7 for specific tools
+- Consider the direction of links (from_post_id → to_post_id)
+
+EXAMPLES:
+
+Query: "Что про observability?"
+Type: CONCEPT_EXPLORATION
+Action: Include ALL posts mentioning monitoring, tracing, metrics (even tangentially)
+Depth: 2
+Reason: "Включаю все посты про мониторинг, метрики и связанные инструменты для полного раскрытия концепции"
+
+Query: "Расскажи про SigNoz"
+Type: TOOL_SPECIFIC
+Action: Include SigNoz post + any monitoring tool comparisons
+Depth: 1
+Reason: "Фокус на SigNoz и прямых сравнениях с другими инструментами"
+
+Query: "Какие AI-агенты для кодинга лучше?"
+Type: KNOWLEDGE_SYNTHESIS
+Action: Include ALL agent mentions, tools, comparisons, experiences
+Depth: 2
+Reason: "Собираю весь опыт автора с AI-агентами для полного обзора"
+
+Now evaluate:
+
+USER QUESTION: $query
+
+RELEVANT POSTS ALREADY FOUND: $relevant_post_ids
+
+AVAILABLE LINKS FROM DATABASE:
+$links
+
+Your response:

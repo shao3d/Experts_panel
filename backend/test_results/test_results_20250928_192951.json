@@ -1,0 +1,363 @@
+[
+  {
+    "test": {
+      "id": "q001",
+      "name": "General topic overview",
+      "query": "What are the main topics discussed in this Telegram channel?",
+      "type": "topic_discovery",
+      "expected": {
+        "min_sources": 5,
+        "keywords": [
+          "topics",
+          "discussed",
+          "main",
+          "themes"
+        ],
+        "phases_required": [
+          "map",
+          "resolve",
+          "reduce"
+        ],
+        "description": "Should identify and summarize major discussion themes"
+      }
+    },
+    "result": {
+      "success": false,
+      "error": "HTTP 404",
+      "response_time": 0.08592820167541504
+    },
+    "validation": {
+      "passed": false,
+      "checks": [
+        "\u001b[91m\u2717 Query failed: HTTP 404\u001b[0m"
+      ],
+      "warnings": []
+    },
+    "timestamp": "2025-09-28T19:29:42.408660"
+  },
+  {
+    "test": {
+      "id": "q002",
+      "name": "Technical question",
+      "query": "What technical decisions and architecture choices were made in this project?",
+      "type": "technical_analysis",
+      "expected": {
+        "min_sources": 3,
+        "keywords": [
+          "technical",
+          "architecture",
+          "decisions",
+          "implementation"
+        ],
+        "phases_required": [
+          "map",
+          "resolve",
+          "reduce"
+        ],
+        "description": "Should find technical discussions and decisions"
+      }
+    },
+    "result": {
+      "success": false,
+      "error": "HTTP 404",
+      "response_time": 0.019470691680908203
+    },
+    "validation": {
+      "passed": false,
+      "checks": [
+        "\u001b[91m\u2717 Query failed: HTTP 404\u001b[0m"
+      ],
+      "warnings": []
+    },
+    "timestamp": "2025-09-28T19:29:43.443590"
+  },
+  {
+    "test": {
+      "id": "q003",
+      "name": "Expert opinion search",
+      "query": "What do the experts think about the future direction of the project?",
+      "type": "opinion_extraction",
+      "expected": {
+        "min_sources": 2,
+        "keywords": [
+          "future",
+          "direction",
+          "opinion",
+          "think",
+          "experts"
+        ],
+        "phases_required": [
+          "map",
+          "resolve",
+          "reduce"
+        ],
+        "description": "Should extract expert opinions and predictions"
+      }
+    },
+    "result": {
+      "success": false,
+      "error": "HTTP 404",
+      "response_time": 0.008024215698242188
+    },
+    "validation": {
+      "passed": false,
+      "checks": [
+        "\u001b[91m\u2717 Query failed: HTTP 404\u001b[0m"
+      ],
+      "warnings": []
+    },
+    "timestamp": "2025-09-28T19:29:44.455687"
+  },
+  {
+    "test": {
+      "id": "q004",
+      "name": "Specific feature query",
+      "query": "How does the Map-Resolve-Reduce pipeline work in this system?",
+      "type": "feature_explanation",
+      "expected": {
+        "min_sources": 3,
+        "keywords": [
+          "map",
+          "resolve",
+          "reduce",
+          "pipeline",
+          "process"
+        ],
+        "phases_required": [
+          "map",
+          "resolve",
+          "reduce"
+        ],
+        "description": "Should explain specific system features"
+      }
+    },
+    "result": {
+      "success": false,
+      "error": "HTTP 404",
+      "response_time": 0.020487070083618164
+    },
+    "validation": {
+      "passed": false,
+      "checks": [
+        "\u001b[91m\u2717 Query failed: HTTP 404\u001b[0m"
+      ],
+      "warnings": []
+    },
+    "timestamp": "2025-09-28T19:29:45.477182"
+  },
+  {
+    "test": {
+      "id": "q005",
+      "name": "Problem resolution",
+      "query": "What problems or challenges were discussed and how were they solved?",
+      "type": "problem_solving",
+      "expected": {
+        "min_sources": 4,
+        "keywords": [
+          "problems",
+          "challenges",
+          "solved",
+          "solution",
+          "fixed"
+        ],
+        "phases_required": [
+          "map",
+          "resolve",
+          "reduce"
+        ],
+        "description": "Should identify problems and their solutions"
+      }
+    },
+    "result": {
+      "success": false,
+      "error": "HTTP 404",
+      "response_time": 0.03368186950683594
+    },
+    "validation": {
+      "passed": false,
+      "checks": [
+        "\u001b[91m\u2717 Query failed: HTTP 404\u001b[0m"
+      ],
+      "warnings": []
+    },
+    "timestamp": "2025-09-28T19:29:46.547684"
+  },
+  {
+    "test": {
+      "id": "q006",
+      "name": "Comparison query",
+      "query": "What are the advantages of this approach compared to traditional RAG systems?",
+      "type": "comparative_analysis",
+      "expected": {
+        "min_sources": 2,
+        "keywords": [
+          "advantages",
+          "compared",
+          "RAG",
+          "traditional",
+          "better"
+        ],
+        "phases_required": [
+          "map",
+          "resolve",
+          "reduce"
+        ],
+        "description": "Should compare different approaches"
+      }
+    },
+    "result": {
+      "success": false,
+      "error": "HTTP 404",
+      "response_time": 0.008513927459716797
+    },
+    "validation": {
+      "passed": false,
+      "checks": [
+        "\u001b[91m\u2717 Query failed: HTTP 404\u001b[0m"
+      ],
+      "warnings": []
+    },
+    "timestamp": "2025-09-28T19:29:47.557454"
+  },
+  {
+    "test": {
+      "id": "q007",
+      "name": "Timeline query",
+      "query": "What was discussed in the most recent conversations?",
+      "type": "temporal_search",
+      "expected": {
+        "min_sources": 5,
+        "keywords": [
+          "recent",
+          "latest",
+          "discussed"
+        ],
+        "phases_required": [
+          "map",
+          "reduce"
+        ],
+        "description": "Should focus on recent posts"
+      }
+    },
+    "result": {
+      "success": false,
+      "error": "HTTP 404",
+      "response_time": 0.009957075119018555
+    },
+    "validation": {
+      "passed": false,
+      "checks": [
+        "\u001b[91m\u2717 Query failed: HTTP 404\u001b[0m"
+      ],
+      "warnings": []
+    },
+    "timestamp": "2025-09-28T19:29:48.569451"
+  },
+  {
+    "test": {
+      "id": "q008",
+      "name": "Link following test",
+      "query": "Find all related discussions about API design and their follow-up implementations",
+      "type": "link_traversal",
+      "expected": {
+        "min_sources": 3,
+        "keywords": [
+          "API",
+          "design",
+          "implementation",
+          "related"
+        ],
+        "phases_required": [
+          "map",
+          "resolve",
+          "reduce"
+        ],
+        "description": "Should follow links between related posts"
+      }
+    },
+    "result": {
+      "success": false,
+      "error": "HTTP 404",
+      "response_time": 0.007842063903808594
+    },
+    "validation": {
+      "passed": false,
+      "checks": [
+        "\u001b[91m\u2717 Query failed: HTTP 404\u001b[0m"
+      ],
+      "warnings": []
+    },
+    "timestamp": "2025-09-28T19:29:49.578648"
+  },
+  {
+    "test": {
+      "id": "q009",
+      "name": "Summary request",
+      "query": "Provide a brief summary of the key insights from expert comments",
+      "type": "summarization",
+      "expected": {
+        "min_sources": 2,
+        "keywords": [
+          "summary",
+          "insights",
+          "expert",
+          "key"
+        ],
+        "phases_required": [
+          "map",
+          "reduce"
+        ],
+        "description": "Should synthesize expert comments"
+      }
+    },
+    "result": {
+      "success": false,
+      "error": "HTTP 404",
+      "response_time": 0.008626937866210938
+    },
+    "validation": {
+      "passed": false,
+      "checks": [
+        "\u001b[91m\u2717 Query failed: HTTP 404\u001b[0m"
+      ],
+      "warnings": []
+    },
+    "timestamp": "2025-09-28T19:29:50.588366"
+  },
+  {
+    "test": {
+      "id": "q010",
+      "name": "Specific author query",
+      "query": "What contributions and ideas were shared by the main participants?",
+      "type": "author_analysis",
+      "expected": {
+        "min_sources": 4,
+        "keywords": [
+          "contributions",
+          "ideas",
+          "participants",
+          "shared"
+        ],
+        "phases_required": [
+          "map",
+          "resolve",
+          "reduce"
+        ],
+        "description": "Should identify contributions by different authors"
+      }
+    },
+    "result": {
+      "success": false,
+      "error": "HTTP 404",
+      "response_time": 0.004760265350341797
+    },
+    "validation": {
+      "passed": false,
+      "checks": [
+        "\u001b[91m\u2717 Query failed: HTTP 404\u001b[0m"
+      ],
+      "warnings": []
+    },
+    "timestamp": "2025-09-28T19:29:51.594038"
+  }
+]

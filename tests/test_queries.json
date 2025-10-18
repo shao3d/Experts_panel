@@ -1,0 +1,138 @@
+{
+  "test_queries": [
+    {
+      "id": "q001",
+      "name": "General topic overview",
+      "query": "What are the main topics discussed in this Telegram channel?",
+      "type": "topic_discovery",
+      "expected": {
+        "min_sources": 5,
+        "keywords": ["topics", "discussed", "main", "themes"],
+        "phases_required": ["map", "resolve", "reduce"],
+        "description": "Should identify and summarize major discussion themes"
+      }
+    },
+    {
+      "id": "q002",
+      "name": "Technical question",
+      "query": "What technical decisions and architecture choices were made in this project?",
+      "type": "technical_analysis",
+      "expected": {
+        "min_sources": 3,
+        "keywords": ["technical", "architecture", "decisions", "implementation"],
+        "phases_required": ["map", "resolve", "reduce"],
+        "description": "Should find technical discussions and decisions"
+      }
+    },
+    {
+      "id": "q003",
+      "name": "Expert opinion search",
+      "query": "What do the experts think about the future direction of the project?",
+      "type": "opinion_extraction",
+      "expected": {
+        "min_sources": 2,
+        "keywords": ["future", "direction", "opinion", "think", "experts"],
+        "phases_required": ["map", "resolve", "reduce"],
+        "description": "Should extract expert opinions and predictions"
+      }
+    },
+    {
+      "id": "q004",
+      "name": "Specific feature query",
+      "query": "How does the Map-Resolve-Reduce pipeline work in this system?",
+      "type": "feature_explanation",
+      "expected": {
+        "min_sources": 3,
+        "keywords": ["map", "resolve", "reduce", "pipeline", "process"],
+        "phases_required": ["map", "resolve", "reduce"],
+        "description": "Should explain specific system features"
+      }
+    },
+    {
+      "id": "q005",
+      "name": "Problem resolution",
+      "query": "What problems or challenges were discussed and how were they solved?",
+      "type": "problem_solving",
+      "expected": {
+        "min_sources": 4,
+        "keywords": ["problems", "challenges", "solved", "solution", "fixed"],
+        "phases_required": ["map", "resolve", "reduce"],
+        "description": "Should identify problems and their solutions"
+      }
+    },
+    {
+      "id": "q006",
+      "name": "Comparison query",
+      "query": "What are the advantages of this approach compared to traditional RAG systems?",
+      "type": "comparative_analysis",
+      "expected": {
+        "min_sources": 2,
+        "keywords": ["advantages", "compared", "RAG", "traditional", "better"],
+        "phases_required": ["map", "resolve", "reduce"],
+        "description": "Should compare different approaches"
+      }
+    },
+    {
+      "id": "q007",
+      "name": "Timeline query",
+      "query": "What was discussed in the most recent conversations?",
+      "type": "temporal_search",
+      "expected": {
+        "min_sources": 5,
+        "keywords": ["recent", "latest", "discussed"],
+        "phases_required": ["map", "reduce"],
+        "description": "Should focus on recent posts"
+      }
+    },
+    {
+      "id": "q008",
+      "name": "Link following test",
+      "query": "Find all related discussions about API design and their follow-up implementations",
+      "type": "link_traversal",
+      "expected": {
+        "min_sources": 3,
+        "keywords": ["API", "design", "implementation", "related"],
+        "phases_required": ["map", "resolve", "reduce"],
+        "description": "Should follow links between related posts"
+      }
+    },
+    {
+      "id": "q009",
+      "name": "Summary request",
+      "query": "Provide a brief summary of the key insights from expert comments",
+      "type": "summarization",
+      "expected": {
+        "min_sources": 2,
+        "keywords": ["summary", "insights", "expert", "key"],
+        "phases_required": ["map", "reduce"],
+        "description": "Should synthesize expert comments"
+      }
+    },
+    {
+      "id": "q010",
+      "name": "Specific author query",
+      "query": "What contributions and ideas were shared by the main participants?",
+      "type": "author_analysis",
+      "expected": {
+        "min_sources": 4,
+        "keywords": ["contributions", "ideas", "participants", "shared"],
+        "phases_required": ["map", "resolve", "reduce"],
+        "description": "Should identify contributions by different authors"
+      }
+    }
+  ],
+  "validation_config": {
+    "api_base_url": "http://localhost:8000",
+    "timeout_seconds": 60,
+    "max_retries": 3,
+    "check_sse_events": true,
+    "save_responses": true,
+    "output_dir": "test_results"
+  },
+  "performance_thresholds": {
+    "max_response_time_seconds": 30,
+    "min_sources_returned": 2,
+    "max_error_rate": 0.1,
+    "required_success_rate": 0.9
+  }
+}

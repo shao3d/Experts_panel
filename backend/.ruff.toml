@@ -1,0 +1,85 @@
+# Ruff configuration for Experts Panel Backend
+
+# Python version target
+target-version = "py311"
+
+# Line length (following Black's default)
+line-length = 88
+
+# Enable auto-fixing
+fix = true
+
+# Rules selection
+select = [
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+    "F",     # pyflakes
+    "B",     # flake8-bugbear
+    "C4",    # flake8-comprehensions
+    "I",     # isort
+    "N",     # pep8-naming
+    "UP",    # pyupgrade
+    "ASYNC", # flake8-async
+    "S",     # flake8-bandit (security)
+    "RUF",   # Ruff-specific rules
+    "FA",    # flake8-future-annotations
+    "SIM",   # flake8-simplify
+    "TCH",   # flake8-type-checking
+]
+
+# Rules to ignore
+ignore = [
+    "E501",   # Line too long (handled by formatter)
+    "B008",   # Do not perform function calls in argument defaults
+    "S101",   # Use of assert detected
+    "S104",   # Possible binding to all interfaces
+    "RUF001", # String contains ambiguous unicode character
+    "RUF002", # Docstring contains ambiguous unicode character
+    "RUF003", # Comment contains ambiguous unicode character
+]
+
+# Exclude patterns
+exclude = [
+    ".git",
+    "__pycache__",
+    ".ruff_cache",
+    ".venv",
+    "venv",
+    ".env",
+    "build",
+    "dist",
+    "*.egg-info",
+    ".pytest_cache",
+    ".coverage",
+    "htmlcov",
+    "migrations",
+]
+
+[per-file-ignores]
+# Test files can use assert and have longer lines
+"tests/**/*.py" = ["S101", "E501"]
+# Init files can have unused imports
+"**/__init__.py" = ["F401", "F403"]
+# Config files can have uppercase variables
+"src/config.py" = ["N806"]
+
+[isort]
+# Import sorting configuration
+known-first-party = ["src"]
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+combine-as-imports = true
+split-on-trailing-comma = true
+
+[format]
+# Use double quotes for strings
+quote-style = "double"
+
+# Use trailing commas where appropriate
+skip-magic-trailing-comma = false
+
+# Format docstrings
+docstring-code-format = true
+
+[lint.pydocstyle]
+# Use Google-style docstrings
+convention = "google"

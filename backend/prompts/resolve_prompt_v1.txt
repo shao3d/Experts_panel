@@ -1,0 +1,90 @@
+You are extracting and analyzing links between Telegram posts to build a connection graph.
+The posts are in Russian. The channel name in links may vary but refers to the same channel.
+
+INPUT:
+- A list of posts that were found relevant in the Map phase
+- Each post contains plain text with possible links to other posts
+- Channel name: {channel_name} (may appear in links as different variations)
+
+TASK:
+1. Extract all references to other Telegram posts (format: t.me/channel_name/POST_ID)
+2. Identify the type of connection between posts
+3. Determine if following these links would provide additional context
+
+OUTPUT FORMAT:
+Return a JSON object with this exact structure:
+{
+  "links_found": [
+    {
+      "from_post_id": <source post telegram_id>,
+      "to_post_id": <target post number from URL>,
+      "url": "<full t.me URL>",
+      "link_type": "<one of: continuation, reference, reply, related>",
+      "context": "<text around the link showing why it's referenced>",
+      "should_follow": <boolean - true if this link likely adds valuable context>
+    }
+  ],
+  "suggested_depth": <integer 0-2, how many levels deep to follow>,
+  "summary": "<brief description of the link structure found>"
+}
+
+LINK TYPE DEFINITIONS:
+- "continuation": Direct continuation of thought (e.g., "как я писал ранее", "продолжение")
+- "reference": Supporting evidence or example (e.g., "см. также", "подробнее тут")
+- "reply": Response or follow-up to previous post
+- "related": Tangentially related content
+
+EXAMPLE:
+
+Posts to analyze:
+[
+  {
+    "id": 47,
+    "content": "Тихая революция в OSINT: AI научился играть в GeoGuessr. Недавно писал пост про то, как AI будет мощно усиливать OSINT (https://t.me/nobilix/44), и вот конкретный пример..."
+  },
+  {
+    "id": 43,
+    "content": "Вторая часть серии про ресурсы для стартапов (первая тут: https://t.me/nobilix/22). Сегодня про NVIDIA Inception..."
+  }
+]
+
+Your Response:
+{
+  "links_found": [
+    {
+      "from_post_id": 47,
+      "to_post_id": 44,
+      "url": "https://t.me/nobilix/44",
+      "link_type": "reference",
+      "context": "Недавно писал пост про то, как AI будет мощно усиливать OSINT",
+      "should_follow": true
+    },
+    {
+      "from_post_id": 43,
+      "to_post_id": 22,
+      "url": "https://t.me/nobilix/22",
+      "link_type": "continuation",
+      "context": "Вторая часть серии про ресурсы для стартапов (первая тут:",
+      "should_follow": true
+    }
+  ],
+  "suggested_depth": 2,
+  "summary": "Found 2 internal links forming a series (43->22) and a reference chain (47->44)"
+}
+
+IMPORTANT RULES:
+- Only extract links matching pattern: t.me/{any_channel_name}/{NUMBER}
+- Consider links to be internal if they match known channel variations
+- Ignore external links to other websites or completely different channels
+- Capture surrounding context (20-30 words) to understand the connection
+- Set should_follow=true for continuation and direct references
+- Set should_follow=false for weak or tangential connections
+- Suggest depth based on link density (many links = depth 2, few = depth 1)
+
+Now analyze the following posts:
+
+CHANNEL NAME: {channel_name}
+POSTS WITH POTENTIAL LINKS:
+{posts}
+
+Your response:

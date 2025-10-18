@@ -1,0 +1,311 @@
+openapi: 3.0.0
+info:
+  title: Experts Panel API
+  description: Intelligent Telegram Channel Analysis System API
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000
+    description: Development server
+  - url: https://experts-panel.railway.app
+    description: Production server
+
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /api/query:
+    post:
+      summary: Submit a natural language query
+      operationId: submitQuery
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryRequest'
+      responses:
+        '200':
+          description: Query accepted, processing started
+          headers:
+            X-Query-ID:
+              schema:
+                type: string
+                format: uuid
+              description: Unique query identifier
+          content:
+            text/event-stream:
+              schema:
+                $ref: '#/components/schemas/ProgressEvent'
+        '400':
+          description: Invalid query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/posts/{postId}:
+    get:
+      summary: Get full post content with comments
+      operationId: getPost
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Post details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostDetails'
+        '404':
+          description: Post not found
+
+  /api/import:
+    post:
+      summary: Import Telegram channel JSON export
+      operationId: importChannel
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Telegram JSON export file
+              required:
+                - file
+      responses:
+        '200':
+          description: Import successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportResponse'
+        '400':
+          description: Invalid JSON format
+
+  /api/comments/collect:
+    post:
+      summary: Start interactive comment collection session
+      operationId: startCommentCollection
+      responses:
+        '200':
+          description: Session started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentSession'
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded]
+        version:
+          type: string
+        database:
+          type: string
+          enum: [connected, disconnected]
+
+    QueryRequest:
+      type: object
+      required:
+        - question
+      properties:
+        question:
+          type: string
+          minLength: 1
+          maxLength: 1000
+          description: Natural language question about the channel
+
+    ProgressEvent:
+      type: object
+      properties:
+        event:
+          type: string
+          enum: [progress, result, error]
+        phase:
+          type: string
+          enum: [map, resolve, reduce]
+        data:
+          oneOf:
+            - $ref: '#/components/schemas/MapProgress'
+            - $ref: '#/components/schemas/ResolveProgress'
+            - $ref: '#/components/schemas/ReduceProgress'
+            - $ref: '#/components/schemas/FinalAnswer'
+
+    MapProgress:
+      type: object
+      properties:
+        chunk_number:
+          type: integer
+        total_chunks:
+          type: integer
+        posts_found:
+          type: integer
+        message:
+          type: string
+          example: "Processing chunk 2/4: found 3 relevant posts"
+
+    ResolveProgress:
+      type: object
+      properties:
+        depth_level:
+          type: integer
+        posts_added:
+          type: integer
+        total_posts:
+          type: integer
+        message:
+          type: string
+          example: "Level 1: Added 2 linked posts"
+
+    ReduceProgress:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [synthesizing, complete]
+        message:
+          type: string
+
+    FinalAnswer:
+      type: object
+      required:
+        - content
+        - source_post_ids
+      properties:
+        content:
+          type: string
+          description: Synthesized answer in markdown format
+        source_post_ids:
+          type: array
+          items:
+            type: integer
+        processing_time_ms:
+          type: integer
+        stats:
+          type: object
+          properties:
+            total_posts_analyzed:
+              type: integer
+            posts_used:
+              type: integer
+            api_calls:
+              type: integer
+
+    PostDetails:
+      type: object
+      properties:
+        id:
+          type: integer
+        telegram_id:
+          type: integer
+        content:
+          type: string
+        date:
+          type: string
+          format: date-time
+        reactions_count:
+          type: integer
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+
+    Comment:
+      type: object
+      properties:
+        id:
+          type: integer
+        author:
+          type: string
+        content:
+          type: string
+        date:
+          type: string
+          format: date-time
+
+    Link:
+      type: object
+      properties:
+        to_post_id:
+          type: integer
+          nullable: true
+        url:
+          type: string
+        anchor_text:
+          type: string
+        link_type:
+          type: string
+
+    ImportResponse:
+      type: object
+      properties:
+        posts_imported:
+          type: integer
+        links_found:
+          type: integer
+        channel_name:
+          type: string
+        errors:
+          type: array
+          items:
+            type: string
+
+    CommentSession:
+      type: object
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        posts_for_review:
+          type: array
+          items:
+            type: object
+            properties:
+              post_id:
+                type: integer
+              preview:
+                type: string
+              likely_has_comments:
+                type: boolean
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        detail:
+          type: string
+        request_id:
+          type: string
+          format: uuid

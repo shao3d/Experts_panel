@@ -1,0 +1,88 @@
+You are finding relevant comment groups based on PRE-ANALYZED DRIFT TOPICS.
+
+CONTEXT:
+Each comment group represents a Telegram discussion that DRIFTED from the original post topic.
+We already analyzed these groups and extracted what topics are discussed in the comments.
+
+USER QUERY: $query
+
+COMMENT GROUPS WITH TOPIC DRIFT:
+$groups
+
+STRUCTURE:
+Each group contains:
+- parent_telegram_message_id: ID to identify the group
+- drift_topics: Array of topics discussed in comments (NOT the post content!)
+  * topic: General theme of drift discussion
+  * keywords: Specific terms/technologies/names mentioned
+  * key_phrases: Direct quotes from the discussion
+  * context: Brief explanation of what was discussed
+- comments_count: Number of comments in this group
+
+TASK:
+Find groups where drift_topics match the user query.
+
+MATCHING PRIORITY:
+1. DIRECT keyword presence in query (highest priority) - query literally contains words from keywords array
+2. Exact keyword match - keywords from drift_topics match query terms
+3. Semantic similarity between query and topic/context
+4. Key phrase contains query terms
+
+RETURN JSON:
+{
+  "relevant_groups": [
+    {
+      "parent_telegram_message_id": <id>,
+      "relevance": "HIGH|MEDIUM",
+      "reason": "<why drift topics match query - in the same language as the user's question>",
+      "matched_keywords": [<list of matched keywords>],
+      "comments_count": <count>
+    }
+  ]
+}
+
+SCORING GUIDELINES:
+
+HIGH relevance:
+- DIRECT keyword presence (e.g. query "Repository Pattern" literally contains keyword "repository pattern") - HIGHEST PRIORITY
+- Exact keyword match (e.g. query contains "TypeScript" and keywords contain "TypeScript")
+- Strong semantic match (e.g. query asks "резервные копии" and keywords contain "бекапы")
+- Multiple drift topics match the query
+- Case-insensitive matching is OK
+
+MEDIUM relevance:
+- Partial keyword match (e.g. query mentions "фреймворки" and keywords contain specific framework names)
+- Weak semantic connection (e.g. query about "AI tools" and drift discusses specific tool categories)
+
+LOW relevance (DO NOT INCLUDE):
+- No keyword match and no semantic connection
+- Topic is completely unrelated to query
+
+IMPORTANT:
+- Only return HIGH and MEDIUM groups
+- Focus on drift_topics content, NOT on anchor post topic
+- Use matched_keywords to show which terms triggered the match
+- Reason should explain the connection in the same language as the user's question
+- If no groups match - return empty array
+
+EXAMPLES:
+
+Example 1 - DIRECT keyword presence (BEST case):
+Query: "Расскажи про Repository Pattern и Data Access Layer"
+Drift topics: {"keywords": ["repository pattern", "service layer", "data access layer"], "topic": "Архитектура сервисного слоя"}
+→ HIGH (DIRECT match: query literally contains "Repository Pattern" and "Data Access Layer" from keywords!)
+
+Example 2 - Exact keyword match:
+Query: "Какие фреймворки автор использует для агентов?"
+Drift topics: {"keywords": ["TypeScript", "Vercel AI SDK", "Mastra"], "topic": "Стек для разработки AI-агентов"}
+→ HIGH (exact keyword match: фреймворки = Vercel AI SDK, Mastra)
+
+Example 3 - Semantic match:
+Query: "Как сохранять резервные копии базы знаний?"
+Drift topics: {"keywords": ["бекапы", "экспорт", "Notion"], "topic": "Бекапы данных из Notion"}
+→ HIGH (semantic match: резервные копии = бекапы, база знаний = Notion)
+
+Example 4 - No match:
+Query: "Что думаешь про blockchain?"
+Drift topics: {"keywords": ["TypeScript", "агенты"], "topic": "Разработка AI"}
+→ Empty array (no match)

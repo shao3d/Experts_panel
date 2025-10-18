@@ -1,0 +1,250 @@
+# Reference Following Validation Scenarios
+# Tests the system's ability to follow references and links between posts
+# Validates Resolve phase's depth-2 enrichment capability
+
+test_suite:
+  name: "Reference Following Validation"
+  description: "Validates the Resolve phase's ability to follow links and enrich context"
+  version: "1.0.0"
+  created: "2025-09-28"
+
+test_cases:
+  - id: "REF-001"
+    name: "Direct Reply Following"
+    query: "What are people saying in response to the welcome message?"
+    initial_posts: [1]  # Starting with welcome post
+    description: "Should follow direct reply links (depth 1)"
+    expected:
+      depth_1_links:
+        - source: 2
+          target: 1
+          type: "reply"
+          description: "Post 2 is a reply to Post 1"
+      enriched_posts: [1, 2]
+      link_path: "1 <- 2"
+      relevance_boost: 0.3  # Reply should boost relevance
+    validation:
+      - "Resolve phase should identify Post 2 as reply to Post 1"
+      - "Both posts should be included in final context"
+
+  - id: "REF-002"
+    name: "Research Discussion Thread"
+    query: "Find the complete discussion about research findings"
+    initial_posts: [4]  # Starting with research post
+    description: "Should follow reply chain for research discussion"
+    expected:
+      depth_1_links:
+        - source: 6
+          target: 4
+          type: "reply"
+          description: "Post 6 responds to research in Post 4"
+      enriched_posts: [4, 6]
+      link_path: "4 <- 6"
+      relevance_boost: 0.4  # Strong topical connection
+    validation:
+      - "Should include both original research and response"
+      - "Context should show discussion thread"
+
+  - id: "REF-003"
+    name: "Isolated Post Query"
+    query: "Tell me about the machine learning article"
+    initial_posts: [3]  # Post with no links
+    description: "Should handle posts with no references gracefully"
+    expected:
+      depth_1_links: []
+      enriched_posts: [3]
+      link_path: "3 (no links)"
+      relevance_boost: 0.0
+    validation:
+      - "Should return only the original post"
+      - "No errors when no links exist"
+
+  - id: "REF-004"
+    name: "Multiple Initial Posts"
+    query: "Show all greeting and response interactions"
+    initial_posts: [1, 2, 4, 6]  # Multiple starting points
+    description: "Should follow links from multiple initial posts"
+    expected:
+      depth_1_links:
+        - source: 2
+          target: 1
+          type: "reply"
+        - source: 6
+          target: 4
+          type: "reply"
+      enriched_posts: [1, 2, 4, 6]  # All posts already included
+      link_paths:
+        - "1 <- 2"
+        - "4 <- 6"
+      relevance_boost: 0.2
+    validation:
+      - "Should identify all reply relationships"
+      - "Should not duplicate posts in results"
+
+  - id: "REF-005"
+    name: "Forward Reference Test"
+    query: "Find forwarded valuable information"
+    initial_posts: [5]  # Forwarded post
+    description: "Test forwarded message handling (no current forward links in DB)"
+    expected:
+      depth_1_links: []
+      enriched_posts: [5]
+      link_path: "5 (forwarded, no local links)"
+      note: "Post is forwarded but has no links to other posts in channel"
+    validation:
+      - "Should handle forwarded posts without local references"
+      - "Should note forward status in metadata"
+
+depth_2_cases:
+  - id: "DEPTH-001"
+    name: "Simulated Depth-2 Traversal"
+    query: "Find all connected discussions starting from the welcome"
+    initial_posts: [1]
+    description: "Test depth-2 capability (would follow 1->2->X if X existed)"
+    expected:
+      depth_1_links:
+        - source: 2
+          target: 1
+          type: "reply"
+      depth_2_links: []  # No further links from Post 2
+      enriched_posts: [1, 2]
+      traversal_note: "System checked for depth-2 links from Post 2 but found none"
+      max_depth_reached: 1
+    validation:
+      - "Should attempt depth-2 traversal"
+      - "Should stop at configured depth limit"
+
+  - id: "DEPTH-002"
+    name: "Parallel Branch Following"
+    query: "Get all discussion threads"
+    initial_posts: [1, 4]
+    description: "Test following multiple branches in parallel"
+    expected:
+      branch_1:
+        depth_1: "1 <- 2"
+        depth_2: "None from 2"
+      branch_2:
+        depth_1: "4 <- 6"
+        depth_2: "None from 6"
+      total_enriched: [1, 2, 4, 6]
+      parallel_processing: true
+    validation:
+      - "Should process multiple branches simultaneously"
+      - "Should maintain separate traversal paths"
+
+edge_cases:
+  - id: "EDGE-001"
+    name: "Circular Reference Prevention"
+    query: "Test circular reference handling"
+    initial_posts: [1, 2]  # Both ends of a reply chain
+    description: "Should prevent circular traversal (2->1 but 1 already in set)"
+    expected:
+      links_found:
+        - source: 2
+          target: 1
+          type: "reply"
+      circular_prevented: true
+      enriched_posts: [1, 2]
+      note: "Post 1 already in initial set, no re-traversal"
+    validation:
+      - "Should not traverse same post twice"
+      - "Should detect and prevent circular references"
+
+  - id: "EDGE-002"
+    name: "Missing Target Reference"
+    query: "Find posts referencing deleted content"
+    initial_posts: [8]  # Simulate reference to non-existent post
+    simulated_link:
+      source: 8
+      target: 7  # Post 7 doesn't exist
+      type: "reply"
+    expected:
+      error_handling: "graceful"
+      enriched_posts: [8]
+      missing_targets: [7]
+      note: "Should handle references to missing posts"
+    validation:
+      - "Should not crash on missing references"
+      - "Should log missing reference for debugging"
+
+  - id: "EDGE-003"
+    name: "Empty Initial Set"
+    query: "Process with no initial posts"
+    initial_posts: []
+    description: "Test handling of empty input"
+    expected:
+      enriched_posts: []
+      links_found: []
+      error: false
+      note: "Should handle empty input gracefully"
+    validation:
+      - "Should return empty result without errors"
+      - "Should not attempt traversal"
+
+  - id: "EDGE-004"
+    name: "Maximum Posts Limit"
+    query: "Test with all posts selected"
+    initial_posts: [1, 2, 3, 4, 5, 6, 8]  # All posts
+    description: "Test when all posts are already in initial set"
+    expected:
+      links_found:
+        - source: 2
+          target: 1
+        - source: 6
+          target: 4
+      enriched_posts: [1, 2, 3, 4, 5, 6, 8]
+      additional_posts: 0
+      note: "All posts already included, only relationship mapping"
+    validation:
+      - "Should identify relationships even when no new posts to add"
+      - "Should handle maximum dataset size"
+
+performance_tests:
+  - id: "PERF-001"
+    name: "Large Initial Set Performance"
+    initial_posts: [1, 2, 3, 4, 5, 6, 8]
+    expected:
+      max_processing_time_ms: 1000
+      memory_usage: "< 10MB"
+
+  - id: "PERF-002"
+    name: "Depth-2 Traversal Performance"
+    initial_posts: [1]
+    simulated_depth: 2
+    expected:
+      max_processing_time_ms: 2000
+      traversal_operations: "< 10"
+
+validation_criteria:
+  success_threshold: 0.85  # 85% of tests must pass
+
+  link_following_rules:
+    - "Must follow all REPLY links"
+    - "Must follow FORWARD links when present"
+    - "Must respect depth limit (max 2)"
+    - "Must prevent circular references"
+    - "Must handle missing references gracefully"
+
+  relevance_scoring:
+    - "Direct reply: +0.3 to relevance"
+    - "Topical reply: +0.4 to relevance"
+    - "Forward reference: +0.2 to relevance"
+    - "Mention reference: +0.1 to relevance"
+
+  performance_requirements:
+    - "Depth-1 traversal: < 500ms per 10 posts"
+    - "Depth-2 traversal: < 1000ms per 10 posts"
+    - "Memory usage: < 5MB per 100 posts"
+
+  quality_checks:
+    - "No duplicate posts in enriched set"
+    - "Preserve link type information"
+    - "Maintain traversal path for debugging"
+    - "Log missing or broken references"
+
+notes:
+  - "Based on test database with 2 reply links: 2->1, 6->4"
+  - "Tests cover depth-1 and depth-2 scenarios"
+  - "Includes edge cases for robustness"
+  - "Performance tests ensure scalability"
+  - "Link types: reply, forward, mention (only reply currently in DB)"

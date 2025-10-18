@@ -1,0 +1,100 @@
+{
+  "name": "Test Channel",
+  "type": "public_channel",
+  "id": 1234567890,
+  "messages": [
+    {
+      "id": 1,
+      "type": "message",
+      "date": "2024-01-15T10:30:00",
+      "from": "John Doe",
+      "from_id": "user123",
+      "text": "Welcome to our expert discussion channel! This is our first post.",
+      "views": 150,
+      "forwards": 5
+    },
+    {
+      "id": 2,
+      "type": "message",
+      "date": "2024-01-15T11:00:00",
+      "from": "Jane Smith",
+      "from_id": "user456",
+      "text": "Great to be here! Looking forward to sharing insights.",
+      "reply_to_message_id": 1,
+      "views": 120
+    },
+    {
+      "id": 3,
+      "type": "message",
+      "date": "2024-01-15T14:30:00",
+      "from": "Bob Johnson",
+      "from_id": "user789",
+      "text": [
+        "Here's an interesting article about ",
+        {
+          "type": "link",
+          "text": "machine learning trends"
+        },
+        " that I found helpful."
+      ],
+      "views": 200,
+      "forwards": 10
+    },
+    {
+      "id": 4,
+      "type": "message",
+      "date": "2024-01-16T09:00:00",
+      "edited": "2024-01-16T09:15:00",
+      "from": "Alice Cooper",
+      "from_id": "user321",
+      "text": "Let me share some insights from my recent research project.",
+      "media_type": "photo",
+      "file": "photo_123.jpg",
+      "file_name": "research_results.jpg",
+      "width": 1920,
+      "height": 1080,
+      "views": 250
+    },
+    {
+      "id": 5,
+      "type": "message",
+      "date": "2024-01-16T10:30:00",
+      "from": "Charlie Brown",
+      "from_id": "user654",
+      "text": "This is a forwarded message with valuable information.",
+      "forwarded_from": "Another Channel",
+      "views": 180
+    },
+    {
+      "id": 6,
+      "type": "message",
+      "date": "2024-01-16T11:45:00",
+      "from": "Diana Prince",
+      "from_id": "user987",
+      "text": "Responding to the research shared earlier - fascinating findings!",
+      "reply_to_message_id": 4,
+      "views": 95
+    },
+    {
+      "id": 7,
+      "type": "service",
+      "date": "2024-01-16T12:00:00",
+      "actor": "Admin",
+      "action": "pin_message"
+    },
+    {
+      "id": 8,
+      "type": "message",
+      "date": "2024-01-17T08:00:00",
+      "from": "Eva Green",
+      "from_id": "user111",
+      "media_type": "document",
+      "file": "report.pdf",
+      "file_name": "Annual_Report_2024.pdf",
+      "mime_type": "application/pdf",
+      "text": "Here's the annual report for everyone to review.",
+      "views": 320,
+      "forwards": 25
+    }
+  ]
+}

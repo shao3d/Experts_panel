@@ -1,0 +1,70 @@
+[project]
+name = "experts-panel-backend"
+version = "0.1.0"
+description = "Intelligent Telegram Channel Analysis System - Backend"
+# readme = "../README.md"  # Commented out for local dev
+requires-python = ">=3.11"
+authors = [
+    { name = "Experts Panel Team" }
+]
+keywords = ["telegram", "analysis", "gpt-4", "map-reduce", "fastapi"]
+dependencies = [
+    "aiohttp>=3.12.15",
+    "aiosqlite>=0.21.0",
+    "fastapi>=0.117.1",
+    "json-repair>=0.52.0",
+    "openai>=1.109.1",
+    "psutil>=7.1.0",
+    "pydantic>=2.11.9",
+    "python-dotenv>=1.1.1",
+    "python-multipart>=0.0.20",
+    "pyyaml>=6.0.3",
+    "requests>=2.32.5",
+    "rich>=14.1.0",
+    "sqlalchemy>=2.0.43",
+    "sse-starlette>=3.0.2",
+    "telethon>=1.41.2",
+    "tenacity>=9.1.2",
+    "uvicorn>=0.37.0",
+]
+
+[tool.ruff]
+# Ruff configuration is in .ruff.toml
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "--verbose --cov=src --cov-report=html --cov-report=term"
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["*/tests/*", "*/__init__.py"]
+
+[tool.coverage.report]
+precision = 2
+skip_covered = false
+show_missing = true
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_any_unimported = false
+no_implicit_optional = true
+check_untyped_defs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+strict_optional = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+ignore_errors = true
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"

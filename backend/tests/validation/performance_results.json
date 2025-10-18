@@ -1,0 +1,128 @@
+{
+  "timestamp": "2025-09-28T21:03:42.480484",
+  "config": {
+    "api_base_url": "http://localhost:8000",
+    "timeout": 300,
+    "targets": {
+      "max_response_time_seconds": 180,
+      "max_memory_mb": 500,
+      "success_rate_percent": 95,
+      "p95_target_seconds": 150,
+      "p99_target_seconds": 180
+    }
+  },
+  "results": [
+    {
+      "query_id": "simple_topic",
+      "query_text": "What are the main topics discussed in this channel?",
+      "response_time": 0.04596996307373047,
+      "status_code": 500,
+      "memory_before": 33.2578125,
+      "memory_after": 33.55078125,
+      "memory_delta": 0.29296875,
+      "cpu_percent": 0.1,
+      "tokens_used": null,
+      "posts_processed": null,
+      "error": "HTTP 500: {\"error\":\"http_error\",\"message\":\"OpenAI API key not configured\",\"request_id\":\"c8a583d0-2d58-4717-bb80-2ff5b179df1d\"}",
+      "timestamp": "2025-09-28T21:03:38.806389"
+    },
+    {
+      "query_id": "simple_greeting",
+      "query_text": "Show me welcome messages",
+      "response_time": 0.006076335906982422,
+      "status_code": 500,
+      "memory_before": 33.55078125,
+      "memory_after": 33.55078125,
+      "memory_delta": 0.0,
+      "cpu_percent": 0.1,
+      "tokens_used": null,
+      "posts_processed": null,
+      "error": "HTTP 500: {\"error\":\"http_error\",\"message\":\"OpenAI API key not configured\",\"request_id\":\"ce2b5b76-72b7-4afd-9010-4535323aa621\"}",
+      "timestamp": "2025-09-28T21:03:39.057059"
+    },
+    {
+      "query_id": "user0_simple_topic_0",
+      "query_text": "What are the main topics discussed in this channel?",
+      "response_time": 0.42663097381591797,
+      "status_code": 500,
+      "memory_before": 33.55078125,
+      "memory_after": 33.5859375,
+      "memory_delta": 0.03515625,
+      "cpu_percent": 0.1,
+      "tokens_used": null,
+      "posts_processed": null,
+      "error": "HTTP 500: {\"error\":\"http_error\",\"message\":\"OpenAI API key not configured\",\"request_id\":\"941c263b-44b6-4ed3-b291-eaf498ee8e9d\"}",
+      "timestamp": "2025-09-28T21:03:39.272669"
+    },
+    {
+      "query_id": "user0_simple_greeting_1",
+      "query_text": "Show me welcome messages",
+      "response_time": 0.6640670299530029,
+      "status_code": 500,
+      "memory_before": 33.55078125,
+      "memory_after": 33.59375,
+      "memory_delta": 0.04296875,
+      "cpu_percent": 0.1,
+      "tokens_used": null,
+      "posts_processed": null,
+      "error": "HTTP 500: {\"error\":\"http_error\",\"message\":\"OpenAI API key not configured\",\"request_id\":\"660f7475-ab2a-4749-b2f2-5a2a11ff2220\"}",
+      "timestamp": "2025-09-28T21:03:39.381389"
+    },
+    {
+      "query_id": "user1_simple_topic_2",
+      "query_text": "What are the main topics discussed in this channel?",
+      "response_time": 0.3413550853729248,
+      "status_code": 500,
+      "memory_before": 33.55859375,
+      "memory_after": 33.59375,
+      "memory_delta": 0.03515625,
+      "cpu_percent": 0.1,
+      "tokens_used": null,
+      "posts_processed": null,
+      "error": "HTTP 500: {\"error\":\"http_error\",\"message\":\"OpenAI API key not configured\",\"request_id\":\"f0f5e365-033e-42c4-8ebd-90f4e2ba88b1\"}",
+      "timestamp": "2025-09-28T21:03:39.486582"
+    },
+    {
+      "query_id": "user1_simple_greeting_3",
+      "query_text": "Show me welcome messages",
+      "response_time": 0.5609049797058105,
+      "status_code": 500,
+      "memory_before": 33.55859375,
+      "memory_after": 33.59375,
+      "memory_delta": 0.03515625,
+      "cpu_percent": 0.1,
+      "tokens_used": null,
+      "posts_processed": null,
+      "error": "HTTP 500: {\"error\":\"http_error\",\"message\":\"OpenAI API key not configured\",\"request_id\":\"93c5992e-045a-49e1-9d62-d0bc807efc9c\"}",
+      "timestamp": "2025-09-28T21:03:39.591824"
+    },
+    {
+      "query_id": "user2_simple_topic_4",
+      "query_text": "What are the main topics discussed in this channel?",
+      "response_time": 0.24039316177368164,
+      "status_code": 500,
+      "memory_before": 33.57421875,
+      "memory_after": 33.59375,
+      "memory_delta": 0.01953125,
+      "cpu_percent": 0.1,
+      "tokens_used": null,
+      "posts_processed": null,
+      "error": "HTTP 500: {\"error\":\"http_error\",\"message\":\"OpenAI API key not configured\",\"request_id\":\"0885977d-0a0b-42ab-aabb-8f75c9f3eb09\"}",
+      "timestamp": "2025-09-28T21:03:39.696533"
+    },
+    {
+      "query_id": "user2_simple_greeting_0",
+      "query_text": "Show me welcome messages",
+      "response_time": 0.012717008590698242,
+      "status_code": 500,
+      "memory_before": 33.59765625,
+      "memory_after": 33.59765625,
+      "memory_delta": 0.0,
+      "cpu_percent": 0.1,
+      "tokens_used": null,
+      "posts_processed": null,
+      "error": "HTTP 500: {\"error\":\"http_error\",\"message\":\"OpenAI API key not configured\",\"request_id\":\"cbfd0b2b-98b8-462e-907b-1eb9989445f7\"}",
+      "timestamp": "2025-09-28T21:03:41.363740"
+    }
+  ]
+}

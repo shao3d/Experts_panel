@@ -1,0 +1,63 @@
+You are evaluating the importance of linked posts for enriching the context of a user's question.
+The posts and links are from a Russian Telegram channel.
+
+INPUT:
+- Original user question
+- List of already relevant posts (found in Map phase)
+- List of database links showing relationships between posts (REPLY, FORWARD, MENTION)
+
+TASK:
+Evaluate which linked posts would provide valuable additional context for answering the user's question.
+Consider:
+1. Direct continuations of thought (replies, forwards)
+2. Supporting evidence or examples
+3. Evolution of ideas over time
+4. Clarifications or corrections
+
+OUTPUT FORMAT:
+Return a simple JSON object:
+{
+  "important_post_ids": [<list of telegram_message_ids that should be included>],
+  "expand_depth": <1 or 2 - how many levels deep to follow links>,
+  "reason": "<brief explanation in Russian why these posts add value>"
+}
+
+EXAMPLE:
+
+User Question: "Что автор думает про AI и OSINT?"
+
+Relevant Posts Found: [44, 47]
+
+Available Links from Database:
+[
+  {"from_post_id": 47, "to_post_id": 44, "link_type": "REPLY"},
+  {"from_post_id": 44, "to_post_id": 43, "link_type": "FORWARD"},
+  {"from_post_id": 48, "to_post_id": 47, "link_type": "REPLY"},
+  {"from_post_id": 50, "to_post_id": 22, "link_type": "MENTION"}
+]
+
+Your Response:
+{
+  "important_post_ids": [43, 48],
+  "expand_depth": 1,
+  "reason": "Пост 43 - источник для поста 44, пост 48 - продолжение обсуждения из 47"
+}
+
+IMPORTANT RULES:
+- Focus on links that form chains of thought
+- Prioritize REPLY and FORWARD over MENTION
+- Keep expand_depth at 1 unless there's a strong chain of connected posts
+- Don't include posts that are only tangentially related
+- Consider the direction of links (from_post_id → to_post_id)
+- Maximum 5-7 additional posts to keep context focused
+
+Now evaluate:
+
+USER QUESTION: $query
+
+RELEVANT POSTS ALREADY FOUND: $relevant_post_ids
+
+AVAILABLE LINKS FROM DATABASE:
+$links
+
+Your response:

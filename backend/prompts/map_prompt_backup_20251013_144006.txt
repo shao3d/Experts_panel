@@ -1,0 +1,84 @@
+You are analyzing a chunk of Telegram channel posts to find content relevant to a user's question.
+The posts are in Russian, and you should respond in the same language as the question.
+
+INPUT:
+- A list of posts from a Telegram channel (each with telegram_message_id, date, content, and author)
+- A user's question in natural language (typically in Russian)
+
+TASK:
+Find posts that contain information relevant to answering the user's question. Consider:
+1. Direct mentions of the topic
+2. Related concepts and synonyms
+3. Context and implications
+4. Posts that provide background or additional perspective
+
+OUTPUT FORMAT:
+Return a JSON object with this exact structure:
+{
+  "relevant_posts": [
+    {
+      "telegram_message_id": <integer - the telegram_message_id of the post>,
+      "relevance": "<HIGH|MEDIUM|LOW>",
+      "reason": "<brief explanation why this post is relevant in Russian>"
+    }
+  ],
+  "chunk_summary": "<one sentence describing what was found in this chunk>"
+}
+
+EXAMPLE:
+
+User Question: "Что автор думает про AI и OSINT?"
+
+Posts:
+[
+  {"telegram_message_id": 44, "date": "2024-03-20", "content": "OSINT + AI для бизнеса: превращаем открытые данные в конкурентное преимущество. Я давно интересуюсь OSINT...", "author": "John"},
+  {"telegram_message_id": 45, "date": "2024-03-21", "content": "Сегодня готовил презентацию для конференции. Волнуюсь немного...", "author": "John"},
+  {"telegram_message_id": 47, "date": "2024-03-23", "content": "Тихая революция в OSINT: AI научился играть в GeoGuessr сильно эффективнее. Недавно писал пост про то, как AI будет мощно усиливать OSINT...", "author": "John"}
+]
+
+Your Response:
+{
+  "relevant_posts": [
+    {
+      "telegram_message_id": 44,
+      "relevance": "HIGH",
+      "reason": "Прямо обсуждает комбинацию OSINT + AI для бизнес-преимущества"
+    },
+    {
+      "telegram_message_id": 47,
+      "relevance": "HIGH",
+      "reason": "Обсуждает революцию AI в OSINT с конкретным примером GeoGuessr"
+    }
+  ],
+  "chunk_summary": "Найдено 2 поста, напрямую обсуждающих пересечение технологий AI и OSINT."
+}
+
+IMPORTANT RULES:
+- Be inclusive rather than exclusive - when in doubt, include as MEDIUM or LOW
+- Include posts even if they only partially address the question
+- HIGH relevance for direct topic matches
+- MEDIUM relevance for related topics and technologies
+- LOW relevance for contextual mentions or background information
+- Always explain WHY a post is relevant IN RUSSIAN
+- If no relevant posts found, return empty relevant_posts array
+- Consider post date when multiple posts discuss evolving topics
+- If content is empty/null, check if post has media_metadata field
+- Author name can help identify expert opinions
+- THINK: Would an expert searching for this topic want to see this post?
+- Consider implicit references and related concepts (e.g., Google/Gemini/Bard for Google queries)
+
+CRITICAL ANTI-HALLUCINATION RULES:
+- ONLY evaluate posts that are actually provided in the list below
+- ONLY use telegram_message_ids from the posts you can see
+- NEVER invent or assume post content that is not explicitly shown
+- If you don't find relevant content, return empty relevant_posts array
+- Do NOT make up telegram_message_ids or post content
+
+Now analyze the following:
+
+USER QUESTION: $query
+
+POSTS TO ANALYZE:
+$posts
+
+Your response (following the JSON structure exactly):

@@ -1,0 +1,68 @@
+You are synthesizing a comprehensive answer from multiple Telegram posts.
+The posts are typically in Russian, but you must respond in the same language as the user's question.
+
+INPUT:
+- User's original question
+- Collection of relevant posts found through Map and Resolve phases
+- Each post has telegram_message_id, date, content, and author
+
+TASK:
+Create a coherent, comprehensive answer that:
+1. Directly addresses the user's question
+2. Synthesizes information from all relevant posts
+3. Preserves the evolution of ideas across time
+4. Uses [post:ID] notation for source attribution
+
+OUTPUT FORMAT:
+Return a simple JSON object:
+{
+  "answer": "<comprehensive answer with inline references like [post:44]>",
+  "main_sources": [<list of most important telegram_message_ids>],
+  "confidence": "<HIGH|MEDIUM|LOW>",
+  "has_expert_comments": <boolean>,
+  "language": "<ru|en>"
+}
+
+EXAMPLE:
+
+User Question: "Что автор думает про AI и OSINT?"
+
+Relevant Posts:
+[
+  {"telegram_message_id": 44, "date": "2024-03-20", "content": "OSINT + AI для бизнеса: превращаем открытые данные в конкурентное преимущество...", "author": "John"},
+  {"telegram_message_id": 47, "date": "2024-03-23", "content": "Тихая революция в OSINT: AI научился играть в GeoGuessr...", "author": "John"},
+  {"telegram_message_id": 48, "date": "2024-03-24", "content": "Продолжая тему OSINT: важно понимать этические границы...", "author": "John"}
+]
+
+Your Response:
+{
+  "answer": "Автор рассматривает AI как революционный усилитель возможностей OSINT. В [post:44] он описывает комбинацию AI и OSINT как способ превращения открытых данных в конкурентное преимущество для бизнеса. Автор давно интересуется OSINT и видит, как AI выводит его на новый уровень.\n\nЧерез несколько дней [post:47] он приводит конкретный пример с AI, освоившим GeoGuessr, называя это 'тихой революцией в OSINT'. Это показывает, как AI может выполнять задачи, которые раньше требовали человеческой интуиции.\n\nОднако автор также осознает ответственность [post:48], подчеркивая важность понимания 'этических границ' при использовании этих мощных инструментов.",
+  "main_sources": [44, 47, 48],
+  "confidence": "HIGH",
+  "has_expert_comments": true,
+  "language": "ru"
+}
+
+WRITING RULES:
+- CRITICAL: Write in the same language as the user's question - if asked in English, respond in English; if asked in Russian, respond in Russian
+- Use [post:ID] notation for inline citations
+- Connect ideas across posts to show thought development
+- Be specific with quotes and examples from posts
+- Integrate expert comments naturally when available
+- Keep the answer focused and comprehensive
+- Use "автор" when referring to the channel owner (in Russian)
+- Technical terms (AI, OSINT, API) can stay in English
+
+CONFIDENCE LEVELS:
+- HIGH: Direct, clear information from multiple consistent sources
+- MEDIUM: Partial information or some uncertainty
+- LOW: Limited information or conflicting sources
+
+Now synthesize an answer for:
+
+USER QUESTION: $query
+
+POSTS TO SYNTHESIZE:
+$posts
+
+Your response:
