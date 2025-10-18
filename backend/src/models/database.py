@@ -8,7 +8,7 @@ from sqlalchemy import Table, Column, Integer, Boolean, Text, TIMESTAMP, Foreign
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
-from .base import Base, engine
+from .base import Base, engine, DATABASE_URL
 
 
 # Define comment_group_drift table (created via SQL migration)
@@ -38,8 +38,9 @@ def init_db():
     # Import all models to register them with Base
     from . import Post, Link, Comment
 
-    # Enable foreign keys for SQLite
-    event.listen(engine, "connect", enable_sqlite_foreign_keys)
+    # Enable foreign keys for SQLite only
+    if not DATABASE_URL.startswith("postgresql://"):
+        event.listen(engine, "connect", enable_sqlite_foreign_keys)
 
     # Create all tables
     Base.metadata.create_all(bind=engine)
@@ -60,13 +61,24 @@ def reset_db():
 
 
 # Async support for future use
-DATABASE_URL_ASYNC = "sqlite+aiosqlite:///../data/experts.db"
+import os
+DATABASE_URL_ASYNC = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///../data/experts.db")
 
-async_engine = create_async_engine(
-    DATABASE_URL_ASYNC,
-    echo=False,
-    poolclass=NullPool,  # Recommended for SQLite
-)
+# Convert synchronous URL to async if needed
+if DATABASE_URL_ASYNC.startswith("postgresql://"):
+    DATABASE_URL_ASYNC = DATABASE_URL_ASYNC.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+# Configure async engine based on database type
+if DATABASE_URL_ASYNC.startswith("postgresql+asyncpg://"):
+    # PostgreSQL async configuration
+    async_engine = create_async_engine(DATABASE_URL_ASYNC, echo=False)
+else:
+    # SQLite async configuration (local development)
+    async_engine = create_async_engine(
+        DATABASE_URL_ASYNC,
+        echo=False,
+        poolclass=NullPool,  # Recommended for SQLite
+    )
 
 AsyncSessionLocal = async_sessionmaker(
     async_engine,
@@ -92,8 +104,9 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
 async def init_async_db():
     """Initialize database asynchronously."""
     async with async_engine.begin() as conn:
-        # Enable foreign keys for SQLite
-        await conn.execute("PRAGMA foreign_keys=ON")
+        # Enable foreign keys for SQLite only
+        if not DATABASE_URL_ASYNC.startswith("postgresql+asyncpg://"):
+            await conn.execute("PRAGMA foreign_keys=ON")
         # Create all tables
         await conn.run_sync(Base.metadata.create_all)
     print("Async database initialized successfully!")
