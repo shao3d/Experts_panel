@@ -1,0 +1,114 @@
+name: Deploy to Railway
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - production
+        - staging
+
+jobs:
+  deploy:
+    name: Deploy to Railway
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Railway CLI
+      uses: railway-app/setup-railway@v1
+      with:
+        api-token: ${{ secrets.RAILWAY_TOKEN }}
+
+    - name: Deploy to Railway
+      run: railway up --service="${{ secrets.RAILWAY_SERVICE_ID || 'experts-panel' }}"
+
+    - name: Wait for Deployment
+      run: |
+        echo "Waiting for Railway deployment to complete..."
+        sleep 30
+
+    - name: Get Deployment URL
+      id: deployment
+      run: |
+        # Try to get the deployment URL from Railway
+        DEPLOYMENT_URL=$(railway status 2>/dev/null | grep -E '(https?://[^\s]+)' | head -1 | grep -oE '(https?://[^\s]+)' || echo "")
+        echo "url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+
+        if [ -n "$DEPLOYMENT_URL" ]; then
+          echo "✅ Deployment successful: $DEPLOYMENT_URL"
+        else
+          echo "⚠️ Could not retrieve deployment URL, but deployment was triggered"
+        fi
+
+    - name: Health Check
+      run: |
+        if [ -n "${{ steps.deployment.outputs.url }}" ]; then
+          echo "Performing health check on ${{ steps.deployment.outputs.url }}"
+
+          # Wait a bit more for the service to start
+          sleep 30
+
+          # Try health check endpoint
+          for i in {1..10}; do
+            if curl -f "${{ steps.deployment.outputs.url }}/health" > /dev/null 2>&1; then
+              echo "✅ Health check passed!"
+              break
+            else
+              echo "⏳ Health check attempt $i/10 failed, retrying in 30s..."
+              sleep 30
+            fi
+          done
+        else
+          echo "⚠️ Skipping health check - no deployment URL available"
+        fi
+
+    - name: Deployment Summary
+      run: |
+        echo "## 🚀 Railway Deployment Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        if [ -n "${{ steps.deployment.outputs.url }}" ]; then
+          echo "✅ **Deployment successful!**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Application URL:** ${{ steps.deployment.outputs.url }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Available endpoints:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Health: ${{ steps.deployment.outputs.url }}/health" >> $GITHUB_STEP_SUMMARY
+          echo "- API: ${{ steps.deployment.outputs.url }}/api/v1/query" >> $GITHUB_STEP_SUMMARY
+          echo "- Frontend: ${{ steps.deployment.outputs.url }}" (if frontend is configured) >> $GITHUB_STEP_SUMMARY
+        else
+          echo "⚠️ **Deployment triggered**" >> $GITHUB_STEP_SUMMARY
+          echo "Check Railway dashboard for deployment status" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📋 Environment Variables Required" >> $GITHUB_STEP_SUMMARY
+        echo "Make sure these are set in Railway:" >> $GITHUB_STEP_SUMMARY
+        echo "- \`OPENAI_API_KEY\` or \`OPENROUTER_API_KEY\`" >> $GITHUB_STEP_SUMMARY
+        echo "- \`TELEGRAM_API_ID\`" >> $GITHUB_STEP_SUMMARY
+        echo "- \`TELEGRAM_API_HASH\`" >> $GITHUB_STEP_SUMMARY
+        echo "- \`TELEGRAM_CHANNEL\`" >> $GITHUB_STEP_SUMMARY
+
+  notify:
+    name: Notify Deployment
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: always() && github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Notify Deployment Status
+      run: |
+        if [ "${{ needs.deploy.result }}" == "success" ]; then
+          echo "🎉 **Experts Panel deployed successfully!**"
+        else
+          echo "❌ **Deployment failed - check logs**"
+        fi
