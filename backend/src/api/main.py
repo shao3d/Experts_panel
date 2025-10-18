@@ -68,105 +68,88 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Configure CORS
-origins = [
-    "http://localhost:3000",  # React development server
-    "http://localhost:3001",  # React development server (alt port)
-    "http://localhost:3002",  # Vite development server (alt port)
-    "http://localhost:5173",  # Vite development server
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:3001",
-    "http://127.0.0.1:3002",
-    "http://127.0.0.1:5173",
-]
-
-# Add production origins from environment
-production_origin = os.getenv("PRODUCTION_ORIGIN")
-if production_origin:
-    origins.append(production_origin)
-
+# Simple CORS for Railway - allow all origins for testing
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["X-Request-ID"],
 )
 
 
-# Request ID middleware
-@app.middleware("http")
-async def add_request_id(request: Request, call_next):
-    """Add unique request ID to each request."""
-    request_id = str(uuid.uuid4())
-    request.state.request_id = request_id
-
-    start_time = time.time()
-
-    response = await call_next(request)
-
-    process_time = time.time() - start_time
-    response.headers["X-Request-ID"] = request_id
-    response.headers["X-Process-Time"] = str(process_time)
-
-    # Log request details
-    logger.info(
-        f"{request.method} {request.url.path} - "
-        f"Status: {response.status_code} - "
-        f"Time: {process_time:.3f}s - "
-        f"ID: {request_id}"
-    )
-
-    return response
-
-
-# Exception handlers
-@app.exception_handler(StarletteHTTPException)
-async def http_exception_handler(request: Request, exc: StarletteHTTPException):
-    """Handle HTTP exceptions."""
-    request_id = getattr(request.state, "request_id", "unknown")
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={
-            "error": "http_error",
-            "message": exc.detail,
-            "request_id": request_id
-        },
-        headers={"X-Request-ID": request_id}
-    )
+# Request ID middleware temporarily disabled for Railway debugging
+# @app.middleware("http")
+# async def add_request_id(request: Request, call_next):
+#     """Add unique request ID to each request."""
+#     request_id = str(uuid.uuid4())
+#     request.state.request_id = request_id
+#
+#     start_time = time.time()
+#
+#     response = await call_next(request)
+#
+#     process_time = time.time() - start_time
+#     response.headers["X-Request-ID"] = request_id
+#     response.headers["X-Process-Time"] = str(process_time)
+#
+#     # Log request details
+#     logger.info(
+#         f"{request.method} {request.url.path} - "
+#         f"Status: {response.status_code} - "
+#         f"Time: {process_time:.3f}s - "
+#         f"ID: {request_id}"
+#     )
+#
+#     return response
 
 
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    """Handle validation errors."""
-    request_id = getattr(request.state, "request_id", "unknown")
-    return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={
-            "error": "validation_error",
-            "message": "Invalid request data",
-            "details": exc.errors(),
-            "request_id": request_id
-        },
-        headers={"X-Request-ID": request_id}
-    )
-
-
-@app.exception_handler(Exception)
-async def general_exception_handler(request: Request, exc: Exception):
-    """Handle unexpected exceptions."""
-    request_id = getattr(request.state, "request_id", "unknown")
-    logger.error(f"Unexpected error for request {request_id}: {exc}", exc_info=True)
-    return JSONResponse(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={
-            "error": "internal_error",
-            "message": "An unexpected error occurred",
-            "request_id": request_id
-        },
-        headers={"X-Request-ID": request_id}
-    )
+# Exception handlers temporarily disabled for Railway debugging
+# @app.exception_handler(StarletteHTTPException)
+# async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+#     """Handle HTTP exceptions."""
+#     request_id = getattr(request.state, "request_id", "unknown")
+#     return JSONResponse(
+#         status_code=exc.status_code,
+#         content={
+#             "error": "http_error",
+#             "message": exc.detail,
+#             "request_id": request_id
+#         },
+#         headers={"X-Request-ID": request_id}
+#     )
+#
+#
+# @app.exception_handler(RequestValidationError)
+# async def validation_exception_handler(request: Request, exc: RequestValidationError):
+#     """Handle validation errors."""
+#     request_id = getattr(request.state, "request_id", "unknown")
+#     return JSONResponse(
+#         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+#         content={
+#             "error": "validation_error",
+#             "message": "Invalid request data",
+#             "details": exc.errors(),
+#             "request_id": request_id
+#         },
+#         headers={"X-Request-ID": request_id}
+#     )
+#
+#
+# @app.exception_handler(Exception)
+# async def general_exception_handler(request: Request, exc: Exception):
+#     """Handle unexpected exceptions."""
+#     request_id = getattr(request.state, "request_id", "unknown")
+#     logger.error(f"Unexpected error for request {request_id}: {exc}", exc_info=True)
+#     return JSONResponse(
+#         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+#         content={
+#             "error": "internal_error",
+#             "message": "An unexpected error occurred",
+#             "request_id": request_id
+#         },
+#         headers={"X-Request-ID": request_id}
+#     )
 
 
 # Simple ping endpoint for basic connectivity test
