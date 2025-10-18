@@ -61,9 +61,15 @@ async def health():
         "database": {
             "url_configured": bool(database_url),
             "status": db_status,
-            "url_prefix": database_url.split("@")[0] + "@" if database_url else ""
+            "url_prefix": database_url.split("@")[0] + "@" if database_url else "",
+            "url_length": len(database_url) if database_url else 0
         },
-        "environment": os.getenv("RAILWAY_ENVIRONMENT", "unknown")
+        "environment": os.getenv("RAILWAY_ENVIRONMENT", "unknown"),
+        "env_vars": {
+            "has_database_url": "DATABASE_URL" in os.environ,
+            "port": os.getenv("PORT", "not_set"),
+            "all_env_keys": [k for k in os.environ.keys() if not k.startswith("RAILWAY_")][:10]
+        }
     }
 
 
