@@ -12,13 +12,30 @@ app = FastAPI(
 
 @app.get("/")
 async def root():
-    """Root endpoint."""
-    return {"message": "Hello World", "status": "running"}
+    """Root endpoint - shows all available paths."""
+    return {
+        "message": "Hello World",
+        "status": "running",
+        "available_endpoints": [
+            "/",
+            "/health",
+            "/api/health",
+            "/api/v1/health",
+            "/healthz",
+            "/ready",
+            "/ping"
+        ],
+        "timestamp": time.time()
+    }
 
 
 @app.get("/health")
+@app.get("/api/health")
+@app.get("/api/v1/health")
+@app.get("/healthz")
+@app.get("/ready")
 async def health():
-    """Health check endpoint."""
+    """Health check endpoint - multiple paths for Railway compatibility."""
     return {
         "status": "healthy",
         "version": "1.0.0",
