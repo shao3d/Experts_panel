@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker
 # Database URL configuration
 # Production: PostgreSQL via DATABASE_URL environment variable
 # Local: SQLite fallback for development
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///../data/experts.db")
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///data/experts.db")
 
 # Engine configuration based on database type
 if DATABASE_URL.startswith("postgresql://"):

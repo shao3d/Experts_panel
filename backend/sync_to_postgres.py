@@ -52,7 +52,7 @@ def copy_table_data(sqlite_conn: sqlite3.Connection, pg_conn: psycopg2.extension
         sql = f"INSERT INTO {table_name} ({', '.join(columns)}) VALUES ({placeholders})"
 
         # Копирование данных
-        execute_values(cursor, sql, rows)
+        cursor.executemany(sql, rows)
         pg_conn.commit()
 
         print(f"  ✅ Скопировано {len(rows)} записей в таблицу {table_name}")
@@ -123,7 +123,7 @@ def copy_posts(sqlite_conn: sqlite3.Connection, pg_conn: psycopg2.extensions.con
                              is_forwarded, forward_from_channel)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
-        execute_values(cursor, sql, processed_rows)
+        cursor.executemany(sql, processed_rows)
         pg_conn.commit()
 
         print(f"  ✅ Скопировано {len(processed_rows)} записей в таблицу posts")
@@ -177,7 +177,7 @@ def copy_comment_group_drift(sqlite_conn: sqlite3.Connection, pg_conn: psycopg2.
             INSERT INTO comment_group_drift (post_id, has_drift, drift_topics, analyzed_at, analyzed_by, expert_id)
             VALUES (%s, %s, %s, %s, %s, %s)
         """
-        execute_values(cursor, sql, processed_rows)
+        cursor.executemany(sql, processed_rows)
         pg_conn.commit()
 
         print(f"  ✅ Скопировано {len(processed_rows)} записей в таблицу comment_group_drift")

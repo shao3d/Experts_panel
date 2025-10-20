@@ -395,8 +395,34 @@ npm run preview
 
 ### Base URL Configuration
 ```typescript
+// Development
 const apiClient = new APIClient('http://localhost:8000');
+
+// Production (Railway)
+const apiClient = new APIClient('https://your-app.railway.app');
 ```
+
+### Railway Deployment Configuration
+The frontend is configured for production deployment with nginx:
+
+#### Docker Configuration
+- **Multi-stage build**: Node.js build stage + nginx production stage
+- **Base images**: node:18-alpine (build), nginx:alpine (production)
+- **Static serving**: nginx serves optimized build files from /usr/share/nginx/html
+- **Port**: 80 (standard HTTP port)
+
+#### Nginx Features
+- **API proxy**: `/api/*` requests proxied to backend service
+- **SSE support**: Special headers for Server-Sent Events streaming
+- **SPA routing**: All non-file requests served to index.html
+- **Gzip compression**: Automatic compression for text-based assets
+- **Static caching**: Long-term caching for JS/CSS/image assets
+
+#### Production vs Development
+- **Development**: Vite dev server on port 5173 with HMR
+- **Production**: nginx serving static files with API proxy
+- **API communication**: Uses relative URLs (`/api/*`) in production
+- **Environment detection**: Base URL configured per deployment environment
 
 ### Health Check
 ```typescript
