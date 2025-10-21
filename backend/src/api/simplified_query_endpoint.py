@@ -142,10 +142,10 @@ async def process_expert_pipeline(
 
     relevant_posts = map_results.get("relevant_posts", [])
 
-    # 3. Filter only HIGH relevance posts for more precise results
+    # 3. Filter HIGH and MEDIUM relevance posts for comprehensive results
     filtered_posts = [
         p for p in relevant_posts
-        if p.get("relevance") == "HIGH"
+        if p.get("relevance") in ["HIGH", "MEDIUM"]
     ]
 
     # 4. Resolve phase (with expert_id filtering)

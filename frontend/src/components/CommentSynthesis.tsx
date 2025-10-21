@@ -33,7 +33,7 @@ const CommentSynthesis: React.FC<CommentSynthesisProps> = ({ synthesis }) => {
             margin: 0,
           }}
         >
-          Дополнительно из релевантных комментариев
+          Additional insights from relevant comments
         </h3>
       </div>
       <div

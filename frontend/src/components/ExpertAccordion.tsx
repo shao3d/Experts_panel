@@ -93,7 +93,7 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
         <span style={styles.expertName}>{expert.expert_name}</span>
         <span style={styles.channelName}>@{expert.channel_username}</span>
         <span style={styles.stats}>
-          {expert.posts_analyzed} постов • {(expert.processing_time_ms / 1000).toFixed(1)}с
+          {expert.posts_analyzed} posts • {(expert.processing_time_ms / 1000).toFixed(1)} seconds
         </span>
         <span style={{
           ...styles.confidence,
@@ -109,7 +109,7 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
           {/* Left Column - Expert Response */}
           <div style={styles.leftColumn}>
             <div style={styles.columnHeader}>
-              <h2 style={styles.columnTitle}>Ответ системы</h2>
+              <h2 style={styles.columnTitle}>Expert Response</h2>
             </div>
 
             <div style={styles.scrollableContent}>
@@ -126,7 +126,7 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
                 </>
               ) : (
                 <div style={styles.placeholder}>
-                  Нет ответа от эксперта
+                  No response from expert
                 </div>
               )}
             </div>
@@ -136,13 +136,13 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
           <div style={styles.rightColumn}>
             <div style={styles.columnHeader}>
               <h2 style={styles.columnTitle}>
-                Оригинальные посты-претенденты с комментариями ({posts.length})
+                Source posts with comments ({posts.length})
               </h2>
             </div>
 
             <div style={styles.scrollableContent}>
               {postsLoading ? (
-                <div style={styles.placeholder}>Загрузка постов...</div>
+                <div style={styles.placeholder}>Loading posts...</div>
               ) : posts.length > 0 ? (
                 <>
                   <PostsList
@@ -158,7 +158,7 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
                 </>
               ) : (
                 <div style={styles.placeholder}>
-                  {expert.main_sources.length > 0 ? 'Посты загружаются...' : 'Нет постов-источников'}
+                  {expert.main_sources.length > 0 ? 'Loading posts...' : 'No source posts available'}
                 </div>
               )}
             </div>

@@ -28,7 +28,7 @@ export const ProgressLog: React.FC<ProgressLogProps> = ({
   return (
     <div style={styles.container}>
       <h3 style={styles.title}>
-        {isProcessing ? '⚙️ Обработка запроса...' : '✅ Обработка завершена'}
+        {isProcessing ? '⚙️ Stages query...' : '✅ Stages completed'}
       </h3>
 
       <div style={styles.logContainer}>
@@ -72,13 +72,13 @@ function formatEventData(data: Record<string, any>): string {
   const parts: string[] = [];
 
   if (data.relevant_count !== undefined) {
-    parts.push(`${data.relevant_count} релевантных`);
+    parts.push(`${data.relevant_count} relevant`);
   }
   if (data.enriched_count !== undefined) {
-    parts.push(`${data.enriched_count} обогащённых`);
+    parts.push(`${data.enriched_count} enriched`);
   }
   if (data.links_followed !== undefined) {
-    parts.push(`${data.links_followed} связей`);
+    parts.push(`${data.links_followed} links`);
   }
   if (data.confidence) {
     parts.push(`confidence: ${data.confidence}`);

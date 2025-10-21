@@ -52,7 +52,7 @@ const ExpertResponse: React.FC<ExpertResponseProps> = ({ answer, sources, onPost
               e.currentTarget.style.backgroundColor = '#e6f2ff';
               e.currentTarget.style.color = '#0066cc';
             }}
-            title={`Перейти к посту #${postId}`}
+            title={`View post #${postId}`}
           >
             [{postId}]
           </button>

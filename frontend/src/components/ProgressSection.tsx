@@ -68,8 +68,7 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({ isProcessing, progres
         alignItems: 'center',
         fontSize: '14px',
       }}>
-        <span style={{ fontSize: '16px' }}>⏳</span>
-        <span style={{ color: '#6c757d', fontWeight: '500' }}>Обработка:</span>
+        <span style={{ fontSize: '14px', color: '#495057', fontWeight: '500' }}>Stages:</span>
 
         {phases.map((phase, index) => {
           const status = getPhaseStatus(phase.name);
@@ -92,7 +91,7 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({ isProcessing, progres
 
         {isProcessing && (
           <span style={{ color: '#6c757d', marginLeft: '8px' }}>
-            ({elapsedSeconds} сек)
+            ({elapsedSeconds} seconds)
           </span>
         )}
       </div>
@@ -122,24 +121,23 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({ isProcessing, progres
           {!isProcessing && stats && (
             <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '20px', color: '#28a745' }}>✅</span>
-                <span style={{ fontSize: '14px', color: '#495057', fontWeight: '500' }}>Завершено</span>
+                <span style={{ fontSize: '14px', color: '#495057', fontWeight: '500' }}>Statistics:</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
                 <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#212529' }}>{stats.totalPosts}</span>
-                <span style={{ fontSize: '14px', color: '#6c757d' }}>постов</span>
+                <span style={{ fontSize: '14px', color: '#6c757d' }}>posts</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
                 <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#212529' }}>
-                  {stats.processingTime.toFixed(1)}с
+                  {stats.processingTime.toFixed(1)}
                 </span>
-                <span style={{ fontSize: '14px', color: '#6c757d' }}>время</span>
+                <span style={{ fontSize: '14px', color: '#6c757d' }}>seconds</span>
               </div>
             </div>
           )}
           {!isProcessing && !stats && progressEvents.length === 0 && (
             <div style={{ color: '#6c757d', fontSize: '14px' }}>
-              Готов к обработке запроса
+              Ready to process queries
             </div>
           )}
         </div>

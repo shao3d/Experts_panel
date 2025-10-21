@@ -70,13 +70,13 @@ export class APIClient {
       });
 
       if (!response.ok) {
-        let errorMessage = 'Ошибка при обработке запроса';
+        let errorMessage = 'Query processing failed';
         try {
           const error: APIError = await response.json();
           errorMessage = error.message || errorMessage;
         } catch {
           // If response is not JSON (e.g., 502 from proxy)
-          errorMessage = `Ошибка сервера: ${response.status} ${response.statusText}`;
+          errorMessage = `Server error: ${response.status} ${response.statusText}`;
         }
         throw new Error(errorMessage);
       }
@@ -91,7 +91,7 @@ export class APIClient {
     } catch (err) {
       // Handle network errors (connection refused, timeout, DNS failure)
       if (err instanceof TypeError && err.message.includes('fetch')) {
-        throw new Error('Не удалось подключиться к серверу. Проверьте что бэкенд запущен на ' + this.baseURL);
+        throw new Error('Cannot connect to server. Make sure backend is running on ' + this.baseURL);
       }
       // Re-throw other errors (including our custom error messages)
       throw err;

@@ -218,7 +218,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments,
             <span style={{ fontSize: '16px', lineHeight: '1' }}>
               {isExpanded ? '−' : '+'}
             </span>
-            Комментарии
+            Comments
           </button>
 
           {/* Comments List */}

@@ -17,11 +17,11 @@ interface QueryResultProps {
 export const QueryResult: React.FC<QueryResultProps> = ({ result }) => {
   return (
     <div style={styles.container}>
-      <h2 style={styles.title}>Результат</h2>
+      <h2 style={styles.title}>Results</h2>
 
       {/* Main Answer */}
       <div style={styles.answer}>
-        <h3 style={styles.sectionTitle}>Ответ:</h3>
+        <h3 style={styles.sectionTitle}>Answer:</h3>
         <div style={styles.answerText}>
           {result.answer}
         </div>
@@ -30,13 +30,13 @@ export const QueryResult: React.FC<QueryResultProps> = ({ result }) => {
       {/* Main Sources */}
       <div style={styles.sources}>
         <h3 style={styles.sectionTitle}>
-          Источники ({result.main_sources.length}):
+          Sources ({result.main_sources.length}):
         </h3>
         <div style={styles.sourceList}>
           {result.main_sources.map((sourceId) => (
             <div key={sourceId} style={styles.sourceItem}>
               <span style={styles.sourceIcon}>📄</span>
-              <span>Пост #{sourceId}</span>
+              <span>Post #{sourceId}</span>
             </div>
           ))}
         </div>
@@ -44,25 +44,25 @@ export const QueryResult: React.FC<QueryResultProps> = ({ result }) => {
 
       {/* Statistics */}
       <div style={styles.stats}>
-        <h3 style={styles.sectionTitle}>Статистика:</h3>
+        <h3 style={styles.sectionTitle}>Statistics:</h3>
         <div style={styles.statsGrid}>
           <div style={styles.statItem}>
-            <span style={styles.statLabel}>Проанализировано постов:</span>
+            <span style={styles.statLabel}>Posts analyzed:</span>
             <span style={styles.statValue}>{result.posts_analyzed}</span>
           </div>
           <div style={styles.statItem}>
-            <span style={styles.statLabel}>Уверенность:</span>
+            <span style={styles.statLabel}>Confidence:</span>
             <span style={styles.statValue}>{result.confidence}</span>
           </div>
           <div style={styles.statItem}>
-            <span style={styles.statLabel}>Время обработки:</span>
+            <span style={styles.statLabel}>Processing time:</span>
             <span style={styles.statValue}>
-              {(result.processing_time_ms / 1000).toFixed(2)} сек
+              {(result.processing_time_ms / 1000).toFixed(2)} seconds
             </span>
           </div>
           {result.has_expert_comments && (
             <div style={styles.statItem}>
-              <span style={styles.statLabel}>Комментарии экспертов:</span>
+              <span style={styles.statLabel}>Experts comments:</span>
               <span style={styles.statValue}>
                 {result.expert_comments_included}
               </span>
@@ -70,7 +70,7 @@ export const QueryResult: React.FC<QueryResultProps> = ({ result }) => {
           )}
           {result.token_usage && (
             <div style={styles.statItem}>
-              <span style={styles.statLabel}>Токены:</span>
+              <span style={styles.statLabel}>Tokens:</span>
               <span style={styles.statValue}>
                 {result.token_usage.total_tokens}
               </span>
@@ -82,7 +82,7 @@ export const QueryResult: React.FC<QueryResultProps> = ({ result }) => {
       {/* Relevance Distribution */}
       {Object.keys(result.relevance_distribution).length > 0 && (
         <div style={styles.distribution}>
-          <h3 style={styles.sectionTitle}>Распределение по релевантности:</h3>
+          <h3 style={styles.sectionTitle}>Relevance distribution:</h3>
           <div style={styles.distributionList}>
             {Object.entries(result.relevance_distribution).map(([level, count]) => (
               <div key={level} style={styles.distributionItem}>

@@ -47,11 +47,11 @@ export const CommentGroupsList: React.FC<CommentGroupsListProps> = ({
   const getRelevanceBadge = (relevance: string): { color: string; text: string } => {
     switch (relevance) {
       case 'HIGH':
-        return { color: '#22c55e', text: 'Высокая' };
+        return { color: '#22c55e', text: 'High' };
       case 'MEDIUM':
-        return { color: '#f59e0b', text: 'Средняя' };
+        return { color: '#f59e0b', text: 'Medium' };
       default:
-        return { color: '#94a3b8', text: 'Низкая' };
+        return { color: '#94a3b8', text: 'Low' };
     }
   };
 
@@ -183,7 +183,7 @@ export const CommentGroupsList: React.FC<CommentGroupsListProps> = ({
     <div style={styles.container}>
       <div style={styles.header}>
         <span>💬</span>
-        <span>Релевантные группы комментариев ({commentGroups.length})</span>
+        <span>Relevant groups of comments ({commentGroups.length})</span>
       </div>
 
       {commentGroups.map((group) => {
@@ -208,7 +208,7 @@ export const CommentGroupsList: React.FC<CommentGroupsListProps> = ({
                   }}
                 >
                   <span>{isExpanded ? '▼' : '▶'}</span>
-                  <span>{isExpanded ? 'Скрыть пост' : 'Показать пост'}</span>
+                  <span>{isExpanded ? 'Hide post' : 'Show post'}</span>
                 </button>
                 <span>•</span>
                 <span style={{ fontSize: '13px', color: '#64748b' }}>{group.anchor_post.author_name}</span>

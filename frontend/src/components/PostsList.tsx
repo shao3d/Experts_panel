@@ -81,7 +81,7 @@ const PostsList: React.FC<PostsListProps> = ({ posts, selectedPostId }) => {
           color: '#6c757d',
           fontSize: '16px',
         }}>
-          Посты не загружены
+          No posts loaded
         </div>
       )}
     </div>

@@ -22,7 +22,7 @@ interface QueryFormProps {
 export const QueryForm: React.FC<QueryFormProps> = ({
   onSubmit,
   disabled = false,
-  placeholder = "Введите ваш вопрос о материалах канала..."
+  placeholder = "Ask experts about AI and related..."
 }) => {
   const [query, setQuery] = useState('');
 
@@ -31,7 +31,7 @@ export const QueryForm: React.FC<QueryFormProps> = ({
 
     const trimmed = query.trim();
     if (trimmed.length < 3) {
-      alert('Вопрос должен содержать минимум 3 символа');
+      alert('Question must be at least 3 characters');
       return;
     }
 
@@ -64,7 +64,7 @@ export const QueryForm: React.FC<QueryFormProps> = ({
             ...(disabled || query.trim().length < 3 ? styles.buttonDisabled : {})
           }}
         >
-          {disabled ? '⏳' : 'Send'}
+          {disabled ? '⏳' : 'Ask'}
         </button>
       </div>
     </form>
