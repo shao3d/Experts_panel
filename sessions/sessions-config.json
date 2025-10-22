@@ -1,26 +1,56 @@
 {
-  "developer_name": "Андрей",
-  "trigger_phrases": [
-    "make it so",
-    "run that",
-    "go ahead",
-    "yert",
-    "внедряй",
-    "приступай",
-    "поехали",
-    "пиши код"
-  ],
-  "blocked_tools": [
-    "Edit",
-    "Write",
-    "MultiEdit",
-    "NotebookEdit"
-  ],
-  "task_detection": {
-    "enabled": true
+  "trigger_phrases": {
+    "implementation_mode": [
+      "yert"
+    ],
+    "discussion_mode": [
+      "SILENCE"
+    ],
+    "task_creation": [
+      "mek:"
+    ],
+    "task_startup": [
+      "start^"
+    ],
+    "task_completion": [
+      "finito"
+    ],
+    "context_compaction": [
+      "squish"
+    ]
   },
-  "branch_enforcement": {
-    "enabled": true
+  "blocked_actions": {
+    "implementation_only_tools": [
+      "Write",
+      "Edit",
+      "MultiEdit",
+      "NotebookEdit"
+    ],
+    "bash_read_patterns": [],
+    "bash_write_patterns": [],
+    "extrasafe": true
   },
-  "api_mode": false
+  "git_preferences": {
+    "add_pattern": "ask",
+    "default_branch": "main",
+    "commit_style": "detailed",
+    "auto_merge": false,
+    "auto_push": true,
+    "has_submodules": false
+  },
+  "environment": {
+    "os": "macos",
+    "shell": "zsh",
+    "developer_name": "Andrii"
+  },
+  "features": {
+    "branch_enforcement": true,
+    "task_detection": true,
+    "auto_ultrathink": true,
+    "icon_style": "ascii",
+    "context_warnings": {
+      "warn_85": true,
+      "warn_90": true
+    }
+  }
 }

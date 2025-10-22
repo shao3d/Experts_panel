@@ -60,13 +60,7 @@ Before making any changes:
    - List what to ADD (new from this session)
 
 ### Transcript Reading
-Follow these steps to find and read the transcript files:
-
-1. **Determine the parent directory** of the sessions/ directory in which the task file is stored
-2. **List all files** in `[parent directory]/.claude/state/logging/`
-3. **Read every file** in that directory
-
-The transcript files contain the full conversation history that led to this point.
+The full transcript of the session (all user and assistant messages) is stored at `sessions/transcripts/logging/`. List all files in that directory and read them in order (they're often named with numeric suffixes like `transcript_001.txt`, `transcript_002.txt`).
 
 ### Work Log Format
 
@@ -203,7 +197,7 @@ After:
 - Refactoring completed
 
 **DON'T Include:**
-- Code snippets (those go in patterns)
+- Code snippets
 - Detailed technical explanations
 - Tool commands used
 - Minor debugging steps
@@ -229,11 +223,15 @@ Before saving, verify you have:
 - [ ] Ensured no redundancy across sections
 - [ ] Kept only current, relevant information
 
+### Important Output Note
+
+IMPORTANT: Neither the caller nor the user can see your execution unless you return it as your response. Your confirmation and summary of log consolidation must be returned as your final response, not saved as a separate file.
+
 ### CRITICAL RESTRICTIONS
 
 **YOU MUST NEVER:**
-- Edit or touch any files in .claude/state/ directory
-- Modify current_task.json
+- Edit or touch any files in sessions/state/ directory
+- Modify current-task.json
 - Change DAIC mode or run daic command
 - Edit any system state files
 - Try to control workflow or session state

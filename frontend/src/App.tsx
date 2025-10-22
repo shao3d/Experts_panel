@@ -59,10 +59,10 @@ export const App: React.FC = () => {
         setExpertResponses([legacyExpert]);
       } else {
         console.log('[DEBUG] No valid response:', response);
-        setError('Не удалось получить ответ от экспертов');
+        setError('Failed to get experts response');
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Произошла ошибка';
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
       setError(errorMessage);
       console.error('Query failed:', err);
     } finally {
@@ -120,7 +120,7 @@ export const App: React.FC = () => {
         <div style={styles.accordionContainer}>
           {error ? (
             <div style={styles.error}>
-              <h3>⚠️ Ошибка</h3>
+              <h3>⚠️ Error</h3>
               <p>{error}</p>
             </div>
           ) : expertResponses.length > 0 ? (
@@ -142,7 +142,7 @@ export const App: React.FC = () => {
               ))
           ) : (
             <div style={styles.placeholder}>
-              {isProcessing ? 'Обработка запроса...' : 'Здесь появятся ответы экспертов'}
+              {isProcessing ? 'Stages query...' : 'Experts answers will appear here'}
             </div>
           )}
         </div>

@@ -1,3 +1,6 @@
+
+@sessions/CLAUDE.sessions.md
+
 # Experts Panel Development Guidelines
 
 Auto-generated from feature plans. Last updated: 2025-10-15
