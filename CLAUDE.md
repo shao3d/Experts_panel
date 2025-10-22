@@ -1035,14 +1035,70 @@ For MVP, we use validation through prepared Q&A sets rather than unit tests:
 - Test with missing experts (empty response, not error)
 - Validate `expert_filter` parameter correctly filters experts
 
+## Railway Deployment
+
+### Production Deployment with Docker
+The application is configured for Railway cloud deployment with comprehensive Docker support:
+
+#### Key Deployment Files
+- `railway.toml` - Railway platform configuration with health checks
+- `backend/Dockerfile` - Production-ready Python container
+- `frontend/Dockerfile` - Multi-stage Node.js build with nginx
+- `docker-compose.yml` - Local development environment
+- `DEPLOYMENT.md` - Complete deployment guide with troubleshooting
+
+#### Railway Configuration
+- **Builder**: Dockerfile-based deployment
+- **Health Check**: `/health` endpoint with 30s intervals
+- **Restart Policy**: Automatic restart on failure (max 10 retries)
+- **Database**: PostgreSQL provided by Railway (SQLite for local)
+- **Environment**: All variables configured in Railway dashboard
+
+#### Required Environment Variables for Production
+```bash
+# Required
+OPENAI_API_KEY=sk-your-openai-api-key
+DATABASE_URL=postgresql://user:pass@host:port/dbname  # Railway provides
+
+# Production settings
+PRODUCTION_ORIGIN=https://your-app.railway.app
+API_HOST=0.0.0.0
+API_PORT=8000
+LOG_LEVEL=INFO
+
+# Railway specific
+PORT=8000
+RAILWAY_ENVIRONMENT=production
+```
+
+#### Local Development with Docker
+```bash
+# Build and run locally
+docker-compose up --build
+
+# Services available:
+# Frontend: http://localhost:3000
+# Backend: http://localhost:8000
+# Health check: http://localhost:8000/health
+```
+
+#### Deployment Process
+1. Push Docker configuration to GitHub
+2. Connect Railway repository to GitHub
+3. Configure environment variables in Railway dashboard
+4. Railway automatically builds and deploys
+5. Health checks ensure zero-downtime deployments
+
 ## Deployment Checklist
 
 Before deploying to Railway:
 1. Ensure `.env.example` is updated with all required variables
-2. Test Docker build locally
-3. Verify health check endpoint returns 200
+2. Test Docker build locally with `docker-compose up --build`
+3. Verify health check endpoint returns 200: `curl http://localhost:8000/health`
 4. Confirm OpenAI API key is set in Railway environment
 5. Test with small dataset first (100 posts)
+6. Check all Docker files are committed to git
+7. Verify CORS origins include production domain
 
 ## 🗑️ Deprecated Files (Legacy, can be removed)
 

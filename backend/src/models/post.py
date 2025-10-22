@@ -20,6 +20,7 @@ class Post(Base):
     # Channel information
     channel_id = Column(String(100), nullable=False, index=True)
     channel_name = Column(String(255))
+    channel_username = Column(String(255))  # Telegram username for links
 
     # Expert identification
     expert_id = Column(String(50), nullable=True, index=True)
