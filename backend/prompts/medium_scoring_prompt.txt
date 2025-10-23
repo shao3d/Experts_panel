@@ -1,32 +1,49 @@
-You are scoring MEDIUM-relevance posts to determine which ones should complement HIGH-relevance posts.
+You are an expert content analyst working with Qwen2.5-72B. Your task is to score MEDIUM-relevance posts to determine which ones should complement HIGH-relevance posts for answering the user's query.
 
-User query: {query}
+USER QUERY: {query}
 
-HIGH posts summary:
+HIGH-RELEVANCE POSTS (already selected):
 {high_posts}
 
-MEDIUM posts to evaluate:
+MEDIUM-RELEVANCE POSTS TO EVALUATE:
 {medium_posts}
 
-Your task is to score each MEDIUM post on a scale of 0.0-1.0 based on how well it complements the HIGH posts and provides additional value for answering the user's query.
+CRITICAL INSTRUCTIONS - READ CAREFULLY:
+1. You MUST copy the EXACT telegram_message_id from each input post
+2. Do NOT invent or create new IDs - use only the IDs provided in the input
+3. You MUST score EVERY post listed in the MEDIUM-RELEVANCE POSTS section
+4. Score based on complementarity to HIGH posts and query relevance
+5. Return your response in the specified text format ONLY
 
-Scoring criteria:
-- 0.8-1.0: Strong complement to HIGH posts, provides unique perspectives or valuable additional context
-- 0.6-0.7: Good complement, moderately relevant and useful
-- 0.4-0.5: Weak complement, some relevance but limited additional value
-- 0.0-0.3: Poor complement, redundant with HIGH posts or irrelevant to query
+HOW TO SCORE EACH POST:
 
-For each MEDIUM post, provide:
-- score: 0.0-1.0 (how well it complements HIGH posts)
-- reason: explanation of why this score was given
+For each post listed in the "MEDIUM-RELEVANCE POSTS TO EVALUATE" section:
 
-Return JSON format:
-{
-  "scored_posts": [
-    {
-      "telegram_message_id": <telegram_message_id>,
-      "score": <0.0-1.0>,
-      "reason": "<explanation>"
-    }
-  ]
-}
+1. Find the telegram_message_id in the post header
+2. Copy that exact ID into your response
+3. Assign a score from 0.0 to 1.0 based on how well it complements HIGH posts
+4. Write a brief reason explaining your score
+
+FORMAT FOR EACH POST:
+telegram_message_id: <copy_exact_id_from_input_post>
+Score: <0.0-1.0>
+Reason: <brief explanation>
+
+IMPORTANT: Always copy the exact telegram_message_id from the input post. Never invent or create new IDs!
+Return your response in this text format ONLY - no JSON!
+
+SCORING GUIDELINES:
+- 0.8-1.0: Excellent complement, unique insights valuable for answering query
+- 0.6-0.7: Good complement, relevant additional context
+- 0.4-0.5: Weak complement, limited additional value
+- 0.0-0.3: Poor complement, redundant or irrelevant
+
+WORKFLOW:
+1. Look at each post in MEDIUM-RELEVANCE POSTS section
+2. Copy exact "telegram_message_id": value from that post
+3. Assign a score (0.0-1.0) based on how well it complements HIGH posts
+4. Write a brief reason for score
+5. Repeat for ALL posts
+
+CRITICAL: You MUST process ALL posts from input and use their EXACT telegram_message_id values.
+Return your response in the specified text format ONLY - no JSON!

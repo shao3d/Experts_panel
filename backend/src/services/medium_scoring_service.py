@@ -19,13 +19,13 @@ logger = logging.getLogger(__name__)
 
 
 class MediumScoringService:
-    """Service for scoring MEDIUM relevance posts using GPT-4o-mini.
+    """Service for scoring MEDIUM relevance posts using Qwen2.5-72B.
 
     Implements hybrid approach: LLM scores all MEDIUM posts 0.0-1.0,
     code selects posts with score >= 0.7 (max 5 posts by highest score).
     """
 
-    DEFAULT_MODEL = "gpt-4o-mini"
+    DEFAULT_MODEL = "qwen-2.5-72b"
     # Configurable via environment variables
     SCORE_THRESHOLD = float(os.getenv("MEDIUM_SCORE_THRESHOLD", "0.7"))
     MAX_SELECTED_POSTS = int(os.getenv("MEDIUM_MAX_SELECTED_POSTS", "5"))
@@ -36,7 +36,7 @@ class MediumScoringService:
 
         Args:
             api_key: OpenAI API key
-            model: Model to use (default gpt-4o-mini)
+            model: Model to use (default qwen-2.5-72b)
         """
         # Mask API key for logging
         self.api_key_masked = f"{api_key[:8]}...{api_key[-4:]}" if len(api_key) > 12 else "***"
@@ -60,6 +60,85 @@ class MediumScoringService:
             return text
         # Remove invalid escape sequences, keep only valid JSON escapes
         return re.sub(r'\\(?![ntr"\\/])', '', text)
+
+    def _parse_text_response(self, raw_content: str, medium_posts: List[Dict[str, Any]], expert_id: str) -> Dict[str, Any]:
+        """Parse markdown text response from model and convert to JSON format.
+
+        Args:
+            raw_content: Raw text response from model
+            medium_posts: List of medium posts that were scored
+            expert_id: Expert identifier for logging
+
+        Returns:
+            Dictionary in expected format with scored_posts
+        """
+        logger.info(f"[{expert_id}] Parsing markdown text response from model")
+
+        # Split response into individual post sections by looking for "POST" markers
+        sections = raw_content.split("=== POST")
+
+        scored_posts = []
+
+        # Extract information from each section
+        for section in sections:
+            if not section.strip():  # Skip empty sections
+                lines = section.strip().split('\n')
+                post_data = {
+                    "telegram_message_id": None,
+                    "score": 0.0,
+                    "reason": ""
+                }
+
+                for line in lines:
+                    line = line.strip()
+                    if line.startswith("ID:"):
+                        # Extract ID from ID line
+                        id_part = line.replace("ID:", "").strip()
+                        # Clean up any formatting
+                        post_data["telegram_message_id"] = id_part.strip()
+
+                    elif line.startswith("Score:"):
+                        try:
+                            score_str = line.replace("Score:", "").strip()
+                            post_data["score"] = float(score_str)
+                        except ValueError:
+                            logger.warning(f"[{expert_id}] Could not parse score: {line}")
+                            post_data["score"] = 0.0
+
+                    elif line.startswith("Reason:"):
+                        post_data["reason"] = line.replace("Reason:", "").strip()
+
+                # Only add if we have a valid ID
+                if post_data["telegram_message_id"]:
+                    scored_posts.append(post_data)
+
+        return {"scored_posts": scored_posts}
+
+        # Match scored posts with input posts and validate IDs
+        valid_scored_posts = []
+        input_ids = {str(post["telegram_message_id"]) for post in medium_posts}
+
+        for scored_post in scored_posts:
+            post_id = str(scored_post["telegram_message_id"])
+            if post_id in input_ids:
+                valid_scored_posts.append(scored_post)
+            else:
+                logger.warning(f"[{expert_id}] Scored post ID {post_id} not found in input posts")
+
+        # Ensure all input posts have scores (add default scores if missing)
+        for post in medium_posts:
+            post_id = str(post["telegram_message_id"])
+            if not any(sp.get("telegram_message_id") == post_id for sp in valid_scored_posts):
+                logger.warning(f"[{expert_id}] No score found for input post {post_id}, using default 0.0")
+                valid_scored_posts.append({
+                    "telegram_message_id": post_id,
+                    "score": 0.0,
+                    "reason": "Not scored by model"
+                })
+
+        logger.info(f"[{expert_id}] Parsed {len(valid_scored_posts)} scored posts from text response")
+
+        return {"scored_posts": valid_scored_posts}
 
     def _load_prompt_template(self) -> Template:
         """Load medium scoring prompt template."""
@@ -102,7 +181,7 @@ class MediumScoringService:
         expert_id: str,
         progress_callback: Optional[Callable] = None
     ) -> Dict[str, Any]:
-        """Score MEDIUM posts using GPT-4o-mini.
+        """Score MEDIUM posts using Qwen2.5-72B.
 
         Args:
             medium_posts: List of MEDIUM relevance posts to score
@@ -124,24 +203,29 @@ class MediumScoringService:
                 "expert_id": expert_id
             })
 
-        # Format medium posts for prompt with sanitization
-        medium_posts_formatted = []
-        for post in medium_posts:
-            medium_posts_formatted.append({
-                "telegram_message_id": post["telegram_message_id"],
-                "content": self._sanitize_text(post.get("content", "")),
-                "reason": self._sanitize_text(post.get("reason", "")),
-                "author": self._sanitize_text(post.get("author", "")),
-                "created_at": post.get("created_at", "")
-            })
+        # Format medium posts for prompt with markdown structure
+        medium_posts_text = ""
+        for i, post in enumerate(medium_posts):
+            medium_posts_text += f"""
+=== POST {i+1} ===
+ID: {post["telegram_message_id"]}
+Content: {post.get('content', '')}
+Author: {post.get('author', '')}
+Created: {post.get('created_at', '')}
+"""
 
-        medium_posts_json = json.dumps(medium_posts_formatted, ensure_ascii=False, indent=2)
+        # Note: Qwen will receive this as plain text, not JSON
+
+        # Log the actual data being sent to Qwen2.5-72B for debugging
+        logger.info(f"[{expert_id}] Sending {len(medium_posts_formatted)} posts to Qwen2.5-72B:")
+        for i, post in enumerate(medium_posts_formatted[:3]):  # Log first 3 posts as example
+            logger.info(f"[{expert_id}] Post {i+1}: ID={post['telegram_message_id']}, content_len={len(post.get('content', ''))}")
 
         # Create base prompt
         base_prompt = self._prompt_template.substitute(
             query=query,
             high_posts=high_posts_context,
-            medium_posts=medium_posts_json
+            medium_posts=medium_posts_text
         )
 
         # Apply language instruction based on query language
@@ -160,29 +244,40 @@ class MediumScoringService:
                 {"role": "system", "content": enhanced_system},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.3,
-            response_format={"type": "json_object"}
+            temperature=0.3
         )
 
         # Parse response with enhanced validation
         raw_content = response.choices[0].message.content
 
+        # Log Qwen2.5-72B response for debugging
+        logger.info(f"[{expert_id}] Qwen2.5-72B response: {raw_content}")
+
         # Validate non-empty response
         if not raw_content or not raw_content.strip():
-            logger.error(f"[{expert_id}] Empty response from LLM for medium scoring")
+            logger.error(f"[{expert_id}] Empty response from Qwen2.5-72B for medium scoring")
             raise ValueError("Empty LLM response for medium scoring")
 
-        result = json.loads(raw_content)
+        # Parse text response and convert to expected JSON format
+        result = self._parse_text_response(raw_content, medium_posts, expert_id)
 
         # Validate response structure
         if not isinstance(result, dict):
+            logger.error(f"[{expert_id}] Qwen2.5-72B returned non-dict response: {type(result)}")
             raise ValueError(f"Expected dict response, got {type(result)}")
 
         if "scored_posts" not in result:
+            logger.error(f"[{expert_id}] Qwen2.5-72B response missing 'scored_posts' field: {list(result.keys())}")
             raise ValueError("Missing 'scored_posts' field in LLM response")
 
         if not isinstance(result["scored_posts"], list):
+            logger.error(f"[{expert_id}] Qwen2.5-72B 'scored_posts' not list: {type(result['scored_posts'])}")
             raise ValueError(f"Expected 'scored_posts' to be list, got {type(result['scored_posts'])}")
+
+        # Log scored posts count for validation
+        scored_posts_count = len(result["scored_posts"])
+        expected_count = len(medium_posts)
+        logger.info(f"[{expert_id}] Qwen2.5-72B scored {scored_posts_count}/{expected_count} posts")
 
         if progress_callback:
             await progress_callback({
@@ -240,13 +335,13 @@ class MediumScoringService:
                 progress_callback=progress_callback
             )
         except Exception as e:
-            logger.error(f"[{expert_id}] Medium scoring failed (API key: {self.api_key_masked}): {e}")
+            logger.error(f"[{expert_id}] Qwen2.5-72B medium scoring failed (API key: {self.api_key_masked}): {e}")
             # Fallback: return empty list (graceful degradation)
             if progress_callback:
                 await progress_callback({
                     "phase": "medium_scoring",
                     "status": "error",
-                    "message": f"Scoring failed, using fallback: {str(e)}"
+                    "message": f"Qwen2.5-72B scoring failed, using fallback: {str(e)}"
                 })
             return []
 
