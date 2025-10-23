@@ -3,6 +3,7 @@
 # =========================
 .clauderc
 claude_code_zai_env.sh
+.claude/
 .specify/
 *.pem
 *.key
