@@ -146,24 +146,78 @@ The system uses a **six-phase pipeline**:
 
 *For detailed pipeline architecture see `/docs/pipeline-architecture.md`*
 
-## 🚨 Critical Backend Startup
+## 🚀 SERVER STARTUP GUIDE
 
-### ONLY Working Method:
-1. Ensure `backend/src/api/main.py` contains:
-   ```python
-   from dotenv import load_dotenv
-   load_dotenv()
-   ```
+### 📋 Prerequisites Check
+Before starting servers, ensure:
+- ✅ `.env` file exists in project root with `OPENAI_API_KEY`
+- ✅ Python 3.11+ available (`python3 --version`)
+- ✅ Node.js 18+ available (`node --version`)
+- ✅ SQLite database path ready
 
-2. Run ONLY this way:
-   ```bash
-   cd backend && uv run uvicorn src.api.main:app --reload --port 8000
-   ```
+### 🐍 Backend Server (Port 8000)
+**ONLY Working Methods (choose one):**
 
-### DOES NOT WORK:
-- ❌ source .env && uv run...
-- ❌ export $(cat .env) && uv run...
-- ❌ uv run --env-file .env...
+**Method 1: Python3 (Recommended)**
+```bash
+cd backend && python3 -m uvicorn src.api.main:app --reload --port 8000
+```
+
+**Method 2: UV (if installed)**
+```bash
+cd backend && uv run uvicorn src.api.main:app --reload --port 8000
+```
+
+**✅ Success Indicators:**
+- Server starts on http://127.0.0.1:8000
+- Database tables verified/created message
+- Health endpoint: http://localhost:8000/health
+- Response: `{"status":"healthy","database":"healthy","openai_configured":true}`
+
+**❌ DOES NOT WORK:**
+- `source .env && python3...` - Environment loading issues
+- `export $(cat .env) && python3...` - Variable expansion problems
+- `python3 src/api/main.py` - Direct import issues
+
+### ⚛️ Frontend Server (Port 3001)
+**Start Method:**
+```bash
+cd frontend && npm run dev
+```
+
+**✅ Success Indicators:**
+- Vite server starts (usually port 3001 if 3000 occupied)
+- Page loads: http://localhost:3001/
+- Hot reload enabled for development
+- Title: "Experts Panel - Telegram Channel Analyzer"
+
+### 🔧 Complete Development Setup
+**Start Both Servers:**
+```bash
+# Terminal 1: Backend
+cd backend && python3 -m uvicorn src.api.main:app --reload --port 8000
+
+# Terminal 2: Frontend
+cd frontend && npm run dev
+```
+
+**Access Points:**
+- 🌐 Frontend: http://localhost:3001/
+- 🔧 Backend API: http://localhost:8000/
+- ❤️ Health Check: http://localhost:8000/health
+- 📖 API Docs: http://localhost:8000/docs
+
+### 🚨 Troubleshooting
+**Backend Issues:**
+- Check `.env` file exists in project root
+- Verify `OPENAI_API_KEY` is set
+- Ensure port 8000 is not occupied
+- Use `python3` not `python` command
+
+**Frontend Issues:**
+- Run `npm install` if dependencies missing
+- Check if port 3000/3001 is available
+- Verify backend is running first (API connection)
 
 ### API Testing:
 ```bash
