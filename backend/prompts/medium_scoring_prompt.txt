@@ -1,0 +1,32 @@
+You are scoring MEDIUM-relevance posts to determine which ones should complement HIGH-relevance posts.
+
+User query: {query}
+
+HIGH posts summary:
+{high_posts}
+
+MEDIUM posts to evaluate:
+{medium_posts}
+
+Your task is to score each MEDIUM post on a scale of 0.0-1.0 based on how well it complements the HIGH posts and provides additional value for answering the user's query.
+
+Scoring criteria:
+- 0.8-1.0: Strong complement to HIGH posts, provides unique perspectives or valuable additional context
+- 0.6-0.7: Good complement, moderately relevant and useful
+- 0.4-0.5: Weak complement, some relevance but limited additional value
+- 0.0-0.3: Poor complement, redundant with HIGH posts or irrelevant to query
+
+For each MEDIUM post, provide:
+- score: 0.0-1.0 (how well it complements HIGH posts)
+- reason: explanation of why this score was given
+
+Return JSON format:
+{
+  "scored_posts": [
+    {
+      "telegram_message_id": <telegram_message_id>,
+      "score": <0.0-1.0>,
+      "reason": "<explanation>"
+    }
+  ]
+}

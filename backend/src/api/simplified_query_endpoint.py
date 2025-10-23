@@ -35,6 +35,7 @@ from ..services.simple_resolve_service import SimpleResolveService
 from ..services.reduce_service import ReduceService
 from ..services.comment_group_map_service import CommentGroupMapService
 from ..services.comment_synthesis_service import CommentSynthesisService
+from ..services.medium_scoring_service import MediumScoringService
 
 logger = logging.getLogger(__name__)
 
@@ -142,28 +143,95 @@ async def process_expert_pipeline(
 
     relevant_posts = map_results.get("relevant_posts", [])
 
-    # 3. Filter HIGH and MEDIUM relevance posts for comprehensive results
-    filtered_posts = [
-        p for p in relevant_posts
-        if p.get("relevance") in ["HIGH", "MEDIUM"]
+    # 3. NEW: Split HIGH and MEDIUM posts after Map phase
+    high_posts = [p for p in relevant_posts if p.get("relevance") == "HIGH"]
+    medium_posts = [p for p in relevant_posts if p.get("relevance") == "MEDIUM"]
+
+    # 4. NEW: Score MEDIUM posts and filter (two-stage: score >= 0.7 → top-5)
+    selected_medium_posts = []
+    if medium_posts:
+        from ..services.medium_scoring_service import MediumScoringService
+
+        scoring_service = MediumScoringService(api_key)
+
+        async def scoring_progress(data: dict):
+            if progress_callback:
+                data['expert_id'] = expert_id
+                await progress_callback(data)
+
+        # Create context from HIGH posts
+        high_context = json.dumps([
+            {
+                "telegram_message_id": p["telegram_message_id"],
+                "content": p.get("content", ""),
+                "reason": p.get("reason", "")
+            }
+            for p in high_posts
+        ], ensure_ascii=False, indent=2)
+
+        # Score MEDIUM posts
+        try:
+            scored_medium_posts = await scoring_service.score_medium_posts(
+                medium_posts=medium_posts,
+                high_posts_context=high_context,
+                query=request.query,
+                expert_id=expert_id,
+                progress_callback=scoring_progress
+            )
+
+            # Filter by score >= 0.7, then top-5 by highest score
+            above_threshold = [p for p in scored_medium_posts if p.get("score", 0) >= 0.7]
+            selected_medium_posts = sorted(
+                above_threshold,
+                key=lambda x: x.get("score", 0),
+                reverse=True
+            )[:5]  # Max 5 posts
+
+            logger.info(f"[{expert_id}] Medium reranking: {len(medium_posts)} → {len(above_threshold)} posts (score >= 0.7) → {len(selected_medium_posts)} selected (max 5)")
+        except Exception as e:
+            logger.error(f"[{expert_id}] Medium scoring failed: {e}")
+            # Fallback: use empty list (graceful degradation)
+            selected_medium_posts = []
+
+    # 5. NEW: Differential Resolve processing
+    enriched_posts = []
+
+    # Process HIGH posts through Resolve (with linked posts)
+    if high_posts:
+        resolve_service = SimpleResolveService()
+
+        async def resolve_progress(data: dict):
+            if progress_callback:
+                data['expert_id'] = expert_id
+                await progress_callback(data)
+
+        high_resolve_results = await resolve_service.process(
+            relevant_posts=high_posts,
+            query=request.query,
+            expert_id=expert_id,  # CRITICAL: Pass expert_id
+            progress_callback=resolve_progress
+        )
+
+        # HIGH posts get linked context posts
+        high_enriched = high_resolve_results.get("enriched_posts", [])
+        enriched_posts.extend(high_enriched)
+
+    # Selected MEDIUM posts bypass Resolve (direct inclusion)
+    medium_direct = [
+        {
+            "telegram_message_id": p["telegram_message_id"],
+            "relevance": "MEDIUM",
+            "reason": p.get("reason", ""),
+            "content": p.get("content", ""),
+            "author": p.get("author", ""),
+            "created_at": p.get("created_at", ""),
+            "is_original": True,  # Critical: not CONTEXT posts
+            "score": p.get("score", 0.0),
+            "score_reason": p.get("score_reason", "")
+        }
+        for p in selected_medium_posts
     ]
-
-    # 4. Resolve phase (with expert_id filtering)
-    resolve_service = SimpleResolveService()
-
-    async def resolve_progress(data: dict):
-        if progress_callback:
-            data['expert_id'] = expert_id
-            await progress_callback(data)
-
-    resolve_results = await resolve_service.process(
-        relevant_posts=filtered_posts,
-        query=request.query,
-        expert_id=expert_id,  # CRITICAL: Pass expert_id
-        progress_callback=resolve_progress
-    )
-
-    enriched_posts = resolve_results.get("enriched_posts", [])
+    enriched_posts.extend(medium_direct)
 
     # 5. Reduce phase
     reduce_service = ReduceService(api_key=api_key)
