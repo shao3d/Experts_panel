@@ -481,7 +481,7 @@ def get_expert_name(expert_id: str) -> str:
     """Get display name for expert."""
     names = {
         'refat': 'Refat (Tech & AI)',
-        'ai_architect': 'AI Архитектор',
+        'ai_architect': 'AI Architect',
         'neuraldeep': 'Neuraldeep'
     }
     return names.get(expert_id, expert_id)
