@@ -2,10 +2,10 @@
 ## 🚀 Backend Service CLAUDE.md
 
 ## Purpose
-FastAPI backend service providing multi-expert query processing with Map-Resolve-Reduce pipeline, real-time SSE streaming, and Railway deployment support.
+FastAPI backend service providing multi-expert query processing with Map-Resolve-Reduce pipeline, real-time SSE streaming, and VPS/cloud deployment support.
 
 ## Narrative Summary
-The backend implements a sophisticated query processing system that retrieves relevant content from expert Telegram channels and synthesizes comprehensive answers. It features a six-phase pipeline with multi-model LLM strategy, multi-expert support, Telegram synchronization, and comprehensive drift analysis for comment discussions. The service is containerized with Docker and configured for Railway cloud deployment with health checks and automatic restarts.
+The backend implements a sophisticated query processing system that retrieves relevant content from expert Telegram channels and synthesizes comprehensive answers. It features a six-phase pipeline with multi-model LLM strategy, multi-expert support, Telegram synchronization, and comprehensive drift analysis for comment discussions. The service is containerized with Docker and ready for VPS/cloud deployment with health checks and automatic restarts.
 
 ## Key Files
 - `src/api/main.py` - FastAPI application with CORS, SSE, and environment configuration
@@ -16,8 +16,7 @@ The backend implements a sophisticated query processing system that retrieves re
 - `src/services/comment_group_map_service.py` - Pipeline B: Comment drift analysis
 - `src/services/comment_synthesis_service.py` - Pipeline C: Comment insights extraction
 - `src/data/channel_syncer.py` - Incremental Telegram synchronization
-- `Dockerfile` - Production container configuration for Railway deployment
-- `railway.toml` - Railway platform deployment configuration
+- `Dockerfile` - Production container configuration for deployment
 
 ## API Endpoints
 - `GET /health` - Health check with service status validation
@@ -26,28 +25,28 @@ The backend implements a sophisticated query processing system that retrieves re
 - `POST /api/v1/posts/by-ids` - Batch retrieve multiple posts by IDs
 - `POST /api/v1/import` - Import Telegram JSON data with expert assignment
 
-## Railway Deployment Configuration
+## Production Deployment Configuration
 ### Build Configuration
 - **Builder**: Dockerfile-based deployment
 - **Dockerfile**: `backend/Dockerfile` with Python 3.11 slim image
-- **Health Check**: `/health` endpoint with 30s intervals and 300s timeout
-- **Restart Policy**: ON_FAILURE with max 10 retries
+- **Health Check**: `/health` endpoint with 30s intervals
+- **Restart Policy**: Always restart on failure
 
 ### Required Environment Variables
 ```bash
 # Required
 OPENAI_API_KEY=sk-your-openai-api-key
-DATABASE_URL=postgresql://user:pass@host:port/dbname  # Railway provides PostgreSQL
+DATABASE_URL=sqlite:///data/experts.db  # SQLite for local/VPS deployment
 
 # Production settings
-PRODUCTION_ORIGIN=https://your-app.railway.app
+PRODUCTION_ORIGIN=https://your-domain.com
 API_HOST=0.0.0.0
 API_PORT=8000
 LOG_LEVEL=INFO
 
-# Railway specific
+# Production environment
 PORT=8000
-RAILWAY_ENVIRONMENT=production
+ENVIRONMENT=production
 
 # Optional: Telegram API for sync
 TELEGRAM_API_ID=12345678
@@ -67,7 +66,7 @@ TELEGRAM_CHANNEL=channel-name
 
 ### Consumes
 - **OpenAI/OpenRouter API** - Multi-model LLM processing (Qwen, Gemini, GPT-4o-mini)
-- **PostgreSQL Database** - Production data storage (Railway provided)
+- **SQLite Database** - Local and VPS data storage
 - **Telegram API** - Channel synchronization and comment fetching
 
 ### Provides
@@ -140,13 +139,13 @@ curl -X POST http://localhost:8000/api/v1/query \
 ## Configuration Management
 
 ### Environment Variables Priority
-1. Railway platform variables (production)
+1. Production environment variables (VPS/cloud)
 2. .env file (local development)
 3. Default values in code
 
 ### Database Configuration
 - **Local**: SQLite (`data/experts.db`)
-- **Production**: PostgreSQL (Railway provided)
+- **Production**: SQLite (VPS/cloud deployment)
 - **Async Support**: SQLAlchemy 2.0 with aiosqlite driver
 
 ### Model Configuration
@@ -157,7 +156,7 @@ curl -X POST http://localhost:8000/api/v1/query \
 ## Production Deployment Notes
 
 ### Database Migration
-- SQLite local development → PostgreSQL production
+- SQLite local development → SQLite production (copy or backup/restore)
 - Migration scripts in `migrations/` directory
 - Automatic database initialization on first run
 
@@ -171,7 +170,7 @@ curl -X POST http://localhost:8000/api/v1/query \
 - Health checks for zero-downtime deployments
 - Automatic restarts on failure
 - Comprehensive logging for debugging
-- Resource monitoring via Railway dashboard
+- Resource monitoring via hosting provider dashboard
 
 ## Language Enforcement System
 
@@ -208,7 +207,7 @@ enhanced_prompt = prepare_prompt_with_language_instruction(prompt_template, quer
 ```
 
 ## Related Documentation
-- `DEPLOYMENT.md` - Complete Railway deployment guide
+- `DEPLOYMENT.md` - Complete deployment guide
 - `frontend/CLAUDE.md` - Frontend architecture and API integration
 - `prompts/README.md` - LLM prompt documentation
 - `migrations/` - Database migration scripts
@@ -219,12 +218,12 @@ enhanced_prompt = prepare_prompt_with_language_instruction(prompt_template, quer
 ### Development Environment
 - **Environment variables not loading**: Ensure `load_dotenv()` is called in `main.py`
 - **Port conflicts**: Use `--port 8000` for backend, frontend uses 3000
-- **Database issues**: SQLite for local, PostgreSQL for Railway
+- **Database issues**: SQLite for both local and production
 
-### Railway Deployment
+### Production Deployment
 - **Build failures**: Check Dockerfile paths and requirements.txt
 - **Health check failures**: Verify `/health` endpoint responds correctly
-- **Environment variables**: Set all required variables in Railway dashboard
+- **Environment variables**: Set all required variables in hosting environment
 
 ### API Issues
 - **CORS errors**: Check CORS origins configuration

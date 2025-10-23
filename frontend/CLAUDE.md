@@ -398,11 +398,11 @@ npm run preview
 // Development
 const apiClient = new APIClient('http://localhost:8000');
 
-// Production (Railway)
-const apiClient = new APIClient('https://your-app.railway.app');
+// Production (VPS/Cloud)
+const apiClient = new APIClient('https://your-domain.com');
 ```
 
-### Railway Deployment Configuration
+### Production Deployment Configuration
 The frontend is configured for production deployment with nginx:
 
 #### Docker Configuration

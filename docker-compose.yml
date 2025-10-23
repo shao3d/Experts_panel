@@ -21,9 +21,9 @@ services:
       - API_PORT=8000
       - LOG_LEVEL=INFO
 
-      # Railway specific (will be overridden in production)
+      # Production settings
       - PORT=8000
-      - RAILWAY_ENVIRONMENT=production
+      - ENVIRONMENT=production
 
     volumes:
       # Mount database directory for persistence

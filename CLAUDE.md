@@ -11,7 +11,7 @@ Auto-generated from feature plans. Last updated: 2025-10-23
   - Gemini 2.0 Flash for Reduce and Comment Synthesis
   - GPT-4o-mini for Comment Groups matching
 - Docker for deployment
-- Railway for hosting
+- VPS/Cloud hosting ready
 
 ## Project Structure
 ```
