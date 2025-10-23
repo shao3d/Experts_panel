@@ -1,14 +1,45 @@
-# Environment variables
+# =========================
+# SECURITY & PERSONAL DATA
+# =========================
+.clauderc
+claude_code_zai_env.sh
+.specify/
+*.pem
+*.key
+config/secrets/
+
+# =========================
+# ENVIRONMENT VARIABLES
+# =========================
 .env
 .env.local
 .env.*.local
+.env.production
+.env.development
+backend/.env
 
-# Python
+# =========================
+# DATABASES & DATA
+# =========================
+*.db
+*.sqlite
+*.sqlite3
+backend/data/
+data/
+archive/
+*/backups/
+*.backup
+*.bak
+
+# =========================
+# PYTHON ARTIFACTS
+# =========================
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
+backend/.venv/
 env/
 venv/
 ENV/
@@ -33,54 +64,71 @@ MANIFEST
 *.cover
 .hypothesis/
 
-# Node
+# =========================
+# NODE.JS ARTIFACTS
+# =========================
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-
-# Frontend build
-frontend/dist
+frontend/dist/
 frontend/dist-ssr
 frontend/*.local
 
-# IDE
+# =========================
+# SESSIONS & RUNTIME
+# =========================
+sessions/sessions-state.json
+sessions/transcripts/
+sessions/.archived/
+sessions/*.log
+mode-revert-debug.log
+*.session
+*.session*
+
+# =========================
+# AI TOOLS & DEBUG
+# =========================
+.aider*
+.claude/logs/
+*.log
+logs/
+
+# =========================
+# IDE & SYSTEM
+# =========================
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 .DS_Store
+**/.DS_Store
+*/.DS_Store
+Thumbs.db
 
-# Database
-*.db
-*.sqlite
-*.sqlite3
-data/experts.db
-
-# Logs
-logs/
-*.log
-
-# Temporary files
+# =========================
+# TEMPORARY FILES
+# =========================
 tmp/
 temp/
+*.tmp
+*.cache
+cache/
 
-# OS
-Thumbs.db
-.DS_Store
-.aider*
+# =========================
+# CONFIG FILES (LOCAL ONLY)
+# =========================
+*.ruff.toml
+*/.ruff.toml
+.vscode/settings.json
+.idea/
 
-<<<<<<< HEAD
-# cc-sessions runtime files
-sessions/sessions-state.json
-sessions/package.json
-sessions/transcripts/
-sessions/.archived/
-=======
-# Telegram session files
-*.session
-*.session*
->>>>>>> 2eb6e71bd4ead0454f90f19c9596344eff9c5090
+# =========================
+# TEST ARTIFACTS
+# =========================
+test_results/
+backend/test_results/
+*.test.db

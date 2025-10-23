@@ -200,6 +200,56 @@ Good implementation with minor issues. Address warnings before merging.
 - Explain the actual impact
 - Provide concrete fixes when possible
 
+### Experts Panel Specific Patterns
+
+**Pipeline Architecture Review:**
+- Verify all six phases are implemented in correct order (Map → Filter → Resolve → Reduce → Comments → Synthesis)
+- Check expert_id filtering throughout all services (critical for multi-expert isolation)
+- Ensure retry mechanisms in Map phase with proper exponential backoff
+- Validate SSE event structure and progress tracking with expert_id
+
+**Multi-Expert Data Isolation:**
+- Check that all database queries filter by expert_id to prevent cross-contamination
+- Verify no cross-expert data contamination in any service
+- Ensure channel_id is used for Telegram operations (prevents wrong expert data)
+- Validate drift analysis respects expert boundaries
+
+**LLM Integration Patterns:**
+- Check OpenRouter model name conversion (qwen/qwen-2.5-72b-instruct → openrouter format)
+- Verify language enforcement system usage for multilingual queries
+- Ensure prompt templates are loaded from external files (not hardcoded)
+- Validate JSON response parsing and error handling for LLM responses
+- Check for prompt injection vulnerabilities in user input handling
+
+**MVP Simplicity Guidelines:**
+- Prefer inline styles over CSS frameworks (as seen in current codebase)
+- Use direct function calls over complex abstractions and inheritance
+- Validate singleton patterns for API clients (APIClient class)
+- Check for unnecessary complexity in state management
+- Ensure consistency with existing MVP patterns
+
+**Railway Deployment Readiness:**
+- Verify Dockerfile uses non-root user for security
+- Check health endpoint accessibility (/health path)
+- Validate environment variable configuration (.env usage, no hardcoded secrets)
+- Ensure PostgreSQL compatibility for production (SQLite for local only)
+
+### Technology-Specific Focus
+
+**Python/FastAPI Backend:**
+- Type hints everywhere: async def process(posts: List[Post], query: str) -> Dict[str, Any]
+- Consistent error handling: logger.error(f"[{expert_id}] Operation failed: {e}")
+- Enum usage for constants: class RelevanceLevel(str, Enum): HIGH = "HIGH"
+- SQLAlchemy parameterized queries (never string formatting for SQL)
+- Pydantic model validation for all API inputs
+
+**TypeScript/React Frontend:**
+- Interface over type: interface QueryRequest { query: string; }
+- Explicit return types: const handleSubmit = async (query: string): Promise<void>
+- Inline styles for MVP: const styles = { container: { padding: '20px' } }
+- Function components only (no class components)
+- Proper prop typing with TypeScript strict mode
+
 ### Remember
 Your job is to catch bugs and security issues, not to redesign the architecture. Respect the project's existing patterns and decisions. Focus on whether the code works correctly and safely within the context of the existing system.
 
