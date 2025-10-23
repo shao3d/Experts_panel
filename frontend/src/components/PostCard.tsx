@@ -101,7 +101,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments,
 
   return (
     <div
-      id={`post-${post.telegram_message_id}`}
+      id={`post-${post.channel_name || post.expert_id || 'unknown'}-${post.telegram_message_id}`}
       style={{
         marginBottom: '16px',
         padding: '16px',

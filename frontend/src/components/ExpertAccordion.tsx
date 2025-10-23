@@ -148,6 +148,7 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
                   <PostsList
                     posts={posts}
                     selectedPostId={selectedPostId}
+                    expertId={expert.expert_id}
                   />
                   {expert.relevant_comment_groups && expert.relevant_comment_groups.length > 0 && (
                     <CommentGroupsList

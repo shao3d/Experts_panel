@@ -10,9 +10,10 @@ interface PostWithRelevance extends PostDetailResponse {
 interface PostsListProps {
   posts: PostWithRelevance[];
   selectedPostId?: number | null;
+  expertId?: string;
 }
 
-const PostsList: React.FC<PostsListProps> = ({ posts, selectedPostId }) => {
+const PostsList: React.FC<PostsListProps> = ({ posts, selectedPostId, expertId }) => {
   // Track which posts have expanded comments
   const [expandedPosts, setExpandedPosts] = useState<Set<number>>(new Set());
   const containerRef = useRef<HTMLDivElement>(null);
@@ -20,7 +21,14 @@ const PostsList: React.FC<PostsListProps> = ({ posts, selectedPostId }) => {
   // Scroll to selected post when it changes
   useEffect(() => {
     if (selectedPostId && containerRef.current) {
-      const element = document.getElementById(`post-${selectedPostId}`);
+      // Try to find the post with expert prefix first
+      let element = document.getElementById(`post-${expertId || 'unknown'}-${selectedPostId}`);
+
+      // Fallback to old format for compatibility
+      if (!element) {
+        element = document.getElementById(`post-${selectedPostId}`);
+      }
+
       if (element) {
         // Smooth scroll to the element
         element.scrollIntoView({ behavior: 'smooth', block: 'center' });
