@@ -1,18 +1,19 @@
 # Pipeline Architecture Guide
 
-Detailed guide for the **seven-phase** Map-Resolve-Reduce pipeline with Medium Posts Hybrid Reranking and comment analysis capabilities.
+Detailed guide for the **eight-phase** Map-Resolve-Reduce pipeline with Medium Posts Hybrid Reranking, Language Validation, and comment analysis capabilities.
 
 ## 🏗️ Overview
 
-The Experts Panel uses a sophisticated **seven-phase pipeline** to process user queries and generate comprehensive answers from expert content:
+The Experts Panel uses a sophisticated **eight-phase pipeline** to process user queries and generate comprehensive answers from expert content:
 
 1. **Map Phase** - Find relevant posts via semantic search
 2. **Medium Scoring Phase** - Score and select Medium posts with hybrid reranking
 3. **Differential Resolve Phase** - Expand context for HIGH posts only
 4. **Reduce Phase** - Synthesize final answer with all selected posts
-5. **Comment Groups** - Find relevant comment discussions
-6. **Comment Synthesis** - Extract complementary insights
-7. **Response Building** - Assemble final multi-expert response
+5. **Language Validation Phase** - Validate response language consistency and translate if needed
+6. **Comment Groups** - Find relevant comment discussions
+7. **Comment Synthesis** - Extract complementary insights
+8. **Response Building** - Assemble final multi-expert response
 
 ## 🚀 Map Phase
 
@@ -218,6 +219,66 @@ Synthesize final answer using HIGH posts with expanded context and selected Medi
 }
 ```
 
+## 🌐 Language Validation Phase
+
+### Purpose
+Validate language consistency between user query and expert response, translating Russian responses to English when language mismatch is detected.
+
+### Implementation
+- **File**: `backend/src/services/language_validation_service.py`
+- **Model**: Qwen 2.5-72B Instruct (same as translation service)
+- **Translation**: Uses existing TranslationService for consistency
+- **Error Handling**: Graceful degradation with fallback to original text
+
+### Key Features
+
+#### Language Detection
+- **Query Language Detection**: Uses existing `detect_query_language()` function
+- **Response Language Analysis**: Detects language of synthesized expert response
+- **Mismatch Detection**: Identifies Russian responses to English queries
+
+#### Translation Process
+- **Trigger Condition**: English query + Russian response
+- **Translation Service**: Leverages existing TranslationService infrastructure
+- **Format Preservation**: Maintains all post links and formatting during translation
+- **Quality Assurance**: Uses proven translation pipeline with retry mechanisms
+
+#### Multi-Expert Support
+- **Expert Isolation**: Each expert's response validated independently
+- **Parallel Processing**: Runs concurrently with other pipeline phases
+- **SSE Integration**: Real-time progress updates with expert_id context
+
+### Process Flow
+1. **Language Detection**: Analyze query and response languages
+2. **Mismatch Check**: Determine if translation is needed (Russian → English)
+3. **Translation**: Apply translation service when mismatch detected
+4. **Validation**: Ensure translation preserves meaning and formatting
+5. **Progress Reporting**: SSE events for validation status updates
+
+### Output Format
+```json
+{
+  "answer": "Translated or original response",
+  "original_answer": "Original response before validation",
+  "language": "English|Russian|Unknown",
+  "validation_applied": true,
+  "translation_applied": true,
+  "original_detected_language": "Russian"
+}
+```
+
+### Integration Points
+- **Position**: Phase 5, after Reduce phase completion
+- **Input**: Expert response from Reduce phase
+- **Output**: Validated (and possibly translated) response to Comment Groups phase
+- **Parallel Execution**: Runs independently while Comment Groups phase starts
+
+### Configuration
+- **Model**: `qwen-2.5-72b` (configurable via environment)
+- **Retry Strategy**: 3 attempts with exponential backoff
+- **Timeout**: Integrated with existing request timeout settings
+- **Error Handling**: Returns original text if translation fails
+
 ## 💬 Comment Groups Phase
 
 ### Purpose
@@ -333,14 +394,14 @@ Assemble the final multi-expert response combining main answer, comment insights
 ## 📊 Model Selection Strategy
 
 ### Model Rationale
-- **Qwen 2.5-72B**: Superior document ranking, relevance scoring, and Medium post evaluation
+- **Qwen 2.5-72B**: Superior document ranking, relevance scoring, Medium post evaluation, and language validation
 - **Gemini 2.0 Flash**: Better context synthesis and instruction following
 - **GPT-4o-mini**: Fast and cost-effective for matching tasks
 
 ### Performance Characteristics
 | Model | Use Case | Cost | Strengths |
 |-------|----------|------|-----------|
-| Qwen 2.5-72B | Map Phase, Medium Scoring | $0.08/$0.33 | Document ranking, relevance scoring, fine-grained evaluation |
+| Qwen 2.5-72B | Map Phase, Medium Scoring, Language Validation | $0.08/$0.33 | Document ranking, relevance scoring, fine-grained evaluation, translation |
 | Gemini 2.0 Flash | Reduce, Comment Synthesis | $0.10/$0.40 | Context synthesis, instruction following |
 | GPT-4o-mini | Comment Groups | Fast/cheap | Keyword matching, fast processing |
 
@@ -367,6 +428,10 @@ USE_PERSONAL_STYLE = True  # Default to personal style
 # Comment Groups
 DRIFT_CHUNK_SIZE = 20  # Drift groups per API call
 MAX_PARALLEL_REQUESTS = 5  # Rate limiting
+
+# Language Validation
+LANGUAGE_VALIDATION_MODEL = "qwen-2.5-72b"  # Model for language validation
+TRANSLATION_RETRY_ATTEMPTS = 3  # Retry attempts for translation
 ```
 
 ### Model Configuration
@@ -375,6 +440,7 @@ DEFAULT_MODELS = {
     "map": "qwen/qwen-2.5-72b-instruct",
     "medium_scoring": "qwen/qwen-2.5-72b-instruct",
     "reduce": "google/gemini-2.0-flash-001",
+    "language_validation": "qwen/qwen-2.5-72b-instruct",
     "comment_groups": "openai/gpt-4o-mini",
     "comment_synthesis": "google/gemini-2.0-flash-001"
 }
@@ -412,6 +478,7 @@ grep "failed" backend/logs/app.log
 - **Medium Scoring Service**: `backend/src/services/medium_scoring_service.py`
 - **Resolve Service**: `backend/src/services/simple_resolve_service.py`
 - **Reduce Service**: `backend/src/services/reduce_service.py`
+- **Language Validation Service**: `backend/src/services/language_validation_service.py`
 - **Comment Groups**: `backend/src/services/comment_group_map_service.py`
 - **Comment Synthesis**: `backend/src/services/comment_synthesis_service.py`
 

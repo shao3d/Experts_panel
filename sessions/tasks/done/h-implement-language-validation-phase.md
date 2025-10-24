@@ -1,7 +1,7 @@
 ---
 name: h-implement-language-validation-phase
 branch: feature/h-implement-language-validation-phase
-status: pending
+status: completed
 created: 2025-01-25
 ---
 
@@ -17,12 +17,12 @@ This task implements a new Language Validation phase that:
 4. Runs parallel to Comment Groups phase with SSE progress tracking
 
 ## Success Criteria
-- [ ] Language validation service implemented using `detect_query_language()`
-- [ ] Russian → English translation via Qwen 2.5-72B only when mismatch detected
-- [ ] Translation preserves all post links and formatting exactly
-- [ ] Integrated into pipeline parallel to Comment Groups with proper SSE
-- [ ] All experts processed independently with language validation
-- [ ] Testing confirms English queries always return English responses
+- [x] Language validation service implemented using `detect_query_language()`
+- [x] Russian → English translation via Qwen 2.5-72B only when mismatch detected
+- [x] Translation preserves all post links and formatting exactly
+- [x] Integrated into pipeline parallel to Comment Groups with proper SSE
+- [x] All experts processed independently with language validation
+- [x] Testing confirms English queries always return English responses
 
 ## Context Manifest
 
@@ -307,5 +307,43 @@ class LanguageValidationService:
 <!-- Any specific notes or requirements from the developer -->
 
 ## Work Log
-<!-- Updated as work progresses -->
-- [YYYY-MM-DD] Started task, initial research
+
+### 2025-10-25
+
+#### Completed
+- **Created LanguageValidationService** in `backend/src/services/language_validation_service.py` with complete language validation and translation capabilities
+- **Integrated service into pipeline** in `backend/src/api/simplified_query_endpoint.py` after Reduce phase, running parallel to Comment Groups phase
+- **Added proper SSE tracking** with expert_id context and phase-specific progress events
+- **Implemented Russian→English translation** using existing TranslationService and Qwen 2.5-72B model
+- **Preserved all post links and formatting** during translation process
+
+#### Implementation Details
+- **Language Detection**: Reused existing `detect_query_language()` function from `language_utils.py` to ensure consistency
+- **Translation Logic**: Only translates Russian responses to English when query is English and response is Russian
+- **Pipeline Integration**: Added as new Phase 5 (Language Validation) between Reduce and Comment Groups phases
+- **Error Handling**: Graceful degradation - returns original text if translation fails
+- **Multi-Expert Support**: All experts processed independently with proper expert_id isolation
+- **SSE Events**: Comprehensive progress tracking with phase status and validation results in event data
+
+#### Technical Architecture
+- **Service Pattern**: Follows established service architecture with retry mechanisms and progress callbacks
+- **Model Usage**: Uses Qwen 2.5-72B via OpenRouter for consistent translation quality
+- **Progress Tracking**: Real-time SSE events with original_detected_language, validation_result, and translation_applied metadata
+- **Response Flow**: Validated answer flows to Comment Synthesis phase and final response assembly
+
+#### Testing Verification
+- **Language Consistency**: English queries now consistently return English responses across all experts
+- **Translation Quality**: Preserves markdown formatting, links `[text](url)`, and technical terminology
+- **Pipeline Performance**: No significant performance impact - runs concurrently with Comment Groups phase
+- **Error Recovery**: Handles translation failures gracefully without breaking the overall pipeline
+
+#### Decisions
+- **Reuse over Reinvention**: Leveraged existing `detect_query_language()` and `TranslationService` for consistency
+- **Parallel Processing**: Integrated as parallel phase to maintain pipeline performance
+- **Conservative Translation**: Only translates Russian→English when mismatch detected, avoiding unnecessary translations
+- **Model Consistency**: Used same Qwen 2.5-72B model as existing translation services for uniform quality
+
+#### Next Steps
+- Monitor language validation performance in production
+- Consider expanding to other language combinations if needed in future
+- Document phase behavior for troubleshooting and optimization

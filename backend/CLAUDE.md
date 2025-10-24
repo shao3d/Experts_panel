@@ -5,7 +5,7 @@
 FastAPI backend service providing multi-expert query processing with Map-Resolve-Reduce pipeline, real-time SSE streaming, and VPS/cloud deployment support.
 
 ## Narrative Summary
-The backend implements a sophisticated query processing system that retrieves relevant content from expert Telegram channels and synthesizes comprehensive answers. It features a six-phase pipeline with multi-model LLM strategy, multi-expert support, Telegram synchronization, and comprehensive drift analysis for comment discussions. The service is containerized with Docker and ready for VPS/cloud deployment with health checks and automatic restarts.
+The backend implements a sophisticated query processing system that retrieves relevant content from expert Telegram channels and synthesizes comprehensive answers. It features an eight-phase pipeline with multi-model LLM strategy, language validation, multi-expert support, Telegram synchronization, and comprehensive drift analysis for comment discussions. The service is containerized with Docker and ready for VPS/cloud deployment with health checks and automatic restarts.
 
 ## Key Files
 - `src/api/main.py` - FastAPI application with CORS, SSE, and environment configuration
@@ -13,6 +13,7 @@ The backend implements a sophisticated query processing system that retrieves re
 - `src/services/map_service.py` - Phase 1: Content relevance detection with retry mechanism
 - `src/services/simple_resolve_service.py` - Phase 2: Database link expansion
 - `src/services/reduce_service.py` - Phase 3: Answer synthesis with personal style support
+- `src/services/language_validation_service.py` - Phase 5: Language consistency validation and translation
 - `src/services/comment_group_map_service.py` - Pipeline B: Comment drift analysis
 - `src/services/comment_synthesis_service.py` - Pipeline C: Comment insights extraction
 - `src/data/channel_syncer.py` - Incremental Telegram synchronization
@@ -116,16 +117,17 @@ curl -X POST http://localhost:8000/api/v1/query \
 - Parallel async tasks with individual SSE progress tracking
 - Dynamic expert detection with optional filtering
 
-### Six-Phase Pipeline Architecture
+### Eight-Phase Pipeline Architecture
 1. **Map Phase** - Content relevance detection with robust retry mechanism
 2. **Filter Phase** - HIGH relevance content filtering (60-70% reduction)
 3. **Resolve Phase** - Database link expansion (depth 1 only)
 4. **Reduce Phase** - Answer synthesis with personal style support
-5. **Comment Groups Phase** - Drift analysis for relevant discussions
-6. **Comment Synthesis Phase** - Complementary insights extraction
+5. **Language Validation Phase** - Language consistency validation and translation
+6. **Comment Groups Phase** - Drift analysis for relevant discussions
+7. **Comment Synthesis Phase** - Complementary insights extraction
 
 ### Multi-Model Strategy
-- **Qwen 2.5-72B** - Map phase document ranking
+- **Qwen 2.5-72B** - Map phase document ranking and Language Validation
 - **Gemini 2.0 Flash** - Reduce and comment synthesis
 - **GPT-4o-mini** - Comment group matching
 - **Claude Sonnet 4.5** - Drift analysis preprocessing

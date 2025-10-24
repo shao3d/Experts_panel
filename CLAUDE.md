@@ -1,13 +1,13 @@
 # Experts Panel Development Guidelines
 
-Auto-generated from feature plans. Last updated: 2025-10-24
+Auto-generated from feature plans. Last updated: 2025-10-25
 
 ## Active Technologies
 - Python 3.11+ with FastAPI and Pydantic v2
 - SQLite with SQLAlchemy 2.0
 - React 18 with TypeScript
 - OpenRouter API - Multi-model strategy:
-  - Qwen 2.5-72B Instruct for Map phase
+  - Qwen 2.5-72B Instruct for Map phase and Language Validation
   - Gemini 2.0 Flash for Reduce and Comment Synthesis
   - GPT-4o-mini for Comment Groups matching and Medium posts scoring
 - Docker for deployment
@@ -48,6 +48,7 @@ data/
 - **API Endpoints**: See `api/simplified_query_endpoint.py`
 - **Import Scripts**: See `data/json_parser.py`
 - **Medium Scoring**: See `services/medium_scoring_service.py`
+- **Language Validation**: See `services/language_validation_service.py`
 
 ## Commands
 
@@ -137,7 +138,7 @@ sqlite3 data/experts.db "SELECT post_id, has_drift, analyzed_at FROM comment_gro
 
 ## 🏗️ Pipeline Overview
 
-The system uses a **seven-phase pipeline** with hybrid Medium posts reranking:
+The system uses an **eight-phase pipeline** with hybrid Medium posts reranking and language validation:
 
 1. **Map Phase** - Qwen 2.5-72B finds relevant posts (HIGH/MEDIUM/LOW classification)
 2. **Medium Scoring Phase** - Qwen 2.5-72B scores Medium posts (≥0.7 threshold → top-5 selection) ✅
@@ -145,8 +146,9 @@ The system uses a **seven-phase pipeline** with hybrid Medium posts reranking:
    - HIGH posts → processed with linked posts (depth 1) via Resolve phase
    - Selected Medium posts → bypass Resolve, go directly to Reduce phase
 4. **Reduce Phase** - Gemini 2.0 Flash synthesizes answer with all selected posts
-5. **Comment Groups** - GPT-4o-mini finds relevant comment discussions
-6. **Comment Synthesis** - Gemini 2.0 Flash extracts complementary insights
+5. **Language Validation Phase** - Qwen 2.5-72B validates response language consistency with query language ✅
+6. **Comment Groups** - GPT-4o-mini finds relevant comment discussions
+7. **Comment Synthesis** - Gemini 2.0 Flash extracts complementary insights
 
 *For detailed pipeline architecture see `/docs/pipeline-architecture.md`*
 
@@ -256,6 +258,7 @@ curl -X POST http://localhost:8000/api/v1/query \
 
 ## 📋 Recent Changes (Last 30 days)
 
+- **2025-10-25**: Language Validation Phase Implementation - Added eight-phase pipeline with language consistency validation and Russian-to-English translation
 - **2025-10-24**: Fixed Post ID Scrolling for Multi-Expert Interface - Standardized DOM ID generation between PostCard and PostsList components using consistent expertId prop
 - **2025-10-23**: Medium Posts Hybrid Reranking System - GPT-4o-mini scoring with threshold ≥0.7 and top-5 selection
 - **2025-10-16**: Multi-Expert Sync Optimization v3.0 - Complete workflow integration
@@ -299,6 +302,14 @@ curl -X POST http://localhost:8000/api/v1/query \
 - **Security**: API key masking in error logs and input sanitization
 - **Multi-Expert Support**: Maintains expert isolation throughout reranking process
 
+### Language Validation Phase
+- **Language Consistency**: Validates response language matches query language
+- **Translation Capability**: Translates Russian responses to English when mismatch detected
+- **Model Integration**: Uses Qwen 2.5-72B via existing TranslationService
+- **Error Handling**: Graceful degradation with fallback to original text
+- **SSE Progress Tracking**: Real-time validation status updates with expert_id context
+- **Multi-Expert Support**: Maintains expert isolation throughout validation process
+
 *For detailed multi-expert setup see `/docs/multi-expert-guide.md`*
 
 ## 🛠️ Testing Strategy
@@ -319,6 +330,7 @@ For MVP, use validation through prepared Q&A sets:
 ## 📁 Important File Locations
 
 - **Main Pipeline**: `backend/src/services/`
+- **Language Validation Service**: `backend/src/services/language_validation_service.py`
 - **Medium Scoring Service**: `backend/src/services/medium_scoring_service.py`
 - **Medium Scoring Prompt**: `backend/prompts/medium_scoring_prompt.txt`
 - **API Endpoints**: `backend/src/api/simplified_query_endpoint.py`
