@@ -1,6 +1,6 @@
 # Experts Panel Development Guidelines
 
-Auto-generated from feature plans. Last updated: 2025-10-23
+Auto-generated from feature plans. Last updated: 2025-10-24
 
 ## Active Technologies
 - Python 3.11+ with FastAPI and Pydantic v2
@@ -256,6 +256,7 @@ curl -X POST http://localhost:8000/api/v1/query \
 
 ## 📋 Recent Changes (Last 30 days)
 
+- **2025-10-24**: Fixed Post ID Scrolling for Multi-Expert Interface - Standardized DOM ID generation between PostCard and PostsList components using consistent expertId prop
 - **2025-10-23**: Medium Posts Hybrid Reranking System - GPT-4o-mini scoring with threshold ≥0.7 and top-5 selection
 - **2025-10-16**: Multi-Expert Sync Optimization v3.0 - Complete workflow integration
 - **2025-10-15**: Map Phase Retry Mechanism - 95%+ reliability improvement
@@ -284,6 +285,12 @@ curl -X POST http://localhost:8000/api/v1/query \
 - All tables have `expert_id` field
 - Complete data isolation between experts
 - Parallel processing of all experts by default
+
+### Frontend DOM ID Generation
+- **Consistent expertId usage**: PostCard and PostsList components use `expertId` prop for DOM element IDs
+- **ID Pattern**: `post-${expertId || 'unknown'}-${telegram_message_id}` for reliable element lookup
+- **Backward Compatibility**: Fallback to `post-${telegram_message_id}` for edge cases
+- **Post Reference Clicking**: Enables reliable scrolling to posts from expert responses across all experts
 
 ### Medium Posts Hybrid Reranking
 - **Differential Processing**: HIGH posts go through Resolve phase, selected Medium posts bypass it
@@ -318,6 +325,8 @@ For MVP, use validation through prepared Q&A sets:
 - **Database Models**: `backend/src/models/`
 - **Prompts**: `backend/prompts/`
 - **Frontend Components**: `frontend/src/components/`
+- **PostCard Component**: `frontend/src/components/PostCard.tsx`
+- **PostsList Component**: `frontend/src/components/PostsList.tsx`
 - **Migration Scripts**: `backend/migrations/`
 
 ## Sessions System Behaviors

@@ -13,9 +13,10 @@ interface PostCardProps {
   isExpanded: boolean;
   onToggleComments: () => void;
   isSelected?: boolean;
+  expertId?: string;
 }
 
-const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments, isSelected = false }) => {
+const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments, isSelected = false, expertId }) => {
   const hasComments = post.comments && post.comments.length > 0;
 
   const formatDate = (dateStr: string) => {
@@ -101,7 +102,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments,
 
   return (
     <div
-      id={`post-${post.channel_name || post.expert_id || 'unknown'}-${post.telegram_message_id}`}
+      id={`post-${expertId || 'unknown'}-${post.telegram_message_id}`}
       style={{
         marginBottom: '16px',
         padding: '16px',

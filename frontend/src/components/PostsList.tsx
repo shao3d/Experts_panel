@@ -79,6 +79,7 @@ const PostsList: React.FC<PostsListProps> = ({ posts, selectedPostId, expertId }
           isExpanded={expandedPosts.has(post.telegram_message_id)}
           onToggleComments={() => toggleComments(post.telegram_message_id)}
           isSelected={post.telegram_message_id === selectedPostId}
+          expertId={expertId}
         />
       ))}
 

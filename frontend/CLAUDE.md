@@ -122,12 +122,25 @@ Posts listing with selection:
 - Post selection highlighting
 - Auto-scroll to selected post
 - Responsive layout
+- Consistent DOM element lookup using expertId
 
 **Props:**
 ```typescript
 interface PostsListProps {
   posts: PostDetail[];
-  selectedPostId: number | null;
+  selectedPostId?: number | null;
+  expertId?: string;  // Passed to PostCard for DOM ID generation
+}
+```
+
+**Post Reference Clicking:**
+```typescript
+// DOM element lookup with expertId prefix
+let element = document.getElementById(`post-${expertId || 'unknown'}-${selectedPostId}`);
+
+// Fallback for backward compatibility
+if (!element) {
+  element = document.getElementById(`post-${selectedPostId}`);
 }
 ```
 
@@ -139,13 +152,22 @@ Individual post card display:
 - Author and date display
 - Expert comments section
 - Selection state styling
+- Consistent DOM ID generation for post reference clicking
 
 **Props:**
 ```typescript
 interface PostCardProps {
   post: PostDetail;
-  isSelected: boolean;
+  isExpanded: boolean;
+  onToggleComments: () => void;
+  isSelected?: boolean;
+  expertId?: string;  // Used for DOM ID generation
 }
+```
+
+**DOM ID Pattern:**
+```typescript
+id={`post-${expertId || 'unknown'}-${post.telegram_message_id}`}
 ```
 
 ## Services Layer
@@ -483,6 +505,12 @@ const posts = await apiClient.getPostsByIds([1, 2, 3]);
 - Compiler catches integration errors
 - Self-documenting interfaces
 
+### 6. Post Reference Clicking System
+- **Consistent DOM ID Generation**: PostCard and PostsList use expertId for reliable element lookup
+- **Multi-Expert Support**: Works across all experts with different channel names
+- **Backward Compatibility**: Fallback ID pattern for edge cases
+- **Component Integration**: ExpertResponse → ExpertAccordion → PostsList → PostCard data flow
+
 ## Performance Considerations
 
 ### SSE Stream Parsing
@@ -540,3 +568,9 @@ When moving beyond MVP:
 - Verify React key props on lists
 - Check state updates in React DevTools
 - Ensure async operations use finally block
+
+### Post Reference Clicking Issues
+- **Element Not Found**: Check that expertId prop is passed from PostsList to PostCard
+- **Inconsistent IDs**: Verify DOM ID pattern matches between PostCard (generation) and PostsList (lookup)
+- **Multi-Expert Problems**: Ensure expertId is correctly passed through component hierarchy
+- **Console Errors**: Look for "element not found" errors when clicking post references
