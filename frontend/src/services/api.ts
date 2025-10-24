@@ -19,6 +19,23 @@ import {
 export type ProgressCallback = (event: ProgressEvent) => void;
 
 /**
+ * Determine if a query is in English (for translation UX)
+ * Simple heuristic: check if majority of words are English
+ */
+export function isEnglishQuery(query: string): boolean {
+  if (!query || !query.trim()) return false;
+
+  const words = query.trim().split(/\s+/);
+  const englishWords = words.filter(word =>
+    /^[a-zA-Z][a-zA-Z]*$/.test(word) ||
+    /^[a-zA-Z]+$/.test(word)
+  );
+
+  // If at least 70% of words are English, consider it an English query
+  return words.length > 0 && (englishWords.length / words.length) >= 0.7;
+}
+
+/**
  * API client for Experts Panel backend
  */
 export class APIClient {
@@ -278,27 +295,81 @@ export class APIClient {
   }
 
   /**
-   * Get detailed information about a specific post
+   * Sleep utility for retry delays
+   */
+  private async sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  /**
+   * Get detailed information about a specific post with retry mechanism
    *
    * @param postId - Post ID to fetch
    * @param expertId - Optional expert ID to filter posts (required for multi-expert)
+   * @param query - Optional user query to determine if translation is needed
+   * @param translate - Boolean flag to force translation
+   * @param maxRetries - Maximum number of retry attempts (default: 3)
    * @returns Post details with comments and links
    */
-  async getPostDetail(postId: number, expertId?: string): Promise<any> {
-    const url = expertId
-      ? `${this.baseURL}/api/v1/posts/${postId}?expert_id=${encodeURIComponent(expertId)}`
-      : `${this.baseURL}/api/v1/posts/${postId}`;
-    const response = await fetch(url);
+  async getPostDetail(
+    postId: number,
+    expertId?: string,
+    query?: string,
+    translate = false,
+    maxRetries = 3
+  ): Promise<any> {
+    let lastError: Error | null = null;
 
-    if (!response.ok) {
-      if (response.status === 404) {
-        throw new Error(`Post with ID ${postId} not found`);
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`[API] Fetching post ${postId} (attempt ${attempt}/${maxRetries})`);
+
+        let url = expertId
+          ? `${this.baseURL}/api/v1/posts/${postId}?expert_id=${encodeURIComponent(expertId)}`
+          : `${this.baseURL}/api/v1/posts/${postId}`;
+
+        // Add query parameters if provided
+        const params = new URLSearchParams();
+        if (query) params.append('query', query);
+        if (translate) params.append('translate', 'true');
+
+        if (params.toString()) {
+          url += url.includes('?') ? `&${params.toString()}` : `?${params.toString()}`;
+        }
+
+        const response = await fetch(url);
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error(`Post with ID ${postId} not found`);
+          }
+          const error: APIError = await response.json();
+          throw new Error(error.message || 'Failed to fetch post details');
+        }
+
+        const result = await response.json();
+        console.log(`[API] Successfully fetched post ${postId} on attempt ${attempt}`);
+        return result;
+
+      } catch (error) {
+        lastError = error as Error;
+        console.warn(`[API] Post ${postId} fetch failed (attempt ${attempt}/${maxRetries}):`, error);
+
+        // If this is the last attempt, don't wait
+        if (attempt === maxRetries) {
+          console.error(`[API] Post ${postId} failed after ${maxRetries} attempts`);
+          break;
+        }
+
+        // Exponential backoff: 1s, 2s, 4s (max 5s)
+        const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+        console.log(`[API] Retrying post ${postId} after ${delay}ms delay`);
+        await this.sleep(delay);
       }
-      const error: APIError = await response.json();
-      throw new Error(error.message || 'Failed to fetch post details');
     }
 
-    return response.json();
+    // All retries failed - throw the last error
+    throw lastError || new Error(`Failed to fetch post ${postId} after ${maxRetries} attempts`);
   }
 
   /**
@@ -306,11 +377,149 @@ export class APIClient {
    *
    * @param postIds - Array of post IDs
    * @param expertId - Optional expert ID to filter posts (required for multi-expert)
+   * @param query - Optional user query to determine if translation is needed
    * @returns Array of post details
    */
-  async getPostsByIds(postIds: number[], expertId?: string): Promise<PostDetailResponse[]> {
-    console.log('[API] Fetching posts by IDs:', postIds, 'for expert:', expertId);
-    const promises = postIds.map(id => this.getPostDetail(id, expertId));
+  async getPostsByIdsProgressive(
+    postIds: number[],
+    expertId?: string,
+    query?: string,
+    onPostReady?: (post: PostDetailResponse) => void,
+    onProgress?: (completed: number, total: number) => void,
+    onRetry?: (postId: number, attempt: number, maxRetries: number) => void
+  ): Promise<PostDetailResponse[]> {
+    console.log('[API] Fetching posts progressively in parallel:', postIds, 'for expert:', expertId, 'with query:', query);
+
+    // Determine if translation is needed
+    const needsTranslation = query ? isEnglishQuery(query) : false;
+    let completed = 0;
+    const completedResults: any[] = [];
+
+    // Create individual promises with wrapped metadata and retry support
+    const postPromises = postIds.map(async (postId, index) => {
+      let lastError: Error | null = null;
+      let retryCount = 0;
+      const maxRetries = 3;
+
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          console.log(`[API] Starting fetch for post ${postId} (${index + 1}/${postIds.length}, attempt ${attempt}/${maxRetries})`);
+
+          const post = await this.getPostDetail(postId, expertId, query, needsTranslation, maxRetries);
+
+          // If retry succeeded and we're here after multiple attempts, notify about successful retry
+          if (onRetry && attempt > 1) {
+            onRetry(postId, attempt - 1, maxRetries);
+          }
+
+          console.log(`[API] Successfully fetched post ${postId} on attempt ${attempt}`);
+          return { post, postId, index, success: true, retryCount: attempt - 1 };
+
+        } catch (error) {
+          lastError = error as Error;
+          retryCount = attempt;
+
+          if (attempt < maxRetries) {
+            console.warn(`[API] Post ${postId} failed (attempt ${attempt}/${maxRetries}), retrying...`);
+
+            // Notify about retry attempt
+            if (onRetry) {
+              onRetry(postId, attempt, maxRetries);
+            }
+
+            // Exponential backoff is handled inside getPostDetail
+            continue;
+          }
+        }
+      }
+
+      // All retries failed - try without translation as fallback
+      if (needsTranslation) {
+        console.log(`[API] Translation failed for post ${postId} after ${maxRetries} attempts, trying original post`);
+        try {
+          const originalPost = await this.getPostDetail(postId, expertId, query, false, 1);
+          console.log(`[API] Successfully fetched original post ${postId} as fallback`);
+          return { post: originalPost, postId, index, success: true, fallback: true, retryCount };
+        } catch (fallbackError) {
+          console.error(`[API] Fallback also failed for post ${postId}`);
+          return { post: null, postId, index, success: false, error: lastError, retryCount };
+        }
+      } else {
+        console.error(`[API] Post ${postId} failed after ${maxRetries} attempts`);
+        return { post: null, postId, index, success: false, error: lastError, retryCount };
+      }
+    });
+
+    // Process posts as they complete using Promise.race - TRUE progressive loading
+    const pendingPromises = postPromises.map((promise, index) => ({
+      promise,
+      index,
+      completed: false
+    }));
+
+    while (pendingPromises.some(p => !p.completed)) {
+      // Race between all pending promises
+      const racePromises = pendingPromises
+        .filter(p => !p.completed)
+        .map(p => p.promise.then(result => ({ result, originalIndex: p.index })));
+
+      if (racePromises.length === 0) break;
+
+      try {
+        // Wait for the next promise to complete
+        const { result, originalIndex } = await Promise.race(racePromises);
+
+        // Mark this promise as completed
+        const promiseMeta = pendingPromises[originalIndex];
+        promiseMeta.completed = true;
+
+        completed++;
+        completedResults.push(result);
+
+        const statusText = result.fallback ? ' (fallback to original)' : result.retryCount > 0 ? ` (after ${result.retryCount} retries)` : '';
+        console.log(`[API] Post completed in real-time: ${result.postId}${statusText}, ${completed}/${postIds.length}`);
+
+        // Update progress in real-time
+        if (onProgress) {
+          onProgress(completed, postIds.length);
+        }
+
+        // Notify about post ready immediately (REAL progressive loading!)
+        if (result.success && result.post && onPostReady) {
+          onPostReady(result.post);
+        }
+
+      } catch (error) {
+        console.error('[API] Error in Promise.race:', error);
+        completed++;
+
+        // Still update progress on race error
+        if (onProgress) {
+          onProgress(completed, postIds.length);
+        }
+      }
+    }
+
+    // Sort successful results by original index to maintain order
+    const successfulResults = completedResults
+      .filter(result => result.success)
+      .sort((a, b) => a.index - b.index);
+
+    const orderedPosts = successfulResults.map(result => result.post);
+
+    console.log(`[API] TRUE Progressive fetch with retries completed: ${orderedPosts.length}/${postIds.length} posts successful`);
+    return orderedPosts;
+  }
+
+  async getPostsByIds(
+    postIds: number[],
+    expertId?: string,
+    query?: string
+  ): Promise<PostDetailResponse[]> {
+    console.log('[API] Fetching posts by IDs:', postIds, 'for expert:', expertId, 'with query:', query);
+    // Determine if translation is needed
+    const needsTranslation = query ? isEnglishQuery(query) : false;
+    const promises = postIds.map(id => this.getPostDetail(id, expertId, query, needsTranslation));
 
     // Fetch all posts in parallel
     const results = await Promise.allSettled(promises);

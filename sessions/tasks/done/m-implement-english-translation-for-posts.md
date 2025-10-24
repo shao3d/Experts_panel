@@ -1,7 +1,7 @@
 ---
 name: m-implement-english-translation-for-posts
 branch: feature/english-translation-for-posts
-status: pending
+status: completed
 created: 2025-01-24
 submodules: []
 ---

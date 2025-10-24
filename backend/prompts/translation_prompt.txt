@@ -1,0 +1,21 @@
+Translate the following Russian Telegram post to natural English.
+
+Author: ${author_name}
+
+Post:
+${post_text}
+
+IMPORTANT REQUIREMENTS:
+1. Translate ONLY the Russian text to English
+2. Keep ALL links [text](url) exactly as they are - do NOT translate the URLs
+3. Preserve ALL markdown formatting (bold, italic, code blocks, lists)
+4. Keep technical terms and proper names as appropriate
+5. If there are mixed languages, translate only the Russian parts
+6. Maintain the original tone and style
+7. Do NOT add any additional commentary or explanations
+
+Example of preserving links:
+Original: "Смотри [здесь](https://example.com) информацию"
+Translation: "Look [здесь](https://example.com) for information" (keep the link URL unchanged)
+
+Translate the post now:

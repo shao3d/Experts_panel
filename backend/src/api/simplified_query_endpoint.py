@@ -36,6 +36,7 @@ from ..services.reduce_service import ReduceService
 from ..services.comment_group_map_service import CommentGroupMapService
 from ..services.comment_synthesis_service import CommentSynthesisService
 from ..services.medium_scoring_service import MediumScoringService
+from ..services.translation_service import TranslationService
 
 logger = logging.getLogger(__name__)
 
@@ -639,6 +640,8 @@ def validate_expert_id(expert_id: str) -> str:
 async def get_post_detail(
     post_id: int,
     expert_id: Optional[str] = None,
+    query: Optional[str] = None,
+    translate: Optional[bool] = False,
     db: Session = Depends(get_db)
 ):
     # Validate parameters
@@ -650,16 +653,18 @@ async def get_post_detail(
     Args:
         post_id: Telegram message ID of the post
         expert_id: Optional expert ID to filter posts (required for multi-expert)
+        query: Optional user query to determine if translation is needed
+        translate: Boolean flag to force translation
         db: Database session
 
     Returns:
         SimplifiedPostDetailResponse with post content and comments
     """
     # Find post in database - filter by expert_id to avoid cross-expert conflicts
-    query = db.query(Post).filter(Post.telegram_message_id == post_id)
+    post_query = db.query(Post).filter(Post.telegram_message_id == post_id)
     if expert_id:
-        query = query.filter(Post.expert_id == expert_id)
-    post = query.first()
+        post_query = post_query.filter(Post.expert_id == expert_id)
+    post = post_query.first()
 
     if not post:
         raise HTTPException(
@@ -679,6 +684,41 @@ async def get_post_detail(
                 updated_at=comment.updated_at
             ))
 
+    # Determine if translation is needed
+    should_translate = False
+    logger.info(f"DEBUG: get_post_detail called with post_id={post_id}, expert_id={expert_id}, query='{query}', translate={translate}")
+
+    if translate:
+        should_translate = True
+        logger.info(f"DEBUG: Translation forced by translate=true flag for post {post_id}")
+    elif query:
+        # Use translation service to detect if query is in English
+        translation_service = TranslationService(api_key=get_openai_key())
+        should_translate = translation_service.should_translate(query)
+        logger.info(f"DEBUG: Translation check for post {post_id}: query='{query[:50]}...', should_translate={should_translate}")
+    else:
+        logger.info(f"DEBUG: No translation for post {post_id}: no query provided")
+
+    # Translate post content if needed
+    message_text = post.message_text or ""
+    logger.info(f"DEBUG: Before translation - should_translate={should_translate}, message_text_length={len(message_text)}")
+
+    if should_translate and message_text:
+        logger.info(f"DEBUG: Starting translation for post {post_id} with content length {len(message_text)}")
+        try:
+            translation_service = TranslationService(api_key=get_openai_key())
+            translated_text = await translation_service.translate_single_post(
+                message_text,
+                post.author_name or "Unknown"
+            )
+            message_text = translated_text
+            logger.info(f"DEBUG: Successfully translated post {post_id} to English for query: {query[:50]}...")
+        except Exception as e:
+            logger.error(f"DEBUG: Translation failed for post {post_id}: {e}")
+            # Keep original text if translation fails
+    else:
+        logger.info(f"DEBUG: Skipping translation for post {post_id} - should_translate={should_translate}, has_content={bool(message_text)}")
+
     # Get channel username from expert_id using helper function
     channel_username = get_channel_username(post.expert_id) if post.expert_id else post.channel_name
 
@@ -686,7 +726,7 @@ async def get_post_detail(
     return SimplifiedPostDetailResponse(
         telegram_message_id=post.telegram_message_id,
         author_name=post.author_name or "Unknown",
-        message_text=post.message_text or "",
+        message_text=message_text,
         created_at=post.created_at.isoformat() if post.created_at else "",
         channel_name=channel_username,  # Use username for Telegram links
         comments=comments,

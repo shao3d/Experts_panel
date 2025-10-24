@@ -16,6 +16,7 @@ export const App: React.FC = () => {
   const [expertResponses, setExpertResponses] = useState<ExpertResponseType[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [expandedExperts, setExpandedExperts] = useState<Set<string>>(new Set(['refat', 'ai_architect', 'neuraldeep']));
+  const [currentQuery, setCurrentQuery] = useState<string>('');
 
   /**
    * Handle query submission
@@ -26,6 +27,7 @@ export const App: React.FC = () => {
     setProgressEvents([]);
     setExpertResponses([]);
     setError(null);
+    setCurrentQuery(query);
 
     try {
       // Submit query with progress callback
@@ -138,6 +140,7 @@ export const App: React.FC = () => {
                   expert={expert}
                   isExpanded={expandedExperts.has(expert.expert_id)}
                   onToggle={() => handleToggleExpert(expert.expert_id)}
+                  query={currentQuery}
                 />
               ))
           ) : (
