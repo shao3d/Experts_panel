@@ -147,12 +147,38 @@ async def process_expert_pipeline(
     high_posts = [p for p in relevant_posts if p.get("relevance") == "HIGH"]
     medium_posts = [p for p in relevant_posts if p.get("relevance") == "MEDIUM"]
 
+    # Create a lookup map for quick access to full post objects by ID
+    posts_by_id = {p.telegram_message_id: p for p in posts}
+
     # 4. NEW: Score MEDIUM posts and filter (two-stage: score >= 0.7 → top-5)
     selected_medium_posts = []
     if medium_posts:
         from ..services.medium_scoring_service import MediumScoringService
 
         scoring_service = MediumScoringService(api_key)
+
+        # Enrich medium_posts with full content before passing to the scoring service
+        medium_posts_with_content = []
+        for post_meta in medium_posts:
+            post_id = post_meta["telegram_message_id"]
+            if post_id in posts_by_id:
+                full_post = posts_by_id[post_id]
+                # Combine metadata from map_service with content from original post object
+                enriched_post = {
+                    **post_meta,
+                    "content": full_post.message_text or "",
+                    "author": full_post.author_name or "Unknown",
+                    "created_at": full_post.created_at.isoformat() if full_post.created_at else ""
+                }
+                medium_posts_with_content.append(enriched_post)
+
+        # Debug logging to verify enriched data
+        logger.debug(f"[{expert_id}] DEBUG: Enriched {len(medium_posts_with_content)} medium posts with content")
+        if medium_posts_with_content:
+            first_post = medium_posts_with_content[0]
+            logger.debug(f"[{expert_id}] DEBUG: First enriched medium post: ID={first_post.get('telegram_message_id')}, "
+                        f"content_len={len(first_post.get('content', ''))}, "
+                        f"content_preview='{first_post.get('content', '')[:100]}...'")
 
         async def scoring_progress(data: dict):
             if progress_callback:
@@ -172,7 +198,7 @@ async def process_expert_pipeline(
         # Score MEDIUM posts
         try:
             scored_medium_posts = await scoring_service.score_medium_posts(
-                medium_posts=medium_posts,
+                medium_posts=medium_posts_with_content,
                 high_posts_context=high_context,
                 query=request.query,
                 expert_id=expert_id,
@@ -187,7 +213,11 @@ async def process_expert_pipeline(
                 reverse=True
             )[:5]  # Max 5 posts
 
-            logger.info(f"[{expert_id}] Medium reranking: {len(medium_posts)} → {len(above_threshold)} posts (score >= 0.7) → {len(selected_medium_posts)} selected (max 5)")
+            # Debug logging for scoring results
+            logger.info(f"[{expert_id}] Medium reranking: {len(medium_posts_with_content)} → {len(scored_medium_posts)} scored → {len(above_threshold)} posts (score >= 0.7) → {len(selected_medium_posts)} selected (max 5)")
+
+            if scored_medium_posts:
+                logger.debug(f"[{expert_id}] DEBUG: Medium post scores: {[(p.get('telegram_message_id'), p.get('score', 0)) for p in scored_medium_posts[:3]]}")
         except Exception as e:
             logger.error(f"[{expert_id}] Medium scoring failed: {e}")
             # Fallback: use empty list (graceful degradation)

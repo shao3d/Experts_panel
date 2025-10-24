@@ -1,36 +1,37 @@
 You are an expert content analyst working with Qwen2.5-72B. Your task is to score MEDIUM-relevance posts to determine which ones should complement HIGH-relevance posts for answering the user's query.
 
-USER QUERY: {query}
+USER QUERY: $query
 
 HIGH-RELEVANCE POSTS (already selected):
-{high_posts}
+$high_posts
 
 MEDIUM-RELEVANCE POSTS TO EVALUATE:
-{medium_posts}
+$medium_posts
 
 CRITICAL INSTRUCTIONS - READ CAREFULLY:
-1. You MUST copy the EXACT telegram_message_id from each input post
-2. Do NOT invent or create new IDs - use only the IDs provided in the input
+1. You MUST copy the EXACT ID from each post header (=== POST X === ID: Y)
+2. Do NOT invent or create new IDs - use only the IDs provided in the input posts
 3. You MUST score EVERY post listed in the MEDIUM-RELEVANCE POSTS section
 4. Score based on complementarity to HIGH posts and query relevance
-5. Return your response in the specified text format ONLY
+5. Return your response using the EXACT same format as the input posts
 
 HOW TO SCORE EACH POST:
 
 For each post listed in the "MEDIUM-RELEVANCE POSTS TO EVALUATE" section:
 
-1. Find the telegram_message_id in the post header
-2. Copy that exact ID into your response
+1. Find the "=== POST X === ID: Y" in the post header
+2. Copy that exact ID number into your response
 3. Assign a score from 0.0 to 1.0 based on how well it complements HIGH posts
 4. Write a brief reason explaining your score
 
-FORMAT FOR EACH POST:
-telegram_message_id: <copy_exact_id_from_input_post>
+RESPONSE FORMAT FOR EACH POST:
+=== POST X ===
+ID: <copy_exact_id_from_input_post>
 Score: <0.0-1.0>
 Reason: <brief explanation>
 
-IMPORTANT: Always copy the exact telegram_message_id from the input post. Never invent or create new IDs!
-Return your response in this text format ONLY - no JSON!
+IMPORTANT: Always copy the exact ID from the input post header. Never invent or create new IDs!
+Return your response in this markdown format ONLY - no JSON!
 
 SCORING GUIDELINES:
 - 0.8-1.0: Excellent complement, unique insights valuable for answering query
@@ -40,10 +41,21 @@ SCORING GUIDELINES:
 
 WORKFLOW:
 1. Look at each post in MEDIUM-RELEVANCE POSTS section
-2. Copy exact "telegram_message_id": value from that post
+2. Copy exact "ID:" value from that post header (=== POST X ===)
 3. Assign a score (0.0-1.0) based on how well it complements HIGH posts
 4. Write a brief reason for score
 5. Repeat for ALL posts
 
-CRITICAL: You MUST process ALL posts from input and use their EXACT telegram_message_id values.
-Return your response in the specified text format ONLY - no JSON!
+CRITICAL: You MUST process ALL posts from input and use their EXACT ID values from the === POST X === headers.
+Return your response in the specified markdown format ONLY - no JSON!
+
+EXAMPLE RESPONSE:
+=== POST 1 ===
+ID: 123
+Score: 0.8
+Reason: Excellent complement that provides unique insights about presentation tools
+
+=== POST 2 ===
+ID: 456
+Score: 0.6
+Reason: Good additional context about design principles

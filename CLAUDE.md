@@ -139,7 +139,7 @@ sqlite3 data/experts.db "SELECT post_id, has_drift, analyzed_at FROM comment_gro
 The system uses a **seven-phase pipeline** with hybrid Medium posts reranking:
 
 1. **Map Phase** - Qwen 2.5-72B finds relevant posts (HIGH/MEDIUM/LOW classification)
-2. **Medium Scoring Phase** - GPT-4o-mini scores Medium posts (≥0.7 threshold → top-5 selection)
+2. **Medium Scoring Phase** - Qwen 2.5-72B scores Medium posts (≥0.7 threshold → top-5 selection) ✅
 3. **Differential Resolve Phase** -
    - HIGH posts → processed with linked posts (depth 1) via Resolve phase
    - Selected Medium posts → bypass Resolve, go directly to Reduce phase

@@ -82,44 +82,46 @@ class MediumScoringService:
         # Extract information from each section
         for section in sections:
             if not section.strip():  # Skip empty sections
-                lines = section.strip().split('\n')
-                post_data = {
-                    "telegram_message_id": None,
-                    "score": 0.0,
-                    "reason": ""
-                }
+                continue
 
-                for line in lines:
-                    line = line.strip()
-                    if line.startswith("ID:"):
-                        # Extract ID from ID line
-                        id_part = line.replace("ID:", "").strip()
-                        # Clean up any formatting
-                        post_data["telegram_message_id"] = id_part.strip()
+            post_data = {
+                "telegram_message_id": None,
+                "score": 0.0,
+                "reason": ""
+            }
 
-                    elif line.startswith("Score:"):
-                        try:
-                            score_str = line.replace("Score:", "").strip()
-                            post_data["score"] = float(score_str)
-                        except ValueError:
-                            logger.warning(f"[{expert_id}] Could not parse score: {line}")
-                            post_data["score"] = 0.0
+            # Use regex to be more robust against formatting variations
+            id_match = re.search(r'ID:\s*(\d+)', section, re.IGNORECASE)
+            score_match = re.search(r'Score:\s*([0-9.]+)', section, re.IGNORECASE)
+            reason_match = re.search(r'Reason:(.*)', section, re.IGNORECASE | re.DOTALL)
 
-                    elif line.startswith("Reason:"):
-                        post_data["reason"] = line.replace("Reason:", "").strip()
+            if id_match:
+                try:
+                    post_data["telegram_message_id"] = int(id_match.group(1).strip())
+                except (ValueError, TypeError):
+                    logger.warning(f"[{expert_id}] Could not parse post ID from: {id_match.group(1)}")
+                    post_data["telegram_message_id"] = None
 
-                # Only add if we have a valid ID
-                if post_data["telegram_message_id"]:
-                    scored_posts.append(post_data)
+            if score_match:
+                try:
+                    post_data["score"] = float(score_match.group(1).strip())
+                except ValueError:
+                    logger.warning(f"[{expert_id}] Could not parse score from: {score_match.group(1)}")
+                    post_data["score"] = 0.0
 
-        return {"scored_posts": scored_posts}
+            if reason_match:
+                post_data["reason"] = reason_match.group(1).strip()
+
+            # Only add if we have a valid ID
+            if post_data["telegram_message_id"] is not None:
+                scored_posts.append(post_data)
 
         # Match scored posts with input posts and validate IDs
         valid_scored_posts = []
-        input_ids = {str(post["telegram_message_id"]) for post in medium_posts}
+        input_ids = {post["telegram_message_id"] for post in medium_posts}
 
         for scored_post in scored_posts:
-            post_id = str(scored_post["telegram_message_id"])
+            post_id = scored_post["telegram_message_id"]
             if post_id in input_ids:
                 valid_scored_posts.append(scored_post)
             else:
@@ -127,7 +129,7 @@ class MediumScoringService:
 
         # Ensure all input posts have scores (add default scores if missing)
         for post in medium_posts:
-            post_id = str(post["telegram_message_id"])
+            post_id = post["telegram_message_id"]
             if not any(sp.get("telegram_message_id") == post_id for sp in valid_scored_posts):
                 logger.warning(f"[{expert_id}] No score found for input post {post_id}, using default 0.0")
                 valid_scored_posts.append({
@@ -159,7 +161,7 @@ class MediumScoringService:
                 content = f.read()
 
             # Validate required placeholders
-            if "{query}" not in content or "{high_posts}" not in content or "{medium_posts}" not in content:
+            if "$query" not in content or "$high_posts" not in content or "$medium_posts" not in content:
                 raise ValueError("Prompt template missing required placeholders")
 
             return Template(content)
@@ -217,8 +219,8 @@ Created: {post.get('created_at', '')}
         # Note: Qwen will receive this as plain text, not JSON
 
         # Log the actual data being sent to Qwen2.5-72B for debugging
-        logger.info(f"[{expert_id}] Sending {len(medium_posts_formatted)} posts to Qwen2.5-72B:")
-        for i, post in enumerate(medium_posts_formatted[:3]):  # Log first 3 posts as example
+        logger.info(f"[{expert_id}] Sending {len(medium_posts)} posts to Qwen2.5-72B:")
+        for i, post in enumerate(medium_posts[:3]):  # Log first 3 posts as example
             logger.info(f"[{expert_id}] Post {i+1}: ID={post['telegram_message_id']}, content_len={len(post.get('content', ''))}")
 
         # Create base prompt
@@ -227,6 +229,13 @@ Created: {post.get('created_at', '')}
             high_posts=high_posts_context,
             medium_posts=medium_posts_text
         )
+
+        # Debug logging to check variable substitution
+        logger.info(f"[{expert_id}] DEBUG: Prompt template substitution completed")
+        logger.info(f"[{expert_id}] DEBUG: Query length: {len(query)}")
+        logger.info(f"[{expert_id}] DEBUG: High posts context length: {len(high_posts_context)}")
+        logger.info(f"[{expert_id}] DEBUG: Medium posts text length: {len(medium_posts_text)}")
+        logger.info(f"[{expert_id}] DEBUG: Final prompt preview (first 500 chars): {base_prompt[:500]}")
 
         # Apply language instruction based on query language
         prompt = prepare_prompt_with_language_instruction(base_prompt, query)
@@ -324,6 +333,13 @@ Created: {post.get('created_at', '')}
             medium_posts = medium_posts[:self.max_medium_posts]
 
         logger.info(f"[{expert_id}] Medium Scoring Phase START: Scoring {len(medium_posts)} MEDIUM posts")
+
+        # Debug logging to check received posts
+        logger.info(f"[{expert_id}] DEBUG: Received {len(medium_posts)} medium posts for scoring")
+        for i, post in enumerate(medium_posts[:2]):  # Log first 2 posts with content
+            logger.info(f"[{expert_id}] DEBUG: Post {i+1} data: ID={post.get('telegram_message_id')}, "
+                       f"content_len={len(post.get('content', ''))}, "
+                       f"content_preview='{post.get('content', '')[:100]}'")
 
         # Score all MEDIUM posts
         try:
