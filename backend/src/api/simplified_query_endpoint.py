@@ -37,6 +37,7 @@ from ..services.comment_group_map_service import CommentGroupMapService
 from ..services.comment_synthesis_service import CommentSynthesisService
 from ..services.medium_scoring_service import MediumScoringService
 from ..services.translation_service import TranslationService
+from ..services.language_validation_service import LanguageValidationService
 
 logger = logging.getLogger(__name__)
 
@@ -279,6 +280,24 @@ async def process_expert_pipeline(
         progress_callback=reduce_progress
     )
 
+    # 5. NEW: Language Validation Phase
+    language_validation_service = LanguageValidationService(api_key=api_key)
+
+    async def validation_progress(data: dict):
+        if progress_callback:
+            data['expert_id'] = expert_id
+            await progress_callback(data)
+
+    validation_results = await language_validation_service.process(
+        answer=reduce_results.get("answer", ""),
+        query=request.query,
+        expert_id=expert_id,
+        progress_callback=validation_progress
+    )
+
+    # Use validated answer for subsequent phases
+    validated_answer = validation_results.get("answer", reduce_results.get("answer", ""))
+
     # 6. Comment Groups (optional)
     comment_groups = []
     comment_synthesis = None
@@ -349,7 +368,7 @@ async def process_expert_pipeline(
                 synthesis_service = CommentSynthesisService(api_key=api_key)
                 comment_synthesis = await synthesis_service.process(
                     query=request.query,
-                    main_answer=reduce_results.get("answer", ""),
+                    main_answer=validated_answer,  # Use validated answer
                     comment_groups=comment_groups_dict,
                     expert_id=expert_id
                 )
@@ -363,7 +382,7 @@ async def process_expert_pipeline(
         expert_id=expert_id,
         expert_name=get_expert_name(expert_id),
         channel_username=get_channel_username(expert_id),
-        answer=sanitize_for_json(reduce_results.get("answer", "")),
+        answer=sanitize_for_json(validated_answer),  # Use validated answer
         main_sources=reduce_results.get("main_sources", []),
         confidence=reduce_results.get("confidence", ConfidenceLevel.MEDIUM),
         posts_analyzed=reduce_results.get("posts_analyzed", 0),
