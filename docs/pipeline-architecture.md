@@ -1,17 +1,18 @@
 # Pipeline Architecture Guide
 
-Detailed guide for the six-phase Map-Resolve-Reduce pipeline with comment analysis capabilities.
+Detailed guide for the **seven-phase** Map-Resolve-Reduce pipeline with Medium Posts Hybrid Reranking and comment analysis capabilities.
 
 ## 🏗️ Overview
 
-The Experts Panel uses a sophisticated **six-phase pipeline** to process user queries and generate comprehensive answers from expert content:
+The Experts Panel uses a sophisticated **seven-phase pipeline** to process user queries and generate comprehensive answers from expert content:
 
 1. **Map Phase** - Find relevant posts via semantic search
-2. **Filter Phase** - Keep only HIGH relevance posts
-3. **Resolve Phase** - Expand context via database links
-4. **Reduce Phase** - Synthesize final answer
+2. **Medium Scoring Phase** - Score and select Medium posts with hybrid reranking
+3. **Differential Resolve Phase** - Expand context for HIGH posts only
+4. **Reduce Phase** - Synthesize final answer with all selected posts
 5. **Comment Groups** - Find relevant comment discussions
 6. **Comment Synthesis** - Extract complementary insights
+7. **Response Building** - Assemble final multi-expert response
 
 ## 🚀 Map Phase
 
@@ -64,34 +65,99 @@ Two-layer retry strategy ensures reliable processing:
 }
 ```
 
+## 🎯 Medium Scoring Phase
+
+### Purpose
+Intelligently score and select Medium relevance posts using hybrid reranking to identify valuable content that might be missed by simple HIGH/LOW filtering.
+
+### Implementation
+- **File**: `backend/src/services/medium_scoring_service.py`
+- **Model**: Qwen 2.5-72B Instruct
+- **Strategy**: Hybrid threshold + top-K selection
+- **Memory Management**: Maximum 50 Medium posts processed
+
+### Hybrid Reranking Algorithm
+
+#### Two-Stage Selection Process
+1. **Threshold Filtering**: Score ≥ 0.7 passes first filter
+2. **Top-K Selection**: From filtered posts, select top-5 by highest score
+
+#### Configuration Parameters
+```python
+MEDIUM_SCORE_THRESHOLD = 0.7      # Minimum score threshold
+MEDIUM_MAX_SELECTED_POSTS = 5     # Maximum posts to select
+MEDIUM_MAX_POSTS = 50           # Memory limit for processing
+```
+
+### Key Features
+
+#### Intelligent Scoring
+- **Contextual Evaluation**: Posts scored within query context
+- **Relevance Granulation**: Fine-grained scoring vs binary HIGH/LOW
+- **Content Quality Assessment**: Evaluates substance and insight value
+
+#### Memory Efficiency
+- **Chunked Processing**: Processes Medium posts in manageable batches
+- **Progressive Filtering**: Applies thresholds early to reduce load
+- **Resource Limits**: Hard caps prevent memory overflow
+
+### Process Flow
+1. **Collection**: Gather all MEDIUM relevance posts from Map phase
+2. **Scoring**: Rate each post on 0.0-1.0 scale for query relevance
+3. **Threshold Filter**: Keep posts scoring ≥ 0.7
+4. **Top-K Selection**: Select top-5 highest scoring posts
+5. **Output**: Pass selected posts to Reduce phase
+
+### Output Format
+```json
+{
+  "selected_medium_posts": [
+    {
+      "post_id": 456,
+      "score": 0.85,
+      "reason": "Directly addresses user's question with technical details"
+    }
+  ],
+  "total_medium_processed": 23,
+  "threshold_passed": 8,
+  "final_selected": 5
+}
+```
+
 ## 🔍 Filter Phase
 
 ### Purpose
-Remove LOW and MEDIUM relevance posts to focus on most relevant content.
+Remove LOW relevance posts while keeping HIGH and selected Medium posts for comprehensive coverage.
 
 ### Implementation
 - **File**: `backend/src/api/simplified_query_endpoint.py:144-148`
-- **Filter Logic**: Keep ONLY HIGH relevance posts
-- **Impact**: Reduces dataset by 60-70%
+- **Filter Logic**: Keep HIGH relevance posts + selected Medium posts
+- **Impact**: Reduces dataset by 40-50% while preserving valuable content
 
 ### Benefits
-- Improved precision in subsequent phases
-- Reduced token usage
-- Faster processing times
-- Better focus on highly relevant content
+- **Improved Precision**: Focuses on most relevant content
+- **Reduced Token Usage**: Optimizes processing efficiency
+- **Enhanced Coverage**: Medium scoring rescues valuable content
+- **Faster Processing**: Smaller, higher quality dataset
 
-## 🔗 Resolve Phase
+## 🔗 Differential Resolve Phase
 
 ### Purpose
-Expand context by following database links (replies, forwards, mentions).
+Expand context by following database links for HIGH relevance posts only, while selected Medium posts bypass this phase and go directly to Reduce.
 
 ### Implementation
 - **File**: `backend/src/services/simple_resolve_service.py`
 - **Strategy**: Database-only approach (no GPT evaluation)
 - **Depth**: Depth 1 expansion only
+- **Differential Processing**: HIGH posts → Resolve, Medium posts → bypass
+
+### Differential Processing Logic
+1. **HIGH Posts**: Processed through Resolve phase with linked posts
+2. **Selected Medium Posts**: Skip Resolve phase, go directly to Reduce
+3. **Efficiency**: Reduces processing time while maintaining quality
 
 ### Key Principles
-- **Trust Author's Links**: All author references are included
+- **Trust Author's Links**: All author references from HIGH posts are included
 - **Fast Processing**: 10x faster than GPT-based evaluation
 - **100% Accuracy**: Based on database structure, not text parsing
 - **Prevent Context Drift**: Limited depth prevents runaway expansion
@@ -105,13 +171,14 @@ Expand context by following database links (replies, forwards, mentions).
 ## ⚡ Reduce Phase
 
 ### Purpose
-Synthesize final answer using expanded context and expert's writing style.
+Synthesize final answer using HIGH posts with expanded context and selected Medium posts from hybrid reranking.
 
 ### Implementation
 - **File**: `backend/src/services/reduce_service.py`
 - **Model**: Gemini 2.0 Flash
 - **Cost**: $0.10/$0.40 per 1M tokens
 - **Style**: Personal or Neutral
+- **Input**: HIGH posts (with linked content) + selected Medium posts
 
 ### Answer Styles
 
@@ -135,10 +202,11 @@ Synthesize final answer using expanded context and expert's writing style.
 - Prevents hallucinated references
 
 #### Content Processing
-1. **Post Sorting**: By relevance (HIGH → MEDIUM → CONTEXT)
-2. **Token Limiting**: Maximum 50 posts
-3. **Context Construction**: Builds coherent narrative
-4. **Answer Synthesis**: Generates comprehensive response
+1. **Post Sorting**: HIGH posts (with linked content) → selected Medium posts → remaining context
+2. **Token Limiting**: Maximum 50 posts total
+3. **Priority Handling**: HIGH posts get priority, Medium posts supplement gaps
+4. **Context Construction**: Builds coherent narrative from diverse sources
+5. **Answer Synthesis**: Generates comprehensive response utilizing all selected content
 
 ### Output Format
 ```json
@@ -201,6 +269,54 @@ Extract complementary insights from relevant comment groups.
 3. **Synthesis**: Generate structured insights
 4. **Validation**: Ensure accuracy and relevance
 
+## 🏗️ Response Building Phase
+
+### Purpose
+Assemble the final multi-expert response combining main answer, comment insights, and comprehensive metadata.
+
+### Implementation
+- **File**: `backend/src/api/simplified_query_endpoint.py`
+- **Integration**: Combines outputs from Reduce and Comment Synthesis phases
+- **Multi-Expert Support**: Processes responses from all experts
+
+### Process Flow
+1. **Collection**: Gather outputs from Reduce phase for all experts
+2. **Comment Integration**: Add comment synthesis insights if available
+3. **Metadata Assembly**: Include source posts, confidence scores, processing stats
+4. **Response Formatting**: Structure final multi-expert response
+5. **SSE Transmission**: Stream complete response to client
+
+### Output Format
+```json
+{
+  "experts": [
+    {
+      "expert_id": "expert_name",
+      "answer": "Main synthesized answer",
+      "main_sources": [21, 65, 77],
+      "confidence": "HIGH",
+      "comment_insights": [
+        {
+          "insight": "Additional perspective from comments",
+          "comment_sources": ["post:123|group:456"]
+        }
+      ],
+      "processing_stats": {
+        "total_posts_processed": 156,
+        "high_posts": 12,
+        "medium_posts_selected": 5,
+        "processing_time_ms": 4500
+      }
+    }
+  ],
+  "query_metadata": {
+    "query": "User's original query",
+    "total_experts_processed": 3,
+    "total_processing_time_ms": 12000
+  }
+}
+```
+
 ## 🔄 Parallel Processing
 
 ### Multi-Expert Support
@@ -217,15 +333,15 @@ Extract complementary insights from relevant comment groups.
 ## 📊 Model Selection Strategy
 
 ### Model Rationale
-- **Qwen 2.5-72B**: Superior document ranking and relevance scoring
+- **Qwen 2.5-72B**: Superior document ranking, relevance scoring, and Medium post evaluation
 - **Gemini 2.0 Flash**: Better context synthesis and instruction following
 - **GPT-4o-mini**: Fast and cost-effective for matching tasks
 
 ### Performance Characteristics
 | Model | Use Case | Cost | Strengths |
 |-------|----------|------|-----------|
-| Qwen 2.5-72B | Map Phase | $0.08/$0.33 | Document ranking, relevance scoring |
-| Gemini 2.0 Flash | Reduce, Synthesis | $0.10/$0.40 | Context synthesis, instruction following |
+| Qwen 2.5-72B | Map Phase, Medium Scoring | $0.08/$0.33 | Document ranking, relevance scoring, fine-grained evaluation |
+| Gemini 2.0 Flash | Reduce, Comment Synthesis | $0.10/$0.40 | Context synthesis, instruction following |
 | GPT-4o-mini | Comment Groups | Fast/cheap | Keyword matching, fast processing |
 
 ## 🛠️ Configuration
@@ -236,8 +352,13 @@ Extract complementary insights from relevant comment groups.
 CHUNK_SIZE = 40  # Posts per chunk
 MAX_GLOBAL_RETRIES = 1  # Additional global retry attempts
 
+# Medium Scoring Phase
+MEDIUM_SCORE_THRESHOLD = 0.7  # Minimum score threshold
+MEDIUM_MAX_SELECTED_POSTS = 5  # Maximum posts to select
+MEDIUM_MAX_POSTS = 50  # Memory limit for processing
+
 # Filter Phase
-RELEVANCE_THRESHOLD = "HIGH"  # Only HIGH relevance posts
+RELEVANCE_THRESHOLD = "HIGH"  # Keep HIGH + selected Medium posts
 
 # Reduce Phase
 MAX_POSTS = 50  # Maximum posts for synthesis
@@ -252,6 +373,7 @@ MAX_PARALLEL_REQUESTS = 5  # Rate limiting
 ```python
 DEFAULT_MODELS = {
     "map": "qwen/qwen-2.5-72b-instruct",
+    "medium_scoring": "qwen/qwen-2.5-72b-instruct",
     "reduce": "google/gemini-2.0-flash-001",
     "comment_groups": "openai/gpt-4o-mini",
     "comment_synthesis": "google/gemini-2.0-flash-001"
@@ -287,6 +409,7 @@ grep "failed" backend/logs/app.log
 
 ### Core Pipeline Services
 - **Map Service**: `backend/src/services/map_service.py`
+- **Medium Scoring Service**: `backend/src/services/medium_scoring_service.py`
 - **Resolve Service**: `backend/src/services/simple_resolve_service.py`
 - **Reduce Service**: `backend/src/services/reduce_service.py`
 - **Comment Groups**: `backend/src/services/comment_group_map_service.py`
@@ -299,6 +422,7 @@ grep "failed" backend/logs/app.log
 
 ### Prompts and Templates
 - **Map Prompt**: `backend/prompts/map_prompt.txt`
+- **Medium Scoring Prompt**: `backend/prompts/medium_scoring_prompt.txt`
 - **Reduce Prompts**: `backend/prompts/reduce_prompt*.txt`
 - **Comment Prompts**: `backend/prompts/comment_*.txt`
 

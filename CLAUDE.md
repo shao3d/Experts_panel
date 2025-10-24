@@ -104,6 +104,7 @@ sqlite3 data/experts.db < backend/migrations/002_add_sync_state.sql
 sqlite3 data/experts.db < backend/migrations/003_add_expert_id.sql
 sqlite3 data/experts.db < backend/migrations/004_add_expert_id_to_drift.sql
 sqlite3 data/experts.db < backend/migrations/006_add_unique_telegram_message_id.sql
+sqlite3 data/experts.db < backend/migrations/008_add_comment_constraints.sql
 
 # Backup database
 sqlite3 data/experts.db ".backup data/backup.db"
@@ -157,13 +158,19 @@ The system uses a **seven-phase pipeline** with hybrid Medium posts reranking:
 - `MEDIUM_MAX_POSTS` - Memory limit for Medium posts processing (default: 50)
 
 ### Required Variables
-- `OPENAI_API_KEY` - OpenAI API key for LLM model access
+- `OPENROUTER_API_KEY` - OpenRouter API key for multi-model access
+
+### Optional Variables
+- `DATABASE_URL` - Database connection string (default: sqlite:///data/experts.db)
+- `MAX_POSTS_LIMIT` - Maximum posts to process (default: 500)
+- `CHUNK_SIZE` - Posts per processing chunk (default: 20)
+- `REQUEST_TIMEOUT` - Request timeout in seconds (default: 300)
 
 ## 🚀 SERVER STARTUP GUIDE
 
 ### 📋 Prerequisites Check
 Before starting servers, ensure:
-- ✅ `.env` file exists in project root with `OPENAI_API_KEY`
+- ✅ `.env` file exists in project root with `OPENROUTER_API_KEY`
 - ✅ Python 3.11+ available (`python3 --version`)
 - ✅ Node.js 18+ available (`node --version`)
 - ✅ SQLite database path ready
@@ -185,7 +192,7 @@ cd backend && uv run uvicorn src.api.main:app --reload --port 8000
 - Server starts on http://127.0.0.1:8000
 - Database tables verified/created message
 - Health endpoint: http://localhost:8000/health
-- Response: `{"status":"healthy","database":"healthy","openai_configured":true}`
+- Response: `{"status":"healthy","database":"healthy","openrouter_configured":true}`
 
 **❌ DOES NOT WORK:**
 - `source .env && python3...` - Environment loading issues
@@ -223,7 +230,7 @@ cd frontend && npm run dev
 ### 🚨 Troubleshooting
 **Backend Issues:**
 - Check `.env` file exists in project root
-- Verify `OPENAI_API_KEY` is set
+- Verify `OPENROUTER_API_KEY` is set
 - Ensure port 8000 is not occupied
 - Use `python3` not `python` command
 
