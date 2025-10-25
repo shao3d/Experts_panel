@@ -16,7 +16,7 @@ Users currently see basic progress information but lack detailed understanding o
 
 ## Success Criteria
 - [ ] User sees warning indicator when any phase exceeds 180 seconds
-- [ ] Active phase shows contextual description (e.g., "Поиск релевантных постов...")
+- [ ] Active phase shows contextual description (e.g., "Searching relevant posts...")
 - [ ] Real-time expert count displays during processing
 - [ ] All improvements fit within existing UI space constraints
 - [ ] No breaking changes to existing progress flow
@@ -112,7 +112,7 @@ Since we're enhancing the ProgressSection with better user feedback, the integra
 
 **Contextual Phase Descriptions:**
 - Current `getPhaseStatus()` function can be extended to provide descriptions
-- Need mapping from phase names to user-friendly descriptions in Russian
+- Need mapping from phase names to user-friendly descriptions in English
 - Should appear near existing phase indicators without disrupting layout
 - Must respect existing space constraints (140px container height)
 
