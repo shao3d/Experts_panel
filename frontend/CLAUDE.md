@@ -467,26 +467,48 @@ const apiClient = new APIClient('https://your-domain.com');
 ```
 
 ### Production Deployment Configuration
-The frontend is configured for production deployment with nginx:
+The frontend is production-ready with Docker multi-stage build and nginx optimization:
 
-#### Docker Configuration
-- **Multi-stage build**: Node.js build stage + nginx production stage
-- **Base images**: node:18-alpine (build), nginx:alpine (production)
-- **Static serving**: nginx serves optimized build files from /usr/share/nginx/html
-- **Port**: 80 (standard HTTP port)
+#### Production Docker Architecture
+- **Multi-stage build**: Node.js build stage + nginx:alpine production stage
+- **Build optimization**: Asset minification, source map generation disabled
+- **Static serving**: nginx serves optimized files from `/usr/share/nginx/html`
+- **Resource limits**: 256MB memory, 0.25 CPU limit, 128MB reservation
+- **Health checks**: Built-in nginx health check with 30s intervals
 
-#### Nginx Features
-- **API proxy**: `/api/*` requests proxied to backend service
-- **SSE support**: Special headers for Server-Sent Events streaming
-- **SPA routing**: All non-file requests served to index.html
-- **Gzip compression**: Automatic compression for text-based assets
-- **Static caching**: Long-term caching for JS/CSS/image assets
+#### Production Nginx Configuration
+- **SSL termination**: HTTPS handled by external nginx reverse proxy
+- **API proxy**: `/api/*` requests proxied to backend-api service
+- **SSE support**: Special headers and buffering for Server-Sent Events
+- **SPA routing**: All non-file requests served to index.html for client-side routing
+- **Static caching**: 1-year cache for immutable assets (JS, CSS, images)
+- **Gzip compression**: Automatic compression for text-based responses
+- **Security headers**: HSTS, X-Frame-Options, CSP, etc. applied by reverse proxy
+
+#### Production Environment Variables
+```bash
+# Production API URL (automatically configured)
+REACT_APP_API_URL=${PRODUCTION_ORIGIN}/api
+
+# Build optimizations
+GENERATE_SOURCEMAP=false
+NODE_ENV=production
+```
 
 #### Production vs Development
-- **Development**: Vite dev server on port 5173 with HMR
-- **Production**: nginx serving static files with API proxy
-- **API communication**: Uses relative URLs (`/api/*`) in production
-- **Environment detection**: Base URL configured per deployment environment
+- **Development**: Vite dev server on port 5173 with HMR and source maps
+- **Production**: nginx serving optimized static files with API proxy
+- **API communication**: Uses relative URLs (`/api/*`) in production, absolute in development
+- **Environment detection**: Base URL automatically configured from PRODUCTION_ORIGIN
+- **Error handling**: Production error boundaries and fallback UI
+
+#### Production Deployment Workflow
+```bash
+# Deploy frontend with full application
+./deploy.sh                    # Automated deployment includes frontend build
+./deploy.sh status            # Check frontend service status
+./deploy.sh logs              # View nginx and frontend logs
+```
 
 ### Health Check
 ```typescript
@@ -570,29 +592,61 @@ const posts = await apiClient.getPostsByIds([1, 2, 3]);
 - No virtualization needed (small result sets)
 - Simple grid layout (no complex calculations)
 
+## Production Performance and Security
+
+### Performance Optimization
+- **Asset Optimization**: Minified JS/CSS, compressed images, optimized bundle size
+- **Caching Strategy**: 1-year cache for static assets, cache-busting via filenames
+- **CDN Ready**: Static assets can be served via CDN in enterprise deployments
+- **Compression**: Gzip compression enabled for all text-based responses
+- **Resource Limits**: Memory and CPU constraints prevent resource exhaustion
+
+### Security Features
+- **HTTPS Only**: All production traffic forced to HTTPS via reverse proxy
+- **Security Headers**: HSTS, X-Frame-Options, CSP, and other headers applied
+- **Content Security**: Static files served with proper MIME types and security headers
+- **API Security**: Frontend communicates with backend via secure reverse proxy
+- **No Secrets**: No API keys or secrets stored in frontend build
+
+### Monitoring and Debugging
+- **Health Checks**: Built-in endpoint for monitoring service health
+- **Error Boundaries**: Graceful error handling with fallback UI
+- **Console Logging**: Structured logging for production debugging
+- **Performance Metrics**: Bundle size, loading times, and runtime performance
+- **SSE Reliability**: Robust Server-Sent Events handling with reconnection
+
 ## Future Enhancements
 
 When moving beyond MVP:
 
 1. **Styling System**
    - Replace inline styles with CSS modules or styled-components
-   - Add dark mode support
-   - Implement responsive breakpoints
+   - Add dark mode support with system preference detection
+   - Implement responsive breakpoints for mobile/tablet/desktop
 
 2. **State Management**
    - Consider Zustand/Redux if state grows complex
-   - Add persistence for query history
+   - Add persistence for query history and user preferences
+   - Implement optimistic updates for better UX
 
 3. **Testing**
    - Add Jest + React Testing Library
-   - Mock SSE streams for testing
-   - Component snapshot tests
+   - Mock SSE streams for testing progress updates
+   - Component snapshot tests and integration testing
+   - E2E testing with Playwright or Cypress
 
 4. **Advanced Features**
-   - Source post preview on hover
-   - Export results to PDF/JSON
-   - Query history and bookmarks
-   - Advanced filtering options
+   - Source post preview on hover with lightweight summaries
+   - Export results to PDF/JSON with formatting options
+   - Query history with search and bookmark functionality
+   - Advanced filtering and sorting options for posts
+   - Real-time collaboration features for multi-user scenarios
+
+5. **Production Enhancements**
+   - Progressive Web App (PWA) capabilities
+   - Offline support for cached queries and results
+   - Advanced analytics and error tracking
+   - A/B testing framework for UI experiments
 
 ## Troubleshooting
 
@@ -616,3 +670,37 @@ When moving beyond MVP:
 - **Inconsistent IDs**: Verify DOM ID pattern matches between PostCard (generation) and PostsList (lookup)
 - **Multi-Expert Problems**: Ensure expertId is correctly passed through component hierarchy
 - **Console Errors**: Look for "element not found" errors when clicking post references
+
+### Production Deployment Issues
+- **Build failures**: Check Dockerfile paths and package.json dependencies
+- **Health check failures**: Verify nginx health check responds correctly on port 80
+- **Environment variables**: Ensure PRODUCTION_ORIGIN and REACT_APP_API_URL configured properly
+- **SSL certificate issues**: Check `./update-ssl.sh status` and certificate validity
+- **Deployment failures**: Run `./deploy.sh check` to validate all prerequisites
+- **Service connectivity**: Verify nginx reverse proxy can reach frontend-app service
+- **API proxy issues**: Check that `/api/*` requests are properly proxied to backend
+- **Static asset serving**: Verify nginx can serve files from `/usr/share/nginx/html`
+
+### Production Performance Issues
+- **Slow loading**: Check asset compression and caching headers
+- **Memory issues**: Monitor container resource usage with `docker stats`
+- **SSE timeouts**: Verify nginx proxy settings for long-running connections
+- **Bundle size**: Use build tools to analyze and optimize JavaScript bundle
+
+### Production Debugging
+```bash
+# Check frontend service health
+curl http://localhost/health
+
+# View nginx configuration
+docker-compose exec frontend-app nginx -T
+
+# Test static asset serving
+curl -I https://your-domain.com/
+
+# Check nginx logs
+docker-compose logs nginx-reverse-proxy
+
+# Debug build process
+docker-compose build frontend-app
+```

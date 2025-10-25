@@ -10,8 +10,8 @@ Auto-generated from feature plans. Last updated: 2025-10-25
   - Qwen 2.5-72B Instruct for Map phase and Language Validation
   - Gemini 2.0 Flash for Reduce and Comment Synthesis
   - GPT-4o-mini for Comment Groups matching and Medium posts scoring
-- Docker for deployment
-- VPS/Cloud hosting ready
+- Docker for development and production deployment
+- Production-ready VPS/cloud hosting with SSL/HTTPS, security hardening, and automated deployment
 
 ## Project Structure
 ```
@@ -35,6 +35,15 @@ frontend/
 data/
 ├── exports/          # Telegram JSON files
 └── experts.db        # SQLite database
+
+deployment/
+├── docker-compose.prod.yml  # Production Docker configuration
+├── deploy.sh              # Automated deployment script
+├── update-ssl.sh         # SSL certificate management
+├── .env.production.example # Production environment template
+├── nginx/               # SSL and reverse proxy configuration
+├── ssl/                 # SSL certificates (Let's Encrypt)
+└── security/            # VPS security hardening scripts
 ```
 
 ## 🗺️ Key Documentation References
@@ -42,6 +51,8 @@ data/
 ### Core Architecture
 - **Pipeline Architecture**: `/docs/pipeline-architecture.md` 🚀
 - **Multi-Expert Setup**: `/docs/multi-expert-guide.md` 👥
+- **Production Deployment**: `DEPLOYMENT.md` 🌐
+- **Quick Start Guide**: `QUICK_START.md` ⚡
 
 ### Quick Reference
 - **Database Operations**: See `models/database.py`
@@ -113,6 +124,82 @@ sqlite3 data/experts.db ".backup data/backup.db"
 # Query drift groups
 sqlite3 data/experts.db "SELECT post_id, has_drift, analyzed_at FROM comment_group_drift WHERE has_drift=1;"
 ```
+
+## 🚀 Production Deployment (Docker + VPS)
+
+### Prerequisites
+- Ubuntu/Debian VPS with sudo access
+- Domain name pointing to VPS IP
+- OpenRouter API key
+- Latest `experts.db` database file
+
+### Quick Production Deployment (15 minutes)
+```bash
+# 1. VPS Setup
+sudo apt update && sudo apt upgrade -y
+sudo apt install -y curl wget git docker.io docker-compose-plugin certbot
+sudo usermod -aG docker $USER
+newgrp docker
+
+git clone https://github.com/your-username/experts-panel.git
+cd experts-panel
+git checkout feature/docker-deployment-vps
+
+# 2. SSL Certificate Setup
+sudo certbot certonly --standalone -d your-domain.com
+sudo cp /etc/letsencrypt/live/your-domain.com/fullchain.pem ./ssl/
+sudo cp /etc/letsencrypt/live/your-domain.com/privkey.pem ./ssl/
+sudo chown $USER:$USER ./ssl/*
+chmod 600 ./ssl/privkey.pem
+chmod 644 ./ssl/fullchain.pem
+
+# 3. Environment Configuration
+cp .env.production.example .env.production
+nano .env.production  # Set OPENAI_API_KEY and PRODUCTION_ORIGIN
+
+# 4. Database Upload
+mkdir -p data
+# Upload your experts.db file to ./data/ directory
+
+# 5. Deploy Application
+chmod +x deploy.sh update-ssl.sh
+./deploy.sh
+
+# 6. Security Hardening (Optional but Recommended)
+chmod +x security/harden-vps.sh
+sudo ./security/harden-vps.sh
+```
+
+### Production Management Commands
+```bash
+# Check deployment status
+./deploy.sh status
+
+# View application logs
+./deploy.sh logs
+
+# Restart services
+./deploy.sh restart
+
+# SSL certificate management
+./update-ssl.sh status
+sudo ./update-ssl.sh setup-auto  # Setup automatic renewal
+
+# Health check
+curl https://your-domain.com/health
+```
+
+### Production Architecture
+- **3-Service Docker Setup**: nginx-reverse-proxy, backend-api, frontend-app
+- **SSL/HTTPS Termination**: Let's Encrypt with automated renewal
+- **Security Hardening**: UFW firewall, fail2ban, SSH hardening
+- **Resource Limits**: Memory and CPU constraints for production stability
+- **Health Monitoring**: Built-in health checks and automatic restarts
+
+### Detailed Documentation
+- **Complete Guide**: See `DEPLOYMENT.md` for comprehensive deployment instructions
+- **Quick Reference**: See `QUICK_START.md` for rapid deployment steps
+- **Security**: See `security/README.md` for VPS hardening details
 
 ## Code Style
 
@@ -258,6 +345,7 @@ curl -X POST http://localhost:8000/api/v1/query \
 
 ## 📋 Recent Changes (Last 30 days)
 
+- **2025-10-26**: Docker Deployment VPS Implementation - Complete production-ready deployment infrastructure with automated deployment script, SSL/HTTPS configuration, security hardening, and comprehensive documentation
 - **2025-10-25**: Enhanced Progress UI with Real-time Expert Feedback - Added contextual phase descriptions, active expert count display, warning indicators for long-running processes, and frontend-only final_results phase
 - **2025-10-25**: Language Validation Phase Implementation - Added eight-phase pipeline with language consistency validation and Russian-to-English translation
 - **2025-10-24**: Fixed Post ID Scrolling for Multi-Expert Interface - Standardized DOM ID generation between PostCard and PostsList components using consistent expertId prop
@@ -351,6 +439,10 @@ For MVP, use validation through prepared Q&A sets:
 - **PostCard Component**: `frontend/src/components/PostCard.tsx`
 - **PostsList Component**: `frontend/src/components/PostsList.tsx`
 - **Migration Scripts**: `backend/migrations/`
+- **Production Deployment**: `docker-compose.prod.yml`, `deploy.sh`, `update-ssl.sh`
+- **SSL Configuration**: `nginx/nginx-prod.conf`, `ssl/` directory
+- **Security Scripts**: `security/harden-vps.sh`
+- **Environment Templates**: `.env.production.example`
 
 ## Sessions System Behaviors
 

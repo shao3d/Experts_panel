@@ -27,41 +27,65 @@ The backend implements a sophisticated query processing system that retrieves re
 - `POST /api/v1/import` - Import Telegram JSON data with expert assignment
 
 ## Production Deployment Configuration
-### Build Configuration
-- **Builder**: Dockerfile-based deployment
-- **Dockerfile**: `backend/Dockerfile` with Python 3.11 slim image
-- **Health Check**: `/health` endpoint with 30s intervals
-- **Restart Policy**: Always restart on failure
+### Docker Production Architecture
+- **Production Dockerfile**: `backend/Dockerfile` with multi-stage build and security hardening
+- **Health Check**: `/health` endpoint with 30s intervals, 40s start period
+- **Restart Policy**: `unless-stopped` for production stability
+- **Resource Limits**: 1GB memory, 0.5 CPU limit, 512MB reservation
+- **Security**: Non-root appuser, read-only filesystem where possible
 
-### Required Environment Variables
+### Production Environment Variables
 ```bash
-# Required
-OPENAI_API_KEY=sk-your-openai-api-key
-DATABASE_URL=sqlite:///data/experts.db  # SQLite for local/VPS deployment
+# Required: OpenRouter API (uses OPENAI_API_KEY variable name)
+OPENAI_API_KEY=sk-your-openrouter-api-key-here
 
-# Production settings
+# Database Configuration
+DATABASE_URL=sqlite:///data/experts.db
+
+# Production Domain (must match SSL certificate)
 PRODUCTION_ORIGIN=https://your-domain.com
+
+# Production Settings
+ENVIRONMENT=production
 API_HOST=0.0.0.0
 API_PORT=8000
 LOG_LEVEL=INFO
-
-# Production environment
 PORT=8000
-ENVIRONMENT=production
 
-# Optional: Telegram API for sync
-TELEGRAM_API_ID=12345678
-TELEGRAM_API_HASH=your-api-hash
-TELEGRAM_CHANNEL=channel-name
+# Performance Settings
+MAX_POSTS_LIMIT=500
+CHUNK_SIZE=20
+REQUEST_TIMEOUT=300
+
+# Optional: Telegram API for synchronization
+TELEGRAM_API_ID=your-telegram-api-id
+TELEGRAM_API_HASH=your-telegram-api-hash
+TELEGRAM_CHANNEL=your-channel-name
 ```
 
-### Docker Configuration
-- **Base Image**: Python 3.11-slim
+### Production Docker Configuration
+- **Base Image**: Python 3.11-slim with security updates
 - **Working Directory**: /app
-- **User**: Non-root appuser for security
+- **User**: Non-root appuser (UID 1000) for security
 - **Health Check**: Built-in Docker health check with curl
-- **Port**: 8000 exposed
-- **Command**: `uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --log-level debug`
+- **Port**: 8000 exposed to internal network only
+- **Command**: `python -m uvicorn src.api.main:app --host 0.0.0.0 --port ${PORT:-8000} --log-level info`
+- **Volumes**: `/app/data` for SQLite persistence, `/app/logs` for application logs
+
+### Production Deployment Workflow
+```bash
+# Quick production deployment (15 minutes)
+./deploy.sh                    # Automated deployment with health checks
+./deploy.sh status            # Check service status
+./deploy.sh logs              # View application logs
+./deploy.sh restart           # Restart services
+```
+
+### SSL and HTTPS Configuration
+- **SSL Termination**: Handled by nginx reverse proxy
+- **Security Headers**: HSTS, X-Frame-Options, CSP, etc.
+- **Certificate Management**: Automated Let's Encrypt renewal via `update-ssl.sh`
+- **HTTPS Only**: All traffic redirected to HTTPS in production
 
 ## Integration Points
 
@@ -157,22 +181,56 @@ curl -X POST http://localhost:8000/api/v1/query \
 
 ## Production Deployment Notes
 
-### Database Migration
-- SQLite local development → SQLite production (copy or backup/restore)
-- Migration scripts in `migrations/` directory
-- Automatic database initialization on first run
+### Production Architecture Overview
+- **3-Service Setup**: nginx-reverse-proxy → backend-api → frontend-app
+- **Internal Network**: Custom Docker network (172.20.0.0/16) for secure communication
+- **SSL Termination**: nginx handles HTTPS, backend receives HTTP internally
+- **Resource Isolation**: Memory and CPU limits per service
 
-### Security Considerations
-- Non-root Docker user
-- Environment variable validation
-- SQL injection protection
-- CORS configuration for production domains
+### Database Management
+- **Persistence**: SQLite database mounted at `/app/data/experts.db`
+- **Backup Strategy**: Manual backup via `sqlite3 .backup` or file copy
+- **Migration**: Upload development database to production VPS
+- **Permissions**: Database file owned by appuser (UID 1000)
 
-### Performance Optimization
-- Health checks for zero-downtime deployments
-- Automatic restarts on failure
-- Comprehensive logging for debugging
-- Resource monitoring via hosting provider dashboard
+### Security Hardening
+- **Non-root Container**: Backend runs as appuser (UID 1000)
+- **Network Isolation**: Only accessible via nginx reverse proxy
+- **Environment Variables**: Sensitive data passed via Docker environment
+- **Health Monitoring**: Built-in health checks with automatic restarts
+- **CORS Configuration**: Locked to production domain only
+
+### Performance and Monitoring
+- **Resource Limits**: 1GB memory, 0.5 CPU limit for stability
+- **Health Checks**: 30s intervals, 40s start period, 3 retries
+- **Logging**: Structured JSON logs to `/app/logs` directory
+- **Restart Policy**: `unless-stopped` for high availability
+- **Graceful Shutdown**: 10s timeout for SIGTERM handling
+
+### VPS Security Integration
+- **Firewall**: UFW configured to allow only HTTPS (443) and HTTP (80)
+- **Intrusion Prevention**: fail2ban for SSH and web protection
+- **SSL Certificates**: Automated Let's Encrypt renewal
+- **SSH Hardening**: Key-based authentication only, root login disabled
+- **System Updates**: Automatic security patch management
+
+### Production Troubleshooting
+```bash
+# Check service health
+curl https://your-domain.com/health
+
+# View backend logs
+./deploy.sh logs | grep backend-api
+
+# Debug database connectivity
+docker-compose exec backend-api sqlite3 data/experts.db ".tables"
+
+# Monitor resource usage
+docker stats experts-panel-backend
+
+# Check SSL certificates
+./update-ssl.sh status
+```
 
 ## Language Enforcement System
 
@@ -209,11 +267,14 @@ enhanced_prompt = prepare_prompt_with_language_instruction(prompt_template, quer
 ```
 
 ## Related Documentation
-- `DEPLOYMENT.md` - Complete deployment guide
+- `DEPLOYMENT.md` - Complete production deployment guide
+- `QUICK_START.md` - 15-minute VPS deployment quick start
 - `frontend/CLAUDE.md` - Frontend architecture and API integration
 - `prompts/README.md` - LLM prompt documentation
 - `migrations/` - Database migration scripts
 - `../CLAUDE.md` - Overall project architecture and commands
+- `security/README.md` - VPS security hardening guide
+- `nginx/nginx-prod.conf` - Production SSL and reverse proxy configuration
 
 ## Troubleshooting Common Issues
 
