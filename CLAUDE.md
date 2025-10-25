@@ -258,6 +258,7 @@ curl -X POST http://localhost:8000/api/v1/query \
 
 ## 📋 Recent Changes (Last 30 days)
 
+- **2025-10-25**: Enhanced Progress UI with Real-time Expert Feedback - Added contextual phase descriptions, active expert count display, warning indicators for long-running processes, and frontend-only final_results phase
 - **2025-10-25**: Language Validation Phase Implementation - Added eight-phase pipeline with language consistency validation and Russian-to-English translation
 - **2025-10-24**: Fixed Post ID Scrolling for Multi-Expert Interface - Standardized DOM ID generation between PostCard and PostsList components using consistent expertId prop
 - **2025-10-23**: Medium Posts Hybrid Reranking System - GPT-4o-mini scoring with threshold ≥0.7 and top-5 selection
@@ -310,6 +311,15 @@ curl -X POST http://localhost:8000/api/v1/query \
 - **SSE Progress Tracking**: Real-time validation status updates with expert_id context
 - **Multi-Expert Support**: Maintains expert isolation throughout validation process
 
+### Enhanced Progress UI System
+- **Real-time Expert Feedback**: Displays active expert count during processing with contextual messages
+- **Contextual Phase Descriptions**: User-friendly descriptions for each pipeline phase (Map, Resolve, Reduce, Comments, Final)
+- **Warning Indicators**: Visual warnings (orange color, ⚠️ icon) for processes exceeding 300 seconds
+- **Frontend-only Phase Management**: Final_results phase exists only in frontend for completion detection
+- **Enhanced Phase Status Logic**: Resolve phase combines with medium_scoring events for comprehensive status tracking
+- **Multi-Expert Progress Tracking**: Active expert count extracted from SSE events using expert_id
+- **Improved User Experience**: Better text layout with proper spacing and colon formatting
+
 *For detailed multi-expert setup see `/docs/multi-expert-guide.md`*
 
 ## 🛠️ Testing Strategy
@@ -337,6 +347,7 @@ For MVP, use validation through prepared Q&A sets:
 - **Database Models**: `backend/src/models/`
 - **Prompts**: `backend/prompts/`
 - **Frontend Components**: `frontend/src/components/`
+- **ProgressSection Component**: `frontend/src/components/ProgressSection.tsx`
 - **PostCard Component**: `frontend/src/components/PostCard.tsx`
 - **PostsList Component**: `frontend/src/components/PostsList.tsx`
 - **Migration Scripts**: `backend/migrations/`

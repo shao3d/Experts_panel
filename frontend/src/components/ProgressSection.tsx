@@ -39,6 +39,39 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({ isProcessing, progres
 
   // Determine phase status based on events
   const getPhaseStatus = (phaseName: string): 'pending' | 'active' | 'completed' => {
+    // Special handling for resolve phase - include medium_scoring events
+    if (phaseName === 'resolve') {
+      const resolveEvents = progressEvents.filter(e => e.phase === 'resolve');
+      const scoringEvents = progressEvents.filter(e => e.phase === 'medium_scoring');
+
+      if (resolveEvents.length > 0 || scoringEvents.length > 0) {
+        const lastResolve = resolveEvents[resolveEvents.length - 1];
+        const lastScoring = scoringEvents[scoringEvents.length - 1];
+
+        // Check if either is still processing
+        const resolveActive = lastResolve?.status !== 'completed';
+        const scoringActive = lastScoring?.status !== 'completed';
+
+        if (resolveActive || scoringActive) return 'active';
+        return 'completed';
+      }
+      return 'pending';
+    }
+
+    // Special handling for final_results phase
+    if (phaseName === 'final_results') {
+      if (!isProcessing) {
+        // Check if all other phases are completed
+        const otherPhases = phases.filter(p => p.name !== 'final_results');
+        const allCompleted = otherPhases.every(p => getPhaseStatus(p.name) === 'completed');
+        return allCompleted ? 'completed' : 'pending';
+      }
+      // Check if all other phases are completed but we're still processing
+      const otherPhases = phases.filter(p => p.name !== 'final_results');
+      const allCompleted = otherPhases.every(p => getPhaseStatus(p.name) === 'completed');
+      return allCompleted ? 'active' : 'pending';
+    }
+
     const phaseEvents = progressEvents.filter(e => e.phase === phaseName);
     if (phaseEvents.length === 0) return 'pending';
 
@@ -49,16 +82,46 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({ isProcessing, progres
     return 'active';
   };
 
+  // Get contextual description for active phases
+  const getActivePhaseMessage = (phaseName: string): string => {
+    const messages: Record<string, string> = {
+      'map': 'Searching relevant posts...',
+      'resolve': 'Analyzing connections and scoring medium posts...',
+      'reduce': 'Generating comprehensive answer...',
+      'comment_groups': 'Finding relevant discussions...',
+      'language_validation': 'Validating response language...',
+      'comment_synthesis': 'Extracting discussion insights...',
+      'final_results': 'Assembling expert responses...'
+    };
+    return messages[phaseName] || 'Processing...';
+  };
+
+  // Get active expert count from progress events
+  const getActiveExpertsCount = (): number => {
+    const activeExperts = new Set();
+    progressEvents.forEach(event => {
+      if (event.data?.expert_id && event.event_type !== 'complete') {
+        activeExperts.add(event.data.expert_id);
+      }
+    });
+    return activeExperts.size;
+  };
+
+  // Define phases for active phase detection
+  const phases = [
+    { name: 'map', label: 'Map', icon: '🔍' },
+    { name: 'resolve', label: 'Resolve', icon: '🔗' },
+    { name: 'reduce', label: 'Reduce', icon: '⚡' },
+    { name: 'comment_groups', label: 'Comments', icon: '💬' },
+    { name: 'final_results', label: 'Final', icon: '🎯' }
+  ];
+
+  // Find active phase for contextual description
+  const activePhase = phases.find(p => getPhaseStatus(p.name) === 'active');
+
   // Render compact phase progress line with checkboxes
   const renderPhaseProgressLine = () => {
     if (progressEvents.length === 0 && !isProcessing) return null;
-
-    const phases = [
-      { name: 'map', label: 'Map', icon: '🔍' },
-      { name: 'resolve', label: 'Resolve', icon: '🔗' },
-      { name: 'reduce', label: 'Reduce', icon: '⚡' },
-      { name: 'comment_groups', label: 'Comments', icon: '💬' }
-    ];
 
     return (
       <div style={{
@@ -73,15 +136,19 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({ isProcessing, progres
         {phases.map((phase, index) => {
           const status = getPhaseStatus(phase.name);
           const isLast = index === phases.length - 1;
+          const isHanging = status === 'active' && elapsedSeconds >= 300;
 
           return (
             <React.Fragment key={phase.name}>
               <span style={{
                 color: status === 'completed' ? '#28a745' :
+                       isHanging ? '#ff9800' :
                        status === 'active' ? '#0066cc' : '#adb5bd',
                 fontWeight: status === 'active' ? 'bold' : 'normal'
               }}>
-                {status === 'completed' ? '✓' : status === 'active' ? phase.icon : phase.icon}
+                {status === 'completed' ? '✓' :
+                 isHanging ? '⚠️' :
+                 status === 'active' ? phase.icon : phase.icon}
                 {' '}{phase.label}
               </span>
               {!isLast && <span style={{ color: '#dee2e6' }}>→</span>}
@@ -90,8 +157,13 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({ isProcessing, progres
         })}
 
         {isProcessing && (
-          <span style={{ color: '#6c757d', marginLeft: '8px' }}>
+          <span style={{ color: elapsedSeconds >= 300 ? '#ff9800' : '#6c757d', marginLeft: '8px' }}>
             ({elapsedSeconds} seconds)
+            {elapsedSeconds >= 300 && (
+              <span style={{ color: '#ff9800', marginLeft: '4px' }}>
+                ⚠️
+              </span>
+            )}
           </span>
         )}
       </div>
@@ -133,6 +205,29 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({ isProcessing, progres
                 </span>
                 <span style={{ fontSize: '14px', color: '#6c757d' }}>seconds</span>
               </div>
+            </div>
+          )}
+          {isProcessing && (
+            <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ fontSize: '14px', color: '#495057', fontWeight: '500' }}>
+                  Processing {getActiveExpertsCount()} experts:
+                </span>
+              </div>
+              {activePhase && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ fontSize: '14px', color: '#0066cc' }}>
+                    {getActivePhaseMessage(activePhase.name)}
+                  </span>
+                </div>
+              )}
+              {elapsedSeconds >= 300 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ fontSize: '14px', color: '#ff9800' }}>
+                    ⚠️ Taking longer than expected
+                  </span>
+                </div>
+              )}
             </div>
           )}
           {!isProcessing && !stats && progressEvents.length === 0 && (

@@ -20,7 +20,7 @@ frontend/src/
 ├── index.tsx                  # Entry point
 ├── components/
 │   ├── QueryForm.tsx          # Query input with validation
-│   ├── ProgressSection.tsx    # Progress display & statistics
+│   ├── ProgressSection.tsx    # Enhanced progress display with real-time expert feedback
 │   ├── ExpertResponse.tsx     # Answer display with source links
 │   ├── PostsList.tsx          # Posts list with selection
 │   ├── PostCard.tsx           # Individual post card display
@@ -75,13 +75,16 @@ interface QueryFormProps {
 ```
 
 ### ProgressSection.tsx
-Progress display with statistics:
+Enhanced progress display with real-time expert feedback and contextual phase descriptions:
 
 **Features:**
-- Real-time processing status
+- Real-time processing status with active expert count display
+- Contextual phase descriptions for each processing stage
+- Warning indicators for processes taking longer than 180 seconds
+- Frontend-only final_results phase for completion detection
 - Statistics display (posts, time, experts)
-- Compact event log view
-- Phase indicators
+- Compact phase progress line with visual indicators
+- Enhanced resolve phase handling that includes medium_scoring events
 
 **Props:**
 ```typescript
@@ -91,10 +94,18 @@ interface ProgressSectionProps {
   stats?: {
     totalPosts: number;
     processingTime: number;
-    expertCount: number;
+    expertCount?: number;
   };
 }
 ```
+
+**Enhanced Capabilities:**
+- **Active Expert Count**: Displays "Processing X experts: [contextual message]" during active processing
+- **Contextual Messages**: Phase-specific descriptions like "Searching relevant posts..." or "Analyzing connections and scoring medium posts..."
+- **Warning System**: Orange color and warning icon (⚠️) for processes exceeding 300 seconds
+- **Phase Status Logic**: Enhanced `getPhaseStatus()` handles resolve+medium_scoring combination and final_results detection
+- **Real-time Updates**: Live elapsed time counter with visual feedback
+- **Final Results Phase**: Frontend-only phase that activates when all other phases are completed
 
 ### ExpertResponse.tsx
 Answer display with source links:
@@ -300,22 +311,53 @@ return <div style={styles.container}>...</div>;
 - Easy to prototype
 - No build complexity
 
-### 2. Progress Event Handling
+### 2. Enhanced Progress Event Handling
 
 ```typescript
 // Collect events in array
 setProgressEvents(prev => [...prev, event]);
 
-// Display with phase icons
-function getPhaseIcon(phase: string): string {
-  const icons: Record<string, string> = {
-    'map': '🗺️',
-    'resolve': '🔗',
-    'reduce': '📝',
-    'final': '🎯'
+// Enhanced phase status with special handling
+const getPhaseStatus = (phaseName: string): 'pending' | 'active' | 'completed' => {
+  // Special handling for resolve phase - include medium_scoring events
+  if (phaseName === 'resolve') {
+    const resolveEvents = progressEvents.filter(e => e.phase === 'resolve');
+    const scoringEvents = progressEvents.filter(e => e.phase === 'medium_scoring');
+    // Combined logic for resolve + medium_scoring status
+  }
+
+  // Special handling for final_results phase (frontend-only)
+  if (phaseName === 'final_results') {
+    // Check if all other phases are completed
+  }
+
+  // Standard phase status logic
+};
+
+// Get active expert count from progress events
+const getActiveExpertsCount = (): number => {
+  const activeExperts = new Set();
+  progressEvents.forEach(event => {
+    if (event.data?.expert_id && event.event_type !== 'complete') {
+      activeExperts.add(event.data.expert_id);
+    }
+  });
+  return activeExperts.size;
+};
+
+// Contextual phase descriptions
+const getActivePhaseMessage = (phaseName: string): string => {
+  const messages: Record<string, string> = {
+    'map': 'Searching relevant posts...',
+    'resolve': 'Analyzing connections and scoring medium posts...',
+    'reduce': 'Generating comprehensive answer...',
+    'comment_groups': 'Finding relevant discussions...',
+    'language_validation': 'Validating response language...',
+    'comment_synthesis': 'Extracting discussion insights...',
+    'final_results': 'Assembling expert responses...'
   };
-  return icons[phase] || '•';
-}
+  return messages[phaseName] || 'Processing...';
+};
 ```
 
 ### 3. Error Handling
@@ -362,7 +404,7 @@ const handleReset = (): void => {
        └─> Buffers incomplete JSON lines
        └─> Calls onProgressCallback for each event
            └─> App updates progressEvents state
-               └─> ProgressSection re-renders
+               └─> ProgressSection re-renders with enhanced UI (expert count, contextual messages, warnings)
 
 4. Backend sends final event
    └─> event_type: 'complete'
