@@ -64,6 +64,9 @@ get_domain() {
             DOMAIN=$(echo "$PRODUCTION_ORIGIN" | sed 's|https://||' | sed 's|/.*||')
             print_info "Found domain in .env.production: $DOMAIN"
         fi
+        if [[ -n "$SSL_ADMIN_EMAIL" ]]; then
+            print_info "Found SSL admin email in .env.production: $SSL_ADMIN_EMAIL"
+        fi
     fi
 
     if [[ -z "$DOMAIN" ]]; then
@@ -116,8 +119,11 @@ obtain_new_certificate() {
     print_info "Temporarily stopping nginx..."
     docker-compose -f docker-compose.prod.yml stop nginx-reverse-proxy || true
 
+    # Get email from environment or use fallback
+    local email_address=${SSL_ADMIN_EMAIL:-admin@$DOMAIN}
+
     # Obtain certificate
-    if certbot certonly --standalone -d "$DOMAIN" --non-interactive --agree-tos --email admin@"$DOMAIN" --force-renewal; then
+    if certbot certonly --standalone -d "$DOMAIN" --non-interactive --agree-tos --email "$email_address" --force-renewal; then
         print_success "New certificate obtained successfully"
     else
         print_error "Failed to obtain SSL certificate"

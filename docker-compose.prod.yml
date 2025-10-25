@@ -32,8 +32,8 @@ services:
       # Database
       - DATABASE_URL=sqlite:///data/experts.db
 
-      # Critical: OpenRouter API (uses OPENAI_API_KEY variable name)
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      # Critical: OpenRouter API (supports both variable names for flexibility)
+      - OPENAI_API_KEY=${OPENROUTER_API_KEY:-$OPENAI_API_KEY}
 
       # Production settings
       - PRODUCTION_ORIGIN=${PRODUCTION_ORIGIN}
