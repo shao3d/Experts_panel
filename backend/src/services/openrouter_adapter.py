@@ -8,13 +8,13 @@ def create_openrouter_client(api_key: str = None) -> AsyncOpenAI:
     """Create OpenAI client configured for OpenRouter.
 
     Args:
-        api_key: OpenRouter API key. If not provided, uses OPENAI_API_KEY env var.
+        api_key: OpenRouter API key. If not provided, uses OPENROUTER_API_KEY or OPENAI_API_KEY env var.
 
     Returns:
         AsyncOpenAI client configured for OpenRouter
     """
     if not api_key:
-        api_key = os.getenv("OPENAI_API_KEY")
+        api_key = os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KEY")
 
     return AsyncOpenAI(
         api_key=api_key,

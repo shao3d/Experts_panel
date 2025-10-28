@@ -4,12 +4,10 @@ import { CommentGroupResponse } from '../types/api';
 
 interface CommentGroupsListProps {
   commentGroups: CommentGroupResponse[];
-  channelUsername?: string;
 }
 
 export const CommentGroupsList: React.FC<CommentGroupsListProps> = ({
-  commentGroups,
-  channelUsername = 'nobilix'
+  commentGroups
 }) => {
   const [expandedPosts, setExpandedPosts] = useState<Set<number>>(new Set());
   const [expandedComments, setExpandedComments] = useState<Set<number>>(

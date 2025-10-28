@@ -41,7 +41,7 @@ export function isEnglishQuery(query: string): boolean {
 export class APIClient {
   private baseURL: string;
 
-  constructor(baseURL: string = 'http://localhost:8000') {
+  constructor(baseURL: string = import.meta.env.VITE_API_URL || 'http://localhost:8000') {
     this.baseURL = baseURL;
   }
 
@@ -547,7 +547,7 @@ export class APIClient {
 }
 
 // Export singleton instance for convenience
-export const apiClient = new APIClient();
+export const apiClient = new APIClient(import.meta.env.VITE_API_URL || 'http://localhost:8000');
 
 // Export class for custom instances
 export default APIClient;

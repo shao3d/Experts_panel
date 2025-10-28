@@ -13,30 +13,6 @@ interface ProgressSectionProps {
 
 const ProgressSection: React.FC<ProgressSectionProps> = ({ isProcessing, progressEvents, stats }) => {
 
-  // Track elapsed time
-  const [startTime, setStartTime] = React.useState<number | null>(null);
-  const [elapsedSeconds, setElapsedSeconds] = React.useState(0);
-
-  React.useEffect(() => {
-    if (isProcessing && !startTime) {
-      setStartTime(Date.now());
-    }
-    if (!isProcessing) {
-      setStartTime(null);
-      setElapsedSeconds(0);
-    }
-  }, [isProcessing]);
-
-  React.useEffect(() => {
-    if (!isProcessing || !startTime) return;
-
-    const interval = setInterval(() => {
-      setElapsedSeconds(Math.floor((Date.now() - startTime) / 1000));
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [isProcessing, startTime]);
-
   // Determine phase status based on events
   const getPhaseStatus = (phaseName: string): 'pending' | 'active' | 'completed' => {
     // Special handling for resolve phase - include medium_scoring events
@@ -136,18 +112,15 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({ isProcessing, progres
         {phases.map((phase, index) => {
           const status = getPhaseStatus(phase.name);
           const isLast = index === phases.length - 1;
-          const isHanging = status === 'active' && elapsedSeconds >= 300;
 
           return (
             <React.Fragment key={phase.name}>
               <span style={{
                 color: status === 'completed' ? '#28a745' :
-                       isHanging ? '#ff9800' :
                        status === 'active' ? '#0066cc' : '#adb5bd',
                 fontWeight: status === 'active' ? 'bold' : 'normal'
               }}>
                 {status === 'completed' ? '✓' :
-                 isHanging ? '⚠️' :
                  status === 'active' ? phase.icon : phase.icon}
                 {' '}{phase.label}
               </span>
@@ -185,11 +158,11 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({ isProcessing, progres
                 <span style={{ fontSize: '14px', color: '#495057', fontWeight: '500' }}>Statistics:</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#212529' }}>{stats.totalPosts}</span>
+                <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#212529' }}>{stats.totalPosts}</span>
                 <span style={{ fontSize: '14px', color: '#6c757d' }}>posts</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#212529' }}>
+                <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#212529' }}>
                   {stats.processingTime.toFixed(1)}
                 </span>
                 <span style={{ fontSize: '14px', color: '#6c757d' }}>seconds</span>
@@ -209,16 +182,6 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({ isProcessing, progres
                     {getActivePhaseMessage(activePhase.name)}
                   </span>
                 </div>
-              )}
-              {isProcessing && (
-                <span style={{ color: elapsedSeconds >= 300 ? '#ff9800' : '#6c757d', fontSize: '14px' }}>
-                  ({elapsedSeconds} seconds)
-                  {elapsedSeconds >= 300 && (
-                    <span style={{ color: '#ff9800', marginLeft: '4px' }}>
-                      ⚠️
-                    </span>
-                  )}
-                </span>
               )}
             </div>
           )}
