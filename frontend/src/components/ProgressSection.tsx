@@ -155,17 +155,6 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({ isProcessing, progres
             </React.Fragment>
           );
         })}
-
-        {isProcessing && (
-          <span style={{ color: elapsedSeconds >= 300 ? '#ff9800' : '#6c757d', marginLeft: '8px' }}>
-            ({elapsedSeconds} seconds)
-            {elapsedSeconds >= 300 && (
-              <span style={{ color: '#ff9800', marginLeft: '4px' }}>
-                ⚠️
-              </span>
-            )}
-          </span>
-        )}
       </div>
     );
   };
@@ -221,12 +210,15 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({ isProcessing, progres
                   </span>
                 </div>
               )}
-              {elapsedSeconds >= 300 && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ fontSize: '14px', color: '#ff9800' }}>
-                    ⚠️ Taking longer than expected
-                  </span>
-                </div>
+              {isProcessing && (
+                <span style={{ color: elapsedSeconds >= 300 ? '#ff9800' : '#6c757d', fontSize: '14px' }}>
+                  ({elapsedSeconds} seconds)
+                  {elapsedSeconds >= 300 && (
+                    <span style={{ color: '#ff9800', marginLeft: '4px' }}>
+                      ⚠️
+                    </span>
+                  )}
+                </span>
               )}
             </div>
           )}
