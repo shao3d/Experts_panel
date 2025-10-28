@@ -72,13 +72,13 @@ def get_db():
         db.close()
 
 
-def get_openai_key() -> str:
-    """Get OpenAI API key from environment."""
-    api_key = os.getenv("OPENAI_API_KEY")
+def get_api_key() -> str:
+    """Get API key from environment, preferring OpenRouter."""
+    api_key = os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise HTTPException(
             status_code=500,
-            detail="OpenAI API key not configured"
+            detail="OPENROUTER_API_KEY or OPENAI_API_KEY not configured"
         )
     return api_key
 
@@ -604,7 +604,7 @@ async def event_generator_parallel(
 async def process_simplified_query(
     request: QueryRequest,
     db: Session = Depends(get_db),
-    api_key: str = Depends(get_openai_key)
+    api_key: str = Depends(get_api_key)
 ):
     """Process a query through parallel multi-expert pipeline with SSE streaming.
 
@@ -712,7 +712,7 @@ async def get_post_detail(
         logger.info(f"DEBUG: Translation forced by translate=true flag for post {post_id}")
     elif query:
         # Use translation service to detect if query is in English
-        translation_service = TranslationService(api_key=get_openai_key())
+        translation_service = TranslationService(api_key=get_api_key())
         should_translate = translation_service.should_translate(query)
         logger.info(f"DEBUG: Translation check for post {post_id}: query='{query[:50]}...', should_translate={should_translate}")
     else:
@@ -725,7 +725,7 @@ async def get_post_detail(
     if should_translate and message_text:
         logger.info(f"DEBUG: Starting translation for post {post_id} with content length {len(message_text)}")
         try:
-            translation_service = TranslationService(api_key=get_openai_key())
+            translation_service = TranslationService(api_key=get_api_key())
             translated_text = await translation_service.translate_single_post(
                 message_text,
                 post.author_name or "Unknown"

@@ -291,7 +291,6 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
                   {expert.relevant_comment_groups && expert.relevant_comment_groups.length > 0 && (
                     <CommentGroupsList
                       commentGroups={expert.relevant_comment_groups}
-                      channelUsername={expert.channel_username}
                     />
                   )}
                 </>

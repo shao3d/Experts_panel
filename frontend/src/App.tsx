@@ -3,7 +3,7 @@
  * Connects all components and manages query state.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { QueryForm } from './components/QueryForm';
 import ExpertAccordion from './components/ExpertAccordion';
 import ProgressSection from './components/ProgressSection';
@@ -17,6 +17,31 @@ export const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [expandedExperts, setExpandedExperts] = useState<Set<string>>(new Set(['refat', 'ai_architect', 'neuraldeep']));
   const [currentQuery, setCurrentQuery] = useState<string>('');
+
+  // Timer state for processing time
+  const [startTime, setStartTime] = useState<number | null>(null);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+  // Timer management
+  useEffect(() => {
+    if (isProcessing && !startTime) {
+      setStartTime(Date.now());
+    }
+    if (!isProcessing) {
+      setStartTime(null);
+      setElapsedSeconds(0);
+    }
+  }, [isProcessing]);
+
+  useEffect(() => {
+    if (!isProcessing || !startTime) return;
+
+    const interval = setInterval(() => {
+      setElapsedSeconds(Math.floor((Date.now() - startTime) / 1000));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isProcessing, startTime]);
 
   /**
    * Handle query submission
@@ -105,6 +130,7 @@ export const App: React.FC = () => {
           <QueryForm
             onSubmit={handleQuerySubmit}
             disabled={isProcessing}
+            elapsedSeconds={elapsedSeconds}
           />
         </div>
 

@@ -14,6 +14,9 @@ interface QueryFormProps {
 
   /** Placeholder text for input */
   placeholder?: string;
+
+  /** Elapsed processing time in seconds */
+  elapsedSeconds?: number;
 }
 
 /**
@@ -22,7 +25,8 @@ interface QueryFormProps {
 export const QueryForm: React.FC<QueryFormProps> = ({
   onSubmit,
   disabled = false,
-  placeholder = "Ask experts about AI and related..."
+  placeholder = "Ask experts about AI and related...",
+  elapsedSeconds = 0
 }) => {
   const [query, setQuery] = useState('');
 
@@ -64,7 +68,7 @@ export const QueryForm: React.FC<QueryFormProps> = ({
             ...(disabled || query.trim().length < 3 ? styles.buttonDisabled : {})
           }}
         >
-          {disabled ? '⏳' : 'Ask'}
+          {disabled ? `${elapsedSeconds}s` : 'Ask'}
         </button>
       </div>
     </form>

@@ -1,0 +1,139 @@
+# flyctl launch added from .gitignore
+# =========================
+# SECURITY & PERSONAL DATA
+# =========================
+**/.clauderc
+**/claude_code_zai_env.sh
+**/.claude
+**/.specify
+**/*.pem
+**/*.key
+**/config/secrets
+
+# =========================
+# ENVIRONMENT VARIABLES
+# =========================
+**/.env
+**/.env.local
+**/.env.*.local
+**/.env.production
+**/.env.development
+**/backend/.env
+
+# =========================
+# DATABASES & DATA
+# =========================
+**/*.db
+**/*.sqlite
+**/*.sqlite3
+**/backend/data
+/data/
+**/archive
+**/*/backups
+**/*.backup
+**/*.bak
+
+# =========================
+# PYTHON ARTIFACTS
+# =========================
+**/__pycache__
+**/*.py[cod]
+**/*$py.class
+**/*.so
+**/.Python
+**/backend/.venv
+**/env
+**/venv
+**/ENV
+**/build
+**/develop-eggs
+# /dist removed to allow frontend/dist in Docker build
+**/downloads
+**/eggs
+**/.eggs
+**/lib
+**/lib64
+**/parts
+**/sdist
+**/var
+**/wheels
+**/*.egg-info
+**/.installed.cfg
+**/*.egg
+**/MANIFEST
+**/.pytest_cache
+**/.coverage
+**/*.cover
+**/.hypothesis
+
+# =========================
+# NODE.JS ARTIFACTS
+# =========================
+**/node_modules
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/pnpm-debug.log*
+**/lerna-debug.log*
+**/frontend/dist-ssr
+**/frontend/*.local
+
+# =========================
+# SESSIONS & RUNTIME
+# =========================
+**/sessions/sessions-state.json
+**/sessions/transcripts
+**/sessions/.archived
+**/sessions/*.log
+**/mode-revert-debug.log
+**/*.session
+**/*.session*
+
+# =========================
+# AI TOOLS & DEBUG
+# =========================
+**/.aider*
+**/.claude/logs
+**/*.log
+**/logs
+
+# =========================
+# IDE & SYSTEM
+# =========================
+**/.vscode
+**/.idea
+**/*.swp
+**/*.swo
+**/*~
+**/.DS_Store
+**/**/.DS_Store
+**/*/.DS_Store
+**/Thumbs.db
+
+# =========================
+# TEMPORARY FILES
+# =========================
+**/tmp
+**/temp
+**/*.tmp
+**/*.cache
+**/cache
+
+# =========================
+# CONFIG FILES (LOCAL ONLY)
+# =========================
+**/*.ruff.toml
+**/*/.ruff.toml
+**/.vscode/settings.json
+**/.idea
+
+# =========================
+# TEST ARTIFACTS
+# =========================
+**/test_results
+**/backend/test_results
+**/*.test.db
+
+# flyctl launch added from backend/.venv/.gitignore
+backend/.venv/**/*
+fly.toml

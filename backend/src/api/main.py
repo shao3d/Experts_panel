@@ -15,6 +15,7 @@ from fastapi import FastAPI, Request, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
+from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from sqlalchemy import text
 
@@ -178,14 +179,14 @@ async def health_check() -> Dict[str, Any]:
         logger.error(f"Database health check failed: {e}")
         db_status = "unhealthy"
 
-    # Check OpenAI API key
-    openai_configured = bool(os.getenv("OPENAI_API_KEY"))
+    # Check API key
+    api_key_configured = bool(os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KEY"))
 
     return {
-        "status": "healthy" if db_status == "healthy" and openai_configured else "degraded",
+        "status": "healthy" if db_status == "healthy" and api_key_configured else "degraded",
         "version": "1.0.0",
         "database": db_status,
-        "openai_configured": openai_configured,
+        "api_key_configured": api_key_configured,
         "timestamp": time.time()
     }
 
@@ -220,19 +221,11 @@ app.include_router(comment_router, prefix="/api/v1")
 # Simplified Map-Resolve+Reduce architecture (no GPT link evaluation)
 app.include_router(query_router)
 
+# Mount static files to serve frontend
+# This must be LAST, after all API routers
+app.mount("/", StaticFiles(directory="static", html=True), name="static")
 
-# Root redirect
-@app.get("/", include_in_schema=False)
-async def root():
-    """Redirect root to API documentation."""
-    return JSONResponse(
-        content={
-            "message": "Welcome to Experts Panel API",
-            "documentation": "/api/docs",
-            "health": "/health",
-            "api_info": "/api/info"
-        }
-    )
+
 
 
 if __name__ == "__main__":
