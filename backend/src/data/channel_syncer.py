@@ -136,37 +136,48 @@ class TelegramChannelSyncer(SafeTelegramCommentsFetcher):
                     new_posts = [p['telegram_message_id'] for p in new_posts_data]
                     print(f"[DRY-RUN] Would save {len(new_posts)} posts")
 
-            # Update recent posts comments
-            print(f"\n🔄 Updating comments for last {self.RECENT_POSTS_DEPTH} posts...")
-            updated_result = await self.update_recent_posts_comments(
-                db=db,
-                channel_username=channel_username,
-                expert_id=expert_id,
-                depth=self.RECENT_POSTS_DEPTH,
-                dry_run=dry_run
-            )
-            updated_posts = updated_result.get('updated_posts', [])
-            self.stats['posts_updated'] = len(updated_posts)
-            self.stats['new_comments_found'] += updated_result.get('stats', {}).get('comments_found', 0)
-            self.stats['new_comments_saved'] += updated_result.get('stats', {}).get('comments_saved', 0)
+            # OPTIMIZATION RATIONALE:
+            # The original logic updated comments in two separate, redundant steps:
+            # 1. For the N most recent posts.
+            # 2. For all newly fetched posts.
+            # This was inefficient because new posts could also be in the "recent"
+            # list, leading to them being processed twice.
+            #
+            # This updated logic is more optimal:
+            # 1. It gets a single, unique list of post IDs from both new and recent posts.
+            # 2. It makes only one consolidated call to `update_specific_posts_comments`
+            #    to process all required posts at once.
+            # This avoids redundant API calls and processing, and simplifies the code
+            # by allowing the removal of the `update_recent_posts_comments` method.
 
-            # Update comments for NEW posts (if any)
-            if new_posts:
-                print(f"\n🔄 Updating comments for {len(new_posts)} new posts...")
-                new_posts_result = await self.update_specific_posts_comments(
+            # Combine new posts with recent posts to update comments in one go
+            # 1. Get recent posts from DB
+            recent_posts_query = db.query(Post.telegram_message_id) \
+                .filter(Post.expert_id == expert_id) \
+                .order_by(Post.telegram_message_id.desc()) \
+                .limit(self.RECENT_POSTS_DEPTH)
+            recent_post_ids = [p[0] for p in recent_posts_query.all()]
+
+            # 2. Combine new post IDs with recent post IDs, no duplicates
+            post_ids_to_update = sorted(list(set(new_posts + recent_post_ids)), reverse=True)
+
+            # 3. Update comments for all these posts
+            if post_ids_to_update:
+                print(f"\n🔄 Updating comments for {len(post_ids_to_update)} posts (new + recent)...")
+                update_result = await self.update_specific_posts_comments(
                     db=db,
                     channel_username=channel_username,
                     expert_id=expert_id,
-                    telegram_message_ids=new_posts,
+                    telegram_message_ids=post_ids_to_update,
                     dry_run=dry_run
                 )
-                new_posts_updated = new_posts_result.get('updated_posts', [])
-                # Merge updated posts lists
-                updated_posts.extend(new_posts_updated)
-                updated_posts = list(set(updated_posts))  # Remove duplicates
+                updated_posts = update_result.get('updated_posts', [])
                 self.stats['posts_updated'] = len(updated_posts)
-                self.stats['new_comments_found'] += new_posts_result.get('stats', {}).get('comments_found', 0)
-                self.stats['new_comments_saved'] += new_posts_result.get('stats', {}).get('comments_saved', 0)
+                self.stats['new_comments_found'] += update_result.get('stats', {}).get('comments_found', 0)
+                self.stats['new_comments_saved'] += update_result.get('stats', {}).get('comments_saved', 0)
+            else:
+                print("\n🔄 No new or recent posts to check for comments.")
+                updated_posts = []
 
             # Update sync state
             if not dry_run and new_posts:
@@ -202,84 +213,7 @@ class TelegramChannelSyncer(SafeTelegramCommentsFetcher):
             db.close()
             await self.client.disconnect()
 
-    async def update_recent_posts_comments(
-        self,
-        db: Session,
-        channel_username: str,
-        expert_id: str,
-        depth: int = 10,
-        dry_run: bool = False
-    ) -> Dict[str, Any]:
-        """
-        Refresh comments for last N posts for specific expert.
-
-        Args:
-            db: Database session
-            channel_username: Channel to sync
-            expert_id: Expert identifier for filtering posts
-            depth: How many recent posts to check
-            dry_run: If True, don't save to database
-
-        Returns:
-            {
-                "updated_posts": List[int],  # telegram_message_ids
-                "stats": {"comments_found": int, "comments_saved": int}
-            }
-        """
-        updated_posts = []
-        comments_found = 0
-        comments_saved = 0
-
-        # Get last N posts for this expert only
-        recent_posts = db.query(Post.post_id, Post.telegram_message_id, Post.channel_id)\
-            .filter(Post.expert_id == expert_id)\
-            .order_by(Post.telegram_message_id.desc())\
-            .limit(depth)\
-            .all()
-
-        if not recent_posts:
-            return {"updated_posts": [], "stats": {"comments_found": 0, "comments_saved": 0}}
-
-        # Get channel entity
-        channel = await self.client.get_entity(channel_username)
-
-        # Fetch comments for each post
-        for post_id, telegram_message_id, channel_id in recent_posts:
-            print(f"  📝 Post #{telegram_message_id}...", end=" ")
-
-            comments = await self.get_discussion_replies(channel, telegram_message_id)
-            comments_found += len(comments)
-
-            if comments:
-                if not dry_run:
-                    # Save comments with proper channel_id filtering
-                    saved = self.save_comments_to_db(db, comments, channel_id)
-                    comments_saved += saved
-                    db.commit()
-                    if saved == len(comments):
-                        print(f"✅ {saved} comments")
-                    elif saved > 0:
-                        print(f"✅ {saved}/{len(comments)} comments (skipped {len(comments) - saved} duplicates)")
-                    else:
-                        print(f"⚠️  0/{len(comments)} comments (all duplicates)")
-                else:
-                    print(f"[DRY-RUN] Would save {len(comments)} comments")
-
-                updated_posts.append(telegram_message_id)
-            else:
-                print("No comments")
-
-            # Rate limiting
-            await asyncio.sleep(self.DELAY_BETWEEN_POSTS)
-
-        return {
-            "updated_posts": updated_posts,
-            "stats": {
-                "comments_found": comments_found,
-                "comments_saved": comments_saved
-            }
-        }
-
+  
     async def update_specific_posts_comments(
         self,
         db: Session,
