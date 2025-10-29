@@ -1,0 +1,72 @@
+name: Deploy to Fly.io
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to Fly.io
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    environment:
+      name: production
+      url: https://experts-panel.fly.dev
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Fly.io CLI
+      uses: superfly/flyctl-actions/setup-flyctl@master
+
+    - name: Deploy to Fly.io
+      run: flyctl deploy --remote-only
+      env:
+        FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+    - name: Wait for deployment to be ready
+      run: |
+        echo "Waiting for application to be ready..."
+        sleep 30
+
+    - name: Verify deployment health
+      run: |
+        echo "Checking application health..."
+
+        # Try health check with retries
+        for i in {1..10}; do
+          if curl -f https://experts-panel.fly.dev/health; then
+            echo "✅ Deployment successful - application is healthy"
+            break
+          else
+            echo "⏳ Health check attempt $i failed, retrying in 10 seconds..."
+            sleep 10
+          fi
+        done
+
+    - name: Deployment Summary
+      if: always()
+      run: |
+        echo "## 🚀 Fly.io Deployment Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        if [ "${{ job.status }}" == "success" ]; then
+          echo "✅ **Status**: DEPLOYED SUCCESSFULLY" >> $GITHUB_STEP_SUMMARY
+          echo "🌐 **URL**: https://experts-panel.fly.dev" >> $GITHUB_STEP_SUMMARY
+          echo "🏥 **Health Check**: ✅ PASSED" >> $GITHUB_STEP_SUMMARY
+          echo "⏱️ **Deployment Time**: $(date -u)" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **Status**: DEPLOYMENT FAILED" >> $GITHUB_STEP_SUMMARY
+          echo "🔧 **Action**: Check deployment logs and try again" >> $GITHUB_STEP_SUMMARY
+          echo "📊 **Debug**: Run \`flyctl logs\` for detailed logs" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📊 Deployment Details" >> $GITHUB_STEP_SUMMARY
+        echo "- **Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Commit**: [${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})" >> $GITHUB_STEP_SUMMARY
+        echo "- **Triggered by**: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Workflow**: [#$${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY

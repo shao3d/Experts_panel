@@ -11,7 +11,7 @@ Auto-generated from feature plans. Last updated: 2025-10-25
   - Gemini 2.0 Flash for Reduce and Comment Synthesis
   - GPT-4o-mini for Comment Groups matching and Medium posts scoring
 - Docker for development and production deployment
-- Production-ready VPS/cloud hosting with SSL/HTTPS, security hardening, and automated deployment
+- Production-ready Fly.io cloud hosting with automated deployment
 
 ## Project Structure
 ```
@@ -36,14 +36,9 @@ data/
 ├── exports/          # Telegram JSON files
 └── experts.db        # SQLite database
 
-deployment/
-├── docker-compose.prod.yml  # Production Docker configuration
-├── deploy.sh              # Automated deployment script
-├── update-ssl.sh         # SSL certificate management
-├── .env.production.example # Production environment template
-├── nginx/               # SSL and reverse proxy configuration
-├── ssl/                 # SSL certificates (Let's Encrypt)
-└── security/            # VPS security hardening scripts
+# Fly.io Configuration
+fly.toml              # Fly.io app configuration
+Dockerfile            # Multi-stage build for Fly.io deployment
 ```
 
 ## 🗺️ Key Documentation References
@@ -51,8 +46,7 @@ deployment/
 ### Core Architecture
 - **Pipeline Architecture**: `/docs/pipeline-architecture.md` 🚀
 - **Multi-Expert Setup**: `/docs/multi-expert-guide.md` 👥
-- **Production Deployment**: `DEPLOYMENT.md` 🌐
-- **Quick Start Guide**: `QUICK_START.md` ⚡
+- **Fly.io Deployment**: See configuration below ✈️
 
 ### Quick Reference
 - **Database Operations**: See `models/database.py`
@@ -125,81 +119,52 @@ sqlite3 data/experts.db ".backup data/backup.db"
 sqlite3 data/experts.db "SELECT post_id, has_drift, analyzed_at FROM comment_group_drift WHERE has_drift=1;"
 ```
 
-## 🚀 Production Deployment (Docker + VPS)
+## 🚀 Production Deployment (Fly.io)
 
 ### Prerequisites
-- Ubuntu/Debian VPS with sudo access
-- Domain name pointing to VPS IP
+- Fly.io account with `flyctl` installed
 - OpenRouter API key
 - Latest `experts.db` database file
 
-### Quick Production Deployment (15 minutes)
+### Quick Production Deployment (5 minutes)
 ```bash
-# 1. VPS Setup
-sudo apt update && sudo apt upgrade -y
-sudo apt install -y curl wget git docker.io docker-compose-plugin certbot
-sudo usermod -aG docker $USER
-newgrp docker
+# 1. Install Fly CLI
+curl -L https://fly.io/install.sh | sh
 
-git clone https://github.com/your-username/experts-panel.git
-cd experts-panel
-git checkout feature/docker-deployment-vps
+# 2. Authenticate with Fly.io
+fly auth login
 
-# 2. SSL Certificate Setup
-sudo certbot certonly --standalone -d your-domain.com
-sudo cp /etc/letsencrypt/live/your-domain.com/fullchain.pem ./ssl/
-sudo cp /etc/letsencrypt/live/your-domain.com/privkey.pem ./ssl/
-sudo chown $USER:$USER ./ssl/*
-chmod 600 ./ssl/privkey.pem
-chmod 644 ./ssl/fullchain.pem
+# 3. Deploy Application
+fly deploy
 
-# 3. Environment Configuration
-cp .env.production.example .env.production
-nano .env.production  # Set OPENAI_API_KEY and PRODUCTION_ORIGIN
+# 4. Set up secrets
+fly secrets set OPENROUTER_API_KEY=your-key-here
 
-# 4. Database Upload
-mkdir -p data
-# Upload your experts.db file to ./data/ directory
-
-# 5. Deploy Application
-chmod +x deploy.sh update-ssl.sh
-./deploy.sh
-
-# 6. Security Hardening (Optional but Recommended)
-chmod +x security/harden-vps.sh
-sudo ./security/harden-vps.sh
+# 5. Health check
+curl https://experts-panel.fly.dev/health
 ```
 
 ### Production Management Commands
 ```bash
 # Check deployment status
-./deploy.sh status
+fly status
 
 # View application logs
-./deploy.sh logs
+fly logs
 
-# Restart services
-./deploy.sh restart
+# Deploy new version
+fly deploy
 
-# SSL certificate management
-./update-ssl.sh status
-sudo ./update-ssl.sh setup-auto  # Setup automatic renewal
-
-# Health check
-curl https://your-domain.com/health
+# Open application in browser
+fly open
 ```
 
 ### Production Architecture
-- **3-Service Docker Setup**: nginx-reverse-proxy, backend-api, frontend-app
-- **SSL/HTTPS Termination**: Let's Encrypt with automated renewal
-- **Security Hardening**: UFW firewall, fail2ban, SSH hardening
-- **Resource Limits**: Memory and CPU constraints for production stability
+- **Single Service**: Monolithic application with embedded frontend
+- **SSL/HTTPS**: Automatic HTTPS termination by Fly.io
+- **Database Persistence**: SQLite database mounted to persistent volume
 - **Health Monitoring**: Built-in health checks and automatic restarts
-
-### Detailed Documentation
-- **Complete Guide**: See `DEPLOYMENT.md` for comprehensive deployment instructions
-- **Quick Reference**: See `QUICK_START.md` for rapid deployment steps
-- **Security**: See `security/README.md` for VPS hardening details
+- **Zero-downtime deployments**: Rolling deployments with instant rollback
 
 ## Code Style
 
@@ -439,10 +404,9 @@ For MVP, use validation through prepared Q&A sets:
 - **PostCard Component**: `frontend/src/components/PostCard.tsx`
 - **PostsList Component**: `frontend/src/components/PostsList.tsx`
 - **Migration Scripts**: `backend/migrations/`
-- **Production Deployment**: `docker-compose.prod.yml`, `deploy.sh`, `update-ssl.sh`
-- **SSL Configuration**: `nginx/nginx-prod.conf`, `ssl/` directory
-- **Security Scripts**: `security/harden-vps.sh`
-- **Environment Templates**: `.env.production.example`
+- **Production Deployment**: `fly.toml`, `Dockerfile`
+- **Fly.io Configuration**: Automatic SSL/HTTPS and persistent storage
+- **Environment Variables**: Set via `fly secrets set`
 
 ## Sessions System Behaviors
 
