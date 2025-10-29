@@ -1,6 +1,14 @@
 # Experts Panel 🔍
 
+[![Deploy to Fly.io](https://github.com/shao3d/Experts_panel/actions/workflows/deploy-fly.yml/badge.svg)](https://github.com/shao3d/Experts_panel/actions/workflows/deploy-fly.yml)
+[![CI/CD Pipeline](https://github.com/shao3d/Experts_panel/actions/workflows/ci.yml/badge.svg)](https://github.com/shao3d/Experts_panel/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![React 18](https://img.shields.io/badge/react-18-61dafb.svg)](https://reactjs.org/)
+
 Интеллектуальная платформа для анализа дискуссий в Telegram-каналах с использованием 8-фазной архитектуры Map-Resolve-Reduce и гибридной системы реранкинга Medium постов с улучшенным UI для отслеживания прогресса.
+
+**🌐 Live Demo:** https://experts-panel.fly.dev
 
 ## 🚀 Особенности
 
@@ -14,83 +22,87 @@
 - **Экспертные комментарии** - поддержка аннотаций от экспертов
 - **Визуализация источников** - удобный просмотр найденных постов
 
-## 📋 Требования
+## 🚀 Quick Start
 
+### 🌐 Try Live Demo
+Visit **[experts-panel.fly.dev](https://experts-panel.fly.dev)** to try the application without installation.
+
+### 🛠 Local Development
+
+#### Prerequisites
 - Python 3.11+
 - Node.js 18+
-- SQLite 3
-- OpenRouter API ключ (доступ к Qwen 2.5-72B, Gemini 2.0 Flash, GPT-4o-mini)
+- OpenRouter API key (for Qwen 2.5-72B, Gemini 2.0 Flash, GPT-4o-mini)
 
-## 🛠 Установка
+#### Installation
 
-### Backend
-
+**Backend:**
 ```bash
 cd backend
-
-# Установка зависимостей через uv (рекомендуется)
-uv install
-
-# Или через pip
 pip install -r requirements.txt
-
-# Создание .env файла
 cp .env.example .env
-# Добавьте ваш OPENROUTER_API_KEY в .env
+# Add your OPENROUTER_API_KEY to .env
 ```
 
-### Frontend
-
+**Frontend:**
 ```bash
 cd frontend
-
-# Установка зависимостей
 npm install
 ```
 
-## 🚦 Быстрый старт
+#### Run Locally
 
-### 1. Подготовка базы данных
-
+**1. Start Backend:**
 ```bash
 cd backend
-
-# Создание базы данных
-sqlite3 ../data/experts.db < schema.sql
-
-# Импорт данных из Telegram
-python -m src.data.json_parser ../data/exports/your_export.json
-
-# Добавление экспертных комментариев (опционально)
-python -m src.data.comment_collector
+uv run uvicorn src.api.main:app --reload --port 8000
 ```
 
-### 2. Запуск Backend
-
-```bash
-cd backend
-
-# Development режим
-uv run python -m src.api.main
-
-# Или через uvicorn напрямую
-uvicorn src.api.main:app --reload --port 8000
-```
-
-Backend будет доступен на http://localhost:8000
-- API документация: http://localhost:8000/docs
-- Health check: http://localhost:8000/health
-
-### 3. Запуск Frontend
-
+**2. Start Frontend:**
 ```bash
 cd frontend
-
-# Development режим
 npm run dev
 ```
 
-Frontend будет доступен на http://localhost:3001
+**3. Access Application:**
+- Frontend: http://localhost:3001
+- Backend API: http://localhost:8000
+- API Docs: http://localhost:8000/docs
+
+### 🚀 Fly.io Deployment (Recommended)
+
+The application is automatically deployed to [Fly.io](https://fly.io) via GitHub Actions CI/CD.
+
+**Manual Deployment:**
+```bash
+# Install Fly CLI
+curl -L https://fly.io/install.sh | sh
+
+# Deploy
+fly deploy
+```
+
+**Features:**
+- ✅ Automatic HTTPS
+- ✅ Zero-downtime deployments
+- ✅ Health monitoring
+- ✅ Persistent storage for SQLite database
+
+### 🐳 Docker Deployment
+
+```bash
+# Build and run locally
+docker build -t experts-panel .
+docker run -p 8000:8000 \
+  -e OPENROUTER_API_KEY=your_key_here \
+  experts-panel
+```
+
+### 📊 Environment Setup
+
+**Required Secrets:**
+- `OPENROUTER_API_KEY` - Your OpenRouter API key
+- `FLY_API_TOKEN` - Fly.io deploy token (for CI/CD)
 
 ## 📚 API Endpoints
 
@@ -232,22 +244,56 @@ PRODUCTION_ORIGIN=https://your-domain.com
 - Файловые логи в `backend/logs/`
 - SSE события для real-time мониторинга
 
-## 📝 Лицензия
+## 🏗️ Architecture
 
-MIT
+### 8-Phase Map-Resolve-Reduce Pipeline
 
-## 🤝 Контрибьюторы
+1. **Map Phase** - Qwen 2.5-72B находит релевантные посты (HIGH/MEDIUM/LOW классификация)
+2. **Medium Scoring Phase** - Qwen 2.5-72B оценивает Medium посты (≥0.7 threshold + top-5 отбор)
+3. **Differential Resolve Phase** - HIGH посты обрабатываются через Resolve, отобранные Medium обходят Resolve
+4. **Reduce Phase** - Gemini 2.0 Flash синтезирует ответ
+5. **Language Validation Phase** - Qwen 2.5-72B валидирует язык ответа и переводит при необходимости
+6. **Comment Groups Phase** - GPT-4o-mini находит релевантные дискуссии в комментариях
+7. **Comment Synthesis Phase** - Gemini 2.0 Flash извлекает дополнительные инсайты
+8. **Response Building** - Формирование финального multi-expert ответа
 
-- Проект создан с помощью Claude AI
-- Основан на архитектуре Map-Resolve-Reduce
+### Multi-Model Strategy
+- **Qwen 2.5-72B**: Map phase, Language Validation
+- **Gemini 2.0 Flash**: Reduce phase, Comment Synthesis
+- **GPT-4o-mini**: Comment Groups matching, Medium posts scoring
 
-## 📞 Поддержка
+## 🧪 Testing
 
-Для вопросов и предложений:
-- Создайте Issue в репозитории
-- Обратитесь к документации в `PROJECT_BRIEF.md`
-- Изучите примеры в `tests/test_queries.json`
+```bash
+# Run validation tests
+python tests/test_queries.py
+
+# Performance check
+python tests/test_queries.py --performance-check
+```
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+**Development Setup:**
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📞 Support
+
+For questions and support:
+- 🐛 Create an [Issue](https://github.com/shao3d/Experts_panel/issues)
+- 📖 Check [Documentation](docs/)
+- 🚀 Try [Live Demo](https://experts-panel.fly.dev)
 
 ---
 
-🤖 Generated with [Claude Code](https://claude.ai/code)
+🤖 Generated with [Claude Code](https://claude.ai/code) • Deployed on [Fly.io](https://fly.io)
