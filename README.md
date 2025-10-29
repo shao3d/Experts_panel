@@ -1,93 +1,90 @@
-# Experts Panel 🔍
+# Experts Panel
 
-[![Deploy to Fly.io](https://github.com/shao3d/Experts_panel/actions/workflows/deploy-fly.yml/badge.svg)](https://github.com/shao3d/Experts_panel/actions/workflows/deploy-fly.yml)
-[![CI/CD Pipeline](https://github.com/shao3d/Experts_panel/actions/workflows/ci.yml/badge.svg)](https://github.com/shao3d/Experts_panel/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![React 18](https://img.shields.io/badge/react-18-61dafb.svg)](https://reactjs.org/)
+[![CI/CD](https://github.com/andreysazonov/Experts_panel/workflows/CI%2FCD/badge.svg)](https://github.com/andreysazonov/Experts_panel/actions)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com)
+[![React](https://img.shields.io/badge/React-18+-blue.svg)](https://reactjs.org)
 
-Production-ready AI platform for intelligent analysis of Telegram channel discussions. Built with **8-phase Map-Resolve-Reduce architecture** + **Multi-model LLM strategy** (Qwen 2.5-72B + Gemini 2.0 Flash + GPT-4o-mini) for expert insights extraction and real-time conversation analysis.
+**Интеллектуальная система анализа Telegram каналов экспертов с использованием многомодельной AI-архитектуры**
 
-**Built with ❤️ for researchers and knowledge professionals**
+Experts Panel — это мощный инструмент для семантического поиска и анализа контента из Telegram каналов экспертов. Система использует продвинутую **8-фазную архитектуру Map-Resolve-Reduce pipeline** с несколькими AI-моделями для предоставления точных и контекстуально релевантных ответов.
 
-**🌐 Live Demo:** https://experts-panel.fly.dev
+## 🏗️ Архитектура системы
 
-## 🏗️ System Architecture
-
-### High-Level Architecture
+### Высокоуровневая архитектура
 
 ```mermaid
 graph TD
-    subgraph "User Environment"
-        User[👤 User]
+    subgraph "Пользовательская среда"
+        User[👤 Пользователь]
         Frontend[🌐 React Frontend (Vite)]
     end
 
-    subgraph "Experts Panel Infrastructure"
+    subgraph "Инфраструктура Experts Panel"
         Backend[🚀 FastAPI Backend]
-        subgraph "Knowledge Base"
-            DB[(🗃️ SQLite)]
+        subgraph "База Знаний"
+            DB[(🗃️ SQLite / PostgreSQL)]
         end
     end
 
-    subgraph "External AI Services"
+    subgraph "Внешние AI сервисы"
         LLM_API[🧠 OpenRouter API]
     end
 
-    User -- "Sends Query" --> Frontend
-    Frontend -- "API Request /api/v1/query (SSE)" --> Backend
-    Backend -- "Calls LLM Models" --> LLM_API
-    Backend -- "Extracts Posts, Comments, Links" --> DB
-    Backend -- "Streams Progress & Response" --> Frontend
-    Frontend -- "Displays Answer & Sources" --> User
+    User -- "Отправляет запрос" --> Frontend
+    Frontend -- "API-запрос /api/v1/query (SSE)" --> Backend
+    Backend -- "Обращается к LLM-моделям" --> LLM_API
+    Backend -- "Извлекает посты, комментарии, связи" --> DB
+    Backend -- "Потоком (SSE) отдаёт прогресс и ответ" --> Frontend
+    Frontend -- "Отображает ответ и источники" --> User
 ```
 
-### 8-Phase Processing Pipeline
+### Интеллектуальный конвейер обработки запросов
 
 ```mermaid
 graph TD
-    A[▶️ Start: User Query] --> B{Detect Query Language};
-    B --> C[1. Map Phase: Qwen 2.5];
-    C -- "Posts" --> D{Split HIGH and MEDIUM};
-    D -- "HIGH posts" --> E[3. Resolve Phase: Find Related Posts];
-    D -- "MEDIUM posts" --> F[2. Scoring Phase: Qwen 2.5];
-    F -- "Top-5 posts (score >= 0.7)" --> G[4. Reduce Phase: Gemini Flash];
-    E -- "Enriched HIGH posts" --> G;
-    G -- "Synthesized Answer (RU)" --> H[5. Language Validation: Qwen 2.5];
-    B -- "Language: EN" --> H;
-    H -- "Answer in Correct Language" --> I{Assemble Final Response};
+    A[▶️ Старт: Пользовательский запрос] --> B{Определение языка запроса};
+    B --> C[1. Map-фаза: Qwen 2.5];
+    C -- "Посты" --> D{Разделение на HIGH и MEDIUM};
+    D -- "HIGH посты" --> E[3. Resolve-фаза: Поиск связанных постов в БД];
+    D -- "MEDIUM посты" --> F[2. Scoring-фаза: Qwen 2.5];
+    F -- "Top-5 постов (score >= 0.7)" --> G[4. Reduce-фаза: Gemini Flash];
+    E -- "Обогащенные HIGH посты" --> G;
+    G -- "Синтезированный ответ" --> H[5. Language Validation: Qwen 2.5];
+    H -- "Ответ на нужном языке" --> I{Сборка финального ответа};
 
-    subgraph "Parallel Pipeline B: Comment Analysis"
-        J[6. Drift Topic Search] --> K[7. Comment Insight Synthesis];
+    subgraph "Параллельный Pipeline B: Поиск в комментариях"
+        J[6. Поиск по Drift Topics] --> K[7. Синтез инсайтов из комментариев];
     end
 
     A --> J;
     K --> I[8. Response Building];
 
-    I --> L[✅ Final Response];
+    I --> L[✅ Финальный ответ];
 
     classDef llm_step fill:#f9f,stroke:#333,stroke-width:2px;
     class C,F,G,H,J,K llm_step;
 ```
 
-### Data Synchronization Lifecycle
+### Жизненный цикл данных
 
 ```mermaid
 graph TD
-    subgraph "Stage 1: Manual Import (Initial Load)"
-        A[👤 Administrator] --> B[📜 json_parser.py];
-        C[📄 Telegram JSON Export] --> B;
-        B --> D[🗃️ Write Posts, Comments, Links to DB];
+    subgraph "Этап 1: Ручной импорт (Первичная загрузка)"
+        A[👤 Администратор] --> B[📜 `json_parser.py`];
+        C[📄 JSON экспорт из Telegram] --> B;
+        B --> D[🗃️ Запись постов, комментариев, связей в БД];
     end
 
-    subgraph "Stage 2: Automatic Incremental Sync"
-        E[⏰ Cron Job / Scheduler] --> F[🔄 sync_channel.py];
-        F -- "Get Last Post ID" --> G[🗃️ DB];
-        G -- "Return ID" --> F;
-        F -- "Request New Data" --> H[🌐 Telegram API];
-        H -- "Return New Posts & Comments" --> F;
-        F --> I[📝 Update/Add Data to DB];
-        F --> J[❓ Mark New Comment Groups as 'pending'];
+    subgraph "Этап 2: Автоматическая инкрементальная синхронизация"
+        E[⏰ Cron Job / Планировщик] --> F[🔄 `sync_channel.py`];
+        F -- "Получает ID последнего поста" --> G[🗃️ БД];
+        G -- "Отдаёт ID" --> F;
+        F -- "Запрашивает новые данные" --> H[🌐 Telegram API];
+        H -- "Отдаёт новые посты и комментарии" --> F;
+        F --> I[📝 Обновляет/добавляет данные в БД];
+        F --> J[❓ Помечает новые группы комментариев как 'pending'];
     end
 
     D --> G;
@@ -95,213 +92,263 @@ graph TD
     J --> G;
 ```
 
-## 🚀 Features
+### Пользовательский путь
 
-- **8-фазная Map-Resolve-Reduce архитектура** - эффективная обработка больших объемов сообщений с гибридным реранкингом и валидацией языка
-- **Enhanced Progress UI** - улучшенный интерфейс с отображением активных экспертов, контекстными сообщениями и предупреждениями
-- **Medium Posts Hybrid Reranking** - интеллектуальная система оценки и отбора релевантных постов (threshold ≥0.7 + top-5)
-- **Умный поиск по контексту** - находит связанные посты через анализ ссылок и упоминаний с дифференциальной обработкой
-- **Multi-Expert поддержка** - параллельная обработка данных от нескольких экспертов с полной изоляцией
-- **Real-time прогресс** - SSE для отслеживания состояния обработки запроса с контекстными описаниями фаз
-- **OpenRouter Multi-Model стратегия** - использование специализированных моделей для каждой фазы
-- **Экспертные комментарии** - поддержка аннотаций от экспертов
-- **Визуализация источников** - удобный просмотр найденных постов
+```mermaid
+graph TD
+    A[🏁 Пользователь открывает приложение] --> B{Видит форму ввода};
+    B --> C[⌨️ Вводит вопрос и нажимает "Ask"];
+    C --> D[🔄 UI переходит в состояние 'Processing'];
+    D --> E[📊 ProgressSection отображает прогресс в реальном времени];
+    E --> F["Появляются статусы: 🔍 Map → 🔗 Resolve → ⚡ Reduce ..."];
+    F --> G[✅ Бэкенд присылает финальный ответ];
+    G --> H[👥 Появляются аккордеоны для каждого эксперта];
+    H -- "Клик на аккордеон" --> I{Раскрывается результат};
+    I --> J[📝 Видит ответ и список постов-источников];
+    J -- "Клик на ссылку [post:ID] в ответе" --> K[🎯 Нужный пост подсвечивается в списке];
+    J -- "Клик на пост в списке" --> L[📂 Пост раскрывается, показывая полный текст и комментарии];
+    L --> J;
+    H --> B;
+```
 
-## 🚀 Quick Start
+### Архитектура развёртывания
 
-### 🌐 Try Live Demo
-Visit **[experts-panel.fly.dev](https://experts-panel.fly.dev)** to try the application without installation.
+```mermaid
+graph TD
+    subgraph "Интернет"
+        User[👤 Пользователь]
+    end
 
-### 🛠 Local Development
+    subgraph "Облачная платформа (Fly.io / Railway)"
+        LB[🌐 Load Balancer/Proxy]
 
-#### Prerequisites
+        subgraph "Frontend контейнер"
+            Nginx[🖥️ Nginx] --> Static[📄 Статика React]
+        end
+
+        subgraph "Backend контейнер"
+            Uvicorn[ASGI-сервер Uvicorn] --> App[🚀 FastAPI приложение]
+        end
+
+        subgraph "Постоянное хранилище"
+            Volume[💾 Mounted Volume]
+            DB[(🗃️ experts.db)]
+            Volume -- содержит --> DB
+        end
+    end
+
+    User -- HTTPS --> LB
+    LB -- "Запросы UI" --> Nginx
+    Nginx --> Static
+    LB -- "Проксирует /api/*" --> Uvicorn
+    App -- "Читает/пишет в БД" --> DB
+    App -- "Обращается к AI" --> LLM_API[🧠 OpenRouter API]
+
+    style Volume fill:#fdf,stroke:#333
+```
+
+## ✨ Ключевые возможности
+
+- **🧠 8-фазная Map-Resolve-Reduce архитектура**: Продвинутый pipeline с дифференциальной обработкой HIGH/MEDIUM постов
+- **🎯 Многомодельная AI-стратегия**: Qwen 2.5-72B (Map+Validation), Gemini 2.0 Flash (Reduce+Synthesis), GPT-4o-mini (Scoring+Matching)
+- **🔍 Умный семантический поиск**: Находит релевантные посты по смыслу, а не по ключевым словам
+- **📊 Medium Posts Hybrid Reranking**: Гибридная система с порогом ≥0.7 и топ-5 отбором
+- **💬 Comment Drift Analysis**: Отдельный pipeline для анализа комментариев и обсуждений
+- **🌐 Language Validation Phase**: Валидация языка ответа и перевод RU→EN при необходимости
+- **⚡ Реальное время**: Отображение прогресса обработки через Server-Sent Events
+- **👥 Мульти-экспертность**: Поддержка `expert_id` для изоляции данных и параллельной обработки
+- **🔄 Автоматическая синхронизация**: Инкрементальное обновление данных из Telegram каналов
+
+## 🚀 Быстрый старт
+
+### Требования
+
 - Python 3.11+
 - Node.js 18+
-- OpenRouter API key (for Qwen 2.5-72B, Gemini 2.0 Flash, GPT-4o-mini)
+- OpenRouter API ключ
 
-#### Installation
+### Установка и запуск
 
-**Backend:**
 ```bash
+# 1. Клонирование репозитория
+git clone https://github.com/andreysazonov/Experts_panel.git
+cd Experts_panel
+
+# 2. Настройка переменных окружения
+cp .env.example .env
+# Отредактируйте .env, добавив OPENROUTER_API_KEY
+
+# 3. Запуск бэкенда
 cd backend
 pip install -r requirements.txt
-cp .env.example .env
-# Add your OPENROUTER_API_KEY to .env
-```
+python3 -m uvicorn src.api.main:app --reload --port 8000
 
-**Frontend:**
-```bash
+# 4. Запуск фроненда (в новом терминале)
 cd frontend
 npm install
-```
-
-#### Run Locally
-
-**1. Start Backend:**
-```bash
-cd backend
-uv run uvicorn src.api.main:app --reload --port 8000
-```
-
-**2. Start Frontend:**
-```bash
-cd frontend
 npm run dev
 ```
 
-**3. Access Application:**
-- Frontend: http://localhost:3001
-- Backend API: http://localhost:8000
-- API Docs: http://localhost:8000/docs
+Приложение будет доступно по адресу http://localhost:3001
 
-## 📦 Deployment
+## 🛠️ Управление данными
 
-### 🚀 Fly.io Deployment (Recommended)
+### Импорт данных из Telegram
 
-The application is automatically deployed to [Fly.io](https://fly.io) via GitHub Actions CI/CD.
-
-**Manual Deployment:**
 ```bash
-# Install Fly CLI
+# Импорт JSON файла с указанием expert_id
+cd backend && python -m src.data.json_parser data/exports/channel.json --expert-id refat
+
+# Интерактивное добавление комментариев
+cd backend && python -m src.data.comment_collector
+
+# Синхронизация Telegram канала
+cd backend && python sync_channel.py --dry-run --expert-id refat
+cd backend && python sync_channel.py --expert-id refat
+```
+
+### Анализ drift и база данных
+
+```bash
+# Анализ drift в комментариях (обязательно после реимпорта данных)
+cd backend && python analyze_drift.py
+
+# Управление базой данных
+cd backend && python -m src.models.database  # Интерактивное управление (init/reset/drop)
+
+# Создание и миграция SQLite базы
+sqlite3 data/experts.db < schema.sql
+sqlite3 data/experts.db < backend/migrations/001_create_comment_group_drift.sql
+sqlite3 data/experts.db < backend/migrations/002_add_sync_state.sql
+sqlite3 data/experts.db < backend/migrations/003_add_expert_id.sql
+```
+
+## 📚 Использование API
+
+### Базовый запрос
+
+```bash
+curl -X POST http://localhost:8000/api/v1/query \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Ваш вопрос", "stream_progress": false}'
+```
+
+### Запрос к конкретному эксперту
+
+```bash
+curl -X POST http://localhost:8000/api/v1/query \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Ваш вопрос", "expert_filter": ["refat"], "stream_progress": false}'
+```
+
+### Переменные окружения
+
+```bash
+# Основные переменные
+OPENROUTER_API_KEY=your-key-here
+DATABASE_URL=sqlite:///data/experts.db
+
+# Medium Posts Reranking
+MEDIUM_SCORE_THRESHOLD=0.7
+MEDIUM_MAX_SELECTED_POSTS=5
+MEDIUM_MAX_POSTS=50
+
+# Производительность
+MAX_POSTS_LIMIT=500
+CHUNK_SIZE=20
+REQUEST_TIMEOUT=300
+```
+
+## 🏗️ Техническая архитектура
+
+### Технологический стек
+
+- **Backend**: FastAPI, SQLAlchemy 2.0, Pydantic v2
+- **Frontend**: React 18, TypeScript, Vite
+- **Database**: SQLite / PostgreSQL с полной `expert_id` изоляцией
+- **AI Models**: OpenRouter API (Qwen 2.5-72B, Gemini 2.0 Flash, GPT-4o-mini)
+- **Deployment**: Docker, Fly.io
+
+### Структура проекта
+
+```
+backend/
+├── src/
+│   ├── models/       # SQLAlchemy модели с expert_id полями
+│   ├── services/     # Map-Resolve-Reduce pipeline
+│   │   ├── medium_scoring_service.py    # Medium Posts Reranking
+│   │   ├── language_validation_service.py # Language Validation
+│   │   └── drift_analysis_service.py    # Comment Drift Analysis
+│   ├── api/          # FastAPI эндпоинты
+│   ├── data/         # Импорт и парсинг Telegram данных
+│   └── utils/        # Утилиты и конвертеры
+├── prompts/          # LLM промпты (оптимизированные под модели)
+├── migrations/       # Миграции БД с expert_id поддержкой
+└── tests/            # Тесты валидации
+
+frontend/
+├── src/
+│   ├── components/   # React компоненты с expertId поддержкой
+│   ├── services/     # API клиент с SSE стримингом
+│   └── types/        # TypeScript интерфейсы
+└── public/           # Статика
+
+data/
+├── exports/          # Telegram JSON файлы по expert_id
+└── experts.db        # SQLite база данных с мульти-экспертностью
+```
+
+### Мульти-экспертная архитектура
+
+- **Полная изоляция данных**: Каждый пост, комментарий и результат анализа имеет `expert_id`
+- **Параллельная обработка**: Все эксперты обрабатываются одновременно для снижения времени ответа
+- **Масштабируемость**: Лёгкое добавление новых Telegram каналов через `expert_id`
+- **SSE трекинг**: Отображение активных экспертов в реальном времени через progress events
+
+## 🚀 Продакшен развёртывание
+
+### Развертывание на Fly.io
+
+```bash
+# 1. Установка Fly CLI
 curl -L https://fly.io/install.sh | sh
+fly auth login
 
-# Deploy
+# 2. Деплой приложения
 fly deploy
+
+# 3. Настройка секретов
+fly secrets set OPENROUTER_API_KEY=your-key-here
+
+# 4. Проверка здоровья
+curl https://experts-panel.fly.dev/health
 ```
 
-**Features:**
-- ✅ Automatic HTTPS
-- ✅ Zero-downtime deployments
-- ✅ Health monitoring
-- ✅ Persistent storage for SQLite database
+## 📖 Документация
 
-### 🐳 Docker Deployment
+- [Pipeline Architecture](docs/pipeline-architecture.md)
+- [Multi-Expert Setup](docs/multi-expert-guide.md)
+- [API Documentation](http://localhost:8000/docs)
+- [Development Guide](docs/development-guide.md)
 
-```bash
-# Build and run locally
-docker build -t experts-panel .
-docker run -p 8000:8000 \
-  -e OPENROUTER_API_KEY=your_key_here \
-  experts-panel
-```
+## 🤝 Вклад в проект
 
-### 📊 Environment Setup
+1. Fork репозитория
+2. Создайте feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit изменения (`git commit -m 'Add some AmazingFeature'`)
+4. Push в branch (`git push origin feature/AmazingFeature`)
+5. Откройте Pull Request
 
-**Required Secrets:**
-- `OPENROUTER_API_KEY` - Your OpenRouter API key
-- `FLY_API_TOKEN` - Fly.io deploy token (for CI/CD)
+## 📄 Лицензия
 
-## 🧪 Technology Stack
+Этот проект лицензирован под MIT License - см. файл [LICENSE](LICENSE) для деталей.
 
-### 🚀 Technology Stack
-- **Backend**: FastAPI + SQLAlchemy + SQLite
-- **Frontend**: React 18 + TypeScript + Vite
-- **AI Models**: Qwen 2.5-72B + Gemini 2.0 Flash + GPT-4o-mini
-- **Deployment**: Fly.io + GitHub Actions CI/CD
-- **Architecture**: 8-phase Map-Resolve-Reduce pipeline
+## 🙏 Благодарности
 
-## 📊 Performance Metrics
-
-- ⚡ **Query Processing**: 200-400 seconds for complex multi-expert queries
-- 🎯 **Accuracy**: 95%+ relevant post identification with 8-phase pipeline
-- 🔄 **Multi-Expert**: Parallel processing of unlimited experts
-- 💾 **Storage**: Efficient SQLite with persistent volumes on Fly.io
-- 🌐 **Real-time Progress**: SSE streaming with expert feedback
-- 🧠 **Multi-Model**: Optimal model selection per phase (Qwen/Gemini/GPT-4o-mini)
-
-### ⏱️ Phase Timing Breakdown
-- **Map Phase**: 60-120 seconds (content analysis)
-- **Medium Scoring**: 30-60 seconds (post reranking)
-- **Resolve Phase**: 20-40 seconds (link expansion)
-- **Reduce Phase**: 40-80 seconds (answer synthesis)
-- **Language Validation**: 10-20 seconds (consistency check)
-- **Comment Analysis**: 30-60 seconds (discussion extraction)
-- **Comment Synthesis**: 20-40 seconds (insight integration)
-
-### 📈 System Capabilities
-- **🔄 Concurrent Experts**: Unlimited parallel expert processing
-- **📝 Post Capacity**: Up to 5000 posts per expert analyzed
-- **💬 Comment Analysis**: Deep discussion thread extraction
-- **🌍 Multi-language**: Russian/English with automatic translation
-- **🎛️ Configurable**: Adjustable thresholds and model parameters
-
-## 📚 API Endpoints
-
-### Основные endpoints
-
-| Метод | Endpoint | Описание |
-|-------|----------|----------|
-| POST | `/api/v1/query` | Выполнить поисковый запрос (SSE) |
-| GET | `/api/v1/posts/{post_id}` | Получить детали поста |
-| POST | `/api/v1/posts/by-ids` | Пакетное получение постов |
-| POST | `/api/v1/import/import` | Загрузка JSON файла |
-| GET | `/api/import/status/{job_id}` | Статус импорта |
-| GET | `/api/v1/comments/posts/{post_id}/comments` | Получить комментарии к посту |
-| POST | `/api/v1/comments/comments/collect` | Создание комментария |
-| PUT | `/api/v1/comments/comments/{comment_id}` | Обновить комментарий |
-| DELETE | `/api/v1/comments/comments/{comment_id}` | Удалить комментарий |
-| POST | `/api/v1/admin/upload-database` | Загрузка базы данных |
-| GET | `/health` | Проверка здоровья системы |
-| GET | `/api/info` | Информация об API |
-
-### Пример запроса
-
-```bash
-# Простой поисковый запрос
-curl -X POST "http://localhost:8000/api/v1/query" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "query": "Какие основные темы обсуждаются в канале?",
-       "max_posts": 100,
-       "include_comments": true,
-       "stream_progress": true
-     }'
-
-# Получение деталей поста
-curl "http://localhost:8000/api/v1/posts/1"
-
-# Запрос с фильтрацией по экспертам
-curl -X POST "http://localhost:8000/api/v1/query" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "query": "Какие основные темы обсуждаются в канале?",
-       "expert_filter": ["expert1", "expert2"],
-       "stream_progress": false
-     }'
-```
-
-## 🧪 Testing
-
-```bash
-# Run validation tests
-python tests/test_queries.py
-
-# Performance check
-python tests/test_queries.py --performance-check
-```
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-**Development Setup:**
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📞 Support
-
-For questions and support:
-- 🐛 Create an [Issue](https://github.com/shao3d/Experts_panel/issues)
-- 📖 Check [Documentation](docs/)
-- 🚀 Try [Live Demo](https://experts-panel.fly.dev)
+- [OpenRouter](https://openrouter.ai/) за доступ к передовым AI моделям
+- [FastAPI](https://fastapi.tiangolo.com/) за мощный фреймворк
+- [React](https://reactjs.org/) за прекрасный UI фреймворк
 
 ---
 
-🤖 Generated with [Claude Code](https://claude.ai/code) • Deployed on [Fly.io](https://fly.io)
+**Experts Panel** — превращаем хаос Telegram каналов в структурированные знания 💡
