@@ -1,6 +1,6 @@
 # Experts Panel Development Guidelines
 
-Auto-generated from feature plans. Last updated: 2025-10-25
+Auto-generated from feature plans. Last updated: 2025-10-29
 
 ## Active Technologies
 - Python 3.11+ with FastAPI and Pydantic v2
@@ -18,9 +18,12 @@ Auto-generated from feature plans. Last updated: 2025-10-25
 backend/
 ├── src/
 │   ├── models/       # SQLAlchemy models
-│   ├── services/     # Map-Resolve-Reduce pipeline
+│   ├── services/     # Map-Resolve-Reduce pipeline and utilities
 │   ├── api/          # FastAPI endpoints
-│   └── data/         # Import and parsing
+│   ├── data/         # Import and parsing
+│   └── utils/        # Utility functions and helpers
+│       ├── entities_converter.py  # Telegram entities to markdown converter
+│       └── language_utils.py      # Language detection and validation utilities
 ├── prompts/          # LLM prompts (optimized per model)
 ├── migrations/       # Database migrations
 └── tests/            # Validation queries
@@ -35,6 +38,24 @@ frontend/
 data/
 ├── exports/          # Telegram JSON files
 └── experts.db        # SQLite database
+
+# Backend Root Scripts
+backend/
+├── sync_channel.py                    # Telegram channel synchronization
+├── sync_channel_multi_expert.py       # Multi-expert synchronization
+├── analyze_drift.py                   # Comment drift analysis
+├── import_interactive.py              # Interactive data import
+├── populate_test_data.py              # Test data generation
+├── apply_postgres_migrations.py       # PostgreSQL migrations
+├── sync_to_postgres.py                # Sync to PostgreSQL
+└── run_import.py                      # Batch import runner
+
+# Project Test Files
+tests/
+├── test_queries.py                    # Query validation tests
+└── validation/performance_test.py     # Performance tests
+
+quickstart_validate.py                 # Quick validation script
 
 # Fly.io Configuration
 fly.toml              # Fly.io app configuration
@@ -63,7 +84,7 @@ Dockerfile            # Multi-stage build for Fly.io deployment
 pip install -r requirements.txt
 
 # Run development server (ONLY way that works!)
-cd backend && uv run uvicorn src.api.main:app --reload --port 8000
+cd backend && python3 -m uvicorn src.api.main:app --reload --port 8000
 
 # Database management
 python -m src.models.database  # Interactive DB operations (init/reset/drop)
@@ -109,8 +130,11 @@ sqlite3 data/experts.db < backend/migrations/001_create_comment_group_drift.sql
 sqlite3 data/experts.db < backend/migrations/002_add_sync_state.sql
 sqlite3 data/experts.db < backend/migrations/003_add_expert_id.sql
 sqlite3 data/experts.db < backend/migrations/004_add_expert_id_to_drift.sql
+sqlite3 data/experts.db < backend/migrations/005_add_unique_telegram_message_id.sql
 sqlite3 data/experts.db < backend/migrations/006_add_unique_telegram_message_id.sql
-sqlite3 data/experts.db < backend/migrations/008_add_comment_constraints.sql
+sqlite3 data/experts.db < backend/migrations/007_fix_unique_telegram_message_id.sql
+sqlite3 data/experts.db < backend/migrations/007_add_channel_username.sql
+sqlite3 data/experts.db < backend/migrations/008_fix_comment_unique_constraint.sql
 
 # Backup database
 sqlite3 data/experts.db ".backup data/backup.db"
@@ -310,11 +334,13 @@ curl -X POST http://localhost:8000/api/v1/query \
 
 ## 📋 Recent Changes (Last 30 days)
 
+- **2025-10-29**: Complete Documentation Synchronization - Final comprehensive audit and 100% alignment of documentation with codebase, including structural fixes, API endpoint corrections, backend scripts documentation, and test files coverage
 - **2025-10-26**: Docker Deployment VPS Implementation - Complete production-ready deployment infrastructure with automated deployment script, SSL/HTTPS configuration, security hardening, and comprehensive documentation
 - **2025-10-25**: Enhanced Progress UI with Real-time Expert Feedback - Added contextual phase descriptions, active expert count display, warning indicators for long-running processes, and frontend-only final_results phase
 - **2025-10-25**: Language Validation Phase Implementation - Added eight-phase pipeline with language consistency validation and Russian-to-English translation
 - **2025-10-24**: Fixed Post ID Scrolling for Multi-Expert Interface - Standardized DOM ID generation between PostCard and PostsList components using consistent expertId prop
 - **2025-10-23**: Medium Posts Hybrid Reranking System - GPT-4o-mini scoring with threshold ≥0.7 and top-5 selection
+- **2025-10-22**: Channel Username Migration - Added channel_username field to posts table for better channel identification and tracking
 - **2025-10-16**: Multi-Expert Sync Optimization v3.0 - Complete workflow integration
 - **2025-10-15**: Map Phase Retry Mechanism - 95%+ reliability improvement
 - **2025-10-14**: Data Selection Optimization - HIGH only filtering
@@ -395,9 +421,18 @@ For MVP, use validation through prepared Q&A sets:
 - **Main Pipeline**: `backend/src/services/`
 - **Language Validation Service**: `backend/src/services/language_validation_service.py`
 - **Medium Scoring Service**: `backend/src/services/medium_scoring_service.py`
+- **Fact Validation Service**: `backend/src/services/fact_validator.py`
+- **Log Service**: `backend/src/services/log_service.py`
+- **Translation Service**: `backend/src/services/translation_service.py`
+- **OpenRouter Adapter**: `backend/src/services/openrouter_adapter.py`
+- **Resolve Service**: `backend/src/services/resolve_service.py`
+- **Simple Resolve Service**: `backend/src/services/simple_resolve_service.py`
 - **Medium Scoring Prompt**: `backend/prompts/medium_scoring_prompt.txt`
 - **API Endpoints**: `backend/src/api/simplified_query_endpoint.py`
 - **Database Models**: `backend/src/models/`
+- **Utility Functions**: `backend/src/utils/`
+- **Entities Converter**: `backend/src/utils/entities_converter.py`
+- **Language Utils**: `backend/src/utils/language_utils.py`
 - **Prompts**: `backend/prompts/`
 - **Frontend Components**: `frontend/src/components/`
 - **ProgressSection Component**: `frontend/src/components/ProgressSection.tsx`

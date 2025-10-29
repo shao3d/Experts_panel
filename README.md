@@ -233,8 +233,14 @@ docker run -p 8000:8000 \
 |-------|----------|----------|
 | POST | `/api/v1/query` | Выполнить поисковый запрос (SSE) |
 | GET | `/api/v1/posts/{post_id}` | Получить детали поста |
-| POST | `/api/v1/import` | Импортировать JSON файл |
-| GET | `/api/v1/import/status/{job_id}` | Статус импорта |
+| POST | `/api/v1/posts/by-ids` | Пакетное получение постов |
+| POST | `/api/v1/import/import` | Загрузка JSON файла |
+| GET | `/api/import/status/{job_id}` | Статус импорта |
+| GET | `/api/v1/comments/posts/{post_id}/comments` | Получить комментарии к посту |
+| POST | `/api/v1/comments/comments/collect` | Создание комментария |
+| PUT | `/api/v1/comments/comments/{comment_id}` | Обновить комментарий |
+| DELETE | `/api/v1/comments/comments/{comment_id}` | Удалить комментарий |
+| POST | `/api/v1/admin/upload-database` | Загрузка базы данных |
 | GET | `/health` | Проверка здоровья системы |
 | GET | `/api/info` | Информация об API |
 
