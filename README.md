@@ -6,85 +6,85 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com)
 [![React](https://img.shields.io/badge/React-18+-blue.svg)](https://reactjs.org)
 
-**Интеллектуальная система анализа Telegram каналов экспертов с использованием многомодельной AI-архитектуры**
+**Intelligent system for analyzing expert Telegram channels using multi-model AI architecture**
 
-Experts Panel — это мощный инструмент для семантического поиска и анализа контента из Telegram каналов экспертов. Система использует продвинутую **8-фазную архитектуру Map-Resolve-Reduce pipeline** с несколькими AI-моделями для предоставления точных и контекстуально релевантных ответов.
+Experts Panel is a powerful tool for semantic search and analysis of content from expert Telegram channels. The system uses an advanced **8-phase Map-Resolve-Reduce pipeline architecture** with multiple AI models to provide accurate and contextually relevant answers.
 
-## 🏗️ Архитектура системы
+## 🏗️ System Architecture
 
-### Высокоуровневая архитектура
+### High-Level Architecture
 
 ```mermaid
 graph TD
-    subgraph "Пользовательская среда"
-        User[Пользователь]
+    subgraph "User Environment"
+        User[User]
         Frontend[React Frontend Vite]
     end
 
-    subgraph "Инфраструктура Experts Panel"
+    subgraph "Experts Panel Infrastructure"
         Backend[FastAPI Backend]
-        subgraph "База Знаний"
+        subgraph "Knowledge Base"
             DB[(SQLite PostgreSQL)]
         end
     end
 
-    subgraph "Внешние AI сервисы"
+    subgraph "External AI Services"
         LLM_API[OpenRouter API]
     end
 
-    User -- "Отправляет запрос" --> Frontend
-    Frontend -- "API-запрос /api/v1/query SSE" --> Backend
-    Backend -- "Обращается к LLM-моделям" --> LLM_API
-    Backend -- "Извлекает посты, комментарии, связи" --> DB
-    Backend -- "Потоком SSE отдаёт прогресс и ответ" --> Frontend
-    Frontend -- "Отображает ответ и источники" --> User
+    User -- "Sends query" --> Frontend
+    Frontend -- "API request /api/v1/query SSE" --> Backend
+    Backend -- "Accesses LLM models" --> LLM_API
+    Backend -- "Extracts posts, comments, relationships" --> DB
+    Backend -- "Streams SSE progress and response" --> Frontend
+    Frontend -- "Displays response and sources" --> User
 ```
 
-### Интеллектуальный конвейер обработки запросов
+### Intelligent Query Processing Pipeline
 
 ```mermaid
 graph TD
-    A[Старт: Пользовательский запрос] --> B{Определение языка запроса}
-    B --> C[1. Map-фаза: Qwen 2.5]
-    C -- "Посты" --> D{Разделение на HIGH и MEDIUM}
-    D -- "HIGH посты" --> E[3. Resolve-фаза: Поиск связанных постов в БД]
-    D -- "MEDIUM посты" --> F[2. Scoring-фаза: Qwen 2.5]
-    F -- "Top-5 постов score >= 0.7" --> G[4. Reduce-фаза: Gemini Flash]
-    E -- "Обогащенные HIGH посты" --> G
-    G -- "Синтезированный ответ" --> H[5. Language Validation: Qwen 2.5]
-    H -- "Ответ на нужном языке" --> I{Сборка финального ответа}
+    A[Start: User Query] --> B{Determine Query Language}
+    B --> C[1. Map Phase: Qwen 2.5]
+    C -- "Posts" --> D{Split into HIGH and MEDIUM}
+    D -- "HIGH posts" --> E[3. Resolve Phase: Search related posts in DB]
+    D -- "MEDIUM posts" --> F[2. Scoring Phase: Qwen 2.5]
+    F -- "Top-5 posts score >= 0.7" --> G[4. Reduce Phase: Gemini Flash]
+    E -- "Enriched HIGH posts" --> G
+    G -- "Synthesized response" --> H[5. Language Validation: Qwen 2.5]
+    H -- "Response in correct language" --> I{Assemble Final Response}
 
-    subgraph "Параллельный Pipeline B: Поиск в комментариях"
-        J[6. Поиск по Drift Topics] --> K[7. Синтез инсайтов из комментариев]
+    subgraph "Parallel Pipeline B: Comment Search"
+        J[6. Search Drift Topics] --> K[7. Synthesize insights from comments]
     end
 
     A --> J
     K --> I[8. Response Building]
 
-    I --> L[Финальный ответ]
+    I --> L[Final Response]
 
     classDef llm_step fill:#f9f,stroke:#333,stroke-width:2px
     class C,F,G,H,J,K llm_step
 ```
 
-### Жизненный цикл данных
+### Data Lifecycle
 
 ```mermaid
 graph TD
-    subgraph "Этап 1: Ручной импорт Первичная загрузка"
-        A[Администратор] --> B[json_parser.py]
-        C[JSON экспорт из Telegram] --> B
-        B --> D[Запись постов комментариев связей в БД]
+    subgraph "Stage 1: Manual Import Initial Loading"
+        A[Administrator] --> B[json_parser.py]
+        C[JSON export from Telegram] --> B
+        B --> D[Write posts comments relationships to DB]
     end
 
-    subgraph "Этап 2: Автоматическая инкрементальная синхронизация"
-        E[Cron Job Планировщик] --> F[sync_channel.py]
-        F -- "Получает ID последнего поста" --> G[БД]
-        G -- "Отдаёт ID" --> F
-        F -- "Запрашивает новые данные" --> H[Telegram API]
-        H -- "Отдаёт новые посты и комментарии" --> F
-        F --> I[Обновляет добавляет данные в БД]
-        F --> J[Помечает новые группы комментариев как pending]
+    subgraph "Stage 2: Automatic Incremental Synchronization"
+        E[Cron Job Scheduler] --> F[sync_channel.py]
+        F -- "Gets last post ID" --> G[Database]
+        G -- "Returns ID" --> F
+        F -- "Requests new data" --> H[Telegram API]
+        H -- "Returns new posts and comments" --> F
+        F --> I[Updates adds data to DB]
+        F --> J[Marks new comment groups as pending]
     end
 
     D --> G
@@ -92,159 +92,159 @@ graph TD
     J --> G
 ```
 
-### Пользовательский путь
+### User Journey
 
 ```mermaid
 graph TD
-    A[Пользователь открывает приложение] --> B{Видит форму ввода}
-    B --> C[Вводит вопрос и нажимает Ask]
-    C --> D[UI переходит в состояние Processing]
-    D --> E[ProgressSection отображает прогресс в реальном времени]
-    E --> F["Появляются статусы: Map - Resolve - Reduce ..."]
-    F --> G[Бэкенд присылает финальный ответ]
-    G --> H[Появляются аккордеоны для каждого эксперта]
-    H -- "Клик на аккордеон" --> I{Раскрывается результат}
-    I --> J[Видит ответ и список постов-источников]
-    J -- "Клик на ссылку post ID в ответе" --> K[Нужный пост подсвечивается в списке]
-    J -- "Клик на пост в списке" --> L[Пост раскрывается, показывая полный текст и комментарии]
+    A[User opens application] --> B{Sees input form}
+    B --> C[Enters question and clicks Ask]
+    C --> D[UI enters Processing state]
+    D --> E[ProgressSection displays real-time progress]
+    E --> F["Statuses appear: Map - Resolve - Reduce ..."]
+    F --> G[Backend sends final response]
+    G --> H[Accordions appear for each expert]
+    H -- "Click on accordion" --> I{Result expands}
+    I --> J[Sees response and list of source posts]
+    J -- "Click on post ID link in response" --> K[Target post highlights in list]
+    J -- "Click on post in list" --> L[Post expands showing full text and comments]
     L --> J
     H --> B
 ```
 
-### Архитектура развёртывания
+### Deployment Architecture
 
 ```mermaid
 graph TD
-    subgraph "Интернет"
-        User[Пользователь]
+    subgraph "Internet"
+        User[User]
     end
 
-    subgraph "Облачная платформа Fly.io Railway"
+    subgraph "Cloud Platform Fly.io Railway"
         LB[Load Balancer Proxy]
 
-        subgraph "Frontend контейнер"
-            Nginx[Nginx] --> Static[Статика React]
+        subgraph "Frontend container"
+            Nginx[Nginx] --> Static[React Static]
         end
 
-        subgraph "Backend контейнер"
-            Uvicorn[ASGI сервер Uvicorn] --> App[FastAPI приложение]
+        subgraph "Backend container"
+            Uvicorn[ASGI server Uvicorn] --> App[FastAPI application]
         end
 
-        subgraph "Постоянное хранилище"
+        subgraph "Persistent storage"
             Volume[Mounted Volume]
             DB[(experts.db)]
-            Volume -- содержит --> DB
+            Volume -- contains --> DB
         end
     end
 
     User -- HTTPS --> LB
-    LB -- "Запросы UI" --> Nginx
+    LB -- "UI requests" --> Nginx
     Nginx --> Static
-    LB -- "Проксирует /api/*" --> Uvicorn
-    App -- "Читает пишет в БД" --> DB
-    App -- "Обращается к AI" --> LLM_API[OpenRouter API]
+    LB -- "Proxies /api/*" --> Uvicorn
+    App -- "Reads writes to DB" --> DB
+    App -- "Accesses AI" --> LLM_API[OpenRouter API]
 
     style Volume fill:#fdf,stroke:#333
 ```
 
-## ✨ Ключевые возможности
+## ✨ Key Features
 
-- **🧠 8-фазная Map-Resolve-Reduce архитектура**: Продвинутый pipeline с дифференциальной обработкой HIGH/MEDIUM постов
-- **🎯 Многомодельная AI-стратегия**: Qwen 2.5-72B (Map+Validation), Gemini 2.0 Flash (Reduce+Synthesis), GPT-4o-mini (Scoring+Matching)
-- **🔍 Умный семантический поиск**: Находит релевантные посты по смыслу, а не по ключевым словам
-- **📊 Medium Posts Hybrid Reranking**: Гибридная система с порогом ≥0.7 и топ-5 отбором
-- **💬 Comment Drift Analysis**: Отдельный pipeline для анализа комментариев и обсуждений
-- **🌐 Language Validation Phase**: Валидация языка ответа и перевод RU→EN при необходимости
-- **⚡ Реальное время**: Отображение прогресса обработки через Server-Sent Events
-- **👥 Мульти-экспертность**: Поддержка `expert_id` для изоляции данных и параллельной обработки
-- **🔄 Автоматическая синхронизация**: Инкрементальное обновление данных из Telegram каналов
+- **🧠 8-phase Map-Resolve-Reduce Architecture**: Advanced pipeline with differential HIGH/MEDIUM posts processing
+- **🎯 Multi-model AI Strategy**: Qwen 2.5-72B (Map+Validation), Gemini 2.0 Flash (Reduce+Synthesis), GPT-4o-mini (Scoring+Matching)
+- **🔍 Smart Semantic Search**: Finds relevant posts by meaning, not keywords
+- **📊 Medium Posts Hybrid Reranking**: Hybrid system with threshold ≥0.7 and top-5 selection
+- **💬 Comment Drift Analysis**: Separate pipeline for comment and discussion analysis
+- **🌐 Language Validation Phase**: Response language validation and RU→EN translation when needed
+- **⚡ Real-time**: Processing progress display via Server-Sent Events
+- **👥 Multi-expert Support**: `expert_id` support for data isolation and parallel processing
+- **🔄 Automatic Synchronization**: Incremental data updates from Telegram channels
 
-## 🚀 Быстрый старт
+## 🚀 Quick Start
 
-### Требования
+### Prerequisites
 
 - Python 3.11+
 - Node.js 18+
-- OpenRouter API ключ
+- OpenRouter API key
 
-### Установка и запуск
+### Installation and Setup
 
 ```bash
-# 1. Клонирование репозитория
+# 1. Clone repository
 git clone https://github.com/andreysazonov/Experts_panel.git
 cd Experts_panel
 
-# 2. Настройка переменных окружения
+# 2. Setup environment variables
 cp .env.example .env
-# Отредактируйте .env, добавив OPENROUTER_API_KEY
+# Edit .env adding your OPENROUTER_API_KEY
 
-# 3. Запуск бэкенда
+# 3. Start backend
 cd backend
 pip install -r requirements.txt
 python3 -m uvicorn src.api.main:app --reload --port 8000
 
-# 4. Запуск фроненда (в новом терминале)
+# 4. Start frontend (in new terminal)
 cd frontend
 npm install
 npm run dev
 ```
 
-Приложение будет доступно по адресу http://localhost:3001
+Application will be available at http://localhost:3001
 
-## 🛠️ Управление данными
+## 🛠️ Data Management
 
-### Импорт данных из Telegram
+### Telegram Data Import
 
 ```bash
-# Импорт JSON файла с указанием expert_id
+# Import JSON file with expert_id specified
 cd backend && python -m src.data.json_parser data/exports/channel.json --expert-id refat
 
-# Интерактивное добавление комментариев
+# Interactive comment addition
 cd backend && python -m src.data.comment_collector
 
-# Синхронизация Telegram канала
+# Telegram channel synchronization
 cd backend && python sync_channel.py --dry-run --expert-id refat
 cd backend && python sync_channel.py --expert-id refat
 ```
 
-### Анализ drift и база данных
+### Drift Analysis and Database
 
 ```bash
-# Анализ drift в комментариях (обязательно после реимпорта данных)
+# Drift analysis in comments (required after data reimport)
 cd backend && python analyze_drift.py
 
-# Управление базой данных
-cd backend && python -m src.models.database  # Интерактивное управление (init/reset/drop)
+# Database management
+cd backend && python -m src.models.database  # Interactive management (init/reset/drop)
 
-# Создание и миграция SQLite базы
+# SQLite database creation and migration
 sqlite3 data/experts.db < schema.sql
 sqlite3 data/experts.db < backend/migrations/001_create_comment_group_drift.sql
 sqlite3 data/experts.db < backend/migrations/002_add_sync_state.sql
 sqlite3 data/experts.db < backend/migrations/003_add_expert_id.sql
 ```
 
-## 📚 Использование API
+## 📚 API Usage
 
-### Базовый запрос
-
-```bash
-curl -X POST http://localhost:8000/api/v1/query \
-  -H "Content-Type: application/json" \
-  -d '{"query": "Ваш вопрос", "stream_progress": false}'
-```
-
-### Запрос к конкретному эксперту
+### Basic Query
 
 ```bash
 curl -X POST http://localhost:8000/api/v1/query \
   -H "Content-Type: application/json" \
-  -d '{"query": "Ваш вопрос", "expert_filter": ["refat"], "stream_progress": false}'
+  -d '{"query": "Your question", "stream_progress": false}'
 ```
 
-### Переменные окружения
+### Query Specific Expert
 
 ```bash
-# Основные переменные
+curl -X POST http://localhost:8000/api/v1/query \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Your question", "expert_filter": ["refat"], "stream_progress": false}'
+```
+
+### Environment Variables
+
+```bash
+# Main variables
 OPENROUTER_API_KEY=your-key-here
 DATABASE_URL=sqlite:///data/experts.db
 
@@ -253,102 +253,102 @@ MEDIUM_SCORE_THRESHOLD=0.7
 MEDIUM_MAX_SELECTED_POSTS=5
 MEDIUM_MAX_POSTS=50
 
-# Производительность
+# Performance
 MAX_POSTS_LIMIT=500
 CHUNK_SIZE=20
 REQUEST_TIMEOUT=300
 ```
 
-## 🏗️ Техническая архитектура
+## 🏗️ Technical Architecture
 
-### Технологический стек
+### Technology Stack
 
 - **Backend**: FastAPI, SQLAlchemy 2.0, Pydantic v2
 - **Frontend**: React 18, TypeScript, Vite
-- **Database**: SQLite / PostgreSQL с полной `expert_id` изоляцией
+- **Database**: SQLite / PostgreSQL with full `expert_id` isolation
 - **AI Models**: OpenRouter API (Qwen 2.5-72B, Gemini 2.0 Flash, GPT-4o-mini)
 - **Deployment**: Docker, Fly.io
 
-### Структура проекта
+### Project Structure
 
 ```
 backend/
 ├── src/
-│   ├── models/       # SQLAlchemy модели с expert_id полями
+│   ├── models/       # SQLAlchemy models with expert_id fields
 │   ├── services/     # Map-Resolve-Reduce pipeline
 │   │   ├── medium_scoring_service.py    # Medium Posts Reranking
 │   │   ├── language_validation_service.py # Language Validation
 │   │   └── drift_analysis_service.py    # Comment Drift Analysis
-│   ├── api/          # FastAPI эндпоинты
-│   ├── data/         # Импорт и парсинг Telegram данных
-│   └── utils/        # Утилиты и конвертеры
-├── prompts/          # LLM промпты (оптимизированные под модели)
-├── migrations/       # Миграции БД с expert_id поддержкой
-└── tests/            # Тесты валидации
+│   ├── api/          # FastAPI endpoints
+│   ├── data/         # Telegram data import and parsing
+│   └── utils/        # Utilities and converters
+├── prompts/          # LLM prompts (optimized per model)
+├── migrations/       # Database migrations with expert_id support
+└── tests/            # Validation tests
 
 frontend/
 ├── src/
-│   ├── components/   # React компоненты с expertId поддержкой
-│   ├── services/     # API клиент с SSE стримингом
-│   └── types/        # TypeScript интерфейсы
-└── public/           # Статика
+│   ├── components/   # React components with expertId support
+│   ├── services/     # API client with SSE streaming
+│   └── types/        # TypeScript interfaces
+└── public/           # Static assets
 
 data/
-├── exports/          # Telegram JSON файлы по expert_id
-└── experts.db        # SQLite база данных с мульти-экспертностью
+├── exports/          # Telegram JSON files by expert_id
+└── experts.db        # SQLite database with multi-expert support
 ```
 
-### Мульти-экспертная архитектура
+### Multi-Expert Architecture
 
-- **Полная изоляция данных**: Каждый пост, комментарий и результат анализа имеет `expert_id`
-- **Параллельная обработка**: Все эксперты обрабатываются одновременно для снижения времени ответа
-- **Масштабируемость**: Лёгкое добавление новых Telegram каналов через `expert_id`
-- **SSE трекинг**: Отображение активных экспертов в реальном времени через progress events
+- **Full Data Isolation**: Every post, comment, and analysis result has `expert_id`
+- **Parallel Processing**: All experts processed simultaneously to reduce response time
+- **Scalability**: Easy addition of new Telegram channels via `expert_id`
+- **SSE Tracking**: Real-time display of active experts via progress events
 
-## 🚀 Продакшен развёртывание
+## 🚀 Production Deployment
 
-### Развертывание на Fly.io
+### Fly.io Deployment
 
 ```bash
-# 1. Установка Fly CLI
+# 1. Install Fly CLI
 curl -L https://fly.io/install.sh | sh
 fly auth login
 
-# 2. Деплой приложения
+# 2. Deploy application
 fly deploy
 
-# 3. Настройка секретов
+# 3. Setup secrets
 fly secrets set OPENROUTER_API_KEY=your-key-here
 
-# 4. Проверка здоровья
+# 4. Health check
 curl https://experts-panel.fly.dev/health
 ```
 
-## 📖 Документация
+## 📚 Documentation
 
 - [Pipeline Architecture](docs/pipeline-architecture.md)
 - [Multi-Expert Setup](docs/multi-expert-guide.md)
 - [API Documentation](http://localhost:8000/docs)
 - [Development Guide](docs/development-guide.md)
 
-## 🤝 Вклад в проект
+## 🤝 Contributing
 
-1. Fork репозитория
-2. Создайте feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit изменения (`git commit -m 'Add some AmazingFeature'`)
-4. Push в branch (`git push origin feature/AmazingFeature`)
-5. Откройте Pull Request
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## 📄 Лицензия
+## 📄 License
 
-Этот проект лицензирован под MIT License - см. файл [LICENSE](LICENSE) для деталей.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Благодарности
+## 🙏 Acknowledgments
 
-- [OpenRouter](https://openrouter.ai/) за доступ к передовым AI моделям
-- [FastAPI](https://fastapi.tiangolo.com/) за мощный фреймворк
-- [React](https://reactjs.org/) за прекрасный UI фреймворк
+- [OpenRouter](https://openrouter.ai/) for access to cutting-edge AI models
+- [FastAPI](https://fastapi.tiangolo.com/) for the powerful framework
+- [React](https://reactjs.org/) for the excellent UI framework
 
 ---
 
-**Experts Panel** — превращаем хаос Telegram каналов в структурированные знания 💡
+**Experts Panel** — turning Telegram channel chaos into structured knowledge 💡
