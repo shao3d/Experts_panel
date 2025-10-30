@@ -12,7 +12,9 @@ import time
 
 def get_database_connection():
     """Get database connection"""
-    conn = sqlite3.connect('data/experts.db')
+    # Use absolute path for database reliability
+    db_path = '/Users/andreysazonov/Documents/Projects/Experts_panel/backend/data/experts.db'
+    conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -113,49 +115,99 @@ If comments are purely discussing the post content (clarifications, agreements, 
 
 def simple_drift_analysis(post_text: str, comments: List[Dict]) -> Dict[str, Any]:
     """
-    Simple heuristic-based drift analysis
-    This is a placeholder for Claude API analysis
+    Enhanced heuristic-based drift analysis
+    Analyzes topic drift between post and comments
     """
     if not comments:
         return {"has_drift": 0, "drift_topics": None}
 
-    # Extract key terms from post
-    post_words = set(post_text.lower().split())
+    # Normalize post text
+    post_text_lower = post_text.lower()
+    post_words = set(post_text_lower.split())
 
-    # Look for topic indicators in comments
-    drift_indicators = [
-        'what about', 'how does', 'what if', 'why not', 'have you considered',
-        'actually', 'in my experience', 'this reminds me of', 'on the other hand',
-        'but what about', 'however', 'although', 'meanwhile', 'by the way'
-    ]
+    # Define topic categories and their keywords
+    topic_categories = {
+        "OCR Performance & Capabilities": {
+            "keywords": ["ocr", "bounding", "boxes", "сканированные", "приказы", "сканер", "результаты", "шум", "экран"],
+            "related_terms": ["распознает", "сканирует", "читает", "обрабатывает", "анализирует"]
+        },
+        "Model Testing & Benchmarks": {
+            "keywords": ["годнота", "огнище", "бенчи", "картинки", "тест", "проверка", "сравнение", "производительность"],
+            "related_terms": ["проверял", "тестировал", "бенчмарк", "результаты", "скорость"]
+        },
+        "Hardware Requirements & Compatibility": {
+            "keywords": ["4090", "3060", "машинах", "компьюта", "железо", "видеокарта", "память"],
+            "related_terms": ["запустить", "работает", "требует", "нужна", "подходит"]
+        },
+        "Alternative Solutions & Models": {
+            "keywords": ["nanonets", "qwen", "huggingface", "gguf", "альтернатива", "другие", "модели"],
+            "related_terms": ["использовать", "попробовать", "сравнить", "варианты"]
+        },
+        "Practical Applications & Use Cases": {
+            "keywords": ["crm", "координатам", "предразметки", "аннотацию", "задача", "применение", "реальный"],
+            "related_terms": ["использую", "применять", "практика", "работа", "проект"]
+        },
+        "Technical Limitations & Issues": {
+            "keywords": ["не могут", "тинкеринг", "автоматизированном", "проблемы", "ограничения", "баги", "точность"],
+            "related_terms": ["проблема", "сложность", "ограничение", "не работает", "ошибка"]
+        }
+    }
 
-    # Check for question marks and discussion indicators
-    has_questions = any('?' in c['comment_text'] for c in comments)
-    has_discussion_indicators = any(
-        any(indicator in c['comment_text'].lower() for indicator in drift_indicators)
-        for c in comments
-    )
+    # Analyze comments for topic drift
+    drift_topics = []
+    comment_texts = [comment["comment_text"].lower() for comment in comments]
 
-    # Simple heuristic: if comments have questions or discussion indicators, mark as drift
-    has_drift = 1 if (has_questions or has_discussion_indicators) else 0
+    for category_name, category_data in topic_categories.items():
+        matching_comments = []
+
+        # Find comments that match this category
+        for i, text in enumerate(comment_texts):
+            keyword_matches = sum(1 for keyword in category_data["keywords"] if keyword in text)
+            related_matches = sum(1 for term in category_data["related_terms"] if term in text)
+
+            if keyword_matches > 0 or related_matches > 0:
+                matching_comments.append(comments[i])
+
+        # Only consider as drift if:
+        # 1. We have matching comments
+        # 2. The topic is not the main focus of the original post
+        # 3. We have substantial discussion (multiple comments or detailed comments)
+
+        if matching_comments:
+            # Check if this topic is already covered in the original post
+            post_topic_coverage = sum(1 for keyword in category_data["keywords"] if keyword in post_text_lower)
+
+            # Consider it drift if:
+            # - Post doesn't cover this topic well (<= 1 keyword match)
+            # - OR we have extensive discussion beyond what's in the post
+            if post_topic_coverage <= 1 or len(matching_comments) >= 2:
+
+                # Extract key phrases and context
+                key_phrases = []
+                context_parts = []
+
+                for comment in matching_comments[:3]:
+                    comment_text = comment["comment_text"]
+                    # Extract meaningful phrases (avoid very short ones)
+                    if len(comment_text.strip()) > 10:
+                        phrase = comment_text[:80] + "..." if len(comment_text) > 80 else comment_text
+                        key_phrases.append(phrase)
+                        context_parts.append(f"{comment['author_name']}: {comment_text[:50]}...")
+
+                # Create drift topic entry
+                drift_topic = {
+                    "topic": category_name,
+                    "keywords": category_data["keywords"][:5],  # Limit keywords
+                    "key_phrases": key_phrases,
+                    "context": f"Discussion from {len(matching_comments)} comments: {'; '.join(context_parts[:2])}"
+                }
+                drift_topics.append(drift_topic)
+
+    # Determine if meaningful drift exists
+    has_drift = 1 if len(drift_topics) > 0 else 0
 
     if has_drift:
-        # Extract simple drift topics
-        drift_topics = []
-        for comment in comments[:3]:  # Take first 3 comments as topics
-            comment_text = comment['comment_text']
-            words = comment_text.lower().split()
-            # Find words not in post
-            new_words = [w for w in words if w not in post_words and len(w) > 3][:3]
-            if new_words:
-                drift_topics.append({
-                    "topic": comment_text[:100] + "..." if len(comment_text) > 100 else comment_text,
-                    "keywords": new_words,
-                    "key_phrases": [comment_text[:50] + "..."],
-                    "context": f"From comment by {comment['author_name']}"
-                })
-
-        return {"has_drift": 1, "drift_topics": drift_topics[:3]}  # Max 3 topics
+        return {"has_drift": 1, "drift_topics": drift_topics}
     else:
         return {"has_drift": 0, "drift_topics": None}
 
@@ -184,22 +236,40 @@ def main():
     conn = get_database_connection()
 
     try:
-        # Step 1: Identify pending groups
-        pending_groups = get_pending_groups(conn)
+        # Check if specific post_id is provided as argument
+        if len(sys.argv) > 1:
+            target_post_id = int(sys.argv[1])
+            print(f"🎯 Analyzing specific post_id: {target_post_id}")
 
-        if not pending_groups:
-            print("✅ No pending drift groups found")
-            return
+            # Check if this post is pending
+            cursor = conn.cursor()
+            cursor.execute("SELECT post_id, expert_id FROM comment_group_drift WHERE post_id = ? AND analyzed_by = 'pending'", (target_post_id,))
+            pending_post = cursor.fetchone()
 
-        print(f"📊 Found {len(pending_groups)} pending groups:")
+            if not pending_post:
+                print(f"❌ Post {target_post_id} not found in pending groups")
+                return
 
-        # Count by expert
-        expert_counts = {}
-        for post_id, expert_id in pending_groups:
-            expert_counts[expert_id] = expert_counts.get(expert_id, 0) + 1
+            post_id, expert_id = pending_post
+            pending_groups = [(post_id, expert_id)]
+            print(f"📊 Found 1 pending group for expert: {expert_id}")
+        else:
+            # Step 1: Identify all pending groups
+            pending_groups = get_pending_groups(conn)
 
-        for expert_id, count in expert_counts.items():
-            print(f"  - {expert_id}: {count} groups")
+            if not pending_groups:
+                print("✅ No pending drift groups found")
+                return
+
+            print(f"📊 Found {len(pending_groups)} pending groups:")
+
+            # Count by expert
+            expert_counts = {}
+            for post_id, expert_id in pending_groups:
+                expert_counts[expert_id] = expert_counts.get(expert_id, 0) + 1
+
+            for expert_id, count in expert_counts.items():
+                print(f"  - {expert_id}: {count} groups")
 
         print("\n🔄 Starting drift analysis...")
 
@@ -216,7 +286,8 @@ def main():
         }
 
         # Initialize expert results
-        for expert_id in expert_counts:
+        expert_ids = list(set(expert_id for _, expert_id in pending_groups))
+        for expert_id in expert_ids:
             results["by_expert"][expert_id] = {
                 "processed": 0,
                 "with_drift": 0,
@@ -234,6 +305,7 @@ def main():
                 comments = get_comments_for_post(conn, post_id)
 
                 print(f"  - Found {len(comments)} comments")
+                print(f"  - Post content: {post_content.get('message_text', 'N/A')[:100]}...")
 
                 # Analyze drift
                 analysis_result = analyze_drift_for_group(post_content, comments)
@@ -249,6 +321,8 @@ def main():
                     results["by_expert"][expert_id]["with_drift"] += 1
                     results["drift_summary"]["total_with_drift"] += 1
                     print(f"  ✅ Has drift: {len(analysis_result['drift_topics'] or [])} topics")
+                    for topic in analysis_result['drift_topics'] or []:
+                        print(f"    - {topic['topic']}")
                 else:
                     results["by_expert"][expert_id]["without_drift"] += 1
                     results["drift_summary"]["total_without_drift"] += 1
