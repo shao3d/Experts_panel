@@ -1,0 +1,61 @@
+# .github/workflows/deploy-pr-manual.yml
+name: Deploy PR to Fly.io
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to deploy'
+        required: true
+        type: number
+      environment:
+        description: 'Environment type'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - test
+          - demo
+
+jobs:
+  deploy-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Fly.io CLI
+        uses: superfly/flyctl-actions/setup-flyctl@1.5
+        with:
+          version: latest
+
+      - name: Fetch and checkout PR
+        run: |
+          echo "Fetching PR #${{ github.event.inputs.pr_number }}"
+          git fetch origin pull/${{ github.event.inputs.pr_number }}/head:pr-${{ github.event.inputs.pr_number }}
+          git checkout pr-${{ github.event.inputs.pr_number }}
+
+      - name: Set app name
+        run: |
+          if [ "${{ github.event.inputs.environment }}" = "staging" ]; then
+            echo "APP_NAME=experts-panel-staging-${{ github.event.inputs.pr_number }}" >> $GITHUB_ENV
+          elif [ "${{ github.event.inputs.environment }}" = "test" ]; then
+            echo "APP_NAME=experts-panel-test-${{ github.event.inputs.pr_number }}" >> $GITHUB_ENV
+          else
+            echo "APP_NAME=experts-panel-demo-${{ github.event.inputs.pr_number }}" >> $GITHUB_ENV
+          fi
+
+      - name: Deploy to Fly.io
+        run: |
+          echo "Deploying PR #${{ github.event.inputs.pr_number }} to ${{ env.APP_NAME }}"
+          flyctl deploy --app ${{ env.APP_NAME }} --region iad
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Get deployment URL
+        run: |
+          echo "🚀 Deployment successful!"
+          echo "📱 App URL: https://${{ env.APP_NAME }}.fly.dev"
+          echo "🔧 Health check: https://${{ env.APP_NAME }}.fly.dev/health"
