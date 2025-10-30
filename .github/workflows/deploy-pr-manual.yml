@@ -25,7 +25,7 @@ jobs:
         id: deploy
         uses: superfly/fly-pr-review-apps@1.2.1
         with:
-          app-name: experts-panel-pr-${{ github.event.number || github.event.inputs.pr_number }}
+          name: experts-panel-pr-${{ github.event.number || github.event.inputs.pr_number }}
 
       - name: Get deployment URL
         run: |
