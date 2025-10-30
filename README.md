@@ -351,4 +351,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Experts Panel** — turning Telegram channel chaos into structured knowledge 💡
+**Experts Panel** — turning Telegram channel chaos into structured knowledge 💡# Test PR deployment workflow trigger
