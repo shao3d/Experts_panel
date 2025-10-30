@@ -9,6 +9,7 @@ import ExpertAccordion from './components/ExpertAccordion';
 import ProgressSection from './components/ProgressSection';
 import { apiClient } from './services/api';
 import { ExpertResponse as ExpertResponseType, ProgressEvent } from './types/api';
+import { experts } from './components/ExpertSelector';
 
 export const App: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
@@ -17,6 +18,9 @@ export const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [expandedExperts, setExpandedExperts] = useState<Set<string>>(new Set(['refat', 'ai_architect', 'neuraldeep']));
   const [currentQuery, setCurrentQuery] = useState<string>('');
+  const [selectedExperts, setSelectedExperts] = useState<string[]>(
+    experts.map(e => e.id)
+  );
 
   // Timer state for processing time
   const [startTime, setStartTime] = useState<number | null>(null);
@@ -57,7 +61,13 @@ export const App: React.FC = () => {
     try {
       // Submit query with progress callback
       const response = await apiClient.submitQuery(
-        { query, stream_progress: true, include_comments: true, include_comment_groups: true },
+        {
+          query,
+          stream_progress: true,
+          include_comments: true,
+          include_comment_groups: true,
+          expert_filter: selectedExperts
+        },
         (event: ProgressEvent) => {
           // Add progress event to log
           setProgressEvents(prev => [...prev, event]);
@@ -131,6 +141,8 @@ export const App: React.FC = () => {
             onSubmit={handleQuerySubmit}
             disabled={isProcessing}
             elapsedSeconds={elapsedSeconds}
+            selectedExperts={selectedExperts}
+            onExpertsChange={setSelectedExperts}
           />
         </div>
 
@@ -190,7 +202,7 @@ const styles = {
     overflow: 'hidden'
   },
   topSection: {
-    height: '140px',
+    height: '180px',
     display: 'flex',
     gap: '20px',
     padding: '20px',

@@ -4,6 +4,7 @@
  */
 
 import React, { useState, FormEvent } from 'react';
+import { ExpertSelector } from './ExpertSelector';
 
 interface QueryFormProps {
   /** Callback when query is submitted */
@@ -17,6 +18,12 @@ interface QueryFormProps {
 
   /** Elapsed processing time in seconds */
   elapsedSeconds?: number;
+
+  /** List of selected expert IDs */
+  selectedExperts: string[];
+
+  /** Callback for when expert selection changes */
+  onExpertsChange: (selected: string[]) => void;
 }
 
 /**
@@ -26,7 +33,9 @@ export const QueryForm: React.FC<QueryFormProps> = ({
   onSubmit,
   disabled = false,
   placeholder = "Ask experts about AI and related...",
-  elapsedSeconds = 0
+  elapsedSeconds = 0,
+  selectedExperts,
+  onExpertsChange
 }) => {
   const [query, setQuery] = useState('');
 
@@ -44,33 +53,39 @@ export const QueryForm: React.FC<QueryFormProps> = ({
 
   return (
     <form onSubmit={handleSubmit} style={styles.form}>
-      <div style={styles.inputRow}>
-        <div style={styles.textareaContainer}>
-          <textarea
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            disabled={disabled}
-            placeholder={placeholder}
-            rows={2}
-            style={styles.textarea}
-            maxLength={1000}
-          />
-          <span style={styles.counter}>
-            {query.length} / 1000
-          </span>
-        </div>
+      <div>
+        <div style={styles.inputRow}>
+          <div style={styles.textareaContainer}>
+            <textarea
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              disabled={disabled}
+              placeholder={placeholder}
+              rows={2}
+              style={styles.textarea}
+              maxLength={1000}
+            />
+            <span style={styles.counter}>
+              {query.length} / 1000
+            </span>
+          </div>
 
-        <button
-          type="submit"
-          disabled={disabled || query.trim().length < 3}
-          style={{
-            ...styles.button,
-            ...(disabled || query.trim().length < 3 ? styles.buttonDisabled : {})
-          }}
-        >
-          {disabled ? `${elapsedSeconds}s` : 'Ask'}
-        </button>
+          <button
+            type="submit"
+            disabled={disabled || query.trim().length < 3 || selectedExperts.length === 0}
+            style={{
+              ...styles.button,
+              ...(disabled || query.trim().length < 3 || selectedExperts.length === 0 ? styles.buttonDisabled : {})
+            }}
+          >
+            {disabled ? `${elapsedSeconds}s` : 'Ask'}
+          </button>
+        </div>
       </div>
+      <ExpertSelector
+        selectedExperts={selectedExperts}
+        onSelectionChange={onExpertsChange}
+      />
     </form>
   );
 };
@@ -106,7 +121,7 @@ const styles = {
     color: '#1a1a1a',
     resize: 'none' as const,
     fontFamily: 'inherit',
-    minHeight: '90px',
+    minHeight: '60px',
     boxSizing: 'border-box' as const
   },
   counter: {
@@ -129,7 +144,7 @@ const styles = {
     transition: 'all 0.2s',
     boxShadow: '0 2px 4px rgba(0, 102, 204, 0.2)',
     minWidth: '80px',
-    height: '90px'
+    height: '60px'
   },
   buttonDisabled: {
     backgroundColor: '#d0d0d0',

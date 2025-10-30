@@ -48,6 +48,9 @@ export interface QueryRequest {
 
   /** Whether to stream progress updates via SSE (default: true) */
   stream_progress?: boolean;
+
+  /** Filter by specific expert IDs. None = all experts */
+  expert_filter?: string[];
 }
 
 // ============================================================================
