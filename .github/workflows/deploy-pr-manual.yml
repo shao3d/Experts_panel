@@ -50,7 +50,7 @@ jobs:
       - name: Deploy to Fly.io
         run: |
           echo "Deploying PR #${{ github.event.inputs.pr_number }} to ${{ env.APP_NAME }}"
-          flyctl deploy --app ${{ env.APP_NAME }} --region iad
+          flyctl deploy --app ${{ env.APP_NAME }}
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
