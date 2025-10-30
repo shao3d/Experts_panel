@@ -37,7 +37,10 @@ frontend/
 
 data/
 ├── exports/          # Telegram JSON files
-└── experts.db        # SQLite database
+
+backend/
+├── data/
+│   └── experts.db    # SQLite database (working database with data)
 
 # Backend Root Scripts
 backend/
@@ -122,25 +125,25 @@ npm run type-check
 
 ### Database Management
 ```bash
-# Create database
-sqlite3 data/experts.db < schema.sql
+# Create database (run from backend directory)
+cd backend && sqlite3 data/experts.db < schema.sql
 
-# Run migrations (apply in order)
-sqlite3 data/experts.db < backend/migrations/001_create_comment_group_drift.sql
-sqlite3 data/experts.db < backend/migrations/002_add_sync_state.sql
-sqlite3 data/experts.db < backend/migrations/003_add_expert_id.sql
-sqlite3 data/experts.db < backend/migrations/004_add_expert_id_to_drift.sql
-sqlite3 data/experts.db < backend/migrations/005_add_unique_telegram_message_id.sql
-sqlite3 data/experts.db < backend/migrations/006_add_unique_telegram_message_id.sql
-sqlite3 data/experts.db < backend/migrations/007_fix_unique_telegram_message_id.sql
-sqlite3 data/experts.db < backend/migrations/007_add_channel_username.sql
-sqlite3 data/experts.db < backend/migrations/008_fix_comment_unique_constraint.sql
+# Run migrations (apply in order from backend directory)
+cd backend && sqlite3 data/experts.db < migrations/001_create_comment_group_drift.sql
+cd backend && sqlite3 data/experts.db < migrations/002_add_sync_state.sql
+cd backend && sqlite3 data/experts.db < migrations/003_add_expert_id.sql
+cd backend && sqlite3 data/experts.db < migrations/004_add_expert_id_to_drift.sql
+cd backend && sqlite3 data/experts.db < migrations/005_add_unique_telegram_message_id.sql
+cd backend && sqlite3 data/experts.db < migrations/006_add_unique_telegram_message_id.sql
+cd backend && sqlite3 data/experts.db < migrations/007_fix_unique_telegram_message_id.sql
+cd backend && sqlite3 data/experts.db < migrations/007_add_channel_username.sql
+cd backend && sqlite3 data/experts.db < migrations/008_fix_comment_unique_constraint.sql
 
-# Backup database
-sqlite3 data/experts.db ".backup data/backup.db"
+# Backup database (run from backend directory)
+cd backend && sqlite3 data/experts.db ".backup data/backup.db"
 
-# Query drift groups
-sqlite3 data/experts.db "SELECT post_id, has_drift, analyzed_at FROM comment_group_drift WHERE has_drift=1;"
+# Query drift groups (run from backend directory)
+cd backend && sqlite3 data/experts.db "SELECT post_id, has_drift, analyzed_at FROM comment_group_drift WHERE has_drift=1;"
 ```
 
 ## 🚀 Production Deployment (Fly.io)

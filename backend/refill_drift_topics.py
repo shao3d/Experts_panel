@@ -19,7 +19,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
 # Configuration
-DATABASE_PATH = Path(__file__).parent.parent / "data" / "experts.db"
+DATABASE_PATH = Path(__file__).parent / "data" / "experts.db"
 PROMPT_PATH = Path(__file__).parent / "prompts" / "extract_drift_topics.txt"
 MODEL = "anthropic/claude-sonnet-4.5"
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"

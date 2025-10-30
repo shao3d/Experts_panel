@@ -170,8 +170,8 @@ curl -X POST http://localhost:8000/api/v1/query \
 3. Default values in code
 
 ### Database Configuration
-- **Local**: SQLite (`data/experts.db`)
-- **Production**: SQLite (VPS/cloud deployment)
+- **Local**: SQLite (`data/experts.db` - located in `backend/data/` directory)
+- **Production**: SQLite (`/app/data/experts.db` on Fly.io)
 - **Async Support**: SQLAlchemy 2.0 with aiosqlite driver
 
 ### Model Configuration
