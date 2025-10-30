@@ -1,61 +1,34 @@
 # .github/workflows/deploy-pr-manual.yml
-name: Deploy PR to Fly.io
+name: Deploy Review App
 on:
+  pull_request:
+    types: [opened, reopened, synchronize, closed]
   workflow_dispatch:
     inputs:
       pr_number:
-        description: 'PR number to deploy'
-        required: true
+        description: 'PR number to deploy (optional, auto-detected from workflow)'
+        required: false
         type: number
-      environment:
-        description: 'Environment type'
-        required: true
-        default: 'staging'
-        type: choice
-        options:
-          - staging
-          - test
-          - demo
+
+env:
+  FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+  FLY_REGION: iad
+  FLY_ORG: personal
 
 jobs:
-  deploy-pr:
+  review_app:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+
+      - name: Deploy PR app
+        id: deploy
+        uses: superfly/fly-pr-review-apps@1.2.1
         with:
-          fetch-depth: 0
-
-      - name: Setup Fly.io CLI
-        uses: superfly/flyctl-actions/setup-flyctl@1.5
-        with:
-          version: latest
-
-      - name: Fetch and checkout PR
-        run: |
-          echo "Fetching PR #${{ github.event.inputs.pr_number }}"
-          git fetch origin pull/${{ github.event.inputs.pr_number }}/head:pr-${{ github.event.inputs.pr_number }}
-          git checkout pr-${{ github.event.inputs.pr_number }}
-
-      - name: Set app name
-        run: |
-          if [ "${{ github.event.inputs.environment }}" = "staging" ]; then
-            echo "APP_NAME=experts-panel-staging-${{ github.event.inputs.pr_number }}" >> $GITHUB_ENV
-          elif [ "${{ github.event.inputs.environment }}" = "test" ]; then
-            echo "APP_NAME=experts-panel-test-${{ github.event.inputs.pr_number }}" >> $GITHUB_ENV
-          else
-            echo "APP_NAME=experts-panel-demo-${{ github.event.inputs.pr_number }}" >> $GITHUB_ENV
-          fi
-
-      - name: Deploy to Fly.io
-        run: |
-          echo "Deploying PR #${{ github.event.inputs.pr_number }} to ${{ env.APP_NAME }}"
-          flyctl deploy --app ${{ env.APP_NAME }}
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          app-name: experts-panel-pr-${{ github.event.number || github.event.inputs.pr_number }}
 
       - name: Get deployment URL
         run: |
-          echo "🚀 Deployment successful!"
-          echo "📱 App URL: https://${{ env.APP_NAME }}.fly.dev"
-          echo "🔧 Health check: https://${{ env.APP_NAME }}.fly.dev/health"
+          echo "🚀 Review app deployed!"
+          echo "📱 App URL: https://pr-${{ github.event.number || github.event.inputs.pr_number }}-shao3d-experts-panel.fly.dev"
+          echo "🔧 Health check: https://pr-${{ github.event.number || github.event.inputs.pr_number }}-shao3d-experts-panel.fly.dev/health"
