@@ -68,7 +68,7 @@ export const QueryForm: React.FC<QueryFormProps> = ({
             ...(disabled || query.trim().length < 3 ? styles.buttonDisabled : {})
           }}
         >
-          {disabled ? `${elapsedSeconds}s` : 'Ask'}
+          {disabled ? `${elapsedSeconds}s` : 'Send'}
         </button>
       </div>
     </form>
