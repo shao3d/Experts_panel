@@ -42,7 +42,7 @@ const ExpertSelectionBar: React.FC<ExpertSelectionBarProps> = ({
   return (
     <div style={styles.container}>
       <div style={styles.expertsRow}>
-        <span style={styles.title}>ЭКСПЕРТЫ:</span>
+        <span style={styles.title}>EXPERTS:</span>
         {AVAILABLE_EXPERTS.map((expert) => (
           <div key={expert.id} style={styles.expertItem}>
             <label style={{
