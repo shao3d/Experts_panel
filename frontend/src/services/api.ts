@@ -41,8 +41,14 @@ export function isEnglishQuery(query: string): boolean {
 export class APIClient {
   private baseURL: string;
 
-  constructor(baseURL: string = import.meta.env.VITE_API_URL || 'http://localhost:8000') {
-    this.baseURL = baseURL;
+  constructor(baseURL?: string) {
+    // For production/PR apps, use relative URLs to work with the same domain
+    // For local development, use localhost or VITE_API_URL if specified
+    if (import.meta.env.PROD) {
+      this.baseURL = '';  // Use relative URLs in production
+    } else {
+      this.baseURL = baseURL || import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    }
   }
 
   /**
@@ -51,7 +57,7 @@ export class APIClient {
    * @returns Health status of the backend
    */
   async checkHealth(): Promise<HealthResponse> {
-    const response = await fetch(`${this.baseURL}/health`);
+    const response = await fetch(`${this.baseURL.replace(/\/$/, '')}/health`);
 
     if (!response.ok) {
       throw new Error(`Health check failed: ${response.statusText}`);
@@ -78,7 +84,7 @@ export class APIClient {
     };
 
     try {
-      const response = await fetch(`${this.baseURL}/api/v1/query`, {
+      const response = await fetch(`${this.baseURL.replace(/\/$/, '')}/api/v1/query`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -324,9 +330,10 @@ export class APIClient {
       try {
         console.log(`[API] Fetching post ${postId} (attempt ${attempt}/${maxRetries})`);
 
+        const baseUrl = this.baseURL.replace(/\/$/, '');
         let url = expertId
-          ? `${this.baseURL}/api/v1/posts/${postId}?expert_id=${encodeURIComponent(expertId)}`
-          : `${this.baseURL}/api/v1/posts/${postId}`;
+          ? `${baseUrl}/api/v1/posts/${postId}?expert_id=${encodeURIComponent(expertId)}`
+          : `${baseUrl}/api/v1/posts/${postId}`;
 
         // Add query parameters if provided
         const params = new URLSearchParams();
