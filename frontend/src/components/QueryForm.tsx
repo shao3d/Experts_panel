@@ -17,6 +17,9 @@ interface QueryFormProps {
 
   /** Elapsed processing time in seconds */
   elapsedSeconds?: number;
+
+  /** Set of selected expert IDs, used to disable submit button */
+  selectedExperts?: Set<string>;
 }
 
 /**
@@ -26,7 +29,8 @@ export const QueryForm: React.FC<QueryFormProps> = ({
   onSubmit,
   disabled = false,
   placeholder = "Ask experts about AI and related...",
-  elapsedSeconds = 0
+  elapsedSeconds = 0,
+  selectedExperts = new Set()
 }) => {
   const [query, setQuery] = useState('');
 
@@ -41,6 +45,8 @@ export const QueryForm: React.FC<QueryFormProps> = ({
 
     onSubmit(trimmed);
   };
+
+  const isButtonDisabled = disabled || query.trim().length < 3 || selectedExperts.size === 0;
 
   return (
     <form onSubmit={handleSubmit} style={styles.form}>
@@ -62,10 +68,10 @@ export const QueryForm: React.FC<QueryFormProps> = ({
 
         <button
           type="submit"
-          disabled={disabled || query.trim().length < 3}
+          disabled={isButtonDisabled}
           style={{
             ...styles.button,
-            ...(disabled || query.trim().length < 3 ? styles.buttonDisabled : {})
+            ...(isButtonDisabled ? styles.buttonDisabled : {})
           }}
         >
           {disabled ? `${elapsedSeconds}s` : 'Ask'}

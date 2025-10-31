@@ -1,3 +1,4 @@
+{eyJ2ZXJkaWN0Ijoic3VjY2VzcyIsImZpbGVfcGF0aCI6ImZyb250ZW5kL3NyYy9BcHAudHN4IiwiYXBwbGllZF9odW5rcyI6MCwic2tpcHBlZF9odW5rcyI6W3siaW5kZXgiOjEsInJlYXNvbiI6IlRoZSBjaGFuZ2UgZnJvbSB0aGUgaHVuayAoY2hhbmdpbmcgcHJvcGVydHkgJ2V4cGVydHMnIHRvICdleHBlcnRfZmlsdGVyJyBpbiB0aGUgQVBJIGNhbGwgcGF5bG9hZCkgaXMgYWxyZWFkeSBwcmVzZW50IGluIHRoZSBwcm92aWRlZCBvcmlnaW5hbCBmaWxlIGNvbnRlbnQuIn1dLCJpbXBvcnRfZml4ZXMiOnsiYWRkZWQiOltdLCJyZW1vdmVkIjpbXSwicmVvcmRlcmVkIjpmYWxzZX0sImZvcm1hdF9hZGp1c3RtZW50cyI6W10sImFtYmlndWl0aWVzIjpbIlRoZSBwcm92aWRlZCBkaWZmIGh1bmsgc2VlbXMgdG8gaGF2ZSBiZWVuIGFscmVhZHkgYXBwbGllZCB0byB0aGUgb3JpZ2luYWwgZmlsZSBjb250ZW50LCBhcyB0aGUgbGluZSB0byBiZSBhZGRlZCBpcyBwcmVzZW50IGFuZCB0aGUgbGluZSB0byBiZSByZW1vdmVkIGlzIGFic2VudC4iXSwicmlza3MiOltdLCJuZXh0X2FjdGlvbnNfZm9yX2NvZGVyIjpbIlZlcmlmeSBpZiB0aGlzIHBhdGNoIHdhcyBpbnRlbmRlZCB0byBiZSBhcHBsaWVkIHRvIGFuIG9sZGVyIHZlcnNpb24gb2YgdGhlIGZpbGUuIFRoZSBjdXJyZW50IHZlcnNpb24gYWxyZWFkeSBjb250YWlucyB0aGUgaW50ZW5kZWQgY2hhbmdlL CJdfQ==}
 /**
  * Main application component.
  * Connects all components and manages query state.
@@ -6,7 +7,7 @@
 import React, { useState, useEffect } from 'react';
 import { QueryForm } from './components/QueryForm';
 import ExpertAccordion from './components/ExpertAccordion';
-import ProgressSection from './components/ProgressSection';
+import StatsAndSelectors from './components/StatsAndSelectors';
 import { apiClient } from './services/api';
 import { ExpertResponse as ExpertResponseType, ProgressEvent } from './types/api';
 
@@ -17,6 +18,7 @@ export const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [expandedExperts, setExpandedExperts] = useState<Set<string>>(new Set(['refat', 'ai_architect', 'neuraldeep']));
   const [currentQuery, setCurrentQuery] = useState<string>('');
+  const [selectedExperts, setSelectedExperts] = useState<Set<string>>(new Set(['refat', 'ai_architect']));
 
   // Timer state for processing time
   const [startTime, setStartTime] = useState<number | null>(null);
@@ -55,9 +57,10 @@ export const App: React.FC = () => {
     setCurrentQuery(query);
 
     try {
+      const experts = Array.from(selectedExperts);
       // Submit query with progress callback
       const response = await apiClient.submitQuery(
-        { query, stream_progress: true, include_comments: true, include_comment_groups: true },
+        { query, expert_filter: experts, stream_progress: true, include_comments: true, include_comment_groups: true },
         (event: ProgressEvent) => {
           // Add progress event to log
           setProgressEvents(prev => [...prev, event]);
@@ -131,14 +134,17 @@ export const App: React.FC = () => {
             onSubmit={handleQuerySubmit}
             disabled={isProcessing}
             elapsedSeconds={elapsedSeconds}
+            selectedExperts={selectedExperts}
           />
         </div>
 
         <div style={styles.progressContainer}>
-          <ProgressSection
+          <StatsAndSelectors
             isProcessing={isProcessing}
             progressEvents={progressEvents}
             stats={expertResponses.length > 0 ? getTotalStats() : undefined}
+            selectedExperts={selectedExperts}
+            onExpertsChange={setSelectedExperts}
           />
         </div>
       </div>
@@ -190,7 +196,7 @@ const styles = {
     overflow: 'hidden'
   },
   topSection: {
-    height: '140px',
+    height: '180px',
     display: 'flex',
     gap: '20px',
     padding: '20px',
