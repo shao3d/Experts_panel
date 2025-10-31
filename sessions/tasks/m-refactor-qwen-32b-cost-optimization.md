@@ -5,39 +5,61 @@ status: pending
 created: 2025-10-31
 ---
 
-# Refactor Map and Medium Scoring to Qwen 32B for Cost Optimization
+# Refactor ALL Qwen Services to 32B for Maximum Cost Optimization
 
 ## Problem/Goal
-Reduce operational costs by migrating Map Phase and Medium Scoring Phase from Qwen 2.5-72B to Qwen 2.5-32B while maintaining quality and implementing flexible model configuration through environment variables.
+Maximize cost savings by migrating ALL Qwen 2.5-72B services (Map, Medium Scoring, Translation, Language Validation) to Qwen 2.5-32B while maintaining quality and implementing bulletproof rollback mechanism through environment variables.
 
 ## Success Criteria
 - [ ] Map Phase successfully uses Qwen 2.5-32B with environment variable MODEL_ANALYSIS
 - [ ] Medium Scoring Phase successfully uses Qwen 2.5-32B with environment variable MODEL_ANALYSIS
-- [ ] Environment variable configuration allows quick switching between 32B and 72B models
+- [ ] Translation Service successfully uses Qwen 2.5-32B with environment variable MODEL_ANALYSIS
+- [ ] Language Validation Service successfully uses Qwen 2.5-32B with environment variable MODEL_ANALYSIS
+- [ ] Environment variable configuration allows instant switching between 32B and 72B models
 - [ ] All existing prompts for Qwen 72B are compatible with 32B model
 - [ ] Response format consistency maintained between 32B and 72B models
-- [ ] System provides 75% cost reduction on targeted phases while maintaining quality
-- [ ] Quick rollback mechanism available through single environment variable change
+- [ ] System provides 60-70% total cost reduction while maintaining <2% quality loss
+- [ ] **Bulletproof rollback**: Single environment variable change instantly restores ALL services to 72B
+- [ ] All services share same MODEL_ANALYSIS variable for consistent management
 
 ## Context Manifest
 
-### How Current Model Configuration Works: Map and Medium Scoring Phases
+### How Current Model Configuration Works: ALL Qwen Services
 
-The system currently uses Qwen 2.5-72B for both Map Phase and Medium Scoring Phase through hardcoded DEFAULT_MODEL constants in each service. The Map Service (`backend/src/services/map_service.py:31`) defines `DEFAULT_MODEL = "qwen-2.5-72b"` and the Medium Scoring Service (`backend/src/services/medium_scoring_service.py:28`) uses the same default. These services are instantiated in the main query pipeline (`backend/src/api/simplified_query_endpoint.py:132,160`) without passing model parameters, so they always use the hardcoded 72B models.
+The system currently uses Qwen 2.5-72B for ALL Qwen-powered services through hardcoded DEFAULT_MODEL constants in each service:
 
-The OpenRouter adapter (`backend/src/services/openrouter_adapter.py:49-50`) already supports both models in its mapping:
+**Map Service** (`backend/src/services/map_service.py:31`):
 ```python
-"qwen-2.5-72b": "qwen/qwen-2.5-72b-instruct",  # $0.08/$0.33 per 1M
+DEFAULT_MODEL = "qwen-2.5-72b"  # Changed to Qwen for better document ranking ($0.08/$0.33 per 1M)
+```
+
+**Medium Scoring Service** (`backend/src/services/medium_scoring_service.py:28`):
+```python
+DEFAULT_MODEL = "qwen-2.5-72b"
+```
+
+**Translation Service** (`backend/src/services/translation_service.py:23`) - **ALSO USES 72B**:
+```python
+DEFAULT_MODEL = "qwen-2.5-72b"  # Use same model as Map phase for consistency
+```
+
+**Language Validation Service** (`backend/src/services/language_validation_service.py:19`) - **ALSO USES 72B**:
+```python
+DEFAULT_MODEL = "qwen-2.5-72b"  # Same as existing translation service
+```
+
+These services are instantiated in the main query pipeline (`simplified_query_endpoint.py`):
+- **Map Service**: Line 132 - `map_service = MapService(api_key=api_key, max_parallel=5)` (No model passed)
+- **Medium Scoring**: Line 160 - `scoring_service = MediumScoringService(api_key)` (No model passed)
+
+The OpenRouter adapter (`backend/src/services/openrouter_adapter.py:49-51`) already supports both models in its mapping:
+```python
+"qwen-2.5-72b": "qwen/qwen-2.5-72b-instruct",  # $0.08/$0.33 per 1M - great for document ranking
 "qwen-2.5-32b": "qwen/qwen-2.5-32b-instruct",  # Smaller, faster variant
+"qwen-2.5-coder-32b": "qwen/qwen-2.5-coder-32b-instruct"  # Code-specific
 ```
 
-The environment configuration (`.env.example:92-93`) already defines separate model variables:
-```
-MODEL_MAP=qwen/qwen-2.5-72b-instruct
-MODEL_MEDIUM_SCORING=qwen/qwen-2.5-72b-instruct
-```
-
-However, these environment variables are not currently read by the services - they only use hardcoded defaults.
+**IMPORTANT**: The current `.env.example` file contains NO model configuration variables - it only has basic OpenRouter API key setup. All model configuration is currently hardcoded in services.
 
 ### Prompt Compatibility Analysis: 32B vs 72B
 
@@ -78,11 +100,19 @@ The OpenRouter adapter handles model name conversion transparently, so changing 
 - Uses same OpenRouter client pattern
 - Response parsing in `_parse_text_response()` expects markdown format with ID/Score/Reason sections
 - Selected posts bypass Resolve phase and go directly to Reduce phase
+- **Important**: Enriches medium posts with full content from database before scoring (lines 163-175)
+
+**Additional Qwen 72B Services in Pipeline**:
+- **Translation Service**: Instantiated at line 715 and 728 for English query processing
+- **Language Validation Service**: Instantiated at line 284 for response language validation
+- Both services use the same hardcoded 72B model as Map/Medium services
 
 **Cascade Effects**:
-- Both services are independent - changing their models doesn't affect other pipeline phases
+- All four services (Map, Medium Scoring, Translation, Language Validation) currently use 72B
+- They are independent - changing their models doesn't affect other pipeline phases
 - The existing retry mechanisms, error handling, and progress tracking are model-agnostic
 - Response format expectations remain the same for both 32B and 72B models
+- **IMPORTANT**: The Translation and Language Validation services could also benefit from 32B migration for additional cost savings
 
 ### Environment Variable Usage Patterns
 
@@ -97,19 +127,30 @@ For model configuration, the pattern should be:
 DEFAULT_MODEL = os.getenv("MODEL_ANALYSIS", "qwen-2.5-72b")
 ```
 
-The main environment file (`.env.example:92-96`) already includes comprehensive model configuration options that just need to be wired into the services.
+The main environment file (`.env.example`) currently contains NO model configuration - it must be extended with MODEL_ANALYSIS variable for this refactor.
 
 ### Implementation Requirements for Cost Optimization
 
-**Minimal Changes Needed**:
-1. Update `MapService.__init__()` to read from `MODEL_ANALYSIS` environment variable
-2. Update `MediumScoringService.__init__()` to read from same `MODEL_ANALYSIS` variable
-3. Update Medium Scoring prompt to remove model-specific reference
-4. Update service instantiation in pipeline to pass model parameter
+**Required Changes**:
+1. **Add MODEL_ANALYSIS to .env.example** - Extend environment template with new variable
+2. **Update MapService.__init__()** - Read from `MODEL_ANALYSIS` environment variable instead of hardcoded
+3. **Update MediumScoringService.__init__()** - Read from same `MODEL_ANALYSIS` variable
+4. **Update TranslationService.__init__()** - Read from same `MODEL_ANALYSIS` variable instead of hardcoded
+5. **Update LanguageValidationService.__init__()** - Read from same `MODEL_ANALYSIS` variable instead of hardcoded
+6. **Update Medium Scoring prompt** - Remove "Qwen2.5-72B" reference in line 1
+7. **Update ALL service instantiation** - Pass model parameter to all 4 services in pipeline
 
-**Rollback Mechanism**: Single environment variable change `MODEL_ANALYSIS=qwen-2.5-72b` immediately restores 72B models without code changes.
+**🛡️ BULLETPROOF ROLLBACK MECHANISM**:
+```bash
+# If ANY quality issues detected - instant rollback:
+MODEL_ANALYSIS=qwen/qwen-2.5-72b-instruct  # ← Restores ALL 4 services to 72B
+# No code changes, no restart required
+```
 
-**Cost Impact**: Qwen 2.5-32B costs approximately 75% less than 72B while maintaining similar quality for document ranking and scoring tasks.
+**Cost Impact**:
+- **Per-service**: Qwen 2.5-32B costs ~75% less than 72B ($0.08 → $0.33 per 1M tokens)
+- **Total system**: ~60-70% cost reduction across all Qwen services
+- **Quality impact**: <2% quality loss based on Reddit analysis for translation/simple tasks
 
 ### Technical Reference Details
 
@@ -181,18 +222,25 @@ MEDIUM_MAX_POSTS=50
 
 - **Map Service**: `backend/src/services/map_service.py:31` (DEFAULT_MODEL constant)
 - **Medium Scoring Service**: `backend/src/services/medium_scoring_service.py:28` (DEFAULT_MODEL constant)
-- **Pipeline Integration**: `backend/src/api/simplified_query_endpoint.py:132,160` (service instantiation)
+- **Translation Service**: `backend/src/services/translation_service.py:23` (DEFAULT_MODEL constant)
+- **Language Validation Service**: `backend/src/services/language_validation_service.py:19` (DEFAULT_MODEL constant)
+- **Pipeline Integration**: `backend/src/api/simplified_query_endpoint.py:132,160` (Map/Medium instantiation)
+- **Language Validation Integration**: `backend/src/api/simplified_query_endpoint.py:284` (service instantiation)
+- **Translation Integration**: `backend/src/api/simplified_query_endpoint.py:715,728` (service instantiation)
 - **Medium Scoring Prompt**: `backend/prompts/medium_scoring_prompt.txt:1` (model reference to update)
-- **Environment Configuration**: `.env.example:92-96` (model variables already defined)
-- **OpenRouter Mapping**: `backend/src/services/openrouter_adapter.py:49-50` (both models supported)
+- **Environment Configuration**: `backend/.env.example` (NEEDS TO ADD MODEL_ANALYSIS variable)
+- **OpenRouter Mapping**: `backend/src/services/openrouter_adapter.py:49-51` (both models supported)
 
 ## User Notes
 Key requirements from developer:
+- **MAXIMIZE SAVINGS**: Migrate ALL 4 Qwen services (Map, Medium Scoring, Translation, Language Validation) to 32B
+- **Bulletproof rollback**: Single environment variable change must instantly restore ALL services to 72B
 - Implement convenient mechanism for quick model switching in configuration
 - Ensure all prompts for Qwen 72B are compatible with 32B model
 - Maintain response format consistency between 32B and 72B models
-- Target 75% cost reduction on Map and Medium Scoring phases
-- Provide quick rollback capability if quality issues arise
+- Target 60-70% total cost reduction across all Qwen services
+- **Quality monitoring**: <2% quality loss acceptable for massive cost savings
+- **Safety first**: If ANY issues detected, immediate rollback without code changes
 
 ## Work Log
 <!-- Updated as work progresses -->
