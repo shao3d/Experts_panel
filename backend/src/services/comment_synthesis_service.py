@@ -10,6 +10,7 @@ from openai import AsyncOpenAI
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from .openrouter_adapter import create_openrouter_client, convert_model_name
+from .hybrid_llm_adapter import create_hybrid_client, is_hybrid_mode_enabled
 from ..utils.language_utils import prepare_prompt_with_language_instruction, prepare_system_message_with_language, get_response_language_instruction
 
 logger = logging.getLogger(__name__)
@@ -33,10 +34,20 @@ class CommentSynthesisService:
 
         Args:
             api_key: OpenAI API key
-            model: OpenAI model to use (default gpt-4o-mini)
+            model: OpenAI model to use (default gemini-2.0-flash)
         """
-        self.client = create_openrouter_client(api_key=api_key)
-        self.model = convert_model_name(model)
+        # Use hybrid client if enabled, otherwise fallback to OpenRouter
+        if is_hybrid_mode_enabled():
+            self.client = create_hybrid_client(
+                openrouter_api_key=api_key,
+                enable_hybrid=True
+            )
+            logger.info("CommentSynthesisService initialized with hybrid LLM client (Google AI Studio + OpenRouter)")
+        else:
+            self.client = create_openrouter_client(api_key=api_key)
+            logger.info("CommentSynthesisService initialized with OpenRouter client only")
+
+        self.model = model
         self._prompt_template = self._load_prompt_template()
 
     def _load_prompt_template(self) -> Template:
@@ -131,16 +142,30 @@ class CommentSynthesisService:
             query
         )
 
-        # Call OpenAI API
-        response = await self.client.chat.completions.create(
-            model=self.model,
-            messages=[
-                {"role": "system", "content": enhanced_system},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.4,
-            response_format={"type": "json_object"}
-        )
+        # Call LLM API (Google AI Studio first, then OpenRouter)
+        if hasattr(self.client, 'chat_completions_create'):
+            # Hybrid client
+            response = await self.client.chat_completions_create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": enhanced_system},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.4,
+                response_format={"type": "json_object"},
+                service_name="comment_synthesis"
+            )
+        else:
+            # OpenRouter client
+            response = await self.client.chat.completions.create(
+                model=convert_model_name(self.model),
+                messages=[
+                    {"role": "system", "content": enhanced_system},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.4,
+                response_format={"type": "json_object"}
+            )
 
         # Parse response
         raw_content = response.choices[0].message.content
