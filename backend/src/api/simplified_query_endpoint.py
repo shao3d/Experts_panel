@@ -129,7 +129,8 @@ async def process_expert_pipeline(
         )
 
     # 2. Map phase
-    map_service = MapService(api_key=api_key, max_parallel=5)
+    model_analysis = os.getenv("MODEL_ANALYSIS", "qwen-2.5-72b")
+    map_service = MapService(api_key=api_key, model=model_analysis, max_parallel=5)
 
     async def map_progress(data: dict):
         if progress_callback:
@@ -157,7 +158,7 @@ async def process_expert_pipeline(
     if medium_posts:
         from ..services.medium_scoring_service import MediumScoringService
 
-        scoring_service = MediumScoringService(api_key)
+        scoring_service = MediumScoringService(api_key, model=model_analysis)
 
         # Enrich medium_posts with full content before passing to the scoring service
         medium_posts_with_content = []
@@ -281,7 +282,7 @@ async def process_expert_pipeline(
     )
 
     # 5. NEW: Language Validation Phase
-    language_validation_service = LanguageValidationService(api_key=api_key)
+    language_validation_service = LanguageValidationService(api_key=api_key, model=model_analysis)
 
     async def validation_progress(data: dict):
         if progress_callback:
@@ -712,7 +713,8 @@ async def get_post_detail(
         logger.info(f"DEBUG: Translation forced by translate=true flag for post {post_id}")
     elif query:
         # Use translation service to detect if query is in English
-        translation_service = TranslationService(api_key=get_api_key())
+        model_analysis = os.getenv("MODEL_ANALYSIS", "qwen-2.5-72b")
+        translation_service = TranslationService(api_key=get_api_key(), model=model_analysis)
         should_translate = translation_service.should_translate(query)
         logger.info(f"DEBUG: Translation check for post {post_id}: query='{query[:50]}...', should_translate={should_translate}")
     else:
@@ -725,7 +727,7 @@ async def get_post_detail(
     if should_translate and message_text:
         logger.info(f"DEBUG: Starting translation for post {post_id} with content length {len(message_text)}")
         try:
-            translation_service = TranslationService(api_key=get_api_key())
+            translation_service = TranslationService(api_key=get_api_key(), model=model_analysis)
             translated_text = await translation_service.translate_single_post(
                 message_text,
                 post.author_name or "Unknown"

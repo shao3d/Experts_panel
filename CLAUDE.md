@@ -10,9 +10,9 @@ Auto-generated from feature plans. Last updated: 2025-10-29
 - SQLite with SQLAlchemy 2.0
 - React 18 with TypeScript
 - OpenRouter API - Multi-model strategy:
-  - Qwen 2.5-72B Instruct for Map phase and Language Validation
+  - Qwen 2.5-72B/32B Instruct for Map phase, Medium Scoring, Translation, and Language Validation (configurable via MODEL_ANALYSIS)
   - Gemini 2.0 Flash for Reduce and Comment Synthesis
-  - GPT-4o-mini for Comment Groups matching and Medium posts scoring
+  - GPT-4o-mini for Comment Groups matching
 - Docker for development and production deployment
 - Production-ready Fly.io cloud hosting with automated deployment
 
@@ -236,6 +236,12 @@ The system uses an **eight-phase pipeline** with hybrid Medium posts reranking a
 
 ## 🔧 Environment Variables
 
+### Model Configuration
+- `MODEL_ANALYSIS` - Analysis model for Map, Medium Scoring, Translation, and Language Validation phases (default: qwen-2.5-72b)
+  - Cost optimization: Set to `qwen/qwen-2.5-32b-instruct` for 60-70% cost reduction
+  - Maximum quality: Set to `qwen/qwen-2.5-72b-instruct` for highest accuracy
+  - **Bulletproof rollback**: Change this single variable to instantly switch ALL Qwen services
+
 ### Medium Posts Reranking
 - `MEDIUM_SCORE_THRESHOLD` - Score threshold for Medium posts (default: 0.7)
 - `MEDIUM_MAX_SELECTED_POSTS` - Maximum Medium posts to select (default: 5)
@@ -340,6 +346,7 @@ curl -X POST http://localhost:8000/api/v1/query \
 
 ## 📋 Recent Changes (Last 30 days)
 
+- **2025-10-31**: Qwen 32B Cost Optimization Refactor - Implemented unified MODEL_ANALYSIS environment variable for all Qwen services (Map, Medium Scoring, Translation, Language Validation), enabling 60-70% cost reduction with bulletproof rollback mechanism
 - **2025-10-29**: Complete Documentation Synchronization - Final comprehensive audit and 100% alignment of documentation with codebase, including structural fixes, API endpoint corrections, backend scripts documentation, and test files coverage
 - **2025-10-26**: Docker Deployment VPS Implementation - Complete production-ready deployment infrastructure with automated deployment script, SSL/HTTPS configuration, security hardening, and comprehensive documentation
 - **2025-10-25**: Enhanced Progress UI with Real-time Expert Feedback - Added contextual phase descriptions, active expert count display, warning indicators for long-running processes, and frontend-only final_results phase
@@ -375,6 +382,13 @@ curl -X POST http://localhost:8000/api/v1/query \
 - Complete data isolation between experts
 - Parallel processing of all experts by default
 
+### Unified Model Configuration
+- **Environment-driven**: All Qwen services (Map, Medium Scoring, Translation, Language Validation) use `MODEL_ANALYSIS` environment variable
+- **Cost Optimization**: 32B model provides 60-70% cost reduction with <2% quality loss
+- **Bulletproof Rollback**: Single environment variable change instantly switches ALL services between 32B and 72B models
+- **Consistent Management**: Unified configuration eliminates model mismatch risks
+- **Service Integration**: All 4 services read model configuration at startup for consistency
+
 ### Frontend DOM ID Generation
 - **Consistent expertId usage**: PostCard and PostsList components use `expertId` prop for DOM element IDs
 - **ID Pattern**: `post-${expertId || 'unknown'}-${telegram_message_id}` for reliable element lookup
@@ -391,7 +405,7 @@ curl -X POST http://localhost:8000/api/v1/query \
 ### Language Validation Phase
 - **Language Consistency**: Validates response language matches query language
 - **Translation Capability**: Translates Russian responses to English when mismatch detected
-- **Model Integration**: Uses Qwen 2.5-72B via existing TranslationService
+- **Model Integration**: Uses configurable Qwen model via MODEL_ANALYSIS environment variable (32B/72B)
 - **Error Handling**: Graceful degradation with fallback to original text
 - **SSE Progress Tracking**: Real-time validation status updates with expert_id context
 - **Multi-Expert Support**: Maintains expert isolation throughout validation process

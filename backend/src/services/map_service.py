@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import os
 from typing import List, Dict, Any, Optional, Callable
 from datetime import datetime
 import logging
@@ -28,7 +29,7 @@ class MapService:
     """
 
     DEFAULT_CHUNK_SIZE = 40
-    DEFAULT_MODEL = "qwen-2.5-72b"  # Changed to Qwen for better document ranking ($0.08/$0.33 per 1M)
+    DEFAULT_MODEL = os.getenv("MODEL_ANALYSIS", "qwen-2.5-72b")  # Configurable via MODEL_ANALYSIS environment variable
 
     def __init__(
         self,

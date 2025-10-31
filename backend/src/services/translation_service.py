@@ -3,6 +3,7 @@
 import asyncio
 import json
 import logging
+import os
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 from string import Template
@@ -20,7 +21,7 @@ logger = logging.getLogger(__name__)
 class TranslationService:
     """Service for translating posts to English for English queries."""
 
-    DEFAULT_MODEL = "qwen-2.5-72b"  # Use same model as Map phase for consistency
+    DEFAULT_MODEL = os.getenv("MODEL_ANALYSIS", "qwen-2.5-72b")  # Configurable via MODEL_ANALYSIS environment variable
 
     def __init__(
         self,

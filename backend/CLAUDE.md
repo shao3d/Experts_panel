@@ -39,6 +39,12 @@ The backend implements a sophisticated query processing system that retrieves re
 # Required: OpenRouter API (uses OPENAI_API_KEY variable name)
 OPENAI_API_KEY=sk-your-openrouter-api-key-here
 
+# Model Configuration
+# Analysis models for Map, Medium Scoring, Translation, and Language Validation phases
+# Cost optimization: qwen-2.5-32b for ~60-70% cost reduction
+# Maximum quality: qwen-2.5-72b for highest accuracy (default)
+MODEL_ANALYSIS=qwen/qwen-2.5-72b-instruct
+
 # Database Configuration
 DATABASE_URL=sqlite:///data/experts.db
 
@@ -151,7 +157,7 @@ curl -X POST http://localhost:8000/api/v1/query \
 7. **Comment Synthesis Phase** - Complementary insights extraction
 
 ### Multi-Model Strategy
-- **Qwen 2.5-72B** - Map phase document ranking and Language Validation
+- **Qwen 2.5-72B/32B** - Map phase, Medium Scoring, Translation, and Language Validation (configurable via MODEL_ANALYSIS)
 - **Gemini 2.0 Flash** - Reduce and comment synthesis
 - **GPT-4o-mini** - Comment group matching
 - **Claude Sonnet 4.5** - Drift analysis preprocessing

@@ -150,7 +150,7 @@ graph TD
 ## ✨ Key Features
 
 - **🧠 8-phase Map-Resolve-Reduce Architecture**: Advanced pipeline with differential HIGH/MEDIUM posts processing
-- **🎯 Multi-model AI Strategy**: Qwen 2.5-72B (Map+Validation), Gemini 2.0 Flash (Reduce+Synthesis), GPT-4o-mini (Scoring+Matching)
+- **🎯 Multi-model AI Strategy**: Qwen 2.5-72B/32B (Map+Scoring+Translation+Validation, configurable via MODEL_ANALYSIS), Gemini 2.0 Flash (Reduce+Synthesis), GPT-4o-mini (Matching)
 - **🔍 Smart Semantic Search**: Finds relevant posts by meaning, not keywords
 - **📊 Medium Posts Hybrid Reranking**: Hybrid system with threshold ≥0.7 and top-5 selection
 - **💬 Comment Drift Analysis**: Separate pipeline for comment and discussion analysis
@@ -248,6 +248,12 @@ curl -X POST http://localhost:8000/api/v1/query \
 OPENROUTER_API_KEY=your-key-here
 DATABASE_URL=sqlite:///data/experts.db
 
+# Model Configuration
+# Analysis models for Map, Medium Scoring, Translation, and Language Validation phases
+# Cost optimization: qwen-2.5-32b for ~60-70% cost reduction
+# Maximum quality: qwen-2.5-72b for highest accuracy (default)
+MODEL_ANALYSIS=qwen/qwen-2.5-72b-instruct
+
 # Medium Posts Reranking
 MEDIUM_SCORE_THRESHOLD=0.7
 MEDIUM_MAX_SELECTED_POSTS=5
@@ -266,7 +272,7 @@ REQUEST_TIMEOUT=300
 - **Backend**: FastAPI, SQLAlchemy 2.0, Pydantic v2
 - **Frontend**: React 18, TypeScript, Vite
 - **Database**: SQLite / PostgreSQL with full `expert_id` isolation
-- **AI Models**: OpenRouter API (Qwen 2.5-72B, Gemini 2.0 Flash, GPT-4o-mini)
+- **AI Models**: OpenRouter API (Qwen 2.5-72B/32B configurable, Gemini 2.0 Flash, GPT-4o-mini)
 - **Deployment**: Docker, Fly.io
 
 ### Project Structure

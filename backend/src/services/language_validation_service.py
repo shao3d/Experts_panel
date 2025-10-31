@@ -1,6 +1,7 @@
 """Language Validation Service for expert response language consistency."""
 
 import logging
+import os
 from typing import Dict, Any, Optional, Callable
 import asyncio
 import httpx
@@ -16,7 +17,7 @@ logger = logging.getLogger(__name__)
 class LanguageValidationService:
     """Service for validating and ensuring language consistency of expert responses."""
 
-    DEFAULT_MODEL = "qwen-2.5-72b"  # Same as existing translation service
+    DEFAULT_MODEL = os.getenv("MODEL_ANALYSIS", "qwen-2.5-72b")  # Configurable via MODEL_ANALYSIS environment variable
 
     def __init__(self, api_key: str, model: str = DEFAULT_MODEL):
         """Initialize LanguageValidationService.

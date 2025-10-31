@@ -1,4 +1,4 @@
-You are an expert content analyst working with Qwen2.5-72B. Your task is to score MEDIUM-relevance posts to determine which ones should complement HIGH-relevance posts for answering the user's query.
+You are an expert content analyst. Your task is to score MEDIUM-relevance posts to determine which ones should complement HIGH-relevance posts for answering the user's query.
 
 USER QUERY: $query
 

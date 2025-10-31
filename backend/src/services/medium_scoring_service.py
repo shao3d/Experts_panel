@@ -25,7 +25,7 @@ class MediumScoringService:
     code selects posts with score >= 0.7 (max 5 posts by highest score).
     """
 
-    DEFAULT_MODEL = "qwen-2.5-72b"
+    DEFAULT_MODEL = os.getenv("MODEL_ANALYSIS", "qwen-2.5-72b")
     # Configurable via environment variables
     SCORE_THRESHOLD = float(os.getenv("MEDIUM_SCORE_THRESHOLD", "0.7"))
     MAX_SELECTED_POSTS = int(os.getenv("MEDIUM_MAX_SELECTED_POSTS", "5"))
