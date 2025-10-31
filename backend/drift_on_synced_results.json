@@ -1,0 +1,16 @@
+{
+  "total_pending_groups": 1,
+  "groups_processed": 1,
+  "by_expert": {
+    "refat": {
+      "processed": 1,
+      "with_drift": 0,
+      "without_drift": 1
+    }
+  },
+  "drift_summary": {
+    "total_with_drift": 0,
+    "total_without_drift": 1,
+    "success_rate": "100.0%"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "original_post_topic": "Qwen3-VL-32B-Instruct model release, deployment offer, hardware requirements (2x 4090 48GB)",
+  "has_drift": true,
+  "drift_topics": [
+    {
+      "topic": "Hardware requirements and cost considerations",
+      "keywords": ["96 гб", "4090", "видеопамять", "железо", "стоимость"],
+      "key_phrases": ["И держать для этого 96 гб?", "2х 4090 по 48гб", "для локального инференса она слишком жирная"],
+      "context": "Discussion about practical hardware requirements and costs for running the 32B model locally"
+    },
+    {
+      "topic": "Model size vs performance trade-offs",
+      "keywords": ["скорость", "качество", "4B", "32B", "размер модели"],
+      "key_phrases": ["Я не хочу слезать с qwen3 4B instruct 😂 скорость бомбовая просто", "мелкие неплохи для простого", "Я считаю что для топ агента не демки примерно столько и нужно не больше"],
+      "context": "Comparison between different model sizes and their speed/quality characteristics"
+    },
+    {
+      "topic": "MOE vs Dense model architectures",
+      "keywords": ["MOE", "dense", "A3B", "архитектура", "flash-attn"],
+      "key_phrases": ["В чём различие между 30B-A3B и 32B?", "Одна MOE, другая dense", "Я не очень люблю MOE как-то они не так отвечают"],
+      "context": "Technical discussion about Mixture of Experts vs Dense model architectures and their practical differences"
+    },
+    {
+      "topic": "Practical use cases and deployment scenarios",
+      "keywords": ["локальный инференс", "закрытый контур", "агент", "тулы"],
+      "key_phrases": ["А зачем она...для локального инференса она слишком жирная", "Вот тебе мультимодальный агент еще мем мсп прикрутить", "в каком сценарии такую большую модель использовать?"],
+      "context": "Discussion about practical applications and deployment scenarios for large models"
+    },
+    {
+      "topic": "Performance testing and feedback",
+      "keywords": ["тесты", "скорость", "ответы", "качество", "CRM"],
+      "key_phrases": ["Когда потестить можно будет?", "Я потестил скорость не очень", "Очень четко находит границы во всяких CRM", "Сносно прям очень сносно"],
+      "context": "Actual testing results and performance feedback from users who tested the model"
+    }
+  ]
+}

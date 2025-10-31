@@ -6,7 +6,8 @@
 import React, { useState, useEffect } from 'react';
 import { QueryForm } from './components/QueryForm';
 import ExpertAccordion from './components/ExpertAccordion';
-import StatsAndSelectors from './components/StatsAndSelectors';
+import ProgressSection from './components/ProgressSection';
+import ExpertSelectionBar from './components/ExpertSelectionBar';
 import { apiClient } from './services/api';
 import { ExpertResponse as ExpertResponseType, ProgressEvent } from './types/api';
 
@@ -17,7 +18,7 @@ export const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [expandedExperts, setExpandedExperts] = useState<Set<string>>(new Set(['refat', 'ai_architect', 'neuraldeep']));
   const [currentQuery, setCurrentQuery] = useState<string>('');
-  const [selectedExperts, setSelectedExperts] = useState<Set<string>>(new Set(['refat', 'ai_architect']));
+  const [selectedExperts, setSelectedExperts] = useState<Set<string>>(new Set(['refat', 'ai_architect', 'neuraldeep']));
 
   // Timer state for processing time
   const [startTime, setStartTime] = useState<number | null>(null);
@@ -138,14 +139,21 @@ export const App: React.FC = () => {
         </div>
 
         <div style={styles.progressContainer}>
-          <StatsAndSelectors
+          <ProgressSection
             isProcessing={isProcessing}
             progressEvents={progressEvents}
             stats={expertResponses.length > 0 ? getTotalStats() : undefined}
-            selectedExperts={selectedExperts}
-            onExpertsChange={setSelectedExperts}
           />
         </div>
+      </div>
+
+      {/* Expert Selection Bar */}
+      <div style={styles.expertBarContainer}>
+        <ExpertSelectionBar
+          selectedExperts={selectedExperts}
+          onExpertsChange={setSelectedExperts}
+          disabled={isProcessing}
+        />
       </div>
 
       {/* Main Content Area - Expert Accordions */}
@@ -195,7 +203,7 @@ const styles = {
     overflow: 'hidden'
   },
   topSection: {
-    height: '180px',
+    height: '140px',
     display: 'flex',
     gap: '20px',
     padding: '20px',
@@ -215,6 +223,11 @@ const styles = {
     flexDirection: 'column' as const,
     gap: '10px',
     overflow: 'hidden'
+  },
+  expertBarContainer: {
+    width: '100%',
+    backgroundColor: 'white',
+    borderBottom: '1px solid #dee2e6'
   },
   mainContent: {
     flex: 1,
