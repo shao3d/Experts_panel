@@ -48,6 +48,9 @@ export interface QueryRequest {
 
   /** Whether to stream progress updates via SSE (default: true) */
   stream_progress?: boolean;
+
+  /** List of expert IDs to filter results (default: all experts) */
+  expert_filter?: string[];
 }
 
 // ============================================================================
