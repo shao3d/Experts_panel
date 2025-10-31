@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import os
 from typing import List, Dict, Any, Optional, Callable
 from datetime import datetime
 import re
@@ -32,7 +33,7 @@ class CommentGroupMapService:
     """
 
     DEFAULT_CHUNK_SIZE = 20  # Groups per chunk
-    DEFAULT_MODEL = "gpt-4o-mini"
+    DEFAULT_MODEL = os.getenv("MODEL_COMMENT_GROUPS", "gpt-4o-mini")
     DEFAULT_MAX_PARALLEL = 5  # Rate limiting for API calls
 
     def __init__(

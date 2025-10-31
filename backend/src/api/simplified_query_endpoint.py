@@ -307,7 +307,9 @@ async def process_expert_pipeline(
     if request.include_comment_groups:
         main_sources = reduce_results.get("main_sources", [])
 
-        cg_service = CommentGroupMapService(api_key=api_key)
+        # Read comment groups model from environment
+        model_comment_groups = os.getenv("MODEL_COMMENT_GROUPS", "gpt-4o-mini")
+        cg_service = CommentGroupMapService(api_key=api_key, model=model_comment_groups)
 
         async def cg_progress(data: dict):
             if progress_callback:
