@@ -17,6 +17,7 @@ from json_repair import repair_json
 from ..models.post import Post
 from .openrouter_adapter import create_openrouter_client, convert_model_name
 from ..utils.language_utils import prepare_prompt_with_language_instruction, prepare_system_message_with_language
+from ..utils.error_handler import error_handler
 
 logger = logging.getLogger(__name__)
 
@@ -247,12 +248,24 @@ class MapService:
             raise
         except Exception as e:
             logger.error(f"Error processing chunk {chunk_index}: {str(e)}")
+
+            # Process error through error handler for user-friendly messaging
+            error_info = error_handler.process_api_error(
+                e,
+                context={
+                    "phase": "map",
+                    "chunk": chunk_index,
+                    "expert_id": expert_id
+                }
+            )
+
             if progress_callback:
                 await progress_callback({
                     "phase": "map",
                     "chunk": chunk_index,
                     "status": "error",
-                    "message": f"Error in chunk {chunk_index + 1}: {str(e)}"
+                    "message": f"Error in chunk {chunk_index + 1}: {str(e)}",
+                    "error_info": error_info  # Add detailed error information
                 })
             raise
 

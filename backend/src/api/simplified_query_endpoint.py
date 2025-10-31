@@ -38,6 +38,7 @@ from ..services.comment_synthesis_service import CommentSynthesisService
 from ..services.medium_scoring_service import MediumScoringService
 from ..services.translation_service import TranslationService
 from ..services.language_validation_service import LanguageValidationService
+from ..utils.error_handler import error_handler
 
 logger = logging.getLogger(__name__)
 
@@ -463,13 +464,33 @@ async def event_generator_parallel(
 
         async def expert_progress_callback(data: dict):
             expert_id = data.get('expert_id', 'unknown')
+            status = data.get("status", "processing")
+
+            # Check if this is an error with error_info
+            if status == "error" and "error_info" in data:
+                # Use user-friendly error message from error_info
+                error_info = data["error_info"]
+                message = f"[{expert_id}] {error_info.get('title', 'Processing error')}"
+
+                # Enhance data with error information
+                enhanced_data = data.copy()
+                enhanced_data.update({
+                    "error_type": error_info.get("error_type"),
+                    "user_message": error_info.get("message"),
+                    "suggested_action": error_info.get("suggested_action"),
+                    "user_friendly": error_info.get("user_friendly", True)
+                })
+            else:
+                message = f"[{expert_id}] {data.get('message', 'Processing...')}"
+                enhanced_data = data
+
             # Use original phase from service (map/resolve/reduce)
             event = ProgressEvent(
                 event_type="progress",
                 phase=data.get('phase', 'expert_pipeline'),  # Preserve original phase!
-                status=data.get("status", "processing"),
-                message=f"[{expert_id}] {data.get('message', 'Processing...')}",
-                data=data
+                status=status,
+                message=message,
+                data=enhanced_data
             )
             # SECURITY: Try to add event to queue, drop if full to prevent memory leaks
             try:
@@ -552,12 +573,29 @@ async def event_generator_parallel(
 
             except Exception as e:
                 logger.error(f"Error processing expert {expert_id}: {e}")
+
+                # Process error through error handler for user-friendly messaging
+                error_info = error_handler.process_api_error(
+                    e,
+                    context={
+                        "phase": "expert_pipeline",
+                        "expert_id": expert_id,
+                        "request_id": request_id
+                    }
+                )
+
+                # Create user-friendly error event
+                error_event = error_handler.create_error_event(
+                    error_info,
+                    event_type="expert_error"
+                )
+
                 event = ProgressEvent(
                     event_type="expert_error",
-                    phase="expert_pipeline",
+                    phase=error_event["phase"],
                     status="error",
-                    message=f"Expert {expert_id} failed: {str(e)}",
-                    data={"expert_id": expert_id, "error": str(e)}
+                    message=error_event["message"],
+                    data=error_event["data"]
                 )
                 sanitized = sanitize_for_json(event.model_dump(mode='json'))
                 yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
@@ -589,13 +627,28 @@ async def event_generator_parallel(
         import traceback
         logger.error(f"Error processing multi-expert query {request_id}: {str(e)}")
         logger.error(f"Traceback: {traceback.format_exc()}")
-        # Return generic error to client - hide internal details
+
+        # Process error through error handler for user-friendly messaging
+        error_info = error_handler.process_api_error(
+            e,
+            context={
+                "phase": "global",
+                "request_id": request_id
+            }
+        )
+
+        # Create user-friendly error event
+        error_event_data = error_handler.create_error_event(
+            error_info,
+            event_type="error"
+        )
+
         error_event = ProgressEvent(
-            event_type="error",
-            phase="error",
-            status="failed",
-            message="An error occurred while processing your query. Please try again.",
-            data={"request_id": request_id}
+            event_type=error_event_data["event_type"],
+            phase=error_event_data["phase"],
+            status=error_event_data["status"],
+            message=error_event_data["message"],
+            data=error_event_data["data"]
         )
         yield f"data: {json.dumps(error_event.model_dump(mode='json'), ensure_ascii=False)}\n\n"
 

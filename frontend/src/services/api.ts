@@ -135,10 +135,28 @@ export class APIClient {
     const firstExpert = multiResponse.expert_responses?.[0];
 
     if (!firstExpert) {
-      // No experts responded, create empty response
+      // Check if we have error information from the backend
+      const lastProgressEvent = multiResponse.last_progress_event;
+      let errorMessage = '';
+
+      if (lastProgressEvent?.data?.error_type && lastProgressEvent?.data?.user_message) {
+        // Use user-friendly message from backend error detector
+        errorMessage = lastProgressEvent.data.user_message;
+        console.log('[API] Using backend error message:', {
+          error_type: lastProgressEvent.data.error_type,
+          message: errorMessage,
+          original_error: lastProgressEvent.data.original_error
+        });
+      } else {
+        // Default message for no experts responded
+        errorMessage = '🔧 Сервис обработки запросов временно недоступен. Пожалуйста, попробуйте позже.';
+        console.log('[API] Using default error message - no error info from backend');
+      }
+
+      // No experts responded, create empty response with user-friendly message
       return {
         query: multiResponse.query || '',
-        answer: '',
+        answer: errorMessage,
         main_sources: [],
         confidence: ConfidenceLevel.LOW,
         language: 'ru',
@@ -192,6 +210,7 @@ export class APIClient {
 
     let buffer = '';
     let finalResponse: QueryResponse | null = null;
+    let lastErrorEvent: ProgressEvent | null = null; // Track last error event
 
     try {
       while (true) {
@@ -212,9 +231,19 @@ export class APIClient {
 
             try {
               const event: ProgressEvent = JSON.parse(jsonString);
+
+              // Track error events for later use
+              if (event.event_type === 'error' || event.event_type === 'expert_error') {
+                lastErrorEvent = event;
+              }
+
               if (onProgress) onProgress(event);
               if (event.event_type === 'complete' && event.data?.response) {
                 const rawResponse = event.data.response as any;
+                // Attach last error event to response for error handling
+                if (lastErrorEvent) {
+                  (rawResponse as any).last_progress_event = lastErrorEvent;
+                }
                 finalResponse = this.normalizeResponse(rawResponse);
               }
             } catch (e) {
@@ -250,13 +279,19 @@ export class APIClient {
           try {
             const event: ProgressEvent = JSON.parse(jsonString);
 
+            // Track error events for later use
+            if (event.event_type === 'error' || event.event_type === 'expert_error') {
+              lastErrorEvent = event;
+            }
+
             // Debug logging
             console.log('[SSE] Event received:', {
               type: event.event_type,
               phase: event.phase,
               status: event.status,
               hasData: !!event.data,
-              hasResponse: event.data?.response !== undefined
+              hasResponse: event.data?.response !== undefined,
+              isLastError: event.event_type === 'error' || event.event_type === 'expert_error'
             });
 
             // Call progress callback if provided
@@ -269,6 +304,10 @@ export class APIClient {
               console.log('[SSE] Found final response in event.data.response:', event.data.response);
               // Handle multi-expert response format
               const rawResponse = event.data.response as any;
+              // Attach last error event to response for error handling
+              if (lastErrorEvent) {
+                (rawResponse as any).last_progress_event = lastErrorEvent;
+              }
               finalResponse = this.normalizeResponse(rawResponse);
             }
 

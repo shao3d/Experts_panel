@@ -282,13 +282,13 @@ class ReduceService:
 
         if not enriched_posts:
             return {
-                "answer": "К сожалению, не найдено релевантных постов для ответа на ваш вопрос.",
+                "answer": "🔧 Сервис обработки запросов временно недоступен. Пожалуйста, попробуйте через несколько минут.",
                 "main_sources": [],
                 "confidence": "LOW",
                 "has_expert_comments": False,
                 "language": "ru",
                 "posts_analyzed": 0,
-                "summary": "Нет постов для анализа"
+                "summary": "Сервис временно недоступен"
             }
 
         logger.info(f"[{expert_id}] Synthesizing answer from {len(enriched_posts)} posts")
