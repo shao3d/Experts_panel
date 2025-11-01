@@ -13,6 +13,8 @@ import {
   ConfidenceLevel
 } from '../types/api';
 
+import { logSSEEvent } from '../utils/debugLogger';
+
 /**
  * Callback type for progress events during query processing
  */
@@ -231,6 +233,9 @@ export class APIClient {
 
             try {
               const event: ProgressEvent = JSON.parse(jsonString);
+
+              // Log SSE events for debugging
+              logSSEEvent(event.phase || 'unknown', event.event_type, event, event.message);
 
               // Track error events for later use
               if (event.event_type === 'error' || event.event_type === 'expert_error') {

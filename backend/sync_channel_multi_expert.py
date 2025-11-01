@@ -268,8 +268,8 @@ Examples:
     api_hash = os.getenv('TELEGRAM_API_HASH')
     session_name = os.getenv('TELEGRAM_SESSION_NAME', 'telegram_fetcher')
 
-    # Sync depth (override from CLI or use default)
-    sync_depth = args.depth or 10
+    # Sync depth (override from CLI or use environment variable or default)
+    sync_depth = args.depth or int(os.getenv('SYNC_DEPTH', '10'))
 
     print("🔄 MULTI-EXPERT TELEGRAM SYNC", file=sys.stderr)
     print("=" * 60, file=sys.stderr)
