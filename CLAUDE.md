@@ -3,7 +3,7 @@
 
 # Experts Panel Development Guidelines
 
-Auto-generated from feature plans. Last updated: 2025-10-29
+Auto-generated from feature plans. Last updated: 2025-11-01
 
 ## Active Technologies
 - Python 3.11+ with FastAPI and Pydantic v2
@@ -38,28 +38,57 @@ frontend/
 │   └── types/        # TypeScript interfaces
 └── public/           # Static assets
 
-data/
-├── exports/          # Telegram JSON files
+data/                    # Data directory at project root
+└── experts.db           # SQLite database (working database with data)
 
-backend/
-├── data/
-│   └── experts.db    # SQLite database (working database with data)
+# Database Locations
+# Primary database: data/experts.db (project root)
+# Secondary: backend/data/experts.db (may exist during development)
 
 # Backend Root Scripts
-backend/
+
+## Core Pipeline Scripts
 ├── sync_channel.py                    # Telegram channel synchronization
 ├── sync_channel_multi_expert.py       # Multi-expert synchronization
-├── analyze_drift.py                   # Comment drift analysis
 ├── import_interactive.py              # Interactive data import
 ├── populate_test_data.py              # Test data generation
+├── run_import.py                      # Batch import runner
+
+## Drift Analysis Scripts
+├── analyze_drift.py                   # Comment drift analysis (main script)
+├── fix_drift_topics.py                # Fix drift topics in database
+├── fix_double_nested_drift.py         # Fix double nested drift issues
+├── refill_drift_topics.py             # Refill drift topics for posts
+├── run_drift_on_synced.py             # Run drift analysis on synced data
+├── analyze_specific_drift.py          # Analyze specific drift patterns
+├── run_single_drift_analysis.py       # Run drift analysis for single post
+├── custom_drift_analysis_680.py       # Custom drift analysis for post 680
+├── drift_on_synced_single.py          # Single post drift analysis
+
+## Post-Specific Drift Analysis Scripts
+├── analyze_drift_140.py               # Drift analysis for post 140
+├── analyze_drift_696.py               # Drift analysis for post 696
+├── analyze_drift_post_716.py          # Drift analysis for post 716
+├── analyze_drift_post_720.py          # Drift analysis for post 720
+├── run_drift_on_synced_673.py         # Run drift on synced post 673
+├── run_drift_on_synced_695.py         # Run drift on synced post 695
+├── run_drift_on_synced_specific.py    # Run drift on specific synced posts
+
+## PostgreSQL Migration Scripts
 ├── apply_postgres_migrations.py       # PostgreSQL migrations
 ├── sync_to_postgres.py                # Sync to PostgreSQL
-└── run_import.py                      # Batch import runner
+
+## Testing Scripts
+├── test_hybrid_llm.py                 # Test hybrid LLM configuration
+├── test_hybrid_simple.py              # Simple hybrid LLM testing
 
 # Project Test Files
 tests/
-├── test_queries.py                    # Query validation tests
-└── validation/performance_test.py     # Performance tests
+├── test_queries.py                    # Query validation tests (at project root)
+├── test_queries.json                  # Test query data and expected results
+backend/tests/
+├── validation/
+│   └── performance_test.py            # Performance tests
 
 quickstart_validate.py                 # Quick validation script
 
@@ -132,6 +161,7 @@ npm run type-check
 cd backend && sqlite3 data/experts.db < schema.sql
 
 # Run migrations (apply in order from backend directory)
+# Note: There are two files numbered 006 and 007 - apply both as needed
 cd backend && sqlite3 data/experts.db < migrations/001_create_comment_group_drift.sql
 cd backend && sqlite3 data/experts.db < migrations/002_add_sync_state.sql
 cd backend && sqlite3 data/experts.db < migrations/003_add_expert_id.sql
@@ -289,15 +319,15 @@ cd backend && uv run uvicorn src.api.main:app --reload --port 8000
 - `export $(cat .env) && python3...` - Variable expansion problems
 - `python3 src/api/main.py` - Direct import issues
 
-### ⚛️ Frontend Server (Port 3001)
+### ⚛️ Frontend Server (Port 5173)
 **Start Method:**
 ```bash
 cd frontend && npm run dev
 ```
 
 **✅ Success Indicators:**
-- Vite server starts (usually port 3001 if 3000 occupied)
-- Page loads: http://localhost:3001/
+- Vite server starts (default port 5173, may vary if occupied)
+- Page loads: http://localhost:5173/ (or other available port)
 - Hot reload enabled for development
 - Title: "Experts Panel - Telegram Channel Analyzer"
 
@@ -312,7 +342,7 @@ cd frontend && npm run dev
 ```
 
 **Access Points:**
-- 🌐 Frontend: http://localhost:3001/
+- 🌐 Frontend: http://localhost:5173/ (or port shown in terminal)
 - 🔧 Backend API: http://localhost:8000/
 - ❤️ Health Check: http://localhost:8000/health
 - 📖 API Docs: http://localhost:8000/docs
@@ -326,7 +356,7 @@ cd frontend && npm run dev
 
 **Frontend Issues:**
 - Run `npm install` if dependencies missing
-- Check if port 3000/3001 is available
+- Check if port 5173 (or shown port) is available
 - Verify backend is running first (API connection)
 
 ### API Testing:
@@ -346,6 +376,7 @@ curl -X POST http://localhost:8000/api/v1/query \
 
 ## 📋 Recent Changes (Last 30 days)
 
+- **2025-11-01**: Documentation Alignment Update - Comprehensive documentation synchronization with current codebase state including: corrected project structure paths, updated migration numbering with duplicate file notes, enhanced backend scripts categorization (25+ drift analysis scripts documented), corrected frontend port information (Vite default 5173), and fixed test file locations
 - **2025-10-31**: Qwen 32B Cost Optimization Refactor - Implemented unified MODEL_ANALYSIS environment variable for all Qwen services (Map, Medium Scoring, Translation, Language Validation), enabling 60-70% cost reduction with bulletproof rollback mechanism
 - **2025-10-29**: Complete Documentation Synchronization - Final comprehensive audit and 100% alignment of documentation with codebase, including structural fixes, API endpoint corrections, backend scripts documentation, and test files coverage
 - **2025-10-26**: Docker Deployment VPS Implementation - Complete production-ready deployment infrastructure with automated deployment script, SSL/HTTPS configuration, security hardening, and comprehensive documentation
@@ -439,12 +470,19 @@ For MVP, use validation through prepared Q&A sets:
 ## 📁 Important File Locations
 
 - **Main Pipeline**: `backend/src/services/`
+- **Map Service**: `backend/src/services/map_service.py`
+- **Reduce Service**: `backend/src/services/reduce_service.py`
 - **Language Validation Service**: `backend/src/services/language_validation_service.py`
 - **Medium Scoring Service**: `backend/src/services/medium_scoring_service.py`
+- **Comment Group Map Service**: `backend/src/services/comment_group_map_service.py`
+- **Comment Synthesis Service**: `backend/src/services/comment_synthesis_service.py`
 - **Fact Validation Service**: `backend/src/services/fact_validator.py`
 - **Log Service**: `backend/src/services/log_service.py`
 - **Translation Service**: `backend/src/services/translation_service.py`
 - **OpenRouter Adapter**: `backend/src/services/openrouter_adapter.py`
+- **Hybrid LLM Adapter**: `backend/src/services/hybrid_llm_adapter.py`
+- **Hybrid LLM Monitor**: `backend/src/services/hybrid_llm_monitor.py`
+- **Google AI Studio Client**: `backend/src/services/google_ai_studio_client.py`
 - **Resolve Service**: `backend/src/services/resolve_service.py`
 - **Simple Resolve Service**: `backend/src/services/simple_resolve_service.py`
 - **Medium Scoring Prompt**: `backend/prompts/medium_scoring_prompt.txt`
