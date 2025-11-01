@@ -12,7 +12,12 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KE
 
 # --- Конфигурация моделей для каждой фазы ---
 
-# Модель для анализа (Map, Medium Scoring, Translation, Validation)
+# Модель для Map фазы (только для поиска релевантных постов)
+# Использует Qwen 2.5 32B для оптимального баланса производительности и качества
+# Если не задана в .env, использует значение по умолчанию
+MODEL_MAP: str = os.getenv("MODEL_MAP", "qwen/qwen2.5-32b-instruct")
+
+# Модель для анализа (Medium Scoring, Translation, Validation)
 # Значение по умолчанию согласовано с .env.example
 MODEL_ANALYSIS: str = os.getenv("MODEL_ANALYSIS", "qwen/qwen-2.5-72b-instruct")
 
@@ -30,7 +35,8 @@ DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///data/experts.db")
 
 # Логирование для проверки при запуске
 print("--- Загруженная конфигурация моделей ---")
-print(f"  Анализ (Map и др.): {MODEL_ANALYSIS}")
+print(f"  Map фаза:           {MODEL_MAP}")
+print(f"  Анализ (Scoring):   {MODEL_ANALYSIS}")
 print(f"  Синтез (Reduce):     {MODEL_REDUCE}")
 print(f"  Группы коммент.:     {MODEL_COMMENT_GROUPS}")
 print(f"  Синтез коммент.:   {MODEL_COMMENT_SYNTHESIS}")
