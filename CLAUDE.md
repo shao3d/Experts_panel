@@ -10,9 +10,8 @@ Auto-generated from feature plans. Last updated: 2025-11-01
 - SQLite with SQLAlchemy 2.0
 - React 18 with TypeScript
 - OpenRouter API - Multi-model strategy:
-  - Qwen 2.5-72B/32B Instruct for Map phase, Medium Scoring, Translation, and Language Validation (configurable via MODEL_ANALYSIS)
+  - Qwen 2.5-72B Instruct for Map phase, Medium Scoring, Translation, Language Validation, and Comment Groups (configurable via MODEL_ANALYSIS)
   - Gemini 2.0 Flash for Reduce and Comment Synthesis
-  - GPT-4o-mini for Comment Groups matching
 - Docker for development and production deployment
 - Production-ready Fly.io cloud hosting with automated deployment
 
@@ -110,6 +109,45 @@ Dockerfile            # Multi-stage build for Fly.io deployment
 - **Import Scripts**: See `data/json_parser.py`
 - **Medium Scoring**: See `services/medium_scoring_service.py`
 - **Language Validation**: See `services/language_validation_service.py`
+
+## 🔍 Log Access (for Claude Development)
+
+### Development Log Files
+- **Backend Log**: `backend/backend.log` - Main FastAPI/Uvicorn logs with request tracking
+- **Frontend Log**: `frontend.log` - Vite development server logs
+- **Session Logs**: `sessions/mode-revert-debug.log` - Claude sessions debug logs
+
+### Quick Log Commands
+```bash
+# Watch logs in real-time
+tail -f backend/backend.log          # Backend logs (API requests, pipeline phases)
+tail -f frontend.log                 # Frontend logs (Vite, builds)
+
+# Find recent errors
+grep -i "error\|exception\|failed" backend/backend.log | tail -10
+
+# Find recent query processing
+grep -i "query\|processing" backend/backend.log | tail -5
+
+# Check server status
+curl -s http://localhost:8000/health | jq '.'    # Backend health
+curl -s http://localhost:5173 > /dev/null && echo "Frontend OK" || echo "Frontend down"
+
+# Find specific expert processing
+grep "expert_id" backend/backend.log | tail -10
+```
+
+### Production Logs (Fly.io)
+```bash
+fly logs                           # All production logs
+fly logs --grep "ERROR"            # Production errors only
+fly logs --since 1h                # Last hour of logs
+```
+
+### Log Content Examples
+- **Backend**: Request IDs, pipeline phases (map/resolve/reduce), expert processing, API errors
+- **Frontend**: Vite server startup, build progress, port information
+- **Session**: Claude session state changes, mode switches
 
 ## Commands
 
@@ -259,7 +297,7 @@ The system uses an **eight-phase pipeline** with hybrid Medium posts reranking a
    - Selected Medium posts → bypass Resolve, go directly to Reduce phase
 4. **Reduce Phase** - Gemini 2.0 Flash synthesizes answer with all selected posts
 5. **Language Validation Phase** - Qwen 2.5-72B validates response language consistency with query language ✅
-6. **Comment Groups** - GPT-4o-mini finds relevant comment discussions
+6. **Comment Groups** - Qwen 2.5-72B finds relevant comment discussions
 7. **Comment Synthesis** - Gemini 2.0 Flash extracts complementary insights
 
 *For detailed pipeline architecture see `/docs/pipeline-architecture.md`*
@@ -267,8 +305,7 @@ The system uses an **eight-phase pipeline** with hybrid Medium posts reranking a
 ## 🔧 Environment Variables
 
 ### Model Configuration
-- `MODEL_ANALYSIS` - Analysis model for Map, Medium Scoring, Translation, and Language Validation phases (default: qwen-2.5-72b)
-  - Cost optimization: Set to `qwen/qwen-2.5-32b-instruct` for 60-70% cost reduction
+- `MODEL_ANALYSIS` - Analysis model for Map, Medium Scoring, Translation, Language Validation, and Comment Groups phases (default: qwen-2.5-72b)
   - Maximum quality: Set to `qwen/qwen-2.5-72b-instruct` for highest accuracy
   - **Bulletproof rollback**: Change this single variable to instantly switch ALL Qwen services
 
@@ -376,14 +413,15 @@ curl -X POST http://localhost:8000/api/v1/query \
 
 ## 📋 Recent Changes (Last 30 days)
 
+- **2025-11-01**: Qwen Model Unification Update - Updated Comment Groups phase to use Qwen 2.5-72B for complete analytical pipeline consistency (Map, Medium Scoring, Translation, Language Validation, Comment Groups) and removed legacy GPT-4o-mini references
 - **2025-11-01**: Documentation Alignment Update - Comprehensive documentation synchronization with current codebase state including: corrected project structure paths, updated migration numbering with duplicate file notes, enhanced backend scripts categorization (25+ drift analysis scripts documented), corrected frontend port information (Vite default 5173), and fixed test file locations
-- **2025-10-31**: Qwen 32B Cost Optimization Refactor - Implemented unified MODEL_ANALYSIS environment variable for all Qwen services (Map, Medium Scoring, Translation, Language Validation), enabling 60-70% cost reduction with bulletproof rollback mechanism
+- **2025-10-31**: Qwen Model Configuration Refactor - Implemented unified MODEL_ANALYSIS environment variable for all Qwen services (Map, Medium Scoring, Translation, Language Validation), enabling consistent model architecture with bulletproof rollback mechanism
 - **2025-10-29**: Complete Documentation Synchronization - Final comprehensive audit and 100% alignment of documentation with codebase, including structural fixes, API endpoint corrections, backend scripts documentation, and test files coverage
 - **2025-10-26**: Docker Deployment VPS Implementation - Complete production-ready deployment infrastructure with automated deployment script, SSL/HTTPS configuration, security hardening, and comprehensive documentation
 - **2025-10-25**: Enhanced Progress UI with Real-time Expert Feedback - Added contextual phase descriptions, active expert count display, warning indicators for long-running processes, and frontend-only final_results phase
 - **2025-10-25**: Language Validation Phase Implementation - Added eight-phase pipeline with language consistency validation and Russian-to-English translation
 - **2025-10-24**: Fixed Post ID Scrolling for Multi-Expert Interface - Standardized DOM ID generation between PostCard and PostsList components using consistent expertId prop
-- **2025-10-23**: Medium Posts Hybrid Reranking System - GPT-4o-mini scoring with threshold ≥0.7 and top-5 selection
+- **2025-10-23**: Medium Posts Hybrid Reranking System - Qwen 2.5-72B scoring with threshold ≥0.7 and top-5 selection
 - **2025-10-22**: Channel Username Migration - Added channel_username field to posts table for better channel identification and tracking
 - **2025-10-16**: Multi-Expert Sync Optimization v3.0 - Complete workflow integration
 - **2025-10-15**: Map Phase Retry Mechanism - 95%+ reliability improvement
@@ -414,11 +452,10 @@ curl -X POST http://localhost:8000/api/v1/query \
 - Parallel processing of all experts by default
 
 ### Unified Model Configuration
-- **Environment-driven**: All Qwen services (Map, Medium Scoring, Translation, Language Validation) use `MODEL_ANALYSIS` environment variable
-- **Cost Optimization**: 32B model provides 60-70% cost reduction with <2% quality loss
-- **Bulletproof Rollback**: Single environment variable change instantly switches ALL services between 32B and 72B models
+- **Environment-driven**: All Qwen services (Map, Medium Scoring, Translation, Language Validation, Comment Groups) use `MODEL_ANALYSIS` environment variable
+- **Bulletproof Rollback**: Single environment variable change instantly switches ALL Qwen services
 - **Consistent Management**: Unified configuration eliminates model mismatch risks
-- **Service Integration**: All 4 services read model configuration at startup for consistency
+- **Service Integration**: All 5 analytical services read model configuration at startup for consistency
 
 ### Frontend DOM ID Generation
 - **Consistent expertId usage**: PostCard and PostsList components use `expertId` prop for DOM element IDs
@@ -436,7 +473,7 @@ curl -X POST http://localhost:8000/api/v1/query \
 ### Language Validation Phase
 - **Language Consistency**: Validates response language matches query language
 - **Translation Capability**: Translates Russian responses to English when mismatch detected
-- **Model Integration**: Uses configurable Qwen model via MODEL_ANALYSIS environment variable (32B/72B)
+- **Model Integration**: Uses configurable Qwen model via MODEL_ANALYSIS environment variable
 - **Error Handling**: Graceful degradation with fallback to original text
 - **SSE Progress Tracking**: Real-time validation status updates with expert_id context
 - **Multi-Expert Support**: Maintains expert isolation throughout validation process
