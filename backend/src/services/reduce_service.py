@@ -26,13 +26,12 @@ class ReduceService:
     using Gemini 2.0 Flash to create a coherent response with source attribution.
     """
 
-    DEFAULT_MODEL = os.getenv("MODEL_REDUCE", "gemini-2.0-flash")
     MAX_CONTEXT_POSTS = 50  # Limit for token management
 
     def __init__(
         self,
         api_key: str,
-        model: str = DEFAULT_MODEL,
+        model: str,
         use_personal_style: bool = True
     ):
         """Initialize ReduceService.

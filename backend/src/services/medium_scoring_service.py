@@ -25,13 +25,12 @@ class MediumScoringService:
     code selects posts with score >= 0.7 (max 5 posts by highest score).
     """
 
-    DEFAULT_MODEL = os.getenv("MODEL_ANALYSIS", "qwen/qwen-2.5-32b-instruct")
     # Configurable via environment variables
     SCORE_THRESHOLD = float(os.getenv("MEDIUM_SCORE_THRESHOLD", "0.7"))
     MAX_SELECTED_POSTS = int(os.getenv("MEDIUM_MAX_SELECTED_POSTS", "5"))
     MAX_MEDIUM_POSTS = int(os.getenv("MEDIUM_MAX_POSTS", "50"))  # Memory limit
 
-    def __init__(self, api_key: str, model: str = DEFAULT_MODEL):
+    def __init__(self, api_key: str, model: str):
         """Initialize MediumScoringService.
 
         Args:

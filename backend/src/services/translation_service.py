@@ -21,12 +21,10 @@ logger = logging.getLogger(__name__)
 class TranslationService:
     """Service for translating posts to English for English queries."""
 
-    DEFAULT_MODEL = os.getenv("MODEL_ANALYSIS", "qwen/qwen-2.5-32b-instruct")  # Configurable via MODEL_ANALYSIS environment variable
-
     def __init__(
         self,
         api_key: str,
-        model: str = DEFAULT_MODEL
+        model: str
     ):
         """Initialize TranslationService.
 

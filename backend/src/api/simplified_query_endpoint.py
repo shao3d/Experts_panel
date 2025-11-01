@@ -27,6 +27,7 @@ from .models import (
     get_expert_name,
     get_channel_username
 )
+from .. import config
 from ..models.base import SessionLocal
 from ..models.post import Post
 from ..models.comment import Comment
@@ -73,15 +74,6 @@ def get_db():
         db.close()
 
 
-def get_api_key() -> str:
-    """Get API key from environment, preferring OpenRouter."""
-    api_key = os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        raise HTTPException(
-            status_code=500,
-            detail="OPENROUTER_API_KEY or OPENAI_API_KEY not configured"
-        )
-    return api_key
 
 
 async def process_expert_pipeline(
@@ -130,8 +122,7 @@ async def process_expert_pipeline(
         )
 
     # 2. Map phase
-    model_analysis = os.getenv("MODEL_ANALYSIS", "qwen-2.5-72b")
-    map_service = MapService(api_key=api_key, model=model_analysis, max_parallel=5)
+    map_service = MapService(api_key=config.OPENROUTER_API_KEY, model=config.MODEL_ANALYSIS, max_parallel=5)
 
     async def map_progress(data: dict):
         if progress_callback:
@@ -159,7 +150,7 @@ async def process_expert_pipeline(
     if medium_posts:
         from ..services.medium_scoring_service import MediumScoringService
 
-        scoring_service = MediumScoringService(api_key, model=model_analysis)
+        scoring_service = MediumScoringService(api_key=config.OPENROUTER_API_KEY, model=config.MODEL_ANALYSIS)
 
         # Enrich medium_posts with full content before passing to the scoring service
         medium_posts_with_content = []
@@ -268,7 +259,7 @@ async def process_expert_pipeline(
     enriched_posts.extend(medium_direct)
 
     # 5. Reduce phase
-    reduce_service = ReduceService(api_key=api_key)
+    reduce_service = ReduceService(api_key=config.OPENROUTER_API_KEY, model=config.MODEL_REDUCE)
 
     async def reduce_progress(data: dict):
         if progress_callback:
@@ -283,7 +274,7 @@ async def process_expert_pipeline(
     )
 
     # 5. NEW: Language Validation Phase
-    language_validation_service = LanguageValidationService(api_key=api_key, model=model_analysis)
+    language_validation_service = LanguageValidationService(api_key=config.OPENROUTER_API_KEY, model=config.MODEL_ANALYSIS)
 
     async def validation_progress(data: dict):
         if progress_callback:
@@ -307,9 +298,7 @@ async def process_expert_pipeline(
     if request.include_comment_groups:
         main_sources = reduce_results.get("main_sources", [])
 
-        # Read comment groups model from environment
-        model_comment_groups = os.getenv("MODEL_COMMENT_GROUPS", "qwen-2.5-72b")
-        cg_service = CommentGroupMapService(api_key=api_key, model=model_comment_groups)
+        cg_service = CommentGroupMapService(api_key=config.OPENROUTER_API_KEY, model=config.MODEL_COMMENT_GROUPS)
 
         async def cg_progress(data: dict):
             if progress_callback:
@@ -369,7 +358,7 @@ async def process_expert_pipeline(
                     for cg in comment_groups
                 ]
 
-                synthesis_service = CommentSynthesisService(api_key=api_key)
+                synthesis_service = CommentSynthesisService(api_key=config.OPENROUTER_API_KEY, model=config.MODEL_COMMENT_SYNTHESIS)
                 comment_synthesis = await synthesis_service.process(
                     query=request.query,
                     main_answer=validated_answer,  # Use validated answer
@@ -660,7 +649,7 @@ async def event_generator_parallel(
 async def process_simplified_query(
     request: QueryRequest,
     db: Session = Depends(get_db),
-    api_key: str = Depends(get_api_key)
+    api_key: str = Depends(lambda: config.OPENROUTER_API_KEY)
 ):
     """Process a query through parallel multi-expert pipeline with SSE streaming.
 
@@ -677,6 +666,12 @@ async def process_simplified_query(
     """
     request_id = str(uuid.uuid4())
     logger.info(f"Processing multi-expert query {request_id}: {request.query[:50]}...")
+
+    if not api_key:
+        raise HTTPException(
+            status_code=500,
+            detail="OPENROUTER_API_KEY not configured"
+        )
 
     # Always return SSE stream with parallel multi-expert processing
     return EventSourceResponse(
@@ -763,15 +758,12 @@ async def get_post_detail(
     should_translate = False
     logger.info(f"DEBUG: get_post_detail called with post_id={post_id}, expert_id={expert_id}, query='{query}', translate={translate}")
 
-    # Always define model_analysis for translation service
-    model_analysis = os.getenv("MODEL_ANALYSIS", "qwen-2.5-72b")
-
     if translate:
         should_translate = True
         logger.info(f"DEBUG: Translation forced by translate=true flag for post {post_id}")
     elif query:
         # Use translation service to detect if query is in English
-        translation_service = TranslationService(api_key=get_api_key(), model=model_analysis)
+        translation_service = TranslationService(api_key=config.OPENROUTER_API_KEY, model=config.MODEL_ANALYSIS)
         should_translate = translation_service.should_translate(query)
         logger.info(f"DEBUG: Translation check for post {post_id}: query='{query[:50]}...', should_translate={should_translate}")
     else:
@@ -784,7 +776,7 @@ async def get_post_detail(
     if should_translate and message_text:
         logger.info(f"DEBUG: Starting translation for post {post_id} with content length {len(message_text)}")
         try:
-            translation_service = TranslationService(api_key=get_api_key(), model=model_analysis)
+            translation_service = TranslationService(api_key=config.OPENROUTER_API_KEY, model=config.MODEL_ANALYSIS)
             translated_text = await translation_service.translate_single_post(
                 message_text,
                 post.author_name or "Unknown"

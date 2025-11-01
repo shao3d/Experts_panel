@@ -33,14 +33,13 @@ class CommentGroupMapService:
     """
 
     DEFAULT_CHUNK_SIZE = 20  # Groups per chunk
-    DEFAULT_MODEL = os.getenv("MODEL_COMMENT_GROUPS", "qwen/qwen-2.5-32b-instruct")
     DEFAULT_MAX_PARALLEL = 5  # Rate limiting for API calls
 
     def __init__(
         self,
         api_key: str,
+        model: str,
         chunk_size: int = DEFAULT_CHUNK_SIZE,
-        model: str = DEFAULT_MODEL,
         max_parallel: int = DEFAULT_MAX_PARALLEL
     ):
         """Initialize CommentGroupMapService.

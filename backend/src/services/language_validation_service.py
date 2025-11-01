@@ -17,9 +17,7 @@ logger = logging.getLogger(__name__)
 class LanguageValidationService:
     """Service for validating and ensuring language consistency of expert responses."""
 
-    DEFAULT_MODEL = os.getenv("MODEL_ANALYSIS", "qwen/qwen-2.5-32b-instruct")  # Configurable via MODEL_ANALYSIS environment variable
-
-    def __init__(self, api_key: str, model: str = DEFAULT_MODEL):
+    def __init__(self, api_key: str, model: str):
         """Initialize LanguageValidationService.
 
         Args:

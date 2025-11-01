@@ -24,12 +24,10 @@ class CommentSynthesisService:
     complement the main answer from the Reduce phase.
     """
 
-    DEFAULT_MODEL = os.getenv("MODEL_COMMENT_SYNTHESIS", "gemini-2.0-flash")
-
     def __init__(
         self,
         api_key: str,
-        model: str = DEFAULT_MODEL
+        model: str
     ):
         """Initialize CommentSynthesisService.
 

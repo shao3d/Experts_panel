@@ -30,13 +30,12 @@ class MapService:
     """
 
     DEFAULT_CHUNK_SIZE = 40
-    DEFAULT_MODEL = os.getenv("MODEL_ANALYSIS", "qwen/qwen-2.5-32b-instruct")  # Configurable via MODEL_ANALYSIS environment variable
 
     def __init__(
         self,
         api_key: str,
+        model: str,
         chunk_size: int = DEFAULT_CHUNK_SIZE,
-        model: str = DEFAULT_MODEL,
         max_parallel: int = None
     ):
         """Initialize MapService.
@@ -51,6 +50,7 @@ class MapService:
         self.chunk_size = chunk_size
         self.model = convert_model_name(model)
         self.max_parallel = max_parallel
+        logger.info(f"MapService initialized with model: {self.model}")
         self._prompt_template = self._load_prompt_template()
 
     def _load_prompt_template(self) -> Template:
