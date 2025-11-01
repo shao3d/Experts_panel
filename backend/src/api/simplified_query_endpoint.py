@@ -130,7 +130,7 @@ async def process_expert_pipeline(
         )
 
     # 2. Map phase
-    model_analysis = os.getenv("MODEL_ANALYSIS", "qwen-2.5-72b")
+    model_analysis = os.getenv("MODEL_ANALYSIS", "qwen3-32b")
     map_service = MapService(api_key=api_key, model=model_analysis, max_parallel=5)
 
     async def map_progress(data: dict):
@@ -308,7 +308,7 @@ async def process_expert_pipeline(
         main_sources = reduce_results.get("main_sources", [])
 
         # Read comment groups model from environment
-        model_comment_groups = os.getenv("MODEL_COMMENT_GROUPS", "qwen/qwen-2.5-32b-instruct")
+        model_comment_groups = os.getenv("MODEL_COMMENT_GROUPS", "qwen3-32b")
         cg_service = CommentGroupMapService(api_key=api_key, model=model_comment_groups)
 
         async def cg_progress(data: dict):
@@ -768,7 +768,7 @@ async def get_post_detail(
         logger.info(f"DEBUG: Translation forced by translate=true flag for post {post_id}")
     elif query:
         # Use translation service to detect if query is in English
-        model_analysis = os.getenv("MODEL_ANALYSIS", "qwen/qwen-2.5-32b-instruct")
+        model_analysis = os.getenv("MODEL_ANALYSIS", "qwen3-32b")
         translation_service = TranslationService(api_key=get_api_key(), model=model_analysis)
         should_translate = translation_service.should_translate(query)
         logger.info(f"DEBUG: Translation check for post {post_id}: query='{query[:50]}...', should_translate={should_translate}")

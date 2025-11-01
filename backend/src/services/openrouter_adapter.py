@@ -48,7 +48,10 @@ def convert_model_name(openai_model: str) -> str:
         # Alibaba Qwen models (October 2025)
         "qwen-2.5-72b": "qwen/qwen-2.5-72b-instruct",  # $0.08/$0.33 per 1M - great for document ranking
         "qwen-2.5-32b": "qwen/qwen-2.5-32b-instruct",  # Smaller, faster variant
-        "qwen-2.5-coder-32b": "qwen/qwen-2.5-coder-32b-instruct"  # Code-specific
+        "qwen-2.5-coder-32b": "qwen/qwen-2.5-coder-32b-instruct",  # Code-specific
+
+        # Alibaba Qwen3 models (2025) - newer architecture
+        "qwen3-32b": "qwen/qwen3-32b",  # Latest 32B model, matches Qwen2.5-72B performance
     }
 
     # Return mapped model or add openai/ prefix if not found
