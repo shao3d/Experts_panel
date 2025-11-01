@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 class TranslationService:
     """Service for translating posts to English for English queries."""
 
-    DEFAULT_MODEL = os.getenv("MODEL_ANALYSIS", "qwen-2.5-72b")  # Configurable via MODEL_ANALYSIS environment variable
+    DEFAULT_MODEL = os.getenv("MODEL_ANALYSIS", "qwen/qwen-2.5-32b-instruct")  # Configurable via MODEL_ANALYSIS environment variable
 
     def __init__(
         self,
@@ -32,10 +32,14 @@ class TranslationService:
 
         Args:
             api_key: OpenAI API key
-            model: OpenAI model to use (default qwen-2.5-72b)
+            model: Model to use (configured via MODEL_ANALYSIS environment variable)
         """
+        # Always use OpenRouter for translation (Qwen models not supported by Google AI Studio)
+        # This provides reliable translation service with configurable model support
         self.client = create_openrouter_client(api_key=api_key)
         self.model = convert_model_name(model)
+
+        logger.info(f"TranslationService initialized with OpenRouter, model: {self.model}")
         self._prompt_template = self._load_prompt_template()
 
     def _load_prompt_template(self) -> Template:
@@ -81,7 +85,7 @@ class TranslationService:
             # Prepare system message
             system_message = "You are a helpful translator. Translate Russian Telegram posts to natural English while preserving all links and formatting."
 
-            # Call OpenAI API
+            # Call LLM API using OpenRouter client
             response = await self.client.chat.completions.create(
                 model=self.model,
                 messages=[

@@ -8,7 +8,8 @@ import os
 import json
 import logging
 from typing import Dict, Any, Optional, List
-from openai import AsyncOpenAI
+import google.generativeai as genai
+from google.generativeai.types import HarmCategory, HarmBlockThreshold
 import httpx
 
 logger = logging.getLogger(__name__)
@@ -50,10 +51,7 @@ class GoogleAIClient:
             raise ValueError("Google AI Studio API key is required. Set GOOGLE_AI_STUDIO_API_KEY environment variable.")
 
         self.api_key = api_key
-        self.client = AsyncOpenAI(
-            api_key=api_key,
-            base_url="https://generativelanguage.googleapis.com/v1beta"
-        )
+        genai.configure(api_key=api_key)
 
     def _is_rate_limit_error(self, error_content: str) -> bool:
         """Check if error indicates rate limit exceeded.
@@ -67,6 +65,144 @@ class GoogleAIClient:
         error_lower = error_content.lower()
         return any(pattern.lower() in error_lower for pattern in self.RATE_LIMIT_ERRORS)
 
+    def _convert_openai_json_to_gemini_schema(self, response_format: Optional[Dict[str, str]]) -> Optional[Dict[str, Any]]:
+        """Convert OpenAI JSON format to Gemini Schema format.
+
+        Args:
+            response_format: OpenAI response format specification
+
+        Returns:
+            Gemini Schema specification or None
+        """
+        if not response_format or response_format.get("type") != "json_object":
+            return None
+
+        # Define Gemini schema for our expected JSON structure
+        gemini_schema = {
+            "type": "object",
+            "properties": {
+                "answer": {
+                    "type": "string",
+                    "description": "The synthesized answer to the user's query"
+                },
+                "main_sources": {
+                    "type": "array",
+                    "description": "List of telegram message IDs used as sources",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "confidence": {
+                    "type": "string",
+                    "description": "Confidence level (HIGH/MEDIUM/LOW)"
+                },
+                "has_expert_comments": {
+                    "type": "boolean",
+                    "description": "Whether expert comments are available"
+                },
+                "language": {
+                    "type": "string",
+                    "description": "Response language (e.g., 'ru', 'en')"
+                },
+                "posts_analyzed": {
+                    "type": "integer",
+                    "description": "Number of posts analyzed"
+                },
+                "token_usage": {
+                    "type": "object",
+                    "description": "Token usage information"
+                },
+                "summary": {
+                    "type": "string",
+                    "description": "Brief summary of the analysis"
+                }
+            },
+            "required": ["answer", "main_sources", "confidence", "language"]
+        }
+
+        return gemini_schema
+
+    def _convert_messages_to_gemini_format(self, messages: List[Dict[str, str]]) -> List[Any]:
+        """Convert OpenAI message format to Gemini message format.
+
+        Args:
+            messages: List of OpenAI format messages
+
+        Returns:
+            List of Gemini format messages
+        """
+        import google.generativeai as genai
+
+        gemini_messages = []
+        system_message = None
+
+        for message in messages:
+            if message["role"] == "system":
+                # Store system message to prepend later
+                system_message = message["content"]
+                continue
+            elif message["role"] == "user":
+                content = message["content"]
+                if system_message and not gemini_messages:
+                    # Prepend system message to first user message
+                    content = f"{system_message}\n\n{content}"
+                    system_message = None  # Clear to avoid adding again
+                gemini_messages.append(content)
+            elif message["role"] == "assistant":
+                gemini_messages.append(message["content"])
+
+        # If system message wasn't added yet, add it as first message
+        if system_message:
+            gemini_messages.insert(0, system_message)
+
+        return gemini_messages
+
+    def _convert_gemini_response_to_openai_format(self, gemini_response: Any) -> Any:
+        """Convert Gemini response to OpenAI format for compatibility.
+
+        Args:
+            gemini_response: Raw Gemini API response
+
+        Returns:
+            Response object compatible with OpenAI format
+        """
+        # Create a mock response object that mimics OpenAI's response structure
+        class MockOpenAIResponse:
+            def __init__(self, content: str, model: str):
+                self.choices = [MockChoice(content)]
+                self.model = model
+                self.usage = MockUsage()
+
+        class MockChoice:
+            def __init__(self, content: str):
+                self.message = MockMessage(content)
+                self.finish_reason = "stop"
+
+        class MockMessage:
+            def __init__(self, content: str):
+                self.content = content
+                self.role = "assistant"
+
+        class MockUsage:
+            def __init__(self):
+                self.prompt_tokens = 0
+                self.completion_tokens = 0
+                self.total_tokens = 0
+
+        # Extract content from Gemini response
+        content = ""
+        if hasattr(gemini_response, 'text'):
+            content = gemini_response.text
+        elif hasattr(gemini_response, 'candidates') and gemini_response.candidates:
+            candidate = gemini_response.candidates[0]
+            if hasattr(candidate, 'content') and hasattr(candidate.content, 'parts'):
+                content = "".join(part.text for part in candidate.content.parts if hasattr(part, 'text'))
+
+        # Log the raw response for debugging
+        logger.info(f"Gemini raw response (first 200 chars): {content[:200]}")
+
+        return MockOpenAIResponse(content, "gemini-2.0-flash-exp")
+
     def _extract_error_details(self, error: Exception) -> Dict[str, Any]:
         """Extract error details from API exception.
 
@@ -79,11 +215,18 @@ class GoogleAIClient:
         error_content = str(error)
         is_rate_limit = self._is_rate_limit_error(error_content)
 
+        # Extract more detailed error information from Google AI SDK
+        details = None
+        if hasattr(error, 'response') and error.response:
+            details = error.response
+        elif hasattr(error, 'message'):
+            details = error.message
+
         return {
             "error_type": "rate_limit" if is_rate_limit else "api_error",
             "is_rate_limit": is_rate_limit,
             "message": error_content,
-            "details": getattr(error, 'response', None)
+            "details": details
         }
 
     async def chat_completions_create(
@@ -117,40 +260,61 @@ class GoogleAIClient:
                 # Remove google/ prefix if present
                 model = model.replace("google/", "")
 
-            # Prepare request parameters
-            params = {
-                "model": model,
-                "messages": messages,
-                "temperature": temperature
+            # Convert OpenAI messages to Gemini format
+            gemini_messages = self._convert_messages_to_gemini_format(messages)
+
+            # Create generation config
+            generation_config = {
+                "temperature": temperature,
+                "candidate_count": 1,
             }
 
-            # Add response format if specified (JSON mode)
+            # Handle JSON response format for Gemini
             if response_format and response_format.get("type") == "json_object":
-                # For Gemini, we need to add JSON instruction to system message
-                system_message = next(
-                    (msg for msg in messages if msg["role"] == "system"),
-                    None
-                )
-                if system_message:
-                    system_message["content"] += "\n\nIMPORTANT: You must respond with valid JSON only."
+                # Convert OpenAI JSON format to Gemini Schema
+                gemini_schema = self._convert_openai_json_to_gemini_schema(response_format)
+                if gemini_schema:
+                    # Use Gemini's native JSON mode
+                    generation_config["response_mime_type"] = "application/json"
+                    try:
+                        generation_config["response_schema"] = genai.Schema(**gemini_schema)
+                        logger.info(f"Using Gemini native JSON mode with schema")
+                    except Exception as e:
+                        logger.warning(f"Failed to create Gemini schema: {e}, using fallback JSON instruction")
+                        # Fallback to JSON instruction
+                        if gemini_messages:
+                            gemini_messages[0] = gemini_messages[0] + "\n\nIMPORTANT: You must respond with valid JSON only."
                 else:
-                    messages.insert(0, {
-                        "role": "system",
-                        "content": "You must respond with valid JSON only."
-                    })
+                    # Fallback: Add JSON instruction to first message
+                    if gemini_messages:
+                        gemini_messages[0] = gemini_messages[0] + "\n\nIMPORTANT: You must respond with valid JSON only."
 
-            params.update(kwargs)
+            # Update generation config with additional kwargs
+            for key, value in kwargs.items():
+                if key not in ["response_format"]:  # Skip response_format as we handle it separately
+                    generation_config[key] = value
 
             logger.info(f"Calling Google AI Studio API with model: {model}")
 
-            # Make the API call with timeout to prevent hanging
-            response = await self.client.chat.completions.create(
-                timeout=30.0,  # MVP: Add 30 second timeout
-                **params
+            # Create model and make the API call
+            gemini_model = genai.GenerativeModel(
+                model_name=model,
+                generation_config=generation_config,
+                safety_settings={
+                    HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+                    HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+                    HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+                    HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+                }
             )
 
+            # Make the API call
+            response = await gemini_model.generate_content_async(gemini_messages)
+
             logger.info(f"Google AI Studio API call successful")
-            return response
+
+            # Convert Gemini response to OpenAI format for compatibility
+            return self._convert_gemini_response_to_openai_format(response)
 
         except Exception as error:
             error_details = self._extract_error_details(error)

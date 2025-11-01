@@ -2,6 +2,7 @@
 
 import json
 import logging
+import os
 from typing import List, Dict, Any, Optional, Callable
 from pathlib import Path
 from string import Template
@@ -23,7 +24,7 @@ class CommentSynthesisService:
     complement the main answer from the Reduce phase.
     """
 
-    DEFAULT_MODEL = "gemini-2.0-flash"  # Changed to Gemini for better context synthesis
+    DEFAULT_MODEL = os.getenv("MODEL_COMMENT_SYNTHESIS", "gemini-2.0-flash")
 
     def __init__(
         self,

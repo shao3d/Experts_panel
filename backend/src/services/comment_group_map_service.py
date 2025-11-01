@@ -33,7 +33,7 @@ class CommentGroupMapService:
     """
 
     DEFAULT_CHUNK_SIZE = 20  # Groups per chunk
-    DEFAULT_MODEL = os.getenv("MODEL_COMMENT_GROUPS", "gpt-4o-mini")
+    DEFAULT_MODEL = os.getenv("MODEL_COMMENT_GROUPS", "qwen/qwen-2.5-32b-instruct")
     DEFAULT_MAX_PARALLEL = 5  # Rate limiting for API calls
 
     def __init__(
@@ -232,9 +232,9 @@ class CommentGroupMapService:
         return json.dumps(formatted_groups, ensure_ascii=False, indent=2)
 
     @retry(
-        stop=stop_after_attempt(5),
+        stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=2, min=4, max=60),
-        retry=retry_if_exception_type(httpx.HTTPStatusError),
+        retry=retry_if_exception_type((httpx.HTTPStatusError, json.JSONDecodeError, ValueError)),
         reraise=True
     )
     async def _process_chunk(

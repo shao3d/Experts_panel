@@ -2,6 +2,7 @@
 
 import json
 import logging
+import os
 from typing import List, Dict, Any, Optional, Callable
 from datetime import datetime
 from pathlib import Path
@@ -25,7 +26,7 @@ class ReduceService:
     using Gemini 2.0 Flash to create a coherent response with source attribution.
     """
 
-    DEFAULT_MODEL = "gemini-2.0-flash"  # Upgraded from gpt-4o-mini for better synthesis (maps to gemini-2.5-flash)
+    DEFAULT_MODEL = os.getenv("MODEL_REDUCE", "gemini-2.0-flash")
     MAX_CONTEXT_POSTS = 50  # Limit for token management
 
     def __init__(

@@ -75,16 +75,21 @@ class HybridLLMClient:
         Returns:
             Chat completion response
         """
+        # Determine if the model is a Google model to avoid unnecessary API calls
+        is_google_model = "gemini" in model or model.startswith("google/")
+
         # First try Google AI Studio if available and enabled
-        if self.enable_hybrid and self.google_available and self.google_client:
+        if self.enable_hybrid and self.google_available and self.google_client and is_google_model:
             start_time = time.time()
             try:
                 logger.info(f"[{service_name}] Trying Google AI Studio API with model: {model}")
+
+                # Google AI Studio uses native JSON format, OpenRouter uses OpenAI format
                 response = await self.google_client.chat_completions_create(
                     model=model,
                     messages=messages,
                     temperature=temperature,
-                    response_format=response_format,
+                    response_format=response_format,  # Will be converted to Gemini format internally
                     **kwargs
                 )
                 logger.info(f"[{service_name}] Google AI Studio API call successful")
@@ -131,16 +136,16 @@ class HybridLLMClient:
                 )
                 logger.error(f"[{service_name}] Unexpected Google AI Studio error, switching to OpenRouter: {e}")
 
-        # Fallback to OpenRouter
+        # Fallback to OpenRouter with OpenAI format
         start_time = time.time()
-        logger.info(f"[{service_name}] Using OpenRouter API with model: {convert_model_name(model)}")
+        logger.info(f"[{service_name}] Using OpenRouter API with model: {convert_model_name(model)} (OpenAI JSON format)")
 
         try:
             response = await self.openrouter_client.chat.completions.create(
                 model=convert_model_name(model),
                 messages=messages,
                 temperature=temperature,
-                response_format=response_format,
+                response_format=response_format,  # OpenAI format
                 timeout=30.0,  # MVP: Add 30 second timeout
                 **kwargs
             )
