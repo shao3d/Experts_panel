@@ -13,9 +13,9 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KE
 # --- Конфигурация моделей для каждой фазы ---
 
 # Модель для Map фазы (только для поиска релевантных постов)
-# Использует Qwen 2.5 32B для оптимального баланса производительности и качества
+# Использует Qwen 2.5 72B для максимального качества relevance detection
 # Если не задана в .env, использует значение по умолчанию
-MODEL_MAP: str = os.getenv("MODEL_MAP", "qwen/qwen2.5-32b-instruct")
+MODEL_MAP: str = os.getenv("MODEL_MAP", "qwen/qwen-2.5-72b-instruct")
 
 # Модель для анализа (Medium Scoring, Translation, Validation)
 # Значение по умолчанию согласовано с .env.example
