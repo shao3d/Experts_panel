@@ -9,11 +9,13 @@ import logging
 from pathlib import Path
 from string import Template
 
+import google.generativeai as genai
 from openai import AsyncOpenAI
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 import httpx
 from json_repair import repair_json
 
+from .. import config
 from ..models.post import Post
 from .openrouter_adapter import create_openrouter_client, convert_model_name
 from ..utils.language_utils import prepare_prompt_with_language_instruction, prepare_system_message_with_language
@@ -41,16 +43,28 @@ class MapService:
         """Initialize MapService.
 
         Args:
-            api_key: OpenAI API key
+            api_key: API key for the provider (e.g., OpenRouter). Not used for Gemini.
             chunk_size: Number of posts per chunk (default 30)
-            model: OpenAI model to use (default gpt-4o-mini)
+            model: Model name to use. Use 'gemini/...' prefix for Gemini models.
             max_parallel: Maximum parallel API calls (None = all chunks in parallel)
         """
-        self.client = create_openrouter_client(api_key=api_key)
         self.chunk_size = chunk_size
-        self.model = convert_model_name(model)
         self.max_parallel = max_parallel
-        logger.info(f"MapService initialized with model: {self.model}")
+
+        if model.startswith('gemini/'):
+            self.provider = 'gemini'
+            model_name = model.split('/', 1)[1]
+            if not config.GOOGLE_AI_STUDIO_API_KEY:
+                raise ValueError("GOOGLE_AI_STUDIO_API_KEY is not set for Gemini provider")
+            genai.configure(api_key=config.GOOGLE_AI_STUDIO_API_KEY)
+            self.model = genai.GenerativeModel(model_name)
+            logger.info(f"MapService initialized with Gemini provider and model: {model_name}")
+        else:
+            self.provider = 'openrouter'
+            self.client = create_openrouter_client(api_key=api_key)
+            self.model = convert_model_name(model)
+            logger.info(f"MapService initialized with OpenRouter provider and model: {self.model}")
+
         self._prompt_template = self._load_prompt_template()
 
     def _load_prompt_template(self) -> Template:
@@ -138,20 +152,39 @@ class MapService:
 
         return json.dumps(formatted_posts, ensure_ascii=False, indent=2)
 
+    async def _process_chunk(
+        self,
+        chunk: List[Post],
+        query: str,
+        chunk_index: int,
+        progress_callback: Optional[Callable] = None,
+        expert_id: str = "unknown"
+    ) -> Dict[str, Any]:
+        """Process a single chunk of posts by dispatching to the correct provider."""
+        if self.provider == 'gemini':
+            return await self._process_chunk_gemini(
+                chunk, query, chunk_index, progress_callback, expert_id
+            )
+        else:
+            return await self._process_chunk_openrouter(
+                chunk, query, chunk_index, progress_callback, expert_id
+            )
+
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=2, min=4, max=60),
         retry=retry_if_exception_type((httpx.HTTPStatusError, json.JSONDecodeError, ValueError)),
         reraise=True
     )
-    async def _process_chunk(
+    async def _process_chunk_openrouter(
         self,
         chunk: List[Post],
         query: str,
         chunk_index: int,
-        progress_callback: Optional[Callable] = None
+        progress_callback: Optional[Callable] = None,
+        expert_id: str = "unknown"
     ) -> Dict[str, Any]:
-        """Process a single chunk of posts.
+        """Process a single chunk of posts using OpenRouter.
 
         Args:
             chunk: List of posts in this chunk
@@ -218,6 +251,7 @@ class MapService:
             # Add chunk metadata
             result["chunk_index"] = chunk_index
             result["posts_processed"] = len(chunk)
+            result["provider"] = "openrouter"
 
             if progress_callback:
                 await progress_callback({
@@ -266,6 +300,92 @@ class MapService:
                     "status": "error",
                     "message": f"Error in chunk {chunk_index + 1}: {str(e)}",
                     "error_info": error_info  # Add detailed error information
+                })
+            raise
+
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=2, min=4, max=60),
+        retry=retry_if_exception_type((json.JSONDecodeError, ValueError)),
+        reraise=True
+    )
+    async def _process_chunk_gemini(
+        self,
+        chunk: List[Post],
+        query: str,
+        chunk_index: int,
+        progress_callback: Optional[Callable] = None,
+        expert_id: str = "unknown"
+    ) -> Dict[str, Any]:
+        """Process a single chunk of posts using Gemini."""
+        try:
+            if progress_callback:
+                await progress_callback({
+                    "phase": "map",
+                    "status": "processing",
+                    "message": f"Processing chunk {chunk_index + 1} (Gemini)",
+                    "chunk_index": chunk_index,
+                    "total_chunks": None
+                })
+
+            posts_formatted = self._format_posts_for_prompt(chunk)
+            base_prompt = self._prompt_template.substitute(
+                query=query,
+                posts=posts_formatted
+            )
+            prompt = prepare_prompt_with_language_instruction(base_prompt, query)
+
+            response = await self.model.generate_content_async(
+                prompt,
+                generation_config={"response_mime_type": "application/json"}
+            )
+
+            raw_content = response.text
+            if not raw_content or not raw_content.strip():
+                logger.error(f"Empty response from Gemini API for chunk {chunk_index}")
+                raise ValueError(f"Empty API response for chunk {chunk_index}")
+
+            result = json.loads(raw_content)
+
+            result["chunk_index"] = chunk_index
+            result["posts_processed"] = len(chunk)
+            result["provider"] = "gemini"
+
+            if progress_callback:
+                await progress_callback({
+                    "phase": "map",
+                    "status": "progress",
+                    "message": f"Chunk {chunk_index + 1} completed (Gemini)",
+                    "chunk_index": chunk_index,
+                    "relevant_found": len(result.get("relevant_posts", []))
+                })
+
+            return result
+        except json.JSONDecodeError as e:
+            logger.error(f"Gemini JSON decode error in chunk {chunk_index}: {str(e)}")
+            try:
+                response_preview = raw_content[:500] if 'raw_content' in locals() else "N/A"
+                logger.error(f"Gemini response preview (first 500 chars): {response_preview}")
+            except Exception:
+                pass
+            if progress_callback:
+                await progress_callback({
+                    "phase": "map",
+                    "chunk": chunk_index,
+                    "status": "error",
+                    "message": f"JSON decode error in chunk {chunk_index + 1} (Gemini)"
+                })
+            raise
+        except Exception as e:
+            logger.error(f"Error processing Gemini chunk {chunk_index}: {str(e)}")
+            error_info = error_handler.process_api_error(
+                e, context={"phase": "map", "chunk": chunk_index, "expert_id": expert_id}
+            )
+            if progress_callback:
+                await progress_callback({
+                    "phase": "map", "chunk": chunk_index, "status": "error",
+                    "message": f"Error in chunk {chunk_index + 1} (Gemini): {str(e)}",
+                    "error_info": error_info
                 })
             raise
 
@@ -320,7 +440,7 @@ class MapService:
 
         async def process_with_semaphore(chunk, index):
             async with semaphore:
-                return await self._process_chunk(chunk, query, index, progress_callback)
+                return await self._process_chunk(chunk, query, index, progress_callback, expert_id)
 
         # Create tasks for all chunks
         tasks = [
@@ -362,7 +482,7 @@ class MapService:
 
             # Retry failed chunks
             retry_tasks = [
-                self._process_chunk(chunk, query, index, progress_callback)
+                self._process_chunk(chunk, query, index, progress_callback, expert_id)
                 for chunk, index in failed_chunks
             ]
 

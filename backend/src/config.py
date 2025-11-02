@@ -9,6 +9,7 @@ import os
 
 # --- API Ключи ---
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KEY")
+GOOGLE_AI_STUDIO_API_KEY = os.getenv("GOOGLE_AI_STUDIO_API_KEY")
 
 # --- Конфигурация моделей для каждой фазы ---
 
