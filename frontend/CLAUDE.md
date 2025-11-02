@@ -1,18 +1,18 @@
 # Frontend Architecture - Experts Panel
 
-## Overview
+**📖 See main documentation:** `../CLAUDE.md` (Quick Start, Architecture Overview)
 
-React 18 + TypeScript frontend with SSE streaming for real-time query progress. Built for MVP with inline styles, focusing on type safety and direct API communication.
+React 18 + TypeScript frontend with real-time query progress tracking and expert feedback display.
 
-## Technology Stack
+## 🛠️ Technology Stack
 
 - **React 18** - Function components with hooks
 - **TypeScript** - Strict mode, full type safety
-- **Vite** - Build tool and dev server
+- **Vite** - Build tool and dev server (port 3000)
 - **SSE (Server-Sent Events)** - Real-time progress streaming
 - **Inline styles** - No CSS frameworks for MVP simplicity
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 frontend/src/
@@ -20,25 +20,31 @@ frontend/src/
 ├── index.tsx                  # Entry point
 ├── components/
 │   ├── QueryForm.tsx          # Query input with validation
-│   ├── ProgressSection.tsx    # Enhanced progress display with real-time expert feedback
+│   ├── ProgressSection.tsx    # Enhanced progress display with expert feedback
 │   ├── ExpertResponse.tsx     # Answer display with source links
 │   ├── PostsList.tsx          # Posts list with selection
 │   ├── PostCard.tsx           # Individual post card display
-│   ├── ProgressLog.tsx        # SSE progress events (legacy)
-│   └── QueryResult.tsx        # Result container (legacy)
+│   ├── ExpertAccordion.tsx    # Expandable expert response sections
+│   ├── ExpertSelector.tsx     # Expert selection interface
+│   ├── ExpertSelectionBar.tsx # Expert filtering and selection bar
+│   ├── StatsAndSelectors.tsx  # Statistics display and filtering controls
+│   ├── CommentSynthesis.tsx   # Comment synthesis display component
+│   ├── CommentGroupsList.tsx  # Comment groups list interface
+│   ├── ProgressLog.tsx        # Legacy SSE progress events
+│   └── QueryResult.tsx        # Legacy result container
 ├── services/
-│   ├── api.ts                 # APIClient with fixed SSE streaming
+│   ├── api.ts                 # APIClient with SSE streaming
 │   ├── error-handler.ts       # Error handling utilities
 │   └── index.ts               # Service exports
+├── utils/
+│   └── debugLogger.ts         # Console/SSE/API logging utility
 └── types/
     └── api.ts                 # TypeScript interfaces (matches backend)
 ```
 
-## Core Components
+## 🎯 Core Components
 
-### App.tsx
-Main application component managing all state:
-
+### App.tsx - Main Application State
 ```typescript
 const [isProcessing, setIsProcessing] = useState(false);
 const [progressEvents, setProgressEvents] = useState<ProgressEvent[]>([]);
@@ -46,24 +52,20 @@ const [result, setResult] = useState<QueryResponse | null>(null);
 const [error, setError] = useState<string | null>(null);
 const [posts, setPosts] = useState<PostDetail[]>([]);
 const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
-const [postsLoading, setPostsLoading] = useState(false);
 ```
 
 **Responsibilities:**
-- Query submission handling
-- Progress events collection
+- Query submission and API communication
+- Progress events collection via SSE
 - Result/error state management
-- Posts loading and selection
+- Posts loading with expert context
 - Component orchestration
 
-### QueryForm.tsx
-Query input form with validation:
-
+### QueryForm.tsx - Input Validation
 **Features:**
-- Character limit: 3-1000 chars
-- Real-time character counter
-- Submit validation
-- Disabled state during processing
+- Character limit: 3-1000 chars with real-time counter
+- Submit validation and disabled state during processing
+- Clear error handling and user feedback
 
 **Props:**
 ```typescript
@@ -74,17 +76,14 @@ interface QueryFormProps {
 }
 ```
 
-### ProgressSection.tsx
-Enhanced progress display with real-time expert feedback and contextual phase descriptions:
-
+### ProgressSection.tsx - Real-time Progress Tracking
 **Features:**
-- Real-time processing status with active expert count display
-- Contextual phase descriptions for each processing stage
-- Warning indicators for processes taking longer than 180 seconds
-- Frontend-only final_results phase for completion detection
-- Statistics display (posts, time, experts)
-- Compact phase progress line with visual indicators
-- Enhanced resolve phase handling that includes medium_scoring events
+- Active expert count display during processing
+- Contextual phase descriptions ("Searching relevant posts...", "Analyzing connections...")
+- Warning indicators (⚠️) for processes exceeding 300 seconds
+- Frontend-only `final_results` phase for completion detection
+- Enhanced resolve phase handling with medium_scoring events
+- Real-time elapsed time counter
 
 **Props:**
 ```typescript
@@ -99,98 +98,51 @@ interface ProgressSectionProps {
 }
 ```
 
-**Enhanced Capabilities:**
-- **Active Expert Count**: Displays "Processing X experts: [contextual message]" during active processing
-- **Contextual Messages**: Phase-specific descriptions like "Searching relevant posts..." or "Analyzing connections and scoring medium posts..."
-- **Warning System**: Orange color and warning icon (⚠️) for processes exceeding 300 seconds
-- **Phase Status Logic**: Enhanced `getPhaseStatus()` handles resolve+medium_scoring combination and final_results detection
-- **Real-time Updates**: Live elapsed time counter with visual feedback
-- **Final Results Phase**: Frontend-only phase that activates when all other phases are completed
-
-### ExpertResponse.tsx
-Answer display with source links:
-
+### ExpertResponse.tsx - Answer Display
 **Features:**
-- Formatted answer text
-- Clickable source references
-- Post ID highlighting
-- Expert badge display
+- Formatted answer text with markdown rendering
+- Clickable source references with post navigation
+- Expert badge display and confidence indicators
+- Language validation status display
 
 **Props:**
 ```typescript
 interface ExpertResponseProps {
   answer: string;
   sources: number[];
+  confidence: ConfidenceLevel;
+  language: string;
   onPostClick: (postId: number) => void;
 }
 ```
 
-### PostsList.tsx
-Posts listing with selection:
-
+### PostsList.tsx & PostCard.tsx - Content Navigation
 **Features:**
-- Scrollable posts container
-- Post selection highlighting
-- Auto-scroll to selected post
-- Responsive layout
-- Consistent DOM element lookup using expertId
-
-**Props:**
-```typescript
-interface PostsListProps {
-  posts: PostDetail[];
-  selectedPostId?: number | null;
-  expertId?: string;  // Passed to PostCard for DOM ID generation
-}
-```
-
-**Post Reference Clicking:**
-```typescript
-// DOM element lookup with expertId prefix
-let element = document.getElementById(`post-${expertId || 'unknown'}-${selectedPostId}`);
-
-// Fallback for backward compatibility
-if (!element) {
-  element = document.getElementById(`post-${selectedPostId}`);
-}
-```
-
-### PostCard.tsx
-Individual post card display:
-
-**Features:**
-- Post content with formatting
-- Author and date display
-- Expert comments section
-- Selection state styling
+- Scrollable posts container with selection highlighting
+- Auto-scroll to selected post with smooth animation
+- Expert comments section with expand/collapse
 - Consistent DOM ID generation for post reference clicking
-
-**Props:**
-```typescript
-interface PostCardProps {
-  post: PostDetail;
-  isExpanded: boolean;
-  onToggleComments: () => void;
-  isSelected?: boolean;
-  expertId?: string;  // Used for DOM ID generation
-}
-```
+- Multi-expert support with expertId context
 
 **DOM ID Pattern:**
 ```typescript
+// PostCard.tsx - Reliable element lookup
 id={`post-${expertId || 'unknown'}-${post.telegram_message_id}`}
+
+// PostsList.tsx - Element lookup with fallback
+let element = document.getElementById(`post-${expertId || 'unknown'}-${selectedPostId}`);
+if (!element) {
+  element = document.getElementById(`post-${selectedPostId}`); // Backward compatibility
+}
 ```
 
-## Services Layer
+## 🔄 Services Layer
 
 ### APIClient (services/api.ts)
-
 Main API client with SSE streaming support:
 
 ```typescript
 class APIClient {
-  private baseURL: string;
-
   async submitQuery(
     request: QueryRequest,
     onProgress?: ProgressCallback
@@ -200,92 +152,76 @@ class APIClient {
   async getPostDetail(postId: number): Promise<PostDetailResponse>
   async getPostsByIds(postIds: number[]): Promise<PostDetailResponse[]>
 }
-
-export const apiClient = new APIClient(); // Singleton instance
 ```
 
 **SSE Streaming Implementation:**
+- Line-by-line parsing with incremental buffering
+- Progress event extraction and callback handling
+- Error recovery and stream state management
+- Real-time expert tracking with expert_id context
 
+### Debug Logger (utils/debugLogger.ts)
+Advanced logging system for development debugging:
+
+**Features:**
+- **Console Interception**: Captures all console.log/warn/error with recursion prevention
+- **SSE Event Logging**: Real-time pipeline phase tracking with expert context
+- **API Request Monitoring**: Automatic fetch/XHR interception with timing
+- **Batch Processing**: 10-second interval batching to `/api/v1/log-batch`
+- **Memory Management**: 1000-event circular buffer prevents memory leaks
+
+**Usage:**
 ```typescript
-private async parseSSEStream(
-  response: Response,
-  onProgress?: ProgressCallback
-): Promise<QueryResponse> {
-  const reader = response.body?.getReader();
-  const decoder = new TextDecoder();
+import { debugLogger } from './utils/debugLogger';
 
-  // Parse SSE format: "data: {json}\n\n"
-  // Extract progress events and final response
-  // Handle event.data.response for final result
-}
+// Automatic console capture
+console.log('User interaction detected'); // Automatically logged
+
+// Manual SSE event logging
+debugLogger.logSSEEvent('map', 'phase_start', { expert_id: 'refat' });
 ```
 
-**Progress Callback Pattern:**
+## 📝 Type System
 
-```typescript
-await apiClient.submitQuery(
-  { query, stream_progress: true },
-  (event: ProgressEvent) => {
-    // Real-time progress updates
-    setProgressEvents(prev => [...prev, event]);
-  }
-);
-```
+Complete TypeScript interfaces matching backend Pydantic models:
 
-## Type System (types/api.ts)
-
-Full TypeScript interfaces matching backend Pydantic models:
-
-### Enums
-```typescript
-enum RelevanceLevel { HIGH, MEDIUM, LOW, CONTEXT }
-enum ConfidenceLevel { HIGH, MEDIUM, LOW }
-```
-
-### Request Models
+### Key Interfaces
 ```typescript
 interface QueryRequest {
   query: string;                    // 3-1000 chars
   max_posts?: number;
   include_comments?: boolean;
   stream_progress?: boolean;        // Default: true
+  expert_filter?: string[];         // Optional expert filtering
 }
-```
 
-### Response Models
-```typescript
 interface QueryResponse {
   query: string;
   answer: string;
   main_sources: number[];           // telegram_message_ids
-  confidence: ConfidenceLevel;
+  confidence: ConfidenceLevel;      // HIGH, MEDIUM, LOW
   language: string;
   has_expert_comments: boolean;
   posts_analyzed: number;
   expert_comments_included: number;
   relevance_distribution: Record<string, number>;
-  token_usage?: TokenUsage;
   processing_time_ms: number;
   request_id: string;
 }
-```
 
-### SSE Events
-```typescript
 interface ProgressEvent {
   event_type: 'phase_start' | 'progress' | 'phase_complete' | 'complete' | 'error';
-  phase: string;                    // map/resolve/reduce/final
+  phase: string;                    // map, resolve, reduce, comment_groups, etc.
   status: string;
   message: string;
   timestamp?: string;
-  data?: Record<string, any>;       // Contains response on 'complete'
+  data?: Record<string, any>;       // Contains expert_id, response, etc.
 }
 ```
 
-## Code Patterns
+## 🎨 Code Patterns
 
 ### 1. Inline Styles for MVP
-
 All components use inline styles via style objects:
 
 ```typescript
@@ -297,44 +233,26 @@ const styles = {
   },
   button: {
     fontSize: '16px',
-    fontWeight: '600' as const,    // Explicit type for TS
+    fontWeight: '600' as const,
     cursor: 'pointer'
   }
 };
-
-return <div style={styles.container}>...</div>;
 ```
 
-**Benefits:**
-- Zero external dependencies
-- Component-local styles
-- Easy to prototype
-- No build complexity
-
 ### 2. Enhanced Progress Event Handling
-
 ```typescript
-// Collect events in array
-setProgressEvents(prev => [...prev, event]);
-
-// Enhanced phase status with special handling
+// Special phase status logic
 const getPhaseStatus = (phaseName: string): 'pending' | 'active' | 'completed' => {
-  // Special handling for resolve phase - include medium_scoring events
   if (phaseName === 'resolve') {
-    const resolveEvents = progressEvents.filter(e => e.phase === 'resolve');
-    const scoringEvents = progressEvents.filter(e => e.phase === 'medium_scoring');
-    // Combined logic for resolve + medium_scoring status
+    // Combine resolve + medium_scoring events for comprehensive status
   }
-
-  // Special handling for final_results phase (frontend-only)
   if (phaseName === 'final_results') {
-    // Check if all other phases are completed
+    // Frontend-only completion detection
   }
-
-  // Standard phase status logic
+  // Standard phase logic
 };
 
-// Get active expert count from progress events
+// Active expert count extraction
 const getActiveExpertsCount = (): number => {
   const activeExperts = new Set();
   progressEvents.forEach(event => {
@@ -344,84 +262,63 @@ const getActiveExpertsCount = (): number => {
   });
   return activeExperts.size;
 };
-
-// Contextual phase descriptions
-const getActivePhaseMessage = (phaseName: string): string => {
-  const messages: Record<string, string> = {
-    'map': 'Searching relevant posts...',
-    'resolve': 'Analyzing connections and scoring medium posts...',
-    'reduce': 'Generating comprehensive answer...',
-    'comment_groups': 'Finding relevant discussions...',
-    'language_validation': 'Validating response language...',
-    'comment_synthesis': 'Extracting discussion insights...',
-    'final_results': 'Assembling expert responses...'
-  };
-  return messages[phaseName] || 'Processing...';
-};
 ```
 
-### 3. Error Handling
-
+### 3. Error Handling Pattern
 ```typescript
 try {
-  const response = await apiClient.submitQuery(...);
+  const response = await apiClient.submitQuery(request, onProgress);
   setResult(response);
 } catch (err) {
-  const errorMessage = err instanceof Error
-    ? err.message
-    : 'Произошла ошибка';
+  const errorMessage = err instanceof Error ? err.message : 'Произошла ошибка';
   setError(errorMessage);
-  console.error('Query failed:', err);
 } finally {
   setIsProcessing(false);
 }
 ```
 
 ### 4. State Reset Pattern
-
 ```typescript
 const handleReset = (): void => {
   setProgressEvents([]);
   setResult(null);
   setError(null);
+  setSelectedPostId(null);
 };
 ```
 
-## SSE Communication Flow
+## 📡 SSE Communication Flow
 
 ```
-1. User submits query
-   └─> App.handleQuerySubmit()
-       └─> apiClient.submitQuery(request, onProgressCallback)
+1. User submits query → App.handleQuerySubmit()
+   └─> apiClient.submitQuery(request, onProgressCallback)
 
-2. Backend starts streaming (simplified phases)
-   └─> Phase 1: Map (find relevant posts)
-   └─> Phase 2: Resolve+Reduce (expand & synthesize)
-   └─> SSE format: line-by-line "data: {json}"
+2. Backend streams SSE events
+   └─> Phase events: map → resolve → reduce → final
+   └─> Format: "data: {json}\n\n" per line
 
-3. Frontend parses stream (fixed parsing)
-   └─> parseSSEStream() processes line-by-line
-       └─> Buffers incomplete JSON lines
-       └─> Calls onProgressCallback for each event
-           └─> App updates progressEvents state
-               └─> ProgressSection re-renders with enhanced UI (expert count, contextual messages, warnings)
+3. Frontend parses stream line-by-line
+   └─> parseSSEStream() processes incremental chunks
+   └─> Buffers incomplete JSON lines
+   └─> Calls onProgressCallback for each event
 
-4. Backend sends final event
-   └─> event_type: 'complete'
-       └─> event.data.response contains QueryResponse
-           └─> parseSSEStream() returns finalResponse
-               └─> App sets result state
-                   └─> ExpertResponse renders
-                   └─> PostsList loads posts via API
+4. Progress UI updates in real-time
+   └─> ProgressSection re-renders with expert count
+   └─> Contextual messages and warnings
+   └─> Active expert tracking
+
+5. Final event received
+   └─> event_type: 'complete' with response data
+   └─> App sets result state → ExpertResponse renders
 ```
 
-## Development Commands
+## 🛠️ Development Commands
 
 ```bash
 # Install dependencies
 npm install
 
-# Run development server (http://localhost:5173)
+# Run development server (http://localhost:3000)
 npm run dev
 
 # Build for production
@@ -434,273 +331,80 @@ npm run type-check
 npm run preview
 ```
 
-## Code Style Guidelines
-
-### TypeScript
-- **Strict mode enabled** - No implicit any
-- **Explicit return types** - All functions must specify return type
-- **Interface over type** - Use interface for object shapes
-- **No any types** - Use unknown or proper types
-- **Const assertions** - Use `as const` for style objects
-
-### React
-- **Function components only** - No class components
-- **Hooks pattern** - useState, useEffect, custom hooks
-- **Props interfaces** - All props must have interface
-- **Explicit typing** - No implicit children or props
-
-### Naming Conventions
-- **Components**: PascalCase (QueryForm.tsx)
-- **Functions**: camelCase (handleSubmit)
-- **Interfaces**: PascalCase with descriptive names
-- **Files**: Match component name exactly
-
-## API Integration
-
-### Base URL Configuration
-```typescript
-// Development
-const apiClient = new APIClient('http://localhost:8000');
-
-// Production (VPS/Cloud)
-const apiClient = new APIClient('https://your-domain.com');
-```
-
-### Production Deployment Configuration
-The frontend is production-ready with Docker multi-stage build and nginx optimization:
-
-#### Production Docker Architecture
-- **Multi-stage build**: Node.js build stage + nginx:alpine production stage
-- **Build optimization**: Asset minification, source map generation disabled
-- **Static serving**: nginx serves optimized files from `/usr/share/nginx/html`
-- **Resource limits**: 256MB memory, 0.25 CPU limit, 128MB reservation
-- **Health checks**: Built-in nginx health check with 30s intervals
-
-#### Production Nginx Configuration
-- **SSL termination**: HTTPS handled by external nginx reverse proxy
-- **API proxy**: `/api/*` requests proxied to backend-api service
-- **SSE support**: Special headers and buffering for Server-Sent Events
-- **SPA routing**: All non-file requests served to index.html for client-side routing
-- **Static caching**: 1-year cache for immutable assets (JS, CSS, images)
-- **Gzip compression**: Automatic compression for text-based responses
-- **Security headers**: HSTS, X-Frame-Options, CSP, etc. applied by reverse proxy
-
-#### Production Environment Variables
-```bash
-# Production API URL (automatically configured)
-REACT_APP_API_URL=${PRODUCTION_ORIGIN}/api
-
-# Build optimizations
-GENERATE_SOURCEMAP=false
-NODE_ENV=production
-```
-
-#### Production vs Development
-- **Development**: Vite dev server on port 5173 with HMR and source maps
-- **Production**: nginx serving optimized static files with API proxy
-- **API communication**: Uses relative URLs (`/api/*`) in production, absolute in development
-- **Environment detection**: Base URL automatically configured from PRODUCTION_ORIGIN
-- **Error handling**: Production error boundaries and fallback UI
-
-#### Production Deployment Workflow
-```bash
-# Deploy frontend with full application
-./deploy.sh                    # Automated deployment includes frontend build
-./deploy.sh status            # Check frontend service status
-./deploy.sh logs              # View nginx and frontend logs
-```
-
-### Health Check
-```typescript
-const health = await apiClient.checkHealth();
-// Returns: { status, version, database, openai_configured, timestamp }
-```
-
-### Query Submission
-```typescript
-const response = await apiClient.submitQuery(
-  {
-    query: "Ваш вопрос",
-    stream_progress: true,
-    include_comments: true
-  },
-  (event) => console.log(event.message)
-);
-```
-
-### Post Details
-```typescript
-const post = await apiClient.getPostDetail(12345);
-// Returns: PostDetailResponse with comments and links
-
-const posts = await apiClient.getPostsByIds([1, 2, 3]);
-// Returns: Array of PostDetailResponse (failed requests filtered out)
-```
-
-## Key Architectural Decisions
+## 🎯 Key Architectural Decisions
 
 ### 1. SSE Over WebSockets
-- Simpler protocol (HTTP-based)
+- Simpler HTTP-based protocol
 - Built-in browser support
-- Unidirectional (sufficient for progress updates)
-- Line-by-line parsing (fixed SSE handling)
+- Unidirectional flow (sufficient for progress updates)
 
 ### 2. Inline Styles Over CSS Frameworks
 - Faster MVP development
-- No Tailwind/Material-UI learning curve
-- Component-scoped styling
+- Component-local styling
 - Easy to replace later
 
 ### 3. Vertical Layout (15%/40%/45%)
-- Query & Progress at top (15%)
-- Expert Response in middle (40%)
-- Posts with Comments at bottom (45%)
-- Optimized for information hierarchy
+- Query & Progress: 15% (top)
+- Expert Response: 40% (middle)
+- Posts with Comments: 45% (bottom)
 
-### 4. Singleton APIClient
-- Single source of truth for base URL
-- Fixed SSE parsing with buffering
-- Parallel post fetching support
-- Convenient default export
-
-### 5. Type Safety First
-- All API types match backend Pydantic models
-- No runtime type checking needed
-- Compiler catches integration errors
-- Self-documenting interfaces
-
-### 6. Post Reference Clicking System
-- **Consistent DOM ID Generation**: PostCard and PostsList use expertId for reliable element lookup
-- **Multi-Expert Support**: Works across all experts with different channel names
+### 4. Post Reference Clicking System
+- **Consistent DOM IDs**: expertId-based pattern across components
+- **Multi-Expert Support**: Works across different expert channels
 - **Backward Compatibility**: Fallback ID pattern for edge cases
-- **Component Integration**: ExpertResponse → ExpertAccordion → PostsList → PostCard data flow
 
-## Performance Considerations
+## 🔧 Frontend-Only Configuration
 
-### SSE Stream Parsing
-- Incremental buffer parsing (no memory bloat)
-- Early release of reader lock
-- Error handling preserves stream state
+### Vite Configuration (vite.config.ts)
+```typescript
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    port: 3000,                    // Fixed port for consistency
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
+    },
+  },
+});
+```
 
-### Progress Events
-- Append-only array (no splice/filter during processing)
-- React key by index (stable ordering)
-- Max-height with scroll (no DOM overflow)
+### Package.json Scripts
+```json
+{
+  "dev": "vite --debug --host 2>&1 | tee frontend.log",
+  "build": "tsc && vite build",
+  "type-check": "tsc --noEmit"
+}
+```
 
-### Result Display
-- Conditional rendering (hide until ready)
-- No virtualization needed (small result sets)
-- Simple grid layout (no complex calculations)
-
-## Production Performance and Security
-
-### Performance Optimization
-- **Asset Optimization**: Minified JS/CSS, compressed images, optimized bundle size
-- **Caching Strategy**: 1-year cache for static assets, cache-busting via filenames
-- **CDN Ready**: Static assets can be served via CDN in enterprise deployments
-- **Compression**: Gzip compression enabled for all text-based responses
-- **Resource Limits**: Memory and CPU constraints prevent resource exhaustion
-
-### Security Features
-- **HTTPS Only**: All production traffic forced to HTTPS via reverse proxy
-- **Security Headers**: HSTS, X-Frame-Options, CSP, and other headers applied
-- **Content Security**: Static files served with proper MIME types and security headers
-- **API Security**: Frontend communicates with backend via secure reverse proxy
-- **No Secrets**: No API keys or secrets stored in frontend build
-
-### Monitoring and Debugging
-- **Health Checks**: Built-in endpoint for monitoring service health
-- **Error Boundaries**: Graceful error handling with fallback UI
-- **Console Logging**: Structured logging for production debugging
-- **Performance Metrics**: Bundle size, loading times, and runtime performance
-- **SSE Reliability**: Robust Server-Sent Events handling with reconnection
-
-## Future Enhancements
-
-When moving beyond MVP:
-
-1. **Styling System**
-   - Replace inline styles with CSS modules or styled-components
-   - Add dark mode support with system preference detection
-   - Implement responsive breakpoints for mobile/tablet/desktop
-
-2. **State Management**
-   - Consider Zustand/Redux if state grows complex
-   - Add persistence for query history and user preferences
-   - Implement optimistic updates for better UX
-
-3. **Testing**
-   - Add Jest + React Testing Library
-   - Mock SSE streams for testing progress updates
-   - Component snapshot tests and integration testing
-   - E2E testing with Playwright or Cypress
-
-4. **Advanced Features**
-   - Source post preview on hover with lightweight summaries
-   - Export results to PDF/JSON with formatting options
-   - Query history with search and bookmark functionality
-   - Advanced filtering and sorting options for posts
-   - Real-time collaboration features for multi-user scenarios
-
-5. **Production Enhancements**
-   - Progressive Web App (PWA) capabilities
-   - Offline support for cached queries and results
-   - Advanced analytics and error tracking
-   - A/B testing framework for UI experiments
-
-## Troubleshooting
+## 🐛 Troubleshooting
 
 ### SSE Connection Issues
 - Check CORS headers from backend
 - Verify Content-Type: text/event-stream
-- Check browser network tab for stream data
+- Monitor network tab for stream data
 
 ### Type Errors
 - Ensure types/api.ts matches backend models
 - Run `npm run type-check` to validate
 - Check for outdated backend API changes
 
-### Rendering Issues
-- Verify React key props on lists
-- Check state updates in React DevTools
-- Ensure async operations use finally block
-
 ### Post Reference Clicking Issues
-- **Element Not Found**: Check that expertId prop is passed from PostsList to PostCard
-- **Inconsistent IDs**: Verify DOM ID pattern matches between PostCard (generation) and PostsList (lookup)
-- **Multi-Expert Problems**: Ensure expertId is correctly passed through component hierarchy
-- **Console Errors**: Look for "element not found" errors when clicking post references
+- **Element Not Found**: Verify expertId prop passed to PostCard
+- **Inconsistent IDs**: Check DOM ID pattern between components
+- **Console Errors**: Look for "element not found" when clicking sources
 
-### Production Deployment Issues
-- **Build failures**: Check Dockerfile paths and package.json dependencies
-- **Health check failures**: Verify nginx health check responds correctly on port 80
-- **Environment variables**: Ensure PRODUCTION_ORIGIN and REACT_APP_API_URL configured properly
-- **SSL certificate issues**: Check `./update-ssl.sh status` and certificate validity
-- **Deployment failures**: Run `./deploy.sh check` to validate all prerequisites
-- **Service connectivity**: Verify nginx reverse proxy can reach frontend-app service
-- **API proxy issues**: Check that `/api/*` requests are properly proxied to backend
-- **Static asset serving**: Verify nginx can serve files from `/usr/share/nginx/html`
+### Debug Logger Issues
+- **Missing Logs**: Check `/api/v1/log-batch` endpoint availability
+- **Memory Issues**: Monitor circular buffer (1000 event limit)
+- **Performance**: Batch processing every 10 seconds
 
-### Production Performance Issues
-- **Slow loading**: Check asset compression and caching headers
-- **Memory issues**: Monitor container resource usage with `docker stats`
-- **SSE timeouts**: Verify nginx proxy settings for long-running connections
-- **Bundle size**: Use build tools to analyze and optimize JavaScript bundle
+---
 
-### Production Debugging
-```bash
-# Check frontend service health
-curl http://localhost/health
-
-# View nginx configuration
-docker-compose exec frontend-app nginx -T
-
-# Test static asset serving
-curl -I https://your-domain.com/
-
-# Check nginx logs
-docker-compose logs nginx-reverse-proxy
-
-# Debug build process
-docker-compose build frontend-app
-```
+**Related Documentation:**
+- **Main Project**: `../CLAUDE.md` - Quick Start and full architecture
+- **Backend API**: `../backend/CLAUDE.md` - Complete API reference and endpoints
+- **Model Configuration**: `../backend/src/config.py` - Environment variables

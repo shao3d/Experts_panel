@@ -1,7 +1,9 @@
 
-## 🚀 Backend Service CLAUDE.md
+# Backend Services - Experts Panel
 
-## Purpose
+**📖 See main documentation:** `../CLAUDE.md` (Quick Start, Architecture Overview, Common Tasks)
+
+## 🚀 Backend Service Purpose
 FastAPI backend service providing multi-expert query processing with Map-Resolve-Reduce pipeline, real-time SSE streaming, and VPS/cloud deployment support.
 
 ## Narrative Summary
