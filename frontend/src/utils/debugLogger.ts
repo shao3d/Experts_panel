@@ -131,7 +131,7 @@ class DebugLogger {
     this.logBuffer = []; // Clear buffer immediately
 
     try {
-      await fetch('/api/v1/log-batch', {
+      await fetch('http://127.0.0.1:8000/api/v1/log-batch', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
