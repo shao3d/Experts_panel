@@ -265,7 +265,7 @@ async def process_expert_pipeline(
     enriched_posts.extend(medium_direct)
 
     # 5. Reduce phase
-    reduce_service = ReduceService(api_key=config.OPENROUTER_API_KEY, model=config.MODEL_REDUCE)
+    reduce_service = ReduceService()
 
     async def reduce_progress(data: dict):
         if progress_callback:
@@ -364,7 +364,7 @@ async def process_expert_pipeline(
                     for cg in comment_groups
                 ]
 
-                synthesis_service = CommentSynthesisService(api_key=config.OPENROUTER_API_KEY, model=config.MODEL_COMMENT_SYNTHESIS)
+                synthesis_service = CommentSynthesisService()
                 comment_synthesis = await synthesis_service.process(
                     query=request.query,
                     main_answer=validated_answer,  # Use validated answer

@@ -27,7 +27,7 @@ class MapService:
     """Service for the Map phase of the Map-Resolve-Reduce pipeline.
 
     Processes posts in parallel chunks, scoring relevance for each post
-    relative to the user's query using Gemini 2.0 Flash.
+    relative to the user's query using configurable models.
     """
 
     DEFAULT_CHUNK_SIZE = 40
@@ -41,29 +41,27 @@ class MapService:
         chunk_size: int = DEFAULT_CHUNK_SIZE,
         max_parallel: int = None
     ):
-        """Initialize MapService with hybrid model support.
+        """Initialize MapService with a primary and fallback model strategy.
 
         Args:
             openrouter_api_key: OpenRouter API key (for fallback)
             google_ai_studio_api_key: Google AI Studio API key (for primary)
-            model: Primary model to use (e.g., 'gemini-2.0-flash-lite')
-            fallback_model: Fallback model on OpenRouter (e.g., 'qwen/qwen-2.5-72b-instruct')
+            model: Primary model to use for the Map phase.
+            fallback_model: Fallback model to use if the primary fails with a rate-limit error.
             chunk_size: Number of posts per chunk
             max_parallel: Maximum parallel API calls (None = all chunks in parallel)
         """
-        # Primary client (Google AI Studio)
+        # Initialize both clients if keys are available
         self.google_client = None
-        self.is_google_primary = False
         if google_ai_studio_api_key:
             try:
                 self.google_client = create_google_ai_studio_client(google_ai_studio_api_key)
-                self.is_google_primary = True
-                logger.info("MapService initialized with Google AI Studio as primary.")
+                logger.info("MapService: Google AI Studio client initialized.")
             except Exception as e:
-                logger.warning(f"Could not initialize Google AI Studio client, will use OpenRouter only: {e}")
+                logger.warning(f"MapService: Could not initialize Google AI Studio client: {e}")
 
-        # Fallback client (OpenRouter)
         self.openrouter_client = create_openrouter_client(api_key=openrouter_api_key)
+        logger.info("MapService: OpenRouter client initialized.")
         self.chunk_size = chunk_size
         self.primary_model = model
         self.fallback_model = fallback_model
@@ -156,6 +154,29 @@ class MapService:
 
         return json.dumps(formatted_posts, ensure_ascii=False, indent=2)
 
+    async def _call_llm(self, model_name: str, prompt: str, system_message: str):
+        """Calls the appropriate LLM client based on the model name."""
+        is_google_model = "gemini" in model_name or model_name.startswith("google/")
+
+        if is_google_model and self.google_client:
+            logger.info(f"Using Google AI Studio client for model: {model_name}")
+            return await self.google_client.chat_completions_create(
+                model=model_name,
+                messages=[{"role": "system", "content": system_message}, {"role": "user", "content": prompt}],
+                temperature=0.3,
+                response_format={"type": "json_object"}
+            )
+        else:
+            logger.info(f"Using OpenRouter client for model: {model_name}")
+            # Ensure the model name is in the format expected by OpenRouter
+            openrouter_model_name = convert_model_name(model_name)
+            return await self.openrouter_client.chat.completions.create(
+                model=openrouter_model_name,
+                messages=[{"role": "system", "content": system_message}, {"role": "user", "content": prompt}],
+                temperature=0.3,
+                response_format={"type": "json_object"}
+            )
+
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=2, min=4, max=60),
@@ -170,7 +191,7 @@ class MapService:
         expert_id: str = "unknown",
         progress_callback: Optional[Callable] = None
     ) -> Dict[str, Any]:
-        """Process a single chunk of posts with hybrid model fallback.
+        """Process a single chunk of posts with a primary/fallback model strategy.
 
         Args:
             chunk: List of posts in this chunk
@@ -215,46 +236,33 @@ class MapService:
 
             # --- Hybrid LLM Logic ---
             response = None
+            try:
+                # Attempt 1: Call PRIMARY model
+                logger.info(f"Chunk {chunk_index}: Attempting PRIMARY model '{self.primary_model}'")
+                response = await self._call_llm(self.primary_model, prompt, enhanced_system)
+                logger.info(f"Chunk {chunk_index}: PRIMARY model '{self.primary_model}' successful.")
 
-            # 1. Try Google AI Studio first if available
-            if self.is_google_primary and self.google_client:
-                try:
-                    logger.info(f"Chunk {chunk_index}: Trying Google AI Studio with {self.primary_model}")
-                    response = await self.google_client.chat_completions_create(
-                        model=self.primary_model,
-                        messages=[
-                            {"role": "system", "content": enhanced_system},
-                            {"role": "user", "content": prompt}
-                        ],
-                        temperature=0.3,
-                        response_format={"type": "json_object"}
-                    )
-                    logger.info(f"Chunk {chunk_index}: Google AI Studio call successful.")
-
-                except GoogleAIStudioError as e:
-                    if e.is_rate_limit:
-                        logger.warning(f"Chunk {chunk_index}: Google AI Studio rate limit. Falling back to OpenRouter.")
-                        response = None  # Ensure we proceed to fallback
-                    else:
-                        logger.error(f"Chunk {chunk_index}: Non-rate-limit Google AI Studio error. Will be retried by tenacity: {e}")
-                        raise  # Re-raise for tenacity to handle
-                except Exception as e:
-                    logger.error(f"Chunk {chunk_index}: Unexpected Google AI Studio error. Will be retried by tenacity: {e}")
-                    raise  # Re-raise for tenacity to handle
-
-            # 2. Fallback to OpenRouter if Google AI Studio was skipped or failed with rate limit
-            if response is None:
-                logger.info(f"Chunk {chunk_index}: Using OpenRouter with {self.fallback_model}")
-                response = await self.openrouter_client.chat.completions.create(
-                    model=convert_model_name(self.fallback_model),
-                    messages=[
-                        {"role": "system", "content": enhanced_system},
-                        {"role": "user", "content": prompt}
-                    ],
-                    temperature=0.3,
-                    response_format={"type": "json_object"}  # Simple JSON mode for Qwen
+            except (GoogleAIStudioError, httpx.HTTPStatusError) as e:
+                # Check if it's a fallback-able error (rate limit, quota, etc.)
+                error_str = str(e).lower()
+                is_rate_limit_error = (
+                    (isinstance(e, GoogleAIStudioError) and e.is_rate_limit) or
+                    '429' in error_str or 'rate limit' in error_str or 'quota' in error_str
                 )
-                logger.info(f"Chunk {chunk_index}: OpenRouter call successful.")
+
+                if is_rate_limit_error:
+                    logger.warning(f"Chunk {chunk_index}: PRIMARY model '{self.primary_model}' failed with rate limit. Falling back to '{self.fallback_model}'. Error: {e}")
+                    try:
+                        # Attempt 2: Call FALLBACK model
+                        response = await self._call_llm(self.fallback_model, prompt, enhanced_system)
+                        logger.info(f"Chunk {chunk_index}: FALLBACK model '{self.fallback_model}' successful.")
+                    except Exception as fallback_e:
+                        logger.error(f"Chunk {chunk_index}: FALLBACK model '{self.fallback_model}' also failed. Error: {fallback_e}")
+                        raise fallback_e # Re-raise the fallback error to be handled by tenacity
+                else:
+                    # Not a rate limit error, re-raise to let tenacity handle retries on the primary model
+                    logger.error(f"Chunk {chunk_index}: PRIMARY model '{self.primary_model}' failed with non-fallback error. Retrying... Error: {e}")
+                    raise e
 
             if response is None:
                 raise ValueError("Both primary and fallback models failed to produce a response.")

@@ -26,6 +26,7 @@ class HybridLLMClient:
         self,
         openrouter_api_key: str = None,
         google_ai_studio_api_key: str = None,
+        fallback_model: str = None,
         enable_hybrid: bool = True
     ):
         """Initialize hybrid LLM client.
@@ -33,10 +34,12 @@ class HybridLLMClient:
         Args:
             openrouter_api_key: OpenRouter API key (fallback)
             google_ai_studio_api_key: Google AI Studio API key (primary)
+            fallback_model: The specific model to use on OpenRouter during a fallback.
             enable_hybrid: Enable hybrid mode (try Google AI Studio first)
         """
         self.enable_hybrid = enable_hybrid
         self.google_available = is_google_ai_studio_available()
+        self.fallback_model = fallback_model
 
         # Initialize clients
         self.openrouter_client = create_openrouter_client(openrouter_api_key)
@@ -138,11 +141,14 @@ class HybridLLMClient:
 
         # Fallback to OpenRouter with OpenAI format
         start_time = time.time()
-        logger.info(f"[{service_name}] Using OpenRouter API with model: {convert_model_name(model)} (OpenAI JSON format)")
+        # Determine which model to use for fallback
+        fallback_model_to_use = self.fallback_model or model # Use configured fallback, or default to original model if not set
+        openrouter_model_name = convert_model_name(fallback_model_to_use)
+        logger.info(f"[{service_name}] Using OpenRouter API with model: {openrouter_model_name} (OpenAI JSON format)")
 
         try:
             response = await self.openrouter_client.chat.completions.create(
-                model=convert_model_name(model),
+                model=openrouter_model_name,
                 messages=messages,
                 temperature=temperature,
                 response_format=response_format,  # OpenAI format
@@ -155,7 +161,7 @@ class HybridLLMClient:
             log_api_call_with_timing(
                 service_name=service_name,
                 provider="openrouter",
-                model=convert_model_name(model),
+                model=openrouter_model_name,
                 start_time=start_time,
                 success=True,
                 response=response,
@@ -169,7 +175,7 @@ class HybridLLMClient:
             log_api_call_with_timing(
                 service_name=service_name,
                 provider="openrouter",
-                model=convert_model_name(model),
+                model=openrouter_model_name,
                 start_time=start_time,
                 success=False,
                 error=e,
@@ -195,6 +201,7 @@ class HybridLLMClient:
 def create_hybrid_client(
     openrouter_api_key: str = None,
     google_ai_studio_api_key: str = None,
+    fallback_model: str = None,
     enable_hybrid: bool = None
 ) -> HybridLLMClient:
     """Create hybrid LLM client.
@@ -202,6 +209,7 @@ def create_hybrid_client(
     Args:
         openrouter_api_key: OpenRouter API key (fallback)
         google_ai_studio_api_key: Google AI Studio API key (primary)
+        fallback_model: The specific model to use on OpenRouter during a fallback.
         enable_hybrid: Enable hybrid mode (defaults to True if both keys available)
 
     Returns:
@@ -216,6 +224,7 @@ def create_hybrid_client(
     return HybridLLMClient(
         openrouter_api_key=openrouter_api_key,
         google_ai_studio_api_key=google_ai_studio_api_key,
+        fallback_model=fallback_model,
         enable_hybrid=enable_hybrid
     )
 

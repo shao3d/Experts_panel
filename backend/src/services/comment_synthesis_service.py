@@ -12,6 +12,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 
 from .openrouter_adapter import create_openrouter_client, convert_model_name
 from .hybrid_llm_adapter import create_hybrid_client, is_hybrid_mode_enabled
+from .. import config
 from ..utils.language_utils import prepare_prompt_with_language_instruction, prepare_system_message_with_language, get_response_language_instruction
 
 logger = logging.getLogger(__name__)
@@ -24,29 +25,23 @@ class CommentSynthesisService:
     complement the main answer from the Reduce phase.
     """
 
-    def __init__(
-        self,
-        api_key: str,
-        model: str
-    ):
+    def __init__(self):
         """Initialize CommentSynthesisService.
-
-        Args:
-            api_key: OpenAI API key
-            model: OpenAI model to use (default gemini-2.0-flash)
         """
         # Use hybrid client if enabled, otherwise fallback to OpenRouter
         if is_hybrid_mode_enabled():
             self.client = create_hybrid_client(
-                openrouter_api_key=api_key,
+                openrouter_api_key=config.OPENROUTER_API_KEY,
+                google_ai_studio_api_key=config.GOOGLE_AI_STUDIO_API_KEY,
+                fallback_model=config.MODEL_SYNTHESIS_FALLBACK,
                 enable_hybrid=True
             )
             logger.info("CommentSynthesisService initialized with hybrid LLM client (Google AI Studio + OpenRouter)")
         else:
-            self.client = create_openrouter_client(api_key=api_key)
+            self.client = create_openrouter_client(api_key=config.OPENROUTER_API_KEY)
             logger.info("CommentSynthesisService initialized with OpenRouter client only")
 
-        self.model = model
+        self.model = config.MODEL_SYNTHESIS_PRIMARY
         self._prompt_template = self._load_prompt_template()
 
     def _load_prompt_template(self) -> Template:

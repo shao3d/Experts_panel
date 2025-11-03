@@ -51,6 +51,11 @@ def convert_model_name(openai_model: str) -> str:
         "qwen-2.5-32b": "qwen/qwen-2.5-32b-instruct",  # Smaller, faster variant
         "qwen-2.5-coder-32b": "qwen/qwen-2.5-coder-32b-instruct",  # Code-specific
 
+        # Alibaba Qwen models with full prefix (already in OpenRouter format)
+        "qwen/qwen-2.5-72b-instruct": "qwen/qwen-2.5-72b-instruct",  # Already correct
+        "qwen/qwen-2.5-32b-instruct": "qwen/qwen-2.5-32b-instruct",  # Already correct
+        "qwen/qwen-2.5-coder-32b-instruct": "qwen/qwen-2.5-coder-32b-instruct",  # Already correct
+
         # Alibaba Qwen3 models (2025) - newer architecture
         "qwen3-32b": "qwen/qwen3-32b",  # Latest 32B model, matches Qwen2.5-72B performance
     }
