@@ -16,6 +16,7 @@ from json_repair import repair_json
 
 from ..models.post import Post
 from .openrouter_adapter import create_openrouter_client, convert_model_name
+from .google_ai_studio_client import create_google_ai_studio_client, GoogleAIStudioError
 from ..utils.language_utils import prepare_prompt_with_language_instruction, prepare_system_message_with_language
 from ..utils.error_handler import error_handler
 
@@ -33,24 +34,41 @@ class MapService:
 
     def __init__(
         self,
-        api_key: str,
+        openrouter_api_key: str,
+        google_ai_studio_api_key: str,
         model: str,
+        fallback_model: str,
         chunk_size: int = DEFAULT_CHUNK_SIZE,
         max_parallel: int = None
     ):
-        """Initialize MapService.
+        """Initialize MapService with hybrid model support.
 
         Args:
-            api_key: OpenAI API key
-            chunk_size: Number of posts per chunk (default 30)
-            model: OpenAI model to use (default gpt-4o-mini)
+            openrouter_api_key: OpenRouter API key (for fallback)
+            google_ai_studio_api_key: Google AI Studio API key (for primary)
+            model: Primary model to use (e.g., 'gemini-2.0-flash-lite')
+            fallback_model: Fallback model on OpenRouter (e.g., 'qwen/qwen-2.5-72b-instruct')
+            chunk_size: Number of posts per chunk
             max_parallel: Maximum parallel API calls (None = all chunks in parallel)
         """
-        self.client = create_openrouter_client(api_key=api_key)
+        # Primary client (Google AI Studio)
+        self.google_client = None
+        self.is_google_primary = False
+        if google_ai_studio_api_key:
+            try:
+                self.google_client = create_google_ai_studio_client(google_ai_studio_api_key)
+                self.is_google_primary = True
+                logger.info("MapService initialized with Google AI Studio as primary.")
+            except Exception as e:
+                logger.warning(f"Could not initialize Google AI Studio client, will use OpenRouter only: {e}")
+
+        # Fallback client (OpenRouter)
+        self.openrouter_client = create_openrouter_client(api_key=openrouter_api_key)
         self.chunk_size = chunk_size
-        self.model = convert_model_name(model)
+        self.primary_model = model
+        self.fallback_model = fallback_model
         self.max_parallel = max_parallel
-        logger.info(f"MapService initialized with model: {self.model}")
+        logger.info(f"MapService models - Primary: {self.primary_model}, Fallback: {self.fallback_model}")
         self._prompt_template = self._load_prompt_template()
 
     def _load_prompt_template(self) -> Template:
@@ -149,14 +167,16 @@ class MapService:
         chunk: List[Post],
         query: str,
         chunk_index: int,
+        expert_id: str = "unknown",
         progress_callback: Optional[Callable] = None
     ) -> Dict[str, Any]:
-        """Process a single chunk of posts.
+        """Process a single chunk of posts with hybrid model fallback.
 
         Args:
             chunk: List of posts in this chunk
             query: User's query
             chunk_index: Index of this chunk (for progress tracking)
+            expert_id: Expert identifier for logging
             progress_callback: Optional callback for progress updates
 
         Returns:
@@ -193,16 +213,51 @@ class MapService:
                 query
             )
 
-            # Call OpenAI API - use simple JSON mode for Qwen compatibility
-            response = await self.client.chat.completions.create(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": enhanced_system},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.3,
-                response_format={"type": "json_object"}  # Simple JSON mode for Qwen
-            )
+            # --- Hybrid LLM Logic ---
+            response = None
+
+            # 1. Try Google AI Studio first if available
+            if self.is_google_primary and self.google_client:
+                try:
+                    logger.info(f"Chunk {chunk_index}: Trying Google AI Studio with {self.primary_model}")
+                    response = await self.google_client.chat_completions_create(
+                        model=self.primary_model,
+                        messages=[
+                            {"role": "system", "content": enhanced_system},
+                            {"role": "user", "content": prompt}
+                        ],
+                        temperature=0.3,
+                        response_format={"type": "json_object"}
+                    )
+                    logger.info(f"Chunk {chunk_index}: Google AI Studio call successful.")
+
+                except GoogleAIStudioError as e:
+                    if e.is_rate_limit:
+                        logger.warning(f"Chunk {chunk_index}: Google AI Studio rate limit. Falling back to OpenRouter.")
+                        response = None  # Ensure we proceed to fallback
+                    else:
+                        logger.error(f"Chunk {chunk_index}: Non-rate-limit Google AI Studio error. Will be retried by tenacity: {e}")
+                        raise  # Re-raise for tenacity to handle
+                except Exception as e:
+                    logger.error(f"Chunk {chunk_index}: Unexpected Google AI Studio error. Will be retried by tenacity: {e}")
+                    raise  # Re-raise for tenacity to handle
+
+            # 2. Fallback to OpenRouter if Google AI Studio was skipped or failed with rate limit
+            if response is None:
+                logger.info(f"Chunk {chunk_index}: Using OpenRouter with {self.fallback_model}")
+                response = await self.openrouter_client.chat.completions.create(
+                    model=convert_model_name(self.fallback_model),
+                    messages=[
+                        {"role": "system", "content": enhanced_system},
+                        {"role": "user", "content": prompt}
+                    ],
+                    temperature=0.3,
+                    response_format={"type": "json_object"}  # Simple JSON mode for Qwen
+                )
+                logger.info(f"Chunk {chunk_index}: OpenRouter call successful.")
+
+            if response is None:
+                raise ValueError("Both primary and fallback models failed to produce a response.")
 
             # Parse response (strict mode guarantees valid JSON)
             raw_content = response.choices[0].message.content
@@ -320,7 +375,7 @@ class MapService:
 
         async def process_with_semaphore(chunk, index):
             async with semaphore:
-                return await self._process_chunk(chunk, query, index, progress_callback)
+                return await self._process_chunk(chunk, query, index, expert_id, progress_callback)
 
         # Create tasks for all chunks
         tasks = [
@@ -362,7 +417,7 @@ class MapService:
 
             # Retry failed chunks
             retry_tasks = [
-                self._process_chunk(chunk, query, index, progress_callback)
+                self._process_chunk(chunk, query, index, expert_id, progress_callback)
                 for chunk, index in failed_chunks
             ]
 

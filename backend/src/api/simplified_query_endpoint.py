@@ -122,7 +122,13 @@ async def process_expert_pipeline(
         )
 
     # 2. Map phase
-    map_service = MapService(api_key=config.OPENROUTER_API_KEY, model=config.MODEL_MAP, max_parallel=5)
+    map_service = MapService(
+        openrouter_api_key=config.OPENROUTER_API_KEY,
+        google_ai_studio_api_key=config.GOOGLE_AI_STUDIO_API_KEY,
+        model=config.MODEL_MAP_PRIMARY,
+        fallback_model=config.MODEL_MAP_FALLBACK,
+        max_parallel=5
+    )
 
     async def map_progress(data: dict):
         if progress_callback:

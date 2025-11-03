@@ -11,6 +11,9 @@ starlette==0.38.0
 # OpenAI Integration
 openai==1.51.0
 
+# Google AI Studio Integration
+google-generativeai==0.8.3
+
 # Async Support
 httpx==0.27.2
 aiofiles==24.1.0

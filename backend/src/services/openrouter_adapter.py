@@ -41,6 +41,7 @@ def convert_model_name(openai_model: str) -> str:
 
         # Google Gemini models
         "gemini-2.0-flash": "google/gemini-2.0-flash-001",  # Stable paid version ($0.10/$0.40 per 1M)
+        "gemini-2.0-flash-lite": "google/gemini-1.5-flash", # Map "lite" to the fast 1.5 flash model
         "gemini-2.0-flash-free": "google/gemini-2.0-flash-exp:free",  # Free experimental version
         "gemini-2.5-flash": "google/gemini-2.5-flash",
         "gemini-1.5-flash": "google/gemini-1.5-flash",
