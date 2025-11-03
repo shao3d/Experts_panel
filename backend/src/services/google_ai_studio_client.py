@@ -255,9 +255,9 @@ class GoogleAIClient:
         try:
             # Map model names to Google AI Studio format
             if model == "gemini-2.0-flash":
-                model = "gemini-2.0-flash-exp"
+                model = "gemini-2.0-flash"  # Use stable version
             elif model == "gemini-2.0-flash-lite":
-                model = "gemini-2.0-flash-lite-exp"  # MVP: Assumed experimental model name
+                model = "gemini-2.0-flash-lite"  # Use stable version
             elif model.startswith("google/"):
                 # Remove google/ prefix if present
                 model = model.replace("google/", "")

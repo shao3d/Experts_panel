@@ -194,7 +194,7 @@ curl -s http://localhost:3000 > /dev/null && echo "Frontend OK"
 
 # View logs
 tail -f backend/backend.log      # Backend API and pipeline logs
-tail -f frontend.log             # Frontend debug logs
+tail -f frontend/frontend.log    # Frontend debug logs
 ```
 
 ### Common Problems
@@ -211,7 +211,7 @@ grep "expert_id" backend/backend.log | tail -10
 grep "phase.*complete" backend/backend.log | tail -5
 
 # Frontend event monitoring
-grep "api.*query" frontend.log | tail -5
+grep "api.*query" frontend/frontend.log | tail -5
 ```
 
 ## 📚 Additional Documentation

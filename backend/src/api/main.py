@@ -24,12 +24,13 @@ from .comment_endpoints import router as comment_router
 from .simplified_query_endpoint import router as query_router
 from .log_endpoints import router as log_router
 from ..models.base import engine, Base
+from .. import config
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
+    level=config.LOG_LEVEL.upper(),
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    filename='backend.log',
+    filename=config.BACKEND_LOG_FILE,
     filemode='a',
     force=True
 )
@@ -37,13 +38,13 @@ logger = logging.getLogger(__name__)
 
 # Configure frontend logger
 frontend_logger = logging.getLogger("frontend")
-handler = logging.FileHandler('../frontend.log', mode='a')
+handler = logging.FileHandler(config.FRONTEND_LOG_FILE, mode='a')
 formatter = logging.Formatter('%(asctime)s - %(message)s')
 handler.setFormatter(formatter)
 # Avoid adding handlers multiple times on reload
 if not frontend_logger.handlers:
     frontend_logger.addHandler(handler)
-frontend_logger.setLevel(logging.INFO)
+frontend_logger.setLevel(config.LOG_LEVEL.upper())
 frontend_logger.propagate = False # Prevent duplicate logs in backend.log
 
 
