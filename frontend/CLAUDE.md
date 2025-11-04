@@ -2,14 +2,17 @@
 
 **📖 See main documentation:** `../CLAUDE.md` (Quick Start, Architecture Overview)
 
-React 18 + TypeScript frontend with real-time query progress tracking and expert feedback display.
+React 18 + TypeScript frontend with real-time multi-expert query progress tracking and comprehensive error handling.
 
 ## 🛠️ Technology Stack
 
 - **React 18** - Function components with hooks
 - **TypeScript** - Strict mode, full type safety
-- **Vite** - Build tool and dev server (port 3000)
-- **SSE (Server-Sent Events)** - Real-time progress streaming
+- **Vite** - Build tool and dev server (port 3000) with path aliases
+- **SSE (Server-Sent Events)** - Real-time multi-expert progress streaming
+- **Advanced Debug Logging** - Console/API/SSE event batching system
+- **React Markdown** - Markdown rendering with syntax highlighting
+- **React Query** - Server state management (optional)
 - **Inline styles** - No CSS frameworks for MVP simplicity
 
 ## 📁 Project Structure
@@ -55,11 +58,11 @@ const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
 ```
 
 **Responsibilities:**
-- Query submission and API communication
-- Progress events collection via SSE
-- Result/error state management
-- Posts loading with expert context
-- Component orchestration
+- Multi-expert query submission and API communication
+- Progress events collection via SSE with expert tracking
+- Multi-expert result/error state management
+- Posts loading with expert context and translation support
+- Component orchestration and error boundary handling
 
 ### QueryForm.tsx - Input Validation
 **Features:**
@@ -76,14 +79,15 @@ interface QueryFormProps {
 }
 ```
 
-### ProgressSection.tsx - Real-time Progress Tracking
+### ProgressSection.tsx - Real-time Multi-Expert Progress Tracking
 **Features:**
-- Active expert count display during processing
-- Contextual phase descriptions ("Searching relevant posts...", "Analyzing connections...")
+- Active expert count display during parallel processing
+- Contextual phase descriptions ("Searching relevant posts...", "Medium scoring...", "Analyzing connections...")
 - Warning indicators (⚠️) for processes exceeding 300 seconds
 - Frontend-only `final_results` phase for completion detection
-- Enhanced resolve phase handling with medium_scoring events
-- Real-time elapsed time counter
+- Enhanced phase handling: map, medium_scoring, resolve, reduce, language_validation
+- Real-time elapsed time counter per expert
+- Error event display with user-friendly messages
 
 **Props:**
 ```typescript
@@ -98,12 +102,15 @@ interface ProgressSectionProps {
 }
 ```
 
-### ExpertResponse.tsx - Answer Display
+### ExpertResponse.tsx - Multi-Expert Answer Display
 **Features:**
-- Formatted answer text with markdown rendering
-- Clickable source references with post navigation
-- Expert badge display and confidence indicators
+- Formatted answer text with markdown and syntax highlighting
+- Clickable source references with expert-aware post navigation
+- Expert badge display with confidence indicators and processing time
 - Language validation status display
+- Multi-expert response rendering with accordion organization
+- Comment groups synthesis display
+- Error state handling for individual expert failures
 
 **Props:**
 ```typescript
@@ -113,16 +120,21 @@ interface ExpertResponseProps {
   confidence: ConfidenceLevel;
   language: string;
   onPostClick: (postId: number) => void;
+  expertId?: string;
+  expertName?: string;
+  processingTime?: number;
 }
 ```
 
-### PostsList.tsx & PostCard.tsx - Content Navigation
+### PostsList.tsx & PostCard.tsx - Expert-Aware Content Navigation
 **Features:**
 - Scrollable posts container with selection highlighting
 - Auto-scroll to selected post with smooth animation
 - Expert comments section with expand/collapse
-- Consistent DOM ID generation for post reference clicking
-- Multi-expert support with expertId context
+- Consistent DOM ID generation for expert-aware post reference clicking
+- Multi-expert support with expertId context and channel usernames
+- Translation support for posts with language detection
+- Expert badge display and metadata
 
 **DOM ID Pattern:**
 ```typescript
@@ -139,26 +151,29 @@ if (!element) {
 ## 🔄 Services Layer
 
 ### APIClient (services/api.ts)
-Main API client with SSE streaming support:
+Main API client with multi-expert SSE streaming support:
 
 ```typescript
 class APIClient {
   async submitQuery(
     request: QueryRequest,
     onProgress?: ProgressCallback
-  ): Promise<QueryResponse>
+  ): Promise<MultiExpertQueryResponse>
 
   async checkHealth(): Promise<HealthResponse>
-  async getPostDetail(postId: number): Promise<PostDetailResponse>
+  async getPostDetail(postId: number, expertId?: string, query?: string, translate?: boolean): Promise<PostDetailResponse>
   async getPostsByIds(postIds: number[]): Promise<PostDetailResponse[]>
+  async logBatch(events: LogEvent[]): Promise<void>
 }
 ```
 
 **SSE Streaming Implementation:**
 - Line-by-line parsing with incremental buffering
-- Progress event extraction and callback handling
+- Multi-expert progress event extraction and callback handling
 - Error recovery and stream state management
 - Real-time expert tracking with expert_id context
+- User-friendly error message processing
+- Event sanitization for safe JSON transmission
 
 ### Debug Logger (utils/debugLogger.ts)
 Advanced logging system for development debugging:
@@ -191,31 +206,38 @@ interface QueryRequest {
   query: string;                    // 3-1000 chars
   max_posts?: number;
   include_comments?: boolean;
+  include_comment_groups?: boolean; // Comment analysis
   stream_progress?: boolean;        // Default: true
   expert_filter?: string[];         // Optional expert filtering
 }
 
-interface QueryResponse {
+interface MultiExpertQueryResponse {
   query: string;
-  answer: string;
-  main_sources: number[];           // telegram_message_ids
-  confidence: ConfidenceLevel;      // HIGH, MEDIUM, LOW
-  language: string;
-  has_expert_comments: boolean;
-  posts_analyzed: number;
-  expert_comments_included: number;
-  relevance_distribution: Record<string, number>;
-  processing_time_ms: number;
+  expert_responses: ExpertResponse[];
+  total_processing_time_ms: number;
   request_id: string;
 }
 
+interface ExpertResponse {
+  expert_id: string;
+  expert_name: string;
+  channel_username: string;
+  answer: string;
+  main_sources: number[];           // telegram_message_ids
+  confidence: ConfidenceLevel;      // HIGH, MEDIUM, LOW
+  posts_analyzed: number;
+  processing_time_ms: number;
+  relevant_comment_groups: CommentGroupResponse[];
+  comment_groups_synthesis?: string;
+}
+
 interface ProgressEvent {
-  event_type: 'phase_start' | 'progress' | 'phase_complete' | 'complete' | 'error';
-  phase: string;                    // map, resolve, reduce, comment_groups, etc.
+  event_type: 'phase_start' | 'progress' | 'phase_complete' | 'complete' | 'error' | 'expert_complete' | 'expert_error';
+  phase: string;                    // map, medium_scoring, resolve, reduce, language_validation, etc.
   status: string;
   message: string;
   timestamp?: string;
-  data?: Record<string, any>;       // Contains expert_id, response, etc.
+  data?: Record<string, any>;       // Contains expert_id, error_info, user_friendly, etc.
 }
 ```
 
@@ -239,7 +261,7 @@ const styles = {
 };
 ```
 
-### 2. Enhanced Progress Event Handling
+### 2. Enhanced Multi-Expert Progress Event Handling
 ```typescript
 // Special phase status logic
 const getPhaseStatus = (phaseName: string): 'pending' | 'active' | 'completed' => {
@@ -256,11 +278,19 @@ const getPhaseStatus = (phaseName: string): 'pending' | 'active' | 'completed' =
 const getActiveExpertsCount = (): number => {
   const activeExperts = new Set();
   progressEvents.forEach(event => {
-    if (event.data?.expert_id && event.event_type !== 'complete') {
+    if (event.data?.expert_id && event.event_type !== 'complete' && event.event_type !== 'expert_complete') {
       activeExperts.add(event.data.expert_id);
     }
   });
   return activeExperts.size;
+};
+
+// Error event processing with user-friendly messages
+const processErrorEvent = (event: ProgressEvent): string => {
+  if (event.data?.user_friendly && event.data?.error_info) {
+    return event.data.error_info.message || event.message;
+  }
+  return event.message;
 };
 ```
 
@@ -287,29 +317,33 @@ const handleReset = (): void => {
 };
 ```
 
-## 📡 SSE Communication Flow
+## 📡 Multi-Expert SSE Communication Flow
 
 ```
 1. User submits query → App.handleQuerySubmit()
    └─> apiClient.submitQuery(request, onProgressCallback)
 
-2. Backend streams SSE events
-   └─> Phase events: map → resolve → reduce → final
-   └─> Format: "data: {json}\n\n" per line
+2. Backend processes all experts in parallel, streams SSE events
+   └─> Phase events per expert: map → medium_scoring → resolve → reduce → language_validation → final
+   └─> Expert completion events: expert_complete, expert_error
+   └─> Format: "data: {json}\n\n" per line (sanitized for safety)
 
 3. Frontend parses stream line-by-line
    └─> parseSSEStream() processes incremental chunks
    └─> Buffers incomplete JSON lines
-   └─> Calls onProgressCallback for each event
+   └─> sanitize_for_json() prevents XSS/JSON parse errors
+   └─> Calls onProgressCallback for each event with expert tracking
 
-4. Progress UI updates in real-time
-   └─> ProgressSection re-renders with expert count
-   └─> Contextual messages and warnings
-   └─> Active expert tracking
+4. Multi-expert Progress UI updates in real-time
+   └─> ProgressSection re-renders with active expert count
+   └─> Contextual phase messages and warnings
+   └─> Individual expert status tracking
+   └─> User-friendly error message display
 
-5. Final event received
-   └─> event_type: 'complete' with response data
-   └─> App sets result state → ExpertResponse renders
+5. Multi-expert final event received
+   └─> event_type: 'complete' with MultiExpertQueryResponse data
+   └─> App sets result state → ExpertResponse renders per expert
+   └─> Expert accordion organization for multiple responses
 ```
 
 ## 🛠️ Development Commands
@@ -359,12 +393,23 @@ npm run preview
 ```typescript
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+      '@components': path.resolve(__dirname, './src/components'),
+      '@services': path.resolve(__dirname, './src/services'),
+      '@types': path.resolve(__dirname, './src/types'),
+    },
+  },
   server: {
     port: 3000,                    // Fixed port for consistency
+    strictPort: true,
+    host: '0.0.0.0',
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'http://127.0.0.1:8000',
         changeOrigin: true,
+        secure: false,
       },
     },
   },
@@ -375,7 +420,10 @@ export default defineConfig({
 ```json
 {
   "dev": "vite --debug --host 2>&1 | tee frontend.log",
+  "dev-logs": "DEBUG=vite:* node --inspect vite --debug --host 2>&1 | tee ../frontend-debug.log",
   "build": "tsc && vite build",
+  "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+  "preview": "vite preview",
   "type-check": "tsc --noEmit"
 }
 ```
@@ -402,9 +450,21 @@ export default defineConfig({
 - **Memory Issues**: Monitor circular buffer (1000 event limit)
 - **Performance**: Batch processing every 10 seconds
 
+### Multi-Expert Issues
+- **Expert Not Processing**: Check expert_filter parameter and database expert IDs
+- **Uneven Processing**: Monitor individual expert completion times
+- **Expert Errors**: Look for expert_error events with user-friendly messages
+- **Response Organization**: Check expert accordion rendering for multiple responses
+
+### Translation Issues
+- **Post Translation**: Verify query language detection and translation API calls
+- **Language Detection**: Check TranslationService language logic
+- **Mixed Languages**: Ensure language validation phase is working
+
 ---
 
 **Related Documentation:**
 - **Main Project**: `../CLAUDE.md` - Quick Start and full architecture
 - **Backend API**: `../backend/CLAUDE.md` - Complete API reference and endpoints
-- **Model Configuration**: `../backend/src/config.py` - Environment variables
+- **Hybrid Model Configuration**: `../backend/src/config.py` - Environment variables and models
+- **Environment Setup**: `../.env.example` - Complete configuration reference

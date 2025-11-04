@@ -26,14 +26,24 @@ from .log_endpoints import router as log_router
 from ..models.base import engine, Base
 from .. import config
 
-# Configure logging
-logging.basicConfig(
-    level=config.LOG_LEVEL.upper(),
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    filename=config.BACKEND_LOG_FILE,
-    filemode='a',
-    force=True
-)
+# Configure logging - explicit FileHandler setup to work with uvicorn
+root_logger = logging.getLogger()
+root_logger.setLevel(config.LOG_LEVEL.upper())
+
+# Create file handler for backend logs
+file_handler = logging.FileHandler(config.BACKEND_LOG_FILE, mode='a')
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+file_handler.setFormatter(formatter)
+file_handler.setLevel(config.LOG_LEVEL.upper())
+
+# Add file handler if not already present (prevents duplication on --reload)
+if not any(isinstance(h, logging.FileHandler) and
+           hasattr(h, 'baseFilename') and
+           h.baseFilename and
+           h.baseFilename.endswith(config.BACKEND_LOG_FILE)
+           for h in root_logger.handlers):
+    root_logger.addHandler(file_handler)
+
 logger = logging.getLogger(__name__)
 
 # Configure frontend logger
@@ -84,10 +94,12 @@ origins = [
     "http://localhost:3000",  # React development server
     "http://localhost:3001",  # React development server (alt port)
     "http://localhost:3002",  # Vite development server (alt port)
+    "http://localhost:3003",  # React development server (additional port)
     "http://localhost:5173",  # Vite development server
     "http://127.0.0.1:3000",
     "http://127.0.0.1:3001",
     "http://127.0.0.1:3002",
+    "http://127.0.0.1:3003",
     "http://127.0.0.1:5173",
 ]
 

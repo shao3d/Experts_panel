@@ -221,7 +221,7 @@ export interface QueryResponse {
  */
 export interface ProgressEvent {
   /** Type of progress event */
-  event_type: 'phase_start' | 'progress' | 'phase_complete' | 'complete' | 'error';
+  event_type: 'phase_start' | 'progress' | 'phase_complete' | 'complete' | 'error' | 'expert_error';
 
   /** Current phase (map/resolve/reduce/final) */
   phase: string;

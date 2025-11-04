@@ -47,18 +47,19 @@ curl -X POST http://localhost:8000/api/v1/query \
 ## 🏗️ Architecture Overview
 
 ### 7-Phase Processing Pipeline
-1. **Map Phase** - Content relevance detection with cost-optimized Qwen 2.5-32B
-2. **Medium Scoring** - Advanced post ranking with Qwen 2.5-72B
-3. **Resolve Phase** - Database link expansion
-4. **Reduce Phase** - Answer synthesis with Gemini 2.0 Flash
-5. **Language Validation** - Response language consistency with Qwen 2.5-72B
+1. **Map Phase** - Content relevance detection with hybrid model system (Primary → Fallback)
+2. **Medium Scoring** - Advanced post ranking with configurable analysis model
+3. **Resolve Phase** - Database link expansion (depth 1 only)
+4. **Reduce Phase** - Answer synthesis with hybrid model system
+5. **Language Validation** - Response language consistency validation
 6. **Comment Groups** - Discussion drift analysis
 7. **Comment Synthesis** - Complementary insights extraction
 
-### Multi-Model Strategy
-- **Map**: Qwen 2.5-32B (60-70% cost optimization)
-- **Analysis**: Qwen 2.5-72B (maximum quality for scoring, validation, comments)
-- **Synthesis**: Gemini 2.0 Flash (fast response generation)
+### Multi-Model Strategy (Hybrid System)
+- **Map Phase**: Primary → Fallback mechanism (Gemini 2.0 Flash Lite → Qwen 2.5-72B)
+- **Analysis**: Qwen 2.5-72B (medium scoring, translation, validation)
+- **Synthesis**: Primary → Fallback mechanism (Gemini 2.0 Flash → Qwen 2.5-72B)
+- **Comment Groups**: Qwen 2.5-72B (drift analysis)
 
 ### Multi-Expert Architecture
 - Complete data isolation between experts
@@ -71,17 +72,19 @@ curl -X POST http://localhost:8000/api/v1/query \
 **📖 See: `backend/CLAUDE.md`**
 
 Complete FastAPI backend with:
-- Multi-expert query processing pipeline
-- 15 specialized services for different phases
-- Real-time SSE streaming for progress tracking
-- Multi-model LLM integration (OpenRouter)
-- SQLite database with 8 migration scripts
+- Multi-expert query processing pipeline with parallel processing
+- 9 specialized services for different phases
+- Real-time SSE streaming for progress tracking with error handling
+- Hybrid multi-model LLM integration (OpenRouter + Google AI Studio)
+- SQLite database with 8 migration scripts (56MB active database)
 - Production-ready Docker deployment
 
 **Key Files:**
-- `src/api/simplified_query_endpoint.py` - Main query processing
-- `src/services/map_service.py` - Content relevance detection
-- `src/config.py` - Model configuration management
+- `src/api/simplified_query_endpoint.py` - Main multi-expert query processing
+- `src/services/map_service.py` - Content relevance detection with hybrid models
+- `src/services/medium_scoring_service.py` - Advanced post reranking
+- `src/services/language_validation_service.py` - Language consistency validation
+- `src/config.py` - Hybrid model configuration management
 
 ### Frontend React Application
 **📖 See: `frontend/CLAUDE.md`**
@@ -99,12 +102,13 @@ React 18 + TypeScript frontend with:
 - `ExpertResponse.tsx` - Answer rendering with sources
 
 ### Database & Data Management
-**Location:** `backend/data/experts.db` (9.7MB active database)
+**Location:** `backend/data/experts.db` (56MB active database)
 
-- **Posts**: Expert channel content with metadata
-- **Comments**: Hierarchical comment structure
-- **Links**: Post relationships and connections
+- **Posts**: Expert channel content with metadata and expert isolation
+- **Comments**: Hierarchical comment structure with expert associations
+- **Links**: Post relationships and connections (depth 1 only)
 - **Expert Isolation**: Complete data separation by expert_id
+- **Migration Scripts**: 8 database evolution scripts in `backend/migrations/`
 
 ## 🔧 Common Development Tasks
 
@@ -134,15 +138,23 @@ sqlite3 data/experts.db < migrations/008_fix_comment_unique_constraint.sql
 
 ### Model Configuration
 ```bash
-# Cost optimization (32B models)
-MODEL_MAP=qwen/qwen2.5-32b-instruct
-MODEL_ANALYSIS=qwen/qwen2.5-32b-instruct
+# Hybrid Model System (Primary → Fallback)
+# Map Phase: Try Google AI Studio first, fallback to OpenRouter
+MODEL_MAP_PRIMARY=gemini-2.0-flash-lite
+MODEL_MAP_FALLBACK=qwen/qwen-2.5-72b-instruct
 
-# Maximum quality (72B models)
-MODEL_MAP=qwen/qwen-2.5-72b-instruct
+# Synthesis Phase: Try Google AI Studio first, fallback to OpenRouter
+MODEL_SYNTHESIS_PRIMARY=gemini-2.0-flash
+MODEL_SYNTHESIS_FALLBACK=qwen/qwen-2.5-72b-instruct
+
+# Analysis Tasks (single model)
 MODEL_ANALYSIS=qwen/qwen-2.5-72b-instruct
+MODEL_COMMENT_GROUPS=qwen/qwen-2.5-72b-instruct
 
-# See backend/CLAUDE.md for complete configuration options
+# Google AI Studio API Keys (comma-separated for rotation)
+GOOGLE_AI_STUDIO_API_KEY=your-google-ai-studio-key-here
+
+# See backend/CLAUDE.md and .env.example for complete configuration
 ```
 
 ### Testing Pipeline
@@ -161,6 +173,9 @@ curl -X POST http://localhost:8000/api/v1/query \
 curl -X POST http://localhost:8000/api/v1/log-batch \
   -H "Content-Type: application/json" \
   -d '[{"timestamp": "2025-01-02T10:00:00Z", "type": "console", "source": "test", "message": "Test log entry"}]'
+
+# Test individual post retrieval with translation
+curl "http://localhost:8000/api/v1/posts/12345?expert_id=refat&query=What is AI?&translate=true"
 ```
 
 ## 🚀 Production Deployment
@@ -232,5 +247,6 @@ grep "api.*query" frontend/frontend.log | tail -5
 ---
 
 **Project Status:** Production-ready with active development
-**Last Updated:** 2025-11-02
-**Architecture:** Multi-expert, multi-model LLM pipeline with real-time progress tracking
+**Last Updated:** 2025-11-04
+**Architecture:** Multi-expert, hybrid multi-model LLM pipeline with real-time progress tracking
+**Key Features:** Parallel expert processing, hybrid model fallback system, language validation, comment synthesis, user-friendly error handling

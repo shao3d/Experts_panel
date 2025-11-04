@@ -46,8 +46,8 @@ DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///data/experts.db")
 
 # --- Конфигурация логирования ---
 LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
-BACKEND_LOG_FILE: str = os.getenv("BACKEND_LOG_FILE", "backend.log")
-FRONTEND_LOG_FILE: str = os.getenv("FRONTEND_LOG_FILE", "../frontend/frontend.log")
+BACKEND_LOG_FILE: str = os.getenv("BACKEND_LOG_FILE", "/app/data/backend.log")
+FRONTEND_LOG_FILE: str = os.getenv("FRONTEND_LOG_FILE", "/app/data/frontend.log")
 
 # Логирование для проверки при запуске
 print("--- Загруженная конфигурация моделей ---")

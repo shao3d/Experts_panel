@@ -7,26 +7,31 @@
 FastAPI backend service providing multi-expert query processing with Map-Resolve-Reduce pipeline, real-time SSE streaming, and VPS/cloud deployment support.
 
 ## Narrative Summary
-The backend implements a sophisticated query processing system that retrieves relevant content from expert Telegram channels and synthesizes comprehensive answers. It features an eight-phase pipeline with multi-model LLM strategy, language validation, multi-expert support, Telegram synchronization, and comprehensive drift analysis for comment discussions. The service is containerized with Docker and ready for VPS/cloud deployment with health checks and automatic restarts.
+The backend implements a sophisticated query processing system that retrieves relevant content from expert Telegram channels and synthesizes comprehensive answers. It features a 7-phase pipeline with hybrid multi-model LLM strategy (Primary → Fallback), language validation, parallel multi-expert processing, Telegram synchronization, and comprehensive drift analysis for comment discussions. The service includes robust error handling with user-friendly messages and is containerized with Docker for VPS/cloud deployment.
 
 ## Key Files
-- `src/api/main.py` - FastAPI application with CORS, SSE, and environment configuration
-- `src/api/simplified_query_endpoint.py` - Main query endpoint with parallel multi-expert processing
-- `src/services/map_service.py` - Phase 1: Content relevance detection with retry mechanism
-- `src/services/simple_resolve_service.py` - Phase 2: Database link expansion
-- `src/services/reduce_service.py` - Phase 3: Answer synthesis with personal style support
-- `src/services/language_validation_service.py` - Phase 5: Language consistency validation and translation
-- `src/services/comment_group_map_service.py` - Pipeline B: Comment drift analysis
-- `src/services/comment_synthesis_service.py` - Pipeline C: Comment insights extraction
-- `src/data/channel_syncer.py` - Incremental Telegram synchronization
+- `src/api/main.py` - FastAPI application with CORS, SSE, error handling, and environment configuration
+- `src/api/simplified_query_endpoint.py` - Main multi-expert query endpoint with parallel processing and SSE
+- `src/services/map_service.py` - Phase 1: Content relevance detection with hybrid model system
+- `src/services/medium_scoring_service.py` - Phase 2: Advanced post reranking with scoring
+- `src/services/simple_resolve_service.py` - Phase 3: Database link expansion (depth 1)
+- `src/services/reduce_service.py` - Phase 4: Answer synthesis with hybrid model system
+- `src/services/language_validation_service.py` - Phase 5: Language consistency validation
+- `src/services/comment_group_map_service.py` - Phase 6: Comment drift analysis
+- `src/services/comment_synthesis_service.py` - Phase 7: Comment insights extraction
+- `src/services/translation_service.py` - Post translation support
+- `src/utils/error_handler.py` - User-friendly error processing system
+- `src/config.py` - Hybrid model configuration management
 - `Dockerfile` - Production container configuration for deployment
 
 ## API Endpoints
 - `GET /health` - Health check with service status validation
-- `POST /api/v1/query` - Main query endpoint with SSE streaming and multi-expert support
-- `GET /api/v1/posts/{post_id}` - Retrieve individual post details with comments
+- `POST /api/v1/query` - Main multi-expert query endpoint with SSE streaming and parallel processing
+- `GET /api/v1/posts/{post_id}` - Retrieve individual post details with comments and translation support
 - `POST /api/v1/posts/by-ids` - Batch retrieve multiple posts by IDs
 - `POST /api/v1/import` - Import Telegram JSON data with expert assignment
+- `POST /api/v1/log-batch` - Debug logging endpoint for frontend development
+- `GET /api/info` - API information and feature listing
 
 ## Production Deployment Configuration
 ### Docker Production Architecture
@@ -38,14 +43,24 @@ The backend implements a sophisticated query processing system that retrieves re
 
 ### Production Environment Variables
 ```bash
-# Required: OpenRouter API (uses OPENAI_API_KEY variable name)
-OPENAI_API_KEY=sk-your-openrouter-api-key-here
+# Required: OpenRouter API (primary)
+OPENROUTER_API_KEY=sk-or-your-openrouter-api-key-here
 
-# Model Configuration
-# Analysis models for Map, Medium Scoring, Translation, and Language Validation phases
-# Cost optimization: qwen-2.5-32b for ~60-70% cost reduction
-# Maximum quality: qwen-2.5-72b for highest accuracy (default)
+# Optional: Google AI Studio API (automatic fallback)
+GOOGLE_AI_STUDIO_API_KEY=your-google-ai-studio-api-key-here
+
+# Hybrid Model Configuration
+# Map Phase: Primary → Fallback mechanism
+MODEL_MAP_PRIMARY=gemini-2.0-flash-lite
+MODEL_MAP_FALLBACK=qwen/qwen-2.5-72b-instruct
+
+# Synthesis Phase: Primary → Fallback mechanism
+MODEL_SYNTHESIS_PRIMARY=gemini-2.0-flash
+MODEL_SYNTHESIS_FALLBACK=qwen/qwen-2.5-72b-instruct
+
+# Analysis Tasks (single model)
 MODEL_ANALYSIS=qwen/qwen-2.5-72b-instruct
+MODEL_COMMENT_GROUPS=qwen/qwen-2.5-72b-instruct
 
 # Database Configuration
 DATABASE_URL=sqlite:///data/experts.db
@@ -110,8 +125,8 @@ TELEGRAM_CHANNEL=your-channel-name
 ## Local Development Setup
 
 ### Prerequisites
-- Python 3.11+ with uv package manager
-- OpenAI API key
+- Python 3.11+ with pip package manager
+- OpenRouter API key (required) and/or Google AI Studio API key (optional)
 - SQLite database (for local development)
 
 ### Development Server
@@ -120,11 +135,11 @@ TELEGRAM_CHANNEL=your-channel-name
 pip install -r requirements.txt
 
 # Run development server
-cd backend && uv run uvicorn src.api.main:app --reload --port 8000
+cd backend && python3 -m uvicorn src.api.main:app --reload --port 8000
 
 # Health check validation
-curl -s http://localhost:8000/health | grep openai_configured
-# Should return: "openai_configured":true
+curl -s http://localhost:8000/health | jq '.'
+# Should return API key status and database health
 ```
 
 ### API Testing
@@ -149,20 +164,21 @@ curl -X POST http://localhost:8000/api/v1/query \
 - Parallel async tasks with individual SSE progress tracking
 - Dynamic expert detection with optional filtering
 
-### Eight-Phase Pipeline Architecture
-1. **Map Phase** - Content relevance detection with robust retry mechanism
-2. **Filter Phase** - HIGH relevance content filtering (60-70% reduction)
-3. **Resolve Phase** - Database link expansion (depth 1 only)
-4. **Reduce Phase** - Answer synthesis with personal style support
+### Seven-Phase Pipeline Architecture
+1. **Map Phase** - Content relevance detection with hybrid model system (Primary → Fallback)
+2. **Medium Scoring Phase** - Advanced post reranking with score ≥ 0.7 filtering (max 5 posts)
+3. **Resolve Phase** - Database link expansion for HIGH posts only (depth 1)
+4. **Reduce Phase** - Answer synthesis with hybrid model system
 5. **Language Validation Phase** - Language consistency validation and translation
 6. **Comment Groups Phase** - Drift analysis for relevant discussions
 7. **Comment Synthesis Phase** - Complementary insights extraction
 
-### Multi-Model Strategy
-- **Qwen 2.5-72B/32B** - Map phase, Medium Scoring, Translation, and Language Validation (configurable via MODEL_ANALYSIS)
-- **Gemini 2.0 Flash** - Reduce and comment synthesis
-- **GPT-4o-mini** - Comment group matching
-- **Claude Sonnet 4.5** - Drift analysis preprocessing
+### Hybrid Multi-Model Strategy
+- **Map Phase**: Gemini 2.0 Flash Lite → Qwen 2.5-72B (Primary → Fallback)
+- **Analysis Tasks**: Qwen 2.5-72B (medium scoring, translation, validation)
+- **Synthesis Phase**: Gemini 2.0 Flash → Qwen 2.5-72B (Primary → Fallback)
+- **Comment Groups**: Qwen 2.5-72B (drift analysis)
+- **Google AI Studio Integration**: Free tier usage with automatic OpenRouter fallback
 
 ### Retry Mechanism (Map Phase)
 - Two-layer retry strategy: 3 per-chunk + 1 global retry attempts
@@ -178,14 +194,17 @@ curl -X POST http://localhost:8000/api/v1/query \
 3. Default values in code
 
 ### Database Configuration
-- **Local**: SQLite (`data/experts.db` - located in `backend/data/` directory)
-- **Production**: SQLite (`/app/data/experts.db` on Fly.io)
+- **Local**: SQLite (`data/experts.db` - located in `backend/data/` directory, 56MB)
+- **Production**: SQLite (`/app/data/experts.db` on production servers)
 - **Async Support**: SQLAlchemy 2.0 with aiosqlite driver
+- **Migrations**: 8 migration scripts in `backend/migrations/` directory
 
-### Model Configuration
+### Hybrid Model Configuration
+- Primary models via Google AI Studio API (free tier)
+- Fallback models via OpenRouter API (paid)
+- Automatic model switching on quota/rate-limit errors
 - All prompts externalized to `prompts/` directory
-- Model selection via `openrouter_adapter.py` mapping
-- Configurable chunk sizes and processing parameters
+- Configurable chunk sizes and processing parameters via environment variables
 
 ## Production Deployment Notes
 
@@ -239,6 +258,24 @@ docker stats experts-panel-backend
 # Check SSL certificates
 ./update-ssl.sh status
 ```
+
+## Error Handling System
+
+### Purpose
+User-friendly error processing system that converts technical errors into actionable messages for users while maintaining detailed logging for developers.
+
+### Key Components
+- `utils/error_handler.py` - Central error processing with user-friendly messages
+- Integration with SSE streaming for real-time error reporting
+- Context-aware error suggestions and recovery actions
+- Support for API key errors, rate limits, and service failures
+
+### Error Categories
+- **API Key Errors**: Configuration issues and authentication failures
+- **Rate Limit Errors**: Quota exceeded and service throttling
+- **Network Errors**: Connection timeouts and service unavailability
+- **Validation Errors**: Invalid input and malformed requests
+- **System Errors**: Database issues and internal failures
 
 ## Language Enforcement System
 
