@@ -33,12 +33,12 @@ These prompts power the three-phase query processing pipeline for analyzing Tele
 - Added expert comments integration
 - Simplified confidence to enum
 
-## Usage with GPT-4o-mini
+## Usage with JSON Mode (example)
 
 ```python
 # Enable JSON strict mode for reliability
 response = openai.chat.completions.create(
-    model="gpt-4o-mini",
+    model="gpt-4o-mini",  # or any other supported model
     response_format={"type": "json_object", "strict": True},
     messages=[...]
 )

@@ -446,7 +446,7 @@ DEFAULT_MODELS = {
     "medium_scoring": os.getenv("MODEL_ANALYSIS", "qwen/qwen-2.5-72b-instruct"),
     "reduce": "google/gemini-2.0-flash-001",
     "language_validation": os.getenv("MODEL_ANALYSIS", "qwen/qwen-2.5-72b-instruct"),
-    "comment_groups": "openai/gpt-4o-mini",
+    "comment_groups": "qwen/qwen-2.5-72b-instruct",
     "comment_synthesis": "google/gemini-2.0-flash-001"
 }
 ```

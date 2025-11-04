@@ -80,4 +80,4 @@ if post.outgoing_links > 3:
 ## Файлы для изменения
 
 - `/backend/prompts/resolve_prompt.txt` - основной промпт
-- `/backend/src/services/resolve_service.py` - логика если нужны изменения кода
+- `/backend/src/services/simple_resolve_service.py` - логика если нужны изменения кода
