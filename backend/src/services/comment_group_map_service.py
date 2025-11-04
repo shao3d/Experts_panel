@@ -163,7 +163,14 @@ class CommentGroupMapService:
                             drift_topics = repaired
                         else:
                             drift_topics = []
-                    except:
+                    except json.JSONDecodeError as e:
+                        logger.warning(f"JSON repair failed for post {post_id}: {e}")
+                        drift_topics = []
+                    except Exception as e:
+                        logger.error(
+                            f"Unexpected error during drift analysis for post {post_id}: {e}",
+                            exc_info=True
+                        )
                         drift_topics = []
             else:
                 drift_topics = []

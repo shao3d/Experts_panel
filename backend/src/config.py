@@ -7,6 +7,13 @@ import os
 Все переменные окружения считываются здесь, чтобы обеспечить единый источник истины.
 """
 
+# --- Вспомогательные функции ---
+def _mask_value(value: str) -> str:
+    """Маскирует чувствительные значения для безопасного вывода в логи."""
+    if not isinstance(value, str) or len(value) < 12:
+        return "Not configured or too short to mask"
+    return f"{value[:5]}...{value[-4:]}"
+
 # --- API Ключи ---
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KEY")
 GOOGLE_AI_STUDIO_API_KEYS_STR = os.getenv("GOOGLE_AI_STUDIO_API_KEY")
@@ -50,16 +57,28 @@ BACKEND_LOG_FILE: str = os.getenv("BACKEND_LOG_FILE", "/app/data/backend.log")
 FRONTEND_LOG_FILE: str = os.getenv("FRONTEND_LOG_FILE", "/app/data/frontend.log")
 
 # Логирование для проверки при запуске
-print("--- Загруженная конфигурация моделей ---")
-print(f"  Map фаза (Primary):    {MODEL_MAP_PRIMARY}")
-print(f"  Map фаза (Fallback):   {MODEL_MAP_FALLBACK}")
-print(f"  Синтез (Primary):      {MODEL_SYNTHESIS_PRIMARY}")
-print(f"  Синтез (Fallback):     {MODEL_SYNTHESIS_FALLBACK}")
-print(f"  Анализ (Scoring/etc):  {MODEL_ANALYSIS}")
-print(f"  Группы коммент.:       {MODEL_COMMENT_GROUPS}")
-print("--------------------------------------")
-print("--- Загруженная конфигурация логирования ---")
-print(f"  Log Level:         {LOG_LEVEL}")
-print(f"  Backend Log File:  {BACKEND_LOG_FILE}")
-print(f"  Frontend Log File: {FRONTEND_LOG_FILE}")
-print("------------------------------------------")
+if os.getenv("ENVIRONMENT") != "production":
+    print("--- Загруженная конфигурация API ---")
+    print(f"  OpenRouter API Key:    {_mask_value(OPENROUTER_API_KEY)}")
+
+    if GOOGLE_AI_STUDIO_API_KEYS:
+        print(f"  Google AI Studio Keys: Configured ({len(GOOGLE_AI_STUDIO_API_KEYS)} keys)")
+    else:
+        print("  Google AI Studio Keys: Not configured")
+
+    print("\n--- Загруженная конфигурация моделей ---")
+    print(f"  Map фаза (Primary):    {MODEL_MAP_PRIMARY}")
+    print(f"  Map фаза (Fallback):   {MODEL_MAP_FALLBACK}")
+    print(f"  Синтез (Primary):      {MODEL_SYNTHESIS_PRIMARY}")
+    print(f"  Синтез (Fallback):     {MODEL_SYNTHESIS_FALLBACK}")
+    print(f"  Анализ (Scoring/etc):  {MODEL_ANALYSIS}")
+    print(f"  Группы коммент.:       {MODEL_COMMENT_GROUPS}")
+    print("--------------------------------------")
+    print("--- Загруженная конфигурация логирования ---")
+    print(f"  Log Level:         {LOG_LEVEL}")
+    print(f"  Backend Log File:  {BACKEND_LOG_FILE}")
+    print(f"  Frontend Log File: {FRONTEND_LOG_FILE}")
+    print("------------------------------------------")
+else:
+    # В production не выводим чувствительные данные
+    print("--- Production mode: API configuration loaded ---")
