@@ -3,6 +3,7 @@
 import asyncio
 import json
 import os
+import time
 from typing import List, Dict, Any, Optional, Callable
 from datetime import datetime
 import logging
@@ -35,7 +36,6 @@ class MapService:
     def __init__(
         self,
         openrouter_api_key: str,
-        google_ai_studio_api_key: str,
         model: str,
         fallback_model: str,
         chunk_size: int = DEFAULT_CHUNK_SIZE,
@@ -45,7 +45,6 @@ class MapService:
 
         Args:
             openrouter_api_key: OpenRouter API key (for fallback)
-            google_ai_studio_api_key: Google AI Studio API key (for primary)
             model: Primary model to use for the Map phase.
             fallback_model: Fallback model to use if the primary fails with a rate-limit error.
             chunk_size: Number of posts per chunk
@@ -53,12 +52,12 @@ class MapService:
         """
         # Initialize both clients if keys are available
         self.google_client = None
-        if google_ai_studio_api_key:
-            try:
-                self.google_client = create_google_ai_studio_client(google_ai_studio_api_key)
+        try:
+            self.google_client = create_google_ai_studio_client()
+            if self.google_client:
                 logger.info("MapService: Google AI Studio client initialized.")
-            except Exception as e:
-                logger.warning(f"MapService: Could not initialize Google AI Studio client: {e}")
+        except Exception as e:
+            logger.warning(f"MapService: Could not initialize Google AI Studio client: {e}")
 
         self.openrouter_client = create_openrouter_client(api_key=openrouter_api_key)
         logger.info("MapService: OpenRouter client initialized.")
@@ -68,6 +67,18 @@ class MapService:
         self.max_parallel = max_parallel
         logger.info(f"MapService models - Primary: {self.primary_model}, Fallback: {self.fallback_model}")
         self._prompt_template = self._load_prompt_template()
+        self.minute_start_time: Optional[float] = None
+        self.requests_in_current_minute: int = 0
+        self.lock = asyncio.Lock()
+
+        # Rate limiting metrics
+        self.rate_limit_hits = 0
+        self.total_requests = 0
+
+    def _reset_rate_limit_state(self):
+        """Reset rate limiting state for new query session."""
+        self.minute_start_time = None
+        self.requests_in_current_minute = 0
 
     def _load_prompt_template(self) -> Template:
         """Load the map phase prompt template."""
@@ -213,6 +224,23 @@ class MapService:
                     "total_chunks": None  # Will be set by parent
                 })
 
+            # Stopwatch logic for rate limiting, protected by a lock to handle concurrency
+            async with self.lock:
+                current_time = time.time()
+
+                # If the stopwatch hasn't started for this batch, start it.
+                if self.minute_start_time is None:
+                    self.minute_start_time = current_time
+                    self.requests_in_current_minute = 0
+
+                # If 60 or more seconds have passed, reset the stopwatch.
+                elapsed = current_time - self.minute_start_time
+                if elapsed >= 60:
+                    self.minute_start_time = current_time
+                    self.requests_in_current_minute = 0
+
+                self.requests_in_current_minute += 1
+            self.total_requests += 1
 
             # Format the prompt
             posts_formatted = self._format_posts_for_prompt(chunk)
@@ -242,30 +270,47 @@ class MapService:
                 response = await self._call_llm(self.primary_model, prompt, enhanced_system)
                 logger.info(f"Chunk {chunk_index}: PRIMARY model '{self.primary_model}' successful.")
 
-            except (GoogleAIStudioError, httpx.HTTPStatusError) as e:
-                # Check if it's a fallback-able error (rate limit, quota, etc.)
+            except (GoogleAIStudioError, httpx.HTTPStatusError) as e: # Catch rate limit errors
                 error_str = str(e).lower()
                 is_rate_limit_error = (
                     (isinstance(e, GoogleAIStudioError) and e.is_rate_limit) or
                     '429' in error_str or 'rate limit' in error_str or 'quota' in error_str
                 )
 
-                if is_rate_limit_error:
-                    logger.warning(f"Chunk {chunk_index}: PRIMARY model '{self.primary_model}' failed with rate limit. Falling back to '{self.fallback_model}'. Error: {e}")
+                # Check for permanent HTTP errors that should fail fast
+                if isinstance(e, httpx.HTTPStatusError):
+                    status_code = e.response.status_code
+                    if status_code in (401, 403, 404, 422):  # Auth/permission/validation errors
+                        logger.error(f"Chunk {chunk_index}: Permanent HTTP {status_code} error. Failing fast.")
+                        raise e
+
+                if is_rate_limit_error: # This is a rate limit error, wait and retry
+                    self.rate_limit_hits += 1
+                    wait_time = 65.0  # Simple, robust wait time to ensure the next minute window
+                    logger.warning(f"Chunk {chunk_index}: Rate limit hit. Waiting a fixed {wait_time}s before retry. Total rate limit hits: {self.rate_limit_hits}")
+
+                    # The sleep happens outside the lock, so other tasks are not blocked
+                    await asyncio.sleep(wait_time)
+
+                    # After waiting, briefly lock to reset the shared stopwatch state.
+                    # This is a very short operation, avoiding contention.
+                    async with self.lock:
+                        self.minute_start_time = time.time()  # Set to current time, not None
+                        self.requests_in_current_minute = 0
+
+                    # Retry the same call once. If this also fails, it will propagate up.
                     try:
-                        # Attempt 2: Call FALLBACK model
-                        response = await self._call_llm(self.fallback_model, prompt, enhanced_system)
-                        logger.info(f"Chunk {chunk_index}: FALLBACK model '{self.fallback_model}' successful.")
-                    except Exception as fallback_e:
-                        logger.error(f"Chunk {chunk_index}: FALLBACK model '{self.fallback_model}' also failed. Error: {fallback_e}")
-                        raise fallback_e # Re-raise the fallback error to be handled by tenacity
+                        response = await self._call_llm(self.primary_model, prompt, enhanced_system)
+                        logger.info(f"Chunk {chunk_index}: Retry after rate limit wait successful.")
+                    except Exception as retry_e:
+                        logger.error(f"Chunk {chunk_index}: Retry after wait FAILED. Giving up on this chunk. Error: {retry_e}")
+                        raise retry_e # Re-raise to mark the chunk as failed
                 else:
-                    # Not a rate limit error, re-raise to let tenacity handle retries on the primary model
-                    logger.error(f"Chunk {chunk_index}: PRIMARY model '{self.primary_model}' failed with non-fallback error. Retrying... Error: {e}")
+                    # Not a rate limit error, re-raise to be handled by tenacity
                     raise e
 
             if response is None:
-                raise ValueError("Both primary and fallback models failed to produce a response.")
+                raise ValueError("Primary model failed to produce a response after retry.")
 
             # Parse response (strict mode guarantees valid JSON)
             raw_content = response.choices[0].message.content
@@ -352,6 +397,9 @@ class MapService:
         """
         import time
         phase_start_time = time.time()
+
+        # Reset rate limiting state for new query session
+        self._reset_rate_limit_state()
 
         if not posts:
             return {

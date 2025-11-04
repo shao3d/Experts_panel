@@ -39,7 +39,6 @@ class ReduceService:
         if is_hybrid_mode_enabled():
             self.client = create_hybrid_client(
                 openrouter_api_key=config.OPENROUTER_API_KEY,
-                google_ai_studio_api_key=config.GOOGLE_AI_STUDIO_API_KEY,
                 fallback_model=config.MODEL_SYNTHESIS_FALLBACK,
                 enable_hybrid=True
             )

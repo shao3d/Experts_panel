@@ -9,7 +9,10 @@ import os
 
 # --- API Ключи ---
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KEY")
-GOOGLE_AI_STUDIO_API_KEY = os.getenv("GOOGLE_AI_STUDIO_API_KEY")
+GOOGLE_AI_STUDIO_API_KEYS_STR = os.getenv("GOOGLE_AI_STUDIO_API_KEY")
+GOOGLE_AI_STUDIO_API_KEYS = [
+    key.strip() for key in (GOOGLE_AI_STUDIO_API_KEYS_STR or "").split(',') if key.strip()
+]
 
 # --- Model Configuration ---
 # The settings below define the DEFAULT models.
