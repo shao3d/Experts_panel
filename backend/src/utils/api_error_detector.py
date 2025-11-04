@@ -87,10 +87,10 @@ class APIErrorDetector:
     # User-friendly messages for each error type
     ERROR_MESSAGES = {
         ErrorType.PAYMENT_REQUIRED: {
-            "title": "🔧 Сервис обработки запросов временно недоступен",
-            "message": "Пожалуйста, попробуйте через несколько минут. Если проблема сохраняется - возможно, проводятся технические работы.",
+            "title": "Oops, we've got a problem with the service...",
+            "message": "Please try again in a few minutes. If the problem persists, there might be technical maintenance ongoing.",
             "user_friendly": True,
-            "suggested_action": "Попробуйте позже или свяжитесь с администратором"
+            "suggested_action": "Try again later or contact the administrator"
         },
         ErrorType.RATE_LIMIT: {
             "title": "⚠️ Слишком много запросов",
