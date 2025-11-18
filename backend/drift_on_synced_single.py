@@ -72,7 +72,40 @@ class DriftOnSyncedAgent:
             print(f"💬 Found {len(comments)} comments")
 
             if len(comments) == 0:
-                return {"error": f"No comments found for post {post_id}"}
+                # Update status to 'no-comments' instead of returning error
+                print("📝 No comments found - updating status to 'no-comments'")
+                cursor.execute("""
+                    UPDATE comment_group_drift
+                    SET analyzed_by = 'no-comments',
+                        has_drift = 0,
+                        analyzed_at = ?
+                    WHERE post_id = ?
+                """, (datetime.utcnow().isoformat(), post_id))
+
+                # Check if record exists, create if not
+                if cursor.rowcount == 0:
+                    cursor.execute("""
+                        INSERT INTO comment_group_drift
+                        (post_id, has_drift, drift_topics, analyzed_at, analyzed_by, expert_id)
+                        VALUES (?, 0, NULL, ?, 'no-comments', ?)
+                    """, (post_id, datetime.utcnow().isoformat(), expert_id))
+                    print(f"📝 Created new 'no-comments' record for post_id {post_id}")
+                else:
+                    print(f"📝 Updated existing record to 'no-comments' for post_id {post_id}")
+
+                conn.commit()
+
+                return {
+                    "success": True,
+                    "post_id": post_id,
+                    "telegram_message_id": telegram_message_id,
+                    "expert_id": expert_id,
+                    "comments_count": 0,
+                    "analysis_result": {
+                        "has_drift": False,
+                        "status": "no-comments"
+                    }
+                }
 
             # Format comments for analysis
             comments_text = "\n".join([
