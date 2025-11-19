@@ -11,14 +11,21 @@ import ExpertSelectionBar from './components/ExpertSelectionBar';
 import { apiClient } from './services/api';
 import { ExpertResponse as ExpertResponseType, ProgressEvent } from './types/api';
 
+interface ExpertInfo {
+  expert_id: string;
+  display_name: string;
+  channel_username: string;
+}
+
 export const App: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [progressEvents, setProgressEvents] = useState<ProgressEvent[]>([]);
   const [expertResponses, setExpertResponses] = useState<ExpertResponseType[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [expandedExperts, setExpandedExperts] = useState<Set<string>>(new Set(['refat', 'ai_architect', 'neuraldeep']));
+  const [availableExperts, setAvailableExperts] = useState<ExpertInfo[]>([]);
+  const [expandedExperts, setExpandedExperts] = useState<Set<string>>(new Set());
   const [currentQuery, setCurrentQuery] = useState<string>('');
-  const [selectedExperts, setSelectedExperts] = useState<Set<string>>(new Set(['refat', 'ai_architect', 'neuraldeep']));
+  const [selectedExperts, setSelectedExperts] = useState<Set<string>>(new Set());
 
   // Timer state for processing time
   const [startTime, setStartTime] = useState<number | null>(null);
@@ -44,6 +51,36 @@ export const App: React.FC = () => {
 
     return () => clearInterval(interval);
   }, [isProcessing, startTime]);
+
+  // Load experts from API on mount
+  useEffect(() => {
+    const loadExperts = async () => {
+      try {
+        const response = await fetch('/api/v1/experts');
+        const experts: ExpertInfo[] = await response.json();
+        setAvailableExperts(experts);
+
+        // Initialize selection with all experts
+        const allExpertIds = new Set(experts.map(e => e.expert_id));
+        setSelectedExperts(allExpertIds);
+        setExpandedExperts(allExpertIds);
+      } catch (err) {
+        console.error('Failed to load experts, using fallback:', err);
+
+        // Fallback to hardcoded list
+        const fallbackExperts: ExpertInfo[] = [
+          { expert_id: 'refat', display_name: 'Refat (Tech & AI)', channel_username: 'nobilix' },
+          { expert_id: 'ai_architect', display_name: 'AI Architect', channel_username: 'the_ai_architect' },
+          { expert_id: 'neuraldeep', display_name: 'Neuraldeep', channel_username: 'neuraldeep' }
+        ];
+        setAvailableExperts(fallbackExperts);
+        setSelectedExperts(new Set(fallbackExperts.map(e => e.expert_id)));
+        setExpandedExperts(new Set(fallbackExperts.map(e => e.expert_id)));
+      }
+    };
+
+    loadExperts();
+  }, []);
 
   /**
    * Handle query submission
