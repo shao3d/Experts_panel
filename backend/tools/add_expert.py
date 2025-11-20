@@ -1,0 +1,241 @@
+#!/usr/bin/env python3
+"""
+Minimal script to add a new expert to the system.
+
+This tool performs all necessary steps to add a new expert:
+1. Add expert metadata to expert_metadata table
+2. Import posts from Telegram JSON export
+3. Backfill channel_username in posts table
+4. Validate the import
+
+Usage:
+    python tools/add_expert.py <expert_id> <display_name> <channel_username> <json_file>
+
+Example:
+    python tools/add_expert.py neuraldeep "Neuraldeep" neuraldeep exports/neuraldeep.json
+
+Next steps after running this script:
+    - Sync comments: python sync_comments.py --expert-id <expert_id>
+    - Verify in UI: open http://localhost:3000
+"""
+
+import sys
+from pathlib import Path
+
+# Add src to path for imports
+sys.path.append(str(Path(__file__).parent.parent / 'src'))
+
+from models.base import SessionLocal
+from models.expert import Expert
+from data.json_parser import TelegramJsonParser
+from sqlalchemy import text
+from sqlalchemy.exc import IntegrityError
+
+
+def _rollback_expert_metadata(db, expert_id: str):
+    """Helper to cleanup expert metadata AND posts on failure.
+
+    Uses SQL DELETE to avoid SQLAlchemy session scope issues.
+    Deletes posts FIRST to avoid FK constraint violations.
+    """
+    try:
+        # Delete posts before expert (FK constraints)
+        result_posts = db.execute(
+            text("DELETE FROM posts WHERE expert_id = :id"),
+            {"id": expert_id}
+        )
+        result_expert = db.execute(
+            text("DELETE FROM expert_metadata WHERE expert_id = :id"),
+            {"id": expert_id}
+        )
+        db.commit()
+
+        posts_count = result_posts.rowcount
+        expert_count = result_expert.rowcount
+
+        if posts_count > 0:
+            print(f"   🔄 Rolled back {posts_count} posts and expert metadata for '{expert_id}'")
+        else:
+            print(f"   🔄 Rolled back expert metadata for '{expert_id}' (no posts to clean)")
+    except Exception as e:
+        print(f"   ⚠️  Failed to rollback: {e}")
+        db.rollback()
+
+
+def add_expert(expert_id: str, display_name: str, channel_username: str, json_file: str):
+    """Add a new expert to the system.
+
+    Args:
+        expert_id: Unique expert identifier (e.g., 'neuraldeep')
+        display_name: Human-readable name (e.g., 'Neuraldeep')
+        channel_username: Telegram channel username (e.g., 'neuraldeep')
+        json_file: Path to Telegram JSON export file
+
+    Raises:
+        SystemExit: If any step fails
+    """
+    # Validate expert_id format
+    import re
+    if not re.match(r'^[a-z0-9_]+$', expert_id):
+        print(f"❌ Invalid expert_id format: '{expert_id}'")
+        print(f"   Expert ID must be lowercase alphanumeric with underscores only")
+        print()
+        print("Valid examples:")
+        print("  - 'ml_daily'")
+        print("  - 'ai_architect'")
+        print("  - 'neuraldeep'")
+        print()
+        print("Invalid examples:")
+        print("  - 'ML Daily' (uppercase and spaces)")
+        print("  - 'ai-expert' (hyphens not allowed)")
+        print("  - 'expert#1' (special characters not allowed)")
+        sys.exit(1)
+
+    db = SessionLocal()
+
+    try:
+        print(f"🚀 Adding expert: {expert_id}")
+        print()
+
+        # Step 1: Add to expert_metadata
+        print(f"📝 Step 1/4: Adding expert metadata...")
+        try:
+            expert = Expert(
+                expert_id=expert_id,
+                display_name=display_name,
+                channel_username=channel_username
+            )
+            db.add(expert)
+            db.commit()
+            print(f"✅ Expert metadata added")
+        except IntegrityError as e:
+            db.rollback()
+            error_msg = str(e)
+
+            # Distinguish between expert_id and channel_username conflicts
+            if 'expert_metadata.expert_id' in error_msg:
+                print(f"❌ Expert ID already exists: {expert_id}")
+                print(f"   An expert with this ID is already registered in the system.")
+                print()
+                print("To fix:")
+                print(f"   1. Choose a different expert_id, or")
+                print(f"   2. Delete existing: sqlite3 data/experts.db \"DELETE FROM expert_metadata WHERE expert_id = '{expert_id}';\"")
+            elif 'expert_metadata.channel_username' in error_msg:
+                print(f"❌ Channel username already exists: {channel_username}")
+                print(f"   Another expert is already using this channel username.")
+                print()
+                print("To fix:")
+                print(f"   1. Verify channel_username is correct, or")
+                print(f"   2. Check existing experts: sqlite3 data/experts.db \"SELECT * FROM expert_metadata WHERE channel_username = '{channel_username}';\"")
+            else:
+                print(f"❌ Database integrity error: {expert_id}")
+                print(f"   {error_msg}")
+
+            sys.exit(1)
+
+        print()
+
+        # Step 2: Import posts
+        print(f"📥 Step 2/4: Importing posts from {json_file}...")
+        try:
+            # Check if file exists
+            if not Path(json_file).exists():
+                print(f"❌ File not found: {json_file}")
+                print()
+                _rollback_expert_metadata(db, expert_id)
+                sys.exit(1)
+
+            # Import using existing parser
+            parser = TelegramJsonParser(db, expert_id)
+            stats = parser.parse_file(json_file)
+            print(f"✅ Posts imported: {stats.get('posts_imported', 0)} posts created")
+        except Exception as e:
+            print(f"❌ Import failed: {e}")
+            print()
+            _rollback_expert_metadata(db, expert_id)
+            sys.exit(1)
+
+        print()
+
+        # Step 3: Backfill channel_username
+        print(f"🔄 Step 3/4: Backfilling channel_username...")
+        result = db.execute(text("""
+            UPDATE posts
+            SET channel_username = :username
+            WHERE expert_id = :expert_id AND channel_username IS NULL
+        """), {"username": channel_username, "expert_id": expert_id})
+        db.commit()
+        print(f"✅ Updated {result.rowcount} posts with channel_username")
+
+        print()
+
+        # Step 4: Validate
+        print(f"🔍 Step 4/4: Validating...")
+
+        # Check 1: Posts without channel_username
+        missing = db.execute(text("""
+            SELECT COUNT(*) FROM posts
+            WHERE expert_id = :expert_id AND channel_username IS NULL
+        """), {"expert_id": expert_id}).scalar()
+
+        if missing > 0:
+            print(f"⚠️  Warning: {missing} posts missing channel_username")
+        else:
+            print(f"✅ All posts have channel_username")
+
+        # Check 2: Total posts
+        total_posts = db.execute(text("""
+            SELECT COUNT(*) FROM posts WHERE expert_id = :expert_id
+        """), {"expert_id": expert_id}).scalar()
+
+        print(f"✅ Total posts for expert: {total_posts}")
+
+        print()
+        print("=" * 60)
+        print(f"🎉 Expert '{expert_id}' added successfully!")
+        print("=" * 60)
+        print()
+        print("Next steps:")
+        print(f"  1. Sync comments (optional):")
+        print(f"     python sync_comments.py --expert-id {expert_id}")
+        print()
+        print(f"  2. Verify in API:")
+        print(f"     curl http://localhost:8000/api/v1/experts | jq '.'")
+        print()
+        print(f"  3. Check in UI:")
+        print(f"     open http://localhost:3000")
+        print()
+
+    except Exception as e:
+        print(f"❌ Unexpected error: {e}")
+        db.rollback()
+        sys.exit(1)
+    finally:
+        db.close()
+
+
+def main():
+    """Main entry point."""
+    if len(sys.argv) != 5:
+        print("Usage: python tools/add_expert.py <expert_id> <display_name> <channel_username> <json_file>")
+        print()
+        print("Example:")
+        print('  python tools/add_expert.py neuraldeep "Neuraldeep" neuraldeep exports/neuraldeep.json')
+        print()
+        print("Arguments:")
+        print("  expert_id         - Unique identifier (e.g., 'neuraldeep')")
+        print("  display_name      - Human-readable name (e.g., 'Neuraldeep')")
+        print("  channel_username  - Telegram channel username (e.g., 'neuraldeep')")
+        print("  json_file         - Path to Telegram JSON export")
+        sys.exit(1)
+
+    expert_id = sys.argv[1]
+    display_name = sys.argv[2]
+    channel_username = sys.argv[3]
+    json_file = sys.argv[4]
+
+    add_expert(expert_id, display_name, channel_username, json_file)
+
+
+if __name__ == '__main__':
+    main()

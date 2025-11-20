@@ -478,19 +478,44 @@ class MultiExpertQueryResponse(BaseModel):
 
 # Helper functions
 def get_expert_name(expert_id: str) -> str:
-    """Get display name for expert."""
-    names = {
-        'refat': 'Refat (Tech & AI)',
-        'ai_architect': 'AI Architect',
-        'neuraldeep': 'Neuraldeep'
-    }
-    return names.get(expert_id, expert_id)
+    """Get display name for expert from database.
+
+    UPDATED (Migration 009): Now queries expert_metadata table instead of hardcoded dict.
+
+    Args:
+        expert_id: Expert identifier (e.g., 'refat')
+
+    Returns:
+        Display name (e.g., 'Refat (Tech & AI)') or expert_id if not found
+    """
+    from ..models.base import SessionLocal
+    from ..models.expert import Expert
+
+    db = SessionLocal()
+    try:
+        expert = db.query(Expert).filter(Expert.expert_id == expert_id).first()
+        return expert.display_name if expert else expert_id
+    finally:
+        db.close()
 
 
 def get_channel_username(expert_id: str) -> str:
-    """Get Telegram channel username for expert."""
-    channels = {
-        'refat': 'nobilix',
-        'ai_architect': 'the_ai_architect'
-    }
-    return channels.get(expert_id, expert_id)
+    """Get Telegram channel username for expert from database.
+
+    UPDATED (Migration 009): Now queries expert_metadata table instead of hardcoded dict.
+
+    Args:
+        expert_id: Expert identifier (e.g., 'refat')
+
+    Returns:
+        Channel username (e.g., 'nobilix') or expert_id if not found
+    """
+    from ..models.base import SessionLocal
+    from ..models.expert import Expert
+
+    db = SessionLocal()
+    try:
+        expert = db.query(Expert).filter(Expert.expert_id == expert_id).first()
+        return expert.channel_username if expert else expert_id
+    finally:
+        db.close()

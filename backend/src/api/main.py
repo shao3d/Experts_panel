@@ -4,14 +4,15 @@ import logging
 import time
 import uuid
 from contextlib import asynccontextmanager
-from typing import Dict, Any
+from typing import Dict, Any, List
 import os
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
 
-from fastapi import FastAPI, Request, HTTPException, status
+from fastapi import FastAPI, Request, HTTPException, status, Depends
+from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
@@ -192,6 +193,25 @@ async def general_exception_handler(request: Request, exc: Exception):
     )
 
 
+# Database dependency
+def get_db():
+    """Database session dependency."""
+    from ..models.base import SessionLocal
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+# Pydantic model for expert info
+class ExpertInfo(BaseModel):
+    """Expert information for frontend."""
+    expert_id: str
+    display_name: str
+    channel_username: str
+
+
 # Health check endpoint
 @app.get("/health", tags=["health"])
 async def health_check() -> Dict[str, Any]:
@@ -217,6 +237,28 @@ async def health_check() -> Dict[str, Any]:
         "api_key_configured": api_key_configured,
         "timestamp": time.time()
     }
+
+
+# Experts endpoint
+@app.get("/api/v1/experts", response_model=List[ExpertInfo], tags=["experts"])
+async def get_experts(db = Depends(get_db)) -> List[ExpertInfo]:
+    """Get all experts from expert_metadata table.
+
+    Returns list of experts for dynamic frontend loading.
+    Added in Migration 009 as part of expert metadata centralization.
+    """
+    from ..models.expert import Expert
+
+    experts = db.query(Expert).order_by(Expert.expert_id).all()
+
+    return [
+        ExpertInfo(
+            expert_id=e.expert_id,
+            display_name=e.display_name,
+            channel_username=e.channel_username
+        )
+        for e in experts
+    ]
 
 
 # API info endpoint

@@ -34,43 +34,44 @@ from sqlalchemy.orm import Session
 
 def get_all_experts(db) -> List[Dict[str, str]]:
     """
-    Получает всех экспертов из базы данных с их каналами.
+    Получает всех экспертов из expert_metadata с их статистикой из posts.
+
+    UPDATED (Migration 009): Now uses expert_metadata table instead of hardcoded CHANNEL_MAPPING.
 
     Returns:
         List of dicts: [{'expert_id': str, 'channel_id': str, 'channel_username': str, 'channel_name': str}]
     """
-    query = text("""
-        SELECT DISTINCT
-            p.expert_id,
-            p.channel_id,
-            p.channel_name,
-            MIN(p.telegram_message_id) as min_message_id,
-            MAX(p.telegram_message_id) as max_message_id,
-            COUNT(*) as post_count
-        FROM posts p
-        WHERE p.expert_id IS NOT NULL
-        GROUP BY p.expert_id, p.channel_id, p.channel_name
-        ORDER BY p.expert_id
+    # Query expert_metadata for all experts
+    experts_query = text("""
+        SELECT expert_id, channel_username
+        FROM expert_metadata
+        ORDER BY expert_id
     """)
 
-    result = db.execute(query)
+    expert_metadata = db.execute(experts_query).fetchall()
     experts = []
 
-    # Channel mapping from user provided URLs
-    CHANNEL_MAPPING = {
-        'refat': 'nobilix',
-        'ai_architect': 'the_ai_architect',
-        'neuraldeep': 'neuraldeep'
-    }
+    for expert_id, channel_username in expert_metadata:
+        # Get stats from posts table for this expert
+        stats_query = text("""
+            SELECT
+                channel_id,
+                channel_name,
+                MIN(telegram_message_id) as min_message_id,
+                MAX(telegram_message_id) as max_message_id,
+                COUNT(*) as post_count
+            FROM posts
+            WHERE expert_id = :expert_id
+            GROUP BY channel_id, channel_name
+        """)
 
-    for row in result.fetchall():
-        expert_id, channel_id, channel_name, min_id, max_id, count = row
+        stats = db.execute(stats_query, {"expert_id": expert_id}).fetchone()
 
-        # Map expert_id to channel_username
-        channel_username = CHANNEL_MAPPING.get(expert_id)
-        if not channel_username:
-            print(f"⚠️  Unknown channel mapping for expert: {expert_id}")
+        if not stats:
+            print(f"⚠️  Expert {expert_id} has no posts in database")
             continue
+
+        channel_id, channel_name, min_id, max_id, count = stats
 
         experts.append({
             'expert_id': expert_id,
