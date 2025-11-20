@@ -74,6 +74,23 @@ def add_expert(expert_id: str, display_name: str, channel_username: str, json_fi
     Raises:
         SystemExit: If any step fails
     """
+    # Validate expert_id format
+    import re
+    if not re.match(r'^[a-z0-9_]+$', expert_id):
+        print(f"❌ Invalid expert_id format: '{expert_id}'")
+        print(f"   Expert ID must be lowercase alphanumeric with underscores only")
+        print()
+        print("Valid examples:")
+        print("  - 'ml_daily'")
+        print("  - 'ai_architect'")
+        print("  - 'neuraldeep'")
+        print()
+        print("Invalid examples:")
+        print("  - 'ML Daily' (uppercase and spaces)")
+        print("  - 'ai-expert' (hyphens not allowed)")
+        print("  - 'expert#1' (special characters not allowed)")
+        sys.exit(1)
+
     db = SessionLocal()
 
     try:
