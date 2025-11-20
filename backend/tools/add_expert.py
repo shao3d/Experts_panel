@@ -33,19 +33,32 @@ from sqlalchemy.exc import IntegrityError
 
 
 def _rollback_expert_metadata(db, expert_id: str):
-    """Helper to cleanup expert metadata on failure.
+    """Helper to cleanup expert metadata AND posts on failure.
 
     Uses SQL DELETE to avoid SQLAlchemy session scope issues.
+    Deletes posts FIRST to avoid FK constraint violations.
     """
     try:
-        db.execute(
+        # Delete posts before expert (FK constraints)
+        result_posts = db.execute(
+            text("DELETE FROM posts WHERE expert_id = :id"),
+            {"id": expert_id}
+        )
+        result_expert = db.execute(
             text("DELETE FROM expert_metadata WHERE expert_id = :id"),
             {"id": expert_id}
         )
         db.commit()
-        print(f"   🔄 Rolled back expert metadata for '{expert_id}'")
+
+        posts_count = result_posts.rowcount
+        expert_count = result_expert.rowcount
+
+        if posts_count > 0:
+            print(f"   🔄 Rolled back {posts_count} posts and expert metadata for '{expert_id}'")
+        else:
+            print(f"   🔄 Rolled back expert metadata for '{expert_id}' (no posts to clean)")
     except Exception as e:
-        print(f"   ⚠️  Failed to rollback metadata: {e}")
+        print(f"   ⚠️  Failed to rollback: {e}")
         db.rollback()
 
 
