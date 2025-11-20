@@ -27,9 +27,26 @@ sys.path.append(str(Path(__file__).parent.parent / 'src'))
 
 from models.base import SessionLocal
 from models.expert import Expert
-from data.json_parser import import_telegram_data
+from data.json_parser import TelegramJsonParser
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
+
+
+def _rollback_expert_metadata(db, expert_id: str):
+    """Helper to cleanup expert metadata on failure.
+
+    Uses SQL DELETE to avoid SQLAlchemy session scope issues.
+    """
+    try:
+        db.execute(
+            text("DELETE FROM expert_metadata WHERE expert_id = :id"),
+            {"id": expert_id}
+        )
+        db.commit()
+        print(f"   🔄 Rolled back expert metadata for '{expert_id}'")
+    except Exception as e:
+        print(f"   ⚠️  Failed to rollback metadata: {e}")
+        db.rollback()
 
 
 def add_expert(expert_id: str, display_name: str, channel_username: str, json_file: str):
@@ -62,12 +79,28 @@ def add_expert(expert_id: str, display_name: str, channel_username: str, json_fi
             db.commit()
             print(f"✅ Expert metadata added")
         except IntegrityError as e:
-            print(f"❌ Expert already exists: {expert_id}")
-            print(f"   Error: {e}")
-            print()
-            print("To retry, first delete the existing expert:")
-            print(f"   sqlite3 data/experts.db \"DELETE FROM expert_metadata WHERE expert_id = '{expert_id}';\"")
             db.rollback()
+            error_msg = str(e)
+
+            # Distinguish between expert_id and channel_username conflicts
+            if 'expert_metadata.expert_id' in error_msg:
+                print(f"❌ Expert ID already exists: {expert_id}")
+                print(f"   An expert with this ID is already registered in the system.")
+                print()
+                print("To fix:")
+                print(f"   1. Choose a different expert_id, or")
+                print(f"   2. Delete existing: sqlite3 data/experts.db \"DELETE FROM expert_metadata WHERE expert_id = '{expert_id}';\"")
+            elif 'expert_metadata.channel_username' in error_msg:
+                print(f"❌ Channel username already exists: {channel_username}")
+                print(f"   Another expert is already using this channel username.")
+                print()
+                print("To fix:")
+                print(f"   1. Verify channel_username is correct, or")
+                print(f"   2. Check existing experts: sqlite3 data/experts.db \"SELECT * FROM expert_metadata WHERE channel_username = '{channel_username}';\"")
+            else:
+                print(f"❌ Database integrity error: {expert_id}")
+                print(f"   {error_msg}")
+
             sys.exit(1)
 
         print()
@@ -78,13 +111,18 @@ def add_expert(expert_id: str, display_name: str, channel_username: str, json_fi
             # Check if file exists
             if not Path(json_file).exists():
                 print(f"❌ File not found: {json_file}")
+                print()
+                _rollback_expert_metadata(db, expert_id)
                 sys.exit(1)
 
             # Import using existing parser
-            stats = import_telegram_data(json_file, expert_id)
-            print(f"✅ Posts imported: {stats.get('posts_created', 0)} posts created")
+            parser = TelegramJsonParser(db, expert_id)
+            stats = parser.parse_file(json_file)
+            print(f"✅ Posts imported: {stats.get('posts_imported', 0)} posts created")
         except Exception as e:
             print(f"❌ Import failed: {e}")
+            print()
+            _rollback_expert_metadata(db, expert_id)
             sys.exit(1)
 
         print()
