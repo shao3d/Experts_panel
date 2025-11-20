@@ -22,7 +22,7 @@ export const App: React.FC = () => {
   const [progressEvents, setProgressEvents] = useState<ProgressEvent[]>([]);
   const [expertResponses, setExpertResponses] = useState<ExpertResponseType[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [availableExperts, setAvailableExperts] = useState<ExpertInfo[]>([]);
+  const [_availableExperts, setAvailableExperts] = useState<ExpertInfo[]>([]);
   const [expandedExperts, setExpandedExperts] = useState<Set<string>>(new Set());
   const [currentQuery, setCurrentQuery] = useState<string>('');
   const [selectedExperts, setSelectedExperts] = useState<Set<string>>(new Set());
