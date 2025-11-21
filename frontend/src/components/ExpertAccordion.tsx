@@ -281,23 +281,31 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
                 </div>
               ) : postsLoading ? (
                 <div style={styles.placeholder}>Loading posts...</div>
-              ) : posts.length > 0 ? (
+              ) : (
                 <>
-                  <PostsList
-                    posts={posts}
-                    selectedPostId={selectedPostId}
-                    expertId={expert.expert_id}
-                  />
+                  {/* 1. Render Posts (if any) */}
+                  {posts.length > 0 && (
+                    <PostsList
+                      posts={posts}
+                      selectedPostId={selectedPostId}
+                      expertId={expert.expert_id}
+                    />
+                  )}
+
+                  {/* 2. Render Comment Groups (ALWAYS if they exist, regardless of posts) */}
                   {expert.relevant_comment_groups && expert.relevant_comment_groups.length > 0 && (
                     <CommentGroupsList
                       commentGroups={expert.relevant_comment_groups}
                     />
                   )}
+
+                  {/* 3. Show placeholder ONLY if we have no posts AND no comment groups */}
+                  {posts.length === 0 && (!expert.relevant_comment_groups || expert.relevant_comment_groups.length === 0) && (
+                    <div style={styles.placeholder}>
+                      {expert.main_sources.length > 0 ? 'Loading posts...' : 'No source posts available'}
+                    </div>
+                  )}
                 </>
-              ) : (
-                <div style={styles.placeholder}>
-                  {expert.main_sources.length > 0 ? 'Loading posts...' : 'No source posts available'}
-                </div>
               )}
             </div>
           </div>
