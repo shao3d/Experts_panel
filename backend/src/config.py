@@ -35,9 +35,13 @@ MODEL_MAP_FALLBACK: str = os.getenv("MODEL_MAP_FALLBACK", "gemini-2.0-flash-lite
 MODEL_SYNTHESIS_PRIMARY: str = os.getenv("MODEL_SYNTHESIS_PRIMARY", "gemini-2.0-flash")
 MODEL_SYNTHESIS_FALLBACK: str = os.getenv("MODEL_SYNTHESIS_FALLBACK", "qwen/qwen-2.5-72b-instruct")
 
-# Модель для анализа (Medium Scoring, Translation, Validation)
+# Модель для анализа (Translation, Validation)
 # Значение по умолчанию согласовано с .env.example
 MODEL_ANALYSIS: str = os.getenv("MODEL_ANALYSIS", "qwen/qwen-2.5-72b-instruct")
+
+# Модели для Medium Scoring (Гибридная схема)
+MODEL_MEDIUM_SCORING_PRIMARY: str = os.getenv("MODEL_MEDIUM_SCORING_PRIMARY", "gemini-2.0-flash")
+MODEL_MEDIUM_SCORING_FALLBACK: str = os.getenv("MODEL_MEDIUM_SCORING_FALLBACK", "qwen/qwen-2.5-72b-instruct")
 
 # Модель для поиска групп комментариев
 MODEL_COMMENT_GROUPS: str = os.getenv("MODEL_COMMENT_GROUPS", "qwen/qwen-2.5-72b-instruct")
@@ -74,9 +78,11 @@ if os.getenv("ENVIRONMENT") != "production":
     print("\n--- Загруженная конфигурация моделей ---")
     print(f"  Map фаза (Primary):    {MODEL_MAP_PRIMARY}")
     print(f"  Map фаза (Fallback):   {MODEL_MAP_FALLBACK}")
+    print(f"  Medium Scoring (Prim): {MODEL_MEDIUM_SCORING_PRIMARY}")
+    print(f"  Medium Scoring (Fall): {MODEL_MEDIUM_SCORING_FALLBACK}")
     print(f"  Синтез (Primary):      {MODEL_SYNTHESIS_PRIMARY}")
     print(f"  Синтез (Fallback):     {MODEL_SYNTHESIS_FALLBACK}")
-    print(f"  Анализ (Scoring/etc):  {MODEL_ANALYSIS}")
+    print(f"  Анализ (Trans/Valid):  {MODEL_ANALYSIS}")
     print(f"  Группы коммент.:       {MODEL_COMMENT_GROUPS}")
     print("--------------------------------------")
     print("--- Загруженная конфигурация логирования ---")

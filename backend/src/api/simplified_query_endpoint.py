@@ -155,7 +155,12 @@ async def process_expert_pipeline(
     if medium_posts:
         from ..services.medium_scoring_service import MediumScoringService
 
-        scoring_service = MediumScoringService(api_key=config.OPENROUTER_API_KEY, model=config.MODEL_ANALYSIS)
+        # Use Hybrid Configuration: Google (Primary) -> Qwen (Fallback)
+        scoring_service = MediumScoringService(
+            api_key=config.OPENROUTER_API_KEY,
+            model=config.MODEL_MEDIUM_SCORING_PRIMARY,
+            fallback_model=config.MODEL_MEDIUM_SCORING_FALLBACK
+        )
 
         # Enrich medium_posts with full content before passing to the scoring service
         medium_posts_with_content = []
