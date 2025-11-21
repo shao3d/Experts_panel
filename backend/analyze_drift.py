@@ -211,9 +211,10 @@ Return JSON:
 
     def _save_result(self, db: Session, post_id: int, result: Dict[str, Any]):
         """Save drift analysis result to database."""
-        drift_topics_json = None
-        if result.get("drift_topics"):
-            drift_topics_json = json.dumps(result["drift_topics"], ensure_ascii=False)
+        # Per docs, drift_topics column must store the FULL analysis object,
+        # not just the array of topics, to match existing DB schema.
+        # See .claude/agents/drift_on_synced.md for the canonical format.
+        drift_topics_json = json.dumps(result, ensure_ascii=False) if result else None
 
         # Get expert_id from post
         post = db.query(Post).filter(Post.post_id == post_id).first()

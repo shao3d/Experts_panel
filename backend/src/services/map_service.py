@@ -20,6 +20,7 @@ from .openrouter_adapter import create_openrouter_client, convert_model_name
 from .google_ai_studio_client import create_google_ai_studio_client, GoogleAIStudioError
 from ..utils.language_utils import prepare_prompt_with_language_instruction, prepare_system_message_with_language
 from ..utils.error_handler import error_handler
+from ..config import MAP_MAX_PARALLEL  # <--- Добавил импорт конфига
 
 logger = logging.getLogger(__name__)
 
@@ -425,8 +426,15 @@ class MapService:
             })
 
         # Process chunks in parallel with dynamic concurrency limit
-        # If max_parallel is None, use the number of chunks (all in parallel)
-        parallel_limit = self.max_parallel if self.max_parallel is not None else total_chunks
+        # If max_parallel is None, use the safe limit from config to protect Google Keys
+        if self.max_parallel is not None:
+            parallel_limit = self.max_parallel
+        else:
+            # Use configured safe limit (e.g. 8 for 5 keys)
+            # But don't use more threads than we have chunks
+            parallel_limit = min(MAP_MAX_PARALLEL, total_chunks)
+
+        logger.info(f"[{expert_id}] Map Phase concurrency limit: {parallel_limit} (Total chunks: {total_chunks})")
         semaphore = asyncio.Semaphore(parallel_limit)
 
         async def process_with_semaphore(chunk, index):

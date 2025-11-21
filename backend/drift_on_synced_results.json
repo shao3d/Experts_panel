@@ -4,13 +4,13 @@
   "by_expert": {
     "refat": {
       "processed": 1,
-      "with_drift": 0,
-      "without_drift": 1
+      "with_drift": 1,
+      "without_drift": 0
     }
   },
   "drift_summary": {
-    "total_with_drift": 0,
-    "total_without_drift": 1,
+    "total_with_drift": 1,
+    "total_without_drift": 0,
     "success_rate": "100.0%"
   }
 }

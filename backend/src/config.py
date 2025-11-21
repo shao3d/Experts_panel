@@ -42,6 +42,11 @@ MODEL_ANALYSIS: str = os.getenv("MODEL_ANALYSIS", "qwen/qwen-2.5-72b-instruct")
 # Модель для поиска групп комментариев
 MODEL_COMMENT_GROUPS: str = os.getenv("MODEL_COMMENT_GROUPS", "qwen/qwen-2.5-72b-instruct")
 
+# --- Лимиты (Rate Limiting) ---
+# Ограничение параллельных запросов для Map фазы.
+# Для 5 ключей ставим 8 (это ~1.6 запроса на ключ, безопасно для Burst Limit).
+MAP_MAX_PARALLEL: int = int(os.getenv("MAP_MAX_PARALLEL", "8"))
+
 # --- Назначение моделей для конкретных сервисов ---
 # Эти переменные читают значения из гибридных настроек выше для обратной совместимости.
 MODEL_MAP: str = MODEL_MAP_PRIMARY
