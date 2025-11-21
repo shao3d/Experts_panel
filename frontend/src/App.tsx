@@ -187,6 +187,7 @@ export const App: React.FC = () => {
       {/* Expert Selection Bar */}
       <div style={styles.expertBarContainer}>
         <ExpertSelectionBar
+          availableExperts={_availableExperts}
           selectedExperts={selectedExperts}
           onExpertsChange={setSelectedExperts}
           disabled={isProcessing}

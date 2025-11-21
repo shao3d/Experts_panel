@@ -241,7 +241,7 @@ async def health_check() -> Dict[str, Any]:
 
 # Experts endpoint
 @app.get("/api/v1/experts", response_model=List[ExpertInfo], tags=["experts"])
-async def get_experts(db = Depends(get_db)) -> List[ExpertInfo]:
+def get_experts(db = Depends(get_db)) -> List[ExpertInfo]:
     """Get all experts from expert_metadata table.
 
     Returns list of experts for dynamic frontend loading.

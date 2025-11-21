@@ -5,23 +5,24 @@
 
 import React from 'react';
 
+interface ExpertInfo {
+  expert_id: string;
+  display_name: string;
+  channel_username: string;
+}
+
 interface ExpertSelectionBarProps {
+  availableExperts: ExpertInfo[];
   selectedExperts: Set<string>;
   onExpertsChange: (selected: Set<string>) => void;
   disabled?: boolean;
 }
 
-// Available experts configuration
-const AVAILABLE_EXPERTS = [
-  { id: 'refat', name: 'Refat Talks: Tech & AI', description: '' },
-  { id: 'ai_architect', name: 'AI Architect | AI Coding', description: '' },
-  { id: 'neuraldeep', name: 'Neural Kovalskii', description: '' }
-];
-
 /**
  * Horizontal expert selection bar component
  */
 const ExpertSelectionBar: React.FC<ExpertSelectionBarProps> = ({
+  availableExperts,
   selectedExperts,
   onExpertsChange,
   disabled = false
@@ -43,8 +44,8 @@ const ExpertSelectionBar: React.FC<ExpertSelectionBarProps> = ({
     <div style={styles.container}>
       <div style={styles.expertsRow}>
         <span style={styles.title}>EXPERTS:</span>
-        {AVAILABLE_EXPERTS.map((expert) => (
-          <div key={expert.id} style={styles.expertItem}>
+        {availableExperts.map((expert) => (
+          <div key={expert.expert_id} style={styles.expertItem}>
             <label style={{
               ...styles.label,
               cursor: disabled ? 'not-allowed' : 'pointer',
@@ -52,8 +53,8 @@ const ExpertSelectionBar: React.FC<ExpertSelectionBarProps> = ({
             }}>
               <input
                 type="checkbox"
-                checked={selectedExperts.has(expert.id)}
-                onChange={() => handleToggleExpert(expert.id)}
+                checked={selectedExperts.has(expert.expert_id)}
+                onChange={() => handleToggleExpert(expert.expert_id)}
                 disabled={disabled}
                 style={{
                   ...styles.checkbox,
@@ -61,7 +62,7 @@ const ExpertSelectionBar: React.FC<ExpertSelectionBarProps> = ({
                 }}
               />
               <span style={styles.expertName}>
-                {expert.name}
+                {expert.display_name}
               </span>
             </label>
           </div>
