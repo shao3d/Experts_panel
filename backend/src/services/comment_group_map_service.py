@@ -19,6 +19,7 @@ from ..models.post import Post
 from ..models.comment import Comment
 from ..models.database import comment_group_drift
 from .openrouter_adapter import create_openrouter_client, convert_model_name
+from .google_ai_studio_client import create_google_ai_studio_client, GoogleAIStudioError
 from ..api.models import get_channel_username
 from ..utils.language_utils import prepare_prompt_with_language_instruction
 
@@ -26,10 +27,10 @@ logger = logging.getLogger(__name__)
 
 
 class CommentGroupMapService:
-    """Service for finding relevant GROUPS of comments.
+    """Service for finding relevant GROUPS of comments using Hybrid LLM approach.
 
-    Analyzes groups of Telegram comments to find discussions relevant to the query,
-    even when the anchor post itself is not relevant.
+    Analyzes groups of Telegram comments to find discussions relevant to the query.
+    Strategy: Try Google Gemini (Free) first, fallback to OpenRouter/Qwen (Paid).
     """
 
     DEFAULT_CHUNK_SIZE = 20  # Groups per chunk
@@ -39,22 +40,38 @@ class CommentGroupMapService:
         self,
         api_key: str,
         model: str,
+        fallback_model: str = None,
         chunk_size: int = DEFAULT_CHUNK_SIZE,
         max_parallel: int = DEFAULT_MAX_PARALLEL
     ):
-        """Initialize CommentGroupMapService.
+        """Initialize CommentGroupMapService with Hybrid Logic.
 
         Args:
-            api_key: OpenAI API key
-            chunk_size: Number of comment groups per chunk (default 20)
-            model: Model to use (default gemini-2.0-flash)
-            max_parallel: Maximum parallel API calls (default 5)
+            api_key: OpenAI API key (for OpenRouter fallback)
+            model: Primary model (usually Google Gemini)
+            fallback_model: Fallback model (usually Qwen via OpenRouter)
+            chunk_size: Number of comment groups per chunk
+            max_parallel: Maximum parallel API calls
         """
-        self.client = create_openrouter_client(api_key=api_key)
+        # 1. Initialize Google Client (Primary)
+        self.google_client = None
+        try:
+            self.google_client = create_google_ai_studio_client()
+            if self.google_client:
+                logger.info("CommentGroupMapService: Google AI Studio client initialized.")
+        except Exception as e:
+            logger.warning(f"CommentGroupMapService: Could not initialize Google AI Studio client: {e}")
+
+        # 2. Initialize OpenRouter Client (Fallback)
+        self.openrouter_client = create_openrouter_client(api_key=api_key)
+
         self.chunk_size = chunk_size
-        self.model = convert_model_name(model)
+        self.primary_model = model
+        self.fallback_model = fallback_model or "qwen/qwen-2.5-72b-instruct"
         self.max_parallel = max_parallel
         self._prompt_template = self._load_prompt_template()
+
+        logger.info(f"CommentGroupMapService Config: Primary={self.primary_model}, Fallback={self.fallback_model}")
 
     def _load_prompt_template(self) -> Template:
         """Load the comment group drift prompt template."""
@@ -62,19 +79,15 @@ class CommentGroupMapService:
             prompt_dir = Path(__file__).parent.parent.parent / "prompts"
             prompt_path = prompt_dir / "comment_group_drift_prompt.txt"
 
-            # SECURITY: Prevent path traversal attacks
             if not prompt_path.resolve().is_relative_to(prompt_dir.resolve()):
                 raise ValueError(f"Invalid prompt path: {prompt_path}")
 
-            # SECURITY: Check file permissions (not world-writable)
             if prompt_path.stat().st_mode & 0o002:
-                logger.error(f"Prompt file is world-writable: {prompt_path}")
                 raise PermissionError("Unsafe prompt file permissions")
 
             with open(prompt_path, "r", encoding="utf-8") as f:
                 content = f.read()
 
-            # Validate required placeholders
             if "$query" not in content or "$groups" not in content:
                 raise ValueError("Prompt template missing required placeholders")
 
@@ -89,16 +102,7 @@ class CommentGroupMapService:
         expert_id: str,
         exclude_post_ids: Optional[List[int]] = None
     ) -> List[Dict[str, Any]]:
-        """Load comment groups with drift from database.
-
-        Args:
-            db: Database session
-            expert_id: Expert identifier to filter posts
-            exclude_post_ids: List of telegram_message_ids to exclude
-
-        Returns:
-            List of drift groups with anchor post info and drift_topics
-        """
+        """Load comment groups with drift from database."""
         # Query drift groups with anchor posts
         query = db.query(
             comment_group_drift.c.post_id,
@@ -111,18 +115,14 @@ class CommentGroupMapService:
             Post, comment_group_drift.c.post_id == Post.post_id
         ).filter(
             comment_group_drift.c.has_drift == True,
-            comment_group_drift.c.expert_id == expert_id  # Direct filter, no need for Post.expert_id
+            comment_group_drift.c.expert_id == expert_id
         )
 
-        # Exclude posts from Pipeline A (relevant_post_ids)
-        # SECURITY: Validate exclude_post_ids to prevent SQL injection
         if exclude_post_ids:
             validated_ids = []
             for post_id in exclude_post_ids:
-                if not isinstance(post_id, int) or post_id <= 0:
-                    logger.warning(f"Invalid post_id in exclude_post_ids: {post_id}")
-                    continue
-                validated_ids.append(post_id)
+                if isinstance(post_id, int) and post_id > 0:
+                    validated_ids.append(post_id)
 
             if validated_ids:
                 query = query.filter(
@@ -131,29 +131,23 @@ class CommentGroupMapService:
 
         results = query.all()
 
-        # Format groups with drift_topics and load comments
         groups = []
         for post_id, drift_topics_json, telegram_msg_id, message_text, created_at, author_name in results:
-            # Sanitize JSON from database before parsing
             if drift_topics_json:
                 try:
-                    # Convert bytes to string if needed
                     if isinstance(drift_topics_json, bytes):
-                        drift_topics_json = drift_topics_json.decode("utf-8")                    # Remove invalid escape sequences
+                        drift_topics_json = drift_topics_json.decode("utf-8")
                     sanitized = re.sub(r'\\(?![ntr"\\/])', '', drift_topics_json)
                     parsed_drift = json.loads(sanitized)
 
-                    # Extract only the drift_topics array, not the wrapper
                     if isinstance(parsed_drift, dict) and 'drift_topics' in parsed_drift:
                         drift_topics = parsed_drift['drift_topics']
                     elif isinstance(parsed_drift, list):
-                        # Handle old format (direct array)
                         drift_topics = parsed_drift
                     else:
                         drift_topics = []
-
-                except json.JSONDecodeError:
-                    # If still fails, use json_repair
+                except Exception as e:
+                    # Use json_repair as fallback if available, otherwise empty
                     try:
                         from json_repair import repair_json
                         repaired = json.loads(repair_json(drift_topics_json))
@@ -163,19 +157,11 @@ class CommentGroupMapService:
                             drift_topics = repaired
                         else:
                             drift_topics = []
-                    except json.JSONDecodeError as e:
-                        logger.warning(f"JSON repair failed for post {post_id}: {e}")
-                        drift_topics = []
-                    except Exception as e:
-                        logger.error(
-                            f"Unexpected error during drift analysis for post {post_id}: {e}",
-                            exc_info=True
-                        )
+                    except Exception:
                         drift_topics = []
             else:
                 drift_topics = []
 
-            # Load actual comments from database
             from ..models.comment import Comment
             comments_query = db.query(Comment).filter(Comment.post_id == post_id).all()
             comments = [
@@ -195,7 +181,7 @@ class CommentGroupMapService:
                     "message_text": message_text or "[Media only]",
                     "created_at": created_at.isoformat(),
                     "author_name": author_name or "Unknown",
-                    "channel_username": get_channel_username(expert_id)  # Dynamic based on expert
+                    "channel_username": get_channel_username(expert_id)
                 },
                 "drift_topics": drift_topics,
                 "comments_count": len(comments),
@@ -205,28 +191,14 @@ class CommentGroupMapService:
         return groups
 
     def _chunk_groups(self, groups: List[Dict[str, Any]]) -> List[List[Dict[str, Any]]]:
-        """Split comment groups into chunks.
-
-        Args:
-            groups: List of comment groups
-
-        Returns:
-            List of group chunks
-        """
+        """Split comment groups into chunks."""
         chunks = []
         for i in range(0, len(groups), self.chunk_size):
             chunks.append(groups[i:i + self.chunk_size])
         return chunks
 
     def _format_groups_for_prompt(self, groups: List[Dict[str, Any]]) -> str:
-        """Format drift groups for inclusion in the prompt.
-
-        Args:
-            groups: List of drift groups with drift_topics
-
-        Returns:
-            Formatted JSON string
-        """
+        """Format drift groups for inclusion in the prompt."""
         formatted_groups = []
         for group in groups:
             formatted_groups.append({
@@ -236,6 +208,34 @@ class CommentGroupMapService:
             })
 
         return json.dumps(formatted_groups, ensure_ascii=False, indent=2)
+
+    async def _call_llm(self, model_name: str, messages: List[Dict[str, str]]):
+        """Unified method to call either Google or OpenRouter."""
+        is_google_model = model_name.startswith("gemini-") or model_name.startswith("google/")
+
+        # 1. Try Google
+        if is_google_model:
+            if self.google_client:
+                # Google client handles key rotation automatically
+                return await self.google_client.chat_completions_create(
+                    model=model_name,
+                    messages=messages,
+                    temperature=0.3,
+                    response_format={"type": "json_object"}
+                )
+
+        # 2. Try OpenRouter (Fallback or if model is not Google)
+        or_model = convert_model_name(model_name)
+        return await self.openrouter_client.chat.completions.create(
+            model=or_model,
+            messages=messages,
+            temperature=0.3,
+            response_format={"type": "json_object"}
+        )
+
+    def _validate_google_client_availability(self) -> bool:
+        """Check if Google AI Studio client is properly initialized."""
+        return self.google_client is not None
 
     @retry(
         stop=stop_after_attempt(3),
@@ -250,17 +250,7 @@ class CommentGroupMapService:
         chunk_index: int,
         progress_callback: Optional[Callable] = None
     ) -> Dict[str, Any]:
-        """Process a single chunk of comment groups.
-
-        Args:
-            chunk: List of comment groups in this chunk
-            query: User's query
-            chunk_index: Index of this chunk
-            progress_callback: Optional callback for progress updates
-
-        Returns:
-            Dictionary with relevant comment groups
-        """
+        """Process a single chunk of comment groups with Hybrid LLM."""
         try:
             if progress_callback:
                 await progress_callback({
@@ -283,22 +273,32 @@ class CommentGroupMapService:
             # Apply language instruction based on query language
             prompt = prepare_prompt_with_language_instruction(base_prompt, query)
 
-            # Call API
-            response = await self.client.chat.completions.create(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": "You are analyzing comment groups from Telegram."},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.3,
-                response_format={"type": "json_object"}
-            )
+            messages = [
+                {"role": "system", "content": "You are analyzing comment groups from Telegram."},
+                {"role": "user", "content": prompt}
+            ]
+
+            response = None
+
+            # --- HYBRID EXECUTION ---
+            try:
+                # Attempt 1: Primary Model (Google if available)
+                response = await self._call_llm(self.primary_model, messages)
+                logger.info(f"CommentGroups: Successfully used primary model {self.primary_model}")
+            except (GoogleAIStudioError, httpx.HTTPStatusError, Exception) as e:
+                logger.warning(f"CommentGroups: Primary model {self.primary_model} failed: {e}. Switching to Fallback.")
+                # Attempt 2: Fallback Model
+                try:
+                    response = await self._call_llm(self.fallback_model, messages)
+                    logger.info(f"CommentGroups: Successfully used fallback model {self.fallback_model}")
+                except Exception as fallback_e:
+                    logger.error(f"CommentGroups: Fallback model {self.fallback_model} also failed: {fallback_e}")
+                    raise fallback_e
 
             # Parse response
             result = json.loads(response.choices[0].message.content)
 
             # Add anchor_post and comments back to each group from original chunk data
-            # GPT only returns parent_telegram_message_id, we need full anchor_post + comments
             chunk_map = {
                 group["anchor_post"]["telegram_message_id"]: {
                     "anchor_post": group["anchor_post"],
@@ -351,21 +351,7 @@ class CommentGroupMapService:
         exclude_post_ids: Optional[List[int]] = None,
         progress_callback: Optional[Callable] = None
     ) -> List[Dict[str, Any]]:
-        """Process drift groups to find relevant ones.
-
-        IMPORTANT: This method does NOT close the db session. The caller
-        is responsible for session lifecycle management.
-
-        Args:
-            query: User's query
-            db: Database session (managed by caller)
-            expert_id: Expert identifier to filter posts
-            exclude_post_ids: List of telegram_message_ids to exclude (from Pipeline A)
-            progress_callback: Optional callback for progress updates
-
-        Returns:
-            List of relevant comment groups
-        """
+        """Process drift groups to find relevant ones."""
         import time
         phase_start_time = time.time()
 
@@ -386,7 +372,7 @@ class CommentGroupMapService:
         chunks = self._chunk_groups(all_groups)
         total_chunks = len(chunks)
 
-        logger.info(f"[{expert_id}] Comment Groups Phase START: Processing {len(all_groups)} comment groups in {total_chunks} chunks")
+        logger.info(f"[{expert_id}] Comment Groups Phase START: Processing {len(all_groups)} groups in {total_chunks} chunks using {self.primary_model}")
 
         if progress_callback:
             await progress_callback({

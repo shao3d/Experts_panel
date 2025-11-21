@@ -47,8 +47,11 @@ MODEL_MEDIUM_SCORING_FALLBACK: str = os.getenv("MODEL_MEDIUM_SCORING_FALLBACK", 
 if not (MODEL_MEDIUM_SCORING_PRIMARY.startswith("gemini-") or MODEL_MEDIUM_SCORING_PRIMARY.startswith("google/")):
     print(f"WARNING: MODEL_MEDIUM_SCORING_PRIMARY should be a Google model for hybrid cost optimization. Current: {MODEL_MEDIUM_SCORING_PRIMARY}")
 
-# Модель для поиска групп комментариев
-MODEL_COMMENT_GROUPS: str = os.getenv("MODEL_COMMENT_GROUPS", "qwen/qwen-2.5-72b-instruct")
+# Модель для поиска групп комментариев (Гибридная схема)
+# Primary: Google Gemini 2.0 Flash (Бесплатно)
+# Fallback: Qwen 72B (Платно)
+MODEL_COMMENT_GROUPS_PRIMARY: str = os.getenv("MODEL_COMMENT_GROUPS_PRIMARY", "gemini-2.0-flash")
+MODEL_COMMENT_GROUPS_FALLBACK: str = os.getenv("MODEL_COMMENT_GROUPS_FALLBACK", "qwen/qwen-2.5-72b-instruct")
 
 # --- Лимиты (Rate Limiting) ---
 # Ограничение параллельных запросов для Map фазы.

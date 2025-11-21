@@ -308,7 +308,12 @@ async def process_expert_pipeline(
     if request.include_comment_groups:
         main_sources = reduce_results.get("main_sources", [])
 
-        cg_service = CommentGroupMapService(api_key=config.OPENROUTER_API_KEY, model=config.MODEL_COMMENT_GROUPS)
+        # Use Hybrid Configuration: Google (Primary) -> Qwen (Fallback)
+        cg_service = CommentGroupMapService(
+            api_key=config.OPENROUTER_API_KEY,
+            model=config.MODEL_COMMENT_GROUPS_PRIMARY,
+            fallback_model=config.MODEL_COMMENT_GROUPS_FALLBACK
+        )
 
         async def cg_progress(data: dict):
             if progress_callback:
