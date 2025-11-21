@@ -53,6 +53,10 @@ if not (MODEL_MEDIUM_SCORING_PRIMARY.startswith("gemini-") or MODEL_MEDIUM_SCORI
 MODEL_COMMENT_GROUPS_PRIMARY: str = os.getenv("MODEL_COMMENT_GROUPS_PRIMARY", "gemini-2.0-flash")
 MODEL_COMMENT_GROUPS_FALLBACK: str = os.getenv("MODEL_COMMENT_GROUPS_FALLBACK", "qwen/qwen-2.5-72b-instruct")
 
+# Модели для Перевода (Гибридная схема)
+# Primary: Google Gemini 2.0 Flash (Бесплатно) для перевода постов и валидации языка
+MODEL_TRANSLATION_PRIMARY: str = os.getenv("MODEL_TRANSLATION_PRIMARY", "gemini-2.0-flash")
+
 # --- Лимиты (Rate Limiting) ---
 # Ограничение параллельных запросов для Map фазы.
 # Для 5 ключей ставим 8 (это ~1.6 запроса на ключ, безопасно для Burst Limit).
@@ -69,8 +73,13 @@ DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///data/experts.db")
 
 # --- Конфигурация логирования ---
 LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
-BACKEND_LOG_FILE: str = os.getenv("BACKEND_LOG_FILE", "/app/data/backend.log")
-FRONTEND_LOG_FILE: str = os.getenv("FRONTEND_LOG_FILE", "/app/data/frontend.log")
+# Use relative paths for development, absolute for production
+if os.getenv("ENVIRONMENT") == "production":
+    BACKEND_LOG_FILE: str = os.getenv("BACKEND_LOG_FILE", "/app/data/backend.log")
+    FRONTEND_LOG_FILE: str = os.getenv("FRONTEND_LOG_FILE", "/app/data/frontend.log")
+else:
+    BACKEND_LOG_FILE: str = os.getenv("BACKEND_LOG_FILE", "data/backend.log")
+    FRONTEND_LOG_FILE: str = os.getenv("FRONTEND_LOG_FILE", "data/frontend.log")
 
 # Логирование для проверки при запуске
 if os.getenv("ENVIRONMENT") != "production":
@@ -91,6 +100,7 @@ if os.getenv("ENVIRONMENT") != "production":
     print(f"  Синтез (Fallback):     {MODEL_SYNTHESIS_FALLBACK}")
     print(f"  Анализ (Trans/Valid):  {MODEL_ANALYSIS}")
     print(f"  Группы коммент.:       {MODEL_COMMENT_GROUPS_PRIMARY}")
+    print(f"  Перевод (Primary):     {MODEL_TRANSLATION_PRIMARY}")
     print("--------------------------------------")
     print("--- Загруженная конфигурация логирования ---")
     print(f"  Log Level:         {LOG_LEVEL}")

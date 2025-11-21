@@ -17,16 +17,22 @@ logger = logging.getLogger(__name__)
 class LanguageValidationService:
     """Service for validating and ensuring language consistency of expert responses."""
 
-    def __init__(self, api_key: str, model: str):
+    def __init__(self, api_key: str, model: str, primary_model: str = "gemini-2.0-flash"):
         """Initialize LanguageValidationService.
 
         Args:
-            api_key: OpenAI API key for OpenRouter access
-            model: Model to use for translation (default qwen-2.5-72b)
+            api_key: OpenAI API key
+            model: Fallback model (Qwen)
+            primary_model: Primary model (Gemini)
         """
         self.client = create_openrouter_client(api_key=api_key)
         self.model = convert_model_name(model)
-        self.translation_service = TranslationService(api_key=api_key, model=model)
+        # Initialize internal translation service with hybrid support
+        self.translation_service = TranslationService(
+            api_key=api_key,
+            model=model,
+            primary_model=primary_model
+        )
 
     @retry(
         stop=stop_after_attempt(3),
