@@ -90,7 +90,7 @@ if os.getenv("ENVIRONMENT") != "production":
     print(f"  Синтез (Primary):      {MODEL_SYNTHESIS_PRIMARY}")
     print(f"  Синтез (Fallback):     {MODEL_SYNTHESIS_FALLBACK}")
     print(f"  Анализ (Trans/Valid):  {MODEL_ANALYSIS}")
-    print(f"  Группы коммент.:       {MODEL_COMMENT_GROUPS}")
+    print(f"  Группы коммент.:       {MODEL_COMMENT_GROUPS_PRIMARY}")
     print("--------------------------------------")
     print("--- Загруженная конфигурация логирования ---")
     print(f"  Log Level:         {LOG_LEVEL}")

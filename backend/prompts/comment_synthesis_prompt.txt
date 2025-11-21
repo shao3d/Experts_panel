@@ -17,6 +17,12 @@ CRITICAL RULES - ABSOLUTE REQUIREMENTS:
 • Ignore comments that simply repeat what's already in the main answer
 • Look for: practical tips, alternative viewpoints, real experiences, warnings, edge cases
 
+CHRONOLOGY RULES:
+• **PRIORITIZE FRESHNESS:** Focus on the most recent community discussions. Trends change fast.
+• Pay attention to the dates of the discussions when summarizing sentiments.
+• Recent discussions (2024-2025) may contain more current information than older ones.
+• When there are conflicting views, give preference to more recent discussions.
+
 WHAT TO EXTRACT:
 ✓ Practical implementation details from real usage
 ✓ Problems and solutions discussed by users

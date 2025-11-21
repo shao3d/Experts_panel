@@ -268,6 +268,16 @@ async def process_expert_pipeline(
     ]
     enriched_posts.extend(medium_direct)
 
+    # --- CHRONOLOGY FIX: Sort posts by Relevance then by Date (Newest First) ---
+    # Strategy: Python sort is stable.
+    # 1. Global Sort: Date Descending (Newest first)
+    enriched_posts.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+
+    # 2. Stable Sort: Relevance Ascending (HIGH=0, MEDIUM=1).
+    # This keeps High posts at the top, but preserves the Date ordering within the High group.
+    relevance_priority = {"HIGH": 0, "MEDIUM": 1}
+    enriched_posts.sort(key=lambda x: relevance_priority.get(x.get("relevance", "LOW"), 2))
+
     # 5. Reduce phase
     reduce_service = ReduceService()
 

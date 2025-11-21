@@ -421,14 +421,15 @@ class CommentGroupMapService:
             if g.get("relevance") == "HIGH"
         ]
 
-        # Sort by relevance
+        # Sort by relevance THEN by Freshness (Date of anchor post)
+        # Strategy: Python sort is stable.
+
+        # 1. Global Sort: Date Descending (Newest discussions first)
+        relevant_groups.sort(key=lambda x: x["anchor_post"].get("created_at", ""), reverse=True)
+
+        # 2. Stable Sort: Relevance Ascending (HIGH=0, MEDIUM=1)
         relevance_order = {"HIGH": 0, "MEDIUM": 1}
-        relevant_groups.sort(
-            key=lambda x: (
-                relevance_order.get(x.get("relevance", "LOW"), 2),
-                -x.get("comments_count", 0)
-            )
-        )
+        relevant_groups.sort(key=lambda x: relevance_order.get(x.get("relevance", "LOW"), 2))
 
         # Log phase completion with timing
         duration_ms = int((time.time() - phase_start_time) * 1000)

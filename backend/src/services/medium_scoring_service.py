@@ -115,7 +115,13 @@ class MediumScoringService:
         for scored_post in scored_posts:
             post_id = scored_post["telegram_message_id"]
             if post_id in input_ids:
-                valid_scored_posts.append(scored_post)
+                # Find original post and merge all fields
+                original_post = next((p for p in medium_posts if p["telegram_message_id"] == post_id), None)
+                if original_post:
+                    merged_post = {**original_post, **scored_post}  # Original fields + score/reason
+                    valid_scored_posts.append(merged_post)
+                else:
+                    logger.warning(f"[{expert_id}] Original post ID {post_id} not found in input posts")
             else:
                 logger.warning(f"[{expert_id}] Scored post ID {post_id} not found in input posts")
 
@@ -124,11 +130,13 @@ class MediumScoringService:
             post_id = post["telegram_message_id"]
             if not any(sp.get("telegram_message_id") == post_id for sp in valid_scored_posts):
                 logger.warning(f"[{expert_id}] No score found for input post {post_id}, using default 0.0")
-                valid_scored_posts.append({
-                    "telegram_message_id": post_id,
+                # Preserve all original fields, add default score/reason
+                post_with_default_score = {
+                    **post,  # All original fields including created_at, content, etc.
                     "score": 0.0,
                     "reason": "Not scored by model"
-                })
+                }
+                valid_scored_posts.append(post_with_default_score)
 
         logger.info(f"[{expert_id}] Parsed {len(valid_scored_posts)} scored posts from text response")
         return {"scored_posts": valid_scored_posts}

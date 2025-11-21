@@ -53,6 +53,12 @@ WRITING RULES:
 - Use "автор" when referring to the channel owner (in Russian)
 - Technical terms (AI, OSINT, API) can stay in English
 
+CHRONOLOGY RULES:
+- **CHRONOLOGY IS CRITICAL:** The provided posts are sorted by relevance and date. Prioritize NEWER posts (check the Date field).
+- Information from recent posts (e.g., 2024-2025) overrides older information.
+- If the expert's opinion changed over time, explicitly mention this evolution.
+- When showing thought development, follow the chronological timeline to reflect how ideas evolved.
+
 CONFIDENCE LEVELS:
 - HIGH: Direct, clear information from multiple consistent sources
 - MEDIUM: Partial information or some uncertainty

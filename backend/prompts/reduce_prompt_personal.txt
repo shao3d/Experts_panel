@@ -48,6 +48,12 @@ CRITICAL ANTI-HALLUCINATION RULES:
 • ONLY reference telegram_message_ids from the posts list below
 • Do NOT assume or extrapolate beyond what posts explicitly state
 
+CHRONOLOGY RULES:
+• **CHRONOLOGY IS CRITICAL:** The provided posts are sorted by relevance and date. Prioritize NEWER posts.
+• Information from recent posts (e.g., 2024-2025) overrides older information.
+• If the author's opinion changed over time, explicitly mention this evolution as "раньше я думал..., сейчас считаю...".
+• When showing thought development, follow the chronological timeline to reflect how ideas evolved.
+
 RELEVANCE CHECK - CRITICAL VALIDATION:
 • BEFORE answering, review: Do these posts ACTUALLY contain information about the SPECIFIC topic asked?
 • If posts are about general development tools but question is about specific technology:
