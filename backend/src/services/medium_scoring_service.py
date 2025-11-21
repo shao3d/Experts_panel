@@ -162,18 +162,22 @@ class MediumScoringService:
 
     async def _call_llm(self, model_name: str, messages: List[Dict[str, str]], expert_id: str):
         """Unified method to call either Google or OpenRouter."""
-        is_google_model = "gemini" in model_name or model_name.startswith("google/")
+        # Fixed: More precise Google model detection
+        is_google_model = model_name.startswith("gemini-") or model_name.startswith("google/")
 
         # 1. Try Google
-        if is_google_model and self.google_client:
-            logger.info(f"[{expert_id}] Calling Google AI Studio ({model_name})...")
-            # Google client handles key rotation automatically
-            return await self.google_client.chat_completions_create(
-                model=model_name,
-                messages=messages,
-                temperature=0.3,
-                # Note: We DON'T force json_object here because the prompt expects Markdown text output
-            )
+        if is_google_model:
+            if self.google_client:
+                logger.info(f"[{expert_id}] Calling Google AI Studio ({model_name})...")
+                # Google client handles key rotation automatically
+                return await self.google_client.chat_completions_create(
+                    model=model_name,
+                    messages=messages,
+                    temperature=0.3,
+                    # Note: We DON'T force json_object here because the prompt expects Markdown text output
+                )
+            else:
+                logger.warning(f"[{expert_id}] Google AI Studio client not available, falling back to OpenRouter for {model_name}")
 
         # 2. Try OpenRouter
         logger.info(f"[{expert_id}] Calling OpenRouter ({model_name})...")
@@ -248,24 +252,25 @@ Created: {post.get('created_at', '')}
         try:
             # Attempt 1: Primary Model (Google)
             response = await self._call_llm(self.primary_model, messages, expert_id)
+            logger.info(f"[{expert_id}] Primary model {self.primary_model} succeeded")
 
-        except (GoogleAIStudioError, httpx.HTTPStatusError) as e:
-            # Only log warning for primary failure, then try fallback
+        except (GoogleAIStudioError, httpx.HTTPStatusError, Exception) as e:
+            # Unified handling for all primary model failures
             logger.warning(f"[{expert_id}] Primary model {self.primary_model} failed: {e}. Switching to Fallback.")
 
             # Attempt 2: Fallback Model (OpenRouter)
             try:
                 response = await self._call_llm(self.fallback_model, messages, expert_id)
+                logger.info(f"[{expert_id}] Fallback model {self.fallback_model} succeeded")
             except Exception as fallback_e:
-                logger.error(f"[{expert_id}] Fallback model {self.fallback_model} also failed: {fallback_e}")
+                logger.error(f"[{expert_id}] Both primary and fallback models failed. Primary: {e}, Fallback: {fallback_e}")
                 raise fallback_e
 
-        except Exception as e:
-            # Catch-all for other primary errors
-            logger.error(f"[{expert_id}] Unexpected error with primary model: {e}. Switching to Fallback.")
-            response = await self._call_llm(self.fallback_model, messages, expert_id)
+        # Process Response with validation
+        if not response or not hasattr(response, 'choices') or len(response.choices) == 0:
+            logger.error(f"[{expert_id}] Invalid response structure from LLM")
+            raise ValueError("Invalid LLM response structure")
 
-        # Process Response
         raw_content = response.choices[0].message.content
 
         if not raw_content or not raw_content.strip():
