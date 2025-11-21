@@ -98,8 +98,6 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
 
     const handlePostReady = (newPost: PostDetailResponse) => {
       if (!cancelled) {
-        console.log(`[ExpertAccordion] Post ready: ${newPost.telegram_message_id}`);
-
         // Accumulate post addition
         if (!pendingPostAdd) {
           pendingPostAdd = (prev) => prev;
@@ -122,7 +120,6 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
 
     const handleProgress = (completed: number, total: number) => {
       if (!cancelled) {
-        console.log(`[ExpertAccordion] Translation progress: ${completed}/${total}`);
         pendingProgressUpdate = { current: completed, total };
         scheduleUpdate();
       }
@@ -137,13 +134,8 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
     )
       .then(finalOrderedPosts => {
         if (!cancelled) {
-          console.log(`[ExpertAccordion] All posts loaded for ${expert.expert_id}:`, finalOrderedPosts.length);
-
           // IMPORTANT: Only update if we're still translating or have no posts yet
-          // This prevents race conditions with progressive updates
           setPosts(currentPosts => {
-            // If we have the same number of posts, keep progressive order
-            // If we need to ensure correct order, use final ordered posts
             if (currentPosts.length === finalOrderedPosts.length) {
               return currentPosts; // Keep progressive order
             }
@@ -165,14 +157,9 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
 
     return () => {
       cancelled = true;
-
-      // Cleanup pending updates to prevent memory leaks
       if (updateTimeout) {
         clearTimeout(updateTimeout);
-        updateTimeout = null;
       }
-
-      // Flush any remaining updates
       flushUpdates();
     };
   }, [isExpanded, expert.main_sources, expert.expert_id, query]);
@@ -247,7 +234,7 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
           <div style={styles.rightColumn}>
             <div style={styles.columnHeader}>
               <h2 style={styles.columnTitle}>
-                Source posts with comments ({posts.length})
+                Source posts with comments
               </h2>
             </div>
 
@@ -292,17 +279,17 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
                     />
                   )}
 
-                  {/* 2. Render Comment Groups (ALWAYS if they exist, regardless of posts) */}
+                  {/* 2. Render Comment Groups (ALWAYS if they exist) */}
                   {expert.relevant_comment_groups && expert.relevant_comment_groups.length > 0 && (
                     <CommentGroupsList
                       commentGroups={expert.relevant_comment_groups}
                     />
                   )}
 
-                  {/* 3. Show placeholder ONLY if we have no posts AND no comment groups */}
+                  {/* 3. Placeholder only if NOTHING exists */}
                   {posts.length === 0 && (!expert.relevant_comment_groups || expert.relevant_comment_groups.length === 0) && (
                     <div style={styles.placeholder}>
-                      {expert.main_sources.length > 0 ? 'Loading posts...' : 'No source posts available'}
+                       {expert.main_sources.length > 0 ? 'Loading posts...' : 'No source posts available'}
                     </div>
                   )}
                 </>

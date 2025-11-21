@@ -339,7 +339,13 @@ async def process_expert_pipeline(
         )
 
         # Convert to response format
+        seen_parent_ids = set()
         for group in comment_group_results:
+            # Deduplicate groups by parent message ID
+            if group["parent_telegram_message_id"] in seen_parent_ids:
+                continue
+            seen_parent_ids.add(group["parent_telegram_message_id"])
+
             anchor_post_data = group["anchor_post"]
 
             # Convert comments
