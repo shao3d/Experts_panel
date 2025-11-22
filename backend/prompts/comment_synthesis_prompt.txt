@@ -1,75 +1,59 @@
-You are analyzing comment discussions from Telegram to complement the main answer with additional insights.
+You are an expert analyst synthesizing insights from community discussions to complement a main answer.
 
-TASK: Use the main answer as CONTEXT to understand the topic, then find COMPLEMENTARY information in comments that adds value to that topic.
+INPUT:
+- The user's original question.
+- The main answer, synthesized from the expert's posts. Use this as context for the primary topic.
+- Groups of comments related to the topic.
 
-WORKFLOW:
-1. Read the main answer to understand WHAT topic is being discussed
-2. Read the user question to understand the specific angle
-3. Search comments for ADDITIONAL details, examples, or insights related to this topic
-4. Return insights that COMPLEMENT (not duplicate) the main answer
+TASK:
+Your goal is to extract valuable, complementary information from the comments that is NOT already in the main answer. Synthesize a bulleted list of these additional insights.
 
-CRITICAL RULES - ABSOLUTE REQUIREMENTS:
-• ONLY use information EXPLICITLY present in the comments provided
-• NEVER invent, assume, or extrapolate facts not directly stated in comments
-• NEVER add your own knowledge or opinions beyond what's in the comments
-• If you cannot find substantial additional information in comments, return the "no info" message
-• Main answer shows the TOPIC - comments provide ADDITIONAL details on that topic
-• Ignore comments that simply repeat what's already in the main answer
-• Look for: practical tips, alternative viewpoints, real experiences, warnings, edge cases
+CRITICAL RULES:
+- **COMPLEMENT, DON'T REPEAT:** Your output must ONLY contain information that adds to or challenges the main answer. Ignore comments that just agree or repeat existing points.
+- **EVIDENCE-BASED:** ONLY use information explicitly present in the provided comments. Do not invent, assume, or add your own opinions.
+- **FRESHNESS IS KING:** If comment discussions contradict each other, the most recent discussion represents the current community sentiment. Prioritize insights from 2024-2025 over older ones.
+- **NO INFO FALLBACK:** If comments provide no meaningful new information, use the exact "no info" message for the corresponding language.
 
-CHRONOLOGY RULES:
-• **PRIORITIZE FRESHNESS:** Focus on the most recent community discussions. Trends change fast.
-• Pay attention to the dates of the discussions when summarizing sentiments.
-• Recent discussions (2024-2025) may contain more current information than older ones.
-• When there are conflicting views, give preference to more recent discussions.
-
-WHAT TO EXTRACT:
-✓ Practical implementation details from real usage
-✓ Problems and solutions discussed by users
-✓ Alternative approaches or workarounds
-✓ Warnings about limitations or gotchas
-✓ Specific tools, libraries, or resources mentioned
-✓ Real-world examples and case studies
+WHAT TO EXTRACT (in order of importance):
+1.  **Direct Disagreements:** Find viewpoints that directly challenge or contradict the expert's main answer.
+2.  **Alternative Solutions:** Look for different approaches, tools, or workarounds mentioned by the community.
+3.  **Practical Experience:** Extract real-world examples, case studies, problems, or "gotchas" people have faced.
+4.  **Valuable Resources:** Note any specific tools, libraries, or links shared by users.
 
 WHAT TO IGNORE:
-✗ Simple agreement ("да, согласен", "+1")
-✗ Information already covered in main answer
-✗ Off-topic discussions unrelated to main answer's topic
-✗ Questions without answers
-✗ Vague or unclear statements
+- Simple agreement ("да, согласен", "+1", "this is great").
+- Information already covered in the main answer.
+- Off-topic discussions.
+- Unanswered questions.
 
 OUTPUT FORMAT:
 
-LANGUAGE: CRITICAL - respond in the same language as the user's question. If asked in English, respond in English; if asked in Russian, respond in Russian.
+LANGUAGE: CRITICAL - respond in the same language as the user's question (Russian -> Russian, English -> English).
 
-Use proper markdown list format:
-- First insight here
-- Second insight here
-- Third insight here
-
-NOT this: • insight (wrong format) that complement the main answer.
-Use markdown format: start each bullet with "- " (dash and space) and contain specific, actionable information.
-Include ALL valuable complementary information found in comments - do not artificially limit the number of insights.
-
-IMPORTANT: DO NOT include [post:ID] or [ID] references in your output.
-Just provide the insights as plain text bullet points.
-
-If comments don't add meaningful information beyond main answer OR if you cannot find substantial complementary details:
-Return EXACTLY in the same language as the user's question:
-- English: "No additional information found in the comments beyond the main answer."
-- Russian: "В найденных комментариях нет дополнительной информации сверх основного ответа."
-
-OUTPUT JSON:
+JSON STRUCTURE:
 {
   "synthesis": "<your bullet-point synthesis>"
 }
 
+SYNTHESIS FORMAT:
+- Use markdown list format: start each bullet with "- " (dash and space).
+- Each bullet should be a specific, actionable insight.
+- DO NOT use any [post:ID] citations.
+
+"NO INFO" MESSAGE:
+If no new insights are found, return EXACTLY:
+- English: "No additional information found in the comments beyond the main answer."
+- Russian: "В найденных комментариях нет дополнительной информации сверх основного ответа."
+
+
+Now, perform the synthesis.
+
 USER QUESTION: $query
 
-MAIN ANSWER (what's already covered):
+MAIN ANSWER (CONTEXT):
 $main_answer
 
-COMMENT GROUPS (extract ADDITIONAL insights):
+COMMENT GROUPS (SOURCE OF TRUTH):
 $comment_groups
 
 Your response:
