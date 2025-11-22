@@ -20,6 +20,15 @@ class DebugLogger {
     this.setupNetworkInterception();
   }
 
+  private getLogEndpoint(): string {
+    if (import.meta.env.PROD) {
+      return '/api/v1/log-batch';
+    }
+
+    const base = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000').replace(/\/$/, '');
+    return `${base}/api/v1/log-batch`;
+  }
+
   // Override console methods to capture logs
   private setupConsoleOverride() {
     const originalLog = console.log;
@@ -131,11 +140,18 @@ class DebugLogger {
     this.logBuffer = []; // Clear buffer immediately
 
     try {
-      await fetch('http://127.0.0.1:8000/api/v1/log-batch', {
+      const logEndpoint = this.getLogEndpoint();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+
+      if (import.meta.env.VITE_ADMIN_SECRET) {
+        headers['X-Admin-Secret'] = import.meta.env.VITE_ADMIN_SECRET;
+      }
+
+      await fetch(logEndpoint, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify(logsToSend),
       });
     } catch (error) {
