@@ -1,4 +1,13 @@
-"""Simplified query endpoint with Map + (Resolve-Reduce) architecture."""
+"""Main API endpoint for processing queries through the multi-expert pipeline.
+
+This module orchestrates the entire query processing flow, including:
+- Receiving the user query via a POST request.
+- Spawning parallel processing tasks for each configured expert.
+- Orchestrating the multi-phase pipeline (Map, Score, Resolve, Reduce, etc.) for each expert.
+- Streaming real-time progress updates to the client via Server-Sent Events (SSE).
+- Assembling and returning the final multi-expert response.
+It also includes endpoints for retrieving individual post details.
+"""
 
 import asyncio
 import json

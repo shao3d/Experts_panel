@@ -31,15 +31,7 @@ Find relevant posts from the expert's content using semantic search and relevanc
 #### Robust Retry Mechanism (NEW 2025-10-15)
 Two-layer retry strategy ensures reliable processing:
 
-**Layer 1: Per-Chunk Retry**
-```python
-@retry(
-    stop=stop_after_attempt(3),
-    wait=wait_exponential(multiplier=2, min=4, max=60),
-    retry=retry_if_exception_type((httpx.HTTPStatusError, json.JSONDecodeError, ValueError)),
-    reraise=True
-)
-```
+The retry mechanism is defined using a `@retry` decorator directly in the `map_service.py` file. See the implementation for specific parameters.
 
 **Layer 2: Global Retry**
 - 1 additional retry for failed chunks
@@ -53,18 +45,7 @@ Two-layer retry strategy ensures reliable processing:
 4. **Error Recovery**: Retry failed chunks automatically
 5. **Progress Tracking**: SSE events for real-time updates
 
-### Output Format
-```json
-{
-  "relevant_posts": [
-    {
-      "post_id": 123,
-      "relevance": "HIGH|MEDIUM|LOW",
-      "reason": "Detailed explanation of relevance"
-    }
-  ]
-}
-```
+The service returns a dictionary containing a list of relevant posts, each with a `post_id`, `relevance` level, and a `reason`. The specific implementation can be found in the `process` method of `backend/src/services/map_service.py`.
 
 ## 🎯 Medium Scoring Phase
 
@@ -83,12 +64,7 @@ Intelligently score and select Medium relevance posts using hybrid reranking to 
 1. **Threshold Filtering**: Score ≥ 0.7 passes first filter
 2. **Top-K Selection**: From filtered posts, select top-5 by highest score
 
-#### Configuration Parameters
-```python
-MEDIUM_SCORE_THRESHOLD = 0.7      # Minimum score threshold
-MEDIUM_MAX_SELECTED_POSTS = 5     # Maximum posts to select
-MEDIUM_MAX_POSTS = 50           # Memory limit for processing
-```
+These parameters are defined as environment variables with defaults. See `MEDIUM_SCORE_THRESHOLD` (default: 0.7), `MEDIUM_MAX_SELECTED_POSTS` (default: 5), and `MEDIUM_MAX_POSTS` (default: 50) in `backend/src/services/medium_scoring_service.py` for implementation details.
 
 ### Key Features
 
@@ -109,21 +85,7 @@ MEDIUM_MAX_POSTS = 50           # Memory limit for processing
 4. **Top-K Selection**: Select top-5 highest scoring posts
 5. **Output**: Pass selected posts to Reduce phase
 
-### Output Format
-```json
-{
-  "selected_medium_posts": [
-    {
-      "post_id": 456,
-      "score": 0.85,
-      "reason": "Directly addresses user's question with technical details"
-    }
-  ],
-  "total_medium_processed": 23,
-  "threshold_passed": 8,
-  "final_selected": 5
-}
-```
+The service returns a list of selected medium posts, each represented as a dictionary containing the original post data along with a `score` and `score_reason`. For the exact structure, see the implementation of the `score_medium_posts` method in `backend/src/services/medium_scoring_service.py`.
 
 ## 🔍 Filter Phase
 
@@ -209,15 +171,7 @@ Synthesize final answer using HIGH posts with expanded context and selected Medi
 4. **Context Construction**: Builds coherent narrative from diverse sources
 5. **Answer Synthesis**: Generates comprehensive response utilizing all selected content
 
-### Output Format
-```json
-{
-  "answer": "Comprehensive answer in expert's voice",
-  "main_sources": [21, 65, 77],
-  "confidence": "HIGH|MEDIUM|LOW",
-  "reasoning": "Explanation of answer confidence"
-}
-```
+The service's output is incorporated into the `ExpertResponse` Pydantic model (`backend/src/api/models.py`), which includes the `answer`, a list of `main_sources`, and a `confidence` level.
 
 ## 🌐 Language Validation Phase
 
@@ -255,17 +209,7 @@ Validate language consistency between user query and expert response, translatin
 4. **Validation**: Ensure translation preserves meaning and formatting
 5. **Progress Reporting**: SSE events for validation status updates
 
-### Output Format
-```json
-{
-  "answer": "Translated or original response",
-  "original_answer": "Original response before validation",
-  "language": "English|Russian|Unknown",
-  "validation_applied": true,
-  "translation_applied": true,
-  "original_detected_language": "Russian"
-}
-```
+The service returns a dictionary containing the validated `answer` and several metadata fields, such as `translation_applied` and `original_detected_language`. For the exact structure, see the `process` method in `backend/src/services/language_validation_service.py`.
 
 ### Integration Points
 - **Position**: Phase 5, after Reduce phase completion
@@ -348,36 +292,7 @@ Assemble the final multi-expert response combining main answer, comment insights
 4. **Response Formatting**: Structure final multi-expert response
 5. **SSE Transmission**: Stream complete response to client
 
-### Output Format
-```json
-{
-  "experts": [
-    {
-      "expert_id": "expert_name",
-      "answer": "Main synthesized answer",
-      "main_sources": [21, 65, 77],
-      "confidence": "HIGH",
-      "comment_insights": [
-        {
-          "insight": "Additional perspective from comments",
-          "comment_sources": ["post:123|group:456"]
-        }
-      ],
-      "processing_stats": {
-        "total_posts_processed": 156,
-        "high_posts": 12,
-        "medium_posts_selected": 5,
-        "processing_time_ms": 4500
-      }
-    }
-  ],
-  "query_metadata": {
-    "query": "User's original query",
-    "total_experts_processed": 3,
-    "total_processing_time_ms": 12000
-  }
-}
-```
+The final SSE 'complete' event contains the response payload. The structure of this payload is defined by the `MultiExpertQueryResponse` Pydantic model located in `backend/src/api/models.py`. This model contains a list of `ExpertResponse` objects, one for each expert.
 
 ## 🔄 Parallel Processing
 
@@ -411,45 +326,10 @@ Assemble the final multi-expert response combining main answer, comment insights
 ## 🛠️ Configuration
 
 ### Pipeline Parameters
-```python
-# Map Phase
-CHUNK_SIZE = 40  # Posts per chunk
-MAX_GLOBAL_RETRIES = 1  # Additional global retry attempts
-
-# Medium Scoring Phase
-MEDIUM_SCORE_THRESHOLD = 0.7  # Minimum score threshold
-MEDIUM_MAX_SELECTED_POSTS = 5  # Maximum posts to select
-MEDIUM_MAX_POSTS = 50  # Memory limit for processing
-
-# Filter Phase
-RELEVANCE_THRESHOLD = "HIGH"  # Keep HIGH + selected Medium posts
-
-# Reduce Phase
-MAX_POSTS = 50  # Maximum posts for synthesis
-USE_PERSONAL_STYLE = True  # Default to personal style
-
-# Comment Groups
-DRIFT_CHUNK_SIZE = 20  # Drift groups per API call
-MAX_PARALLEL_REQUESTS = 5  # Rate limiting
-
-# Language Validation
-LANGUAGE_VALIDATION_MODEL = os.getenv("MODEL_ANALYSIS", "qwen-2.5-72b")  # Configurable via MODEL_ANALYSIS
-TRANSLATION_RETRY_ATTEMPTS = 3  # Retry attempts for translation
-```
+Parameters such as chunk sizes, thresholds, and limits are defined as constants within their respective service files in `backend/src/services/`. For example, `MEDIUM_SCORE_THRESHOLD` is defined in `medium_scoring_service.py`.
 
 ### Model Configuration
-```python
-import os
-
-DEFAULT_MODELS = {
-    "map": os.getenv("MODEL_ANALYSIS", "qwen/qwen-2.5-72b-instruct"),
-    "medium_scoring": os.getenv("MODEL_ANALYSIS", "qwen/qwen-2.5-72b-instruct"),
-    "reduce": "google/gemini-2.0-flash-001",
-    "language_validation": os.getenv("MODEL_ANALYSIS", "qwen/qwen-2.5-72b-instruct"),
-    "comment_groups": "qwen/qwen-2.5-72b-instruct",
-    "comment_synthesis": "google/gemini-2.0-flash-001"
-}
-```
+Default models for each pipeline phase are configured using environment variables. The primary source for this configuration is `backend/src/config.py`, which defines variables such as `MODEL_MAP_PRIMARY`, `MODEL_SYNTHESIS_PRIMARY`, etc.
 
 ## 🔍 Debugging and Monitoring
 
@@ -464,17 +344,7 @@ DEFAULT_MODELS = {
 3. **Timeout Issues**: Check chunk size and API limits
 4. **Context Issues**: Verify database links and constraints
 
-### Performance Monitoring
-```bash
-# Check retry patterns
-grep "Global retry" backend/logs/app.log
-
-# Monitor processing time
-grep "processing_time_ms" backend/logs/app.log
-
-# Check for failures
-grep "failed" backend/logs/app.log
-```
+The application logs provide valuable debugging information. To monitor performance and errors, check the log files (defined in `config.py` as `BACKEND_LOG_FILE`) for messages containing terms like 'Global retry', 'processing_time_ms', and 'failed'.
 
 ## 📁 Key Files and Locations
 

@@ -6,316 +6,56 @@ React 18 + TypeScript frontend with real-time multi-expert query progress tracki
 
 ## 🛠️ Technology Stack
 
-- **React 18** - Function components with hooks
-- **TypeScript** - Strict mode, full type safety
-- **Vite** - Build tool and dev server (port 3000) with path aliases
-- **SSE (Server-Sent Events)** - Real-time multi-expert progress streaming
-- **Advanced Debug Logging** - Console/API/SSE event batching system
-- **React Markdown** - Markdown rendering with syntax highlighting
-- **React Query** - Server state management (optional)
-- **Inline styles** - No CSS frameworks for MVP simplicity
+- **React 18** - Function components with hooks and concurrent features
+- **TypeScript** - Strict mode, full type safety with comprehensive interfaces
+- **Vite** - Build tool and dev server (port 3000) with path aliases and HMR
+- **SSE (Server-Sent Events)** - Real-time multi-expert progress streaming with enhanced error handling
+- **Advanced Debug Logging** - Console/API/SSE event batching system with production compatibility
+- **React Markdown** - Markdown rendering with syntax highlighting and GFM support
+- **React Query (TanStack Query)** - Server state management and caching (v5.56.2)
+- **React Hot Toast** - Elegant notification system for user feedback
+- **React Loading Skeleton** - Smooth loading states and skeleton screens
+- **clsx** - Conditional className utility for cleaner styling
+- **Inline styles** - No CSS frameworks for MVP simplicity with planned migration to CSS modules
 
 ## 📁 Project Structure
-
-```
-frontend/src/
-├── App.tsx                    # Main application with state management
-├── index.tsx                  # Entry point
-├── components/
-│   ├── QueryForm.tsx          # Query input with validation
-│   ├── ProgressSection.tsx    # Enhanced progress display with expert feedback
-│   ├── ExpertResponse.tsx     # Answer display with source links
-│   ├── PostsList.tsx          # Posts list with selection
-│   ├── PostCard.tsx           # Individual post card display
-│   ├── ExpertAccordion.tsx    # Expandable expert response sections
-│   ├── ExpertSelector.tsx     # Expert selection interface
-│   ├── ExpertSelectionBar.tsx # Expert filtering and selection bar
-│   ├── StatsAndSelectors.tsx  # Statistics display and filtering controls
-│   ├── CommentSynthesis.tsx   # Comment synthesis display component
-│   ├── CommentGroupsList.tsx  # Comment groups list interface
-│   ├── ProgressLog.tsx        # Legacy SSE progress events
-│   └── QueryResult.tsx        # Legacy result container
-├── services/
-│   ├── api.ts                 # APIClient with SSE streaming
-│   ├── error-handler.ts       # Error handling utilities
-│   └── index.ts               # Service exports
-├── utils/
-│   └── debugLogger.ts         # Console/SSE/API logging utility
-└── types/
-    └── api.ts                 # TypeScript interfaces (matches backend)
-```
+The frontend source code is located in `frontend/src/` and is organized as follows:
+- **`App.tsx`**: The main application component containing the primary state management.
+- **`index.tsx`**: The entry point for the React application.
+- **`components/`**: Contains all React components, such as `QueryForm.tsx`, `ProgressSection.tsx`, and `ExpertAccordion.tsx`.
+- **`services/`**: Houses the API client (`api.ts`) for communicating with the backend, including SSE streaming logic.
+- **`utils/`**: Includes utility functions, notably the `debugLogger.ts` for advanced logging.
+- **`types/`**: Contains all TypeScript interface definitions, primarily in `api.ts`, which mirror the backend models.
 
 ## 🎯 Core Components
 
-### App.tsx - Main Application State
-```typescript
-const [isProcessing, setIsProcessing] = useState(false);
-const [progressEvents, setProgressEvents] = useState<ProgressEvent[]>([]);
-const [result, setResult] = useState<QueryResponse | null>(null);
-const [error, setError] = useState<string | null>(null);
-const [posts, setPosts] = useState<PostDetail[]>([]);
-const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
-```
+The application's UI is built from a set of modular React components located in `frontend/src/components/`.
 
-**Responsibilities:**
-- Multi-expert query submission and API communication
-- Progress events collection via SSE with expert tracking
-- Multi-expert result/error state management
-- Posts loading with expert context and translation support
-- Component orchestration and error boundary handling
+- **`App.tsx`**: The main application component responsible for overall state management, component orchestration, and handling the primary query lifecycle.
+- **`QueryForm.tsx`**: Provides the user input form with real-time validation.
+- **`ProgressSection.tsx`**: Displays real-time, multi-expert progress updates streamed from the backend via SSE.
+- **`ExpertAccordion.tsx`**: The primary UI element for organizing and displaying responses from multiple experts.
+- **`ExpertResponse.tsx`**: Renders the formatted answer, sources, and metadata for a single expert.
+- **`PostsList.tsx` & `PostCard.tsx`**: Work together to display the list of source posts, handle selection, and manage navigation. They use a consistent DOM ID pattern (`post-{expertId}-{postId}`) to link sources in the answer to the corresponding post in the list.
 
-### QueryForm.tsx - Input Validation
-**Features:**
-- Character limit: 3-1000 chars with real-time counter
-- Submit validation and disabled state during processing
-- Clear error handling and user feedback
+For detailed implementation, props, and state management of each component, refer to its source file in the `frontend/src/components/` directory.
 
-**Props:**
-```typescript
-interface QueryFormProps {
-  onSubmit: (query: string) => void;
-  disabled?: boolean;
-  placeholder?: string;
-}
-```
+## 🔄 Services, Types, and Patterns
 
-### ProgressSection.tsx - Real-time Multi-Expert Progress Tracking
-**Features:**
-- Active expert count display during parallel processing
-- Contextual phase descriptions ("Searching relevant posts...", "Medium scoring...", "Analyzing connections...")
-- Warning indicators (⚠️) for processes exceeding 300 seconds
-- Frontend-only `final_results` phase for completion detection
-- Enhanced phase handling: map, medium_scoring, resolve, reduce, language_validation
-- Real-time elapsed time counter per expert
-- Error event display with user-friendly messages
+### Services Layer
+The application's logic for communicating with the backend is centralized in the `frontend/src/services/` directory.
+- **`api.ts`**: Contains the `APIClient` class, which encapsulates all `fetch` calls to the backend API. It includes robust logic for handling the SSE stream for progress updates.
+- **`error-handler.ts`**: Provides utilities for processing and displaying user-friendly error messages.
 
-**Props:**
-```typescript
-interface ProgressSectionProps {
-  isProcessing: boolean;
-  progressEvents: ProgressEvent[];
-  stats?: {
-    totalPosts: number;
-    processingTime: number;
-    expertCount?: number;
-  };
-}
-```
+### Type System
+All TypeScript types and interfaces are defined in the `frontend/src/types/` directory, primarily within `api.ts`. These interfaces are kept in sync with the backend's Pydantic models to ensure type safety across the application.
 
-### ExpertResponse.tsx - Multi-Expert Answer Display
-**Features:**
-- Formatted answer text with markdown and syntax highlighting
-- Clickable source references with expert-aware post navigation
-- Expert badge display with confidence indicators and processing time
-- Language validation status display
-- Multi-expert response rendering with accordion organization
-- Comment groups synthesis display
-- Error state handling for individual expert failures
-
-**Props:**
-```typescript
-interface ExpertResponseProps {
-  answer: string;
-  sources: number[];
-  confidence: ConfidenceLevel;
-  language: string;
-  onPostClick: (postId: number) => void;
-  expertId?: string;
-  expertName?: string;
-  processingTime?: number;
-}
-```
-
-### PostsList.tsx & PostCard.tsx - Expert-Aware Content Navigation
-**Features:**
-- Scrollable posts container with selection highlighting
-- Auto-scroll to selected post with smooth animation
-- Expert comments section with expand/collapse
-- Consistent DOM ID generation for expert-aware post reference clicking
-- Multi-expert support with expertId context and channel usernames
-- Translation support for posts with language detection
-- Expert badge display and metadata
-
-**DOM ID Pattern:**
-```typescript
-// PostCard.tsx - Reliable element lookup
-id={`post-${expertId || 'unknown'}-${post.telegram_message_id}`}
-
-// PostsList.tsx - Element lookup with fallback
-let element = document.getElementById(`post-${expertId || 'unknown'}-${selectedPostId}`);
-if (!element) {
-  element = document.getElementById(`post-${selectedPostId}`); // Backward compatibility
-}
-```
-
-## 🔄 Services Layer
-
-### APIClient (services/api.ts)
-Main API client with multi-expert SSE streaming support:
-
-```typescript
-class APIClient {
-  async submitQuery(
-    request: QueryRequest,
-    onProgress?: ProgressCallback
-  ): Promise<MultiExpertQueryResponse>
-
-  async checkHealth(): Promise<HealthResponse>
-  async getPostDetail(postId: number, expertId?: string, query?: string, translate?: boolean): Promise<PostDetailResponse>
-  async getPostsByIds(postIds: number[]): Promise<PostDetailResponse[]>
-  async logBatch(events: LogEvent[]): Promise<void>
-}
-```
-
-**SSE Streaming Implementation:**
-- Line-by-line parsing with incremental buffering
-- Multi-expert progress event extraction and callback handling
-- Error recovery and stream state management
-- Real-time expert tracking with expert_id context
-- User-friendly error message processing
-- Event sanitization for safe JSON transmission
-
-### Debug Logger (utils/debugLogger.ts)
-Advanced logging system for development debugging:
-
-**Features:**
-- **Console Interception**: Captures all console.log/warn/error with recursion prevention
-- **SSE Event Logging**: Real-time pipeline phase tracking with expert context
-- **API Request Monitoring**: Automatic fetch/XHR interception with timing
-- **Batch Processing**: 10-second interval batching to `/api/v1/log-batch`
-- **Memory Management**: 1000-event circular buffer prevents memory leaks
-
-**Usage:**
-```typescript
-import { debugLogger } from './utils/debugLogger';
-
-// Automatic console capture
-console.log('User interaction detected'); // Automatically logged
-
-// Manual SSE event logging
-debugLogger.logSSEEvent('map', 'phase_start', { expert_id: 'refat' });
-```
-
-## 📝 Type System
-
-Complete TypeScript interfaces matching backend Pydantic models:
-
-### Key Interfaces
-```typescript
-interface QueryRequest {
-  query: string;                    // 3-1000 chars
-  max_posts?: number;
-  include_comments?: boolean;
-  include_comment_groups?: boolean; // Comment analysis
-  stream_progress?: boolean;        // Default: true
-  expert_filter?: string[];         // Optional expert filtering
-}
-
-interface MultiExpertQueryResponse {
-  query: string;
-  expert_responses: ExpertResponse[];
-  total_processing_time_ms: number;
-  request_id: string;
-}
-
-interface ExpertResponse {
-  expert_id: string;
-  expert_name: string;
-  channel_username: string;
-  answer: string;
-  main_sources: number[];           // telegram_message_ids
-  confidence: ConfidenceLevel;      // HIGH, MEDIUM, LOW
-  posts_analyzed: number;
-  processing_time_ms: number;
-  relevant_comment_groups: CommentGroupResponse[];
-  comment_groups_synthesis?: string;
-}
-
-interface ProgressEvent {
-  event_type: 'phase_start' | 'progress' | 'phase_complete' | 'complete' | 'error' | 'expert_complete' | 'expert_error';
-  phase: string;                    // map, medium_scoring, resolve, reduce, language_validation, etc.
-  status: string;
-  message: string;
-  timestamp?: string;
-  data?: Record<string, any>;       // Contains expert_id, error_info, user_friendly, etc.
-}
-```
-
-## 🎨 Code Patterns
-
-### 1. Inline Styles for MVP
-All components use inline styles via style objects:
-
-```typescript
-const styles = {
-  container: {
-    padding: '20px',
-    backgroundColor: '#f5f5f5',
-    borderRadius: '8px'
-  },
-  button: {
-    fontSize: '16px',
-    fontWeight: '600' as const,
-    cursor: 'pointer'
-  }
-};
-```
-
-### 2. Enhanced Multi-Expert Progress Event Handling
-```typescript
-// Special phase status logic
-const getPhaseStatus = (phaseName: string): 'pending' | 'active' | 'completed' => {
-  if (phaseName === 'resolve') {
-    // Combine resolve + medium_scoring events for comprehensive status
-  }
-  if (phaseName === 'final_results') {
-    // Frontend-only completion detection
-  }
-  // Standard phase logic
-};
-
-// Active expert count extraction
-const getActiveExpertsCount = (): number => {
-  const activeExperts = new Set();
-  progressEvents.forEach(event => {
-    if (event.data?.expert_id && event.event_type !== 'complete' && event.event_type !== 'expert_complete') {
-      activeExperts.add(event.data.expert_id);
-    }
-  });
-  return activeExperts.size;
-};
-
-// Error event processing with user-friendly messages
-const processErrorEvent = (event: ProgressEvent): string => {
-  if (event.data?.user_friendly && event.data?.error_info) {
-    return event.data.error_info.message || event.message;
-  }
-  return event.message;
-};
-```
-
-### 3. Error Handling Pattern
-```typescript
-try {
-  const response = await apiClient.submitQuery(request, onProgress);
-  setResult(response);
-} catch (err) {
-  const errorMessage = err instanceof Error ? err.message : 'Произошла ошибка';
-  setError(errorMessage);
-} finally {
-  setIsProcessing(false);
-}
-```
-
-### 4. State Reset Pattern
-```typescript
-const handleReset = (): void => {
-  setProgressEvents([]);
-  setResult(null);
-  setError(null);
-  setSelectedPostId(null);
-};
-```
+### Code Patterns
+The codebase follows several key patterns:
+- **State Management**: Component state is managed using React hooks (`useState`, `useEffect`). For server state, caching, and data fetching, the application uses TanStack Query (React Query).
+- **Styling**: To simplify development, the application currently uses inline style objects.
+- **Error Handling**: API calls are wrapped in `try/catch` blocks, with a centralized error handler service and user-facing notifications provided by `react-hot-toast`.
+- **Dynamic Loading**: Data such as the list of available experts is fetched from the API on application load to ensure the UI is always up-to-date without requiring a deployment.
 
 ## 📡 Multi-Expert SSE Communication Flow
 
@@ -346,87 +86,17 @@ const handleReset = (): void => {
    └─> Expert accordion organization for multiple responses
 ```
 
-## 🛠️ Development Commands
+## 🛠️ Build and Development
 
-```bash
-# Install dependencies
-npm install
+### Development Commands
+All development scripts are defined in the `scripts` section of `package.json`. Key commands include:
+- `dev`: Starts the Vite development server.
+- `build`: Compiles the TypeScript and builds the application for production.
+- `lint`: Runs the ESLint static analysis.
+- `type-check`: Validates TypeScript types without a full build.
 
-# Run development server (http://localhost:3000)
-npm run dev
-
-# Build for production
-npm run build
-
-# Type checking
-npm run type-check
-
-# Preview production build
-npm run preview
-```
-
-## 🎯 Key Architectural Decisions
-
-### 1. SSE Over WebSockets
-- Simpler HTTP-based protocol
-- Built-in browser support
-- Unidirectional flow (sufficient for progress updates)
-
-### 2. Inline Styles Over CSS Frameworks
-- Faster MVP development
-- Component-local styling
-- Easy to replace later
-
-### 3. Vertical Layout (15%/40%/45%)
-- Query & Progress: 15% (top)
-- Expert Response: 40% (middle)
-- Posts with Comments: 45% (bottom)
-
-### 4. Post Reference Clicking System
-- **Consistent DOM IDs**: expertId-based pattern across components
-- **Multi-Expert Support**: Works across different expert channels
-- **Backward Compatibility**: Fallback ID pattern for edge cases
-
-## 🔧 Frontend-Only Configuration
-
-### Vite Configuration (vite.config.ts)
-```typescript
-export default defineConfig({
-  plugins: [react()],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-      '@components': path.resolve(__dirname, './src/components'),
-      '@services': path.resolve(__dirname, './src/services'),
-      '@types': path.resolve(__dirname, './src/types'),
-    },
-  },
-  server: {
-    port: 3000,                    // Fixed port for consistency
-    strictPort: true,
-    host: '0.0.0.0',
-    proxy: {
-      '/api': {
-        target: 'http://127.0.0.1:8000',
-        changeOrigin: true,
-        secure: false,
-      },
-    },
-  },
-});
-```
-
-### Package.json Scripts
-```json
-{
-  "dev": "vite --debug --host 2>&1 | tee frontend.log",
-  "dev-logs": "DEBUG=vite:* node --inspect vite --debug --host 2>&1 | tee ../frontend-debug.log",
-  "build": "tsc && vite build",
-  "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-  "preview": "vite preview",
-  "type-check": "tsc --noEmit"
-}
-```
+### Configuration
+Frontend-specific configuration, such as server port, path aliases, and the proxy to the backend API, is located in `vite.config.ts`.
 
 ## 🐛 Troubleshooting
 

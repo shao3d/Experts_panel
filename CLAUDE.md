@@ -6,65 +6,18 @@ Sophisticated 7-phase pipeline system for analyzing expert Telegram channels and
 
 ## 🚀 Quick Start (5 minutes)
 
-### Prerequisites
-- Python 3.11+ and Node.js 18+
-- OpenRouter API key
-- Git clone of repository
+For a guided setup, execute the `quickstart.sh` script in the project root. It handles dependency installation and configuration. After setup, the script will provide instructions to start the backend and frontend servers.
 
-### 1. Environment Setup
-```bash
-# Create .env file in project root
-echo "OPENROUTER_API_KEY=your-key-here" > .env
-
-# Backend dependencies
-cd backend && pip install -r requirements.txt
-
-# Frontend dependencies
-cd ../frontend && npm install
-```
-
-### 2. Start Development Servers
-```bash
-# Terminal 1: Backend (port 8000)
-cd backend && python3 -m uvicorn src.api.main:app --reload --port 8000
-
-# Terminal 2: Frontend (port 3000)
-cd frontend && npm run dev
-```
-
-### 3. Verify Installation
-- Backend: http://localhost:8000/health
-- Frontend: http://localhost:3000
-- Test query: "What are the latest AI trends?"
-
-### 4. First Query
-```bash
-curl -X POST http://localhost:8000/api/v1/query \
-  -H "Content-Type: application/json" \
-  -d '{"query": "Your question", "stream_progress": false}'
-```
+To verify the installation, check the health endpoint at `http://localhost:8000/health`. The API documentation for making queries is available at `http://localhost:8000/api/docs`.
 
 ## 🏗️ Architecture Overview
 
-### 7-Phase Processing Pipeline
-1. **Map Phase** - Content relevance detection with hybrid model system (Primary → Fallback)
-2. **Medium Scoring** - Advanced post ranking with configurable analysis model
-3. **Resolve Phase** - Database link expansion (depth 1 only)
-4. **Reduce Phase** - Answer synthesis with hybrid model system
-5. **Language Validation** - Response language consistency validation
-6. **Comment Groups** - Discussion drift analysis
-7. **Comment Synthesis** - Complementary insights extraction
+The system uses an advanced **eight-phase pipeline** for analysis and a hybrid, cost-optimized multi-model strategy. For a complete and up-to-date guide on the pipeline, data flow, and model strategy, please refer to the **[Pipeline Architecture Guide](docs/pipeline-architecture.md)**.
 
-### Multi-Model Strategy (Hybrid System)
-- **Map Phase**: Primary → Fallback mechanism (Gemini 2.0 Flash Lite → Qwen 2.5-72B)
-- **Analysis**: Qwen 2.5-72B (medium scoring, translation, validation)
-- **Synthesis**: Primary → Fallback mechanism (Gemini 2.0 Flash → Qwen 2.5-72B)
-- **Comment Groups**: Qwen 2.5-72B (drift analysis)
-
-### Multi-Expert Architecture
-- Complete data isolation between experts
-- Parallel processing of all experts
-- Real-time progress tracking with SSE streaming
+### Key Architectural Principles
+- **Multi-Expert Architecture**: Complete data isolation between experts and parallel processing.
+- **Cost Optimization**: Utilizes a hybrid model system with free-tier Google models and automatic fallback to OpenRouter, plus automatic API key rotation.
+- **Real-time Progress**: SSE streaming for frontend progress tracking.
 
 ## 📁 Component Documentation
 
@@ -73,18 +26,22 @@ curl -X POST http://localhost:8000/api/v1/query \
 
 Complete FastAPI backend with:
 - Multi-expert query processing pipeline with parallel processing
-- 9 specialized services for different phases
-- Real-time SSE streaming for progress tracking with error handling
-- Hybrid multi-model LLM integration (OpenRouter + Google AI Studio)
-- SQLite database with 8 migration scripts (56MB active database)
-- Production-ready Docker deployment
+- 9+ specialized services for different phases with hybrid model integration
+- Real-time SSE streaming for progress tracking with enhanced error handling
+- Hybrid multi-model LLM integration (OpenRouter + Google AI Studio) with cost optimization
+- SQLite database with 10+ migration scripts (18MB active database)
+- Production-ready Fly.io deployment with admin authentication
+- Dynamic expert loading from database with expert metadata centralization
 
 **Key Files:**
-- `src/api/simplified_query_endpoint.py` - Main multi-expert query processing
+- `src/api/simplified_query_endpoint.py` - Main multi-expert query processing with parallel experts
+- `src/api/admin_endpoints.py` - Admin authentication and production configuration
 - `src/services/map_service.py` - Content relevance detection with hybrid models
-- `src/services/medium_scoring_service.py` - Advanced post reranking
+- `src/services/medium_scoring_service.py` - Advanced post reranking with cost optimization
+- `src/services/translation_service.py` - Hybrid translation service with Google Gemini
 - `src/services/language_validation_service.py` - Language consistency validation
-- `src/config.py` - Hybrid model configuration management
+- `src/config.py` - Comprehensive hybrid model configuration management
+- `src/utils/error_handler.py` - User-friendly error processing system
 
 ### Frontend React Application
 **📖 See: `frontend/CLAUDE.md`**
@@ -102,132 +59,57 @@ React 18 + TypeScript frontend with:
 - `ExpertResponse.tsx` - Answer rendering with sources
 
 ### Database & Data Management
-**Location:** `backend/data/experts.db` (56MB active database)
+**Location:** `backend/data/experts.db` (18MB active database)
 
 - **Posts**: Expert channel content with metadata and expert isolation
 - **Comments**: Hierarchical comment structure with expert associations
 - **Links**: Post relationships and connections (depth 1 only)
+- **Experts**: Centralized expert metadata with display names and channel usernames
 - **Expert Isolation**: Complete data separation by expert_id
-- **Migration Scripts**: 8 database evolution scripts in `backend/migrations/`
+- **Migration Scripts**: 10+ database evolution scripts in `backend/migrations/`
+- **Drift Analysis**: Comprehensive comment drift analysis and topic tracking
 
 ## 🔧 Common Development Tasks
 
 ### Adding New Expert
-```bash
-# Import Telegram data
-cd backend && python -m src.data.json_parser export.json --expert-id new_expert
-
-# Verify import
-python -m src.models.database
-# > list experts
-```
+To add a new expert, use the data import script located at `backend/src/data/json_parser.py`. After import, you can verify the new expert has been added using the interactive database management script at `backend/src/models/database`.
 
 ### Database Operations
-```bash
-cd backend
-
-# Interactive database management
-python -m src.models.database
-
-# Database backup
-sqlite3 data/experts.db ".backup data/backup.db"
-
-# Run migrations
-sqlite3 data/experts.db < migrations/008_fix_comment_unique_constraint.sql
-```
+For interactive database management (e.g., initializing, resetting, or listing tables), use the script at `backend/src/models/database`. Database backups and migrations can be performed using standard `sqlite3` CLI commands, pointing to the database file at `backend/data/experts.db`. Migration scripts are located in `backend/migrations/`.
 
 ### Model Configuration
-```bash
-# Hybrid Model System (Primary → Fallback)
-# Map Phase: Try Google AI Studio first, fallback to OpenRouter
-MODEL_MAP_PRIMARY=gemini-2.0-flash-lite
-MODEL_MAP_FALLBACK=qwen/qwen-2.5-72b-instruct
-
-# Synthesis Phase: Try Google AI Studio first, fallback to OpenRouter
-MODEL_SYNTHESIS_PRIMARY=gemini-2.0-flash
-MODEL_SYNTHESIS_FALLBACK=qwen/qwen-2.5-72b-instruct
-
-# Analysis Tasks (single model)
-MODEL_ANALYSIS=qwen/qwen-2.5-72b-instruct
-MODEL_COMMENT_GROUPS=qwen/qwen-2.5-72b-instruct
-
-# Google AI Studio API Keys (comma-separated for rotation)
-GOOGLE_AI_STUDIO_API_KEY=your-google-ai-studio-key-here
-
-# See backend/CLAUDE.md and .env.example for complete configuration
-```
+Model configuration is managed via environment variables as defined in `.env.example`. Do not modify model settings directly in the code.
 
 ### Testing Pipeline
-```bash
-# Test all experts
-curl -X POST http://localhost:8000/api/v1/query \
-  -H "Content-Type: application/json" \
-  -d '{"query": "Test query", "stream_progress": false}'
-
-# Test specific expert
-curl -X POST http://localhost:8000/api/v1/query \
-  -H "Content-Type: application/json" \
-  -d '{"query": "Test query", "expert_filter": ["refat"]}'
-
-# Test debug logging endpoint
-curl -X POST http://localhost:8000/api/v1/log-batch \
-  -H "Content-Type: application/json" \
-  -d '[{"timestamp": "2025-01-02T10:00:00Z", "type": "console", "source": "test", "message": "Test log entry"}]'
-
-# Test individual post retrieval with translation
-curl "http://localhost:8000/api/v1/posts/12345?expert_id=refat&query=What is AI?&translate=true"
-```
+To test the pipeline, use the interactive API documentation (available at `/api/docs` when the server is running) to send requests to the `/api/v1/query` endpoint. You can test the entire pipeline or filter for specific experts. Individual posts can also be retrieved via the `/api/v1/posts/{post_id}` endpoint.
 
 ## 🚀 Production Deployment
 
-### Quick Fly.io Deployment (15 minutes)
-```bash
-# Install Fly CLI
-curl -L https://fly.io/install.sh | sh && fly auth login
+The application is configured for deployment on Fly.io using the `fly.toml` file.
 
-# Deploy application
-fly deploy
+To deploy, use the Fly.io CLI (`flyctl`) and set the required secrets as defined in `.env.example`. For detailed instructions, please refer to the official Fly.io documentation.
 
-# Configure secrets
-fly secrets set OPENROUTER_API_KEY=your-key-here
-
-# Verify deployment
-fly open && curl https://your-app.fly.dev/health
-```
-
-**Complete deployment guide:** See `backend/CLAUDE.md` → "Production Deployment"
+The `backend/CLAUDE.md` file also contains a more detailed guide specific to this project's production deployment.
 
 ## 🔍 Troubleshooting
 
 ### Server Issues
-```bash
-# Check backend health
-curl -s http://localhost:8000/health | jq '.'
+To check the backend health, access the `/health` endpoint. To verify the frontend is running, check its configured port (e.g., `http://localhost:3000`).
 
-# Check frontend availability
-curl -s http://localhost:3000 > /dev/null && echo "Frontend OK"
-
-# View logs
-tail -f backend/backend.log      # Backend API and pipeline logs
-tail -f frontend/frontend.log    # Frontend debug logs
-```
+Logs are the primary source for debugging. The log file locations are configured via environment variables (see `.env.example`) and default to `backend/data/backend.log` and `backend/data/frontend.log`.
 
 ### Common Problems
-- **Port conflicts**: Backend uses 8000, Frontend uses 3000
-- **Environment variables**: Ensure .env file with OPENROUTER_API_KEY
-- **Database location**: Active DB is in `backend/data/experts.db`
+- **Port conflicts**: The backend defaults to port 8000 and the frontend to 3000.
+- **Environment variables**: Ensure `.env` exists and contains the required API keys.
+- **Database location**: The active database is at `backend/data/experts.db`.
+- **Model configuration**: The model strategy is defined by environment variables in `.env.example` and implemented in `backend/src/config.py`.
+- **Production deployment**: For Fly.io deployments, ensure all required secrets are set correctly using `fly secrets list`.
 
 ### Debug Commands
-```bash
-# Monitor expert processing
-grep "expert_id" backend/backend.log | tail -10
-
-# Track pipeline phases
-grep "phase.*complete" backend/backend.log | tail -5
-
-# Frontend event monitoring
-grep "api.*query" frontend/frontend.log | tail -5
-```
+To debug the pipeline, monitor the backend log file for messages containing specific identifiers:
+- **Expert Processing**: Look for messages containing the relevant `expert_id`.
+- **Pipeline Phases**: Search for messages containing `phase` and `complete` to track progress.
+- **Frontend Events**: The frontend log contains events for API calls and SSE messages; search for terms like `api` and `query`.
 
 ## 📚 Additional Documentation
 
@@ -247,6 +129,6 @@ grep "api.*query" frontend/frontend.log | tail -5
 ---
 
 **Project Status:** Production-ready with active development
-**Last Updated:** 2025-11-04
-**Architecture:** Multi-expert, hybrid multi-model LLM pipeline with real-time progress tracking
-**Key Features:** Parallel expert processing, hybrid model fallback system, language validation, comment synthesis, user-friendly error handling
+**Last Updated:** 2025-11-22
+**Architecture:** Multi-expert, hybrid multi-model LLM pipeline with cost optimization and real-time progress tracking
+**Key Features:** Parallel expert processing, hybrid model fallback system, cost optimization with Google AI Studio, language validation, comment synthesis, enhanced error handling, admin authentication

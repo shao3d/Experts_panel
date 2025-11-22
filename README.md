@@ -12,181 +12,9 @@ Experts Panel is a powerful tool for semantic search and analysis of content fro
 
 ## 🏗️ System Architecture
 
-### High-Level Architecture
+The system uses an advanced **eight-phase Map-Resolve-Reduce pipeline** to provide accurate and contextually relevant answers. The architecture includes a cost-optimized hybrid model strategy, differential processing for posts based on relevance, and parallel pipelines for content and comment analysis.
 
-```mermaid
-graph TD
-    subgraph "User Environment"
-        User[User]
-        Frontend[React Frontend 18 + TypeScript]
-    end
-
-    subgraph "Experts Panel Infrastructure"
-        Backend[FastAPI Backend]
-        subgraph "Admin Layer"
-            Admin[Admin Authentication]
-        end
-        subgraph "Data Layer"
-            DB[(SQLite 18MB with 10+ migrations)]
-        end
-    end
-
-    subgraph "AI Services"
-        OpenRouter[OpenRouter API]
-        GoogleAI[Google AI Studio API]
-    end
-
-    User -- "Sends query" --> Frontend
-    Frontend -- "SSE streaming /api/v1/query" --> Backend
-    Backend -- "Admin API" --> Admin
-    Backend -- "Hybrid LLM calls" --> OpenRouter
-    Backend -- "Cost-optimized LLM calls" --> GoogleAI
-    Backend -- "Multi-expert data access" --> DB
-    Backend -- "Real-time progress" --> Frontend
-    Frontend -- "Expert responses" --> User
-
-    classDef ai_service fill:#e6f3ff,stroke:#0066cc,stroke-width:2px
-    classDef admin_service fill:#f0f8ff,stroke:#333,stroke-width:2px
-    class OpenRouter,GoogleAI ai_service
-    class Admin admin_service
-```
-
-### Intelligent Query Processing Pipeline
-
-```mermaid
-graph TD
-    A[Start: User Query] --> B{Determine Query Language}
-    B --> C[1. Map Phase: Hybrid System]
-    C -- "Posts" --> D{Split into HIGH and MEDIUM}
-    D -- "HIGH posts" --> E[3. Resolve Phase: DB Link Expansion]
-    D -- "MEDIUM posts" --> F[2. Medium Scoring: Hybrid System]
-    F -- "Top-5 posts score >= 0.7" --> G[4. Reduce Phase: Hybrid System]
-    E -- "Enriched HIGH posts" --> G
-    G -- "Synthesized response" --> H[5. Language Validation: Qwen 2.5]
-    H -- "Response in correct language" --> I{Assemble Final Response}
-
-    subgraph "Parallel Pipeline B: Comment Analysis"
-        J[6. Comment Groups: Hybrid System] --> K[7. Comment Synthesis: Hybrid System]
-    end
-
-    A --> J
-    K --> I[Final Response Assembly]
-
-    I --> L[Final Response]
-
-    classDef llm_step fill:#f9f,stroke:#333,stroke-width:2px
-    class C,F,G,H,J,K llm_step
-    classDef hybrid_step fill:#e6f3ff,stroke:#0066cc,stroke-width:2px
-    class C,F,G,J,K hybrid_step
-    classDef cost_optimized fill:#90EE90,stroke:#228B22,stroke-width:2px
-    class F cost_optimized
-```
-
-**Hybrid Model Strategy (Cost-Optimized)**:
-- **Map Phase**: Qwen 2.5-72B → Gemini 2.0 Flash Lite (OpenRouter primary, Google fallback)
-- **Medium Scoring**: Gemini 2.0 Flash → Qwen 2.5-72B (99% free tier usage)
-- **Reduce Phase**: Gemini 2.0 Flash → Qwen 2.5-72B (Google primary, OpenRouter fallback)
-- **Analysis Tasks**: Qwen 2.5-72B (Translation, Validation)
-- **Comment Groups**: Gemini 2.0 Flash → Qwen 2.5-72B (cost optimization)
-- **Translation Service**: Google Gemini 2.0 Flash (primary, free tier)
-
-### Data Lifecycle
-
-```mermaid
-graph TD
-    subgraph "Stage 1: Manual Import Initial Loading"
-        A[Administrator] --> B[json_parser.py]
-        C[JSON export from Telegram] --> B
-        B --> D[Write posts comments relationships to DB]
-    end
-
-    subgraph "Stage 2: Automatic Incremental Synchronization"
-        E[Cron Job Scheduler] --> F[sync_channel.py]
-        F -- "Gets last post ID" --> G[Database]
-        G -- "Returns ID" --> F
-        F -- "Requests new data" --> H[Telegram API]
-        H -- "Returns new posts and comments" --> F
-        F --> I[Updates adds data to DB]
-        F --> J[Marks new comment groups as pending]
-    end
-
-    D --> G
-    I --> G
-    J --> G
-```
-
-### User Journey
-
-```mermaid
-graph TD
-    A[User opens application] --> B{Sees input form}
-    B --> C[Enters question and clicks Ask]
-    C --> D[UI enters Processing state]
-    D --> E[ProgressSection displays real-time progress]
-    E --> F["Statuses appear: Map - Resolve - Reduce ..."]
-    F --> G[Backend sends final response]
-    G --> H[Accordions appear for each expert]
-    H -- "Click on accordion" --> I{Result expands}
-    I --> J[Sees response and list of source posts]
-    J -- "Click on post ID link in response" --> K[Target post highlights in list]
-    J -- "Click on post in list" --> L[Post expands showing full text and comments]
-    L --> J
-    H --> B
-```
-
-### Deployment Architecture
-
-```mermaid
-graph TD
-    subgraph "Internet"
-        User[User]
-    end
-
-    subgraph "Fly.io Platform"
-        LB[Load Balancer + SSL Termination]
-
-        subgraph "Application Container"
-            App[FastAPI Application]
-            Uvicorn[Uvicorn ASGI Server]
-            AdminLayer[Admin Authentication Layer]
-        end
-
-        subgraph "Persistent Storage"
-            Volume[experts_data Volume]
-            DB[(experts.db - 18MB, 10+ migrations)]
-            Volume -- mounted --> DB
-        end
-
-        subgraph "External AI Services"
-            OpenRouter[OpenRouter API]
-            GoogleAI[Google AI Studio API]
-        end
-    end
-
-    User -- HTTPS --> LB
-    LB -- HTTP --> App
-    App -- Admin protection --> AdminLayer
-    App -- Multi-expert queries --> DB
-    App -- Hybrid LLM calls --> OpenRouter
-    App -- Cost-optimized LLM calls --> GoogleAI
-    LB -- Health checks --> App
-
-    classDef storage fill:#fdf,stroke:#333,stroke-width:2px
-    classDef external fill:#e6f3ff,stroke:#0066cc,stroke-width:2px
-    classDef note fill:#f0f8ff,stroke:#ccc,stroke-width:1px
-    classDef admin fill:#FFE4B5,stroke:#D2691E,stroke-width:2px
-    class Volume,DB storage
-    class OpenRouter,GoogleAI external
-    class AdminLayer admin
-
-    subgraph "Production Notes"
-        URL[**Production URL**: https://experts-panel.fly.dev/]
-        Scale[**Auto-scaling**: 0 machines when idle, auto-start on request]
-        Data[**Data Persistence**: SQLite on mounted volume with backups]
-        Auth[**Admin Security**: Secure admin endpoints with authentication]
-        class URL,Scale,Data,Auth note
-    end
-```
+For a detailed breakdown of the 8-phase pipeline, component responsibilities, data flow, and model strategy, please see the **[Pipeline Architecture Guide](docs/pipeline-architecture.md)**.
 
 ## ✨ Key Features
 
@@ -209,152 +37,29 @@ graph TD
 - Node.js 18+
 - OpenRouter API key
 
-### Installation and Setup
-
-```bash
-# 1. Clone repository
-git clone https://github.com/andreysazonov/Experts_panel.git
-cd Experts_panel
-
-# 2. Setup environment variables
-cp .env.example .env
-# Edit .env adding your OPENROUTER_API_KEY
-
-# 3. Start backend
-cd backend
-pip install -r requirements.txt
-python3 -m uvicorn src.api.main:app --reload --port 8000
-
-# 4. Start frontend (in new terminal)
-cd frontend
-npm install
-npm run dev
-```
-
-Application will be available at http://localhost:3000
+For a guided setup experience, execute the `quickstart.sh` script located in the project root. This script will check for dependencies, install packages for the frontend and backend, and create the necessary configuration files. After running the script, follow the final instructions it provides to start the backend and frontend servers.
 
 ## 🛠️ Data Management
 
+The project includes several scripts for data management, located in the `backend/` directory.
+
 ### Telegram Data Import
-
-```bash
-# Import JSON file with expert_id specified
-cd backend && python -m src.data.json_parser data/exports/channel.json --expert-id refat
-
-# Interactive comment addition
-cd backend && python -m src.data.comment_collector
-
-# Telegram channel synchronization
-cd backend && python sync_channel.py --dry-run --expert-id refat
-cd backend && python sync_channel.py --expert-id refat
-```
+Use `src.data.json_parser` for initial data import, `src.data.comment_collector` for interactive comment addition, and `sync_channel.py` for incremental synchronization with Telegram.
 
 ### Drift Analysis and Database
-
-```bash
-# Drift analysis in comments (required after data reimport)
-cd backend && python analyze_drift.py
-
-# Database management
-cd backend && python -m src.models.database  # Interactive management (init/reset/drop)
-
-# SQLite database creation and migration
-sqlite3 data/experts.db < schema.sql
-sqlite3 data/experts.db < backend/migrations/001_create_comment_group_drift.sql
-sqlite3 data/experts.db < backend/migrations/002_add_sync_state.sql
-sqlite3 data/experts.db < backend/migrations/003_add_expert_id.sql
-```
+Comment drift analysis can be run using `backend/analyze_drift.py`. For direct database management, an interactive script is available at `backend/src/models/database`. The initial database schema is defined in `schema.sql`, and subsequent migrations are located in the `backend/migrations/` directory.
 
 ## 📚 API Usage
 
-### Basic Query
+The backend provides a RESTful API for querying experts and managing data. For detailed information on all available endpoints, request/response models, and to interact with the API directly, please see the auto-generated OpenAPI (Swagger) documentation.
 
-```bash
-curl -X POST http://localhost:8000/api/v1/query \
-  -H "Content-Type: application/json" \
-  -d '{"query": "Your question", "stream_progress": false}'
-```
-
-### Query Specific Expert
-
-```bash
-curl -X POST http://localhost:8000/api/v1/query \
-  -H "Content-Type: application/json" \
-  -d '{"query": "Your question", "expert_filter": ["refat"], "stream_progress": false}'
-```
-
-### Additional Endpoints
-
-```bash
-# Get specific post with translation
-curl "http://localhost:8000/api/v1/posts/12345?expert_id=refat&query=What is AI?&translate=true"
-
-# Batch retrieve multiple posts
-curl -X POST http://localhost:8000/api/v1/posts/by-ids \
-  -H "Content-Type: application/json" \
-  -d '{"post_ids": [123, 456, 789], "expert_id": "refat"}'
-
-# Health check
-curl http://localhost:8000/health
-
-# API information
-curl http://localhost:8000/api/info
-
-# Debug logging (for development)
-curl -X POST http://localhost:8000/api/v1/log-batch \
-  -H "Content-Type: application/json" \
-  -d '[{"timestamp": "2025-01-02T10:00:00Z", "type": "console", "source": "test", "message": "Test log"}]'
-```
+When the backend server is running, the interactive API documentation is available at the `/api/docs` endpoint (e.g., `http://localhost:8000/api/docs`).
 
 ### Environment Variables
 
-```bash
-# Main variables
-OPENROUTER_API_KEY=your-openrouter-key-here
-DATABASE_URL=sqlite:///data/experts.db
+All configuration for the application is managed via environment variables. A complete list of available variables, along with default values for development, can be found in the `.env.example` file in the project root.
 
-# Google AI Studio (optional, automatic fallback to OpenRouter)
-GOOGLE_AI_STUDIO_API_KEY=your-google-ai-studio-key-1,key-2,key-3
-
-# Cost-Optimized Hybrid Model Configuration
-# Map Phase: OpenRouter primary, Google AI Studio fallback
-MODEL_MAP_PRIMARY=qwen/qwen-2.5-72b-instruct
-MODEL_MAP_FALLBACK=gemini-2.0-flash-lite
-
-# Medium Scoring: Cost optimization (99% free tier usage)
-MODEL_MEDIUM_SCORING_PRIMARY=gemini-2.0-flash
-MODEL_MEDIUM_SCORING_FALLBACK=qwen/qwen-2.5-72b-instruct
-
-# Synthesis Phase: Google AI Studio primary, OpenRouter fallback
-MODEL_SYNTHESIS_PRIMARY=gemini-2.0-flash
-MODEL_SYNTHESIS_FALLBACK=qwen/qwen-2.5-72b-instruct
-
-# Comment Groups: Cost optimization
-MODEL_COMMENT_GROUPS_PRIMARY=gemini-2.0-flash
-MODEL_COMMENT_GROUPS_FALLBACK=qwen/qwen-2.5-72b-instruct
-
-# Analysis & Translation Tasks
-MODEL_ANALYSIS=qwen/qwen-2.5-72b-instruct
-MODEL_TRANSLATION_PRIMARY=gemini-2.0-flash
-
-# Production Settings
-ENVIRONMENT=production  # Set to "development" for detailed config logging
-API_HOST=0.0.0.0
-API_PORT=8000
-
-# Admin Authentication
-ADMIN_SECRET_KEY=your-admin-secret-key-here
-
-# Medium Posts Reranking
-MEDIUM_SCORE_THRESHOLD=0.7
-MEDIUM_MAX_SELECTED_POSTS=5
-MEDIUM_MAX_POSTS=50
-
-# Performance
-MAX_POSTS_LIMIT=500
-CHUNK_SIZE=20
-REQUEST_TIMEOUT=300
-```
+To set up your local environment, copy this file to `.env` and fill in the required values.
 
 **Model Strategy Notes:**
 - **Cost Optimization**: 99% free tier usage with Google AI Studio as primary for most phases
@@ -383,15 +88,15 @@ backend/
 │   │   ├── medium_scoring_service.py      # Medium Posts Reranking (Hybrid)
 │   │   ├── simple_resolve_service.py      # Resolve Phase (depth 1)
 │   │   ├── reduce_service.py              # Reduce Phase (Hybrid LLM)
-│   │   ├── language_validation_service.py # Language Validation
 │   │   ├── comment_group_map_service.py   # Comment Groups (Hybrid)
 │   │   ├── comment_synthesis_service.py   # Comment Synthesis (Hybrid)
-│   │   ├── translation_service.py         # Hybrid Translation Service
 │   │   ├── hybrid_llm_adapter.py          # Core Hybrid LLM Adapter
-│   │   └── google_ai_studio_client.py     # Google AI Studio Client
+│   │   ├── google_ai_studio_client.py     # Google AI Studio Client
+│   │   └── openrouter_adapter.py          # OpenRouter Client
 │   ├── api/          # FastAPI endpoints
-│   │   ├── admin_endpoints.py             # Admin Authentication
-│   │   └── simplified_query_endpoint.py   # Main Query Processing
+│   │   ├── main.py                        # Main application entrypoint
+│   │   ├── simplified_query_endpoint.py   # Main Query Processing
+│   │   └── admin_endpoints.py             # Admin Authentication
 │   ├── data/         # Telegram data import and parsing
 │   ├── utils/        # Utilities and enhanced error handling
 │   └── config.py     # Hybrid model configuration
@@ -403,12 +108,12 @@ frontend/
 ├── src/
 │   ├── components/   # React components with real-time SSE progress
 │   │   ├── ExpertAccordion.tsx            # Primary Expert UI Component
-│   │   ├── ProgressSection.tsx           # Enhanced pipeline progress
+│   │   ├── ProgressSection.tsx            # Enhanced pipeline progress
 │   │   ├── ExpertResponse.tsx             # Expert response rendering
-│   │   └── DebugLogger.tsx                # Enhanced debug logging
+│   │   └── QueryForm.tsx                  # User input form
 │   ├── services/     # API client with SSE streaming
 │   ├── types/        # TypeScript interfaces
-│   └── hooks/        # Custom React hooks
+│   └── utils/        # Utility functions
 ├── public/           # Static assets
 └── package.json      # Dependencies: React Query, Hot Toast, etc.
 
@@ -431,30 +136,9 @@ data/
 
 ### Fly.io Deployment (15 minutes)
 
-```bash
-# 1. Install Fly CLI
-curl -L https://fly.io/install.sh | sh
-fly auth login
+The application is configured for deployment on Fly.io. The configuration is defined in the `fly.toml` file.
 
-# 2. Deploy application
-fly deploy
-
-# 3. Setup required secrets
-fly secrets set OPENROUTER_API_KEY=your-openrouter-key-here
-fly secrets set GOOGLE_AI_STUDIO_API_KEY=your-google-ai-studio-key-here
-fly secrets set ADMIN_SECRET_KEY=your-admin-secret-key-here
-
-# 4. Configure production environment
-fly secrets set ENVIRONMENT=production
-fly secrets set MODEL_MAP_PRIMARY=qwen/qwen-2.5-72b-instruct
-fly secrets set MODEL_SYNTHESIS_PRIMARY=gemini-2.0-flash
-
-# 5. Health check
-curl https://experts-panel.fly.dev/health
-
-# 6. Monitor deployment
-fly logs -a experts-panel
-```
+To deploy, use the Fly.io CLI (`flyctl`). You will need to set the required secrets for API keys and other configurations as defined in `.env.example`. For detailed instructions on deploying and managing secrets, please refer to the official Fly.io documentation.
 
 **Production Features:**
 - ✅ **Auto-deployment**: Automatic deployment on push to main branch

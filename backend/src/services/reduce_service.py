@@ -24,7 +24,7 @@ class ReduceService:
     """Service for the Reduce phase of the Map-Resolve-Reduce pipeline.
 
     Synthesizes a comprehensive answer from all gathered posts,
-    using Gemini 2.0 Flash to create a coherent response with source attribution.
+    using a configurable LLM to create a coherent response with source attribution.
     """
 
     MAX_CONTEXT_POSTS = 50  # Limit for token management

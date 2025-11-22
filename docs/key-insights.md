@@ -9,13 +9,7 @@
 
 **Наша Map-фаза = это listwise LLM reranker**, только мы пропускаем векторный поиск и идем напрямую!
 
-```
-Traditional RAG:
-Vector Search (100 docs) → Reranker (10 docs) → LLM Answer
-
-Our System:
-Map Phase (listwise reranking) → HIGH+MEDIUM posts → Answer
-```
+В традиционном RAG-подходе сначала происходит векторный поиск для отбора кандидатов, затем ре-ранжирование, и только потом генерация ответа. Наша система объединяет эти шаги, используя Map-фазу для прямого listwise-ранжирования постов, которые затем передаются для генерации ответа.
 
 ---
 
@@ -46,18 +40,7 @@ Map Phase (listwise reranking) → HIGH+MEDIUM posts → Answer
 - Для < 10K документов векторы дают слишком много false positives
 
 ### 2. Semantic Understanding vs Cosine Similarity
-```
-Query: "AI agents"
-
-Vector DB: 
-  "AI agents" близко к "AI assistants" (cosine 0.87)
-  Результат: FALSE POSITIVE (это разные концепции!)
-
-LLM (наш подход):
-  Понимает: agents = autonomy + tools
-             assistants = just chat
-  Результат: CORRECT DISTINCTION ✅
-```
+При запросе "AI agents" векторная база данных может спутать их с "AI assistants" из-за высокой косинусной близости (например, 0.87), что приведет к ложноположительному результату. Наш LLM-подход, напротив, способен понять семантическое различие (автономность и инструменты против простого чата) и дать корректный результат.
 
 ### 3. Персонализация стиля — невозможна с векторами
 - Embeddings НЕ кодируют стиль письма, только semantic meaning
@@ -68,33 +51,17 @@ LLM (наш подход):
 - Vector DB ищет только на уровне документов
 
 ### 5. Стоимость
-```
-1,000 queries, 1,000 docs:
-- Vector + Reranker: $70-250
-- Наша система:     $10-50  ✅ (5-7x дешевле!)
-```
+На примере 1000 запросов по 1000 документов, стоимость системы с векторами и ре-ранкером составляет $70-250, в то время как наша система обходится в $10-50, что в 5-7 раз дешевле.
 
 ### 6. Explainability
-```
-Vector: [post:42, post:137] — почему? "Близко по embeddings" (black box)
-Наш:    post:42 → HIGH "Discusses autonomous agents with tool use" ✅
-```
+Векторный подход непрозрачен и на вопрос "почему эти результаты?" отвечает "потому что они близки в векторном пространстве". Наш подход дает четкое объяснение для каждого результата, например: "Рейтинг ВЫСОКИЙ, потому что в посте обсуждаются автономные агенты с использованием инструментов".
 
 ---
 
 ## 🔍 Как Работают Реранкеры
 
 ### Типичная двухфазная архитектура
-
-```
-User query
-  ↓
-Vector Search: 1M docs → 100 candidates (10-50ms, low precision)
-  ↓
-Reranker: 100 → 10 (500ms-5sec, high precision)
-  ↓
-LLM Generate Answer
-```
+Типичный процесс состоит из двух фаз: сначала быстрый, но менее точный векторный поиск отбирает ~100 кандидатов из миллионов документов. Затем более медленный, но точный ре-ранкер сужает этот список до ~10 наиболее релевантных документов для генерации ответа.
 
 ### Типы реранкеров
 
@@ -109,37 +76,11 @@ LLM Generate Answer
 ## 🎯 Наш Подход = Chunked Listwise Reranker
 
 ### Архитектура Map-фазы
-
-```python
-def map_phase(query, all_posts):
-    # Обрабатываем по 20-25 постов за раз
-    for chunk in chunks(all_posts, size=20):
-        prompt = f"""
-        Query: {query}
-        
-        Post 1: {chunk[0]}
-        Post 2: {chunk[1]}
-        ...
-        Post 20: {chunk[20]}
-        
-        Rank: HIGH/MEDIUM/LOW + explain why
-        """
-        results = gpt4o_mini(prompt)
-    
-    return all_results
-```
+Наша Map-фаза реализует идею listwise-реранкера с разделением на части (chunks). Вместо того чтобы обрабатывать все посты сразу, мы делим их на группы по 20-25 штук. Каждая группа вместе с запросом пользователя отправляется в LLM для получения рейтинга (HIGH/MEDIUM/LOW) с объяснением. Псевдокод этого процесса описан в `backend/src/services/map_service.py`.
 
 ### Почему это умно
 
-**Pure listwise (100 постов сразу):**
-- Input: 100 × 500 tokens = 50K tokens
-- Cost: $250 per 1K queries
-- Risk: Overwhelm LLM
-
-**Chunked listwise (20 постов × 5 chunks):**
-- Input: 20 × 500 × 5 = 50K tokens (same)
-- Cost: $50 per 1K queries (5x дешевле!)
-- Benefit: Лучше reasoning на chunk
+Обработка 100 постов сразу (pure listwise) потребовала бы большого контекстного окна и стоила бы значительно дороже. Наш подход с обработкой по 20 постов в 5 чанках (chunked listwise) сохраняет тот же объем обрабатываемой информации, но обходится в 5 раз дешевле и позволяет LLM лучше сфокусироваться на каждой группе.
 
 ### Преимущества перед традиционными реранкерами
 
@@ -194,15 +135,7 @@ def map_phase(query, all_posts):
 ## 📊 Когда Нужны Векторы в Agentic RAG
 
 ### Vector DB = инструмент агента, не вся система
-
-```
-Agentic RAG:
-Query → Agent decides → Choose tool(s):
-                         ├─ Vector search
-                         ├─ Web search
-                         ├─ SQL database
-                         └─ API calls
-```
+В современной Agentic RAG архитектуре векторный поиск — это лишь один из многих инструментов, которые может выбрать AI-агент, наряду с веб-поиском, SQL-запросами или вызовами API.
 
 ### Векторы нужны когда:
 
@@ -354,357 +287,41 @@ Query → Agent decides → Choose tool(s):
 ### Use Cases: Когда Векторы Критичны
 
 #### 1. **Огромные Датасеты (> 100K документов)**
-
-**Проблема без векторов:**
-```
-Dataset: 1M документов × 500 tokens = 500M tokens
-LLM processing: 500M tokens × $0.003 per 1K = $1,500 per query!
-Time: 10+ минут на query
-```
-
-**Решение с векторами:**
-```
-Vector Search: 1M docs → 100 candidates (50ms, $0.001)
-LLM Reranking: 100 → 10 (5 sec, $0.05)
-Total: 5 sec, $0.051 per query ✅
-```
-
-**Примеры:**
-- **E-commerce:** 15M SKU (Weaviate benchmark)
-- **Enterprise knowledge base:** 500K+ documents
-- **Legal/medical databases:** Миллионы кейсов
-- **Wikipedia search:** 6M+ articles
-
-**Архитектура:**
-```
-Query → Vector Search (pre-filter) → LLM Reranker (precision) → Answer
-        ↑ Fast recall                 ↑ Removes false positives
-```
-
----
+При работе с огромными датасетами (например, 1 млн документов) обработка всего объема с помощью LLM становится нецелесообразной по стоимости (тысячи долларов за запрос) и времени (десятки минут). Векторный поиск позволяет мгновенно (50 мс) и дешево сузить выборку до нескольких сотен кандидатов, которые затем можно передать на более точное, но дорогое LLM-ранжирование.
 
 #### 2. **Ultra-Low Latency Requirements (< 100ms)**
-
-**Когда нужно:**
-- Web search (Google-like experience)
-- Real-time customer support chatbots
-- Interactive applications
-- Mobile apps (network latency critical)
-
-**Сравнение latency:**
-```
-Vector search only:     10-50ms
-Vector + reranking:     500ms - 5sec
-LLM-based (наш):        5-10 sec
-```
-
-**Production пример (Pinecone):**
-- E-commerce: p95 latency = 23ms
-- 15M products indexed
-- 1000s queries per second
-
-**Trade-off:**
-- ✅ Speed: 10-50ms
-- ❌ Precision: 50-60% (больше false positives)
-- Solution: Добавить lightweight reranking
-
----
+Для интерактивных приложений, таких как веб-поиск или чат-боты, где ожидается мгновенный ответ, LLM-обработка (5-10 секунд) слишком медленная. Векторный поиск обеспечивает необходимое время отклика в пределах 10-50 мс, жертвуя при этом точностью.
 
 #### 3. **Multilingual Search**
-
-**Проблема без векторов:**
-```
-Query на русском: "искусственный интеллект"
-Documents на английском: "artificial intelligence"
-LLM: Нужен перевод или multilingual model (дороже)
-```
-
-**Решение с векторами:**
-```
-Cross-lingual embeddings (mBERT, LaBSE):
-  "искусственный интеллект" → [0.12, 0.45, ...]
-  "artificial intelligence" → [0.13, 0.46, ...]
-  cosine similarity: 0.92 ✅ (finds match!)
-```
-
-**Примеры моделей:**
-- **mBERT**: 104 языка
-- **XLM-RoBERTa**: 100 языков
-- **LaBSE**: 109 языков
-- **Cohere Multilingual**: 100+ языков
-
-**Use case:**
-- International knowledge bases
-- Cross-border customer support
-- Research databases (papers in разных языках)
-
----
+Для поиска по документам на разных языках используются кросс-языковые модели эмбеддингов (mBERT, LaBSE), которые представляют семантически схожие фразы из разных языков близкими векторами. Это позволяет, например, по русскому запросу "искусственный интеллект" найти англоязычный документ с "artificial intelligence".
 
 #### 4. **Semantic Similarity Search**
-
-**Когда критично:**
-- **E-commerce:** "comfortable running shoes" → find "cushioned sneakers"
-- **Customer support:** "Can't login" → find "authentication issues"
-- **Research:** "machine learning" → find "neural networks", "deep learning"
-
-**Почему векторы лучше:**
-```
-Query: "comfortable running shoes"
-
-Keyword search: 
-  Ищет exact matches: "comfortable" AND "running" AND "shoes"
-  Пропустит: "cushioned sneakers for jogging" ❌
-
-Vector search:
-  Embeddings понимают semantic similarity
-  Найдет: "cushioned sneakers", "soft trainers", "padded footwear" ✅
-```
-
-**Real-world пример (Weaviate):**
-- E-commerce: 15M SKU
-- Hybrid search: keyword + vector
-- Improvement: 40% better relevance
-
----
+В отличие от поиска по ключевым словам, который находит только точные совпадения, векторный поиск находит семантически близкие понятия. Например, по запросу "удобная обувь для бега" он найдет "кроссовки с амортизацией" или "мягкие трейнеры".
 
 #### 5. **Real-Time Dynamic Content**
-
-**Сценарий:**
-- News aggregation (1000s новых статей/день)
-- Social media monitoring (миллионы постов)
-- Live customer feedback analysis
-
-**Почему векторы:**
-```
-New content arrives → Compute embedding (50ms) → Insert to vector DB
-Query immediately available for search
-
-vs
-
-LLM-based: Need to reprocess entire dataset or complex indexing
-```
-
-**Пример архитектуры:**
-```
-Content Pipeline:
-  New doc → Embedding model → Vector DB → Immediately searchable
-  
-Query Pipeline:
-  Query → Vector search → Top K → LLM synthesis → Answer
-```
-
----
+Для систем, работающих с постоянно поступающим контентом (новости, соцсети), векторы незаменимы. Новый документ можно быстро векторизовать (за ~50 мс) и сразу сделать доступным для поиска, в то время как LLM-подход потребовал бы сложной и медленной переиндексации.
 
 ### Архитектурные Паттерны с Векторами
 
 #### Pattern 1: **Vector Pre-Filter + LLM Reranking** (Most Common)
-
-```
-Query: "AI agents in production"
-  ↓
-Vector Search: 1M docs → 100 candidates (50ms)
-  ├─ Fast recall
-  ├─ Removes 99.99% irrelevant docs
-  └─ May include false positives
-  ↓
-LLM Reranking: 100 → 10 (5 sec)
-  ├─ High precision
-  ├─ Removes false positives
-  └─ Adds reasoning
-  ↓
-LLM Generate Answer: 10 docs (3 sec)
-  └─ Context-aware response
-```
-
-**Преимущества:**
-- ✅ Scalable to millions of docs
-- ✅ Fast initial filtering
-- ✅ High precision from LLM
-- ✅ Explainable results
-
-**Cost (1M docs, 1K queries):**
-- Vector DB: $50-100/month
-- Embeddings: $0.0001 per 1K tokens (offline)
-- LLM reranking: $0.05 per query
-- Total: $50-100/month + $50 per 1K queries
-
-**When to use:** 
-- Dataset > 100K docs
-- Need balance of speed and accuracy
-- Budget allows $100-150/month
-
----
+Наиболее распространенный паттерн, сочетающий скорость векторов и точность LLM. Сначала векторный поиск быстро отбирает сотни кандидатов, отсекая 99.9% нерелевантных данных. Затем LLM-реранкер анализирует этих кандидатов и с высокой точностью выбирает топ-10, предоставляя объяснение своему выбору. Этот подход масштабируется до миллионов документов и обеспечивает хороший баланс скорости, точности и стоимости.
 
 #### Pattern 2: **Hybrid Search (Vector + Keyword)**
-
-```
-Query: "Apple iPhone 15 price"
-  ↓
-Parallel Search:
-  ├─ Vector Search: semantic understanding ("mobile phone", "smartphone")
-  └─ Keyword Search: exact matches ("iPhone 15", "price")
-  ↓
-Reciprocal Rank Fusion (RRF): Merge results
-  ↓
-LLM Reranking: Refine top candidates
-  ↓
-Answer
-```
-
-**Примеры frameworks:**
-- **Elasticsearch:** BM25 + dense vectors
-- **MongoDB Atlas:** full-text + vector search
-- **Weaviate:** BM25 + HNSW vectors
-- **Pinecone Hybrid:** sparse + dense vectors
-
-**Преимущества:**
-- ✅ Exact match для proper nouns ("iPhone 15")
-- ✅ Semantic match для concepts ("smartphone")
-- ✅ Better recall than either alone
-
-**Real-world пример (Elasticsearch):**
-```python
-query = {
-  "hybrid": {
-    "queries": [
-      {"match": {"text": "AI agents"}},      # Keyword
-      {"knn": {"field": "embedding", ...}}   # Vector
-    ],
-    "rank": "rrf"  # Reciprocal Rank Fusion
-  }
-}
-```
-
-**When to use:**
-- E-commerce (product names + descriptions)
-- Technical docs (exact terms + concepts)
-- Customer support (ticket IDs + semantic issues)
-
----
+Этот паттерн комбинирует векторный (семантический) и ключевой (точный) поиск. Он особенно эффективен в e-commerce или при поиске по технической документации, где важно находить как точные названия продуктов или термины ("iPhone 15"), так и общие понятия ("смартфон"). Результаты обоих поисков объединяются с помощью RRF (Reciprocal Rank Fusion) и затем передаются на дальнейшую обработку.
 
 #### Pattern 3: **Agentic Multi-Tool (Vector as One Tool)**
-
-```
-Query: "Latest news about GPT-5"
-  ↓
-Agent Analyzes:
-  - Needs recent info? → Yes
-  - Needs internal knowledge? → Maybe
-  ↓
-Agent Chooses Tools:
-  ├─ Web Search (for latest news)
-  ├─ Vector DB (for internal docs)
-  └─ SQL DB (for structured data)
-  ↓
-Agent Synthesizes: Combines results
-  ↓
-Answer with sources
-```
-
-**Примеры frameworks:**
-- **LangGraph:** Graph-based agent routing
-- **AutoGPT:** Autonomous tool selection
-- **Microsoft Semantic Kernel:** Multi-agent orchestration
-
-**Преимущества:**
-- ✅ Flexibility: uses right tool for job
-- ✅ Scalability: add new tools easily
-- ✅ Accuracy: specialized tools for specialized tasks
-
-**When to use:**
-- Complex queries needing multiple sources
-- Mix of recent + historical data
-- Structured + unstructured data
-
----
+В этой архитектуре AI-агент анализирует запрос и сам решает, какой инструмент использовать. Векторный поиск становится одним из многих инструментов в его арсенале, наряду с веб-поиском, SQL-запросами и т.д. Это гибкий подход, позволяющий подбирать оптимальный инструмент для каждого конкретного запроса.
 
 #### Pattern 4: **Vector Clustering + LLM Summarization**
-
-```
-Dataset: 10K customer reviews
-  ↓
-Vector Embeddings: Each review → embedding
-  ↓
-Clustering: Group similar reviews (K-means, DBSCAN)
-  ├─ Cluster 1: "Shipping issues" (500 reviews)
-  ├─ Cluster 2: "Product quality" (3000 reviews)
-  └─ Cluster 3: "Customer service" (1500 reviews)
-  ↓
-LLM Summarization: Summarize each cluster
-  └─ Cluster 2: "Most customers praise durability but mention size issues"
-```
-
-**Use cases:**
-- Customer feedback analysis
-- Research paper clustering
-- Topic discovery in large corpora
-
-**Преимущества:**
-- ✅ Discover themes in unstructured data
-- ✅ Scalable to millions of docs
-- ✅ Reduces LLM processing (summarize clusters, not individuals)
-
----
+Этот паттерн используется для анализа больших объемов неструктурированных данных, например, отзывов клиентов. Сначала все документы векторизуются, затем алгоритмы кластеризации (K-means, DBSCAN) группируют семантически близкие документы. После этого LLM используется для суммаризации каждой группы, позволяя быстро выявить основные темы и мнения в большом датасете.
 
 ### Hybrid Approaches: Best of Both Worlds
 
 #### Approach 1: **Coarse-to-Fine Retrieval**
-
-```
-Stage 1 (Coarse): Vector Search
-  1M docs → 1000 candidates (fast, broad recall)
-  
-Stage 2 (Medium): Cross-Encoder Reranking
-  1000 → 100 candidates (moderate speed, better precision)
-  
-Stage 3 (Fine): LLM Listwise Reranking
-  100 → 10 (slow, highest precision + reasoning)
-  
-Stage 4: LLM Generate
-  10 docs → Answer
-```
-
-**Cost breakdown:**
-- Stage 1: $0.001 (vector DB)
-- Stage 2: $0.01 (cross-encoder)
-- Stage 3: $0.05 (LLM reranking)
-- Stage 4: $0.02 (LLM generation)
-- Total: ~$0.08 per query
-
-**When to use:** Ultra-high accuracy critical (medical, legal)
-
----
+Многоступенчатый подход для достижения максимальной точности. Сначала грубый, но быстрый векторный поиск отбирает 1000 кандидатов. Затем более точный cross-encoder сужает их до 100. Наконец, самый точный, но медленный listwise LLM-реранкер выбирает топ-10 для генерации ответа.
 
 #### Approach 2: **Query-Type Routing**
-
-```
-Agent analyzes query type:
-
-IF simple_lookup:
-  → Vector search only (fast)
-  
-ELIF complex_reasoning:
-  → LLM-based retrieval (accurate)
-  
-ELIF recent_events:
-  → Web search (fresh data)
-  
-ELSE:
-  → Hybrid (vector + LLM)
-```
-
-**Примеры query types:**
-- **Lookup:** "What is Bitcoin?" → Vector search
-- **Reasoning:** "Compare AI agents vs traditional automation" → LLM-based
-- **Recent:** "Latest GPT-5 news" → Web search
-- **Complex:** "How to implement RAG?" → Hybrid
-
-**Преимущества:**
-- ✅ Optimize cost/speed per query type
-- ✅ Flexibility
-- ✅ Best UX (fast when possible, accurate when needed)
-
----
+Агент анализирует тип запроса и выбирает соответствующую стратегию: быстрый векторный поиск для простых запросов, точный LLM-анализ для сложных, веб-поиск для актуальных событий и т.д. Это позволяет оптимизировать скорость и стоимость для каждого запроса индивидуально.
 
 ### Decision Framework: Vectors vs LLM-Based
 
@@ -720,168 +337,13 @@ ELSE:
 | **Explainability** | Nice-to-have | Critical |
 | **Personal style** | Not needed | Critical |
 
----
-
 ### Production Examples with Vectors
 
-#### 1. **Perplexity AI** (Research Assistant)
-
-**Architecture:**
-```
-Query → Multi-source search:
-  ├─ Web search (real-time)
-  ├─ Vector DB (indexed web pages)
-  └─ Academic DB (papers)
-  ↓
-LLM Synthesis with citations
-```
-
-**Why vectors:**
-- Millions of indexed pages
-- Need fast pre-filtering
-- Combine with real-time web search
-
-**Result:** Sub-second responses with citations
-
----
-
-#### 2. **Notion AI** (Workspace Search)
-
-**Architecture:**
-```
-User workspace: 10K-100K docs
-  ↓
-Incremental indexing → Vector DB
-  ↓
-Query → Hybrid search:
-  ├─ Vector (semantic: "meeting notes")
-  └─ Keyword (exact: "Q4 2024")
-  ↓
-LLM reranking → Top 10
-  ↓
-LLM synthesis → Answer
-```
-
-**Why vectors:**
-- Per-user dataset varies (10K-100K)
-- Need instant search
-- Personal knowledge management
-
----
-
-#### 3. **GitHub Copilot** (Code Search)
-
-**Architecture:**
-```
-Query: "how to implement authentication"
-  ↓
-Vector search: Public code repos
-  ├─ Pre-indexed code snippets
-  └─ Semantic understanding
-  ↓
-Reranking: Relevance + quality
-  ↓
-LLM adaptation: Fit to user's context
-```
-
-**Why vectors:**
-- Billions of code lines indexed
-- Need fast retrieval
-- Semantic code similarity
-
----
+Примеры компаний, использующих векторный поиск в своих продуктах, включают **Perplexity AI** (для предварительной фильтрации веб-страниц), **Notion AI** (для поиска в персональных рабочих пространствах) и **GitHub Copilot** (для семантического поиска по миллиардам строк кода).
 
 ### Best Practices: Vector DB Selection
 
-#### Когда Pinecone
-- ✅ Managed service (zero ops)
-- ✅ Excellent performance (p95: 23ms)
-- ✅ Good for startups (fast setup)
-- ❌ Expensive at scale ($500+/month)
-
-#### Когда Weaviate
-- ✅ Open-source option (self-host)
-- ✅ Hybrid search built-in
-- ✅ GraphQL API
-- ✅ 22% cheaper than Pinecone
-- ❌ More setup required
-
-#### Когда Qdrant
-- ✅ Best for complex filters
-- ✅ High-performance (Rust)
-- ✅ Good for self-hosting
-- ❌ Smaller ecosystem
-
-#### Когда pgvector (Postgres)
-- ✅ If already using Postgres
-- ✅ Simple stack (one DB)
-- ✅ Good for < 1M vectors
-- ❌ Not optimized for vectors
-
----
+Выбор векторной базы данных зависит от задачи: **Pinecone** хорош для быстрого старта и управляемых сервисов, **Weaviate** — open-source альтернатива с гибридным поиском, **Qdrant** — высокопроизводительное решение на Rust, а **pgvector** — простое расширение, если вы уже используете Postgres и ваш датасет не превышает 1 млн векторов.
 
 ### Migration Path: LLM-Based → Vector DB
-
-**Когда мигрировать:**
-- Dataset crosses 10K docs (start planning)
-- Dataset crosses 50K docs (migrate soon)
-- Dataset crosses 100K docs (migrate now!)
-- Query latency > 10 seconds consistently
-- Cost per query > $0.50
-
-**Migration strategy:**
-```
-Phase 1: Keep LLM-based, add vector pre-filter
-  Query → Vector (filter to 1000) → LLM (existing pipeline)
-  Benefit: Faster, same accuracy
-  
-Phase 2: Add cross-encoder reranking
-  Vector (1000) → Cross-encoder (100) → LLM
-  Benefit: Better precision, lower LLM cost
-  
-Phase 3: Full hybrid
-  Vector + Keyword → RRF → Cross-encoder → LLM
-  Benefit: Best accuracy, production-ready
-```
-
-**Наш случай (1K posts → 10K posts):**
-```
-Current: < 1K posts → LLM-based OK ✅
-Planning: 1K-10K posts → Hybrid (vector pre-filter + LLM)
-Future: > 10K posts → Full vector + reranking
-```
-
----
-
-### Ключевые Выводы: Векторный Поиск
-
-1. **Векторы = инструмент масштабирования**
-   - Критичны для > 100K docs
-   - Overkill для < 10K docs
-
-2. **Hybrid > Pure Vector**
-   - Vector + keyword лучше одного
-   - LLM reranking убирает false positives
-
-3. **Латентность vs Точность**
-   - Векторы: 10-50ms, 60% precision
-   - LLM: 5-10 sec, 90% precision
-   - Выбор зависит от use case
-
-4. **Agentic подход: vectors as tool**
-   - Vector DB = один из инструментов агента
-   - Не единственный источник данных
-
-5. **Стоимость растет с scale**
-   - < 10K docs: LLM-based дешевле ($10-50/month)
-   - > 100K docs: Vectors необходимы ($100-500/month)
-
-6. **Migration path существует**
-   - Можно начать с LLM-based
-   - Добавить векторы когда нужно
-   - Поэтапный переход
-
----
-
-**Обновлено:** 2025-10-13  
-**Добавлен раздел:** Правильное использование векторного поиска
+Переход на векторную БД целесообразен, когда датасет превышает 50-100 тыс. документов, а задержки или стоимость запросов становятся неприемлемыми. Миграцию можно проводить поэтапно: сначала добавить векторный поиск как пре-фильтр, затем внедрить ре-ранкеры, и в итоге прийти к полноценной гибридной системе. Для нашего проекта такой переход стоит планировать при достижении 10 тыс. документов.

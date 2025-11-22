@@ -7,31 +7,38 @@
 FastAPI backend service providing multi-expert query processing with Map-Resolve-Reduce pipeline, real-time SSE streaming, and VPS/cloud deployment support.
 
 ## Narrative Summary
-The backend implements a sophisticated query processing system that retrieves relevant content from expert Telegram channels and synthesizes comprehensive answers. It features a 7-phase pipeline with hybrid multi-model LLM strategy (Primary → Fallback), language validation, parallel multi-expert processing, Telegram synchronization, and comprehensive drift analysis for comment discussions. The service includes robust error handling with user-friendly messages and is containerized with Docker for VPS/cloud deployment.
+The backend implements a sophisticated query processing system that retrieves relevant content from expert Telegram channels and synthesizes comprehensive answers. It features a 8-phase pipeline with hybrid multi-model LLM strategy (Primary → Fallback), language validation, parallel multi-expert processing, Telegram synchronization, and comprehensive drift analysis for comment discussions. The service includes robust error handling with user-friendly messages and is containerized with Docker for VPS/cloud deployment.
 
 ## Key Files
-- `src/api/main.py` - FastAPI application with CORS, SSE, error handling, and environment configuration
-- `src/api/simplified_query_endpoint.py` - Main multi-expert query endpoint with parallel processing and SSE
+- `src/api/main.py` - FastAPI application with CORS, SSE, error handling, admin auth, and production configuration
+- `src/api/simplified_query_endpoint.py` - Main multi-expert query endpoint with parallel processing and enhanced SSE
+- `src/api/admin_endpoints.py` - Admin authentication and production configuration endpoints
 - `src/services/map_service.py` - Phase 1: Content relevance detection with hybrid model system
-- `src/services/medium_scoring_service.py` - Phase 2: Advanced post reranking with scoring
+- `src/services/medium_scoring_service.py` - Phase 2: Advanced post reranking with hybrid cost optimization
 - `src/services/simple_resolve_service.py` - Phase 3: Database link expansion (depth 1)
 - `src/services/reduce_service.py` - Phase 4: Answer synthesis with hybrid model system
 - `src/services/language_validation_service.py` - Phase 5: Language consistency validation
-- `src/services/comment_group_map_service.py` - Phase 6: Comment drift analysis
+- `src/services/comment_group_map_service.py` - Phase 6: Comment drift analysis with hybrid optimization
 - `src/services/comment_synthesis_service.py` - Phase 7: Comment insights extraction
-- `src/services/translation_service.py` - Post translation support
-- `src/utils/error_handler.py` - User-friendly error processing system
-- `src/config.py` - Hybrid model configuration management
-- `Dockerfile` - Production container configuration for deployment
+- `src/services/translation_service.py` - Hybrid translation service with Google Gemini as primary
+- `src/utils/error_handler.py` - Enhanced user-friendly error processing system
+- `src/config.py` - Comprehensive hybrid model configuration management
+- `src/services/hybrid_llm_adapter.py` - Core hybrid LLM adapter with Google AI Studio integration
+- `src/services/google_ai_studio_client.py` - Google AI Studio API client implementation
+- `fly.toml` - Fly.io production deployment configuration
 
 ## API Endpoints
 - `GET /health` - Health check with service status validation
-- `POST /api/v1/query` - Main multi-expert query endpoint with SSE streaming and parallel processing
+- `GET /api/v1/experts` - Dynamic expert loading from database with metadata
+- `POST /api/v1/query` - Main multi-expert query endpoint with enhanced SSE streaming and parallel processing
 - `GET /api/v1/posts/{post_id}` - Retrieve individual post details with comments and translation support
-- `POST /api/v1/posts/by-ids` - Batch retrieve multiple posts by IDs
 - `POST /api/v1/import` - Import Telegram JSON data with expert assignment
-- `POST /api/v1/log-batch` - Debug logging endpoint for frontend development
+- `POST /api/v1/log-batch` - Enhanced debug logging endpoint for frontend development
 - `GET /api/info` - API information and feature listing
+- **Admin Endpoints** (protected):
+  - `GET /api/v1/admin/config` - Get production configuration
+  - `POST /api/v1/admin/config` - Update production settings
+  - `GET /api/v1/admin/status` - System status and metrics
 
 ## Production Deployment Configuration
 ### Docker Production Architecture
@@ -41,50 +48,7 @@ The backend implements a sophisticated query processing system that retrieves re
 - **Resource Limits**: 1GB memory, 0.5 CPU limit, 512MB reservation
 - **Security**: Non-root appuser, read-only filesystem where possible
 
-### Production Environment Variables
-```bash
-# Required: OpenRouter API (primary)
-OPENROUTER_API_KEY=sk-or-your-openrouter-api-key-here
-
-# Optional: Google AI Studio API (automatic fallback)
-GOOGLE_AI_STUDIO_API_KEY=your-google-ai-studio-api-key-here
-
-# Hybrid Model Configuration
-# Map Phase: Primary → Fallback mechanism
-MODEL_MAP_PRIMARY=gemini-2.0-flash-lite
-MODEL_MAP_FALLBACK=qwen/qwen-2.5-72b-instruct
-
-# Synthesis Phase: Primary → Fallback mechanism
-MODEL_SYNTHESIS_PRIMARY=gemini-2.0-flash
-MODEL_SYNTHESIS_FALLBACK=qwen/qwen-2.5-72b-instruct
-
-# Analysis Tasks (single model)
-MODEL_ANALYSIS=qwen/qwen-2.5-72b-instruct
-MODEL_COMMENT_GROUPS=qwen/qwen-2.5-72b-instruct
-
-# Database Configuration
-DATABASE_URL=sqlite:///data/experts.db
-
-# Production Domain (must match SSL certificate)
-PRODUCTION_ORIGIN=https://your-domain.com
-
-# Production Settings
-ENVIRONMENT=production
-API_HOST=0.0.0.0
-API_PORT=8000
-LOG_LEVEL=INFO
-PORT=8000
-
-# Performance Settings
-MAX_POSTS_LIMIT=500
-CHUNK_SIZE=20
-REQUEST_TIMEOUT=300
-
-# Optional: Telegram API for synchronization
-TELEGRAM_API_ID=your-telegram-api-id
-TELEGRAM_API_HASH=your-telegram-api-hash
-TELEGRAM_CHANNEL=your-channel-name
-```
+A complete list of required and optional environment variables for production is available in the `.env.example` file. For production, ensure `ENVIRONMENT` is set to `production` and all necessary API keys and secrets are provided.
 
 ### Production Docker Configuration
 - **Base Image**: Python 3.11-slim with security updates
@@ -95,14 +59,7 @@ TELEGRAM_CHANNEL=your-channel-name
 - **Command**: `python -m uvicorn src.api.main:app --host 0.0.0.0 --port ${PORT:-8000} --log-level info`
 - **Volumes**: `/app/data` for SQLite persistence, `/app/logs` for application logs
 
-### Production Deployment Workflow
-```bash
-# Quick production deployment (15 minutes)
-./deploy.sh                    # Automated deployment with health checks
-./deploy.sh status            # Check service status
-./deploy.sh logs              # View application logs
-./deploy.sh restart           # Restart services
-```
+The project can be deployed to Fly.io using the `fly.toml` configuration file and the `flyctl` CLI. Alternatively, a custom deployment script, `deploy.sh`, is provided in the root directory for automated Docker-based deployments. Refer to these files and the official Fly.io documentation for detailed procedures.
 
 ### SSL and HTTPS Configuration
 - **SSL Termination**: Handled by nginx reverse proxy
@@ -130,31 +87,12 @@ TELEGRAM_CHANNEL=your-channel-name
 - SQLite database (for local development)
 
 ### Development Server
-```bash
-# Install dependencies
-pip install -r requirements.txt
+To set up the development environment, install the dependencies listed in `backend/requirements.txt`. The `quickstart.sh` script in the project root can automate this process.
 
-# Run development server
-cd backend && python3 -m uvicorn src.api.main:app --reload --port 8000
-
-# Health check validation
-curl -s http://localhost:8000/health | jq '.'
-# Should return API key status and database health
-```
+To run the development server, you can use the `uvicorn` command as detailed in the `quickstart.sh` script's output.
 
 ### API Testing
-```bash
-# Query all experts (default)
-curl -X POST http://localhost:8000/api/v1/query \
-  -H "Content-Type: application/json" \
-  -d '{"query": "Что такое AI agents?", "stream_progress": false}' \
-  -o /tmp/result.json
-
-# Query specific expert
-curl -X POST http://localhost:8000/api/v1/query \
-  -H "Content-Type: application/json" \
-  -d '{"query": "What is AI?", "expert_filter": ["refat"], "stream_progress": false}'
-```
+Once the server is running, you can test the API. For simple health checks, access the `/health` endpoint. For sending queries and exploring all endpoints, use the interactive OpenAPI documentation available at `/api/docs`.
 
 ## Key Architectural Patterns
 
@@ -164,7 +102,7 @@ curl -X POST http://localhost:8000/api/v1/query \
 - Parallel async tasks with individual SSE progress tracking
 - Dynamic expert detection with optional filtering
 
-### Seven-Phase Pipeline Architecture
+### Eight-Phase Pipeline Architecture
 1. **Map Phase** - Content relevance detection with hybrid model system (Primary → Fallback)
 2. **Medium Scoring Phase** - Advanced post reranking with score ≥ 0.7 filtering (max 5 posts)
 3. **Resolve Phase** - Database link expansion for HIGH posts only (depth 1)
@@ -173,12 +111,8 @@ curl -X POST http://localhost:8000/api/v1/query \
 6. **Comment Groups Phase** - Drift analysis for relevant discussions
 7. **Comment Synthesis Phase** - Complementary insights extraction
 
-### Hybrid Multi-Model Strategy
-- **Map Phase**: Gemini 2.0 Flash Lite → Qwen 2.5-72B (Primary → Fallback)
-- **Analysis Tasks**: Qwen 2.5-72B (medium scoring, translation, validation)
-- **Synthesis Phase**: Gemini 2.0 Flash → Qwen 2.5-72B (Primary → Fallback)
-- **Comment Groups**: Qwen 2.5-72B (drift analysis)
-- **Google AI Studio Integration**: Free tier usage with automatic OpenRouter fallback
+### Hybrid Multi-Model Strategy (Cost Optimized)
+The system uses a hybrid model strategy to optimize for both cost and performance, primarily using free-tier Google models and falling back to OpenRouter. For a detailed and up-to-date breakdown of the models used in each phase, please see the **[Pipeline Architecture Guide](../docs/pipeline-architecture.md)**.
 
 ### Retry Mechanism (Map Phase)
 - Two-layer retry strategy: 3 per-chunk + 1 global retry attempts
@@ -194,10 +128,12 @@ curl -X POST http://localhost:8000/api/v1/query \
 3. Default values in code
 
 ### Database Configuration
-- **Local**: SQLite (`data/experts.db` - located in `backend/data/` directory, 56MB)
+- **Local**: SQLite (`data/experts.db` - located in `backend/data/` directory, 18MB)
 - **Production**: SQLite (`/app/data/experts.db` on production servers)
 - **Async Support**: SQLAlchemy 2.0 with aiosqlite driver
-- **Migrations**: 8 migration scripts in `backend/migrations/` directory
+- **Migrations**: 10+ migration scripts in `backend/migrations/` directory
+- **Expert Metadata**: Centralized expert information with display names and channels
+- **Drift Analysis**: Comprehensive comment drift tracking and topic analysis
 
 ### Hybrid Model Configuration
 - Primary models via Google AI Studio API (free tier)
@@ -209,10 +145,12 @@ curl -X POST http://localhost:8000/api/v1/query \
 ## Production Deployment Notes
 
 ### Production Architecture Overview
-- **3-Service Setup**: nginx-reverse-proxy → backend-api → frontend-app
+- **Fly.io Deployment**: Single-container architecture with persistent volume storage
+- **Alternative VPS**: 3-Service Setup (nginx-reverse-proxy → backend-api → frontend-app)
 - **Internal Network**: Custom Docker network (172.20.0.0/16) for secure communication
-- **SSL Termination**: nginx handles HTTPS, backend receives HTTP internally
-- **Resource Isolation**: Memory and CPU limits per service
+- **SSL Termination**: Automatic HTTPS via Fly.io or nginx reverse proxy
+- **Resource Isolation**: Memory and CPU limits per service (1GB memory, 1 CPU for Fly.io)
+- **Admin Authentication**: Secure admin endpoints with production configuration management
 
 ### Database Management
 - **Persistence**: SQLite database mounted at `/app/data/experts.db`
@@ -242,22 +180,7 @@ curl -X POST http://localhost:8000/api/v1/query \
 - **System Updates**: Automatic security patch management
 
 ### Production Troubleshooting
-```bash
-# Check service health
-curl https://your-domain.com/health
-
-# View backend logs
-./deploy.sh logs | grep backend-api
-
-# Debug database connectivity
-docker-compose exec backend-api sqlite3 data/experts.db ".tables"
-
-# Monitor resource usage
-docker stats experts-panel-backend
-
-# Check SSL certificates
-./update-ssl.sh status
-```
+To troubleshoot a production deployment, first check the service health via its public URL at the `/health` endpoint. For detailed logs, use the `fly logs` command (for Fly.io) or the `deploy.sh` script if applicable. You can also connect to the running container to inspect the database directly. Monitor resource usage via your hosting provider's dashboard (e.g., `docker stats` or Fly.io's metrics).
 
 ## Error Handling System
 
@@ -301,15 +224,7 @@ The language system is integrated into all core LLM services:
 - Enforces response language regardless of source content language
 
 ### Usage Pattern
-```python
-from ..utils.language_utils import prepare_prompt_with_language_instruction, prepare_system_message_with_language
-
-# Method 1: System message override (preferred for LLMs)
-system_message = prepare_system_message_with_language(base_system, query)
-
-# Method 2: Prompt prepending (fallback method)
-enhanced_prompt = prepare_prompt_with_language_instruction(prompt_template, query)
-```
+The usage pattern, involving `prepare_system_message_with_language` and `prepare_prompt_with_language_instruction`, can be seen in practice in the various service files, such as `services/map_service.py` and `services/reduce_service.py`.
 
 ## Related Documentation
 - `DEPLOYMENT.md` - Complete production deployment guide
