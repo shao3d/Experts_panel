@@ -13,13 +13,18 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from .models import ErrorResponse
+from .dependencies import verify_admin_secret
 from ..models.base import SessionLocal
 from ..data.json_parser import TelegramJsonParser
 
 logger = logging.getLogger(__name__)
 
 # Create router
-router = APIRouter(prefix="/api", tags=["import"])
+router = APIRouter(
+    prefix="/api",
+    tags=["import"],
+    dependencies=[Depends(verify_admin_secret)],
+)
 
 # Store import job statuses (in production, use Redis or database)
 import_jobs = {}

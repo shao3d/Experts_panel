@@ -27,6 +27,9 @@ from .log_endpoints import router as log_router
 from ..models.base import engine, Base
 from .. import config
 
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+IS_PRODUCTION = ENVIRONMENT.lower() == "production"
+
 # Configure logging - explicit FileHandler setup to work with uvicorn
 root_logger = logging.getLogger()
 root_logger.setLevel(config.LOG_LEVEL.upper())
@@ -84,30 +87,33 @@ app = FastAPI(
     title="Experts Panel API",
     description="Map-Resolve-Reduce pipeline for Telegram channel analysis",
     version="1.0.0",
-    docs_url="/api/docs",
+    docs_url=None if IS_PRODUCTION else "/api/docs",
     redoc_url="/api/redoc",
     openapi_url="/api/openapi.json",
-    lifespan=lifespan
+    lifespan=lifespan,
+    debug=not IS_PRODUCTION,
 )
 
 # Configure CORS
-origins = [
-    "http://localhost:3000",  # React development server
-    "http://localhost:3001",  # React development server (alt port)
-    "http://localhost:3002",  # Vite development server (alt port)
-    "http://localhost:3003",  # React development server (additional port)
-    "http://localhost:5173",  # Vite development server
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:3001",
-    "http://127.0.0.1:3002",
-    "http://127.0.0.1:3003",
-    "http://127.0.0.1:5173",
-]
-
-# Add production origins from environment
 production_origin = os.getenv("PRODUCTION_ORIGIN")
-if production_origin:
-    origins.append(production_origin)
+
+if IS_PRODUCTION:
+    origins = [production_origin] if production_origin else []
+else:
+    origins = [
+        "http://localhost:3000",  # React development server
+        "http://localhost:3001",  # React development server (alt port)
+        "http://localhost:3002",  # Vite development server (alt port)
+        "http://localhost:3003",  # React development server (additional port)
+        "http://localhost:5173",  # Vite development server
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:3001",
+        "http://127.0.0.1:3002",
+        "http://127.0.0.1:3003",
+        "http://127.0.0.1:5173",
+    ]
+    if production_origin:
+        origins.append(production_origin)
 
 app.add_middleware(
     CORSMiddleware,

@@ -54,12 +54,42 @@ export class APIClient {
   }
 
   /**
+   * Attach admin secret header if configured
+   */
+  private buildHeaders(headers?: HeadersInit): HeadersInit {
+    const adminSecret = import.meta.env.VITE_ADMIN_SECRET;
+
+    if (!adminSecret) {
+      return headers || {};
+    }
+
+    if (headers instanceof Headers) {
+      const cloned = new Headers(headers);
+      cloned.set('X-Admin-Secret', adminSecret);
+      return cloned;
+    }
+
+    if (Array.isArray(headers)) {
+      const fromArray = new Headers(headers);
+      fromArray.set('X-Admin-Secret', adminSecret);
+      return fromArray;
+    }
+
+    return {
+      ...(headers || {}),
+      'X-Admin-Secret': adminSecret
+    };
+  }
+
+  /**
    * Health check endpoint
    *
    * @returns Health status of the backend
    */
   async checkHealth(): Promise<HealthResponse> {
-    const response = await fetch(`${this.baseURL.replace(/\/$/, '')}/health`);
+    const response = await fetch(`${this.baseURL.replace(/\/$/, '')}/health`, {
+      headers: this.buildHeaders()
+    });
 
     if (!response.ok) {
       throw new Error(`Health check failed: ${response.statusText}`);
@@ -88,9 +118,9 @@ export class APIClient {
     try {
       const response = await fetch(`${this.baseURL.replace(/\/$/, '')}/api/v1/query`, {
         method: 'POST',
-        headers: {
+        headers: this.buildHeaders({
           'Content-Type': 'application/json',
-        },
+        }),
         body: JSON.stringify(requestBody),
       });
 
@@ -388,7 +418,9 @@ export class APIClient {
           url += url.includes('?') ? `&${params.toString()}` : `?${params.toString()}`;
         }
 
-        const response = await fetch(url);
+        const response = await fetch(url, {
+          headers: this.buildHeaders()
+        });
 
         if (!response.ok) {
           if (response.status === 404) {

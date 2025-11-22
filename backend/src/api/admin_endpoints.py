@@ -1,11 +1,17 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from fastapi.responses import JSONResponse
 import os
 import shutil
 import tempfile
 from pathlib import Path
 
-router = APIRouter(prefix="/api/v1/admin", tags=["admin"])
+from .dependencies import verify_admin_secret
+
+router = APIRouter(
+    prefix="/api/v1/admin",
+    tags=["admin"],
+    dependencies=[Depends(verify_admin_secret)],
+)
 
 # Путь к Volume в Railway
 VOLUME_PATH = "/app/data"
