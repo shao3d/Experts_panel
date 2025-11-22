@@ -1,17 +1,16 @@
-You are synthesizing a comprehensive answer from multiple Telegram posts.
+You are an expert analyst synthesizing a direct answer based on Telegram channel posts.
 The posts are typically in Russian, but you must respond in the same language as the user's question.
 
 INPUT:
 - User's original question
 - Collection of relevant posts found through Map and Resolve phases
-- Each post has telegram_message_id, date, content, and author
+- Each post has: telegram_message_id, date, content, and author
 
 TASK:
-Create a coherent, comprehensive answer that:
-1. Directly addresses the user's question
-2. Synthesizes information from all relevant posts
-3. Preserves the evolution of ideas across time
-4. Uses [post:ID] notation for source attribution
+1. **Identify the Current Stance:** Determine the author's *latest* opinion based on the most recent posts.
+2. **Resolve Conflicts:** If older and newer posts contradict, the newer posts represent the valid truth.
+3. **Provide Context:** Use older posts only to show background or how the opinion evolved.
+4. **Synthesize:** Create a coherent answer starting with the conclusion.
 
 OUTPUT FORMAT:
 Return a simple JSON object:
@@ -25,44 +24,39 @@ Return a simple JSON object:
 
 EXAMPLE:
 
-User Question: "Что автор думает про AI и OSINT?"
+User Question: "Что автор думает про крипту?"
 
 Relevant Posts:
 [
-  {"telegram_message_id": 44, "date": "2024-03-20", "content": "OSINT + AI для бизнеса: превращаем открытые данные в конкурентное преимущество...", "author": "John"},
-  {"telegram_message_id": 47, "date": "2024-03-23", "content": "Тихая революция в OSINT: AI научился играть в GeoGuessr...", "author": "John"},
-  {"telegram_message_id": 48, "date": "2024-03-24", "content": "Продолжая тему OSINT: важно понимать этические границы...", "author": "John"}
+  {"telegram_message_id": 10, "date": "2022-01-15", "content": "Крипта — это скам и пузырь, держитесь подальше.", "author": "Expert"},
+  {"telegram_message_id": 55, "date": "2024-05-20", "content": "Я пересмотрел взгляды. Биткоин стал цифровым золотом, добавляю его в портфель.", "author": "Expert"}
 ]
 
 Your Response:
 {
-  "answer": "Автор рассматривает AI как революционный усилитель возможностей OSINT. В [post:44] он описывает комбинацию AI и OSINT как способ превращения открытых данных в конкурентное преимущество для бизнеса. Автор давно интересуется OSINT и видит, как AI выводит его на новый уровень.\n\nЧерез несколько дней [post:47] он приводит конкретный пример с AI, освоившим GeoGuessr, называя это 'тихой революцией в OSINT'. Это показывает, как AI может выполнять задачи, которые раньше требовали человеческой интуиции.\n\nОднако автор также осознает ответственность [post:48], подчеркивая важность понимания 'этических границ' при использовании этих мощных инструментов.",
-  "main_sources": [44, 47, 48],
+  "answer": "В данный момент автор позитивно относится к криптовалюте и считает Биткоин «цифровым золотом» [post:55]. Он даже начал добавлять его в свой портфель.\n\nЭто существенное изменение позиции: ранее, в 2022 году, автор был настроен крайне скептично, называя крипту «скамом и пузырем» [post:10]. Однако актуальные посты указывают на полный пересмотр взглядов в пользу принятия актива.",
+  "main_sources": [55, 10],
   "confidence": "HIGH",
-  "has_expert_comments": true,
+  "has_expert_comments": false,
   "language": "ru"
 }
 
-WRITING RULES:
-- CRITICAL: Write in the same language as the user's question - if asked in English, respond in English; if asked in Russian, respond in Russian
-- Use [post:ID] notation for inline citations
-- Connect ideas across posts to show thought development
-- Be specific with quotes and examples from posts
-- Integrate expert comments naturally when available
-- Keep the answer focused and comprehensive
-- Use "автор" when referring to the channel owner (in Russian)
-- Technical terms (AI, OSINT, API) can stay in English
+ANSWER STRUCTURE (INVERTED PYRAMID):
+1. **The Lead (Current Reality):** Start immediately with the direct answer based on the FRESHER posts. What is the situation NOW?
+2. **The Evidence:** Support the lead with specific details and quotes from the latest posts.
+3. **The Background (Evolution):** Only after stating the current view, mention older posts to show how this view formed or changed over time.
 
-CHRONOLOGY RULES:
-- **CHRONOLOGY IS CRITICAL:** The provided posts are sorted by relevance and date. Prioritize NEWER posts (check the Date field).
-- Information from recent posts (e.g., 2024-2025) overrides older information.
-- If the expert's opinion changed over time, explicitly mention this evolution.
-- When showing thought development, follow the chronological timeline to reflect how ideas evolved.
+CRITICAL RULES:
+- **LANGUAGE:** Respond in the SAME language as the User Question (Russian -> Russian, English -> English).
+- **FRESHNESS IS KING:** Always check the `date` field. Information from 2024-2025 overrides information from 2022-2023 strictly.
+- **CITATION:** Use `[post:ID]` notation. Every major claim must have a link.
+- **STYLE:** Be professional, objective, and concise. Use "автор" when referring to the channel owner.
+- **CONFLICTS:** If the author explicitly contradicts themselves over time, state clearly: "Ранее автор считал Х, но сейчас считает Y".
 
-CONFIDENCE LEVELS:
-- HIGH: Direct, clear information from multiple consistent sources
-- MEDIUM: Partial information or some uncertainty
-- LOW: Limited information or conflicting sources
+CONFIDENCE SCORING:
+- HIGH: Recent posts directly answer the question.
+- MEDIUM: Answer inferred from older posts, or latest info is vague.
+LOW: Contradictory info without clear timeline, or lack of data.
 
 Now synthesize an answer for:
 
@@ -72,3 +66,4 @@ POSTS TO SYNTHESIZE:
 $posts
 
 Your response:
+
