@@ -18,13 +18,16 @@ Experts Panel is a powerful tool for semantic search and analysis of content fro
 graph TD
     subgraph "User Environment"
         User[User]
-        Frontend[React Frontend Vite]
+        Frontend[React Frontend 18 + TypeScript]
     end
 
     subgraph "Experts Panel Infrastructure"
         Backend[FastAPI Backend]
+        subgraph "Admin Layer"
+            Admin[Admin Authentication]
+        end
         subgraph "Data Layer"
-            DB[(SQLite with Persistent Volume)]
+            DB[(SQLite 18MB with 10+ migrations)]
         end
     end
 
@@ -35,14 +38,17 @@ graph TD
 
     User -- "Sends query" --> Frontend
     Frontend -- "SSE streaming /api/v1/query" --> Backend
+    Backend -- "Admin API" --> Admin
     Backend -- "Hybrid LLM calls" --> OpenRouter
-    Backend -- "Primary LLM calls" --> GoogleAI
+    Backend -- "Cost-optimized LLM calls" --> GoogleAI
     Backend -- "Multi-expert data access" --> DB
     Backend -- "Real-time progress" --> Frontend
     Frontend -- "Expert responses" --> User
 
     classDef ai_service fill:#e6f3ff,stroke:#0066cc,stroke-width:2px
+    classDef admin_service fill:#f0f8ff,stroke:#333,stroke-width:2px
     class OpenRouter,GoogleAI ai_service
+    class Admin admin_service
 ```
 
 ### Intelligent Query Processing Pipeline
@@ -53,14 +59,14 @@ graph TD
     B --> C[1. Map Phase: Hybrid System]
     C -- "Posts" --> D{Split into HIGH and MEDIUM}
     D -- "HIGH posts" --> E[3. Resolve Phase: DB Link Expansion]
-    D -- "MEDIUM posts" --> F[2. Medium Scoring: Qwen 2.5]
+    D -- "MEDIUM posts" --> F[2. Medium Scoring: Hybrid System]
     F -- "Top-5 posts score >= 0.7" --> G[4. Reduce Phase: Hybrid System]
     E -- "Enriched HIGH posts" --> G
     G -- "Synthesized response" --> H[5. Language Validation: Qwen 2.5]
     H -- "Response in correct language" --> I{Assemble Final Response}
 
     subgraph "Parallel Pipeline B: Comment Analysis"
-        J[6. Comment Groups: Drift Analysis] --> K[7. Comment Synthesis: Qwen 2.5]
+        J[6. Comment Groups: Hybrid System] --> K[7. Comment Synthesis: Hybrid System]
     end
 
     A --> J
@@ -71,13 +77,18 @@ graph TD
     classDef llm_step fill:#f9f,stroke:#333,stroke-width:2px
     class C,F,G,H,J,K llm_step
     classDef hybrid_step fill:#e6f3ff,stroke:#0066cc,stroke-width:2px
-    class C,G hybrid_step
+    class C,F,G,J,K hybrid_step
+    classDef cost_optimized fill:#90EE90,stroke:#228B22,stroke-width:2px
+    class F cost_optimized
 ```
 
-**Hybrid Model Strategy (Primary → Fallback)**:
-- **Map Phase**: Gemini 2.0 Flash Lite → Qwen 2.5-72B
-- **Reduce Phase**: Gemini 2.0 Flash → Qwen 2.5-72B
-- **Analysis Tasks**: Qwen 2.5-72B (Medium Scoring, Translation, Validation, Comment Groups)
+**Hybrid Model Strategy (Cost-Optimized)**:
+- **Map Phase**: Qwen 2.5-72B → Gemini 2.0 Flash Lite (OpenRouter primary, Google fallback)
+- **Medium Scoring**: Gemini 2.0 Flash → Qwen 2.5-72B (99% free tier usage)
+- **Reduce Phase**: Gemini 2.0 Flash → Qwen 2.5-72B (Google primary, OpenRouter fallback)
+- **Analysis Tasks**: Qwen 2.5-72B (Translation, Validation)
+- **Comment Groups**: Gemini 2.0 Flash → Qwen 2.5-72B (cost optimization)
+- **Translation Service**: Google Gemini 2.0 Flash (primary, free tier)
 
 ### Data Lifecycle
 
@@ -137,11 +148,12 @@ graph TD
         subgraph "Application Container"
             App[FastAPI Application]
             Uvicorn[Uvicorn ASGI Server]
+            AdminLayer[Admin Authentication Layer]
         end
 
         subgraph "Persistent Storage"
             Volume[experts_data Volume]
-            DB[(experts.db - 56MB)]
+            DB[(experts.db - 18MB, 10+ migrations)]
             Volume -- mounted --> DB
         end
 
@@ -153,37 +165,41 @@ graph TD
 
     User -- HTTPS --> LB
     LB -- HTTP --> App
+    App -- Admin protection --> AdminLayer
     App -- Multi-expert queries --> DB
     App -- Hybrid LLM calls --> OpenRouter
-    App -- Primary LLM calls --> GoogleAI
+    App -- Cost-optimized LLM calls --> GoogleAI
     LB -- Health checks --> App
 
     classDef storage fill:#fdf,stroke:#333,stroke-width:2px
     classDef external fill:#e6f3ff,stroke:#0066cc,stroke-width:2px
     classDef note fill:#f0f8ff,stroke:#ccc,stroke-width:1px
+    classDef admin fill:#FFE4B5,stroke:#D2691E,stroke-width:2px
     class Volume,DB storage
     class OpenRouter,GoogleAI external
+    class AdminLayer admin
 
     subgraph "Production Notes"
-        URL[**Production URL**: https://expa.beyondhorizon.dev/]
+        URL[**Production URL**: https://experts-panel.fly.dev/]
         Scale[**Auto-scaling**: 0 machines when idle, auto-start on request]
         Data[**Data Persistence**: SQLite on mounted volume with backups]
-        class URL,Scale,Data note
+        Auth[**Admin Security**: Secure admin endpoints with authentication]
+        class URL,Scale,Data,Auth note
     end
 ```
 
 ## ✨ Key Features
 
 - **🧠 7-phase Map-Resolve-Reduce Architecture**: Advanced pipeline with differential HIGH/MEDIUM posts processing
-- **🎯 Hybrid Multi-Model Strategy**: Primary → Fallback system with Gemini 2.0 Flash/Flash Lite → Qwen 2.5-72B, plus Google AI Studio integration
+- **🎯 Cost-Optimized Hybrid Strategy**: Smart primary → fallback system with 99% free tier usage via Google AI Studio, OpenRouter fallback
 - **🔍 Smart Semantic Search**: Finds relevant posts by meaning, not keywords
-- **📊 Medium Posts Reranking**: Advanced scoring system with threshold ≥0.7 and top-5 selection
-- **💬 Comment Groups & Synthesis**: Separate pipeline for comment drift analysis and insights extraction
+- **📊 Medium Posts Reranking**: Hybrid scoring system with threshold ≥0.7 and top-5 selection
+- **💬 Comment Groups & Synthesis**: Hybrid pipeline for comment drift analysis and insights extraction
 - **🌐 Language Validation**: Response language validation and translation when needed
-- **⚡ Real-time**: Processing progress display via Server-Sent Events
+- **⚡ Real-time**: Processing progress display via Server-Sent Events with error handling
 - **👥 Multi-expert Support**: Complete data isolation with `expert_id` and parallel processing
-- **🔄 Automatic Synchronization**: Incremental data updates from Telegram channels
-- **🔒 Production Ready**: Security hardening with API key masking and robust error handling
+- **🔄 Dynamic Expert Loading**: Experts loaded from database with metadata centralization
+- **🔒 Production Ready**: Admin authentication, security hardening with API key masking and robust error handling
 
 ## 🚀 Quick Start
 
@@ -300,23 +316,34 @@ DATABASE_URL=sqlite:///data/experts.db
 # Google AI Studio (optional, automatic fallback to OpenRouter)
 GOOGLE_AI_STUDIO_API_KEY=your-google-ai-studio-key-1,key-2,key-3
 
-# Hybrid Model Configuration (Primary → Fallback)
-# Map Phase: Try Google AI Studio first, fallback to OpenRouter
-MODEL_MAP_PRIMARY=gemini-2.0-flash-lite
-MODEL_MAP_FALLBACK=qwen/qwen-2.5-72b-instruct
+# Cost-Optimized Hybrid Model Configuration
+# Map Phase: OpenRouter primary, Google AI Studio fallback
+MODEL_MAP_PRIMARY=qwen/qwen-2.5-72b-instruct
+MODEL_MAP_FALLBACK=gemini-2.0-flash-lite
 
-# Synthesis Phase: Try Google AI Studio first, fallback to OpenRouter
+# Medium Scoring: Cost optimization (99% free tier usage)
+MODEL_MEDIUM_SCORING_PRIMARY=gemini-2.0-flash
+MODEL_MEDIUM_SCORING_FALLBACK=qwen/qwen-2.5-72b-instruct
+
+# Synthesis Phase: Google AI Studio primary, OpenRouter fallback
 MODEL_SYNTHESIS_PRIMARY=gemini-2.0-flash
 MODEL_SYNTHESIS_FALLBACK=qwen/qwen-2.5-72b-instruct
 
-# Analysis Tasks (single model)
+# Comment Groups: Cost optimization
+MODEL_COMMENT_GROUPS_PRIMARY=gemini-2.0-flash
+MODEL_COMMENT_GROUPS_FALLBACK=qwen/qwen-2.5-72b-instruct
+
+# Analysis & Translation Tasks
 MODEL_ANALYSIS=qwen/qwen-2.5-72b-instruct
-MODEL_COMMENT_GROUPS=qwen/qwen-2.5-72b-instruct
+MODEL_TRANSLATION_PRIMARY=gemini-2.0-flash
 
 # Production Settings
 ENVIRONMENT=production  # Set to "development" for detailed config logging
 API_HOST=0.0.0.0
 API_PORT=8000
+
+# Admin Authentication
+ADMIN_SECRET_KEY=your-admin-secret-key-here
 
 # Medium Posts Reranking
 MEDIUM_SCORE_THRESHOLD=0.7
@@ -330,20 +357,20 @@ REQUEST_TIMEOUT=300
 ```
 
 **Model Strategy Notes:**
-- **Google AI Studio**: Free tier usage with automatic OpenRouter fallback
+- **Cost Optimization**: 99% free tier usage with Google AI Studio as primary for most phases
 - **Key Rotation**: Multiple Google AI Studio keys supported with automatic rotation
-- **Cost Optimization**: Configure primary/secondary models for different phases
+- **Smart Fallback**: Automatic OpenRouter fallback when Google AI Studio quota exhausted
 - **Development Mode**: Set `ENVIRONMENT=development` to see masked API keys in logs
 
 ## 🏗️ Technical Architecture
 
 ### Technology Stack
 
-- **Backend**: FastAPI, SQLAlchemy 2.0, Pydantic v2, uvicorn
-- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS
-- **Database**: SQLite with full `expert_id` isolation and persistent volumes
-- **AI Models**: Hybrid system with Google AI Studio (Gemini 2.0 Flash/Flash Lite) + OpenRouter API (Qwen 2.5-72B)
-- **Deployment**: Docker, Fly.io with automatic health checks and volume mounting
+- **Backend**: FastAPI, SQLAlchemy 2.0, Pydantic v2, uvicorn, hybrid LLM adapter
+- **Frontend**: React 18, TypeScript, Vite, React Query, React Hot Toast, Tailwind CSS
+- **Database**: SQLite (18MB) with 10+ migrations, full `expert_id` isolation and persistent volumes
+- **AI Models**: Cost-optimized hybrid system with Google AI Studio (Gemini 2.0 Flash/Flash Lite) + OpenRouter API (Qwen 2.5-72B)
+- **Deployment**: Docker, Fly.io with admin authentication, health checks and volume mounting
 
 ### Project Structure
 
@@ -353,33 +380,42 @@ backend/
 │   ├── models/       # SQLAlchemy models with expert_id fields
 │   ├── services/     # 7-phase Map-Resolve-Reduce pipeline
 │   │   ├── map_service.py                 # Map Phase (Hybrid LLM)
-│   │   ├── medium_scoring_service.py      # Medium Posts Reranking
+│   │   ├── medium_scoring_service.py      # Medium Posts Reranking (Hybrid)
 │   │   ├── simple_resolve_service.py      # Resolve Phase (depth 1)
 │   │   ├── reduce_service.py              # Reduce Phase (Hybrid LLM)
 │   │   ├── language_validation_service.py # Language Validation
-│   │   ├── comment_group_map_service.py   # Comment Groups (Drift Analysis)
-│   │   ├── comment_synthesis_service.py   # Comment Synthesis
-│   │   └── translation_service.py         # Post Translation
+│   │   ├── comment_group_map_service.py   # Comment Groups (Hybrid)
+│   │   ├── comment_synthesis_service.py   # Comment Synthesis (Hybrid)
+│   │   ├── translation_service.py         # Hybrid Translation Service
+│   │   ├── hybrid_llm_adapter.py          # Core Hybrid LLM Adapter
+│   │   └── google_ai_studio_client.py     # Google AI Studio Client
 │   ├── api/          # FastAPI endpoints
+│   │   ├── admin_endpoints.py             # Admin Authentication
+│   │   └── simplified_query_endpoint.py   # Main Query Processing
 │   ├── data/         # Telegram data import and parsing
-│   └── utils/        # Utilities and error handling
+│   ├── utils/        # Utilities and enhanced error handling
+│   └── config.py     # Hybrid model configuration
 ├── prompts/          # LLM prompts (optimized per model)
-├── migrations/       # Database migrations (9 migration files)
+├── migrations/       # Database migrations (10+ migration files)
 └── tests/            # Validation tests
 
 frontend/
 ├── src/
 │   ├── components/   # React components with real-time SSE progress
-│   │   ├── ProgressSection.tsx           # Pipeline progress display
+│   │   ├── ExpertAccordion.tsx            # Primary Expert UI Component
+│   │   ├── ProgressSection.tsx           # Enhanced pipeline progress
 │   │   ├── ExpertResponse.tsx             # Expert response rendering
-│   │   └── ExpertSelectionBar.tsx        # Expert filtering
+│   │   └── DebugLogger.tsx                # Enhanced debug logging
 │   ├── services/     # API client with SSE streaming
-│   └── types/        # TypeScript interfaces
-└── public/           # Static assets
+│   ├── types/        # TypeScript interfaces
+│   └── hooks/        # Custom React hooks
+├── public/           # Static assets
+└── package.json      # Dependencies: React Query, Hot Toast, etc.
 
 data/
 ├── exports/          # Telegram JSON files by expert_id
-└── experts.db        # SQLite database (56MB, 9 migrations)
+├── experts.db        # SQLite database (18MB, 10+ migrations)
+└── backend.log       # Backend API and pipeline logs
 ```
 
 ### Multi-Expert Architecture
@@ -403,17 +439,18 @@ fly auth login
 # 2. Deploy application
 fly deploy
 
-# 3. Setup secrets (both OpenRouter and Google AI Studio)
+# 3. Setup required secrets
 fly secrets set OPENROUTER_API_KEY=your-openrouter-key-here
 fly secrets set GOOGLE_AI_STUDIO_API_KEY=your-google-ai-studio-key-here
+fly secrets set ADMIN_SECRET_KEY=your-admin-secret-key-here
 
 # 4. Configure production environment
 fly secrets set ENVIRONMENT=production
-fly secrets set MODEL_MAP_PRIMARY=gemini-2.0-flash-lite
+fly secrets set MODEL_MAP_PRIMARY=qwen/qwen-2.5-72b-instruct
 fly secrets set MODEL_SYNTHESIS_PRIMARY=gemini-2.0-flash
 
 # 5. Health check
-curl https://expa.beyondhorizon.dev/health
+curl https://experts-panel.fly.dev/health
 
 # 6. Monitor deployment
 fly logs -a experts-panel
@@ -421,28 +458,30 @@ fly logs -a experts-panel
 
 **Production Features:**
 - ✅ **Auto-deployment**: Automatic deployment on push to main branch
+- ✅ **Admin Authentication**: Secure admin endpoints with authentication
 - ✅ **Health monitoring**: Built-in health checks with automatic restarts
-- ✅ **Persistent data**: SQLite database mounted on persistent volume
+- ✅ **Persistent data**: SQLite database (18MB) mounted on persistent volume
 - ✅ **Security**: Non-root container, SSL termination, API key masking
 - ✅ **Scalability**: Automatic scaling with 0 machines when idle
+- ✅ **Cost Optimization**: 99% free tier usage with hybrid model strategy
 - ✅ **Monitoring**: Real-time logs and deployment tracking
 
-**Live Application**: https://expa.beyondhorizon.dev/
+**Live Application**: https://experts-panel.fly.dev/
 
 ## 📚 Documentation
 
 - [Pipeline Architecture](CLAUDE.md) - Complete 7-phase pipeline documentation
 - [Backend Architecture](backend/CLAUDE.md) - FastAPI services and API reference
 - [Frontend Development](frontend/CLAUDE.md) - React components and SSE integration
-- [API Documentation](https://expa.beyondhorizon.dev/docs) - Interactive OpenAPI docs
+- [API Documentation](https://experts-panel.fly.dev/docs) - Interactive OpenAPI docs
 - [Production Deployment](backend/CLAUDE.md#production-deployment) - Complete deployment guide
 - [Prompts Library](backend/prompts/) - LLM prompts optimized per model
 
 **Quick Links:**
 - 🔧 **Development Setup**: [Quick Start Guide](#-quick-start)
 - 🚀 **Production Deploy**: [Fly.io Guide](#-production-deployment-15-minutes)
-- 📊 **Live Demo**: https://expa.beyondhorizon.dev/
-- 🔍 **API Explorer**: https://expa.beyondhorizon.dev/docs
+- 📊 **Live Demo**: https://experts-panel.fly.dev/
+- 🔍 **API Explorer**: https://experts-panel.fly.dev/docs
 
 ## 🤝 Contributing
 
