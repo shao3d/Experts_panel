@@ -61,9 +61,16 @@ const ExpertSelectionBar: React.FC<ExpertSelectionBarProps> = ({
                   cursor: disabled ? 'not-allowed' : 'pointer'
                 }}
               />
-              <span style={styles.expertName}>
+              <a
+                href={`https://t.me/${expert.channel_username}`}
+                title={`https://t.me/${expert.channel_username}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={styles.expertNameLink}
+                onClick={(e) => e.stopPropagation()} // Prevent click from toggling checkbox
+              >
                 {expert.display_name}
-              </span>
+              </a>
             </label>
           </div>
         ))}
@@ -115,6 +122,12 @@ const styles = {
     fontSize: '14px',
     color: '#495057',
     userSelect: 'none' as const
+  },
+  expertNameLink: {
+    fontSize: '14px',
+    color: '#495057',
+    userSelect: 'none' as const,
+    textDecoration: 'none'
   }
 };
 

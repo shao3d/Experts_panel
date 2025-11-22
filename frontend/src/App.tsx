@@ -54,10 +54,24 @@ export const App: React.FC = () => {
 
   // Load experts from API on mount
   useEffect(() => {
+    const expertNameMapping: { [key: string]: string } = {
+      'ai_architect': 'Tech_aiArchitect',
+      'akimov': 'Biz_Akimov',
+      'neuraldeep': 'Tech_Kovalskii',
+      'refat': 'Tech_Refat'
+    };
+
     const loadExperts = async () => {
       try {
         const response = await fetch('/api/v1/experts');
-        const experts: ExpertInfo[] = await response.json();
+        let experts: ExpertInfo[] = await response.json();
+        
+        // Apply UI-only name mapping
+        experts = experts.map(expert => ({
+          ...expert,
+          display_name: expertNameMapping[expert.expert_id.toLowerCase()] || expert.display_name
+        }));
+
         setAvailableExperts(experts);
 
         // Initialize selection with all experts
@@ -68,11 +82,19 @@ export const App: React.FC = () => {
         console.error('Failed to load experts, using fallback:', err);
 
         // Fallback to hardcoded list
-        const fallbackExperts: ExpertInfo[] = [
+        let fallbackExperts: ExpertInfo[] = [
           { expert_id: 'refat', display_name: 'Refat (Tech & AI)', channel_username: 'nobilix' },
           { expert_id: 'ai_architect', display_name: 'AI Architect', channel_username: 'the_ai_architect' },
-          { expert_id: 'neuraldeep', display_name: 'Neuraldeep', channel_username: 'neuraldeep' }
+          { expert_id: 'neuraldeep', display_name: 'Neuraldeep', channel_username: 'neuraldeep' },
+          { expert_id: 'akimov', display_name: 'Akimov', channel_username: 'ai_product' }
         ];
+
+        // Apply UI-only name mapping to fallback
+        fallbackExperts = fallbackExperts.map(expert => ({
+          ...expert,
+          display_name: expertNameMapping[expert.expert_id.toLowerCase()] || expert.display_name
+        }));
+        
         setAvailableExperts(fallbackExperts);
         setSelectedExperts(new Set(fallbackExperts.map(e => e.expert_id)));
         setExpandedExperts(new Set(fallbackExperts.map(e => e.expert_id)));
