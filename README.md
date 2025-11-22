@@ -8,7 +8,7 @@
 
 **Intelligent system for analyzing expert Telegram channels using multi-model AI architecture**
 
-Experts Panel is a powerful tool for semantic search and analysis of content from expert Telegram channels. The system uses an advanced **7-phase Map-Resolve-Reduce pipeline architecture** with hybrid multi-model AI strategy to provide accurate and contextually relevant answers.
+Experts Panel is a powerful tool for semantic search and analysis of content from expert Telegram channels. The system uses an advanced **8-phase Map-Resolve-Reduce pipeline architecture** with hybrid multi-model AI strategy to provide accurate and contextually relevant answers.
 
 ## 🏗️ System Architecture
 
@@ -16,9 +16,133 @@ The system uses an advanced **eight-phase Map-Resolve-Reduce pipeline** to provi
 
 For a detailed breakdown of the 8-phase pipeline, component responsibilities, data flow, and model strategy, please see the **[Pipeline Architecture Guide](docs/pipeline-architecture.md)**.
 
+### High-Level Architecture
+
+```mermaid
+graph TD
+    subgraph "User Environment"
+        User[User]
+        Frontend[React Frontend 18 + TypeScript]
+    end
+
+    subgraph "Experts Panel Infrastructure"
+        Backend[FastAPI Backend]
+        subgraph "Admin Layer"
+            Admin[Admin Authentication]
+        end
+        subgraph "Data Layer"
+            DB[(SQLite 18MB with 10+ migrations)]
+        end
+    end
+
+    subgraph "AI Services"
+        OpenRouter[OpenRouter API]
+        GoogleAI[Google AI Studio API]
+    end
+
+    User -- "Sends query" --> Frontend
+    Frontend -- "SSE streaming /api/v1/query" --> Backend
+    Backend -- "Admin API" --> Admin
+    Backend -- "Hybrid LLM calls" --> OpenRouter
+    Backend -- "Cost-optimized LLM calls" --> GoogleAI
+    Backend -- "Multi-expert data access" --> DB
+    Backend -- "Real-time progress" --> Frontend
+    Frontend -- "Expert responses" --> User
+
+    classDef ai_service fill:#e6f3ff,stroke:#0066cc,stroke-width:2px
+    classDef admin_service fill:#f0f8ff,stroke:#333,stroke-width:2px
+    class OpenRouter,GoogleAI ai_service
+    class Admin admin_service
+```
+
+### Intelligent Query Processing Pipeline
+
+```mermaid
+graph TD
+    A[Start: User Query] --> B{Determine Query Language}
+    B --> C[1. Map Phase: Hybrid System]
+    C -- "Posts" --> D{Split into HIGH and MEDIUM}
+    D -- "HIGH posts" --> E[3. Resolve Phase: DB Link Expansion]
+    D -- "MEDIUM posts" --> F[2. Medium Scoring: Hybrid System]
+    F -- "Top-5 posts score >= 0.7" --> G[4. Reduce Phase: Hybrid System]
+    E -- "Enriched HIGH posts" --> G
+    G -- "Synthesized response" --> H[5. Language Validation: Qwen 2.5]
+    H -- "Response in correct language" --> I{Assemble Final Response}
+
+    subgraph "Parallel Pipeline B: Comment Analysis"
+        J[7. Comment Groups: Hybrid System] --> K[8. Comment Synthesis: Hybrid System]
+    end
+
+    A --> J
+    K --> I[Final Response Assembly]
+
+    I --> L[Final Response]
+
+    classDef llm_step fill:#f9f,stroke:#333,stroke-width:2px
+    class C,F,G,H,J,K llm_step
+    classDef hybrid_step fill:#e6f3ff,stroke:#0066cc,stroke-width:2px
+    class C,F,G,J,K hybrid_step
+    classDef cost_optimized fill:#90EE90,stroke:#228B22,stroke-width:2px
+    class F cost_optimized
+```
+
+### Deployment Architecture
+
+```mermaid
+graph TD
+    subgraph "Internet"
+        User[User]
+    end
+
+    subgraph "Fly.io Platform"
+        LB[Load Balancer + SSL Termination]
+
+        subgraph "Application Container"
+            App[FastAPI Application]
+            Uvicorn[Uvicorn ASGI Server]
+            AdminLayer[Admin Authentication Layer]
+        end
+
+        subgraph "Persistent Storage"
+            Volume[experts_data Volume]
+            DB[(experts.db - 18MB, 10+ migrations)]
+            Volume -- mounted --> DB
+        end
+
+        subgraph "External AI Services"
+            OpenRouter[OpenRouter API]
+            GoogleAI[Google AI Studio API]
+        end
+    end
+
+    User -- HTTPS --> LB
+    LB -- HTTP --> App
+    App -- Admin protection --> AdminLayer
+    App -- Multi-expert queries --> DB
+    App -- Hybrid LLM calls --> OpenRouter
+    App -- Cost-optimized LLM calls --> GoogleAI
+    LB -- Health checks --> App
+
+    classDef storage fill:#fdf,stroke:#333,stroke-width:2px
+    classDef external fill:#e6f3ff,stroke:#0066cc,stroke-width:2px
+    classDef note fill:#f0f8ff,stroke:#ccc,stroke-width:1px
+    classDef admin fill:#FFE4B5,stroke:#D2691E,stroke-width:2px
+    class Volume,DB storage
+    class OpenRouter,GoogleAI external
+    class AdminLayer admin
+
+    subgraph "Production Notes"
+        URL[**Production URL**: https://experts-panel.fly.dev/]
+        Scale[**Auto-scaling**: 0 machines when idle, auto-start on request]
+        Data[**Data Persistence**: SQLite on mounted volume with backups]
+        Auth[**Admin Security**: Secure admin endpoints with authentication]
+        class URL,Scale,Data,Auth note
+    end
+```
+
 ## ✨ Key Features
 
-- **🧠 7-phase Map-Resolve-Reduce Architecture**: Advanced pipeline with differential HIGH/MEDIUM posts processing
+- **🧠 8-phase Map-Resolve-Reduce Architecture**: Advanced pipeline with differential HIGH/MEDIUM posts processing
 - **🎯 Cost-Optimized Hybrid Strategy**: Smart primary → fallback system with 99% free tier usage via Google AI Studio, OpenRouter fallback
 - **🔍 Smart Semantic Search**: Finds relevant posts by meaning, not keywords
 - **📊 Medium Posts Reranking**: Hybrid scoring system with threshold ≥0.7 and top-5 selection
@@ -83,7 +207,7 @@ To set up your local environment, copy this file to `.env` and fill in the requi
 backend/
 ├── src/
 │   ├── models/       # SQLAlchemy models with expert_id fields
-│   ├── services/     # 7-phase Map-Resolve-Reduce pipeline
+│   ├── services/     # 8-phase Map-Resolve-Reduce pipeline
 │   │   ├── map_service.py                 # Map Phase (Hybrid LLM)
 │   │   ├── medium_scoring_service.py      # Medium Posts Reranking (Hybrid)
 │   │   ├── simple_resolve_service.py      # Resolve Phase (depth 1)
@@ -154,7 +278,7 @@ To deploy, use the Fly.io CLI (`flyctl`). You will need to set the required secr
 
 ## 📚 Documentation
 
-- [Pipeline Architecture](CLAUDE.md) - Complete 7-phase pipeline documentation
+- [Pipeline Architecture](CLAUDE.md) - Complete 8-phase pipeline documentation
 - [Backend Architecture](backend/CLAUDE.md) - FastAPI services and API reference
 - [Frontend Development](frontend/CLAUDE.md) - React components and SSE integration
 - [API Documentation](https://experts-panel.fly.dev/docs) - Interactive OpenAPI docs
