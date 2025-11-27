@@ -1,6 +1,7 @@
 /**
  * Horizontal expert selection bar component.
  * Displays all experts in a single horizontal row with checkboxes.
+ * Supports desktop row and mobile wrapping layouts via CSS.
  */
 
 import React from 'react';
@@ -41,94 +42,53 @@ const ExpertSelectionBar: React.FC<ExpertSelectionBarProps> = ({
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.expertsRow}>
-        <span style={styles.title}>EXPERTS:</span>
-        {availableExperts.map((expert) => (
-          <div key={expert.expert_id} style={styles.expertItem}>
-            <label style={{
-              ...styles.label,
+    <div className="expert-bar">
+      <span style={{
+        fontSize: '13px',
+        fontWeight: 600,
+        color: '#495057',
+        textTransform: 'uppercase',
+        letterSpacing: '0.5px',
+        marginRight: '12px'
+      }}>
+        EXPERTS:
+      </span>
+      
+      {availableExperts.map((expert) => (
+        <div key={expert.expert_id} className="expert-item">
+          <label 
+            className="expert-checkbox-label"
+            style={{
               cursor: disabled ? 'not-allowed' : 'pointer',
               opacity: disabled ? 0.6 : 1
-            }}>
-              <input
-                type="checkbox"
-                checked={selectedExperts.has(expert.expert_id)}
-                onChange={() => handleToggleExpert(expert.expert_id)}
-                disabled={disabled}
-                style={{
-                  ...styles.checkbox,
-                  cursor: disabled ? 'not-allowed' : 'pointer'
-                }}
-              />
-              <a
-                href={`https://t.me/${expert.channel_username}`}
-                title={`https://t.me/${expert.channel_username}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={styles.expertNameLink}
-                onClick={(e) => e.stopPropagation()} // Prevent click from toggling checkbox
-              >
-                {expert.display_name}
-              </a>
-            </label>
-          </div>
-        ))}
-      </div>
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={selectedExperts.has(expert.expert_id)}
+              onChange={() => handleToggleExpert(expert.expert_id)}
+              disabled={disabled}
+              style={{
+                cursor: disabled ? 'not-allowed' : 'pointer'
+              }}
+            />
+            <span>{expert.display_name}</span>
+          </label>
+          
+          <a
+            href={`https://t.me/${expert.channel_username}`}
+            title={`Open @${expert.channel_username} in Telegram`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="expert-link-icon"
+            onClick={(e) => e.stopPropagation()} // Prevent click from toggling checkbox
+          >
+            ✈️
+          </a>
+        </div>
+      ))}
     </div>
   );
-};
-
-// Styles for the horizontal expert selection bar
-const styles = {
-  container: {
-    width: '100%',
-    backgroundColor: 'white',
-    borderTop: '1px solid #dee2e6',
-    padding: '12px 20px',
-    boxSizing: 'border-box' as const
-  },
-  header: {
-    marginBottom: '8px'
-  },
-  title: {
-    fontSize: '13px',
-    fontWeight: '600' as const,
-    color: '#495057',
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.5px'
-  },
-  expertsRow: {
-    display: 'flex',
-    gap: '24px',
-    alignItems: 'center',
-    flexWrap: 'wrap' as const
-  },
-  expertItem: {
-    display: 'flex',
-    alignItems: 'center'
-  },
-  label: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    cursor: 'pointer'
-  },
-  checkbox: {
-    margin: 0,
-    cursor: 'pointer'
-  },
-  expertName: {
-    fontSize: '14px',
-    color: '#495057',
-    userSelect: 'none' as const
-  },
-  expertNameLink: {
-    fontSize: '14px',
-    color: '#495057',
-    userSelect: 'none' as const,
-    textDecoration: 'none'
-  }
 };
 
 export default ExpertSelectionBar;

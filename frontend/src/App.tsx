@@ -10,6 +10,7 @@ import ProgressSection from './components/ProgressSection';
 import ExpertSelectionBar from './components/ExpertSelectionBar';
 import { apiClient } from './services/api';
 import { ExpertResponse as ExpertResponseType, ProgressEvent } from './types/api';
+import './App.css';
 
 interface ExpertInfo {
   expert_id: string;
@@ -22,7 +23,7 @@ export const App: React.FC = () => {
   const [progressEvents, setProgressEvents] = useState<ProgressEvent[]>([]);
   const [expertResponses, setExpertResponses] = useState<ExpertResponseType[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [_availableExperts, setAvailableExperts] = useState<ExpertInfo[]>([]);
+  const [availableExperts, setAvailableExperts] = useState<ExpertInfo[]>([]);
   const [expandedExperts, setExpandedExperts] = useState<Set<string>>(new Set());
   const [currentQuery, setCurrentQuery] = useState<string>('');
   const [selectedExperts, setSelectedExperts] = useState<Set<string>>(new Set());
@@ -155,10 +156,19 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div style={styles.container}>
-      {/* Top Section - Query & Progress */}
-      <div style={styles.topSection}>
-        <div style={styles.queryContainer}>
+    <div className="app-container">
+      {/* Mobile: Sticky Header for Progress */}
+      <div className="mobile-header mobile-only">
+        <ProgressSection
+          isProcessing={isProcessing}
+          progressEvents={progressEvents}
+          stats={expertResponses.length > 0 ? getTotalStats() : undefined}
+        />
+      </div>
+
+      {/* Desktop: Top Section */}
+      <div className="top-section desktop-only">
+        <div className="query-container">
           <QueryForm
             onSubmit={handleQuerySubmit}
             disabled={isProcessing}
@@ -167,7 +177,7 @@ export const App: React.FC = () => {
           />
         </div>
 
-        <div style={styles.progressContainer}>
+        <div className="progress-container">
           <ProgressSection
             isProcessing={isProcessing}
             progressEvents={progressEvents}
@@ -176,10 +186,10 @@ export const App: React.FC = () => {
         </div>
       </div>
 
-      {/* Expert Selection Bar */}
-      <div style={styles.expertBarContainer}>
+      {/* Desktop: Expert Selection Bar */}
+      <div className="expert-bar-container desktop-only">
         <ExpertSelectionBar
-          availableExperts={_availableExperts}
+          availableExperts={availableExperts}
           selectedExperts={selectedExperts}
           onExpertsChange={setSelectedExperts}
           disabled={isProcessing}
@@ -187,10 +197,10 @@ export const App: React.FC = () => {
       </div>
 
       {/* Main Content Area - Expert Accordions */}
-      <div style={styles.mainContent}>
-        <div style={styles.accordionContainer}>
+      <div className="main-content">
+        <div className="accordion-container">
           {error ? (
-            <div style={styles.error}>
+            <div className="error-message">
               <h3>⚠️ Error</h3>
               <p>{error}</p>
             </div>
@@ -213,75 +223,32 @@ export const App: React.FC = () => {
                 />
               ))
           ) : (
-            <div style={styles.placeholder}>
+            <div className="empty-placeholder">
               {isProcessing ? 'Stages query...' : 'Experts answers will appear here'}
             </div>
           )}
         </div>
       </div>
+
+      {/* Mobile: Sticky Footer */}
+      <div className="mobile-footer mobile-only">
+        <div className="mobile-expert-selector">
+          <ExpertSelectionBar
+            availableExperts={availableExperts}
+            selectedExperts={selectedExperts}
+            onExpertsChange={setSelectedExperts}
+            disabled={isProcessing}
+          />
+        </div>
+        <QueryForm
+          onSubmit={handleQuerySubmit}
+          disabled={isProcessing}
+          elapsedSeconds={elapsedSeconds}
+          selectedExperts={selectedExperts}
+        />
+      </div>
     </div>
   );
-};
-
-// Two-column layout styles
-const styles = {
-  container: {
-    height: '100vh',
-    display: 'flex',
-    flexDirection: 'column' as const,
-    backgroundColor: '#f5f5f5',
-    overflow: 'hidden'
-  },
-  topSection: {
-    height: '140px',
-    display: 'flex',
-    gap: '20px',
-    padding: '20px',
-    backgroundColor: 'white',
-    borderBottom: '1px solid #dee2e6'
-  },
-  queryContainer: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '10px',
-    overflow: 'visible'
-  },
-  progressContainer: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '10px',
-    overflow: 'hidden'
-  },
-  expertBarContainer: {
-    width: '100%',
-    backgroundColor: 'white',
-    borderBottom: '1px solid #dee2e6'
-  },
-  mainContent: {
-    flex: 1,
-    overflowY: 'auto' as const,
-    padding: '20px',
-    backgroundColor: '#f5f5f5'
-  },
-  accordionContainer: {
-    maxWidth: '1400px',
-    margin: '0 auto',
-    width: '100%'
-  },
-  error: {
-    padding: '20px',
-    backgroundColor: '#ffe0e0',
-    border: '2px solid #ff6b6b',
-    borderRadius: '8px'
-  },
-  placeholder: {
-    padding: '40px',
-    textAlign: 'center' as const,
-    color: '#6c757d',
-    fontSize: '16px'
-  }
 };
 
 export default App;

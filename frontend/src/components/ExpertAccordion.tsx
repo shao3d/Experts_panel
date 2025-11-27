@@ -184,33 +184,33 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
   };
 
   return (
-    <div style={styles.accordion}>
+    <div className="expert-accordion">
       {/* Header - always visible */}
-      <div style={styles.header} onClick={onToggle}>
-        <span style={styles.icon}>{isExpanded ? '▼' : '▶'}</span>
-        <span style={styles.expertName}>{expert.expert_name}</span>
-        <span style={styles.channelName}>@{expert.channel_username}</span>
-        <span style={styles.stats}>
-          {expert.posts_analyzed} posts • {(expert.processing_time_ms / 1000).toFixed(1)} seconds
+      <div className="accordion-header" onClick={onToggle}>
+        <span className="accordion-icon">{isExpanded ? '▼' : '▶'}</span>
+        <span className="expert-name">{expert.expert_name}</span>
+        <span className="channel-name">@{expert.channel_username}</span>
+        <span className="header-stats">
+          {expert.posts_analyzed} posts • {(expert.processing_time_ms / 1000).toFixed(1)}s
         </span>
-        <span style={{
-          ...styles.confidence,
-          backgroundColor: getConfidenceColor(expert.confidence)
-        }}>
+        <span 
+          className="confidence-badge"
+          style={{ backgroundColor: getConfidenceColor(expert.confidence) }}
+        >
           {expert.confidence}
         </span>
       </div>
 
       {/* Body - only when expanded */}
       {isExpanded && (
-        <div style={styles.body}>
+        <div className="accordion-body">
           {/* Left Column - Expert Response */}
-          <div style={styles.leftColumn}>
-            <div style={styles.columnHeader}>
-              <h2 style={styles.columnTitle}>Expert Response</h2>
+          <div className="accordion-col-left">
+            <div className="col-header">
+              <h2 className="column-title" style={{fontSize: '16px', margin: 0}}>Expert Response</h2>
             </div>
 
-            <div style={styles.scrollableContent}>
+            <div className="scrollable-content">
               {expert.answer ? (
                 <>
                   <ExpertResponse
@@ -223,7 +223,7 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
                   )}
                 </>
               ) : (
-                <div style={styles.placeholder}>
+                <div className="empty-placeholder">
                   No response from expert
                 </div>
               )}
@@ -231,31 +231,31 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
           </div>
 
           {/* Right Column - Posts */}
-          <div style={styles.rightColumn}>
-            <div style={styles.columnHeader}>
-              <h2 style={styles.columnTitle}>
+          <div className="accordion-col-right">
+            <div className="col-header">
+              <h2 className="column-title" style={{fontSize: '16px', margin: 0}}>
                 Source posts with comments
               </h2>
             </div>
 
-            <div style={styles.scrollableContent}>
+            <div className="scrollable-content">
               {isTranslating ? (
                 <div>
                   {/* Progress indicator */}
-                  <div style={styles.translationLoading}>
-                    <div style={styles.loadingIcon}>🔄</div>
-                    <div style={styles.loadingText}>
+                  <div className="translation-loading">
+                    <div className="loading-icon">🔄</div>
+                    <div className="loading-text">
                       Translating posts used for generating the expert response...
                     </div>
-                    <div style={styles.progressIndicator}>
+                    <div className="progress-indicator">
                       {translationProgress.current} / {translationProgress.total}
                     </div>
                   </div>
 
                   {/* Show posts as they become available */}
                   {posts.length > 0 && (
-                    <div style={styles.progressivePostsContainer}>
-                      <div style={styles.progressivePostsHeader}>
+                    <div className="progressive-posts-container">
+                      <div className="progressive-posts-header">
                         {posts.length} post{posts.length === 1 ? '' : 's'} translated so far:
                       </div>
                       <PostsList
@@ -267,7 +267,7 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
                   )}
                 </div>
               ) : postsLoading ? (
-                <div style={styles.placeholder}>Loading posts...</div>
+                <div className="empty-placeholder">Loading posts...</div>
               ) : (
                 <>
                   {/* 1. Render Posts (if any) */}
@@ -288,7 +288,7 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
 
                   {/* 3. Placeholder only if NOTHING exists */}
                   {posts.length === 0 && (!expert.relevant_comment_groups || expert.relevant_comment_groups.length === 0) && (
-                    <div style={styles.placeholder}>
+                    <div className="empty-placeholder">
                        {expert.main_sources.length > 0 ? 'Loading posts...' : 'No source posts available'}
                     </div>
                   )}
@@ -300,140 +300,6 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
       )}
     </div>
   );
-};
-
-const styles = {
-  accordion: {
-    marginBottom: '20px',
-    backgroundColor: 'white',
-    borderRadius: '8px',
-    border: '1px solid #dee2e6',
-    overflow: 'hidden'
-  },
-  header: {
-    padding: '15px 20px',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '15px',
-    backgroundColor: '#f8f9fa',
-    borderRadius: '8px 8px 0 0',
-    transition: 'background-color 0.2s',
-    userSelect: 'none' as const
-  },
-  icon: {
-    fontSize: '14px',
-    color: '#6c757d',
-    width: '14px'
-  },
-  expertName: {
-    fontSize: '16px',
-    fontWeight: '600' as const,
-    color: '#212529'
-  },
-  channelName: {
-    fontSize: '14px',
-    color: '#6c757d'
-  },
-  stats: {
-    fontSize: '13px',
-    color: '#6c757d',
-    marginLeft: 'auto'
-  },
-  confidence: {
-    fontSize: '12px',
-    fontWeight: '600' as const,
-    color: 'white',
-    padding: '3px 8px',
-    borderRadius: '4px',
-    textTransform: 'uppercase' as const
-  },
-  body: {
-    display: 'flex',
-    gap: '2px',
-    height: '600px', // Fixed height for consistency
-    borderTop: '1px solid #dee2e6'
-  },
-  leftColumn: {
-    flex: "0 0 50%",  // Fixed width, prevents growing/shrinking
-    minWidth: 0,      // Allow content overflow instead of container expansion
-    display: 'flex',
-    flexDirection: 'column' as const,
-    backgroundColor: 'white',
-    borderRight: '1px solid #dee2e6'
-  },
-  rightColumn: {
-    flex: "0 0 50%",  // Fixed width, prevents growing/shrinking
-    minWidth: 0,      // Allow content overflow instead of container expansion
-    display: 'flex',
-    flexDirection: 'column' as const,
-    backgroundColor: '#f8f9fa'
-  },
-  columnHeader: {
-    padding: '12px 20px',
-    backgroundColor: '#f5f7fa',
-    borderBottom: '1px solid #dee2e6',
-    textAlign: 'center' as const
-  },
-  columnTitle: {
-    fontSize: '16px',
-    fontWeight: '600' as const,
-    color: '#495057',
-    margin: 0,
-    textAlign: 'center' as const
-  },
-  scrollableContent: {
-    flex: 1,
-    overflowY: 'auto' as const,
-    padding: '20px'
-  },
-  placeholder: {
-    padding: '40px',
-    textAlign: 'center' as const,
-    color: '#6c757d',
-    fontSize: '16px'
-  },
-  translationLoading: {
-    padding: '40px',
-    textAlign: 'center' as const,
-    color: '#6c757d',
-    fontSize: '16px',
-    display: 'flex',
-    flexDirection: 'column' as const,
-    alignItems: 'center',
-    gap: '12px'
-  },
-  loadingIcon: {
-    fontSize: '24px',
-    marginBottom: '8px',
-    animation: 'spin 1s linear infinite'
-  },
-  loadingText: {
-    fontSize: '14px',
-    color: '#495057',
-    fontWeight: '500' as const,
-    textAlign: 'center' as const
-  },
-  progressIndicator: {
-    fontSize: '12px',
-    color: '#495057',
-    fontWeight: '500' as const,
-    textAlign: 'center' as const,
-    marginTop: '8px'
-  },
-  progressivePostsContainer: {
-    marginTop: '20px'
-  },
-  progressivePostsHeader: {
-    fontSize: '14px',
-    color: '#495057',
-    fontWeight: '600' as const,
-    marginBottom: '12px',
-    textAlign: 'center' as const,
-    padding: '8px',
-    backgroundColor: '#e9ecef',
-    borderRadius: '6px'
-  }
 };
 
 export default ExpertAccordion;

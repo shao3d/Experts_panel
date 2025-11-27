@@ -1,52 +1,627 @@
-.app {
+/* App Container & Layout */
+.app-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f5f5f5;
+  overflow: hidden;
+}
+
+/* Desktop: Top Section (Query + Progress) */
+.top-section {
+  height: 140px;
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  background-color: white;
+  border-bottom: 1px solid #dee2e6;
+  flex-shrink: 0;
+}
+
+.query-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: visible;
+}
+
+.progress-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+}
+
+/* Desktop: Expert Selection */
+.expert-bar-container {
   width: 100%;
-  max-width: 1200px;
+  background-color: white;
+  border-bottom: 1px solid #dee2e6;
+  flex-shrink: 0;
+}
+
+/* Main Content (Scrollable) */
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  background-color: #f5f5f5;
+  /* Add inertia scrolling for iOS */
+  -webkit-overflow-scrolling: touch;
+}
+
+.accordion-container {
+  max-width: 1400px;
   margin: 0 auto;
+  width: 100%;
+  padding-bottom: 100px; /* Space for mobile sticky footer */
 }
 
-.app-header {
-  text-align: center;
-  padding: 2rem 0;
-  border-bottom: 1px solid #333;
-  margin-bottom: 2rem;
+/* --- Mobile & Responsive Layouts --- */
+
+@media (max-width: 768px) {
+  .app-container {
+    /* Fix for mobile browser address bars */
+    height: 100dvh; 
+  }
+
+  /* Reorder for Mobile: 
+     1. Header (Progress/Status)
+     2. Content (Experts)
+     3. Footer (Expert Selector + Query Input) 
+  */
+  
+  .top-section {
+    height: auto;
+    flex-direction: column;
+    padding: 10px;
+    gap: 10px;
+    order: 1; /* Put at top, but we might hide query here */
+  }
+
+  /* Hide standard query container on mobile, we move it to footer */
+  .query-container {
+    display: none; 
+  }
+
+  /* Compact Progress Bar for Mobile */
+  .progress-container {
+    flex: none;
+    width: 100%;
+  }
+
+  .expert-bar-container {
+    display: none; /* Moved to footer in mobile layout logic */
+  }
+
+  .main-content {
+    order: 2;
+    padding: 10px;
+    padding-bottom: 160px; /* Huge padding for sticky footer */
+  }
+
+  /* Sticky Footer for Mobile */
+  .mobile-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
 }
 
-.app-header h1 {
-  font-size: 2rem;
+/* Progress Section Styles */
+.progress-section {
+  background-color: white;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.progress-content {
+  padding: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.progress-stats-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #495057;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 14px;
+  font-weight: bold;
+  color: #212529;
+}
+
+.stat-unit {
+  font-size: 14px;
+  color: #6c757d;
+}
+
+.phase-progress-line {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  font-size: 14px;
+}
+
+.phase-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.phase-item.active {
+  color: #0066cc;
+  font-weight: bold;
+}
+
+.phase-item.completed {
+  color: #28a745;
+}
+
+.phase-item.pending {
+  color: #adb5bd;
+}
+
+/* Mobile Header Progress Override */
+.mobile-header .progress-section {
+  border: none;
+  background: transparent;
+  height: auto;
+}
+
+.mobile-header .progress-content {
+  padding: 0;
+  flex-direction: row;
+  align-items: center;
+}
+
+.mobile-header .phase-progress-line {
+  /* On mobile header, maybe hide the full line or make it very small? */
+  /* For now, let's hide the line and just show the active text if processing */
+  display: none; 
+}
+
+/* If we want to show active phase text in mobile header */
+.mobile-header .active-phase-text {
+  display: block;
+  font-size: 13px;
+  color: #0066cc;
   font-weight: 600;
 }
 
-.app-main {
+/* Query Form Styles */
+.query-form {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  width: 100%;
+  height: 100%;
 }
 
-.query-section {
+.query-input-row {
   display: flex;
-  gap: 1rem;
+  gap: 10px;
+  align-items: stretch;
+  flex: 1;
 }
 
-.query-submit {
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-  font-weight: 500;
-  border: 1px solid transparent;
-  border-radius: 4px;
-  background-color: #646cff;
+.query-textarea-container {
+  flex: 1;
+  position: relative;
+}
+
+.query-textarea {
+  width: 100%;
+  height: 100%;
+  padding: 12px;
+  padding-bottom: 28px;
+  font-size: 14px;
+  line-height: 1.5;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: white;
+  color: #1a1a1a;
+  resize: none;
+  font-family: inherit;
+  min-height: 90px;
+  box-sizing: border-box;
+}
+
+.query-textarea:focus {
+  border-color: #0066cc;
+  outline: none;
+}
+
+.query-counter {
+  position: absolute;
+  bottom: 8px;
+  right: 12px;
+  font-size: 12px;
+  color: #999;
+  pointer-events: none;
+}
+
+.query-submit-button {
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 600;
   color: white;
+  background-color: #0066cc;
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.25s;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 102, 204, 0.2);
+  min-width: 80px;
+  height: 90px;
 }
 
-.query-submit:hover {
-  background-color: #535bf2;
+.query-submit-button:disabled {
+  background-color: #d0d0d0;
+  color: #999;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
-.results-section {
-  min-height: 300px;
-  padding: 1rem;
-  border: 1px solid #333;
+/* Mobile Footer Override */
+.mobile-footer .query-textarea {
+  min-height: 50px;
+  height: 50px; /* Compact height */
+  padding-bottom: 12px; /* Reduce padding */
+}
+.mobile-footer .query-submit-button {
+  height: 50px;
+  min-width: 60px;
+  padding: 0;
+}
+.mobile-footer .query-counter {
+  display: none; /* Hide counter on mobile compact view */
+}
+
+/* --- Component Styles --- */
+
+/* Error & Placeholder */
+.error-message {
+  padding: 20px;
+  background-color: #ffe0e0;
+  border: 2px solid #ff6b6b;
+  border-radius: 8px;
+}
+
+.empty-placeholder {
+  padding: 40px;
+  text-align: center;
+  color: #6c757d;
+  font-size: 16px;
+}
+
+/* Expert Accordion Styles */
+.expert-accordion {
+  margin-bottom: 20px;
+  background-color: white;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+
+.expert-accordion:active {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.accordion-header {
+  padding: 15px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px 8px 0 0;
+  user-select: none;
+  /* Touch target size */
+  min-height: 50px; 
+}
+
+.accordion-icon {
+  font-size: 14px;
+  color: #6c757d;
+  width: 14px;
+}
+
+.expert-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #212529;
+}
+
+.channel-name {
+  font-size: 14px;
+  color: #6c757d;
+}
+
+.header-stats {
+  font-size: 13px;
+  color: #6c757d;
+  margin-left: auto;
+}
+
+.confidence-badge {
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  padding: 3px 8px;
   border-radius: 4px;
-  background-color: #1a1a1a;
+  text-transform: uppercase;
+}
+
+.accordion-body {
+  display: flex;
+  border-top: 1px solid #dee2e6;
+  height: 600px; /* Desktop fixed height */
+}
+
+.accordion-col-left, .accordion-col-right {
+  flex: 0 0 50%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.accordion-col-left {
+  background-color: white;
+  border-right: 1px solid #dee2e6;
+}
+
+.accordion-col-right {
+  background-color: #f8f9fa;
+}
+
+.col-header {
+  padding: 12px 20px;
+  background-color: #f5f7fa;
+  border-bottom: 1px solid #dee2e6;
+  text-align: center;
+  font-weight: 600;
+  color: #495057;
+}
+
+.scrollable-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+/* Mobile Accordion Overrides */
+@media (max-width: 768px) {
+  .accordion-body {
+    flex-direction: column;
+    height: auto; /* Let content grow */
+    max-height: none;
+  }
+
+  .accordion-col-left, .accordion-col-right {
+    flex: none;
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #dee2e6;
+    height: auto;
+  }
+  
+  /* Limit height of answer section slightly so it doesn't take infinite space if huge */
+  .accordion-col-left {
+     max-height: 500px; 
+  }
+
+  /* Sources can be collapsible or just list */
+  .accordion-col-right {
+     max-height: 400px;
+  }
+  
+  /* Adjust header for small screens */
+  .accordion-header {
+    padding: 12px 10px;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  
+  .header-stats {
+    font-size: 11px;
+    width: 100%;
+    margin-top: 4px;
+    color: #888;
+  }
+}
+
+/* Expert Selection Bar Styles */
+.expert-bar {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 12px 20px;
+}
+
+.expert-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: white;
+  border-radius: 6px;
+  padding-right: 8px; /* Space for link icon */
+  border: 1px solid transparent; /* Placeholder for hover state */
+}
+
+.expert-item:hover {
+  background-color: #f8f9fa;
+  border-color: #dee2e6;
+}
+
+.expert-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 8px 8px 8px 8px; /* Large touch area */
+  user-select: none;
+  font-size: 14px;
+  color: #495057;
+}
+
+.expert-checkbox-label input {
+  margin: 0;
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+}
+
+.expert-link-icon {
+  text-decoration: none;
+  font-size: 16px;
+  padding: 8px; /* Large touch target */
+  color: #0088cc; /* Telegram blue */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.expert-link-icon:hover {
+  background-color: #e6f2ff;
+}
+
+/* Mobile Expert Selector Overrides */
+@media (max-width: 768px) {
+  .expert-bar {
+    gap: 8px;
+    padding: 5px;
+    justify-content: flex-start; /* Align left to scroll if needed */
+  }
+  
+  .expert-item {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    flex: 1 0 auto; /* Allow growing */
+  }
+  
+  .expert-checkbox-label {
+    padding: 12px; /* Even bigger on mobile */
+    font-weight: 500;
+  }
+}
+
+/* Loading & Progress Styles */
+.translation-loading {
+  padding: 40px;
+  text-align: center;
+  color: #6c757d;
+  font-size: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.loading-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+  animation: spin 1s linear infinite;
+}
+
+.loading-text {
+  font-size: 14px;
+  color: #495057;
+  font-weight: 500;
+  text-align: center;
+}
+
+.progress-indicator {
+  font-size: 12px;
+  color: #495057;
+  font-weight: 500;
+  text-align: center;
+  margin-top: 8px;
+}
+
+.progressive-posts-container {
+  margin-top: 20px;
+}
+
+.progressive-posts-header {
+  font-size: 14px;
+  color: #495057;
+  font-weight: 600;
+  margin-bottom: 12px;
+  text-align: center;
+  padding: 8px;
+  background-color: #e9ecef;
+  border-radius: 6px;
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+/* --- Utility Classes for Responsive Logic --- */
+
+.mobile-only {
+  display: none !important;
+}
+
+.desktop-only {
+  display: flex !important; /* Default to flex, can be overridden */
+}
+
+@media (max-width: 768px) {
+  .mobile-only {
+    display: flex !important;
+    flex-direction: column;
+  }
+  
+  .desktop-only {
+    display: none !important;
+  }
+  
+  /* Mobile Header specific */
+  .mobile-header {
+    padding: 10px;
+    background: white;
+    border-bottom: 1px solid #dee2e6;
+    flex-shrink: 0;
+  }
+  
+  /* Mobile Expert Selector Adjustment */
+  .mobile-expert-selector {
+    max-height: 120px;
+    overflow-y: auto;
+    background: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    padding: 5px;
+  }
 }
