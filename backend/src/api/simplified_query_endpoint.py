@@ -535,16 +535,28 @@ async def event_generator_parallel(
 
         # 3. Launch background task to stream progress events
         async def stream_progress_events():
-            """Stream progress events from queue in real-time."""
+            """Stream progress events from queue in real-time with keep-alive."""
+            last_activity_time = time.time()
+            keep_alive_interval = 15.0  # Send keep-alive every 15 seconds
+
             while True:
                 try:
                     event = await asyncio.wait_for(progress_queue.get(), timeout=0.1)
                     sanitized = sanitize_for_json(event.model_dump(mode='json'))
                     yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+                    last_activity_time = time.time()
                 except asyncio.TimeoutError:
-                    # No event available, check if tasks are done
+                    # No event available
+                    
+                    # Check if tasks are done
                     if all(task.done() for _, task in tasks):
                         break
+                    
+                    # Send keep-alive if needed to prevent timeouts on mobile networks
+                    if time.time() - last_activity_time > keep_alive_interval:
+                        yield ": keep-alive\n\n"
+                        last_activity_time = time.time()
+                    
                     continue
 
         # 4. Launch PARALLEL tasks for each expert
