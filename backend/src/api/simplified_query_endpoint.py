@@ -537,7 +537,7 @@ async def event_generator_parallel(
         async def stream_progress_events():
             """Stream progress events from queue in real-time with keep-alive."""
             last_activity_time = time.time()
-            keep_alive_interval = 15.0  # Send keep-alive every 15 seconds
+            keep_alive_interval = 5.0  # Send keep-alive every 5 seconds (aggressive)
 
             while True:
                 try:
@@ -552,9 +552,11 @@ async def event_generator_parallel(
                     if all(task.done() for _, task in tasks):
                         break
                     
-                    # Send keep-alive if needed to prevent timeouts on mobile networks
+                    # Send keep-alive with padding to prevent timeouts and flush proxy buffers
                     if time.time() - last_activity_time > keep_alive_interval:
-                        yield ": keep-alive\n\n"
+                        # Add 2KB of padding to force proxy buffer flush
+                        padding = " " * 2048
+                        yield f": keep-alive {padding}\n\n"
                         last_activity_time = time.time()
                     
                     continue
