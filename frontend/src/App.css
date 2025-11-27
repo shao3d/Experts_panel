@@ -1,6 +1,6 @@
 /* App Container & Layout */
 .app-container {
-  height: 100vh;
+  height: 100dvh; /* Use dynamic viewport height for mobile browsers */
   display: flex;
   flex-direction: column;
   background-color: #f5f5f5;
@@ -63,43 +63,34 @@
 
 @media (max-width: 768px) {
   .app-container {
-    /* Fix for mobile browser address bars */
-    height: 100dvh; 
+    height: 100dvh; /* Explicitly repeat for specificity */
   }
 
-  /* Reorder for Mobile: 
-     1. Header (Progress/Status)
-     2. Content (Experts)
-     3. Footer (Expert Selector + Query Input) 
-  */
-  
   .top-section {
     height: auto;
     flex-direction: column;
     padding: 10px;
     gap: 10px;
-    order: 1; /* Put at top, but we might hide query here */
+    order: 1; 
   }
 
-  /* Hide standard query container on mobile, we move it to footer */
   .query-container {
     display: none; 
   }
 
-  /* Compact Progress Bar for Mobile */
   .progress-container {
     flex: none;
     width: 100%;
   }
 
   .expert-bar-container {
-    display: none; /* Moved to footer in mobile layout logic */
+    display: none;
   }
 
   .main-content {
     order: 2;
     padding: 10px;
-    padding-bottom: 160px; /* Huge padding for sticky footer */
+    padding-bottom: 140px; /* Space for footer */
   }
 
   /* Sticky Footer for Mobile */
@@ -111,10 +102,53 @@
     background: white;
     box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
     z-index: 1000;
-    padding: 10px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    /* Safe area for iPhone X+ home bar */
+    padding-bottom: env(safe-area-inset-bottom); 
+  }
+
+  /* Toggle Bar Style */
+  .expert-toggle-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 15px;
+    background-color: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+    border-bottom: 1px solid #e9ecef;
+    color: #495057;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    cursor: pointer;
+    user-select: none;
+  }
+  
+  .toggle-icon {
+    font-size: 10px;
+    color: #6c757d;
+  }
+
+  /* Drawer Animation & Layout */
+  .mobile-expert-selector {
+    max-height: 0;
+    overflow-y: auto;
+    background: white;
+    padding: 0 5px;
+    transition: max-height 0.3s ease-in-out, padding 0.3s ease;
+    border-bottom: 1px solid transparent;
+  }
+
+  .mobile-expert-selector.open {
+    max-height: 250px; /* Expand to show list */
+    padding: 10px 5px;
+    border-bottom: 1px solid #dee2e6;
+  }
+  
+  .mobile-query-form-container {
+    padding: 10px;
+    background: white;
   }
 }
 
@@ -203,8 +237,6 @@
 }
 
 .mobile-header .phase-progress-line {
-  /* On mobile header, maybe hide the full line or make it very small? */
-  /* For now, let's hide the line and just show the active text if processing */
   display: none; 
 }
 
@@ -297,8 +329,9 @@
 }
 .mobile-footer .query-submit-button {
   height: 50px;
-  min-width: 60px;
-  padding: 0;
+  min-width: 60px; /* Reduced width for mobile fit */
+  padding: 0 10px; /* Reduced padding */
+  font-size: 14px;
 }
 .mobile-footer .query-counter {
   display: none; /* Hide counter on mobile compact view */
@@ -614,14 +647,17 @@
     background: white;
     border-bottom: 1px solid #dee2e6;
     flex-shrink: 0;
+    /* Fix header to top on mobile */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1001;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
   }
   
-  /* Mobile Expert Selector Adjustment */
-  .mobile-expert-selector {
-    max-height: 120px;
-    overflow-y: auto;
-    background: #f8f9fa;
-    border-top: 1px solid #dee2e6;
-    padding: 5px;
+  /* Adjust content padding for fixed header */
+  .main-content {
+     padding-top: 70px; /* Height of header + gap */
   }
 }

@@ -27,6 +27,9 @@ export const App: React.FC = () => {
   const [expandedExperts, setExpandedExperts] = useState<Set<string>>(new Set());
   const [currentQuery, setCurrentQuery] = useState<string>('');
   const [selectedExperts, setSelectedExperts] = useState<Set<string>>(new Set());
+  
+  // Mobile Expert Selector Drawer State
+  const [isExpertSelectorOpen, setIsExpertSelectorOpen] = useState(false);
 
   // Timer state for processing time
   const [startTime, setStartTime] = useState<number | null>(null);
@@ -85,6 +88,7 @@ export const App: React.FC = () => {
     setExpertResponses([]);
     setError(null);
     setCurrentQuery(query);
+    setIsExpertSelectorOpen(false); // Close selector on submit
 
     try {
       const experts = Array.from(selectedExperts);
@@ -232,7 +236,21 @@ export const App: React.FC = () => {
 
       {/* Mobile: Sticky Footer */}
       <div className="mobile-footer mobile-only">
-        <div className="mobile-expert-selector">
+        {/* Expert Selector Toggle Strip */}
+        <div 
+          className="expert-toggle-bar"
+          onClick={() => setIsExpertSelectorOpen(!isExpertSelectorOpen)}
+        >
+          <span>
+            Select Experts ({selectedExperts.size}/{availableExperts.length})
+          </span>
+          <span className="toggle-icon">
+            {isExpertSelectorOpen ? '▼' : '▲'}
+          </span>
+        </div>
+
+        {/* Collapsible Expert List */}
+        <div className={`mobile-expert-selector ${isExpertSelectorOpen ? 'open' : ''}`}>
           <ExpertSelectionBar
             availableExperts={availableExperts}
             selectedExperts={selectedExperts}
@@ -240,12 +258,16 @@ export const App: React.FC = () => {
             disabled={isProcessing}
           />
         </div>
-        <QueryForm
-          onSubmit={handleQuerySubmit}
-          disabled={isProcessing}
-          elapsedSeconds={elapsedSeconds}
-          selectedExperts={selectedExperts}
-        />
+        
+        {/* Always Visible Query Form */}
+        <div className="mobile-query-form-container">
+          <QueryForm
+            onSubmit={handleQuerySubmit}
+            disabled={isProcessing}
+            elapsedSeconds={elapsedSeconds}
+            selectedExperts={selectedExperts}
+          />
+        </div>
       </div>
     </div>
   );
