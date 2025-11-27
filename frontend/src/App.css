@@ -326,6 +326,7 @@
   min-height: 50px;
   height: 50px; /* Compact height */
   padding-bottom: 12px; /* Reduce padding */
+  font-size: 16px; /* Prevent iOS zoom */
 }
 .mobile-footer .query-submit-button {
   height: 50px;
