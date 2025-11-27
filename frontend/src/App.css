@@ -501,6 +501,15 @@
   padding: 12px 20px;
 }
 
+.expert-bar-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #495057;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-right: 12px;
+}
+
 .expert-item {
   display: flex;
   align-items: center;
@@ -555,6 +564,10 @@
     gap: 8px;
     padding: 5px;
     justify-content: flex-start; /* Align left to scroll if needed */
+  }
+
+  .expert-bar-title {
+    display: none;
   }
   
   .expert-item {

@@ -43,14 +43,7 @@ const ExpertSelectionBar: React.FC<ExpertSelectionBarProps> = ({
 
   return (
     <div className="expert-bar">
-      <span style={{
-        fontSize: '13px',
-        fontWeight: 600,
-        color: '#495057',
-        textTransform: 'uppercase',
-        letterSpacing: '0.5px',
-        marginRight: '12px'
-      }}>
+      <span className="expert-bar-title">
         EXPERTS:
       </span>
       
