@@ -316,6 +316,12 @@ The final SSE 'complete' event contains the response payload. The structure of t
 - **Gemini 2.0 Flash**: Better context synthesis and instruction following
 - **GPT-4o-mini**: Fast and cost-effective for matching tasks
 
+### Cost Optimization Strategy (NEW)
+- **Aggressive Key Rotation**: The system now implements an aggressive multi-key rotation strategy for Google AI Studio.
+- **Trigger**: Any rate limit error (Daily Quota OR Request Per Minute/RPM) triggers immediate rotation to the next available key.
+- **Fallback**: Only when ALL available Google keys are exhausted (or hit rate limits) does the system fall back to paid OpenRouter models.
+- **Result**: Significantly higher utilization of Free Tier resources and reduced operational costs.
+
 ### Performance Characteristics
 | Model | Use Case | Cost | Strengths |
 |-------|----------|------|-----------|
@@ -339,10 +345,10 @@ Default models for each pipeline phase are configured using environment variable
 - **Phase Tracking**: Clear indication of current pipeline phase
 
 ### Common Issues
-1. **Map Phase Failures**: Check retry logs and API status
-2. **Empty Results**: Verify data exists for expert
-3. **Timeout Issues**: Check chunk size and API limits
-4. **Context Issues**: Verify database links and constraints
+1. **Map Phase Failures**: Check retry logs and API status. Map phase has a specialized retry logic that waits 65s if all keys are exhausted before giving up.
+2. **Key Rotation**: Check logs for `🔄` (rotation) and `❌` (exhaustion) emojis to verify key rotation behavior.
+3. **Empty Results**: Verify data exists for expert.
+4. **Timeout Issues**: Check chunk size and API limits.
 
 The application logs provide valuable debugging information. To monitor performance and errors, check the log files (defined in `config.py` as `BACKEND_LOG_FILE`) for messages containing terms like 'Global retry', 'processing_time_ms', and 'failed'.
 
@@ -361,6 +367,7 @@ The application logs provide valuable debugging information. To monitor performa
 - **Main Endpoint**: `backend/src/api/simplified_query_endpoint.py`
 - **API Models**: `backend/src/api/models.py`
 - **OpenRouter Adapter**: `backend/src/services/openrouter_adapter.py`
+- **Google Client**: `backend/src/services/google_ai_studio_client.py` (Handles key rotation)
 
 ### Prompts and Templates
 - **Map Prompt**: `backend/prompts/map_prompt.txt`

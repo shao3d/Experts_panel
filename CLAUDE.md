@@ -16,7 +16,7 @@ The system uses an advanced **eight-phase pipeline** for analysis and a hybrid, 
 
 ### Key Architectural Principles
 - **Multi-Expert Architecture**: Complete data isolation between experts and parallel processing.
-- **Cost Optimization**: Utilizes a hybrid model system with free-tier Google models and automatic fallback to OpenRouter, plus automatic API key rotation.
+- **Cost Optimization**: Utilizes a hybrid model system with free-tier Google models, aggressive multi-key rotation for ANY rate limit, and automatic fallback to OpenRouter.
 - **Real-time Progress**: SSE streaming for frontend progress tracking.
 
 ## 📁 Component Documentation
@@ -129,6 +129,6 @@ To debug the pipeline, monitor the backend log file for messages containing spec
 ---
 
 **Project Status:** Production-ready with active development
-**Last Updated:** 2025-11-22
+**Last Updated:** 2025-11-27
 **Architecture:** Multi-expert, hybrid multi-model LLM pipeline with cost optimization and real-time progress tracking
 **Key Features:** Parallel expert processing, hybrid model fallback system, cost optimization with Google AI Studio, language validation, comment synthesis, enhanced error handling, admin authentication

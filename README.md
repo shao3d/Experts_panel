@@ -143,7 +143,7 @@ graph TD
 ## ✨ Key Features
 
 - **🧠 8-phase Map-Resolve-Reduce Architecture**: Advanced pipeline with differential HIGH/MEDIUM posts processing
-- **🎯 Cost-Optimized Hybrid Strategy**: Smart primary → fallback system with 99% free tier usage via Google AI Studio, OpenRouter fallback
+- **🎯 Cost-Optimized Hybrid Strategy**: Smart primary → fallback system with 99% free tier usage via Google AI Studio (aggressive rotation) & OpenRouter fallback
 - **🔍 Smart Semantic Search**: Finds relevant posts by meaning, not keywords
 - **📊 Medium Posts Reranking**: Hybrid scoring system with threshold ≥0.7 and top-5 selection
 - **💬 Comment Groups & Synthesis**: Hybrid pipeline for comment drift analysis and insights extraction
@@ -187,7 +187,7 @@ To set up your local environment, copy this file to `.env` and fill in the requi
 
 **Model Strategy Notes:**
 - **Cost Optimization**: 99% free tier usage with Google AI Studio as primary for most phases
-- **Key Rotation**: Multiple Google AI Studio keys supported with automatic rotation
+- **Key Rotation**: Multiple Google AI Studio keys supported with automatic rotation on ANY rate limit (RPM or Daily)
 - **Smart Fallback**: Automatic OpenRouter fallback when Google AI Studio quota exhausted
 - **Development Mode**: Set `ENVIRONMENT=development` to see masked API keys in logs
 

@@ -56,23 +56,25 @@ class _GoogleAIClientManager:
     async def rotate_key(self) -> bool:
         """Rotates to the next available API key."""
         async with self._lock:
-            logger.warning(f"Key index {self._current_key_index} has hit its daily limit.")
+            logger.warning(f"🔑 Google AI Studio Key rotation: Key index {self._current_key_index} exhausted (marked: {list(self._exhausted_keys_today)})")
             self._exhausted_keys_today.add(self._current_key_index)
 
             if len(self._exhausted_keys_today) >= len(self._api_keys):
-                logger.error("All Google AI Studio API keys have hit their daily quota limit.")
+                logger.error(f"❌ All Google AI Studio API keys exhausted! Total keys: {len(self._api_keys)}, Exhausted: {len(self._exhausted_keys_today)}")
                 return False
 
             # Find the next unused key
+            previous_index = self._current_key_index
             for _ in range(len(self._api_keys)):
                 self._current_key_index = (self._current_key_index + 1) % len(self._api_keys)
                 if self._current_key_index not in self._exhausted_keys_today:
                     logger.warning(
-                        f"Rotated to Google AI Studio API key index {self._current_key_index}. "
-                        f"Total unique keys used today: {len(self._exhausted_keys_today) + 1}"
+                        f"🔄 Google AI Studio Key rotation: {previous_index} -> {self._current_key_index}. "
+                        f"Available keys left: {len(self._api_keys) - len(self._exhausted_keys_today) - 1}/{len(self._api_keys)}"
                     )
                     return True
 
+            logger.error(f"❌ No available keys found after rotation attempt")
             return False
 
 
@@ -87,7 +89,7 @@ class GoogleAIClient:
     """Client for Google AI Studio Gemini API with rate limit detection."""
 
     def _is_rate_limit_error(self, error_content: str) -> bool:
-        """Check if error indicates rate limit exceeded.
+        """Check if error indicates rate limit exceeded (both daily and minute).
 
         Args:
             error_content: Error message content
@@ -95,21 +97,39 @@ class GoogleAIClient:
         Returns:
             True if this is a rate limit error
         """
+        # Unified list of all rate limit indicators
         RATE_LIMIT_ERRORS = [
             "Resource has been exhausted", "Rate limit exceeded", "Quota exceeded",
             "Too many requests", "resource_exhausted", "quota_limit_exceeded",
-            "rate_limit_exceeded"
+            "rate_limit_exceeded", "429", "generaterequestsperdayperprojectpermodel-freetier",
+            "free_tier_requests", "requests per day", "daily quota",
+            "generativelanguage.googleapis.com/generate_content",
+            "generaterequestsperminuteperprojectpermodel", # Added RPM specific
+            "generatecontentrequestsperminuteperprojectpermodel", # Added Content RPM specific
+            "user has exceeded", # Added User limit specific
+            "limit has been reached" # Generic limit reached
         ]
         error_lower = error_content.lower()
         return any(pattern.lower() in error_lower for pattern in RATE_LIMIT_ERRORS)
 
-    def _is_daily_rate_limit_error(self, error: Exception) -> bool:
-        """Checks if the error is a daily rate limit error based on its string representation."""
-        error_str = str(error)
-        daily_quota_id = 'GenerateRequestsPerDayPerProjectPerModel-FreeTier'
-        if "429" in error_str and daily_quota_id in error_str:
-            logger.warning(f"Detected Google AI Studio daily rate limit error. Quota ID: {daily_quota_id}")
+    def _should_rotate_key(self, error: Exception) -> bool:
+        """Checks if the error warrants a key rotation (Any Rate Limit)."""
+        # Check text content
+        if self._is_rate_limit_error(str(error)):
             return True
+
+        # Check standard HTTP status attributes
+        # Different libraries use different attribute names for the status code
+        status_attrs = ['status_code', 'code', 'http_status', 'status']
+        for attr in status_attrs:
+            val = getattr(error, attr, None)
+            # Check for 429 (Too Many Requests) or 403 (Forbidden - sometimes used for quota)
+            # Note: We include 403 because specific quota errors can sometimes manifest as permission denials
+            # But we rely mainly on text for 403 to avoid rotating on genuine auth errors.
+            # For 429, it's almost always a rate limit.
+            if val == 429:
+                 return True
+
         return False
 
     def _convert_openai_json_to_gemini_schema(self, response_format: Optional[Dict[str, str]]) -> Optional[
@@ -305,12 +325,17 @@ class GoogleAIClient:
         manager = await _get_client_manager()
         last_error = None
 
+        logger.info(f"🚀 Google AI Studio: Starting API call with model {model}. Total keys available: {len(manager._api_keys)}")
+
         async with _google_api_lock:
-            for _ in range(len(manager._api_keys)):
+            for attempt in range(len(manager._api_keys)):
                 api_key = await manager.get_key()
+                current_key_index = manager._current_key_index
+
+                logger.info(f"🔑 Attempt {attempt + 1}/{len(manager._api_keys)}: Using Google AI Studio key index {current_key_index}")
+
                 try:
                     genai.configure(api_key=api_key)
-                    logger.info(f"Attempting Google AI Studio call with key index {manager._current_key_index}")
 
                     # Map model names to Google AI Studio format
                     original_model = model  # Keep original for logging
@@ -355,22 +380,30 @@ class GoogleAIClient:
                     )
 
                     response = await gemini_model.generate_content_async(gemini_messages)
-                    logger.info(f"Google AI Studio API call successful with key index {manager._current_key_index}")
+                    logger.info(f"✅ Google AI Studio API call successful with key index {current_key_index}")
                     return self._convert_gemini_response_to_openai_format(response)
 
                 except Exception as error:
                     last_error = error
-                    if self._is_daily_rate_limit_error(error):
-                        # This is a daily limit error. Rotate the key and allow the loop to continue.
+                    error_str = str(error)
+
+                    logger.error(f"❌ Google AI Studio API error with key index {current_key_index}: {error_str[:200]}...")
+
+                    if self._should_rotate_key(error):
+                        # This is a rate limit error (Daily or Minute). Rotate the key and allow the loop to continue.
+                        logger.warning(f"🔄 Rate limit hit (RPM or Daily) for key {current_key_index}, attempting rotation...")
                         rotated = await manager.rotate_key()
                         if not rotated:
+                            logger.error(f"❌ All Google AI Studio keys exhausted. Falling back to OpenRouter.")
                             raise error  # All keys exhausted, re-raise last error
                         # Continue to next key with same lock
+                        logger.info(f"✅ Key rotation successful, trying next key...")
                         continue
                     else:
-                        # This is not a daily rate limit error (e.g., minute limit, auth error, server error).
+                        # This is not a rate limit error (e.g., auth error, server error).
                         # We should not rotate the key. Instead, we raise the error to exit the loop
                         # and trigger the fallback to OpenRouter in the HybridLLMClient.
+                        logger.warning(f"⚠️ Non-daily rate limit error for key {current_key_index}: {error_str[:100]}...")
                         raise error
 
         # If the loop completes, it means all keys were tried and failed with daily limits.
