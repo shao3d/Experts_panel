@@ -679,4 +679,27 @@
   .main-content {
      padding-top: 70px; /* Height of header + gap */
   }
+  
+  /* Sources Toggle Button */
+  .mobile-sources-toggle {
+    padding: 12px;
+    text-align: center;
+    background-color: #e9ecef;
+    color: #495057;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    border-top: 1px solid #dee2e6;
+    border-bottom: 1px solid #dee2e6;
+    user-select: none;
+  }
+  
+  .mobile-sources-toggle:active {
+    background-color: #dee2e6;
+  }
+  
+  /* Hide element ONLY on mobile */
+  .mobile-hidden {
+    display: none !important;
+  }
 }

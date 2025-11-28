@@ -36,6 +36,8 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
     current: 0,
     total: 0
   });
+  // Mobile source toggle state
+  const [showMobileSources, setShowMobileSources] = useState(false);
 
   /**
    * Load posts when expanded and has sources
@@ -44,6 +46,7 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
     if (!isExpanded || expert.main_sources.length === 0) {
       setPosts([]);
       setTranslationProgress({ current: 0, total: 0 });
+      setShowMobileSources(false); // Reset mobile view
       return;
     }
 
@@ -169,6 +172,8 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
    */
   const handlePostClick = (postId: number): void => {
     setSelectedPostId(postId);
+    // On mobile, auto-expand sources when clicking a reference
+    setShowMobileSources(true);
   };
 
   /**
@@ -228,10 +233,19 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
                 </div>
               )}
             </div>
+            
+            {/* Mobile Only: Toggle Sources Button */}
+            <div 
+              className="mobile-sources-toggle mobile-only"
+              onClick={() => setShowMobileSources(!showMobileSources)}
+            >
+              {showMobileSources ? 'Hide Sources ▲' : `Show Sources (${expert.main_sources.length}) ▼`}
+            </div>
           </div>
 
           {/* Right Column - Posts */}
-          <div className="accordion-col-right">
+          {/* On mobile, this is hidden by default until toggled */}
+          <div className={`accordion-col-right ${!showMobileSources ? 'mobile-hidden' : ''}`}>
             <div className="col-header">
               <h2 className="column-title" style={{fontSize: '16px', margin: 0}}>
                 Source posts with comments
