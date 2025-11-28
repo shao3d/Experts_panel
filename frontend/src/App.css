@@ -459,7 +459,7 @@
   padding: 20px;
 }
 
-/* Mobile Accordion Overrides */
+  /* Mobile Accordion Overrides */
 @media (max-width: 768px) {
   .accordion-body {
     flex-direction: column;
@@ -473,16 +473,14 @@
     border-right: none;
     border-bottom: 1px solid #dee2e6;
     height: auto;
+    /* Disable internal scrolling, let it expand */
+    overflow: visible !important;
+    max-height: none !important;
   }
   
-  /* Limit height of answer section slightly so it doesn't take infinite space if huge */
-  .accordion-col-left {
-     max-height: 500px; 
-  }
-
-  /* Sources can be collapsible or just list */
-  .accordion-col-right {
-     max-height: 400px;
+  .scrollable-content {
+    overflow: visible !important;
+    height: auto !important;
   }
   
   /* Adjust header for small screens */
