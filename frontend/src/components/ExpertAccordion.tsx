@@ -239,7 +239,10 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
               className="mobile-sources-toggle mobile-only"
               onClick={() => setShowMobileSources(!showMobileSources)}
             >
-              {showMobileSources ? 'Hide Sources ▲' : `Show Sources (${expert.main_sources.length}) ▼`}
+              {showMobileSources 
+                ? 'Hide Sources ▲' 
+                : `Show Sources (${expert.main_sources.length + (expert.relevant_comment_groups?.length || 0)}) ▼`
+              }
             </div>
           </div>
 
