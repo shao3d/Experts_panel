@@ -6,6 +6,10 @@
 app = 'experts-panel'
 primary_region = 'iad'
 
+[env]
+  MAP_MAX_PARALLEL = "5"
+  ENVIRONMENT = "production"
+
 [http_service]
   internal_port = 8000
   force_https = true
