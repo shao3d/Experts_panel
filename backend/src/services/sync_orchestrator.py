@@ -95,6 +95,7 @@ def run_preflight_checks():
     # Try finding session in current dir or script dir or parent dirs
     possible_paths = [
         Path(f"{session_name}.session"),
+        Path("/app/data") / f"{session_name}.session",  # Production Volume Path
         Path(__file__).parent / f"{session_name}.session",
         # Check backend root (src/services/../../)
         Path(__file__).parent.parent.parent / f"{session_name}.session"
