@@ -15,6 +15,7 @@ from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 import os
+import logging
 
 from telethon import TelegramClient
 from telethon.errors import FloodWaitError, ChannelPrivateError
@@ -31,6 +32,9 @@ from models.comment import Comment
 from models.link import Link, LinkType
 from data.telegram_comments_fetcher import SafeTelegramCommentsFetcher
 from utils.entities_converter import entities_to_markdown_from_telethon
+
+
+logger = logging.getLogger(__name__)
 
 
 class TelegramChannelSyncer(SafeTelegramCommentsFetcher):
@@ -273,8 +277,22 @@ class TelegramChannelSyncer(SafeTelegramCommentsFetcher):
 
             if comments:
                 if not dry_run:
+                    logger.debug(
+                        "Saving %s comments for post %s (channel %s)",
+                        len(comments),
+                        telegram_message_id,
+                        channel_id,
+                    )
+
                     # Save comments with proper channel_id filtering
                     saved = self.save_comments_to_db(db, comments, channel_id)
+                    logger.debug(
+                        "Saved %s/%s comments for post %s",
+                        saved,
+                        len(comments),
+                        telegram_message_id,
+                    )
+                    
                     comments_saved += saved
                     db.commit()
                     if saved == len(comments):
@@ -283,10 +301,13 @@ class TelegramChannelSyncer(SafeTelegramCommentsFetcher):
                         print(f"✅ {saved}/{len(comments)} comments (skipped {len(comments) - saved} duplicates)")
                     else:
                         print(f"⚠️  0/{len(comments)} comments (all duplicates)")
+                    
+                    # Only mark post as updated if NEW comments were actually saved
+                    if saved > 0:
+                        updated_posts.append(telegram_message_id)
                 else:
                     print(f"[DRY-RUN] Would save {len(comments)} comments")
-
-                updated_posts.append(telegram_message_id)
+                    updated_posts.append(telegram_message_id)
             else:
                 print("No comments")
 

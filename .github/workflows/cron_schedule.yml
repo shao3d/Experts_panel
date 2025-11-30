@@ -1,0 +1,36 @@
+name: Cron Job Scheduler
+
+on:
+  schedule:
+    # Run every 3 days at 3:00 AM UTC
+    - cron: '0 3 */3 * *'
+  workflow_dispatch:  # Allow manual trigger from GitHub UI
+
+jobs:
+  trigger-cron:
+    name: Trigger Fly.io Cron Endpoint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Cron Endpoint
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          PRODUCTION_URL: https://experts-panel.fly.dev
+        run: |
+          echo "Triggering cron job at $PRODUCTION_URL..."
+          
+          # Use curl to trigger the endpoint
+          # -f: Fail silently (no output) on HTTP errors (4xx, 5xx)
+          # -v: Verbose to see headers in logs (masked secrets)
+          # --max-time 10: Don't wait long, just trigger
+          
+          response=$(curl -X POST "$PRODUCTION_URL/api/v1/cron/run-sync" \
+            -H "X-Cron-Secret: $CRON_SECRET" \
+            -H "Content-Type: application/json" \
+            -s -w "%{http_code}" -o /dev/null)
+          
+          if [ "$response" -eq 202 ]; then
+            echo "✅ Cron job triggered successfully (HTTP 202)"
+          else
+            echo "❌ Failed to trigger cron job. HTTP Status: $response"
+            exit 1
+          fi

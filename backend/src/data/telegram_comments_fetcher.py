@@ -12,6 +12,7 @@ from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 import os
+import logging
 
 from telethon import TelegramClient
 from telethon.errors import FloodWaitError, ChannelPrivateError
@@ -27,20 +28,23 @@ from models.comment import Comment
 from utils.entities_converter import entities_to_markdown_from_telethon
 
 
+logger = logging.getLogger(__name__)
+
+
 class SafeTelegramCommentsFetcher:
     """
     Безопасное получение комментариев из Telegram с rate limiting.
     """
-    
+
     # Rate limiting настройки
     DELAY_BETWEEN_POSTS = 2.0  # 2 секунды между постами
     MAX_RETRIES = 3
     BATCH_COMMIT_SIZE = 50  # Коммитить каждые 50 комментариев
-    
+
     def __init__(self, api_id: int, api_hash: str, session_name: str = 'telegram_fetcher'):
         """
         Initialize fetcher.
-        
+
         Args:
             api_id: Telegram API ID from my.telegram.org
             api_hash: Telegram API Hash from my.telegram.org
@@ -56,15 +60,15 @@ class SafeTelegramCommentsFetcher:
             'comments_saved': 0,
             'errors': 0
         }
-    
+
     async def fetch_with_retry(self, func, *args, **kwargs):
         """
         Выполняет функцию с retry при FloodWait.
-        
+
         Args:
             func: Async функция для выполнения
             *args, **kwargs: Аргументы для функции
-            
+
         Returns:
             Результат функции
         """
@@ -81,35 +85,35 @@ class SafeTelegramCommentsFetcher:
                 if attempt == self.MAX_RETRIES - 1:
                     raise
                 await asyncio.sleep(5 * (attempt + 1))
-        
+
         return None
-    
+
     async def get_discussion_replies(
-        self, 
-        channel, 
+        self,
+        channel,
         post_id: int
     ) -> List[Dict[str, Any]]:
         """
         Получает комментарии Discussion Group для поста.
-        
+
         Args:
             channel: Telegram channel entity
             post_id: ID поста (telegram_message_id)
-            
+
         Returns:
             Список комментариев
         """
         try:
             # Получаем пост
             message = await self.client.get_messages(channel, ids=post_id)
-            
+
             if not message or not hasattr(message, 'replies') or not message.replies:
                 return []
-            
+
             # Получаем Discussion Group
             if not message.replies.comments:
                 return []
-            
+
             # Получаем все комментарии
             comments = []
             async for reply in self.client.iter_messages(
@@ -142,7 +146,7 @@ class SafeTelegramCommentsFetcher:
                         'author_id': author_id,
                         'created_at': reply.date
                     })
-            
+
             return comments
 
         except Exception as e:
@@ -160,7 +164,7 @@ class SafeTelegramCommentsFetcher:
             # Other errors - also skip and continue
             print(f"⚠️  (ошибка: {e})")
             return []
-    
+
     def _get_author_name(self, message: Message) -> str:
         """Извлекает имя автора из сообщения."""
         if hasattr(message, 'sender') and message.sender:
@@ -173,7 +177,7 @@ class SafeTelegramCommentsFetcher:
             elif hasattr(sender, 'title'):
                 return sender.title
         return 'Unknown'
-    
+
     def get_posts_from_db(self, db: Session, channel_id: str) -> List[tuple]:
         """
         Получает список постов из БД для указанного канала.
@@ -190,7 +194,7 @@ class SafeTelegramCommentsFetcher:
             Post.channel_id == channel_id  # Параметризованный channel_id
         ).order_by(Post.created_at).all()
         return [(p.post_id, p.telegram_message_id) for p in posts]
-    
+
     def save_comments_to_db(self, db: Session, comments: List[Dict[str, Any]], channel_id: str) -> int:
         """
         Сохраняет комментарии в БД для указанного канала.
@@ -229,17 +233,35 @@ class SafeTelegramCommentsFetcher:
                 parent_telegram_message_id=comment_data['parent_telegram_message_id']
             )
 
+            # Use a SAVEPOINT per comment so duplicates don't roll back the whole batch
+            savepoint = db.begin_nested()
             try:
                 db.add(comment)
                 db.flush()  # Проверить UNIQUE constraint сразу
-                saved_count += 1
             except IntegrityError:
-                db.rollback()  # Откат только этого комментария
-                # Дубликат - пропускаем
-                pass
+                from sqlalchemy.exc import InvalidRequestError
+                savepoint.rollback()
+                try:
+                    db.expunge(comment)
+                except InvalidRequestError:
+                    pass  # Object уже выгружен из сессии
+                logger.debug(
+                    "Duplicate telegram_comment_id=%s for post_id=%s",
+                    comment.telegram_comment_id,
+                    comment.post_id,
+                )
+                continue
+            else:
+                savepoint.commit()
+                saved_count += 1
+                logger.debug(
+                    "Saved telegram_comment_id=%s for post_id=%s",
+                    comment.telegram_comment_id,
+                    comment.post_id,
+                )
 
         return saved_count
-    
+
     async def fetch_all_comments(
         self,
         channel_username: str,
@@ -350,55 +372,55 @@ async def main():
     print("\n" + "=" * 60)
     print("🤖 Telegram Comments Fetcher - Interactive Mode")
     print("=" * 60 + "\n")
-    
+
     # Попытка получить credentials из .env
     api_id = os.getenv('TELEGRAM_API_ID')
     api_hash = os.getenv('TELEGRAM_API_HASH')
     channel_username = os.getenv('TELEGRAM_CHANNEL')
-    
+
     # Если не в .env, спросить интерактивно
     if not api_id:
         print("📝 Введите Telegram API credentials")
         print("   (получить на https://my.telegram.org)\n")
         api_id = input("API_ID: ").strip()
-    
+
     if not api_hash:
         api_hash = input("API_HASH: ").strip()
-    
+
     if not channel_username:
         channel_username = input("Channel username (например: refat_talks): ").strip()
-    
+
     # Валидация
     try:
         api_id = int(api_id)
     except ValueError:
         print("❌ API_ID должен быть числом!")
         return
-    
+
     if not api_hash or not channel_username:
         print("❌ API_HASH и Channel username обязательны!")
         return
-    
+
     # Убрать @ если есть
     if channel_username.startswith('@'):
         channel_username = channel_username[1:]
-    
+
     print(f"\n✅ Credentials получены")
     print(f"   API_ID: {api_id}")
     print(f"   Channel: @{channel_username}\n")
-    
+
     # Подтверждение
     confirm = input("❓ Начать импорт? (y/n): ").strip().lower()
     if confirm != 'y':
         print("❌ Отменено")
         return
-    
+
     # Запуск импорта
     fetcher = SafeTelegramCommentsFetcher(api_id, api_hash)
     await fetcher.fetch_all_comments(channel_username, channel_id)
-    
+
     print("\n✅ Готово! Комментарии импортированы в БД.")
-    print("   Проверьте через: sqlite3 data/experts.db 'SELECT COUNT(*) FROM comments;'\n")
+    print("   Проверьте через: sqlite3 data/experts.db 'SELECT COUNT(*) FROM comments;\'\n")
 
 
 if __name__ == '__main__':
