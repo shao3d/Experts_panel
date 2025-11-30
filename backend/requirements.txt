@@ -25,7 +25,7 @@ psycopg2-binary==2.9.9
 asyncpg==0.29.0
 
 # Telegram Integration
-telethon==1.36.0
+telethon==1.41.2
 
 # JSON Processing
 json-repair==0.25.2
@@ -40,4 +40,4 @@ ruff==0.6.9
 
 # Optional: For better development experience
 ipython==8.28.0
-rich==13.8.1
+rich==13.8.1apscheduler==3.10.4
