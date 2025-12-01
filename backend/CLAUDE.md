@@ -94,6 +94,14 @@ To run the development server, you can use the `uvicorn` command as detailed in 
 ### API Testing
 Once the server is running, you can test the API. For simple health checks, access the `/health` endpoint. For sending queries and exploring all endpoints, use the interactive OpenAPI documentation available at `/api/docs`.
 
+### Database Maintenance
+To keep the database optimized and remove old data (e.g., posts older than 2025), use the pruning script. This script respects foreign key constraints and automatically removes associated comments and links.
+```bash
+# From project root
+python backend/scripts/prune_old_posts.py
+```
+**Note:** Always create a backup before running destructive maintenance operations.
+
 ## Key Architectural Patterns
 
 ### Multi-Expert Parallel Processing
@@ -154,8 +162,8 @@ The system uses a hybrid model strategy to optimize for both cost and performanc
 
 ### Database Management
 - **Persistence**: SQLite database mounted at `/app/data/experts.db`
-- **Backup Strategy**: Manual backup via `sqlite3 .backup` or file copy
-- **Migration**: Upload development database to production VPS
+- **Update Strategy**: Automated via `scripts/update_production_db.sh` (Sync -> Drift Analysis -> Compress -> Upload -> Restart)
+- **Backup Strategy**: Automated local backup before sync + remote backup on server
 - **Permissions**: Database file owned by appuser (UID 1000)
 
 ### Security Hardening

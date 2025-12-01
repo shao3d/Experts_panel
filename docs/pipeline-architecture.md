@@ -24,7 +24,7 @@ Find relevant posts from the expert's content using semantic search and relevanc
 - **File**: `backend/src/services/map_service.py`
 - **Model**: Qwen 2.5-72B/32B Instruct (configurable via MODEL_ANALYSIS environment variable)
 - **Cost**: $0.08/$0.33 per 1M tokens (72B) or ~75% cost reduction with 32B
-- **Chunk Size**: 40 posts per chunk
+- **Chunk Size**: 100 posts per chunk
 
 ### Key Features
 
@@ -39,7 +39,7 @@ The retry mechanism is defined using a `@retry` decorator directly in the `map_s
 - 95%+ recovery rate for failed chunks
 
 #### Processing Flow
-1. **Chunk Creation**: Split posts into groups of 40
+1. **Chunk Creation**: Split posts into groups of 100
 2. **Parallel Processing**: Process chunks simultaneously
 3. **Relevance Scoring**: HIGH, MEDIUM, LOW classification
 4. **Error Recovery**: Retry failed chunks automatically
@@ -236,9 +236,10 @@ Find relevant comment discussions that may contain insights not covered in main 
 
 ### Two-Phase Architecture
 
-#### Phase 1: Pre-Analysis (Offline)
-- **Script**: `backend/analyze_drift.py`
-- **Model**: Claude Sonnet 4.5
+#### Phase 1: Pre-Analysis (Offline / Automated)
+- **Automated Workflow**: `scripts/update_production_db.sh` runs `backend/run_drift_service.py` to analyze new content before deployment.
+- **Manual Script**: `backend/analyze_drift.py` (for full re-analysis)
+- **Model**: Gemini 2.5 Pro (via `DriftSchedulerService`)
 - **Process**: Analyze comment groups for topic drift
 - **Storage**: Results in `comment_group_drift` table
 

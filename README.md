@@ -167,11 +167,27 @@ For a guided setup experience, execute the `quickstart.sh` script located in the
 
 The project includes several scripts for data management, located in the `backend/` directory.
 
-### Telegram Data Import
-Use `src.data.json_parser` for initial data import, `src.data.comment_collector` for interactive comment addition, and `sync_channel.py` for incremental synchronization with Telegram.
+### Automated Production Update (Recommended)
+To synchronize all experts, run drift analysis, and deploy the updated database to production in one go, use the master script:
+```bash
+./scripts/update_production_db.sh
+```
+This script handles:
+1. Local backup
+2. Incremental Telegram Sync
+3. AI-powered Drift Analysis (using Google Gemini)
+4. Secure database upload (compressed)
+5. Server restart
+
+### Manual Data Operations
+For specific tasks, you can use individual scripts:
+- **Import**: `src.data.json_parser` for initial data import
+- **Sync**: `backend/sync_channel.py` for single-channel sync
+- **Drift**: `backend/analyze_drift.py` for drift analysis
+- **Database**: `backend/src/models/database` for interactive management
 
 ### Drift Analysis and Database
-Comment drift analysis can be run using `backend/analyze_drift.py`. For direct database management, an interactive script is available at `backend/src/models/database`. The initial database schema is defined in `schema.sql`, and subsequent migrations are located in the `backend/migrations/` directory.
+Comment drift analysis is automatically handled by the production update script. For manual runs, use `backend/analyze_drift.py`. The initial database schema is defined in `schema.sql`, and migrations are in `backend/migrations/`.
 
 ## 📚 API Usage
 
