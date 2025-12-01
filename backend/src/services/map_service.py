@@ -32,7 +32,7 @@ class MapService:
     relative to the user's query using configurable models.
     """
 
-    DEFAULT_CHUNK_SIZE = 40
+    DEFAULT_CHUNK_SIZE = 100
 
     def __init__(
         self,
@@ -191,7 +191,7 @@ class MapService:
 
     @retry(
         stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=2, min=4, max=60),
+        wait=wait_exponential(multiplier=2, min=4, max=90),
         retry=retry_if_exception_type((httpx.HTTPStatusError, json.JSONDecodeError, ValueError)),
         reraise=True
     )
