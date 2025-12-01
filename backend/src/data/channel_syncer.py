@@ -49,6 +49,7 @@ class TelegramChannelSyncer(SafeTelegramCommentsFetcher):
     """
 
     RECENT_POSTS_DEPTH = 10  # Check last 10 posts for new comments (~30 days)
+    DELAY_BETWEEN_POSTS = 1.0
 
     def __init__(self, api_id: int, api_hash: str, session_name: str = 'telegram_fetcher'):
         """Initialize syncer with Telegram credentials."""
@@ -101,7 +102,7 @@ class TelegramChannelSyncer(SafeTelegramCommentsFetcher):
 
         # Connect to Telegram
         print("📱 Connecting to Telegram...")
-        self.client = TelegramClient(self.session_name, self.api_id, self.api_hash)
+        self.client = TelegramClient(self.session_path, self.api_id, self.api_hash)
         await self.client.start()
         print("✅ Connected!")
 

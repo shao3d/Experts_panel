@@ -40,4 +40,5 @@ ruff==0.6.9
 
 # Optional: For better development experience
 ipython==8.28.0
-rich==13.8.1apscheduler==3.10.4
+rich==13.8.1
+apscheduler==3.10.4
