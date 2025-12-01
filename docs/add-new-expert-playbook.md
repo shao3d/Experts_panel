@@ -1,3 +1,15 @@
+# ⚠️ DEPRECATED ⚠️
+
+**NOTE:** This playbook describes the legacy manual process for adding experts.
+The system has evolved to use a centralized `expert_metadata` table (Migration 009) and automated sync/deployment scripts.
+
+**Current Workflow:**
+1.  **Add Expert:** Use `backend/tools/add_expert.py` (if available) or manually insert into `expert_metadata` table.
+2.  **Sync & Drift:** Use `scripts/update_production_db.sh` which handles sync, drift analysis, and deployment automatically.
+3.  **Frontend:** Experts are loaded dynamically from the API (`/api/v1/experts`), no need to edit `App.tsx`.
+
+---
+
 # Добавление нового эксперта - Интерактивный Playbook с Claude Code
 
 **Версия:** 3.0 (с полным учётом всех особенностей системы)
