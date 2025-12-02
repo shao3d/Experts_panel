@@ -9,14 +9,8 @@ import ExpertAccordion from './components/ExpertAccordion';
 import ProgressSection from './components/ProgressSection';
 import ExpertSelectionBar from './components/ExpertSelectionBar';
 import { apiClient } from './services/api';
-import { ExpertResponse as ExpertResponseType, ProgressEvent } from './types/api';
+import { ExpertResponse as ExpertResponseType, ProgressEvent, ExpertInfo } from './types/api';
 import './App.css';
-
-interface ExpertInfo {
-  expert_id: string;
-  display_name: string;
-  channel_username: string;
-}
 
 export const App: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
@@ -58,24 +52,25 @@ export const App: React.FC = () => {
 
   // Load experts from API on mount
   useEffect(() => {
-    const loadAndOrderExperts = () => {
-      // Define the final, ordered list of experts with their UI-facing names and data
-      const orderedExperts: ExpertInfo[] = [
-        { expert_id: 'refat', display_name: 'Tech_Refat', channel_username: 'nobilix' },
-        { expert_id: 'ai_architect', display_name: 'Tech_aiArchitect', channel_username: 'the_ai_architect' },
-        { expert_id: 'neuraldeep', display_name: 'Tech_Kovalskii', channel_username: 'neuraldeep' },
-        { expert_id: 'akimov', display_name: 'Biz_Akimov', channel_username: 'ai_product' }
-      ];
-
-      setAvailableExperts(orderedExperts);
-      
-      // Initialize selection with all experts
-      const allExpertIds = new Set(orderedExperts.map(e => e.expert_id));
-      setSelectedExperts(allExpertIds);
-      setExpandedExperts(allExpertIds);
+    const loadExperts = async () => {
+      try {
+        console.log('[App] Loading experts from API...');
+        const experts = await apiClient.getExperts();
+        console.log('[App] Loaded experts:', experts);
+        
+        setAvailableExperts(experts);
+        
+        // Initialize selection with all experts
+        const allExpertIds = new Set(experts.map(e => e.expert_id));
+        setSelectedExperts(allExpertIds);
+        setExpandedExperts(allExpertIds);
+      } catch (err) {
+        console.error('[App] Failed to load experts:', err);
+        setError('Failed to load experts list. Please refresh the page.');
+      }
     };
 
-    loadAndOrderExperts();
+    loadExperts();
   }, []);
 
   /**

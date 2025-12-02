@@ -23,7 +23,16 @@ export enum RelevanceLevel {
 export enum ConfidenceLevel {
   HIGH = "HIGH",
   MEDIUM = "MEDIUM",
-  LOW = "LOW"
+  low: number;
+}
+
+/**
+ * Expert information from metadata
+ */
+export interface ExpertInfo {
+  expert_id: string;
+  display_name: string;
+  channel_username: string;
 }
 
 // ============================================================================

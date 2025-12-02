@@ -9,6 +9,7 @@ import {
   ProgressEvent,
   PostDetailResponse,
   HealthResponse,
+  ExpertInfo,
   APIError,
   ConfidenceLevel
 } from '../types/api';
@@ -93,6 +94,21 @@ export class APIClient {
 
     if (!response.ok) {
       throw new Error(`Health check failed: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  /**
+   * Get list of available experts
+   */
+  async getExperts(): Promise<ExpertInfo[]> {
+    const response = await fetch(`${this.baseURL.replace(/\/$/, '')}/api/v1/experts`, {
+      headers: this.buildHeaders()
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch experts: ${response.statusText}`);
     }
 
     return response.json();
