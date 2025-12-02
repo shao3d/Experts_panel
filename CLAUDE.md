@@ -72,7 +72,14 @@ React 18 + TypeScript frontend with:
 ## 🔧 Common Development Tasks
 
 ### Adding New Expert
-To add a new expert, use the data import script located at `backend/src/data/json_parser.py`. After import, you can verify the new expert has been added using the interactive database management script at `backend/src/models/database`.
+To add a new expert, use the automated script:
+```bash
+./scripts/add_new_expert.sh <expert_id> "<Name>" <username> <json_path>
+```
+This script handles registration, post import, full comment sync, and prepares drift analysis automatically.
+For a detailed guide, see **[Add New Expert Playbook](docs/add-new-expert-playbook.md)**.
+
+Use `backend/src/data/json_parser.py` only for low-level manual imports if needed.
 
 ### Database Operations
 For interactive database management (e.g., initializing, resetting, or listing tables), use the script at `backend/src/models/database`. Database backups and migrations can be performed using standard `sqlite3` CLI commands, pointing to the database file at `backend/data/experts.db`. Migration scripts are located in `backend/migrations/`.

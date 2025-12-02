@@ -24,6 +24,61 @@ from dotenv import load_dotenv
 sys.path.append(str(Path(__file__).parent / 'src'))
 
 from data.channel_syncer import TelegramChannelSyncer
+from models.base import SessionLocal
+from sqlalchemy import text
+
+
+def create_pending_drift_records(db, expert_id, post_ids):
+    """Creates pending drift records for new posts."""
+    for post_id in post_ids:
+        existing = db.execute(text("""
+            SELECT 1 FROM comment_group_drift WHERE post_id = :post_id
+        """), {"post_id": post_id}).fetchone()
+
+        if not existing:
+            has_comments = db.execute(text("""
+                SELECT 1 FROM comments WHERE post_id = :post_id LIMIT 1
+            """), {"post_id": post_id}).fetchone()
+
+            status = 'pending' if has_comments else 'no-comments'
+
+            db.execute(text("""
+                INSERT INTO comment_group_drift
+                (post_id, has_drift, drift_topics, analyzed_at, analyzed_by, expert_id)
+                VALUES (:post_id, 0, NULL, datetime('now'), :status, :expert_id)
+            """), {"post_id": post_id, "expert_id": expert_id, "status": status})
+
+
+def reset_drift_records_to_pending(db, post_ids, expert_id):
+    """Resets drift records for updated posts."""
+    if not post_ids:
+        return
+
+    for post_id in post_ids:
+        has_comments = db.execute(text("""
+            SELECT 1 FROM comments WHERE post_id = :post_id LIMIT 1
+        """), {"post_id": post_id}).fetchone()
+
+        status = 'pending' if has_comments else 'no-comments'
+
+        result = db.execute(text("""
+            UPDATE comment_group_drift
+            SET analyzed_by = :status,
+                drift_topics = NULL,
+                analyzed_at = datetime('now')
+            WHERE post_id = :post_id
+        """), {"post_id": post_id, "status": status})
+
+        if result.rowcount == 0:
+            db.execute(text("""
+                INSERT INTO comment_group_drift
+                (post_id, has_drift, drift_topics, analyzed_at, analyzed_by, expert_id)
+                VALUES (:post_id, 0, NULL, datetime('now'), :status, :expert_id)
+            """), {
+                "post_id": post_id,
+                "status": status,
+                "expert_id": expert_id
+            })
 
 
 def run_preflight_checks():
@@ -186,6 +241,31 @@ Examples:
         expert_id=args.expert_id,  # Use CLI argument or default
         dry_run=args.dry_run
     )
+
+    # Update Drift Records if sync was successful and not dry-run
+    if not args.dry_run and result['success']:
+        db = SessionLocal()
+        try:
+            # 1. Handle New Posts
+            if result['new_posts']:
+                ids_str = ','.join(map(str, result['new_posts']))
+                if ids_str:
+                    rows = db.execute(text(f"SELECT post_id FROM posts WHERE expert_id = :eid AND telegram_message_id IN ({ids_str})"), {"eid": args.expert_id}).fetchall()
+                    pids = [r[0] for r in rows]
+                    create_pending_drift_records(db, args.expert_id, pids)
+
+            # 2. Handle Updated Posts (New Comments) or New Groups needing analysis
+            # We use 'new_comment_groups' because it contains post_ids that need analysis,
+            # regardless of whether they were just updated or downloaded previously.
+            if result.get('new_comment_groups'):
+                post_ids = result['new_comment_groups']
+                reset_drift_records_to_pending(db, post_ids, args.expert_id)
+            
+            db.commit()
+        except Exception as e:
+            print(f"⚠️  Warning: Failed to update drift records: {e}", file=sys.stderr)
+        finally:
+            db.close()
 
     # Output JSON to stdout (for programmatic parsing)
     print(json.dumps(result, indent=2, ensure_ascii=False))

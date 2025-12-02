@@ -191,6 +191,33 @@ def add_expert(expert_id: str, display_name: str, channel_username: str, json_fi
         print(f"✅ Total posts for expert: {total_posts}")
 
         print()
+
+        # Step 5: Initialize Sync State
+        print(f"⚙️ Step 5/5: Initializing sync state...")
+        
+        # Find max message ID
+        max_msg_id = db.execute(text("""
+            SELECT MAX(telegram_message_id) FROM posts 
+            WHERE expert_id = :expert_id
+        """), {"expert_id": expert_id}).scalar() or 0
+        
+        print(f"   Latest post ID: {max_msg_id}")
+
+        # Insert into sync_state
+        # We use INSERT OR REPLACE just in case, though for new expert it should be INSERT
+        db.execute(text("""
+            INSERT OR REPLACE INTO sync_state 
+            (channel_username, last_synced_message_id, last_synced_at, total_posts_synced, total_comments_synced)
+            VALUES (:username, :msg_id, datetime('now'), :total_posts, 0)
+        """), {
+            "username": channel_username,
+            "msg_id": max_msg_id,
+            "total_posts": total_posts
+        })
+        db.commit()
+        print(f"✅ Sync state initialized (last_synced_id={max_msg_id})")
+
+        print()
         print("=" * 60)
         print(f"🎉 Expert '{expert_id}' added successfully!")
         print("=" * 60)
