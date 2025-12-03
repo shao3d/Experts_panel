@@ -302,7 +302,10 @@ app.include_router(query_router)
 
 # Mount static files to serve frontend
 # This must be LAST, after all API routers
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
+if os.path.exists("static"):
+    app.mount("/", StaticFiles(directory="static", html=True), name="static")
+else:
+    logger.warning("Static directory not found, frontend will not be served")
 
 
 
