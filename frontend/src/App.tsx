@@ -10,6 +10,7 @@ import ProgressSection from './components/ProgressSection';
 import ExpertSelectionBar from './components/ExpertSelectionBar';
 import { apiClient } from './services/api';
 import { ExpertResponse as ExpertResponseType, ProgressEvent, ExpertInfo } from './types/api';
+import { transformExpertsForUI, EXPERT_UI_CONFIG } from './config/expertConfig';
 import './App.css';
 
 export const App: React.FC = () => {
@@ -57,11 +58,15 @@ export const App: React.FC = () => {
         console.log('[App] Loading experts from API...');
         const experts = await apiClient.getExperts();
         console.log('[App] Loaded experts:', experts);
-        
-        setAvailableExperts(experts);
-        
+
+        // Transform experts for UI display
+        const transformedExperts = transformExpertsForUI(experts);
+        console.log('[App] Transformed experts for UI:', transformedExperts);
+
+        setAvailableExperts(transformedExperts);
+
         // Initialize selection with all experts
-        const allExpertIds = new Set(experts.map(e => e.expert_id));
+        const allExpertIds = new Set(transformedExperts.map(e => e.expert_id));
         setSelectedExperts(allExpertIds);
         setExpandedExperts(allExpertIds);
       } catch (err) {
@@ -105,7 +110,7 @@ export const App: React.FC = () => {
         console.log('[DEBUG] Legacy single response, converting to expert format');
         const legacyExpert: ExpertResponseType = {
           expert_id: 'refat',
-          expert_name: 'Refat (Tech & AI)',
+          expert_name: 'Tech_Refat',
           channel_username: 'nobilix',
           answer: response.answer,
           main_sources: response.main_sources || [],
@@ -206,10 +211,21 @@ export const App: React.FC = () => {
           ) : expertResponses.length > 0 ? (
             [...expertResponses]
               .sort((a, b) => {
-                // Refat always first
-                if (a.expert_id === 'refat') return -1;
-                if (b.expert_id === 'refat') return 1;
-                // Others alphabetically
+                // Sort according to UI configuration order
+                const uiOrder = EXPERT_UI_CONFIG.order;
+                const aIndex = uiOrder.indexOf(a.expert_id);
+                const bIndex = uiOrder.indexOf(b.expert_id);
+
+                // If both experts are in the UI order, sort by that order
+                if (aIndex !== -1 && bIndex !== -1) {
+                  return aIndex - bIndex;
+                }
+
+                // If only one expert is in the UI order, prioritize it
+                if (aIndex !== -1) return -1;
+                if (bIndex !== -1) return 1;
+
+                // If neither is in UI order, sort alphabetically
                 return a.expert_id.localeCompare(b.expert_id);
               })
               .map((expert) => (
