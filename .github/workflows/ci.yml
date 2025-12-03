@@ -152,20 +152,20 @@ jobs:
 
     - name: Test Docker Compose configuration
       run: |
-        docker-compose config > /dev/null
+        docker compose config > /dev/null
         echo "✅ Docker Compose configuration is valid"
 
     - name: Build Docker Compose services
       run: |
-        docker-compose build --no-cache
+        docker compose build --no-cache
         echo "✅ Docker Compose services built successfully"
 
     - name: Test Docker Compose startup
       run: |
-        timeout 30s docker-compose up -d || echo "⚠️ Services startup timeout (expected in CI)"
-        docker-compose ps
-        docker-compose logs || echo "No logs available"
-        docker-compose down -v || true
+        timeout 30s docker compose up -d || echo "⚠️ Services startup timeout (expected in CI)"
+        docker compose ps
+        docker compose logs || echo "No logs available"
+        docker compose down -v || true
 
   # Frontend Tests
   frontend-tests:
@@ -223,7 +223,7 @@ jobs:
         echo "Checking for sensitive files that shouldn't be committed..."
 
         # Check for API keys in .env files
-        if grep -r "sk-or-" . --exclude-dir=.git --exclude="README*" 2>/dev/null; then
+        if grep -r "sk-or-" . --exclude-dir=.git --exclude-dir=.github --exclude="README*" 2>/dev/null; then
           echo "❌ Potential API keys found in files"
           exit 1
         else
