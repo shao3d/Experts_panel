@@ -76,10 +76,19 @@ To add a new expert, use the automated script:
 ```bash
 ./scripts/add_new_expert.sh <expert_id> "<Name>" <username> <json_path>
 ```
-This script handles registration, post import, full comment sync, and prepares drift analysis automatically.
+This script handles registration, post import, full comment sync, and prepares drift analysis automatically. It will prompt you to run the production update script at the end.
 For a detailed guide, see **[Add New Expert Playbook](docs/add-new-expert-playbook.md)**.
 
-Use `backend/src/data/json_parser.py` only for low-level manual imports if needed.
+### Updating Production & Data
+To synchronize all experts, run drift analysis, and deploy the updated database to production:
+```bash
+./scripts/update_production_db.sh
+```
+This "Cycle of Life" script handles:
+1.  **Backup**: Creates a local backup of `experts.db`.
+2.  **Sync**: Incrementally fetches new posts and comments for **all** experts.
+3.  **Drift Analysis**: Analyzes new comments for topic drift using Gemini.
+4.  **Deploy**: Compresses and uploads the database to Fly.io, then restarts the app.
 
 ### Database Operations
 For interactive database management (e.g., initializing, resetting, or listing tables), use the script at `backend/src/models/database`. Database backups and migrations can be performed using standard `sqlite3` CLI commands, pointing to the database file at `backend/data/experts.db`. Migration scripts are located in `backend/migrations/`.
