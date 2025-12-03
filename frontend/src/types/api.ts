@@ -23,7 +23,7 @@ export enum RelevanceLevel {
 export enum ConfidenceLevel {
   HIGH = "HIGH",
   MEDIUM = "MEDIUM",
-  low: number;
+  LOW = "LOW"
 }
 
 /**

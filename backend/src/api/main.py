@@ -35,6 +35,7 @@ root_logger = logging.getLogger()
 root_logger.setLevel(config.LOG_LEVEL.upper())
 
 # Create file handler for backend logs
+os.makedirs(os.path.dirname(config.BACKEND_LOG_FILE), exist_ok=True)
 file_handler = logging.FileHandler(config.BACKEND_LOG_FILE, mode='a')
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 file_handler.setFormatter(formatter)
@@ -52,6 +53,7 @@ logger = logging.getLogger(__name__)
 
 # Configure frontend logger
 frontend_logger = logging.getLogger("frontend")
+os.makedirs(os.path.dirname(config.FRONTEND_LOG_FILE), exist_ok=True)
 handler = logging.FileHandler(config.FRONTEND_LOG_FILE, mode='a')
 formatter = logging.Formatter('%(asctime)s - %(message)s')
 handler.setFormatter(formatter)
