@@ -16,6 +16,11 @@ def create_openrouter_client(api_key: str = None) -> AsyncOpenAI:
     if not api_key:
         api_key = os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KEY")
 
+    if not api_key:
+        # Fallback to dummy key to prevent initialization errors in Google-only mode
+        # Calls to OpenRouter will fail with 401, which is expected if no key is provided
+        api_key = "sk-dummy-key-for-google-only-mode"
+
     return AsyncOpenAI(
         api_key=api_key,
         base_url="https://openrouter.ai/api/v1"

@@ -706,8 +706,7 @@ async def event_generator_parallel(
 @router.post("/query")
 async def process_simplified_query(
     request: QueryRequest,
-    db: Session = Depends(get_db),
-    api_key: str = Depends(lambda: config.OPENROUTER_API_KEY)
+    db: Session = Depends(get_db)
 ):
     """Process a query through parallel multi-expert pipeline with SSE streaming.
 
@@ -717,7 +716,6 @@ async def process_simplified_query(
     Args:
         request: Query request with user's question
         db: Database session
-        api_key: OpenAI API key
 
     Returns:
         SSE stream with multi-expert responses
@@ -725,11 +723,8 @@ async def process_simplified_query(
     request_id = str(uuid.uuid4())
     logger.info(f"Processing multi-expert query {request_id}: {request.query[:50]}...")
 
-    if not api_key:
-        raise HTTPException(
-            status_code=500,
-            detail="OPENROUTER_API_KEY not configured"
-        )
+    # Get API key from config (can be None/empty if using Google-only mode)
+    api_key = config.OPENROUTER_API_KEY
 
     # Always return SSE stream with parallel multi-expert processing
     return EventSourceResponse(
