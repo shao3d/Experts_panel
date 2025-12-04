@@ -35,7 +35,8 @@ class ReduceService:
         Args:
             use_personal_style: Use Refat's personal writing style (default True)
         """
-        # Use hybrid client if enabled, otherwise fallback to OpenRouter
+        # HYBRID_ENABLED=true: Google first, fallback to OpenRouter
+        # HYBRID_ENABLED=false: Google only, no OpenRouter fallback
         if is_hybrid_mode_enabled():
             self.client = create_hybrid_client(
                 openrouter_api_key=config.OPENROUTER_API_KEY,
@@ -44,8 +45,13 @@ class ReduceService:
             )
             logger.info("ReduceService initialized with hybrid LLM client (Google AI Studio + OpenRouter)")
         else:
-            self.client = create_openrouter_client(api_key=config.OPENROUTER_API_KEY)
-            logger.info("ReduceService initialized with OpenRouter client only")
+            # Google-only mode: use hybrid client but disable fallback
+            self.client = create_hybrid_client(
+                openrouter_api_key=None,  # No OpenRouter key = no fallback
+                fallback_model=None,
+                enable_hybrid=True  # Still use Google as primary
+            )
+            logger.info("ReduceService initialized with Google AI Studio only (no OpenRouter fallback)")
 
         self.model = config.MODEL_SYNTHESIS_PRIMARY
         self.use_personal_style = use_personal_style

@@ -40,7 +40,14 @@ class HybridLLMClient:
         self.fallback_model = fallback_model
 
         # Initialize clients
-        self.openrouter_client = create_openrouter_client(openrouter_api_key)
+        # Only create OpenRouter client if we have a valid API key
+        self.openrouter_fallback_available = bool(openrouter_api_key and openrouter_api_key.strip())
+        if self.openrouter_fallback_available:
+            self.openrouter_client = create_openrouter_client(openrouter_api_key)
+        else:
+            self.openrouter_client = None
+            logger.info("OpenRouter fallback disabled (no API key provided)")
+
         self.google_client = None
 
         if self.google_available and enable_hybrid:
@@ -51,8 +58,8 @@ class HybridLLMClient:
                 logger.warning(f"Failed to initialize Google AI Studio client: {e}")
                 self.google_available = False
 
-        if not self.google_available:
-            logger.info("Hybrid LLM client using OpenRouter only")
+        if not self.google_available and not self.openrouter_fallback_available:
+            logger.warning("No LLM clients available! Both Google AI Studio and OpenRouter are disabled.")
 
     async def chat_completions_create(
         self,
@@ -136,6 +143,12 @@ class HybridLLMClient:
                     is_fallback=False
                 )
                 logger.error(f"[{service_name}] Unexpected Google AI Studio error, switching to OpenRouter: {e}")
+
+        # Check if OpenRouter fallback is available
+        if not self.openrouter_fallback_available or not self.openrouter_client:
+            error_msg = f"[{service_name}] Google AI Studio failed and no OpenRouter fallback available"
+            logger.error(error_msg)
+            raise RuntimeError(error_msg)
 
         # Fallback to OpenRouter with OpenAI format
         start_time = time.time()
