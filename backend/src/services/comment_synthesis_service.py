@@ -57,35 +57,43 @@ class CommentSynthesisService:
 
     def _format_comment_groups(
         self,
-        comment_groups: List[Dict[str, Any]]
+        comment_groups: List[Dict[str, Any]],
+        expert_name: str = ""
     ) -> str:
-        """Format comment groups for the synthesis prompt.
+        """Format comment groups for the synthesis prompt with author separation.
 
         Args:
             comment_groups: List of comment group data
+            expert_name: Name of the expert to separate their comments
 
         Returns:
-            Formatted JSON string of comment groups
+            Formatted JSON string of comment groups with author attribution
         """
         formatted_groups = []
 
         for group in comment_groups:
-            # Extract only comments text (no anchor post)
-            comments_text = []
-            for comment in group.get("comments", []):
-                comment_text = comment.get("text", "").strip()
-                if comment_text:
-                    comments_text.append(comment_text)
+            expert_comments = []
+            community_comments = []
 
-            if comments_text:
-                formatted_group = {
+            for comment in group.get("comments", []):
+                text = comment.get("text", "").strip()
+                author = comment.get("author", "Unknown")
+                if text:
+                    comment_data = {"author": author, "text": text}
+                    # Separate expert's comments from community
+                    if expert_name and author.lower() == expert_name.lower():
+                        expert_comments.append(comment_data)
+                    else:
+                        community_comments.append(comment_data)
+
+            if expert_comments or community_comments:
+                formatted_groups.append({
                     "anchor_post_id": group.get("anchor_post", {}).get("id"),
                     "relevance": group.get("relevance", "MEDIUM"),
                     "reason": group.get("reason", ""),
-                    "comments": comments_text,
-                    "comment_count": len(comments_text)
-                }
-                formatted_groups.append(formatted_group)
+                    "expert_comments": expert_comments,
+                    "community_comments": community_comments
+                })
 
         return json.dumps(formatted_groups, ensure_ascii=False, indent=2)
 
@@ -99,14 +107,16 @@ class CommentSynthesisService:
         query: str,
         main_answer: str,
         comment_groups_json: str,
+        expert_name: str = "",
         progress_callback: Optional[Callable] = None
     ) -> Dict[str, Any]:
-        """Call GPT-4o-mini to synthesize insights from comments.
+        """Call LLM to synthesize insights from comments.
 
         Args:
             query: User's original query
             main_answer: Main answer from Reduce phase
             comment_groups_json: JSON string of formatted comment groups
+            expert_name: Name of the expert for attribution
             progress_callback: Optional callback for progress updates
 
         Returns:
@@ -119,11 +129,12 @@ class CommentSynthesisService:
                 "message": "Synthesizing insights from comment discussions"
             })
 
-        # Create base prompt
+        # Create base prompt with expert_name
         base_prompt = self._prompt_template.substitute(
             query=query,
             main_answer=main_answer,
-            comment_groups=comment_groups_json
+            comment_groups=comment_groups_json,
+            expert_name=expert_name
         )
 
         # Apply language instruction based on query language
@@ -144,7 +155,7 @@ class CommentSynthesisService:
                     {"role": "system", "content": enhanced_system},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.4,
+                temperature=0.2,
                 response_format={"type": "json_object"},
                 service_name="comment_synthesis"
             )
@@ -156,7 +167,7 @@ class CommentSynthesisService:
                     {"role": "system", "content": enhanced_system},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.4,
+                temperature=0.2,
                 response_format={"type": "json_object"}
             )
 
@@ -169,26 +180,32 @@ class CommentSynthesisService:
             logger.debug(f"Raw content (first 500 chars): {raw_content[:500]}")
             raise ValueError(f"Failed to parse GPT response as JSON: {e}") from e
 
-        # Handle both string and list formats from GPT
-        if "synthesis" in result:
-            synthesis = result["synthesis"]
+        # Handle new format with expert/community split
+        import re
+        expert_insights = result.get("expert_insights", "")
+        community_insights = result.get("community_insights", "")
 
-            # If GPT returned a list of bullet points, join them into a string
-            if isinstance(synthesis, list):
-                synthesis = "\n".join(synthesis)
-                logger.info(f"Converted synthesis from list ({len(result['synthesis'])} items) to string")
-            elif isinstance(synthesis, str):
-                logger.info("Synthesis already in string format")
-            else:
-                logger.warning(f"Unexpected synthesis type: {type(synthesis)}")
-                synthesis = str(synthesis)
+        # Handle list format if LLM returns it
+        if isinstance(expert_insights, list):
+            expert_insights = "\n".join(expert_insights)
+        if isinstance(community_insights, list):
+            community_insights = "\n".join(community_insights)
 
-            # Sanitize synthesis string (same as in ReduceService)
-            import re
-            # Remove invalid escape sequences
-            synthesis = re.sub(r'\\(?![ntr"\\/])', '', synthesis)
-            result["synthesis"] = synthesis
-            logger.info("Sanitized synthesis string for safe JSON transmission")
+        # Sanitize strings (remove invalid escape sequences)
+        if expert_insights:
+            expert_insights = re.sub(r'\\(?![ntr"\\/])', '', expert_insights)
+        if community_insights:
+            community_insights = re.sub(r'\\(?![ntr"\\/])', '', community_insights)
+
+        # Combine into final synthesis with sections
+        parts = []
+        if expert_insights and expert_insights.strip():
+            parts.append(f"**Уточнения автора:**\n{expert_insights}")
+        if community_insights and community_insights.strip():
+            parts.append(f"**Мнения сообщества:**\n{community_insights}")
+
+        result["synthesis"] = "\n\n".join(parts) if parts else ""
+        logger.info(f"Synthesis combined: expert={bool(expert_insights)}, community={bool(community_insights)}")
 
         # Track token usage
         if response.usage:
@@ -230,6 +247,10 @@ class CommentSynthesisService:
         import time
         phase_start_time = time.time()
 
+        # Get expert display name for comment attribution
+        from ..api.models import get_expert_name
+        expert_name = get_expert_name(expert_id)
+
         # Filter to only HIGH/MEDIUM relevance
         relevant_groups = [
             g for g in comment_groups
@@ -249,14 +270,15 @@ class CommentSynthesisService:
                 "message": f"Starting comment synthesis with {len(relevant_groups)} groups"
             })
 
-        # Format comment groups
-        comment_groups_json = self._format_comment_groups(relevant_groups)
+        # Format comment groups with expert name for separation
+        comment_groups_json = self._format_comment_groups(relevant_groups, expert_name)
 
-        # Synthesize insights
+        # Synthesize insights with expert name
         synthesis = await self._synthesize_insights(
             query,
             main_answer,
             comment_groups_json,
+            expert_name,
             progress_callback
         )
 

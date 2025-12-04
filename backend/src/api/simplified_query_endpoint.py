@@ -397,7 +397,7 @@ async def process_expert_pipeline(
                         "anchor_post": {"id": cg.anchor_post.telegram_message_id},
                         "relevance": cg.relevance,
                         "reason": cg.reason,
-                        "comments": [{"text": c.comment_text} for c in cg.comments]
+                        "comments": [{"text": c.comment_text, "author": c.author_name} for c in cg.comments]
                     }
                     for cg in comment_groups
                 ]
