@@ -28,8 +28,8 @@ GOOGLE_AI_STUDIO_API_KEYS = [
 # Модели для Map фазы (гибридная система)
 # Primary: The model to try first.
 # Fallback: The model to use if the primary fails with a rate-limit/quota error.
-MODEL_MAP_PRIMARY: str = os.getenv("MODEL_MAP_PRIMARY", "qwen/qwen-2.5-72b-instruct")
-MODEL_MAP_FALLBACK: str = os.getenv("MODEL_MAP_FALLBACK", "gemini-2.0-flash-lite")
+MODEL_MAP_PRIMARY: str = os.getenv("MODEL_MAP_PRIMARY", "gemini-2.0-flash-lite")
+MODEL_MAP_FALLBACK: str = os.getenv("MODEL_MAP_FALLBACK", "qwen/qwen-2.5-72b-instruct")
 
 # Модели для Синтеза (Reduce, Comment Synthesis) - гибридный механизм №2
 MODEL_SYNTHESIS_PRIMARY: str = os.getenv("MODEL_SYNTHESIS_PRIMARY", "gemini-2.0-flash")
