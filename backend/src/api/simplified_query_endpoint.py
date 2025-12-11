@@ -320,6 +320,8 @@ async def process_expert_pipeline(
     comment_groups = []
     comment_synthesis = None
 
+    print(f"[DEBUG] include_comment_groups={request.include_comment_groups}")  # DEBUG
+
     if request.include_comment_groups:
         main_sources = reduce_results.get("main_sources", [])
 
@@ -333,6 +335,8 @@ async def process_expert_pipeline(
                 data['expert_id'] = expert_id
                 await progress_callback(data)
 
+        print(f"[DEBUG] Calling cg_service.process for expert {expert_id}")  # DEBUG
+
         comment_group_results = await cg_service.process(
             query=request.query,
             db=db,
@@ -340,6 +344,8 @@ async def process_expert_pipeline(
             exclude_post_ids=main_sources,
             progress_callback=cg_progress
         )
+
+        print(f"[DEBUG] comment_group_results count: {len(comment_group_results)}")  # DEBUG
 
         # Convert to response format
         seen_parent_ids = set()
