@@ -68,7 +68,7 @@ graph TD
     H -- "Response in correct language" --> I{Assemble Final Response}
 
     subgraph "Parallel Pipeline B: Comment Analysis"
-        J[7. Comment Groups: Gemini Flash] --> K[8. Comment Synthesis: Gemini Flash]
+        J[6. Comment Groups: Gemini Flash] --> K[7. Comment Synthesis: Gemini Flash]
     end
 
     A --> J
