@@ -70,7 +70,7 @@ The following are generally out of scope:
 ### For Users
 
 1. **Keep API Keys Secure**
-   - Never expose your OpenRouter API key in client-side code
+   - Never expose your Google AI Studio API key in client-side code
    - Use environment variables for sensitive configuration
    - Rotate API keys regularly
 

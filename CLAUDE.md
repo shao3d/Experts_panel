@@ -2,7 +2,7 @@
 
 # Experts Panel - Multi-Expert Query Processing System
 
-Sophisticated 7-phase pipeline system for analyzing expert Telegram channels and synthesizing comprehensive answers using multiple AI models.
+Sophisticated 8-phase pipeline system for analyzing expert Telegram channels and synthesizing comprehensive answers using Google Gemini AI.
 
 ## 🚀 Quick Start (5 minutes)
 
@@ -16,7 +16,7 @@ The system uses an advanced **eight-phase pipeline** for analysis and a hybrid, 
 
 ### Key Architectural Principles
 - **Multi-Expert Architecture**: Complete data isolation between experts and parallel processing.
-- **Cost Optimization**: Utilizes a hybrid model system with free-tier Google models, aggressive multi-key rotation for ANY rate limit, and automatic fallback to OpenRouter.
+- **Cost Optimization**: Gemini-only strategy with multi-key rotation for 100% free tier utilization.
 - **Real-time Progress**: SSE streaming for frontend progress tracking.
 
 ## 📁 Component Documentation
@@ -26,9 +26,9 @@ The system uses an advanced **eight-phase pipeline** for analysis and a hybrid, 
 
 Complete FastAPI backend with:
 - Multi-expert query processing pipeline with parallel processing
-- 9+ specialized services for different phases with hybrid model integration
+- 9+ specialized services for different phases with Gemini integration
 - Real-time SSE streaming for progress tracking with enhanced error handling
-- Hybrid multi-model LLM integration (OpenRouter + Google AI Studio) with cost optimization
+- Google AI Studio LLM integration with multi-key rotation
 - SQLite database with 10+ migration scripts (18MB active database)
 - Production-ready Fly.io deployment with admin authentication
 - Dynamic expert loading from database with expert metadata centralization
@@ -145,6 +145,6 @@ To debug the pipeline, monitor the backend log file for messages containing spec
 ---
 
 **Project Status:** Production-ready with active development
-**Last Updated:** 2025-11-27
-**Architecture:** Multi-expert, hybrid multi-model LLM pipeline with cost optimization and real-time progress tracking
-**Key Features:** Parallel expert processing, hybrid model fallback system, cost optimization with Google AI Studio, language validation, comment synthesis, enhanced error handling, admin authentication
+**Last Updated:** 2025-12-11
+**Architecture:** Multi-expert, Gemini-only LLM pipeline with multi-key rotation and real-time progress tracking
+**Key Features:** Parallel expert processing, Gemini multi-key rotation, cost optimization with Google AI Studio free tier, language validation, comment synthesis, enhanced error handling, admin authentication

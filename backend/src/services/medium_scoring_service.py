@@ -211,7 +211,7 @@ Author: {post.get('author', '')}
 Created: {post.get('created_at', '')}
 """
         # Log the actual data being sent
-        logger.info(f"[{expert_id}] Sending {len(medium_posts)} posts to Hybrid LLM")
+        logger.info(f"[{expert_id}] Sending {len(medium_posts)} posts to Gemini")
 
         # Create base prompt
         base_prompt = self._prompt_template.substitute(

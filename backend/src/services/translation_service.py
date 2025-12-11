@@ -99,7 +99,7 @@ class TranslationService:
                 logger.warning("Empty translation response, returning original text")
                 return post_text
 
-            logger.debug(f"Translated post from {author_name} using Hybrid service")
+            logger.debug(f"Translated post from {author_name} using Gemini")
             return translated_text
 
         except Exception as e:

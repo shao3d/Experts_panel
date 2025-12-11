@@ -7,24 +7,26 @@
 FastAPI backend service providing multi-expert query processing with Map-Resolve-Reduce pipeline, real-time SSE streaming, and VPS/cloud deployment support.
 
 ## Narrative Summary
-The backend implements a sophisticated query processing system that retrieves relevant content from expert Telegram channels and synthesizes comprehensive answers. It features a 8-phase pipeline with hybrid multi-model LLM strategy (Primary → Fallback), language validation, parallel multi-expert processing, Telegram synchronization, and comprehensive drift analysis for comment discussions. The service includes robust error handling with user-friendly messages and is containerized with Docker for VPS/cloud deployment.
+The backend implements a sophisticated query processing system that retrieves relevant content from expert Telegram channels and synthesizes comprehensive answers. It features an 8-phase pipeline with Gemini-only LLM strategy (multi-key rotation for free tier optimization), language validation, parallel multi-expert processing, Telegram synchronization, and comprehensive drift analysis for comment discussions. The service includes robust error handling with user-friendly messages and is containerized with Docker for VPS/cloud deployment.
 
 ## Key Files
 - `src/api/main.py` - FastAPI application with CORS, SSE, error handling, admin auth, and production configuration
 - `src/api/simplified_query_endpoint.py` - Main multi-expert query endpoint with parallel processing and enhanced SSE
 - `src/api/admin_endpoints.py` - Admin authentication and production configuration endpoints
-- `src/services/map_service.py` - Phase 1: Content relevance detection with hybrid model system
-- `src/services/medium_scoring_service.py` - Phase 2: Advanced post reranking with hybrid cost optimization
+- `src/services/map_service.py` - Phase 1: Content relevance detection with Gemini
+- `src/services/medium_scoring_service.py` - Phase 2: Advanced post reranking with Gemini
 - `src/services/simple_resolve_service.py` - Phase 3: Database link expansion (depth 1)
-- `src/services/reduce_service.py` - Phase 4: Answer synthesis with hybrid model system
+- `src/services/reduce_service.py` - Phase 4: Answer synthesis with Gemini
 - `src/services/language_validation_service.py` - Phase 5: Language consistency validation
-- `src/services/comment_group_map_service.py` - Phase 6: Comment drift analysis with hybrid optimization
+- `src/services/comment_group_map_service.py` - Phase 6: Comment drift analysis with Gemini
 - `src/services/comment_synthesis_service.py` - Phase 7: Comment insights extraction
-- `src/services/translation_service.py` - Hybrid translation service with Google Gemini as primary
+- `src/services/drift_scheduler_service.py` - Offline Drift Analysis with **Gemini 2.5 Pro**
+- `src/services/translation_service.py` - Translation service with Gemini
 - `src/utils/error_handler.py` - Enhanced user-friendly error processing system
-- `src/config.py` - Comprehensive hybrid model configuration management
-- `src/services/hybrid_llm_adapter.py` - Core hybrid LLM adapter with Google AI Studio integration
-- `src/services/google_ai_studio_client.py` - Google AI Studio API client implementation
+- `src/config.py` - Gemini-only model configuration management
+- `src/services/google_ai_studio_client.py` - Google AI Studio API client with multi-key rotation
+- `src/services/monitored_client.py` - LLM call monitoring wrapper
+- `src/services/llm_monitor.py` - LLM statistics and health tracking
 - `fly.toml` - Fly.io production deployment configuration
 
 ## API Endpoints
@@ -70,7 +72,7 @@ The project can be deployed to Fly.io using the `fly.toml` configuration file an
 ## Integration Points
 
 ### Consumes
-- **OpenAI/OpenRouter API** - Multi-model LLM processing (Qwen, Gemini, GPT-4o-mini)
+- **Google AI Studio API** - Gemini models for all LLM processing (with multi-key rotation)
 - **SQLite Database** - Local and VPS data storage
 - **Telegram API** - Channel synchronization and comment fetching
 
@@ -83,7 +85,7 @@ The project can be deployed to Fly.io using the `fly.toml` configuration file an
 
 ### Prerequisites
 - Python 3.11+ with pip package manager
-- OpenRouter API key (required) and/or Google AI Studio API key (optional)
+- Google AI Studio API key(s) — get from https://aistudio.google.com/app/apikey
 - SQLite database (for local development)
 
 ### Development Server
@@ -111,16 +113,20 @@ python backend/scripts/prune_old_posts.py
 - Dynamic expert detection with optional filtering
 
 ### Eight-Phase Pipeline Architecture
-1. **Map Phase** - Content relevance detection with hybrid model system (Primary → Fallback)
+1. **Map Phase** - Content relevance detection with Gemini
 2. **Medium Scoring Phase** - Advanced post reranking with score ≥ 0.7 filtering (max 5 posts)
 3. **Resolve Phase** - Database link expansion for HIGH posts only (depth 1)
-4. **Reduce Phase** - Answer synthesis with hybrid model system
+4. **Reduce Phase** - Answer synthesis with Gemini
 5. **Language Validation Phase** - Language consistency validation and translation
 6. **Comment Groups Phase** - Drift analysis for relevant discussions
 7. **Comment Synthesis Phase** - Complementary insights extraction
 
-### Hybrid Multi-Model Strategy (Cost Optimized)
-The system uses a hybrid model strategy to optimize for both cost and performance, primarily using free-tier Google models and falling back to OpenRouter. For a detailed and up-to-date breakdown of the models used in each phase, please see the **[Pipeline Architecture Guide](../docs/pipeline-architecture.md)**.
+### Gemini-Only Model Strategy
+The system uses Google AI Studio with automatic multi-key rotation for 100% free tier utilization. For a detailed breakdown of the models used in each pipeline phase, see the **[Pipeline Architecture Guide](../docs/pipeline-architecture.md)**.
+
+- **Primary Model**: Gemini 2.0 Flash / Flash Lite (configurable per phase)
+- **Key Rotation**: Automatic rotation on any rate limit (RPM or Daily)
+- **No Paid Fallback**: Gemini-only strategy eliminates OpenRouter dependency
 
 ### Retry Mechanism (Map Phase)
 - Two-layer retry strategy: 3 per-chunk + 1 global retry attempts
@@ -143,10 +149,9 @@ The system uses a hybrid model strategy to optimize for both cost and performanc
 - **Expert Metadata**: Centralized expert information with display names and channels
 - **Drift Analysis**: Comprehensive comment drift tracking and topic analysis
 
-### Hybrid Model Configuration
-- Primary models via Google AI Studio API (free tier)
-- Fallback models via OpenRouter API (paid)
-- Automatic model switching on quota/rate-limit errors
+### Gemini Model Configuration
+- All models via Google AI Studio API (free tier)
+- Multi-key rotation for rate limit mitigation
 - All prompts externalized to `prompts/` directory
 - Configurable chunk sizes and processing parameters via environment variables
 
@@ -258,6 +263,6 @@ The usage pattern, involving `prepare_system_message_with_language` and `prepare
 
 ### API Issues
 - **CORS errors**: Check CORS origins configuration
-- **OpenAI API failures**: Validate API key format and permissions
+- **Google AI Studio failures**: Validate API key format and check rate limits
 - **SSE streaming issues**: Ensure client supports Server-Sent Events
 

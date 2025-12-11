@@ -227,7 +227,7 @@ class CommentGroupMapService:
         chunk_index: int,
         progress_callback: Optional[Callable] = None
     ) -> Dict[str, Any]:
-        """Process a single chunk of comment groups with Hybrid LLM."""
+        """Process a single chunk of comment groups with Gemini."""
         try:
             if progress_callback:
                 await progress_callback({

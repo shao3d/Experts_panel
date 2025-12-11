@@ -22,8 +22,8 @@ Find relevant posts from the expert's content using semantic search and relevanc
 
 ### Implementation
 - **File**: `backend/src/services/map_service.py`
-- **Model**: Qwen 2.5-72B/32B Instruct (configurable via MODEL_ANALYSIS environment variable)
-- **Cost**: $0.08/$0.33 per 1M tokens (72B) or ~75% cost reduction with 32B
+- **Model**: Gemini 2.0 Flash Lite (configurable via MODEL_MAP environment variable)
+- **Cost**: Optimized for free tier usage via Google AI Studio
 - **Chunk Size**: 100 posts per chunk
 
 ### Key Features
@@ -54,7 +54,7 @@ Intelligently score and select Medium relevance posts using hybrid reranking to 
 
 ### Implementation
 - **File**: `backend/src/services/medium_scoring_service.py`
-- **Model**: Qwen 2.5-72B/32B Instruct (configurable via MODEL_ANALYSIS environment variable)
+- **Model**: Gemini 2.0 Flash (configurable via MODEL_MEDIUM_SCORING environment variable)
 - **Strategy**: Hybrid threshold + top-K selection
 - **Memory Management**: Maximum 50 Medium posts processed
 
@@ -180,7 +180,7 @@ Validate language consistency between user query and expert response, translatin
 
 ### Implementation
 - **File**: `backend/src/services/language_validation_service.py`
-- **Model**: Qwen 2.5-72B/32B Instruct (configurable via MODEL_ANALYSIS environment variable)
+- **Model**: Gemini 2.0 Flash (configurable via MODEL_ANALYSIS environment variable)
 - **Translation**: Uses existing TranslationService for consistency
 - **Error Handling**: Graceful degradation with fallback to original text
 
@@ -218,8 +218,7 @@ The service returns a dictionary containing the validated `answer` and several m
 - **Parallel Execution**: Runs independently while Comment Groups phase starts
 
 ### Configuration
-- **Model**: `qwen-2.5-72b` (configurable via MODEL_ANALYSIS environment variable)
-- **Cost Optimization**: Use `qwen-2.5-32b` for 60-70% cost reduction
+- **Model**: Gemini 2.0 Flash (configurable via MODEL_ANALYSIS environment variable)
 - **Retry Strategy**: 3 attempts with exponential backoff
 - **Timeout**: Integrated with existing request timeout settings
 - **Error Handling**: Returns original text if translation fails
@@ -231,7 +230,7 @@ Find relevant comment discussions that may contain insights not covered in main 
 
 ### Implementation
 - **File**: `backend/src/services/comment_group_map_service.py`
-- **Model**: GPT-4o-mini (fast, cost-effective)
+- **Model**: Gemini 2.0 Flash (configurable via MODEL_COMMENT_GROUPS environment variable)
 - **Strategy**: Pre-analyzed drift matching
 
 ### Two-Phase Architecture
@@ -311,24 +310,20 @@ The final SSE 'complete' event contains the response payload. The structure of t
 ## 📊 Model Selection Strategy
 
 ### Model Rationale
-- **Qwen 2.5-72B/32B**: Superior document ranking, relevance scoring, Medium post evaluation, and language validation (configurable via MODEL_ANALYSIS)
-  - **Cost Optimization**: 32B model provides 60-70% cost reduction with <2% quality loss
-  - **Maximum Quality**: 72B model for highest accuracy requirements
-- **Gemini 2.0 Flash**: Better context synthesis and instruction following
-- **GPT-4o-mini**: Fast and cost-effective for matching tasks
+- **Gemini 2.0 Flash/Flash Lite**: Primary model for all online phases (Map, Medium Scoring, Reduce, Comments, Language Validation) due to high performance and free tier availability.
+- **Gemini 2.5 Pro**: Used for high-precision offline Drift Analysis.
 
-### Cost Optimization Strategy (NEW)
-- **Aggressive Key Rotation**: The system now implements an aggressive multi-key rotation strategy for Google AI Studio.
+### Cost Optimization Strategy
+- **Multi-Key Rotation**: The system implements aggressive multi-key rotation for Google AI Studio.
 - **Trigger**: Any rate limit error (Daily Quota OR Request Per Minute/RPM) triggers immediate rotation to the next available key.
-- **Fallback**: Only when ALL available Google keys are exhausted (or hit rate limits) does the system fall back to paid OpenRouter models.
-- **Result**: Significantly higher utilization of Free Tier resources and reduced operational costs.
+- **100% Free Tier**: With sufficient API keys and rotation, all operations run on Google's free tier.
 
 ### Performance Characteristics
 | Model | Use Case | Cost | Strengths |
 |-------|----------|------|-----------|
-| Qwen 2.5-72B/32B | Map Phase, Medium Scoring, Translation, Language Validation | $0.08/$0.33 (72B) or ~75% reduction (32B) | Document ranking, relevance scoring, fine-grained evaluation, translation |
-| Gemini 2.0 Flash | Reduce, Comment Synthesis | $0.10/$0.40 | Context synthesis, instruction following |
-| GPT-4o-mini | Comment Groups | Fast/cheap | Keyword matching, fast processing |
+| Gemini 2.0 Flash Lite | Map phase | Free Tier | High speed, lightweight |
+| Gemini 2.0 Flash | Medium Scoring, Reduce, Comments, Validation | Free Tier | High speed, large context |
+| Gemini 2.5 Pro | Drift Analysis (offline) | Free Tier | High precision for complex analysis |
 
 ## 🛠️ Configuration
 
@@ -367,8 +362,9 @@ The application logs provide valuable debugging information. To monitor performa
 ### Integration and Orchestration
 - **Main Endpoint**: `backend/src/api/simplified_query_endpoint.py`
 - **API Models**: `backend/src/api/models.py`
-- **OpenRouter Adapter**: `backend/src/services/openrouter_adapter.py`
 - **Google Client**: `backend/src/services/google_ai_studio_client.py` (Handles key rotation)
+- **Monitored Client**: `backend/src/services/monitored_client.py` (LLM call monitoring)
+- **LLM Monitor**: `backend/src/services/llm_monitor.py` (Statistics and health)
 
 ### Prompts and Templates
 - **Map Prompt**: `backend/prompts/map_prompt.txt`

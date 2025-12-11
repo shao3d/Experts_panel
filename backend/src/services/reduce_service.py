@@ -112,7 +112,7 @@ class ReduceService:
         expert_id: str = "unknown",
         progress_callback: Optional[Callable] = None
     ) -> Dict[str, Any]:
-        """Call GPT-4o-mini to synthesize the final answer.
+        """Call Gemini to synthesize the final answer.
 
         Args:
             query: User's query
@@ -183,7 +183,7 @@ class ReduceService:
             except json.JSONDecodeError as e2:
                 logger.error(f"JSON parsing failed even after fixes: {e2}")
                 logger.error(f"Full raw content: {raw_content}")
-                raise ValueError(f"Failed to parse GPT response as JSON: {e}") from e
+                raise ValueError(f"Failed to parse LLM response as JSON: {e}") from e
 
         # ALWAYS sanitize answer string to prevent frontend JSON parsing errors
         # This is critical: even if JSON parsing succeeded, the answer string may

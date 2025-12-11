@@ -7,7 +7,7 @@ Thank you for your interest in contributing to Experts Panel! This document prov
 ### Prerequisites
 - Python 3.11+
 - Node.js 18+
-- OpenRouter API key
+- Google AI Studio API key — get from https://aistudio.google.com/app/apikey
 - Git
 
 ### Development Setup
@@ -20,7 +20,7 @@ cd Experts_panel
 cd backend
 pip install -r requirements.txt
 cp .env.example .env
-# Add your OPENROUTER_API_KEY to .env
+# Add your GOOGLE_AI_STUDIO_API_KEY to .env
 
 # Frontend setup
 cd ../frontend

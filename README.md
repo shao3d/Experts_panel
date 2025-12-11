@@ -6,13 +6,13 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com)
 [![React](https://img.shields.io/badge/React-18+-blue.svg)](https://reactjs.org)
 
-**Intelligent system for analyzing expert Telegram channels using multi-model AI architecture**
+**Intelligent system for analyzing expert Telegram channels using Google Gemini AI**
 
-Experts Panel is a powerful tool for semantic search and analysis of content from expert Telegram channels. The system uses an advanced **8-phase Map-Resolve-Reduce pipeline architecture** with hybrid multi-model AI strategy to provide accurate and contextually relevant answers.
+Experts Panel is a powerful tool for semantic search and analysis of content from expert Telegram channels. The system uses an advanced **8-phase Map-Resolve-Reduce pipeline architecture** with Google Gemini AI (multi-key rotation for free tier optimization) to provide accurate and contextually relevant answers.
 
 ## 🏗️ System Architecture
 
-The system uses an advanced **eight-phase Map-Resolve-Reduce pipeline** to provide accurate and contextually relevant answers. The architecture includes a cost-optimized hybrid model strategy, differential processing for posts based on relevance, and parallel pipelines for content and comment analysis.
+The system uses an advanced **eight-phase Map-Resolve-Reduce pipeline** to provide accurate and contextually relevant answers. The architecture includes cost-optimized Gemini-only strategy with multi-key rotation, differential processing for posts based on relevance, and parallel pipelines for content and comment analysis.
 
 For a detailed breakdown of the 8-phase pipeline, component responsibilities, data flow, and model strategy, please see the **[Pipeline Architecture Guide](docs/pipeline-architecture.md)**.
 
@@ -36,22 +36,20 @@ graph TD
     end
 
     subgraph "AI Services"
-        OpenRouter[OpenRouter API]
-        GoogleAI[Google AI Studio API]
+        GoogleAI[Google AI Studio API - Gemini]
     end
 
     User -- "Sends query" --> Frontend
     Frontend -- "SSE streaming /api/v1/query" --> Backend
     Backend -- "Admin API" --> Admin
-    Backend -- "Hybrid LLM calls" --> OpenRouter
-    Backend -- "Cost-optimized LLM calls" --> GoogleAI
+    Backend -- "LLM calls with key rotation" --> GoogleAI
     Backend -- "Multi-expert data access" --> DB
     Backend -- "Real-time progress" --> Frontend
     Frontend -- "Expert responses" --> User
 
     classDef ai_service fill:#e6f3ff,stroke:#0066cc,stroke-width:2px
     classDef admin_service fill:#f0f8ff,stroke:#333,stroke-width:2px
-    class OpenRouter,GoogleAI ai_service
+    class GoogleAI ai_service
     class Admin admin_service
 ```
 
@@ -60,17 +58,17 @@ graph TD
 ```mermaid
 graph TD
     A[Start: User Query] --> B{Determine Query Language}
-    B --> C[1. Map Phase: Hybrid System]
+    B --> C[1. Map Phase: Gemini Flash Lite]
     C -- "Posts" --> D{Split into HIGH and MEDIUM}
     D -- "HIGH posts" --> E[3. Resolve Phase: DB Link Expansion]
-    D -- "MEDIUM posts" --> F[2. Medium Scoring: Hybrid System]
-    F -- "Top-5 posts score >= 0.7" --> G[4. Reduce Phase: Hybrid System]
+    D -- "MEDIUM posts" --> F[2. Medium Scoring: Gemini Flash]
+    F -- "Top-5 posts score >= 0.7" --> G[4. Reduce Phase: Gemini Flash]
     E -- "Enriched HIGH posts" --> G
-    G -- "Synthesized response" --> H[5. Language Validation: Qwen 2.5]
+    G -- "Synthesized response" --> H[5. Language Validation: Gemini Flash]
     H -- "Response in correct language" --> I{Assemble Final Response}
 
     subgraph "Parallel Pipeline B: Comment Analysis"
-        J[7. Comment Groups: Hybrid System] --> K[8. Comment Synthesis: Hybrid System]
+        J[7. Comment Groups: Gemini Flash] --> K[8. Comment Synthesis: Gemini Flash]
     end
 
     A --> J
@@ -80,8 +78,8 @@ graph TD
 
     classDef llm_step fill:#f9f,stroke:#333,stroke-width:2px
     class C,F,G,H,J,K llm_step
-    classDef hybrid_step fill:#e6f3ff,stroke:#0066cc,stroke-width:2px
-    class C,F,G,J,K hybrid_step
+    classDef gemini_step fill:#e6f3ff,stroke:#0066cc,stroke-width:2px
+    class C,F,G,J,K gemini_step
     classDef cost_optimized fill:#90EE90,stroke:#228B22,stroke-width:2px
     class F cost_optimized
 ```
@@ -110,8 +108,7 @@ graph TD
         end
 
         subgraph "External AI Services"
-            OpenRouter[OpenRouter API]
-            GoogleAI[Google AI Studio API]
+            GoogleAI[Google AI Studio API - Gemini]
         end
     end
 
@@ -119,8 +116,7 @@ graph TD
     LB -- HTTP --> App
     App -- Admin protection --> AdminLayer
     App -- Multi-expert queries --> DB
-    App -- Hybrid LLM calls --> OpenRouter
-    App -- Cost-optimized LLM calls --> GoogleAI
+    App -- LLM calls with key rotation --> GoogleAI
     LB -- Health checks --> App
 
     classDef storage fill:#fdf,stroke:#333,stroke-width:2px
@@ -128,7 +124,7 @@ graph TD
     classDef note fill:#f0f8ff,stroke:#ccc,stroke-width:1px
     classDef admin fill:#FFE4B5,stroke:#D2691E,stroke-width:2px
     class Volume,DB storage
-    class OpenRouter,GoogleAI external
+    class GoogleAI external
     class AdminLayer admin
 
     subgraph "Production Notes"
@@ -143,10 +139,10 @@ graph TD
 ## ✨ Key Features
 
 - **🧠 8-phase Map-Resolve-Reduce Architecture**: Advanced pipeline with differential HIGH/MEDIUM posts processing
-- **🎯 Cost-Optimized Hybrid Strategy**: Smart primary → fallback system with 99% free tier usage via Google AI Studio (aggressive rotation) & OpenRouter fallback
+- **🎯 Cost-Optimized Gemini Strategy**: Google AI Studio with multi-key rotation for 100% free tier usage
 - **🔍 Smart Semantic Search**: Finds relevant posts by meaning, not keywords
-- **📊 Medium Posts Reranking**: Hybrid scoring system with threshold ≥0.7 and top-5 selection
-- **💬 Comment Groups & Synthesis**: Hybrid pipeline for comment drift analysis and insights extraction
+- **📊 Medium Posts Reranking**: Gemini-based scoring system with threshold ≥0.7 and top-5 selection
+- **💬 Comment Groups & Synthesis**: Gemini pipeline for comment drift analysis and insights extraction
 - **🌐 Language Validation**: Response language validation and translation when needed
 - **⚡ Real-time**: Processing progress display via Server-Sent Events with error handling
 - **👥 Multi-expert Support**: Complete data isolation with `expert_id` and parallel processing
@@ -159,7 +155,7 @@ graph TD
 
 - Python 3.11+
 - Node.js 18+
-- OpenRouter API key
+- Google AI Studio API key(s) — get from https://aistudio.google.com/app/apikey
 
 For a guided setup experience, execute the `quickstart.sh` script located in the project root. This script will check for dependencies, install packages for the frontend and backend, and create the necessary configuration files. After running the script, follow the final instructions it provides to start the backend and frontend servers.
 
@@ -202,19 +198,19 @@ All configuration for the application is managed via environment variables. A co
 To set up your local environment, copy this file to `.env` and fill in the required values.
 
 **Model Strategy Notes:**
-- **Cost Optimization**: 99% free tier usage with Google AI Studio as primary for most phases
+- **Cost Optimization**: 100% free tier usage with Google AI Studio as primary for all phases
 - **Key Rotation**: Multiple Google AI Studio keys supported with automatic rotation on ANY rate limit (RPM or Daily)
-- **Smart Fallback**: Automatic OpenRouter fallback when Google AI Studio quota exhausted
+- **No Fallback Required**: Gemini-only strategy eliminates need for paid fallback services
 - **Development Mode**: Set `ENVIRONMENT=development` to see masked API keys in logs
 
 ## 🏗️ Technical Architecture
 
 ### Technology Stack
 
-- **Backend**: FastAPI, SQLAlchemy 2.0, Pydantic v2, uvicorn, hybrid LLM adapter
+- **Backend**: FastAPI, SQLAlchemy 2.0, Pydantic v2, uvicorn, Google AI Studio client with key rotation
 - **Frontend**: React 18, TypeScript, Vite, React Query, React Hot Toast, Tailwind CSS
 - **Database**: SQLite (18MB) with 10+ migrations, full `expert_id` isolation and persistent volumes
-- **AI Models**: Cost-optimized hybrid system with Google AI Studio (Gemini 2.0 Flash/Flash Lite) + OpenRouter API (Qwen 2.5-72B)
+- **AI Models**: Gemini-only strategy — Gemini 2.0 Flash / Flash Lite for all phases, Gemini 2.5 Pro for offline drift analysis
 - **Deployment**: Docker, Fly.io with admin authentication, health checks and volume mounting
 
 ### Project Structure
@@ -224,15 +220,15 @@ backend/
 ├── src/
 │   ├── models/       # SQLAlchemy models with expert_id fields
 │   ├── services/     # 8-phase Map-Resolve-Reduce pipeline
-│   │   ├── map_service.py                 # Map Phase (Hybrid LLM)
-│   │   ├── medium_scoring_service.py      # Medium Posts Reranking (Hybrid)
+│   │   ├── map_service.py                 # Map Phase (Gemini)
+│   │   ├── medium_scoring_service.py      # Medium Posts Reranking (Gemini)
 │   │   ├── simple_resolve_service.py      # Resolve Phase (depth 1)
-│   │   ├── reduce_service.py              # Reduce Phase (Hybrid LLM)
-│   │   ├── comment_group_map_service.py   # Comment Groups (Hybrid)
-│   │   ├── comment_synthesis_service.py   # Comment Synthesis (Hybrid)
-│   │   ├── hybrid_llm_adapter.py          # Core Hybrid LLM Adapter
-│   │   ├── google_ai_studio_client.py     # Google AI Studio Client
-│   │   └── openrouter_adapter.py          # OpenRouter Client
+│   │   ├── reduce_service.py              # Reduce Phase (Gemini)
+│   │   ├── comment_group_map_service.py   # Comment Groups (Gemini)
+│   │   ├── comment_synthesis_service.py   # Comment Synthesis (Gemini)
+│   │   ├── google_ai_studio_client.py     # Google AI Studio Client with key rotation
+│   │   ├── monitored_client.py            # LLM call monitoring wrapper
+│   │   └── llm_monitor.py                 # LLM statistics and health tracking
 │   ├── api/          # FastAPI endpoints
 │   │   ├── main.py                        # Main application entrypoint
 │   │   ├── simplified_query_endpoint.py   # Main Query Processing
@@ -287,7 +283,7 @@ To deploy, use the Fly.io CLI (`flyctl`). You will need to set the required secr
 - ✅ **Persistent data**: SQLite database (18MB) mounted on persistent volume
 - ✅ **Security**: Non-root container, SSL termination, API key masking
 - ✅ **Scalability**: Automatic scaling with 0 machines when idle
-- ✅ **Cost Optimization**: 99% free tier usage with hybrid model strategy
+- ✅ **Cost Optimization**: 100% free tier usage with Gemini multi-key rotation
 - ✅ **Monitoring**: Real-time logs and deployment tracking
 
 **Live Application**: https://experts-panel.fly.dev/
@@ -321,7 +317,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- [OpenRouter](https://openrouter.ai/) for access to cutting-edge AI models
+- [Google AI Studio](https://aistudio.google.com/) for generous free tier and powerful Gemini models
 - [FastAPI](https://fastapi.tiangolo.com/) for the powerful framework
 - [React](https://reactjs.org/) for the excellent UI framework
 

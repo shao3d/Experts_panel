@@ -1,6 +1,6 @@
 # Project Context: Experts Panel
 
-**Last Updated:** 2025-11-27
+**Last Updated:** 2025-12-11
 **Status:** Production (v55)
 
 ## 🎯 Core Functionality
@@ -10,7 +10,7 @@ Key feature: **Listwise LLM Reranking** (Map phase) without Vector DB.
 ## 🏗️ Architecture Highlights
 - **Stack:** FastAPI (Backend), React (Frontend), SQLite (DB), Fly.io (Hosting).
 - **Streaming:** Server-Sent Events (SSE) for real-time progress.
-- **LLM Strategy:** Hybrid (Google Gemini 2.0 Flash Free Tier -> OpenRouter Qwen Fallback).
+- **LLM Strategy:** Gemini-only (Google Gemini 2.0 Flash / Flash Lite) with multi-key rotation for 100% free tier usage.
 
 ## 🔧 Key Configurations (Critical)
 - **Google AI Studio:**
@@ -37,6 +37,6 @@ Key feature: **Listwise LLM Reranking** (Map phase) without Vector DB.
 2.  Increased Map Phase chunk size to 100.
 3.  Added robust SSE Keep-Alive (5s + padding) to fix "Load failed" on mobile.
 4.  **Automated Production Update:** Implemented `scripts/update_production_db.sh` for one-click Sync + Drift Analysis + Deploy.
-5.  **Drift Analysis Integration:** Restored and automated `DriftSchedulerService` to analyze new comments before deployment.
+5.  **Drift Analysis Integration:** Restored and automated `DriftSchedulerService` to analyze new comments before deployment. **Upgraded to Gemini 2.5 Pro** for higher accuracy.
 6.  **Deployment Optimization:** Added Gzip compression for database uploads, significantly reducing deployment time.
 

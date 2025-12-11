@@ -155,7 +155,7 @@ class CommentSynthesisService:
         except json.JSONDecodeError as e:
             logger.error(f"JSON parsing failed: {e}")
             logger.debug(f"Raw content (first 500 chars): {raw_content[:500]}")
-            raise ValueError(f"Failed to parse GPT response as JSON: {e}") from e
+            raise ValueError(f"Failed to parse LLM response as JSON: {e}") from e
 
         # Handle new format with expert/community split
         import re

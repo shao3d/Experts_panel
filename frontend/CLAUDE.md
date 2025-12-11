@@ -136,5 +136,5 @@ Frontend-specific configuration, such as server port, path aliases, and the prox
 **Related Documentation:**
 - **Main Project**: `../CLAUDE.md` - Quick Start and full architecture
 - **Backend API**: `../backend/CLAUDE.md` - Complete API reference and endpoints
-- **Hybrid Model Configuration**: `../backend/src/config.py` - Environment variables and models
+- **Model Configuration**: `../backend/src/config.py` - Environment variables and models
 - **Environment Setup**: `../.env.example` - Complete configuration reference
