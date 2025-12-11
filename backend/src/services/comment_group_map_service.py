@@ -93,6 +93,8 @@ class CommentGroupMapService:
         exclude_post_ids: Optional[List[int]] = None
     ) -> List[Dict[str, Any]]:
         """Load comment groups with drift from database."""
+        print(f"[DEBUG CGS] _load_drift_groups called for expert_id={expert_id}, exclude_post_ids={exclude_post_ids}")  # DEBUG
+        
         # Query drift groups with anchor posts
         query = db.query(
             comment_group_drift.c.post_id,
@@ -120,6 +122,7 @@ class CommentGroupMapService:
                 )
 
         results = query.all()
+        print(f"[DEBUG CGS] DB query returned {len(results)} results")  # DEBUG
 
         groups = []
         for post_id, drift_topics_json, telegram_msg_id, message_text, created_at, author_name in results:
@@ -321,10 +324,15 @@ class CommentGroupMapService:
         import time
         phase_start_time = time.time()
 
+        print(f"[DEBUG CGS] process() called for expert_id={expert_id}")  # DEBUG
+
         # Load drift groups from database
         all_groups = self._load_drift_groups(db, expert_id, exclude_post_ids)
 
+        print(f"[DEBUG CGS] all_groups loaded: {len(all_groups)}")  # DEBUG
+
         if not all_groups:
+            print(f"[DEBUG CGS] No groups found, returning early")  # DEBUG
             if progress_callback:
                 await progress_callback({
                     "event_type": "phase_complete",
