@@ -15,58 +15,35 @@ def _mask_value(value: str) -> str:
     return f"{value[:5]}...{value[-4:]}"
 
 # --- API Ключи ---
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KEY")
 GOOGLE_AI_STUDIO_API_KEYS_STR = os.getenv("GOOGLE_AI_STUDIO_API_KEY")
 GOOGLE_AI_STUDIO_API_KEYS = [
     key.strip() for key in (GOOGLE_AI_STUDIO_API_KEYS_STR or "").split(',') if key.strip()
 ]
 
 # --- Model Configuration ---
-# The settings below define the DEFAULT models.
-# You can OVERRIDE any of these in your `backend/.env` file.
+# Only Google Gemini models are supported.
+# Defined in .env or defaulting to stable versions here.
 
-# Модели для Map фазы (гибридная система)
-# Primary: The model to try first.
-# Fallback: The model to use if the primary fails with a rate-limit/quota error.
-MODEL_MAP_PRIMARY: str = os.getenv("MODEL_MAP_PRIMARY", "gemini-2.0-flash-lite")
-MODEL_MAP_FALLBACK: str = os.getenv("MODEL_MAP_FALLBACK", "qwen/qwen-2.5-72b-instruct")
+MODEL_MAP: str = os.getenv("MODEL_MAP", "gemini-2.0-flash-lite")
 
-# Модели для Синтеза (Reduce, Comment Synthesis) - гибридный механизм №2
-MODEL_SYNTHESIS_PRIMARY: str = os.getenv("MODEL_SYNTHESIS_PRIMARY", "gemini-2.0-flash")
-MODEL_SYNTHESIS_FALLBACK: str = os.getenv("MODEL_SYNTHESIS_FALLBACK", "qwen/qwen-2.5-72b-instruct")
+MODEL_SYNTHESIS: str = os.getenv("MODEL_SYNTHESIS", "gemini-2.0-flash")
 
-# Модель для анализа (Translation, Validation)
-# Значение по умолчанию согласовано с .env.example
-MODEL_ANALYSIS: str = os.getenv("MODEL_ANALYSIS", "qwen/qwen-2.5-72b-instruct")
+MODEL_ANALYSIS: str = os.getenv("MODEL_ANALYSIS", "gemini-2.0-flash")
 
-# Модели для Medium Scoring (Гибридная схема)
-MODEL_MEDIUM_SCORING_PRIMARY: str = os.getenv("MODEL_MEDIUM_SCORING_PRIMARY", "gemini-2.0-flash")
-MODEL_MEDIUM_SCORING_FALLBACK: str = os.getenv("MODEL_MEDIUM_SCORING_FALLBACK", "qwen/qwen-2.5-72b-instruct")
+MODEL_MEDIUM_SCORING: str = os.getenv("MODEL_MEDIUM_SCORING", "gemini-2.0-flash")
 
-# Валидация конфигурации Medium Scoring
-if not (MODEL_MEDIUM_SCORING_PRIMARY.startswith("gemini-") or MODEL_MEDIUM_SCORING_PRIMARY.startswith("google/")):
-    print(f"WARNING: MODEL_MEDIUM_SCORING_PRIMARY should be a Google model for hybrid cost optimization. Current: {MODEL_MEDIUM_SCORING_PRIMARY}")
+MODEL_COMMENT_GROUPS: str = os.getenv("MODEL_COMMENT_GROUPS", "gemini-2.0-flash")
 
-# Модель для поиска групп комментариев (Гибридная схема)
-# Primary: Google Gemini 2.0 Flash (Бесплатно)
-# Fallback: Qwen 72B (Платно)
-MODEL_COMMENT_GROUPS_PRIMARY: str = os.getenv("MODEL_COMMENT_GROUPS_PRIMARY", "gemini-2.0-flash")
-MODEL_COMMENT_GROUPS_FALLBACK: str = os.getenv("MODEL_COMMENT_GROUPS_FALLBACK", "qwen/qwen-2.5-72b-instruct")
-
-# Модели для Перевода (Гибридная схема)
-# Primary: Google Gemini 2.0 Flash (Бесплатно) для перевода постов и валидации языка
-MODEL_TRANSLATION_PRIMARY: str = os.getenv("MODEL_TRANSLATION_PRIMARY", "gemini-2.0-flash")
+# --- Medium Scoring Configuration ---
+# Threshold for accepting medium posts (0.0-1.0)
+MEDIUM_SCORE_THRESHOLD: float = float(os.getenv("MEDIUM_SCORE_THRESHOLD", "0.7"))
+# Max number of medium posts to include in context
+MEDIUM_MAX_SELECTED_POSTS: int = int(os.getenv("MEDIUM_MAX_SELECTED_POSTS", "5"))
+# Hard limit on posts processed to prevent OOM
+MEDIUM_MAX_POSTS: int = int(os.getenv("MEDIUM_MAX_POSTS", "50"))
 
 # --- Лимиты (Rate Limiting) ---
-# Ограничение параллельных запросов для Map фазы.
-# Для 5 ключей ставим 8 (это ~1.6 запроса на ключ, безопасно для Burst Limit).
 MAP_MAX_PARALLEL: int = int(os.getenv("MAP_MAX_PARALLEL", "8"))
-
-# --- Назначение моделей для конкретных сервисов ---
-# Эти переменные читают значения из гибридных настроек выше для обратной совместимости.
-MODEL_MAP: str = MODEL_MAP_PRIMARY
-MODEL_REDUCE: str = MODEL_SYNTHESIS_PRIMARY
-MODEL_COMMENT_SYNTHESIS: str = MODEL_SYNTHESIS_PRIMARY
 
 # --- Прочие настройки ---
 DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///data/experts.db")
@@ -84,23 +61,15 @@ else:
 # Логирование для проверки при запуске
 if os.getenv("ENVIRONMENT") != "production":
     print("--- Загруженная конфигурация API ---")
-    print(f"  OpenRouter API Key:    {_mask_value(OPENROUTER_API_KEY)}")
-
     if GOOGLE_AI_STUDIO_API_KEYS:
         print(f"  Google AI Studio Keys: Configured ({len(GOOGLE_AI_STUDIO_API_KEYS)} keys)")
     else:
         print("  Google AI Studio Keys: Not configured")
 
     print("\n--- Загруженная конфигурация моделей ---")
-    print(f"  Map фаза (Primary):    {MODEL_MAP_PRIMARY}")
-    print(f"  Map фаза (Fallback):   {MODEL_MAP_FALLBACK}")
-    print(f"  Medium Scoring (Prim): {MODEL_MEDIUM_SCORING_PRIMARY}")
-    print(f"  Medium Scoring (Fall): {MODEL_MEDIUM_SCORING_FALLBACK}")
-    print(f"  Синтез (Primary):      {MODEL_SYNTHESIS_PRIMARY}")
-    print(f"  Синтез (Fallback):     {MODEL_SYNTHESIS_FALLBACK}")
-    print(f"  Анализ (Trans/Valid):  {MODEL_ANALYSIS}")
-    print(f"  Группы коммент.:       {MODEL_COMMENT_GROUPS_PRIMARY}")
-    print(f"  Перевод (Primary):     {MODEL_TRANSLATION_PRIMARY}")
+    print(f"  Map фаза:          {MODEL_MAP}")
+    print(f"  Синтез:            {MODEL_SYNTHESIS}")
+    print(f"  Анализ:            {MODEL_ANALYSIS}")
     print("--------------------------------------")
     print("--- Загруженная конфигурация логирования ---")
     print(f"  Log Level:         {LOG_LEVEL}")

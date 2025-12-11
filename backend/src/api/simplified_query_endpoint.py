@@ -89,7 +89,6 @@ async def process_expert_pipeline(
     expert_id: str,
     request: QueryRequest,
     db: Session,
-    api_key: str,
     progress_callback: Optional[Callable] = None
 ) -> ExpertResponse:
     """Process full pipeline for one expert.
@@ -98,7 +97,6 @@ async def process_expert_pipeline(
         expert_id: Expert identifier
         request: Query request
         db: Database session
-        api_key: OpenAI API key
         progress_callback: Optional callback for progress updates
 
     Returns:
@@ -132,10 +130,8 @@ async def process_expert_pipeline(
 
     # 2. Map phase
     map_service = MapService(
-        openrouter_api_key=config.OPENROUTER_API_KEY,
-        model=config.MODEL_MAP_PRIMARY,
-        fallback_model=config.MODEL_MAP_FALLBACK,
-        max_parallel=5
+        model=config.MODEL_MAP,
+        max_parallel=config.MAP_MAX_PARALLEL
     )
 
     async def map_progress(data: dict):
@@ -164,11 +160,9 @@ async def process_expert_pipeline(
     if medium_posts:
         from ..services.medium_scoring_service import MediumScoringService
 
-        # Use Hybrid Configuration: Google (Primary) -> Qwen (Fallback)
+        # Use Google Gemini with automatic key rotation
         scoring_service = MediumScoringService(
-            api_key=config.OPENROUTER_API_KEY,
-            model=config.MODEL_MEDIUM_SCORING_PRIMARY,
-            fallback_model=config.MODEL_MEDIUM_SCORING_FALLBACK
+            model=config.MODEL_MEDIUM_SCORING
         )
 
         # Enrich medium_posts with full content before passing to the scoring service
@@ -304,9 +298,7 @@ async def process_expert_pipeline(
 
     # 5. NEW: Language Validation Phase
     language_validation_service = LanguageValidationService(
-        api_key=config.OPENROUTER_API_KEY,
-        model=config.MODEL_ANALYSIS,
-        primary_model=config.MODEL_TRANSLATION_PRIMARY
+        model=config.MODEL_ANALYSIS
     )
 
     async def validation_progress(data: dict):
@@ -331,11 +323,9 @@ async def process_expert_pipeline(
     if request.include_comment_groups:
         main_sources = reduce_results.get("main_sources", [])
 
-        # Use Hybrid Configuration: Google (Primary) -> Qwen (Fallback)
+        # Use Google Gemini with automatic key rotation
         cg_service = CommentGroupMapService(
-            api_key=config.OPENROUTER_API_KEY,
-            model=config.MODEL_COMMENT_GROUPS_PRIMARY,
-            fallback_model=config.MODEL_COMMENT_GROUPS_FALLBACK
+            model=config.MODEL_COMMENT_GROUPS
         )
 
         async def cg_progress(data: dict):
@@ -432,7 +422,6 @@ async def process_expert_pipeline(
 async def event_generator_parallel(
     request: QueryRequest,
     db: Session,
-    api_key: str,
     request_id: str
 ) -> AsyncGenerator[str, None]:
     """Generate SSE events for parallel multi-expert processing.
@@ -442,7 +431,6 @@ async def event_generator_parallel(
     Args:
         request: Query request
         db: Database session
-        api_key: OpenAI API key
         request_id: Unique request ID
 
     Yields:
@@ -569,7 +557,6 @@ async def event_generator_parallel(
                     expert_id=expert_id,
                     request=request,
                     db=db,
-                    api_key=api_key,
                     progress_callback=expert_progress_callback
                 )
             )
@@ -723,12 +710,9 @@ async def process_simplified_query(
     request_id = str(uuid.uuid4())
     logger.info(f"Processing multi-expert query {request_id}: {request.query[:50]}...")
 
-    # Get API key from config (can be None/empty if using Google-only mode)
-    api_key = config.OPENROUTER_API_KEY
-
     # Always return SSE stream with parallel multi-expert processing
     return EventSourceResponse(
-        event_generator_parallel(request, db, api_key, request_id),
+        event_generator_parallel(request, db, request_id),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
@@ -817,9 +801,7 @@ async def get_post_detail(
     elif query:
         # Use translation service to detect if query is in English
         translation_service = TranslationService(
-            api_key=config.OPENROUTER_API_KEY,
-            model=config.MODEL_ANALYSIS,
-            primary_model=config.MODEL_TRANSLATION_PRIMARY
+            model=config.MODEL_ANALYSIS
         )
         should_translate = translation_service.should_translate(query)
         logger.info(f"DEBUG: Translation check for post {post_id}: query='{query[:50]}...', should_translate={should_translate}")
@@ -833,11 +815,9 @@ async def get_post_detail(
     if should_translate and message_text:
         logger.info(f"DEBUG: Starting translation for post {post_id} with content length {len(message_text)}")
         try:
-            # Use Hybrid Translation Service (Google -> Qwen)
+            # Use Google Gemini for translation
             translation_service = TranslationService(
-                api_key=config.OPENROUTER_API_KEY,
-                model=config.MODEL_ANALYSIS,
-                primary_model=config.MODEL_TRANSLATION_PRIMARY
+                model=config.MODEL_ANALYSIS
             )
             translated_text = await translation_service.translate_single_post(
                 message_text,

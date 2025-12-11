@@ -1,7 +1,7 @@
 """Google AI Studio API client for direct Gemini API access.
 
-This module provides a client for calling Google AI Studio's Gemini API directly,
-bypassing OpenRouter to take advantage of free tier limits and key rotation.
+This module provides a client for calling Google AI Studio's Gemini API directly
+with automatic key rotation for free tier limits.
 """
 
 import json
@@ -394,16 +394,15 @@ class GoogleAIClient:
                         logger.warning(f"🔄 Rate limit hit (RPM or Daily) for key {current_key_index}, attempting rotation...")
                         rotated = await manager.rotate_key()
                         if not rotated:
-                            logger.error(f"❌ All Google AI Studio keys exhausted. Falling back to OpenRouter.")
+                            logger.error(f"❌ All Google AI Studio keys exhausted.")
                             raise error  # All keys exhausted, re-raise last error
                         # Continue to next key with same lock
                         logger.info(f"✅ Key rotation successful, trying next key...")
                         continue
                     else:
                         # This is not a rate limit error (e.g., auth error, server error).
-                        # We should not rotate the key. Instead, we raise the error to exit the loop
-                        # and trigger the fallback to OpenRouter in the HybridLLMClient.
-                        logger.warning(f"⚠️ Non-daily rate limit error for key {current_key_index}: {error_str[:100]}...")
+                        # We should not rotate the key. Re-raise the error.
+                        logger.warning(f"⚠️ Non-rate-limit error for key {current_key_index}: {error_str[:100]}...")
                         raise error
 
         # If the loop completes, it means all keys were tried and failed with daily limits.

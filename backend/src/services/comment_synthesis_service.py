@@ -7,11 +7,9 @@ from typing import List, Dict, Any, Optional, Callable
 from pathlib import Path
 from string import Template
 
-from openai import AsyncOpenAI
 from tenacity import retry, stop_after_attempt, wait_exponential
 
-from .openrouter_adapter import create_openrouter_client, convert_model_name
-from .hybrid_llm_adapter import create_hybrid_client, is_hybrid_mode_enabled
+from .monitored_client import create_monitored_client
 from .. import config
 from ..utils.language_utils import prepare_prompt_with_language_instruction, prepare_system_message_with_language, get_response_language_instruction
 
@@ -28,25 +26,11 @@ class CommentSynthesisService:
     def __init__(self):
         """Initialize CommentSynthesisService.
         """
-        # HYBRID_ENABLED=true: Google first, fallback to OpenRouter
-        # HYBRID_ENABLED=false: Google only, no OpenRouter fallback
-        if is_hybrid_mode_enabled():
-            self.client = create_hybrid_client(
-                openrouter_api_key=config.OPENROUTER_API_KEY,
-                fallback_model=config.MODEL_SYNTHESIS_FALLBACK,
-                enable_hybrid=True
-            )
-            logger.info("CommentSynthesisService initialized with hybrid LLM client (Google AI Studio + OpenRouter)")
-        else:
-            # Google-only mode: use hybrid client but disable fallback
-            self.client = create_hybrid_client(
-                openrouter_api_key=None,  # No OpenRouter key = no fallback
-                fallback_model=None,
-                enable_hybrid=True  # Still use Google as primary
-            )
-            logger.info("CommentSynthesisService initialized with Google AI Studio only (no OpenRouter fallback)")
+        # Use monitored client (Google Gemini)
+        self.client = create_monitored_client()
+        logger.info("CommentSynthesisService initialized with monitored Google AI Studio client")
 
-        self.model = config.MODEL_SYNTHESIS_PRIMARY
+        self.model = config.MODEL_SYNTHESIS
         self._prompt_template = self._load_prompt_template()
 
     def _load_prompt_template(self) -> Template:
@@ -152,30 +136,17 @@ class CommentSynthesisService:
             query
         )
 
-        # Call LLM API (Google AI Studio first, then OpenRouter)
-        if hasattr(self.client, 'chat_completions_create'):
-            # Hybrid client
-            response = await self.client.chat_completions_create(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": enhanced_system},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.2,
-                response_format={"type": "json_object"},
-                service_name="comment_synthesis"
-            )
-        else:
-            # OpenRouter client
-            response = await self.client.chat.completions.create(
-                model=convert_model_name(self.model),
-                messages=[
-                    {"role": "system", "content": enhanced_system},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.2,
-                response_format={"type": "json_object"}
-            )
+        # Call LLM API (Google AI Studio)
+        response = await self.client.chat_completions_create(
+            model=self.model,
+            messages=[
+                {"role": "system", "content": enhanced_system},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.2,
+            response_format={"type": "json_object"},
+            service_name="comment_synthesis"
+        )
 
         # Parse response
         raw_content = response.choices[0].message.content

@@ -7,7 +7,6 @@ import asyncio
 import httpx
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
-from .openrouter_adapter import create_openrouter_client, convert_model_name
 from ..utils.language_utils import detect_query_language
 from .translation_service import TranslationService
 
@@ -17,21 +16,16 @@ logger = logging.getLogger(__name__)
 class LanguageValidationService:
     """Service for validating and ensuring language consistency of expert responses."""
 
-    def __init__(self, api_key: str, model: str, primary_model: str = "gemini-2.0-flash"):
+    def __init__(self, model: str = "gemini-2.0-flash"):
         """Initialize LanguageValidationService.
 
         Args:
-            api_key: OpenAI API key
-            model: Fallback model (Qwen)
-            primary_model: Primary model (Gemini)
+            model: Model to use (Gemini)
         """
-        self.client = create_openrouter_client(api_key=api_key)
-        self.model = convert_model_name(model)
-        # Initialize internal translation service with hybrid support
+        self.model = model
+        # Initialize internal translation service
         self.translation_service = TranslationService(
-            api_key=api_key,
-            model=model,
-            primary_model=primary_model
+            model=model
         )
 
     @retry(

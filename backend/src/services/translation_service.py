@@ -1,18 +1,14 @@
 """Translation service for translating posts to English."""
 
 import asyncio
-import json
 import logging
-import os
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 from string import Template
 
-from openai import AsyncOpenAI
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 import httpx
 
-from .openrouter_adapter import create_openrouter_client, convert_model_name
 from .google_ai_studio_client import create_google_ai_studio_client, GoogleAIStudioError
 from ..utils.language_utils import detect_query_language
 
@@ -20,22 +16,18 @@ logger = logging.getLogger(__name__)
 
 
 class TranslationService:
-    """Service for translating posts to English using Hybrid approach (Google -> OpenRouter)."""
+    """Service for translating posts to English using Google AI Studio."""
 
     def __init__(
         self,
-        api_key: str,
-        model: str,
-        primary_model: str = "gemini-2.0-flash"
+        model: str = "gemini-2.0-flash"
     ):
         """Initialize TranslationService.
 
         Args:
-            api_key: OpenAI API key (for OpenRouter fallback)
-            model: Fallback model to use (usually Qwen via OpenRouter)
-            primary_model: Primary model to use (default Gemini via Google)
+            model: Model to use (default Gemini via Google)
         """
-        # 1. Initialize Google Client (Primary)
+        # Initialize Google Client
         self.google_client = None
         try:
             self.google_client = create_google_ai_studio_client()
@@ -44,13 +36,9 @@ class TranslationService:
         except Exception as e:
             logger.warning(f"TranslationService: Could not initialize Google AI Studio client: {e}")
 
-        # 2. Initialize OpenRouter Client (Fallback)
-        self.openrouter_client = create_openrouter_client(api_key=api_key)
+        self.primary_model = model
 
-        self.primary_model = primary_model
-        self.fallback_model = convert_model_name(model)
-
-        logger.info(f"TranslationService Config: Primary={self.primary_model}, Fallback={self.fallback_model}")
+        logger.info(f"TranslationService Config: Model={self.primary_model}")
         self._prompt_template = self._load_prompt_template()
 
     def _load_prompt_template(self) -> Template:
@@ -66,30 +54,15 @@ class TranslationService:
             return Template("Translate the following Russian Telegram post to natural English:\n\n${post_text}\n\nKeep all links [text](url) unchanged and preserve formatting.")
 
     async def _call_llm(self, model_name: str, messages: List[Dict[str, str]]):
-        """Unified method to call either Google or OpenRouter."""
-        is_google_model = model_name.startswith("gemini-") or model_name.startswith("google/")
-
-        # 1. Try Google (only for Google models)
-        if is_google_model and self.google_client:
+        """Call Google AI Studio."""
+        if self.google_client:
             # Google client handles key rotation automatically
             return await self.google_client.chat_completions_create(
                 model=model_name,
                 messages=messages,
                 temperature=0.2
             )
-
-        # 2. Try OpenRouter (for non-Google models or fallback)
-        # Check if model is already in OpenRouter format to avoid double conversion
-        if "/" in model_name and not model_name.startswith("google/"):
-            or_model = model_name  # Already in OpenRouter format
-        else:
-            or_model = convert_model_name(model_name)
-
-        return await self.openrouter_client.chat.completions.create(
-            model=or_model,
-            messages=messages,
-            temperature=0.2
-        )
+        raise ValueError("Google Client not initialized")
 
     @retry(
         stop=stop_after_attempt(3),
@@ -98,7 +71,7 @@ class TranslationService:
         reraise=True
     )
     async def translate_single_post(self, post_text: str, author_name: str = "Unknown") -> str:
-        """Translate a single post from Russian to English (Hybrid)."""
+        """Translate a single post from Russian to English."""
         try:
             if not post_text or not post_text.strip():
                 return post_text
@@ -116,14 +89,8 @@ class TranslationService:
 
             response = None
 
-            # --- HYBRID EXECUTION ---
-            try:
-                # Attempt 1: Primary (Google)
-                response = await self._call_llm(self.primary_model, messages)
-            except (GoogleAIStudioError, httpx.HTTPStatusError, Exception) as e:
-                logger.warning(f"TranslationService: Primary model {self.primary_model} failed: {e}. Switching to Fallback.")
-                # Attempt 2: Fallback (OpenRouter)
-                response = await self._call_llm(self.fallback_model, messages)
+            # Direct call to Google model
+            response = await self._call_llm(self.primary_model, messages)
 
             # Get translated text
             translated_text = response.choices[0].message.content.strip()

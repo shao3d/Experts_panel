@@ -10,17 +10,15 @@ import logging
 from pathlib import Path
 from string import Template
 
-from openai import AsyncOpenAI
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 import httpx
 from json_repair import repair_json
 
 from ..models.post import Post
-from .openrouter_adapter import create_openrouter_client, convert_model_name
 from .google_ai_studio_client import create_google_ai_studio_client, GoogleAIStudioError
 from ..utils.language_utils import prepare_prompt_with_language_instruction, prepare_system_message_with_language
 from ..utils.error_handler import error_handler
-from ..config import MAP_MAX_PARALLEL  # <--- Добавил импорт конфига
+from ..config import MAP_MAX_PARALLEL
 
 logger = logging.getLogger(__name__)
 
@@ -36,22 +34,18 @@ class MapService:
 
     def __init__(
         self,
-        openrouter_api_key: str,
         model: str,
-        fallback_model: str,
         chunk_size: int = DEFAULT_CHUNK_SIZE,
         max_parallel: int = None
     ):
-        """Initialize MapService with a primary and fallback model strategy.
+        """Initialize MapService.
 
         Args:
-            openrouter_api_key: OpenRouter API key (for fallback)
-            model: Primary model to use for the Map phase.
-            fallback_model: Fallback model to use if the primary fails with a rate-limit error.
+            model: Model to use for the Map phase (Gemini).
             chunk_size: Number of posts per chunk
             max_parallel: Maximum parallel API calls (None = all chunks in parallel)
         """
-        # Initialize both clients if keys are available
+        # Initialize Google client
         self.google_client = None
         try:
             self.google_client = create_google_ai_studio_client()
@@ -60,13 +54,10 @@ class MapService:
         except Exception as e:
             logger.warning(f"MapService: Could not initialize Google AI Studio client: {e}")
 
-        self.openrouter_client = create_openrouter_client(api_key=openrouter_api_key)
-        logger.info("MapService: OpenRouter client initialized.")
         self.chunk_size = chunk_size
         self.primary_model = model
-        self.fallback_model = fallback_model
         self.max_parallel = max_parallel
-        logger.info(f"MapService models - Primary: {self.primary_model}, Fallback: {self.fallback_model}")
+        logger.info(f"MapService model: {self.primary_model}")
         self._prompt_template = self._load_prompt_template()
         self.minute_start_time: Optional[float] = None
         self.requests_in_current_minute: int = 0
@@ -167,10 +158,8 @@ class MapService:
         return json.dumps(formatted_posts, ensure_ascii=False, indent=2)
 
     async def _call_llm(self, model_name: str, prompt: str, system_message: str):
-        """Calls the appropriate LLM client based on the model name."""
-        is_google_model = "gemini" in model_name or model_name.startswith("google/")
-
-        if is_google_model and self.google_client:
+        """Calls the Google AI Studio client."""
+        if self.google_client:
             logger.info(f"Using Google AI Studio client for model: {model_name}")
             return await self.google_client.chat_completions_create(
                 model=model_name,
@@ -178,16 +167,7 @@ class MapService:
                 temperature=0.3,
                 response_format={"type": "json_object"}
             )
-        else:
-            logger.info(f"Using OpenRouter client for model: {model_name}")
-            # Ensure the model name is in the format expected by OpenRouter
-            openrouter_model_name = convert_model_name(model_name)
-            return await self.openrouter_client.chat.completions.create(
-                model=openrouter_model_name,
-                messages=[{"role": "system", "content": system_message}, {"role": "user", "content": prompt}],
-                temperature=0.3,
-                response_format={"type": "json_object"}
-            )
+        raise ValueError("Google Client not initialized")
 
     @retry(
         stop=stop_after_attempt(3),
@@ -263,32 +243,25 @@ class MapService:
                 query
             )
 
-            # --- Hybrid LLM Logic ---
             response = None
             try:
-                # Attempt 1: Call PRIMARY model
-                logger.info(f"Chunk {chunk_index}: Attempting PRIMARY model '{self.primary_model}'")
+                # Attempt to call model
+                logger.info(f"Chunk {chunk_index}: Attempting model '{self.primary_model}'")
                 response = await self._call_llm(self.primary_model, prompt, enhanced_system)
-                logger.info(f"Chunk {chunk_index}: PRIMARY model '{self.primary_model}' successful.")
+                logger.info(f"Chunk {chunk_index}: Model '{self.primary_model}' successful.")
 
-            except (GoogleAIStudioError, httpx.HTTPStatusError) as e: # Catch rate limit errors
+            except (GoogleAIStudioError, httpx.HTTPStatusError) as e:
                 error_str = str(e).lower()
                 is_rate_limit_error = (
                     (isinstance(e, GoogleAIStudioError) and e.is_rate_limit) or
                     '429' in error_str or 'rate limit' in error_str or 'quota' in error_str
                 )
 
-                # Check for permanent HTTP errors that should fail fast
-                if isinstance(e, httpx.HTTPStatusError):
-                    status_code = e.response.status_code
-                    if status_code in (401, 403, 404, 422):  # Auth/permission/validation errors
-                        logger.error(f"Chunk {chunk_index}: Permanent HTTP {status_code} error. Failing fast.")
-                        raise e
-
-                if is_rate_limit_error: # This is a rate limit error, wait and retry
+                if is_rate_limit_error:
+                    # Even with rotation, if we hit a global limit, wait and retry once
                     self.rate_limit_hits += 1
                     wait_time = 65.0  # Simple, robust wait time to ensure the next minute window
-                    logger.warning(f"Chunk {chunk_index}: Rate limit hit. Waiting a fixed {wait_time}s before retry. Total rate limit hits: {self.rate_limit_hits}")
+                    logger.warning(f"Chunk {chunk_index}: Rate limit/Exhaustion hit. Waiting {wait_time}s before retry.")
 
                     # The sleep happens outside the lock, so other tasks are not blocked
                     await asyncio.sleep(wait_time)

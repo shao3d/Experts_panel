@@ -235,14 +235,15 @@ async def health_check() -> Dict[str, Any]:
         logger.error(f"Database health check failed: {e}")
         db_status = "unhealthy"
 
-    # Check API key
-    api_key_configured = bool(os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KEY"))
+    # Check API key (Google AI Studio)
+    api_key_configured = bool(config.GOOGLE_AI_STUDIO_API_KEYS)
 
     return {
         "status": "healthy" if db_status == "healthy" and api_key_configured else "degraded",
         "version": "1.0.0",
         "database": db_status,
         "api_key_configured": api_key_configured,
+        "google_ai_keys_count": len(config.GOOGLE_AI_STUDIO_API_KEYS),
         "timestamp": time.time()
     }
 

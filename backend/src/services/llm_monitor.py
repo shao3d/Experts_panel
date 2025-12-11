@@ -1,7 +1,6 @@
-"""Hybrid LLM monitoring and logging utilities.
+"""LLM monitoring and logging utilities.
 
-This module provides enhanced logging and monitoring for hybrid LLM operations,
-tracking API usage, fallbacks, and performance metrics.
+This module provides logging and monitoring for LLM operations.
 """
 
 import logging
@@ -17,14 +16,13 @@ logger = logging.getLogger(__name__)
 class LLMApiCall:
     """Record of an LLM API call for monitoring."""
     service_name: str
-    provider: str  # "google_ai_studio" or "openrouter"
+    provider: str  # "google_ai_studio"
     model: str
     success: bool
     error_type: Optional[str] = None
     error_message: Optional[str] = None
     response_time_ms: Optional[int] = None
     token_usage: Optional[Dict[str, int]] = None
-    is_fallback: bool = False
     timestamp: Optional[datetime] = None
 
     def __post_init__(self):
@@ -32,15 +30,14 @@ class LLMApiCall:
             self.timestamp = datetime.utcnow()
 
 
-class HybridLLMMonitor:
-    """Monitor for hybrid LLM operations."""
+class LLMMonitor:
+    """Monitor for LLM operations."""
 
     # MVP: Limit history size to prevent memory leak
     MAX_API_CALLS_HISTORY = 100
 
     def __init__(self):
         self.api_calls: list[LLMApiCall] = []
-        self.fallback_count = 0
         self.success_count = 0
         self.error_count = 0
 
@@ -53,21 +50,19 @@ class HybridLLMMonitor:
         response_time_ms: int = None,
         token_usage: Dict[str, int] = None,
         error_type: str = None,
-        error_message: str = None,
-        is_fallback: bool = False
+        error_message: str = None
     ):
         """Record an LLM API call.
 
         Args:
             service_name: Service name (e.g., "reduce", "comment_synthesis")
-            provider: API provider ("google_ai_studio" or "openrouter")
+            provider: API provider ("google_ai_studio")
             model: Model name used
             success: Whether the call was successful
             response_time_ms: Response time in milliseconds
             token_usage: Token usage information
             error_type: Type of error if failed
             error_message: Error message if failed
-            is_fallback: Whether this was a fallback call
         """
         call = LLMApiCall(
             service_name=service_name,
@@ -77,8 +72,7 @@ class HybridLLMMonitor:
             error_type=error_type,
             error_message=error_message,
             response_time_ms=response_time_ms,
-            token_usage=token_usage,
-            is_fallback=is_fallback
+            token_usage=token_usage
         )
 
         self.api_calls.append(call)
@@ -93,9 +87,6 @@ class HybridLLMMonitor:
         else:
             self.error_count += 1
 
-        if is_fallback:
-            self.fallback_count += 1
-
         # Log the call
         self._log_api_call(call)
 
@@ -106,16 +97,10 @@ class HybridLLMMonitor:
             call: The API call record
         """
         if call.success:
-            if call.is_fallback:
-                logger.info(
-                    f"[{call.service_name}] ✅ FALLBACK SUCCESS: "
-                    f"{call.provider} ({call.model}) - {call.response_time_ms}ms"
-                )
-            else:
-                logger.info(
-                    f"[{call.service_name}] ✅ SUCCESS: "
-                    f"{call.provider} ({call.model}) - {call.response_time_ms}ms"
-                )
+            logger.info(
+                f"[{call.service_name}] ✅ SUCCESS: "
+                f"{call.provider} ({call.model}) - {call.response_time_ms}ms"
+            )
         else:
             if call.error_type == "rate_limit":
                 logger.warning(
@@ -139,45 +124,27 @@ class HybridLLMMonitor:
             return {
                 "total_calls": 0,
                 "success_rate": 0.0,
-                "fallback_rate": 0.0,
-                "google_ai_studio_usage": 0.0,
-                "openrouter_usage": 0.0
+                "google_ai_studio_usage": 0.0
             }
 
-        # Calculate provider usage
-        google_calls = sum(1 for call in self.api_calls if call.provider == "google_ai_studio")
-        openrouter_calls = sum(1 for call in self.api_calls if call.provider == "openrouter")
-
-        # Calculate success rate by provider
-        google_success = sum(1 for call in self.api_calls
-                           if call.provider == "google_ai_studio" and call.success)
-        openrouter_success = sum(1 for call in self.api_calls
-                               if call.provider == "openrouter" and call.success)
-
+        # Calculate provider usage (should be 100% google now)
+        google_calls = len(self.api_calls)
+        
+        # Calculate success rate
+        google_success = sum(1 for call in self.api_calls if call.success)
+        
         # Calculate average response times
-        google_times = [call.response_time_ms for call in self.api_calls
-                       if call.provider == "google_ai_studio" and call.response_time_ms]
-        openrouter_times = [call.response_time_ms for call in self.api_calls
-                          if call.provider == "openrouter" and call.response_time_ms]
+        google_times = [call.response_time_ms for call in self.api_calls if call.response_time_ms]
 
         return {
             "total_calls": total_calls,
             "success_count": self.success_count,
             "error_count": self.error_count,
-            "fallback_count": self.fallback_count,
-            "success_rate": self.success_count / total_calls,
-            "fallback_rate": self.fallback_count / total_calls,
+            "success_rate": self.success_count / total_calls if total_calls > 0 else 0.0,
             "google_ai_studio": {
                 "calls": google_calls,
                 "success_rate": google_success / google_calls if google_calls > 0 else 0.0,
-                "usage_rate": google_calls / total_calls,
                 "avg_response_time_ms": sum(google_times) / len(google_times) if google_times else None
-            },
-            "openrouter": {
-                "calls": openrouter_calls,
-                "success_rate": openrouter_success / openrouter_calls if openrouter_calls > 0 else 0.0,
-                "usage_rate": openrouter_calls / total_calls,
-                "avg_response_time_ms": sum(openrouter_times) / len(openrouter_times) if openrouter_times else None
             }
         }
 
@@ -186,24 +153,16 @@ class HybridLLMMonitor:
         stats = self.get_stats()
 
         if stats["total_calls"] == 0:
-            logger.info("🔍 Hybrid LLM Monitor: No API calls recorded")
+            logger.info("🔍 LLM Monitor: No API calls recorded")
             return
 
-        logger.info(f"🔍 Hybrid LLM Monitor Summary ({stats['total_calls']} calls)")
+        logger.info(f"🔍 LLM Monitor Summary ({stats['total_calls']} calls)")
         logger.info(f"   Success Rate: {stats['success_rate']:.1%}")
-        logger.info(f"   Fallback Rate: {stats['fallback_rate']:.1%}")
 
         google_stats = stats["google_ai_studio"]
         if google_stats["calls"] > 0:
             logger.info(f"   Google AI Studio: {google_stats['calls']} calls "
-                       f"({google_stats['usage_rate']:.1%} usage, "
-                       f"{google_stats['success_rate']:.1%} success)")
-
-        openrouter_stats = stats["openrouter"]
-        if openrouter_stats["calls"] > 0:
-            logger.info(f"   OpenRouter: {openrouter_stats['calls']} calls "
-                       f"({openrouter_stats['usage_rate']:.1%} usage, "
-                       f"{openrouter_stats['success_rate']:.1%} success)")
+                       f"({google_stats['success_rate']:.1%} success)")
 
     def reset(self):
         """Reset all monitoring data."""
@@ -211,22 +170,22 @@ class HybridLLMMonitor:
         self.fallback_count = 0
         self.success_count = 0
         self.error_count = 0
-        logger.info("🔍 Hybrid LLM Monitor: Reset all statistics")
+        logger.info("🔍 LLM Monitor: Reset all statistics")
 
 
 # Global monitor instance
-_global_monitor: Optional[HybridLLMMonitor] = None
+_global_monitor: Optional[LLMMonitor] = None
 
 
-def get_monitor() -> HybridLLMMonitor:
+def get_monitor() -> LLMMonitor:
     """Get the global monitor instance.
 
     Returns:
-        HybridLLMMonitor instance
+        LLMMonitor instance
     """
     global _global_monitor
     if _global_monitor is None:
-        _global_monitor = HybridLLMMonitor()
+        _global_monitor = LLMMonitor()
     return _global_monitor
 
 
@@ -238,19 +197,17 @@ def log_api_call_with_timing(
     success: bool,
     response: Any = None,
     error: Exception = None,
-    is_fallback: bool = False
 ):
     """Log an API call with timing information.
 
     Args:
         service_name: Service name (e.g., "reduce", "comment_synthesis")
-        provider: API provider ("google_ai_studio" or "openrouter")
+        provider: API provider ("google_ai_studio")
         model: Model name used
         start_time: Start time from time.time()
         success: Whether the call was successful
         response: Response object if successful
         error: Exception if failed
-        is_fallback: Whether this was a fallback call
     """
     response_time_ms = int((time.time() - start_time) * 1000)
 
@@ -279,6 +236,5 @@ def log_api_call_with_timing(
         response_time_ms=response_time_ms,
         token_usage=token_usage,
         error_type=error_type,
-        error_message=error_message,
-        is_fallback=is_fallback
+        error_message=error_message
     )

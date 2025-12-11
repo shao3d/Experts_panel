@@ -11,14 +11,12 @@ from pathlib import Path
 from string import Template
 
 from sqlalchemy.orm import Session
-from openai import AsyncOpenAI
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 import httpx
 
 from ..models.post import Post
 from ..models.comment import Comment
 from ..models.database import comment_group_drift
-from .openrouter_adapter import create_openrouter_client, convert_model_name
 from .google_ai_studio_client import create_google_ai_studio_client, GoogleAIStudioError
 from ..api.models import get_channel_username
 from ..utils.language_utils import prepare_prompt_with_language_instruction
@@ -27,10 +25,10 @@ logger = logging.getLogger(__name__)
 
 
 class CommentGroupMapService:
-    """Service for finding relevant GROUPS of comments using Hybrid LLM approach.
+    """Service for finding relevant GROUPS of comments using Google Gemini.
 
     Analyzes groups of Telegram comments to find discussions relevant to the query.
-    Strategy: Try Google Gemini (Free) first, fallback to OpenRouter/Qwen (Paid).
+    Strategy: Use Google Gemini (Free) with key rotation.
     """
 
     DEFAULT_CHUNK_SIZE = 20  # Groups per chunk
@@ -38,22 +36,18 @@ class CommentGroupMapService:
 
     def __init__(
         self,
-        api_key: str,
         model: str,
-        fallback_model: str = None,
         chunk_size: int = DEFAULT_CHUNK_SIZE,
         max_parallel: int = DEFAULT_MAX_PARALLEL
     ):
-        """Initialize CommentGroupMapService with Hybrid Logic.
+        """Initialize CommentGroupMapService.
 
         Args:
-            api_key: OpenAI API key (for OpenRouter fallback)
-            model: Primary model (usually Google Gemini)
-            fallback_model: Fallback model (usually Qwen via OpenRouter)
+            model: Model to use (Gemini)
             chunk_size: Number of comment groups per chunk
             max_parallel: Maximum parallel API calls
         """
-        # 1. Initialize Google Client (Primary)
+        # Initialize Google Client
         self.google_client = None
         try:
             self.google_client = create_google_ai_studio_client()
@@ -62,16 +56,12 @@ class CommentGroupMapService:
         except Exception as e:
             logger.warning(f"CommentGroupMapService: Could not initialize Google AI Studio client: {e}")
 
-        # 2. Initialize OpenRouter Client (Fallback)
-        self.openrouter_client = create_openrouter_client(api_key=api_key)
-
         self.chunk_size = chunk_size
         self.primary_model = model
-        self.fallback_model = fallback_model or "qwen/qwen-2.5-72b-instruct"
         self.max_parallel = max_parallel
         self._prompt_template = self._load_prompt_template()
 
-        logger.info(f"CommentGroupMapService Config: Primary={self.primary_model}, Fallback={self.fallback_model}")
+        logger.info(f"CommentGroupMapService Config: Model={self.primary_model}")
 
     def _load_prompt_template(self) -> Template:
         """Load the comment group drift prompt template."""
@@ -210,28 +200,15 @@ class CommentGroupMapService:
         return json.dumps(formatted_groups, ensure_ascii=False, indent=2)
 
     async def _call_llm(self, model_name: str, messages: List[Dict[str, str]]):
-        """Unified method to call either Google or OpenRouter."""
-        is_google_model = model_name.startswith("gemini-") or model_name.startswith("google/")
-
-        # 1. Try Google
-        if is_google_model:
-            if self.google_client:
-                # Google client handles key rotation automatically
-                return await self.google_client.chat_completions_create(
-                    model=model_name,
-                    messages=messages,
-                    temperature=0.3,
-                    response_format={"type": "json_object"}
-                )
-
-        # 2. Try OpenRouter (Fallback or if model is not Google)
-        or_model = convert_model_name(model_name)
-        return await self.openrouter_client.chat.completions.create(
-            model=or_model,
-            messages=messages,
-            temperature=0.3,
-            response_format={"type": "json_object"}
-        )
+        """Call Google AI Studio client."""
+        if self.google_client:
+            return await self.google_client.chat_completions_create(
+                model=model_name,
+                messages=messages,
+                temperature=0.3,
+                response_format={"type": "json_object"}
+            )
+        raise ValueError("Google Client not initialized")
 
     def _validate_google_client_availability(self) -> bool:
         """Check if Google AI Studio client is properly initialized."""
@@ -280,20 +257,9 @@ class CommentGroupMapService:
 
             response = None
 
-            # --- HYBRID EXECUTION ---
-            try:
-                # Attempt 1: Primary Model (Google if available)
-                response = await self._call_llm(self.primary_model, messages)
-                logger.info(f"CommentGroups: Successfully used primary model {self.primary_model}")
-            except (GoogleAIStudioError, httpx.HTTPStatusError, Exception) as e:
-                logger.warning(f"CommentGroups: Primary model {self.primary_model} failed: {e}. Switching to Fallback.")
-                # Attempt 2: Fallback Model
-                try:
-                    response = await self._call_llm(self.fallback_model, messages)
-                    logger.info(f"CommentGroups: Successfully used fallback model {self.fallback_model}")
-                except Exception as fallback_e:
-                    logger.error(f"CommentGroups: Fallback model {self.fallback_model} also failed: {fallback_e}")
-                    raise fallback_e
+            # Direct call to Google model
+            response = await self._call_llm(self.primary_model, messages)
+            logger.info(f"CommentGroups: Successfully used model {self.primary_model}")
 
             # Parse response
             result = json.loads(response.choices[0].message.content)

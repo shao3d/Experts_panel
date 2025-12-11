@@ -1,4 +1,4 @@
-"""Medium posts scoring service for hybrid reranking with Google Gemini and Fallback."""
+"""Medium posts scoring service using Google Gemini with key rotation."""
 
 import json
 import logging
@@ -8,38 +8,36 @@ from typing import List, Dict, Any, Optional, Callable
 from pathlib import Path
 from string import Template
 
-from openai import AsyncOpenAI
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 import httpx
 
-from .openrouter_adapter import create_openrouter_client, convert_model_name
 from .google_ai_studio_client import create_google_ai_studio_client, GoogleAIStudioError
 from ..utils.language_utils import prepare_prompt_with_language_instruction, prepare_system_message_with_language
+from .. import config
 
 logger = logging.getLogger(__name__)
 
 
 class MediumScoringService:
-    """Service for scoring MEDIUM relevance posts using Hybrid approach (Google -> OpenRouter).
+    """Service for scoring MEDIUM relevance posts using Google Gemini.
 
-    Implements hybrid approach: LLM scores all MEDIUM posts 0.0-1.0,
+    LLM scores all MEDIUM posts 0.0-1.0,
     code selects posts with score >= 0.7 (max 5 posts by highest score).
     """
 
     # Configurable via environment variables
-    SCORE_THRESHOLD = float(os.getenv("MEDIUM_SCORE_THRESHOLD", "0.7"))
-    MAX_SELECTED_POSTS = int(os.getenv("MEDIUM_MAX_SELECTED_POSTS", "5"))
-    MAX_MEDIUM_POSTS = int(os.getenv("MEDIUM_MAX_POSTS", "50"))  # Memory limit
+    # Configurable via config.py (centralized)
+    SCORE_THRESHOLD = config.MEDIUM_SCORE_THRESHOLD
+    MAX_SELECTED_POSTS = config.MEDIUM_MAX_SELECTED_POSTS
+    MAX_MEDIUM_POSTS = config.MEDIUM_MAX_POSTS  # Memory limit
 
-    def __init__(self, api_key: str, model: str, fallback_model: str = None):
-        """Initialize MediumScoringService with Hybrid Logic.
+    def __init__(self, model: str):
+        """Initialize MediumScoringService.
 
         Args:
-            api_key: OpenAI API key (for OpenRouter fallback)
-            model: Primary model (usually Google Gemini)
-            fallback_model: Fallback model (usually Qwen via OpenRouter)
+            model: Model to use (Gemini)
         """
-        # 1. Initialize Google Client (Primary)
+        # Initialize Google Client
         self.google_client = None
         try:
             self.google_client = create_google_ai_studio_client()
@@ -48,20 +46,15 @@ class MediumScoringService:
         except Exception as e:
             logger.warning(f"MediumScoringService: Could not initialize Google AI Studio client: {e}")
 
-        # 2. Initialize OpenRouter Client (Fallback)
-        self.openrouter_client = create_openrouter_client(api_key=api_key)
-        self.api_key_masked = f"{api_key[:8]}...{api_key[-4:]}" if len(api_key) > 12 else "***"
-
-        # Configure models
+        # Configure model
         self.primary_model = model
-        self.fallback_model = fallback_model or "qwen/qwen-2.5-72b-instruct"
 
         self.score_threshold = self.SCORE_THRESHOLD
         self.max_selected_posts = self.MAX_SELECTED_POSTS
         self.max_medium_posts = self.MAX_MEDIUM_POSTS
         self._prompt_template = self._load_prompt_template()
 
-        logger.info(f"MediumScoringService Config: Primary={self.primary_model}, Fallback={self.fallback_model}")
+        logger.info(f"MediumScoringService Config: Model={self.primary_model}")
 
     def _sanitize_text(self, text: str) -> str:
         """Remove invalid escape sequences from text."""
@@ -169,32 +162,17 @@ class MediumScoringService:
             raise
 
     async def _call_llm(self, model_name: str, messages: List[Dict[str, str]], expert_id: str):
-        """Unified method to call either Google or OpenRouter."""
-        # Fixed: More precise Google model detection
-        is_google_model = model_name.startswith("gemini-") or model_name.startswith("google/")
-
-        # 1. Try Google
-        if is_google_model:
-            if self.google_client:
-                logger.info(f"[{expert_id}] Calling Google AI Studio ({model_name})...")
-                # Google client handles key rotation automatically
-                return await self.google_client.chat_completions_create(
-                    model=model_name,
-                    messages=messages,
-                    temperature=0.3,
-                    # Note: We DON'T force json_object here because the prompt expects Markdown text output
-                )
-            else:
-                logger.warning(f"[{expert_id}] Google AI Studio client not available, falling back to OpenRouter for {model_name}")
-
-        # 2. Try OpenRouter
-        logger.info(f"[{expert_id}] Calling OpenRouter ({model_name})...")
-        or_model = convert_model_name(model_name)
-        return await self.openrouter_client.chat.completions.create(
-            model=or_model,
-            messages=messages,
-            temperature=0.3
-        )
+        """Call Google AI Studio."""
+        if self.google_client:
+            logger.info(f"[{expert_id}] Calling Google AI Studio ({model_name})...")
+            # Google client handles key rotation automatically
+            return await self.google_client.chat_completions_create(
+                model=model_name,
+                messages=messages,
+                temperature=0.3,
+                # Note: We DON'T force json_object here because the prompt expects Markdown text output
+            )
+        raise ValueError("Google Client not initialized")
 
     @retry(
         stop=stop_after_attempt(3),
@@ -210,13 +188,13 @@ class MediumScoringService:
         expert_id: str,
         progress_callback: Optional[Callable] = None
     ) -> Dict[str, Any]:
-        """Score MEDIUM posts using Primary (Google) with Fallback (OpenRouter)."""
+        """Score MEDIUM posts using Google Gemini."""
 
         if progress_callback:
             await progress_callback({
                 "phase": "medium_scoring",
                 "status": "scoring",
-                "message": f"Scoring {len(medium_posts)} MEDIUM posts (Hybrid Mode)",
+                "message": f"Scoring {len(medium_posts)} MEDIUM posts",
                 "processed": 0,
                 "total": len(medium_posts),
                 "expert_id": expert_id
@@ -256,23 +234,9 @@ Created: {post.get('created_at', '')}
 
         response = None
 
-        # --- HYBRID EXECUTION BLOCK ---
-        try:
-            # Attempt 1: Primary Model (Google)
-            response = await self._call_llm(self.primary_model, messages, expert_id)
-            logger.info(f"[{expert_id}] Primary model {self.primary_model} succeeded")
-
-        except (GoogleAIStudioError, httpx.HTTPStatusError, Exception) as e:
-            # Unified handling for all primary model failures
-            logger.warning(f"[{expert_id}] Primary model {self.primary_model} failed: {e}. Switching to Fallback.")
-
-            # Attempt 2: Fallback Model (OpenRouter)
-            try:
-                response = await self._call_llm(self.fallback_model, messages, expert_id)
-                logger.info(f"[{expert_id}] Fallback model {self.fallback_model} succeeded")
-            except Exception as fallback_e:
-                logger.error(f"[{expert_id}] Both primary and fallback models failed. Primary: {e}, Fallback: {fallback_e}")
-                raise fallback_e
+        # Direct call to Google model
+        response = await self._call_llm(self.primary_model, messages, expert_id)
+        logger.info(f"[{expert_id}] Model {self.primary_model} succeeded")
 
         # Process Response with validation
         if not response or not hasattr(response, 'choices') or len(response.choices) == 0:
