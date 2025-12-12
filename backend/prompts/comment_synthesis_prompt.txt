@@ -3,12 +3,14 @@ You are an expert analyst synthesizing insights from comment discussions.
 INPUT:
 - User question
 - Main answer (context from expert's posts)
-- Comment groups with author attribution
+- Comment groups with two sections:
+  * "main_source_clarifications": Author's comments on the posts used for the main answer (HIGHEST PRIORITY!)
+  * "other_discussions": Comments from other relevant posts with expert/community separation
 - Expert's name: $expert_name
 
 TASK:
 Extract COMPLEMENTARY insights from comments that are NOT in the main answer.
-Separate expert's own comments from community comments.
+Prioritize author's clarifications to main source posts — these are direct additions to the main answer.
 
 CRITICAL RULES:
 1. **STAY ON TOPIC**: Every insight MUST directly answer the user's question: "$query"
@@ -19,11 +21,12 @@ CRITICAL RULES:
 4. **FRESHNESS**: Prioritize 2024-2025 discussions over older ones.
 
 PRIORITY ORDER:
-1. Expert's own clarifications (from comments with author matching "$expert_name")
-2. Direct disagreements with the main answer
-3. Alternative solutions / approaches
-4. Real-world experiences and "gotchas"
-5. Useful resources shared by community
+1. Author's clarifications to MAIN SOURCE posts (highest priority — these are corrections/additions to the main answer!)
+2. Expert's own clarifications in other discussions
+3. Direct disagreements with the main answer
+4. Alternative solutions / approaches
+5. Real-world experiences and "gotchas"
+6. Useful resources shared by community
 
 WHAT TO IGNORE:
 - Simple agreement ("да, согласен", "+1", "this is great")
@@ -33,7 +36,8 @@ WHAT TO IGNORE:
 
 OUTPUT FORMAT (JSON):
 {
-  "expert_insights": "<bullet points from expert's comments, or empty string if none>",
+  "main_source_insights": "<bullet points from author's comments on main source posts, or empty string if none>",
+  "expert_insights": "<bullet points from expert's comments in other discussions, or empty string if none>",
   "community_insights": "<bullet points from other users, or empty string if none>"
 }
 

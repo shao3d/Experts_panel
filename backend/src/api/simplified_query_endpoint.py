@@ -318,6 +318,7 @@ async def process_expert_pipeline(
 
     # 6. Comment Groups (optional)
     comment_groups = []
+    comment_group_results = []  # Raw results from service (preserves is_main_source_clarification)
     comment_synthesis = None
 
     print(f"[DEBUG] include_comment_groups={request.include_comment_groups}")  # DEBUG
@@ -341,7 +342,8 @@ async def process_expert_pipeline(
             query=request.query,
             db=db,
             expert_id=expert_id,  # CRITICAL: Pass expert_id
-            exclude_post_ids=main_sources,
+            exclude_post_ids=main_sources,  # Exclude main_sources from drift search
+            main_source_ids=main_sources,   # NEW: Extract author clarifications from main_sources
             progress_callback=cg_progress
         )
 
@@ -385,24 +387,15 @@ async def process_expert_pipeline(
             ))
 
         # Comment Synthesis (if we have relevant comment groups)
-        if comment_groups:
+        # IMPORTANT: Use original comment_group_results, not converted Pydantic models
+        # This preserves is_main_source_clarification flag for proper synthesis prioritization
+        if comment_group_results:
             try:
-                # Convert to dict format for synthesis
-                comment_groups_dict = [
-                    {
-                        "anchor_post": {"id": cg.anchor_post.telegram_message_id},
-                        "relevance": cg.relevance,
-                        "reason": cg.reason,
-                        "comments": [{"text": c.comment_text, "author": c.author_name} for c in cg.comments]
-                    }
-                    for cg in comment_groups
-                ]
-
                 synthesis_service = CommentSynthesisService()
                 comment_synthesis = await synthesis_service.process(
                     query=request.query,
                     main_answer=validated_answer,  # Use validated answer
-                    comment_groups=comment_groups_dict,
+                    comment_groups=comment_group_results,  # Use original results with all fields!
                     expert_id=expert_id
                 )
             except Exception as e:

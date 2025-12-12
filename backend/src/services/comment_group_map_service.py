@@ -86,6 +86,76 @@ class CommentGroupMapService:
             logger.error(f"Comment group map prompt template not found at {prompt_path}")
             raise
 
+    def _load_main_source_author_comments(
+        self,
+        db: Session,
+        main_source_ids: List[int],
+        expert_id: str
+    ) -> List[Dict[str, Any]]:
+        """Load author's comments from main_source posts.
+        
+        These are clarifications the expert made in comments to their own posts
+        that were used as main_sources for the answer.
+        
+        Uses author_id matching: posts have 'channelXXX', comments have 'XXX'.
+        """
+        if not main_source_ids:
+            return []
+        
+        # Get posts by telegram_message_id
+        posts = db.query(Post).filter(
+            Post.telegram_message_id.in_(main_source_ids),
+            Post.expert_id == expert_id
+        ).all()
+        
+        logger.info(f"[{expert_id}] Loading main_source author comments from {len(posts)} posts")
+        
+        groups = []
+        for post in posts:
+            # Extract numeric author_id from post (remove 'channel' prefix)
+            post_author_id = post.author_id.replace("channel", "") if post.author_id else None
+            
+            if not post_author_id:
+                logger.debug(f"Post {post.telegram_message_id} has no author_id, skipping")
+                continue
+            
+            # Get only author's comments using author_id matching (reliable!)
+            author_comments = db.query(Comment).filter(
+                Comment.post_id == post.post_id,
+                Comment.author_id == post_author_id  # "2273349814" == "2273349814"
+            ).order_by(Comment.created_at.desc()).limit(10).all()
+            
+            if author_comments:
+                groups.append({
+                    "anchor_post": {
+                        "telegram_message_id": post.telegram_message_id,
+                        "message_text": post.message_text or "[Media only]",
+                        "created_at": post.created_at.isoformat() if post.created_at else "",
+                        "author_name": post.author_name or "Unknown",
+                        "channel_username": get_channel_username(expert_id)
+                    },
+                    "drift_topics": ["Author clarification to main source"],
+                    "comments_count": len(author_comments),
+                    "comments": [
+                        {
+                            "comment_id": c.comment_id,
+                            "comment_text": c.comment_text,
+                            "author_name": c.author_name,
+                            "created_at": c.created_at.isoformat() if c.created_at else "",
+                            "updated_at": c.updated_at.isoformat() if c.updated_at else ""
+                        }
+                        for c in author_comments
+                    ],
+                    "is_main_source_clarification": True,  # Flag for synthesis priority
+                    "relevance": "HIGH",  # Main source clarifications are always HIGH
+                    "reason": "Author's clarification to a main source post",
+                    "parent_telegram_message_id": post.telegram_message_id
+                })
+                logger.debug(f"Found {len(author_comments)} author comments for post {post.telegram_message_id}")
+        
+        logger.info(f"[{expert_id}] Found {len(groups)} main_source posts with author clarifications")
+        return groups
+
     def _load_drift_groups(
         self,
         db: Session,
@@ -318,18 +388,51 @@ class CommentGroupMapService:
         db: Session,  # NOTE: Caller MUST manage session lifecycle
         expert_id: str,
         exclude_post_ids: Optional[List[int]] = None,
+        main_source_ids: Optional[List[int]] = None,  # NEW: Process author comments from these
         progress_callback: Optional[Callable] = None
     ) -> List[Dict[str, Any]]:
-        """Process drift groups to find relevant ones."""
+        """Process drift groups to find relevant ones.
+        
+        Args:
+            query: User's query
+            db: Database session (caller manages lifecycle)
+            expert_id: Expert identifier
+            exclude_post_ids: Post IDs to exclude from drift search
+            main_source_ids: Main source post IDs to extract author comments from (NEW!)
+            progress_callback: Optional callback for progress updates
+            
+        Returns:
+            List of relevant comment groups, with main_source clarifications first
+        """
         import time
         phase_start_time = time.time()
 
-        print(f"[DEBUG CGS] process() called for expert_id={expert_id}")  # DEBUG
+        print(f"[DEBUG CGS] process() called for expert_id={expert_id}, main_source_ids={main_source_ids}")  # DEBUG
 
-        # Load drift groups from database
+        # NEW: First load author comments from main_sources (these bypass LLM evaluation)
+        main_source_groups = []
+        if main_source_ids:
+            main_source_groups = self._load_main_source_author_comments(
+                db, main_source_ids, expert_id
+            )
+            logger.info(f"[{expert_id}] Loaded {len(main_source_groups)} main_source clarification groups")
+
+        # Load drift groups from database (excluding main_sources as before)
         all_groups = self._load_drift_groups(db, expert_id, exclude_post_ids)
 
         print(f"[DEBUG CGS] all_groups loaded: {len(all_groups)}")  # DEBUG
+
+        # If no drift groups but we have main_source clarifications, return those
+        if not all_groups and main_source_groups:
+            logger.info(f"[{expert_id}] No drift groups, but returning {len(main_source_groups)} main_source clarifications")
+            if progress_callback:
+                await progress_callback({
+                    "event_type": "phase_complete",
+                    "phase": "comment_groups",
+                    "status": "completed",
+                    "message": f"Found {len(main_source_groups)} main source clarifications"
+                })
+            return main_source_groups
 
         if not all_groups:
             print(f"[DEBUG CGS] No groups found, returning early")  # DEBUG
@@ -405,11 +508,16 @@ class CommentGroupMapService:
         relevance_order = {"HIGH": 0, "MEDIUM": 1}
         relevant_groups.sort(key=lambda x: relevance_order.get(x.get("relevance", "LOW"), 2))
 
+        # NEW: Combine main_source clarifications (first) with other relevant groups
+        # Main source clarifications have priority - they appear first
+        final_groups = main_source_groups + relevant_groups
+
         # Log phase completion with timing
         duration_ms = int((time.time() - phase_start_time) * 1000)
         logger.info(
             f"[{expert_id}] Comment Groups Phase END: {duration_ms}ms, "
-            f"found {len(relevant_groups)} HIGH relevance groups from {len(all_groups)} total"
+            f"found {len(main_source_groups)} main_source clarifications + "
+            f"{len(relevant_groups)} drift groups = {len(final_groups)} total"
         )
 
         if progress_callback:
@@ -417,7 +525,7 @@ class CommentGroupMapService:
                 "event_type": "phase_complete",
                 "phase": "comment_groups",
                 "status": "completed",
-                "message": f"Found {len(relevant_groups)} relevant comment groups"
+                "message": f"Found {len(final_groups)} relevant comment groups ({len(main_source_groups)} from main sources)"
             })
 
-        return relevant_groups
+        return final_groups

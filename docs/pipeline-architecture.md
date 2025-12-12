@@ -231,7 +231,7 @@ Find relevant comment discussions that may contain insights not covered in main 
 ### Implementation
 - **File**: `backend/src/services/comment_group_map_service.py`
 - **Model**: Gemini 2.0 Flash (configurable via MODEL_COMMENT_GROUPS environment variable)
-- **Strategy**: Pre-analyzed drift matching
+- **Strategy**: Pre-analyzed drift matching + main source author comments
 
 ### Two-Phase Architecture
 
@@ -247,21 +247,41 @@ Find relevant comment discussions that may contain insights not covered in main 
 - **Filtering**: HIGH relevance groups only
 - **Output**: Anchor posts with relevant discussions
 
+### Main Source Clarifications (NEW)
+
+Additionally, the Comment Groups phase now extracts **author's clarifications from main_source posts**:
+
+- **Source**: Comments on posts used in the main answer (main_sources)
+- **Author Matching**: Uses `author_id` field (`channelXXX` in posts → `XXX` in comments)
+- **Priority**: These clarifications bypass LLM evaluation and are marked as HIGH relevance
+- **Flag**: Groups include `is_main_source_clarification: True`
+
+This ensures that if the expert added important clarifications in comments to their own posts, these insights are included in the final response.
+
 ### Integration
 - Runs AFTER Reduce phase completes
-- Excludes main_sources from Reduce phase
+- Processes main_source author comments FIRST (no LLM needed)
+- Then processes drift groups from OTHER posts (excludes main_sources)
 - Processes 20 drift groups per chunk
 - Rate limiting: Max 5 parallel requests
 
 ## 🔧 Comment Synthesis Phase
 
 ### Purpose
-Extract complementary insights from relevant comment groups.
+Extract complementary insights from relevant comment groups, with priority for author's clarifications.
 
 ### Implementation
 - **File**: `backend/src/services/comment_synthesis_service.py`
 - **Model**: Gemini 2.0 Flash
 - **Trigger**: Only when HIGH comment groups exist
+
+### Output Structure
+
+The synthesis produces three types of insights (in priority order):
+
+1. **Уточнения к основным постам** — Author's clarifications from main_source comments (highest priority)
+2. **Уточнения автора** — Expert's comments in other relevant discussions
+3. **Мнения сообщества** — Community insights from discussions
 
 ### Key Constraints
 - **No [post:ID] references**: Prevents UI confusion
@@ -270,10 +290,11 @@ Extract complementary insights from relevant comment groups.
 - **Accuracy requirements**: Strict fact validation
 
 ### Process Flow
-1. **Group Selection**: HIGH relevance comment groups only
-2. **Content Analysis**: Extract insights not covered in main answer
-3. **Synthesis**: Generate structured insights
-4. **Validation**: Ensure accuracy and relevance
+1. **Group Separation**: Split main_source clarifications from other groups
+2. **Priority Formatting**: Main source clarifications get highest priority
+3. **Content Analysis**: Extract insights not covered in main answer
+4. **Synthesis**: Generate structured insights with three sections
+5. **Validation**: Ensure accuracy and relevance
 
 ## 🏗️ Response Building Phase
 

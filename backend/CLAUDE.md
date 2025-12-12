@@ -18,8 +18,8 @@ The backend implements a sophisticated query processing system that retrieves re
 - `src/services/simple_resolve_service.py` - Phase 3: Database link expansion (depth 1)
 - `src/services/reduce_service.py` - Phase 4: Answer synthesis with Gemini
 - `src/services/language_validation_service.py` - Phase 5: Language consistency validation
-- `src/services/comment_group_map_service.py` - Phase 6: Comment drift analysis with Gemini
-- `src/services/comment_synthesis_service.py` - Phase 7: Comment insights extraction
+- `src/services/comment_group_map_service.py` - Phase 6: Comment drift analysis + main source author clarifications
+- `src/services/comment_synthesis_service.py` - Phase 7: Comment insights extraction with priority for main source clarifications
 - `src/services/drift_scheduler_service.py` - Offline Drift Analysis with **Gemini 2.5 Pro**
 - `src/services/translation_service.py` - Translation service with Gemini
 - `src/utils/error_handler.py` - Enhanced user-friendly error processing system
