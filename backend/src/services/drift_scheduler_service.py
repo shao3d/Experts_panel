@@ -59,10 +59,11 @@ class DriftSchedulerService:
         key = self.keys[self.current_key_index]
         genai.configure(api_key=key)
         
-        # Use Gemini 2.5 Pro as requested (Strong model)
-        # Limits: ~5 RPM / 50-100 RPD per key (Free Tier)
-        self.model = genai.GenerativeModel('gemini-2.5-pro')
-        logger.info(f"Configured Gemini 2.5 Pro with key index {self.current_key_index}")
+        # Use Gemini 3 Flash Preview for drift analysis
+        # Benefits: 5x cheaper, 3x faster than 2.5 Pro with comparable reasoning
+        # Model released: 2025-12-17 (preview phase)
+        self.model = genai.GenerativeModel('gemini-3-flash-preview')
+        logger.info(f"Configured Gemini 3 Flash Preview with key index {self.current_key_index}")
 
     def _rotate_key(self):
         """Rotate to next available API key."""

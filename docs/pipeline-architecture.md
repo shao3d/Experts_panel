@@ -22,7 +22,7 @@ Find relevant posts from the expert's content using semantic search and relevanc
 
 ### Implementation
 - **File**: `backend/src/services/map_service.py`
-- **Model**: Gemini 2.0 Flash Lite (configurable via MODEL_MAP environment variable)
+- **Model**: Gemini 2.5 Flash Lite (configurable via MODEL_MAP environment variable)
 - **Cost**: Optimized for free tier usage via Google AI Studio
 - **Chunk Size**: 100 posts per chunk
 
@@ -331,8 +331,9 @@ The final SSE 'complete' event contains the response payload. The structure of t
 ## 📊 Model Selection Strategy
 
 ### Model Rationale
-- **Gemini 2.0 Flash/Flash Lite**: Primary model for all online phases (Map, Medium Scoring, Reduce, Comments, Language Validation) due to high performance and free tier availability.
-- **Gemini 2.5 Pro**: Used for high-precision offline Drift Analysis.
+- **Gemini 2.5 Flash Lite**: Primary model for Map phase (relevance classification) — optimized for classification and instruction following with better performance than 2.0 version.
+- **Gemini 2.0 Flash**: Primary model for other online phases (Medium Scoring, Reduce, Comments, Language Validation) due to high performance and free tier availability.
+- **Gemini 3 Flash Preview**: Used for offline Drift Analysis. Upgraded from 2.5 Pro on 2025-12-17 for 5x cost savings and 3x speed improvement with comparable reasoning.
 
 ### Cost Optimization Strategy
 - **Multi-Key Rotation**: The system implements aggressive multi-key rotation for Google AI Studio.
@@ -342,9 +343,9 @@ The final SSE 'complete' event contains the response payload. The structure of t
 ### Performance Characteristics
 | Model | Use Case | Cost | Strengths |
 |-------|----------|------|-----------|
-| Gemini 2.0 Flash Lite | Map phase | Free Tier | High speed, lightweight |
+| Gemini 2.5 Flash Lite | Map phase | Free Tier | High speed, better classification, improved instruction following |
 | Gemini 2.0 Flash | Medium Scoring, Reduce, Comments, Validation | Free Tier | High speed, large context |
-| Gemini 2.5 Pro | Drift Analysis (offline) | Free Tier | High precision for complex analysis |
+| Gemini 3 Flash Preview | Drift Analysis (offline) | Free Tier | Pro-grade reasoning, 3x faster, 5x cheaper |
 
 ## 🛠️ Configuration
 

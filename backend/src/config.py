@@ -24,7 +24,7 @@ GOOGLE_AI_STUDIO_API_KEYS = [
 # Only Google Gemini models are supported.
 # Defined in .env or defaulting to stable versions here.
 
-MODEL_MAP: str = os.getenv("MODEL_MAP", "gemini-2.0-flash-lite")
+MODEL_MAP: str = os.getenv("MODEL_MAP", "gemini-2.5-flash-lite")
 
 MODEL_SYNTHESIS: str = os.getenv("MODEL_SYNTHESIS", "gemini-2.0-flash")
 

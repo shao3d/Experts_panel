@@ -341,8 +341,8 @@ class GoogleAIClient:
                     original_model = model  # Keep original for logging
                     if model == "gemini-2.0-flash":
                         model = "gemini-2.0-flash"
-                    elif model == "gemini-2.0-flash-lite":
-                        model = "gemini-2.0-flash-lite"
+                    elif model == "gemini-2.5-flash-lite":
+                        model = "gemini-2.5-flash-lite"
                     elif model.startswith("google/"):
                         model = model.replace("google/", "")
 
