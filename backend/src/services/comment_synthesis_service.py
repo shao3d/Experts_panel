@@ -209,15 +209,29 @@ class CommentSynthesisService:
         if community_insights:
             community_insights = re.sub(r'\\(?![ntr"\\/])', '', community_insights)
 
+        # Determine labels based on query language
+        from ..utils.language_utils import detect_query_language
+        query_lang = detect_query_language(query)
+        
+        if query_lang == "en":
+            label_main_source = "Notes from the expert"
+            label_expert = "Additional comments from the expert"
+            label_community = "Community opinions"
+        else:
+            # Russian (default)
+            label_main_source = "Дополнения эксперта к ответу"
+            label_expert = "Дополнительные комментарии от эксперта"
+            label_community = "Мнения сообщества"
+
         # Combine into final synthesis with prioritized sections
         parts = []
         # Main source clarifications get highest priority
         if main_source_insights and main_source_insights.strip():
-            parts.append(f"**Уточнения к основным постам:**\n{main_source_insights}")
+            parts.append(f"**{label_main_source}:**\n{main_source_insights}")
         if expert_insights and expert_insights.strip():
-            parts.append(f"**Уточнения автора:**\n{expert_insights}")
+            parts.append(f"**{label_expert}:**\n{expert_insights}")
         if community_insights and community_insights.strip():
-            parts.append(f"**Мнения сообщества:**\n{community_insights}")
+            parts.append(f"**{label_community}:**\n{community_insights}")
 
         result["synthesis"] = "\n\n".join(parts) if parts else ""
         logger.info(f"Synthesis combined: main_source={bool(main_source_insights)}, expert={bool(expert_insights)}, community={bool(community_insights)}")

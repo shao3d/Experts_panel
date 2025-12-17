@@ -279,9 +279,9 @@ Extract complementary insights from relevant comment groups, with priority for a
 
 The synthesis produces three types of insights (in priority order):
 
-1. **Уточнения к основным постам** — Author's clarifications from main_source comments (highest priority)
-2. **Уточнения автора** — Expert's comments in other relevant discussions
-3. **Мнения сообщества** — Community insights from discussions
+1. **Дополнения эксперта к ответу** / **Notes from the expert** — Author's clarifications from main_source comments (highest priority)
+2. **Дополнительные комментарии от эксперта** / **Additional comments from the expert** — Expert's comments in other relevant discussions
+3. **Мнения сообщества** / **Community opinions** — Community insights from discussions
 
 ### Key Constraints
 - **No [post:ID] references**: Prevents UI confusion
