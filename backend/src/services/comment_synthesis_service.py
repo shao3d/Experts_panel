@@ -213,7 +213,7 @@ class CommentSynthesisService:
         from ..utils.language_utils import detect_query_language
         query_lang = detect_query_language(query)
         
-        if query_lang == "en":
+        if query_lang == "English":
             label_main_source = "Notes from the expert"
             label_expert = "Additional comments from the expert"
             label_community = "Community opinions"
