@@ -26,7 +26,7 @@ GOOGLE_AI_STUDIO_API_KEYS = [
 
 MODEL_MAP: str = os.getenv("MODEL_MAP", "gemini-2.5-flash-lite")
 
-MODEL_SYNTHESIS: str = os.getenv("MODEL_SYNTHESIS", "gemini-3-flash")
+MODEL_SYNTHESIS: str = os.getenv("MODEL_SYNTHESIS", "gemini-3-flash-preview")
 
 MODEL_ANALYSIS: str = os.getenv("MODEL_ANALYSIS", "gemini-2.0-flash")
 

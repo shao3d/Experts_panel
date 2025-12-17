@@ -343,8 +343,8 @@ class GoogleAIClient:
                         model = "gemini-2.0-flash"
                     elif model == "gemini-2.5-flash-lite":
                         model = "gemini-2.5-flash-lite"
-                    elif model == "gemini-3-flash":
-                        model = "gemini-3-flash"
+                    elif model == "gemini-3-flash-preview":
+                        model = "gemini-3-flash-preview"
                     elif model.startswith("google/"):
                         model = model.replace("google/", "")
 

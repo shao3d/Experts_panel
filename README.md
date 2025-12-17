@@ -210,7 +210,7 @@ To set up your local environment, copy this file to `.env` and fill in the requi
 - **Backend**: FastAPI, SQLAlchemy 2.0, Pydantic v2, uvicorn, Google AI Studio client with key rotation
 - **Frontend**: React 18, TypeScript, Vite, React Query, React Hot Toast, Tailwind CSS
 - **Database**: SQLite (18MB) with 10+ migrations, full `expert_id` isolation and persistent volumes
-- **AI Models**: Gemini-only strategy — Gemini 2.5 Flash Lite for Map phase, Gemini 3 Flash for synthesis, Gemini 2.0 Flash for other phases, Gemini 3 Flash Preview for offline drift analysis
+- **AI Models**: Gemini-only strategy — Gemini 2.5 Flash Lite for Map phase, Gemini 3 Flash Preview for synthesis, Gemini 2.0 Flash for other phases, Gemini 3 Flash Preview for offline drift analysis
 - **Deployment**: Docker, Fly.io with admin authentication, health checks and volume mounting
 
 ### Project Structure
