@@ -138,8 +138,8 @@ Synthesize final answer using HIGH posts with expanded context and selected Medi
 
 ### Implementation
 - **File**: `backend/src/services/reduce_service.py`
-- **Model**: Gemini 2.0 Flash
-- **Cost**: $0.10/$0.40 per 1M tokens
+- **Model**: Gemini 3 Flash (configurable via MODEL_SYNTHESIS environment variable)
+- **Cost**: $0.50/$3.00 per 1M tokens (Pro-grade reasoning)
 - **Style**: Personal or Neutral
 - **Input**: HIGH posts (with linked content) + selected Medium posts
 
@@ -272,7 +272,7 @@ Extract complementary insights from relevant comment groups, with priority for a
 
 ### Implementation
 - **File**: `backend/src/services/comment_synthesis_service.py`
-- **Model**: Gemini 2.0 Flash
+- **Model**: Gemini 3 Flash (shares MODEL_SYNTHESIS with Reduce phase)
 - **Trigger**: Only when HIGH comment groups exist
 
 ### Output Structure
@@ -332,7 +332,8 @@ The final SSE 'complete' event contains the response payload. The structure of t
 
 ### Model Rationale
 - **Gemini 2.5 Flash Lite**: Primary model for Map phase (relevance classification) — optimized for classification and instruction following with better performance than 2.0 version.
-- **Gemini 2.0 Flash**: Primary model for other online phases (Medium Scoring, Reduce, Comments, Language Validation) due to high performance and free tier availability.
+- **Gemini 3 Flash**: Primary model for Reduce Phase and Comment Synthesis — Pro-grade reasoning for high-quality answer synthesis. Upgraded from 2.0 Flash on 2025-12-17.
+- **Gemini 2.0 Flash**: Primary model for other online phases (Medium Scoring, Comment Groups, Language Validation) due to high performance and free tier availability.
 - **Gemini 3 Flash Preview**: Used for offline Drift Analysis. Upgraded from 2.5 Pro on 2025-12-17 for 5x cost savings and 3x speed improvement with comparable reasoning.
 
 ### Cost Optimization Strategy
@@ -344,8 +345,9 @@ The final SSE 'complete' event contains the response payload. The structure of t
 | Model | Use Case | Cost | Strengths |
 |-------|----------|------|-----------|
 | Gemini 2.5 Flash Lite | Map phase | Free Tier | High speed, better classification, improved instruction following |
-| Gemini 2.0 Flash | Medium Scoring, Reduce, Comments, Validation | Free Tier | High speed, large context |
-| Gemini 3 Flash Preview | Drift Analysis (offline) | Free Tier | Pro-grade reasoning, 3x faster, 5x cheaper |
+| Gemini 3 Flash | Reduce, Comment Synthesis | Free Tier | Pro-grade reasoning, excellent synthesis quality |
+| Gemini 2.0 Flash | Medium Scoring, Comment Groups, Validation | Free Tier | High speed, large context |
+| Gemini 3 Flash Preview | Drift Analysis (offline) | Free Tier | Pro-grade reasoning, 3x faster, 5x cheaper than Pro |
 
 ## 🛠️ Configuration
 
