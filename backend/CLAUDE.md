@@ -7,7 +7,7 @@
 FastAPI backend service providing multi-expert query processing with Map-Resolve-Reduce pipeline, real-time SSE streaming, and VPS/cloud deployment support.
 
 ## Narrative Summary
-The backend implements a sophisticated query processing system that retrieves relevant content from expert Telegram channels and synthesizes comprehensive answers. It features an 8-phase pipeline with Gemini-only LLM strategy (multi-key rotation for free tier optimization), language validation, parallel multi-expert processing, Telegram synchronization, and comprehensive drift analysis for comment discussions. The service includes robust error handling with user-friendly messages and is containerized with Docker for VPS/cloud deployment.
+The backend implements a sophisticated query processing system that retrieves relevant content from expert Telegram channels and synthesizes comprehensive answers. It features an 8-phase pipeline with Gemini-only LLM strategy (single API key with auto-retry), language validation, parallel multi-expert processing, Telegram synchronization, and comprehensive drift analysis for comment discussions. The service includes robust error handling with user-friendly messages and is containerized with Docker for VPS/cloud deployment.
 
 ## Key Files
 - `src/api/main.py` - FastAPI application with CORS, SSE, error handling, admin auth, and production configuration
@@ -24,7 +24,7 @@ The backend implements a sophisticated query processing system that retrieves re
 - `src/services/translation_service.py` - Translation service with Gemini
 - `src/utils/error_handler.py` - Enhanced user-friendly error processing system
 - `src/config.py` - Gemini-only model configuration management
-- `src/services/google_ai_studio_client.py` - Google AI Studio API client with multi-key rotation
+- `src/services/google_ai_studio_client.py` - Google AI Studio API client (single-key with auto-retry)
 - `src/services/monitored_client.py` - LLM call monitoring wrapper
 - `src/services/llm_monitor.py` - LLM statistics and health tracking
 - `fly.toml` - Fly.io production deployment configuration
@@ -72,7 +72,7 @@ The project can be deployed to Fly.io using the `fly.toml` configuration file an
 ## Integration Points
 
 ### Consumes
-- **Google AI Studio API** - Gemini models for all LLM processing (with multi-key rotation)
+- **Google AI Studio API** - Gemini models for all LLM processing (single-key with auto-retry)
 - **SQLite Database** - Local and VPS data storage
 - **Telegram API** - Channel synchronization and comment fetching
 

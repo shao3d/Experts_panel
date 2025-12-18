@@ -15,7 +15,7 @@
 - **What:** Multi-expert RAG system processing Telegram channels via 8-phase pipeline
 - **Stack:** FastAPI + React + SQLite + Fly.io
 - **LLM:** Gemini-only (2.0 Flash/Flash Lite for online, 3 Flash Preview for synthesis/drift)
-- **Key Management:** Single/multi-key support with auto-retry on rate limits
+- **Key Management:** Single API key with auto-retry on rate limits (65s wait)
 - **Streaming:** SSE for real-time progress
 
 ## 🔧 Critical Configuration
@@ -50,5 +50,5 @@ backend/
 ## ⚠️ Common Gotchas
 1. **Fly.io secrets must match local .env** — After code refactoring, always verify secrets: `fly secrets list` vs `cat backend/.env`
 2. **Works locally but not on Fly.io?** — Check MODEL_* env vars on Fly: `fly ssh console -C "env | grep MODEL"`
-3. **429 Quota errors** — Single-key mode auto-waits 65s and retries; multi-key mode rotates to next key
+3. **429 Quota errors** — Auto-waits 65s and retries (up to 2 attempts)
 4. **Slow responses (7-10 min)?** — Increase `MAP_MAX_PARALLEL` (25 for Tier 1, 8 for Free Tier)
