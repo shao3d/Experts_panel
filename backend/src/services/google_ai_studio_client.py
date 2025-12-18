@@ -1,13 +1,15 @@
 """Google AI Studio API client for direct Gemini API access.
 
-This module provides a client for calling Google AI Studio's Gemini API directly
-with automatic key rotation for free tier limits.
+This module provides a simplified client for calling Google AI Studio's Gemini API.
+Optimized for single API key usage with Tier 1 (paid) accounts.
+
+For multi-key rotation (e.g., multiple free tier keys), see the legacy
+_GoogleAIClientManager class commented at the bottom of this file.
 """
 
 import json
 import logging
 import asyncio
-import time
 from typing import Dict, Any, Optional, List
 
 import google.generativeai as genai
@@ -16,6 +18,23 @@ from google.generativeai.types import HarmCategory, HarmBlockThreshold
 from .. import config
 
 logger = logging.getLogger(__name__)
+
+# =============================================================================
+# CONFIGURATION
+# =============================================================================
+
+# Get API key from config (supports comma-separated list for backward compatibility)
+_api_keys = config.GOOGLE_AI_STUDIO_API_KEYS
+if not _api_keys:
+    logger.error("❌ No Google AI Studio API key configured!")
+else:
+    _api_key = _api_keys[0]  # Use first key
+    genai.configure(api_key=_api_key)
+    logger.info(f"✅ Google AI Studio configured with API key (first 5 chars: {_api_key[:5]}...)")
+
+# Retry settings for rate limit errors
+MAX_RETRIES = 2
+RETRY_WAIT_SECONDS = 65  # Wait for rate limit window to reset
 
 
 class GoogleAIStudioError(Exception):
@@ -27,71 +46,17 @@ class GoogleAIStudioError(Exception):
         self.is_rate_limit = is_rate_limit
 
 
-class _GoogleAIClientManager:
-    """Manages API key rotation and state for Google AI Studio."""
-
-    def __init__(self, api_keys: List[str]):
-        if not api_keys or not any(api_keys):
-            raise ValueError("At least one Google AI Studio API key is required.")
-
-        self._api_keys = [key for key in api_keys if key]
-        self._current_key_index = 0
-        self._lock = asyncio.Lock()
-        self._last_reset_timestamp = time.time()
-        self._exhausted_keys_today = set()
-        logger.info(f"Google AI Client Manager initialized with {len(self._api_keys)} API keys.")
-
-    async def get_key(self) -> str:
-        async with self._lock:
-            # Before getting a key, check if it's time to reset
-            now = time.time()
-            if now - self._last_reset_timestamp > 86400:  # 24 hours
-                if self._current_key_index != 0 or self._exhausted_keys_today:
-                    logger.info("Resetting Google AI Studio API key usage after 24 hours.")
-                    self._current_key_index = 0
-                    self._exhausted_keys_today.clear()
-                self._last_reset_timestamp = now
-            return self._api_keys[self._current_key_index]
-
-    async def rotate_key(self) -> bool:
-        """Rotates to the next available API key."""
-        async with self._lock:
-            logger.warning(f"🔑 Google AI Studio Key rotation: Key index {self._current_key_index} exhausted (marked: {list(self._exhausted_keys_today)})")
-            self._exhausted_keys_today.add(self._current_key_index)
-
-            if len(self._exhausted_keys_today) >= len(self._api_keys):
-                logger.error(f"❌ All Google AI Studio API keys exhausted! Total keys: {len(self._api_keys)}, Exhausted: {len(self._exhausted_keys_today)}")
-                return False
-
-            # Find the next unused key
-            previous_index = self._current_key_index
-            for _ in range(len(self._api_keys)):
-                self._current_key_index = (self._current_key_index + 1) % len(self._api_keys)
-                if self._current_key_index not in self._exhausted_keys_today:
-                    logger.warning(
-                        f"🔄 Google AI Studio Key rotation: {previous_index} -> {self._current_key_index}. "
-                        f"Available keys left: {len(self._api_keys) - len(self._exhausted_keys_today) - 1}/{len(self._api_keys)}"
-                    )
-                    return True
-
-            logger.error(f"❌ No available keys found after rotation attempt")
-            return False
-
-
-_client_manager: Optional[_GoogleAIClientManager] = None
-_manager_lock = asyncio.Lock()
-
-# NOTE: Global lock DISABLED to allow true parallelism with Tier 1 accounts.
-# The genai.GenerativeModel instances are created per-request, so no shared state issues.
-# Uncomment if you need to serialize API calls (e.g., for debugging or rate limit control).
-# _google_api_lock = asyncio.Lock()
-
-
 class GoogleAIClient:
-    """Client for Google AI Studio Gemini API with rate limit detection."""
+    """Simplified client for Google AI Studio Gemini API.
+    
+    Features:
+    - Single API key (configured at module load)
+    - Automatic retry on rate limit (429) errors
+    - OpenAI-compatible response format
+    """
 
     def _is_rate_limit_error(self, error_content: str) -> bool:
-        """Check if error indicates rate limit exceeded (both daily and minute).
+        """Check if error indicates rate limit exceeded.
 
         Args:
             error_content: Error message content
@@ -99,131 +64,48 @@ class GoogleAIClient:
         Returns:
             True if this is a rate limit error
         """
-        # Unified list of all rate limit indicators
-        RATE_LIMIT_ERRORS = [
-            "Resource has been exhausted", "Rate limit exceeded", "Quota exceeded",
-            "Too many requests", "resource_exhausted", "quota_limit_exceeded",
-            "rate_limit_exceeded", "429", "generaterequestsperdayperprojectpermodel-freetier",
-            "free_tier_requests", "requests per day", "daily quota",
-            "generativelanguage.googleapis.com/generate_content",
-            "generaterequestsperminuteperprojectpermodel", # Added RPM specific
-            "generatecontentrequestsperminuteperprojectpermodel", # Added Content RPM specific
-            "user has exceeded", # Added User limit specific
-            "limit has been reached" # Generic limit reached
+        RATE_LIMIT_PATTERNS = [
+            "resource has been exhausted",
+            "rate limit exceeded",
+            "quota exceeded",
+            "too many requests",
+            "resource_exhausted",
+            "quota_limit_exceeded",
+            "rate_limit_exceeded",
+            "429",
+            "requests per day",
+            "requests per minute",
+            "daily quota",
         ]
         error_lower = error_content.lower()
-        return any(pattern.lower() in error_lower for pattern in RATE_LIMIT_ERRORS)
+        return any(pattern in error_lower for pattern in RATE_LIMIT_PATTERNS)
 
-    def _should_rotate_key(self, error: Exception) -> bool:
-        """Checks if the error warrants a key rotation (Any Rate Limit)."""
-        # Check text content
-        if self._is_rate_limit_error(str(error)):
-            return True
-
-        # Check standard HTTP status attributes
-        # Different libraries use different attribute names for the status code
-        status_attrs = ['status_code', 'code', 'http_status', 'status']
-        for attr in status_attrs:
-            val = getattr(error, attr, None)
-            # Check for 429 (Too Many Requests) or 403 (Forbidden - sometimes used for quota)
-            # Note: We include 403 because specific quota errors can sometimes manifest as permission denials
-            # But we rely mainly on text for 403 to avoid rotating on genuine auth errors.
-            # For 429, it's almost always a rate limit.
-            if val == 429:
-                 return True
-
-        return False
-
-    def _convert_openai_json_to_gemini_schema(self, response_format: Optional[Dict[str, str]]) -> Optional[
-        Dict[str, Any]]:
-        """Convert OpenAI JSON format to Gemini Schema format.
-
-        Args:
-            response_format: OpenAI response format specification
-
-        Returns:
-            Gemini Schema specification or None
-        """
-        if not response_format or response_format.get("type") != "json_object":
-            return None
-
-        # Define Gemini schema for our expected JSON structure
-        gemini_schema = {
-            "type": "object",
-            "properties": {
-                "answer": {
-                    "type": "string",
-                    "description": "The synthesized answer to the user's query"
-                },
-                "main_sources": {
-                    "type": "array",
-                    "description": "List of telegram message IDs used as sources",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "confidence": {
-                    "type": "string",
-                    "description": "Confidence level (HIGH/MEDIUM/LOW)"
-                },
-                "has_expert_comments": {
-                    "type": "boolean",
-                    "description": "Whether expert comments are available"
-                },
-                "language": {
-                    "type": "string",
-                    "description": "Response language (e.g., 'ru', 'en')"
-                },
-                "posts_analyzed": {
-                    "type": "integer",
-                    "description": "Number of posts analyzed"
-                },
-                "token_usage": {
-                    "type": "object",
-                    "description": "Token usage information"
-                },
-                "summary": {
-                    "type": "string",
-                    "description": "Brief summary of the analysis"
-                }
-            },
-            "required": ["answer", "main_sources", "confidence", "language"]
-        }
-
-        return gemini_schema
-
-    def _convert_messages_to_gemini_format(self, messages: List[Dict[str, str]]) -> List[Any]:
+    def _convert_messages_to_gemini_format(self, messages: List[Dict[str, str]]) -> List[str]:
         """Convert OpenAI message format to Gemini message format.
 
         Args:
             messages: List of OpenAI format messages
 
         Returns:
-            List of Gemini format messages
+            List of Gemini format messages (simplified to content strings)
         """
-        import google.generativeai as genai
-
         gemini_messages = []
-        system_message = None
+        system_prompt = ""
 
         for message in messages:
-            if message["role"] == "system":
-                # Store system message to prepend later
-                system_message = message["content"]
-                continue
-            elif message["role"] == "user":
-                content = message["content"]
-                if system_message and not gemini_messages:
-                    # Prepend system message to first user message
-                    content = f"{system_message}\n\n{content}"
-                    system_message = None  # Clear to avoid adding again
-                gemini_messages.append(content)
-            elif message["role"] == "assistant":
-                gemini_messages.append(message["content"])
+            role = message.get("role", "user")
+            content = message.get("content", "")
 
-        # If system message wasn't added yet, add it as first message
-        if system_message:
-            gemini_messages.insert(0, system_message)
+            if role == "system":
+                system_prompt = content
+            elif role == "user":
+                if system_prompt:
+                    gemini_messages.append(f"{system_prompt}\n\n{content}")
+                    system_prompt = ""
+                else:
+                    gemini_messages.append(content)
+            elif role == "assistant":
+                gemini_messages.append(f"Assistant: {content}")
 
         return gemini_messages
 
@@ -236,67 +118,55 @@ class GoogleAIClient:
         Returns:
             Response object compatible with OpenAI format
         """
-        # Create a mock response object that mimics OpenAI's response structure
-        class MockOpenAIResponse:
-            def __init__(self, content: str, model: str):
-                self.choices = [MockChoice(content)]
-                self.model = model
-                self.usage = MockUsage()
+        class MockMessage:
+            def __init__(self, content: str):
+                self.content = content
+                self.role = "assistant"
 
         class MockChoice:
             def __init__(self, content: str):
                 self.message = MockMessage(content)
                 self.finish_reason = "stop"
 
-        class MockMessage:
-            def __init__(self, content: str):
-                self.content = content
-                self.role = "assistant"
-
         class MockUsage:
-            def __init__(self):
-                self.prompt_tokens = 0
-                self.completion_tokens = 0
-                self.total_tokens = 0
+            prompt_tokens = 0
+            completion_tokens = 0
+            total_tokens = 0
 
-        # Extract content from Gemini response
-        content = ""
-        if hasattr(gemini_response, 'text'):
+        class MockOpenAIResponse:
+            def __init__(self, content: str, model: str):
+                self.choices = [MockChoice(content)]
+                self.model = model
+                self.usage = MockUsage()
+
+        try:
             content = gemini_response.text
-        elif hasattr(gemini_response, 'candidates') and gemini_response.candidates:
-            candidate = gemini_response.candidates[0]
-            if hasattr(candidate, 'content') and hasattr(candidate.content, 'parts'):
-                content = "".join(part.text for part in candidate.content.parts if hasattr(part, 'text'))
+        except (AttributeError, ValueError):
+            try:
+                content = gemini_response.candidates[0].content.parts[0].text
+            except (AttributeError, IndexError, ValueError):
+                content = str(gemini_response)
 
-        # Log the raw response for debugging
-        logger.info(f"Gemini raw response (first 200 chars): {content[:200]}")
-
-        return MockOpenAIResponse(content, "gemini-2.0-flash-exp")
+        return MockOpenAIResponse(content, "gemini")
 
     def _extract_error_details(self, error: Exception) -> Dict[str, Any]:
-        """Extract error details from API exception.
-
-        Args:
-            error: The exception object
-
-        Returns:
-            Dictionary with error details
-        """
-        error_content = str(error)
-        is_rate_limit = self._is_rate_limit_error(error_content)
-
-        # Extract more detailed error information from Google AI SDK
-        details = None
-        if hasattr(error, 'response') and error.response:
-            details = error.response
-        elif hasattr(error, 'message'):
-            details = error.message
+        """Extract detailed error information from exception."""
+        error_str = str(error).lower()
+        is_rate_limit = self._is_rate_limit_error(error_str)
+        
+        if is_rate_limit:
+            error_type = "rate_limit"
+        elif "invalid" in error_str or "auth" in error_str:
+            error_type = "authentication"
+        elif "timeout" in error_str:
+            error_type = "timeout"
+        else:
+            error_type = "unknown"
 
         return {
-            "error_type": "rate_limit" if is_rate_limit else "api_error",
-            "is_rate_limit": is_rate_limit,
-            "message": error_content,
-            "details": details
+            "message": str(error),
+            "error_type": error_type,
+            "is_rate_limit": is_rate_limit
         }
 
     async def chat_completions_create(
@@ -307,9 +177,9 @@ class GoogleAIClient:
         response_format: Optional[Dict[str, str]] = None,
         **kwargs
     ) -> Any:
-        """
-        Create chat completion using Google AI Studio API, with automatic key rotation
-        for daily rate limit errors.
+        """Create chat completion using Google AI Studio API.
+
+        Features simple retry on rate limit errors.
 
         Args:
             model: Model name (e.g., "gemini-2.0-flash")
@@ -322,55 +192,29 @@ class GoogleAIClient:
             Chat completion response
 
         Raises:
-            GoogleAIStudioError: If API call fails with rate limit information
+            GoogleAIStudioError: If API call fails
         """
-        manager = await _get_client_manager()
         last_error = None
 
-        # For single key, allow one extra attempt for wait-and-retry
-        max_attempts = len(manager._api_keys) + (1 if len(manager._api_keys) == 1 else 0)
-        logger.info(f"🚀 Google AI Studio: Starting API call with model {model}. Total keys available: {len(manager._api_keys)}, max attempts: {max_attempts}")
-
-        # NOTE: Global lock removed to enable true parallelism.
-        # Each request creates its own GenerativeModel instance, so no shared state issues.
-        for attempt in range(max_attempts):
-            api_key = await manager.get_key()
-            current_key_index = manager._current_key_index
-
-            logger.info(f"🔑 Attempt {attempt + 1}/{max_attempts}: Using Google AI Studio key index {current_key_index}")
+        for attempt in range(MAX_RETRIES):
+            logger.info(f"🚀 Google AI Studio: API call attempt {attempt + 1}/{MAX_RETRIES} with model {model}")
 
             try:
-                genai.configure(api_key=api_key)
-
-                # Map model names to Google AI Studio format
-                original_model = model  # Keep original for logging
-                if model == "gemini-2.0-flash":
-                    model = "gemini-2.0-flash"
-                elif model == "gemini-2.5-flash-lite":
-                    model = "gemini-2.5-flash-lite"
-                elif model == "gemini-3-flash-preview":
-                    model = "gemini-3-flash-preview"
-                elif model.startswith("google/"):
+                # Normalize model name
+                if model.startswith("google/"):
                     model = model.replace("google/", "")
 
                 gemini_messages = self._convert_messages_to_gemini_format(messages)
                 generation_config = {"temperature": temperature, "candidate_count": 1}
 
+                # Handle JSON response format
                 if response_format and response_format.get("type") == "json_object":
-                    gemini_schema = self._convert_openai_json_to_gemini_schema(response_format)
-                    if gemini_schema:
-                        generation_config["response_mime_type"] = "application/json"
-                        try:
-                            generation_config["response_schema"] = genai.Schema(**gemini_schema)
-                            logger.info("Using Gemini native JSON mode with schema")
-                        except Exception as e:
-                            logger.warning(f"Failed to create Gemini schema: {e}, using fallback")
-                            if gemini_messages:
-                                gemini_messages[0] += "\n\nIMPORTANT: You must respond with valid JSON only."
-                    else:
-                        if gemini_messages:
-                            gemini_messages[0] += "\n\nIMPORTANT: You must respond with valid JSON only."
+                    generation_config["response_mime_type"] = "application/json"
+                    # Add JSON instruction to prompt
+                    if gemini_messages:
+                        gemini_messages[0] += "\n\nIMPORTANT: You must respond with valid JSON only."
 
+                # Add any extra kwargs
                 for key, value in kwargs.items():
                     if key not in ["response_format"]:
                         generation_config[key] = value
@@ -387,75 +231,103 @@ class GoogleAIClient:
                 )
 
                 response = await gemini_model.generate_content_async(gemini_messages)
-                logger.info(f"✅ Google AI Studio API call successful with key index {current_key_index}")
+                logger.info(f"✅ Google AI Studio API call successful")
                 return self._convert_gemini_response_to_openai_format(response)
 
             except Exception as error:
                 last_error = error
                 error_str = str(error)
+                logger.error(f"❌ Google AI Studio API error: {error_str[:200]}...")
 
-                logger.error(f"❌ Google AI Studio API error with key index {current_key_index}: {error_str[:200]}...")
-
-                if self._should_rotate_key(error):
-                    # This is a rate limit error (Daily or Minute). Rotate the key and allow the loop to continue.
-                    logger.warning(f"🔄 Rate limit hit (RPM or Daily) for key {current_key_index}, attempting rotation...")
-                    rotated = await manager.rotate_key()
-                    if not rotated:
-                        # All keys exhausted - for single key scenario, wait and retry once
-                        if len(manager._api_keys) == 1:
-                            logger.warning(f"⏳ Single key exhausted (RPM limit). Waiting 65s before retry...")
-                            await asyncio.sleep(65)
-                            # Reset exhausted state for single key
-                            async with manager._lock:
-                                manager._exhausted_keys_today.clear()
-                                manager._current_key_index = 0
-                            logger.info(f"🔄 Single key retry after wait...")
-                            continue  # Retry with same key after waiting
-                        else:
-                            logger.error(f"❌ All Google AI Studio keys exhausted.")
-                            raise error  # All keys exhausted, re-raise last error
-                    # Continue to next key
-                    logger.info(f"✅ Key rotation successful, trying next key...")
+                # Check if rate limit error - retry after wait
+                if self._is_rate_limit_error(error_str) and attempt < MAX_RETRIES - 1:
+                    logger.warning(f"⏳ Rate limit hit. Waiting {RETRY_WAIT_SECONDS}s before retry...")
+                    await asyncio.sleep(RETRY_WAIT_SECONDS)
                     continue
                 else:
-                    # This is not a rate limit error (e.g., auth error, server error).
-                    # We should not rotate the key. Re-raise the error.
-                    logger.warning(f"⚠️ Non-rate-limit error for key {current_key_index}: {error_str[:100]}...")
-                    raise error
+                    # Non-rate-limit error or last attempt - re-raise
+                    break
 
-        # If the loop completes, it means all keys were tried and failed with daily limits.
+        # All retries exhausted
         if last_error:
             error_details = self._extract_error_details(last_error)
             raise GoogleAIStudioError(
-                f"Google AI Studio API error after trying all keys: {error_details['message']}",
+                f"Google AI Studio API error: {error_details['message']}",
                 error_type=error_details["error_type"],
                 is_rate_limit=error_details["is_rate_limit"]
             ) from last_error
-        raise GoogleAIStudioError("All Google AI Studio API keys failed.")
+        
+        raise GoogleAIStudioError("Google AI Studio API call failed with no error details.")
 
     def is_configured(self) -> bool:
         """Check if client is properly configured."""
-        return True
+        return bool(_api_keys)
 
 
-async def _get_client_manager() -> _GoogleAIClientManager:
-    """Initializes and returns the singleton client manager."""
-    global _client_manager
-    if _client_manager is None:
-        async with _manager_lock:
-            if _client_manager is None:
-                _client_manager = _GoogleAIClientManager(config.GOOGLE_AI_STUDIO_API_KEYS)
-    return _client_manager
+# =============================================================================
+# FACTORY FUNCTION
+# =============================================================================
+
+_client_instance: Optional[GoogleAIClient] = None
 
 
-def create_google_ai_studio_client() -> Optional[GoogleAIClient]:
-    """Create and return a singleton Google AI Studio client instance."""
-    if not config.GOOGLE_AI_STUDIO_API_KEYS:
-        logger.warning("No Google AI Studio API keys found. Client will not be created.")
-        return None
-    return GoogleAIClient()
+def create_google_ai_studio_client() -> GoogleAIClient:
+    """Create or return singleton Google AI Studio client.
+    
+    Returns:
+        GoogleAIClient instance
+    """
+    global _client_instance
+    if _client_instance is None:
+        _client_instance = GoogleAIClient()
+    return _client_instance
 
 
-def is_google_ai_studio_available() -> bool:
-    """Check if Google AI Studio API keys are available in config."""
-    return bool(config.GOOGLE_AI_STUDIO_API_KEYS)
+# =============================================================================
+# LEGACY: Multi-Key Rotation Manager (preserved for future use)
+# =============================================================================
+# 
+# If you need to use multiple API keys (e.g., rotating free tier keys),
+# uncomment and adapt the _GoogleAIClientManager class below.
+#
+# class _GoogleAIClientManager:
+#     """Manages API key rotation and state for Google AI Studio."""
+#
+#     def __init__(self, api_keys: List[str]):
+#         if not api_keys or not any(api_keys):
+#             raise ValueError("At least one Google AI Studio API key is required.")
+#
+#         self._api_keys = [key for key in api_keys if key]
+#         self._current_key_index = 0
+#         self._lock = asyncio.Lock()
+#         self._last_reset_timestamp = time.time()
+#         self._exhausted_keys_today = set()
+#         logger.info(f"Google AI Client Manager initialized with {len(self._api_keys)} API keys.")
+#
+#     async def get_key(self) -> str:
+#         async with self._lock:
+#             now = time.time()
+#             if now - self._last_reset_timestamp > 86400:  # 24 hours
+#                 if self._current_key_index != 0 or self._exhausted_keys_today:
+#                     logger.info("Resetting Google AI Studio API key usage after 24 hours.")
+#                     self._current_key_index = 0
+#                     self._exhausted_keys_today.clear()
+#                 self._last_reset_timestamp = now
+#             return self._api_keys[self._current_key_index]
+#
+#     async def rotate_key(self) -> bool:
+#         """Rotates to the next available API key."""
+#         async with self._lock:
+#             logger.warning(f"Key rotation: Key index {self._current_key_index} exhausted")
+#             self._exhausted_keys_today.add(self._current_key_index)
+#
+#             if len(self._exhausted_keys_today) >= len(self._api_keys):
+#                 logger.error("All Google AI Studio API keys exhausted!")
+#                 return False
+#
+#             for _ in range(len(self._api_keys)):
+#                 self._current_key_index = (self._current_key_index + 1) % len(self._api_keys)
+#                 if self._current_key_index not in self._exhausted_keys_today:
+#                     return True
+#
+#             return False
