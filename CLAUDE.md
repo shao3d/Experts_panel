@@ -16,7 +16,7 @@ The system uses an advanced **eight-phase pipeline** for analysis and a hybrid, 
 
 ### Key Architectural Principles
 - **Multi-Expert Architecture**: Complete data isolation between experts and parallel processing.
-- **Cost Optimization**: Gemini-only strategy with multi-key rotation for 100% free tier utilization.
+- **Cost Optimization**: Gemini-only strategy with Tier 1 paid account (high rate limits).
 - **Real-time Progress**: SSE streaming for frontend progress tracking.
 
 ## 📁 Component Documentation
@@ -28,7 +28,7 @@ Complete FastAPI backend with:
 - Multi-expert query processing pipeline with parallel processing
 - 9+ specialized services for different phases with Gemini integration
 - Real-time SSE streaming for progress tracking with enhanced error handling
-- Google AI Studio LLM integration with multi-key rotation
+- Google AI Studio LLM integration (single-key with auto-retry)
 - SQLite database with 10+ migration scripts (18MB active database)
 - Production-ready Fly.io deployment with admin authentication
 - Dynamic expert loading from database with expert metadata centralization
@@ -145,6 +145,6 @@ To debug the pipeline, monitor the backend log file for messages containing spec
 ---
 
 **Project Status:** Production-ready with active development
-**Last Updated:** 2025-12-11
-**Architecture:** Multi-expert, Gemini-only LLM pipeline with multi-key rotation and real-time progress tracking
-**Key Features:** Parallel expert processing, Gemini multi-key rotation, cost optimization with Google AI Studio free tier, language validation, comment synthesis, enhanced error handling, admin authentication
+**Last Updated:** 2025-12-18
+**Architecture:** Multi-expert, Gemini-only LLM pipeline with single-key auto-retry and real-time progress tracking
+**Key Features:** Parallel expert processing, cost optimization with Google AI Studio Tier 1, language validation, comment synthesis, enhanced error handling, admin authentication

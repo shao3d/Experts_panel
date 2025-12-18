@@ -122,10 +122,10 @@ python backend/scripts/prune_old_posts.py
 7. **Comment Synthesis Phase** - Complementary insights extraction
 
 ### Gemini-Only Model Strategy
-The system uses Google AI Studio with automatic multi-key rotation for 100% free tier utilization. For a detailed breakdown of the models used in each pipeline phase, see the **[Pipeline Architecture Guide](../docs/pipeline-architecture.md)**.
+The system uses Google AI Studio with automatic retry on rate limit errors (65s wait). For a detailed breakdown of the models used in each pipeline phase, see the **[Pipeline Architecture Guide](../docs/pipeline-architecture.md)**.
 
 - **Primary Model**: Gemini 2.0 Flash / Flash Lite (configurable per phase)
-- **Key Rotation**: Automatic rotation on any rate limit (RPM or Daily)
+- **Auto-Retry**: Automatic 65-second wait and retry on rate limit (429) errors
 - **No Paid Fallback**: Gemini-only strategy eliminates OpenRouter dependency
 
 ### Retry Mechanism (Map Phase)
@@ -150,8 +150,8 @@ The system uses Google AI Studio with automatic multi-key rotation for 100% free
 - **Drift Analysis**: Comprehensive comment drift tracking and topic analysis
 
 ### Gemini Model Configuration
-- All models via Google AI Studio API (free tier)
-- Multi-key rotation for rate limit mitigation
+- All models via Google AI Studio API (Tier 1 paid account)
+- Automatic retry on rate limit errors with 65-second wait
 - All prompts externalized to `prompts/` directory
 - Configurable chunk sizes and processing parameters via environment variables
 

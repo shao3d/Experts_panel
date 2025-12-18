@@ -23,7 +23,7 @@ Find relevant posts from the expert's content using semantic search and relevanc
 ### Implementation
 - **File**: `backend/src/services/map_service.py`
 - **Model**: Gemini 2.5 Flash Lite (configurable via MODEL_MAP environment variable)
-- **Cost**: Optimized for free tier usage via Google AI Studio
+- **Cost**: Optimized with Tier 1 paid account (high rate limits)
 - **Chunk Size**: 100 posts per chunk
 
 ### Key Features
@@ -333,21 +333,21 @@ The final SSE 'complete' event contains the response payload. The structure of t
 ### Model Rationale
 - **Gemini 2.5 Flash Lite**: Primary model for Map phase (relevance classification) — optimized for classification and instruction following with better performance than 2.0 version.
 - **Gemini 3 Flash Preview**: Primary model for Reduce Phase and Comment Synthesis — Pro-grade reasoning for high-quality answer synthesis. Upgraded from 2.0 Flash on 2025-12-17.
-- **Gemini 2.0 Flash**: Primary model for other online phases (Medium Scoring, Comment Groups, Language Validation) due to high performance and free tier availability.
+- **Gemini 2.0 Flash**: Primary model for other online phases (Medium Scoring, Comment Groups, Language Validation) due to high performance.
 - **Gemini 3 Flash Preview**: Used for offline Drift Analysis. Upgraded from 2.5 Pro on 2025-12-17 for 5x cost savings and 3x speed improvement with comparable reasoning.
 
 ### Cost Optimization Strategy
-- **Multi-Key Rotation**: The system implements aggressive multi-key rotation for Google AI Studio.
-- **Trigger**: Any rate limit error (Daily Quota OR Request Per Minute/RPM) triggers immediate rotation to the next available key.
-- **100% Free Tier**: With sufficient API keys and rotation, all operations run on Google's free tier.
+- **Auto-Retry**: The system implements automatic retry on rate limit (429) errors.
+- **Trigger**: Rate limit error triggers 65-second wait followed by retry (up to 2 attempts).
+- **Tier 1 Account**: High rate limits allow for efficient parallel processing.
 
 ### Performance Characteristics
 | Model | Use Case | Cost | Strengths |
 |-------|----------|------|-----------|
-| Gemini 2.5 Flash Lite | Map phase | Free Tier | High speed, better classification, improved instruction following |
-| Gemini 3 Flash Preview | Reduce, Comment Synthesis | Free Tier | Pro-grade reasoning, excellent synthesis quality |
-| Gemini 2.0 Flash | Medium Scoring, Comment Groups, Validation | Free Tier | High speed, large context |
-| Gemini 3 Flash Preview | Drift Analysis (offline) | Free Tier | Pro-grade reasoning, 3x faster, 5x cheaper than Pro |
+| Gemini 2.5 Flash Lite | Map phase | Tier 1 | High speed, better classification, improved instruction following |
+| Gemini 3 Flash Preview | Reduce, Comment Synthesis | Tier 1 | Pro-grade reasoning, excellent synthesis quality |
+| Gemini 2.0 Flash | Medium Scoring, Comment Groups, Validation | Tier 1 | High speed, large context |
+| Gemini 3 Flash Preview | Drift Analysis (offline) | Tier 1 | Pro-grade reasoning, 3x faster, 5x cheaper than Pro |
 
 ## 🛠️ Configuration
 

@@ -8,11 +8,11 @@
 
 **Intelligent system for analyzing expert Telegram channels using Google Gemini AI**
 
-Experts Panel is a powerful tool for semantic search and analysis of content from expert Telegram channels. The system uses an advanced **8-phase Map-Resolve-Reduce pipeline architecture** with Google Gemini AI (multi-key rotation for free tier optimization) to provide accurate and contextually relevant answers.
+Experts Panel is a powerful tool for semantic search and analysis of content from expert Telegram channels. The system uses an advanced **8-phase Map-Resolve-Reduce pipeline architecture** with Google Gemini AI to provide accurate and contextually relevant answers.
 
 ## 🏗️ System Architecture
 
-The system uses an advanced **eight-phase Map-Resolve-Reduce pipeline** to provide accurate and contextually relevant answers. The architecture includes cost-optimized Gemini-only strategy with multi-key rotation, differential processing for posts based on relevance, and parallel pipelines for content and comment analysis.
+The system uses an advanced **eight-phase Map-Resolve-Reduce pipeline** to provide accurate and contextually relevant answers. The architecture includes cost-optimized Gemini-only strategy with auto-retry on rate limits, differential processing for posts based on relevance, and parallel pipelines for content and comment analysis.
 
 For a detailed breakdown of the 8-phase pipeline, component responsibilities, data flow, and model strategy, please see the **[Pipeline Architecture Guide](docs/pipeline-architecture.md)**.
 
@@ -42,7 +42,7 @@ graph TD
     User -- "Sends query" --> Frontend
     Frontend -- "SSE streaming /api/v1/query" --> Backend
     Backend -- "Admin API" --> Admin
-    Backend -- "LLM calls with key rotation" --> GoogleAI
+    Backend -- "LLM calls with auto-retry" --> GoogleAI
     Backend -- "Multi-expert data access" --> DB
     Backend -- "Real-time progress" --> Frontend
     Frontend -- "Expert responses" --> User
@@ -116,7 +116,7 @@ graph TD
     LB -- HTTP --> App
     App -- Admin protection --> AdminLayer
     App -- Multi-expert queries --> DB
-    App -- LLM calls with key rotation --> GoogleAI
+    App -- LLM calls with auto-retry --> GoogleAI
     LB -- Health checks --> App
 
     classDef storage fill:#fdf,stroke:#333,stroke-width:2px
@@ -139,7 +139,7 @@ graph TD
 ## ✨ Key Features
 
 - **🧠 8-phase Map-Resolve-Reduce Architecture**: Advanced pipeline with differential HIGH/MEDIUM posts processing
-- **🎯 Cost-Optimized Gemini Strategy**: Google AI Studio with multi-key rotation for 100% free tier usage
+- **🎯 Cost-Optimized Gemini Strategy**: Google AI Studio with Tier 1 account (high rate limits)
 - **🔍 Smart Semantic Search**: Finds relevant posts by meaning, not keywords
 - **📊 Medium Posts Reranking**: Gemini-based scoring system with threshold ≥0.7 and top-5 selection
 - **💬 Comment Groups & Synthesis**: Gemini pipeline for comment drift analysis and insights extraction
@@ -198,8 +198,8 @@ All configuration for the application is managed via environment variables. A co
 To set up your local environment, copy this file to `.env` and fill in the required values.
 
 **Model Strategy Notes:**
-- **Cost Optimization**: 100% free tier usage with Google AI Studio as primary for all phases
-- **Key Rotation**: Multiple Google AI Studio keys supported with automatic rotation on ANY rate limit (RPM or Daily)
+- **Cost Optimization**: Using Google AI Studio Tier 1 paid account with high rate limits
+- **Auto-Retry**: Automatic 65-second wait and retry on rate limit (429) errors
 - **No Fallback Required**: Gemini-only strategy eliminates need for paid fallback services
 - **Development Mode**: Set `ENVIRONMENT=development` to see masked API keys in logs
 
@@ -207,7 +207,7 @@ To set up your local environment, copy this file to `.env` and fill in the requi
 
 ### Technology Stack
 
-- **Backend**: FastAPI, SQLAlchemy 2.0, Pydantic v2, uvicorn, Google AI Studio client with key rotation
+- **Backend**: FastAPI, SQLAlchemy 2.0, Pydantic v2, uvicorn, Google AI Studio client with auto-retry
 - **Frontend**: React 18, TypeScript, Vite, React Query, React Hot Toast, Tailwind CSS
 - **Database**: SQLite (18MB) with 10+ migrations, full `expert_id` isolation and persistent volumes
 - **AI Models**: Gemini-only strategy — Gemini 2.5 Flash Lite for Map phase, Gemini 3 Flash Preview for synthesis, Gemini 2.0 Flash for other phases, Gemini 3 Flash Preview for offline drift analysis
@@ -226,7 +226,7 @@ backend/
 │   │   ├── reduce_service.py              # Reduce Phase (Gemini)
 │   │   ├── comment_group_map_service.py   # Comment Groups (Gemini)
 │   │   ├── comment_synthesis_service.py   # Comment Synthesis (Gemini)
-│   │   ├── google_ai_studio_client.py     # Google AI Studio Client with key rotation
+│   │   ├── google_ai_studio_client.py     # Google AI Studio Client (single-key with auto-retry)
 │   │   ├── monitored_client.py            # LLM call monitoring wrapper
 │   │   └── llm_monitor.py                 # LLM statistics and health tracking
 │   ├── api/          # FastAPI endpoints
@@ -283,7 +283,7 @@ To deploy, use the Fly.io CLI (`flyctl`). You will need to set the required secr
 - ✅ **Persistent data**: SQLite database (18MB) mounted on persistent volume
 - ✅ **Security**: Non-root container, SSL termination, API key masking
 - ✅ **Scalability**: Automatic scaling with 0 machines when idle
-- ✅ **Cost Optimization**: 100% free tier usage with Gemini multi-key rotation
+- ✅ **Cost Optimization**: Tier 1 paid account with high rate limits and auto-retry
 - ✅ **Monitoring**: Real-time logs and deployment tracking
 
 **Live Application**: https://experts-panel.fly.dev/
@@ -317,7 +317,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- [Google AI Studio](https://aistudio.google.com/) for generous free tier and powerful Gemini models
+- [Google AI Studio](https://aistudio.google.com/) for powerful Gemini models and Tier 1 rate limits
 - [FastAPI](https://fastapi.tiangolo.com/) for the powerful framework
 - [React](https://reactjs.org/) for the excellent UI framework
 
