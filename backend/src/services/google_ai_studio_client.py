@@ -7,7 +7,6 @@ For multi-key rotation (e.g., multiple free tier keys), see the legacy
 _GoogleAIClientManager class commented at the bottom of this file.
 """
 
-import json
 import logging
 import asyncio
 from typing import Dict, Any, Optional, List
