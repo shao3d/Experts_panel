@@ -1,7 +1,7 @@
 # Project Context: Experts Panel
 
-**Last Updated:** 2025-12-11
-**Status:** Production (Gemini-only architecture)
+**Last Updated:** 2025-12-18
+**Status:** Production (Gemini-only architecture, Tier 1 optimized)
 
 ## 🎯 Quick Start for AI Agent
 
@@ -14,16 +14,17 @@
 ## 🏗️ Core Architecture
 - **What:** Multi-expert RAG system processing Telegram channels via 8-phase pipeline
 - **Stack:** FastAPI + React + SQLite + Fly.io
-- **LLM:** Gemini-only (2.0 Flash/Flash Lite for online, 3 Flash Preview for offline drift) with multi-key rotation (100% free tier)
+- **LLM:** Gemini-only (2.0 Flash/Flash Lite for online, 3 Flash Preview for synthesis/drift)
+- **Key Management:** Single/multi-key support with auto-retry on rate limits
 - **Streaming:** SSE for real-time progress
 
 ## 🔧 Critical Configuration
 | Setting | Value | Location |
-|---------|-------|----------|
-| API Keys | 5 Google AI Studio keys | Fly.io secrets (GOOGLE_AI_STUDIO_API_KEY) |
-| Models | gemini-2.0-flash, gemini-2.0-flash-lite | MODEL_* env vars |
+|---------|-------|---------|
+| API Keys | Google Cloud or AI Studio key(s) | Fly.io secrets (GOOGLE_AI_STUDIO_API_KEY) |
+| Models | gemini-2.0-flash, gemini-2.5-flash-lite, gemini-3-flash-preview | MODEL_* env vars |
+| Map Parallelism | 25 (Tier 1) / 8 (Free Tier) | MAP_MAX_PARALLEL in config.py |
 | Chunk Size | 100 posts | config.py |
-| SSE Keep-Alive | 5s + 2KB padding | Mobile stability fix |
 
 ## 🚀 Deployment
 - **Platform:** Fly.io (auto-deploy via GitHub Actions)
@@ -49,4 +50,5 @@ backend/
 ## ⚠️ Common Gotchas
 1. **Fly.io secrets must match local .env** — After code refactoring, always verify secrets: `fly secrets list` vs `cat backend/.env`
 2. **Works locally but not on Fly.io?** — Check MODEL_* env vars on Fly: `fly ssh console -C "env | grep MODEL"`
-3. **429 Quota errors** — Rotate to fresh API keys, check key validity at aistudio.google.com
+3. **429 Quota errors** — Single-key mode auto-waits 65s and retries; multi-key mode rotates to next key
+4. **Slow responses (7-10 min)?** — Increase `MAP_MAX_PARALLEL` (25 for Tier 1, 8 for Free Tier)

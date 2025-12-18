@@ -325,14 +325,16 @@ class GoogleAIClient:
         manager = await _get_client_manager()
         last_error = None
 
-        logger.info(f"🚀 Google AI Studio: Starting API call with model {model}. Total keys available: {len(manager._api_keys)}")
+        # For single key, allow one extra attempt for wait-and-retry
+        max_attempts = len(manager._api_keys) + (1 if len(manager._api_keys) == 1 else 0)
+        logger.info(f"🚀 Google AI Studio: Starting API call with model {model}. Total keys available: {len(manager._api_keys)}, max attempts: {max_attempts}")
 
         async with _google_api_lock:
-            for attempt in range(len(manager._api_keys)):
+            for attempt in range(max_attempts):
                 api_key = await manager.get_key()
                 current_key_index = manager._current_key_index
 
-                logger.info(f"🔑 Attempt {attempt + 1}/{len(manager._api_keys)}: Using Google AI Studio key index {current_key_index}")
+                logger.info(f"🔑 Attempt {attempt + 1}/{max_attempts}: Using Google AI Studio key index {current_key_index}")
 
                 try:
                     genai.configure(api_key=api_key)
@@ -396,8 +398,19 @@ class GoogleAIClient:
                         logger.warning(f"🔄 Rate limit hit (RPM or Daily) for key {current_key_index}, attempting rotation...")
                         rotated = await manager.rotate_key()
                         if not rotated:
-                            logger.error(f"❌ All Google AI Studio keys exhausted.")
-                            raise error  # All keys exhausted, re-raise last error
+                            # All keys exhausted - for single key scenario, wait and retry once
+                            if len(manager._api_keys) == 1:
+                                logger.warning(f"⏳ Single key exhausted (RPM limit). Waiting 65s before retry...")
+                                await asyncio.sleep(65)
+                                # Reset exhausted state for single key
+                                async with manager._lock:
+                                    manager._exhausted_keys_today.clear()
+                                    manager._current_key_index = 0
+                                logger.info(f"🔄 Single key retry after wait...")
+                                continue  # Retry with same key after waiting
+                            else:
+                                logger.error(f"❌ All Google AI Studio keys exhausted.")
+                                raise error  # All keys exhausted, re-raise last error
                         # Continue to next key with same lock
                         logger.info(f"✅ Key rotation successful, trying next key...")
                         continue
