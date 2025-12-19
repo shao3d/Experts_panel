@@ -28,6 +28,7 @@ const DISPLAY_NAME_MAP: Record<string, string> = {
   'ai_grabli': 'AI_Grabli',
   'refat': 'Refat',
   'akimov': 'Akimov',
+  'llm_under_hood': 'Rinat',
 };
 
 /**
@@ -35,7 +36,7 @@ const DISPLAY_NAME_MAP: Record<string, string> = {
  */
 const EXPERT_GROUPS: { label: string; expertIds: string[] }[] = [
   { label: 'TechExperts', expertIds: ['ai_architect', 'neuraldeep'] },
-  { label: 'Tech&BizExperts', expertIds: ['ai_grabli', 'refat', 'akimov'] },
+  { label: 'Tech&BizExperts', expertIds: ['ai_grabli', 'refat', 'akimov', 'llm_under_hood'] },
 ];
 
 /**
