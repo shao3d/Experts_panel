@@ -247,16 +247,23 @@ Find relevant comment discussions that may contain insights not covered in main 
 - **Filtering**: HIGH relevance groups only
 - **Output**: Anchor posts with relevant discussions
 
-### Main Source Clarifications (NEW)
+### Main Source Comments (Enhanced)
 
-Additionally, the Comment Groups phase now extracts **author's clarifications from main_source posts**:
+The Comment Groups phase extracts comments from main_source posts in two categories:
 
-- **Source**: Comments on posts used in the main answer (main_sources)
+#### 1. Author's Clarifications
+- **Source**: Expert's own comments on posts used in the main answer
 - **Author Matching**: Uses `author_id` field (`channelXXX` in posts → `XXX` in comments)
-- **Priority**: These clarifications bypass LLM evaluation and are marked as HIGH relevance
-- **Flag**: Groups include `is_main_source_clarification: True`
+- **Priority**: Bypass LLM evaluation, marked as HIGH relevance
+- **Flag**: `is_main_source_clarification: True`
 
-This ensures that if the expert added important clarifications in comments to their own posts, these insights are included in the final response.
+#### 2. Community Comments (NEW)
+- **Source**: Community comments on posts used in the main answer
+- **Filter**: Comments where `author_id != post_author_id`
+- **Priority**: Bypass LLM evaluation, marked as HIGH relevance
+- **Flag**: `is_main_source_community: True`
+
+This ensures both expert clarifications AND valuable community discussions on main source posts are included.
 
 ### Integration
 - Runs AFTER Reduce phase completes
@@ -277,11 +284,12 @@ Extract complementary insights from relevant comment groups, with priority for a
 
 ### Output Structure
 
-The synthesis produces three types of insights (in priority order):
+The synthesis produces four types of insights (in priority order):
 
 1. **Дополнения эксперта к ответу** / **Notes from the expert** — Author's clarifications from main_source comments (highest priority)
-2. **Дополнительные комментарии от эксперта** / **Additional comments from the expert** — Expert's comments in other relevant discussions
-3. **Мнения сообщества** / **Community opinions** — Community insights from discussions
+2. **Дополнения сообщества к ответу** / **Notes from community** — Community comments on main_source posts (NEW!)
+3. **Дополнительные комментарии эксперта** / **Additional comments from the expert** — Expert's comments in other relevant discussions
+4. **Мнения сообщества** / **Community opinions** — Community insights from drift discussions
 
 ### Key Constraints
 - **No [post:ID] references**: Prevents UI confusion
@@ -290,10 +298,10 @@ The synthesis produces three types of insights (in priority order):
 - **Accuracy requirements**: Strict fact validation
 
 ### Process Flow
-1. **Group Separation**: Split main_source clarifications from other groups
-2. **Priority Formatting**: Main source clarifications get highest priority
+1. **Group Separation**: Split into three categories (author clarifications, community on main sources, drift groups)
+2. **Priority Formatting**: Main source clarifications get highest priority, then community, then drift
 3. **Content Analysis**: Extract insights not covered in main answer
-4. **Synthesis**: Generate structured insights with three sections
+4. **Synthesis**: Generate structured insights with four sections
 5. **Validation**: Ensure accuracy and relevance
 
 ## 🏗️ Response Building Phase

@@ -59,15 +59,21 @@ class CommentSynthesisService:
         Returns:
             Formatted JSON string of comment groups with author attribution
         """
-        # Separate main_source clarifications from other groups
-        main_source_groups = [g for g in comment_groups if g.get("is_main_source_clarification")]
-        other_groups = [g for g in comment_groups if not g.get("is_main_source_clarification")]
+        # Separate into 3 categories:
+        # 1. main_source_clarification (author comments on main sources)
+        # 2. main_source_community (community comments on main sources) - NEW!
+        # 3. other_discussions (drift groups)
+        main_source_author_groups = [g for g in comment_groups if g.get("is_main_source_clarification")]
+        main_source_community_groups = [g for g in comment_groups if g.get("is_main_source_community")]
+        other_groups = [g for g in comment_groups 
+                       if not g.get("is_main_source_clarification") and not g.get("is_main_source_community")]
         
         formatted_main_source = []
+        formatted_main_source_community = []
         formatted_other = []
 
-        # Process main_source clarifications (all comments are from author)
-        for group in main_source_groups:
+        # Process main_source author clarifications (all comments are from author)
+        for group in main_source_author_groups:
             main_source_comments = []
             for comment in group.get("comments", []):
                 # Handle both 'text' and 'comment_text' field names
@@ -83,7 +89,23 @@ class CommentSynthesisService:
                     "comments": main_source_comments
                 })
 
-        # Process other groups with expert/community separation
+        # NEW: Process main_source community comments
+        for group in main_source_community_groups:
+            community_comments = []
+            for comment in group.get("comments", []):
+                text = (comment.get("text") or comment.get("comment_text", "")).strip()
+                author = comment.get("author") or comment.get("author_name", "Unknown")
+                if text:
+                    community_comments.append({"author": author, "text": text})
+            
+            if community_comments:
+                formatted_main_source_community.append({
+                    "anchor_post_id": group.get("anchor_post", {}).get("telegram_message_id"),
+                    "is_main_source_community": True,
+                    "comments": community_comments
+                })
+
+        # Process other groups (drift) with expert/community separation
         for group in other_groups:
             expert_comments = []
             community_comments = []
@@ -109,9 +131,10 @@ class CommentSynthesisService:
                     "community_comments": community_comments
                 })
 
-        # Combine: main_source first, then other groups
+        # Combine: main_source author first, then main_source community, then drift groups
         result = {
             "main_source_clarifications": formatted_main_source,
+            "main_source_community": formatted_main_source_community,
             "other_discussions": formatted_other
         }
         
@@ -190,12 +213,15 @@ class CommentSynthesisService:
         # Handle new format with main_source/expert/community split
         import re
         main_source_insights = result.get("main_source_insights", "")
+        main_source_community_insights = result.get("main_source_community_insights", "")  # NEW
         expert_insights = result.get("expert_insights", "")
         community_insights = result.get("community_insights", "")
 
         # Handle list format if LLM returns it
         if isinstance(main_source_insights, list):
             main_source_insights = "\n".join(main_source_insights)
+        if isinstance(main_source_community_insights, list):
+            main_source_community_insights = "\n".join(main_source_community_insights)
         if isinstance(expert_insights, list):
             expert_insights = "\n".join(expert_insights)
         if isinstance(community_insights, list):
@@ -204,6 +230,8 @@ class CommentSynthesisService:
         # Sanitize strings (remove invalid escape sequences)
         if main_source_insights:
             main_source_insights = re.sub(r'\\(?![ntr"\\/])', '', main_source_insights)
+        if main_source_community_insights:
+            main_source_community_insights = re.sub(r'\\(?![ntr"\\/])', '', main_source_community_insights)
         if expert_insights:
             expert_insights = re.sub(r'\\(?![ntr"\\/])', '', expert_insights)
         if community_insights:
@@ -215,12 +243,14 @@ class CommentSynthesisService:
         
         if query_lang == "English":
             label_main_source = "Notes from the expert"
+            label_main_source_community = "Notes from community"  # NEW
             label_expert = "Additional comments from the expert"
             label_community = "Community opinions"
         else:
             # Russian (default)
             label_main_source = "Дополнения эксперта к ответу"
-            label_expert = "Дополнительные комментарии от эксперта"
+            label_main_source_community = "Дополнения сообщества к ответу"  # NEW
+            label_expert = "Дополнительные комментарии эксперта"  # Fixed: removed "от"
             label_community = "Мнения сообщества"
 
         # Combine into final synthesis with prioritized sections
@@ -228,13 +258,16 @@ class CommentSynthesisService:
         # Main source clarifications get highest priority
         if main_source_insights and main_source_insights.strip():
             parts.append(f"**{label_main_source}:**\n{main_source_insights}")
+        # NEW: Main source community comments second
+        if main_source_community_insights and main_source_community_insights.strip():
+            parts.append(f"**{label_main_source_community}:**\n{main_source_community_insights}")
         if expert_insights and expert_insights.strip():
             parts.append(f"**{label_expert}:**\n{expert_insights}")
         if community_insights and community_insights.strip():
             parts.append(f"**{label_community}:**\n{community_insights}")
 
         result["synthesis"] = "\n\n".join(parts) if parts else ""
-        logger.info(f"Synthesis combined: main_source={bool(main_source_insights)}, expert={bool(expert_insights)}, community={bool(community_insights)}")
+        logger.info(f"Synthesis combined: main_source={bool(main_source_insights)}, main_source_community={bool(main_source_community_insights)}, expert={bool(expert_insights)}, community={bool(community_insights)}")
 
         # Track token usage
         if response.usage:

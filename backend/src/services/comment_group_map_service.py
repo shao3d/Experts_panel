@@ -156,6 +156,76 @@ class CommentGroupMapService:
         logger.info(f"[{expert_id}] Found {len(groups)} main_source posts with author clarifications")
         return groups
 
+    def _load_main_source_community_comments(
+        self,
+        db: Session,
+        main_source_ids: List[int],
+        expert_id: str
+    ) -> List[Dict[str, Any]]:
+        """Load community comments from main_source posts.
+        
+        These are comments from community members (not the expert) on the posts
+        that were used as main_sources for the answer.
+        """
+        if not main_source_ids:
+            return []
+        
+        # Get posts by telegram_message_id
+        posts = db.query(Post).filter(
+            Post.telegram_message_id.in_(main_source_ids),
+            Post.expert_id == expert_id
+        ).all()
+        
+        logger.info(f"[{expert_id}] Loading main_source community comments from {len(posts)} posts")
+        
+        groups = []
+        for post in posts:
+            # Extract numeric author_id from post (remove 'channel' prefix)
+            post_author_id = post.author_id.replace("channel", "") if post.author_id else None
+            
+            # Get community comments (NOT from author)
+            if post_author_id:
+                community_comments = db.query(Comment).filter(
+                    Comment.post_id == post.post_id,
+                    Comment.author_id != post_author_id  # NOT the author
+                ).order_by(Comment.created_at.desc()).limit(15).all()
+            else:
+                # If no author_id, take all comments
+                community_comments = db.query(Comment).filter(
+                    Comment.post_id == post.post_id
+                ).order_by(Comment.created_at.desc()).limit(15).all()
+            
+            if community_comments:
+                groups.append({
+                    "anchor_post": {
+                        "telegram_message_id": post.telegram_message_id,
+                        "message_text": post.message_text or "[Media only]",
+                        "created_at": post.created_at.isoformat() if post.created_at else "",
+                        "author_name": post.author_name or "Unknown",
+                        "channel_username": get_channel_username(expert_id)
+                    },
+                    "drift_topics": ["Community discussion on main source"],
+                    "comments_count": len(community_comments),
+                    "comments": [
+                        {
+                            "comment_id": c.comment_id,
+                            "comment_text": c.comment_text,
+                            "author_name": c.author_name,
+                            "created_at": c.created_at.isoformat() if c.created_at else "",
+                            "updated_at": c.updated_at.isoformat() if c.updated_at else ""
+                        }
+                        for c in community_comments
+                    ],
+                    "is_main_source_community": True,  # Flag for synthesis
+                    "relevance": "HIGH",  # Main source community comments are HIGH priority
+                    "reason": "Community discussion on a main source post",
+                    "parent_telegram_message_id": post.telegram_message_id
+                })
+                logger.debug(f"Found {len(community_comments)} community comments for post {post.telegram_message_id}")
+        
+        logger.info(f"[{expert_id}] Found {len(groups)} main_source posts with community comments")
+        return groups
+
     def _load_drift_groups(
         self,
         db: Session,
@@ -278,7 +348,7 @@ class CommentGroupMapService:
             return await self.google_client.chat_completions_create(
                 model=model_name,
                 messages=messages,
-                temperature=0.3,
+                temperature=0.2,
                 response_format={"type": "json_object"}
             )
         raise ValueError("Google Client not initialized")
@@ -411,28 +481,36 @@ class CommentGroupMapService:
 
         # NEW: First load author comments from main_sources (these bypass LLM evaluation)
         main_source_groups = []
+        main_source_community_groups = []
         if main_source_ids:
             main_source_groups = self._load_main_source_author_comments(
                 db, main_source_ids, expert_id
             )
             logger.info(f"[{expert_id}] Loaded {len(main_source_groups)} main_source clarification groups")
+            
+            # NEW: Also load community comments from main_sources
+            main_source_community_groups = self._load_main_source_community_comments(
+                db, main_source_ids, expert_id
+            )
+            logger.info(f"[{expert_id}] Loaded {len(main_source_community_groups)} main_source community groups")
 
         # Load drift groups from database (excluding main_sources as before)
         all_groups = self._load_drift_groups(db, expert_id, exclude_post_ids)
 
         print(f"[DEBUG CGS] all_groups loaded: {len(all_groups)}")  # DEBUG
 
-        # If no drift groups but we have main_source clarifications, return those
-        if not all_groups and main_source_groups:
-            logger.info(f"[{expert_id}] No drift groups, but returning {len(main_source_groups)} main_source clarifications")
+        # If no drift groups but we have main_source groups, return those
+        if not all_groups and (main_source_groups or main_source_community_groups):
+            combined = main_source_groups + main_source_community_groups
+            logger.info(f"[{expert_id}] No drift groups, but returning {len(combined)} main_source groups")
             if progress_callback:
                 await progress_callback({
                     "event_type": "phase_complete",
                     "phase": "comment_groups",
                     "status": "completed",
-                    "message": f"Found {len(main_source_groups)} main source clarifications"
+                    "message": f"Found {len(combined)} main source groups"
                 })
-            return main_source_groups
+            return combined
 
         if not all_groups:
             print(f"[DEBUG CGS] No groups found, returning early")  # DEBUG
@@ -508,15 +586,16 @@ class CommentGroupMapService:
         relevance_order = {"HIGH": 0, "MEDIUM": 1}
         relevant_groups.sort(key=lambda x: relevance_order.get(x.get("relevance", "LOW"), 2))
 
-        # NEW: Combine main_source clarifications (first) with other relevant groups
-        # Main source clarifications have priority - they appear first
-        final_groups = main_source_groups + relevant_groups
+        # NEW: Combine main_source clarifications (first), then community, then drift groups
+        # Priority: author clarifications > community on main sources > drift groups
+        final_groups = main_source_groups + main_source_community_groups + relevant_groups
 
         # Log phase completion with timing
         duration_ms = int((time.time() - phase_start_time) * 1000)
         logger.info(
             f"[{expert_id}] Comment Groups Phase END: {duration_ms}ms, "
-            f"found {len(main_source_groups)} main_source clarifications + "
+            f"found {len(main_source_groups)} author clarifications + "
+            f"{len(main_source_community_groups)} community on main sources + "
             f"{len(relevant_groups)} drift groups = {len(final_groups)} total"
         )
 
@@ -525,7 +604,7 @@ class CommentGroupMapService:
                 "event_type": "phase_complete",
                 "phase": "comment_groups",
                 "status": "completed",
-                "message": f"Found {len(final_groups)} relevant comment groups ({len(main_source_groups)} from main sources)"
+                "message": f"Found {len(final_groups)} relevant comment groups ({len(main_source_groups)} author + {len(main_source_community_groups)} community from main sources)"
             })
 
         return final_groups
