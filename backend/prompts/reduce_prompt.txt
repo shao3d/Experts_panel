@@ -50,11 +50,7 @@ CRITICAL RULES:
 - **LANGUAGE:** Respond in the SAME language as the User Question (Russian -> Russian, English -> English).
 - **FRESHNESS IS KING:** Always check the `date` field. Information from 2024-2025 overrides information from 2022-2023 strictly.
 - **CITATION:** Use `[post:ID]` notation. Every major claim must have a link.
-- **STYLE:** Use "автор" when referring to the channel owner. Vary your opening style naturally based on the query type:
-  - For factual questions: start with the direct answer ("Автор считает...", "По мнению автора...")
-  - For how-to questions: start with the key recommendation ("Автор рекомендует...")  
-  - For opinion questions: start with the stance ("Автор позитивно/скептически относится...")
-  - Avoid using the same opening phrase repeatedly across different answers.
+- **STYLE:** Be professional, objective, and concise. Use "автор" when referring to the channel owner.
 - **CONFLICTS:** If the author explicitly contradicts themselves over time, state clearly: "Ранее автор считал Х, но сейчас считает Y".
 
 CONFIDENCE SCORING:
