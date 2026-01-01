@@ -21,9 +21,10 @@ export const EXPERT_UI_CONFIG: ExpertUIConfig = {
     'akimov': 'Biz_Akimov',
     'neuraldeep': 'Tech_Kovalskii',
     'refat': 'Tech_Refat',
-    'llm_under_hood': 'Rinat'
+    'llm_under_hood': 'Rinat',
+    'elkornacio': 'Elkornacio'
   },
-  order: ['refat', 'ai_architect', 'neuraldeep', 'ai_grabli', 'akimov', 'llm_under_hood']
+  order: ['refat', 'ai_architect', 'neuraldeep', 'ai_grabli', 'akimov', 'llm_under_hood', 'elkornacio']
 };
 
 /**
