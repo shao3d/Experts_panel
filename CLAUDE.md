@@ -96,6 +96,16 @@ For interactive database management (e.g., initializing, resetting, or listing t
 ### Model Configuration
 Model configuration is managed via environment variables as defined in `.env.example`. Do not modify model settings directly in the code.
 
+**Current Production Models:**
+- **Map Phase** (`MODEL_MAP`): `gemini-2.5-flash-lite` - Ultra-fast relevance detection
+- **Synthesis Phases** (`MODEL_SYNTHESIS`): `gemini-3-flash-preview` - Pro-grade reasoning for quality synthesis
+- **Analysis Tasks** (`MODEL_ANALYSIS`): `gemini-2.0-flash` - Fast, reliable for translation/validation
+- **Medium Scoring** (`MODEL_MEDIUM_SCORING`): `gemini-2.0-flash` - Content scoring
+- **Comment Groups** (`MODEL_COMMENT_GROUPS`): `gemini-2.0-flash` - Comment relevance
+- **Drift Analysis** (`MODEL_DRIFT_ANALYSIS`): `gemini-3-flash-preview` - Advanced topic drift detection
+
+**Note:** The `gemini-3-flash-preview` model (released December 2025) provides significantly improved reasoning capabilities while maintaining high speed and cost efficiency compared to earlier Gemini models.
+
 ### Testing Pipeline
 To test the pipeline, use the interactive API documentation (available at `/api/docs` when the server is running) to send requests to the `/api/v1/query` endpoint. You can test the entire pipeline or filter for specific experts. Individual posts can also be retrieved via the `/api/v1/posts/{post_id}` endpoint.
 
@@ -145,6 +155,12 @@ To debug the pipeline, monitor the backend log file for messages containing spec
 ---
 
 **Project Status:** Production-ready with active development
-**Last Updated:** 2025-12-18
-**Architecture:** Multi-expert, Gemini-only LLM pipeline with single-key auto-retry and real-time progress tracking
-**Key Features:** Parallel expert processing, cost optimization with Google AI Studio Tier 1, language validation, comment synthesis, enhanced error handling, admin authentication
+**Last Updated:** 2026-01-28
+**Architecture:** Multi-expert, Gemini-only LLM pipeline with unified client and real-time progress tracking
+**Key Features:** Parallel expert processing, unified `google_ai_studio_client`, cost optimization with Gemini 3 Flash, language validation, comment synthesis, enhanced error handling, admin authentication
+**Recent Updates:**
+- ✅ Migrated to `gemini-2.5-flash-lite` for Map phase (ultra-fast)
+- ✅ Upgraded to `gemini-3-flash-preview` for Synthesis and Drift Analysis (pro-grade reasoning)
+- ✅ Unified all services to use `google_ai_studio_client.py` for consistent API access
+- ✅ Removed hardcoded model defaults - all configuration via environment variables
+- ✅ Added `MODEL_DRIFT_ANALYSIS` configuration for offline cron jobs

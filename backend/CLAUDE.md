@@ -20,7 +20,7 @@ The backend implements a sophisticated query processing system that retrieves re
 - `src/services/language_validation_service.py` - Phase 5: Language consistency validation
 - `src/services/comment_group_map_service.py` - Phase 6: Comment drift analysis + main source author clarifications
 - `src/services/comment_synthesis_service.py` - Phase 7: Comment insights extraction with priority for main source clarifications
-- `src/services/drift_scheduler_service.py` - Offline Drift Analysis with **Gemini 2.5 Pro**
+- `src/services/drift_scheduler_service.py` - Offline Drift Analysis with **gemini-3-flash-preview** via unified client
 - `src/services/translation_service.py` - Translation service with Gemini
 - `src/utils/error_handler.py` - Enhanced user-friendly error processing system
 - `src/config.py` - Gemini-only model configuration management
@@ -124,9 +124,21 @@ python backend/scripts/prune_old_posts.py
 ### Gemini-Only Model Strategy
 The system uses Google AI Studio with automatic retry on rate limit errors (65s wait). For a detailed breakdown of the models used in each pipeline phase, see the **[Pipeline Architecture Guide](../docs/pipeline-architecture.md)**.
 
-- **Primary Model**: Gemini 2.0 Flash / Flash Lite (configurable per phase)
-- **Auto-Retry**: Automatic 65-second wait and retry on rate limit (429) errors
-- **No Paid Fallback**: Gemini-only strategy eliminates OpenRouter dependency
+**Current Production Models** (configured via `.env`):
+- **Map Phase**: `gemini-2.5-flash-lite` - Lightweight, ultra-fast relevance detection
+- **Synthesis (Reduce/Comments)**: `gemini-3-flash-preview` - Pro-grade reasoning for synthesis
+- **Analysis (Translation/Validation)**: `gemini-2.0-flash` - Fast, reliable for analysis tasks
+- **Medium Scoring**: `gemini-2.0-flash` - Content scoring and ranking
+- **Comment Groups**: `gemini-2.0-flash` - Comment relevance detection
+- **Drift Analysis** (offline): `gemini-3-flash-preview` - Advanced reasoning for topic drift
+
+**Unified Client Architecture**:
+- All services use `google_ai_studio_client.py` for consistent API access
+- OpenAI-compatible response format with automatic retry logic
+- 65-second wait on rate limit (429) errors with 2 retry attempts
+- Centralized error handling and monitoring
+
+**Note**: Model `gemini-3-flash-preview` (released 2025-12-17) is used for synthesis and drift analysis for enhanced reasoning capabilities while maintaining cost efficiency.
 
 ### Retry Mechanism (Map Phase)
 - Two-layer retry strategy: 3 per-chunk + 1 global retry attempts
