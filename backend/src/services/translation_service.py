@@ -20,13 +20,16 @@ class TranslationService:
 
     def __init__(
         self,
-        model: str = "gemini-2.0-flash"
+        model: str = None
     ):
         """Initialize TranslationService.
 
         Args:
-            model: Model to use (default Gemini via Google)
+            model: Model to use (default Gemini via Google). Defaults to MODEL_ANALYSIS from config.
         """
+        if model is None:
+            from .. import config
+            model = config.MODEL_ANALYSIS
         # Initialize Google Client
         self.google_client = None
         try:

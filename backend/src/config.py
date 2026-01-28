@@ -34,6 +34,8 @@ MODEL_MEDIUM_SCORING: str = os.getenv("MODEL_MEDIUM_SCORING", "gemini-2.0-flash"
 
 MODEL_COMMENT_GROUPS: str = os.getenv("MODEL_COMMENT_GROUPS", "gemini-2.0-flash")
 
+MODEL_DRIFT_ANALYSIS: str = os.getenv("MODEL_DRIFT_ANALYSIS", "gemini-3-flash-preview")
+
 # --- Medium Scoring Configuration ---
 # Threshold for accepting medium posts (0.0-1.0)
 MEDIUM_SCORE_THRESHOLD: float = float(os.getenv("MEDIUM_SCORE_THRESHOLD", "0.7"))
@@ -71,6 +73,7 @@ if os.getenv("ENVIRONMENT") != "production":
     print(f"  Map фаза:          {MODEL_MAP}")
     print(f"  Синтез:            {MODEL_SYNTHESIS}")
     print(f"  Анализ:            {MODEL_ANALYSIS}")
+    print(f"  Drift Analysis:    {MODEL_DRIFT_ANALYSIS}")
     print("--------------------------------------")
     print("--- Загруженная конфигурация логирования ---")
     print(f"  Log Level:         {LOG_LEVEL}")

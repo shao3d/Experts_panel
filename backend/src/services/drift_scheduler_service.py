@@ -6,12 +6,11 @@ import os
 from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Any, Optional
-import google.generativeai as genai
-from google.generativeai.types import HarmCategory, HarmBlockThreshold
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from src.config import GOOGLE_AI_STUDIO_API_KEYS, BACKEND_LOG_FILE
+from src.config import MODEL_DRIFT_ANALYSIS, BACKEND_LOG_FILE
+from .google_ai_studio_client import create_google_ai_studio_client, GoogleAIStudioError
 
 # Configure logging specific for Cron Jobs
 CRON_LOG_FILE = Path("/app/data/logs/cron_jobs.log")
@@ -39,42 +38,23 @@ class DriftSchedulerService:
     """
     Service for processing 'pending' comment groups using Google Gemini.
     Designed for Cron Job execution with strict rate limiting.
+
+    Uses the unified google_ai_studio_client for consistent API access
+    with automatic retry logic and OpenAI-compatible response format.
     """
 
     def __init__(self, db: Session):
         self.db = db
-        self.keys = GOOGLE_AI_STUDIO_API_KEYS
-        self.current_key_index = 0
-        self._configure_model()
-        # Strict Rate Limit for Gemini Pro (Free Tier)
-        # Limit is usually 5 RPM per key. We sleep 15s to be safe (4 RPM).
-        # With 5 keys, we can theoretically burst, but we play it safe per-key.
-        self.rate_limit_delay = 15.0
-
-    def _configure_model(self):
-        """Configure Gemini model with current key."""
-        if not self.keys:
-            raise ValueError("No GOOGLE_AI_STUDIO_API_KEYS configured")
-        
-        key = self.keys[self.current_key_index]
-        genai.configure(api_key=key)
-        
-        # Use Gemini 3 Flash Preview for drift analysis
-        # Benefits: 5x cheaper, 3x faster than 2.5 Pro with comparable reasoning
-        # Model released: 2025-12-17 (preview phase)
-        self.model = genai.GenerativeModel('gemini-3-flash-preview')
-        logger.info(f"Configured Gemini 3 Flash Preview with key index {self.current_key_index}")
-
-    def _rotate_key(self):
-        """Rotate to next available API key."""
-        self.current_key_index = (self.current_key_index + 1) % len(self.keys)
-        logger.warning(f"🔄 Rotating to Google API Key index: {self.current_key_index}")
-        self._configure_model()
+        self.client = create_google_ai_studio_client()
+        self.model_name = MODEL_DRIFT_ANALYSIS
+        # Rate limiting is handled by the google_ai_studio_client
+        # which includes 65s wait on rate limit errors
+        logger.info(f"DriftSchedulerService initialized with model: {self.model_name}")
 
     def get_pending_groups(self, limit: int = 10) -> List[Dict[str, Any]]:
         """Fetch pending groups with their posts and comments."""
         query = text("""
-            SELECT 
+            SELECT
                 cgd.post_id,
                 cgd.expert_id,
                 p.message_text as post_text,
@@ -85,10 +65,10 @@ class DriftSchedulerService:
             ORDER BY cgd.post_id ASC
             LIMIT :limit
         """)
-        
+
         results = self.db.execute(query, {"limit": limit}).fetchall()
         groups = []
-        
+
         for row in results:
             # Fetch comments for this post
             comments_query = text("""
@@ -98,7 +78,7 @@ class DriftSchedulerService:
                 ORDER BY created_at ASC
             """)
             comments = self.db.execute(comments_query, {"post_id": row.post_id}).fetchall()
-            
+
             groups.append({
                 "post_id": row.post_id,
                 "expert_id": row.expert_id,
@@ -106,16 +86,19 @@ class DriftSchedulerService:
                 "telegram_message_id": row.telegram_message_id,
                 "comments": [{"author": c.author_name, "text": c.comment_text} for c in comments]
             })
-            
+
         return groups
 
-    def analyze_drift(self, post_text: str, comments: List[Dict[str, str]]) -> Dict[str, Any]:
+    async def analyze_drift_async(self, post_text: str, comments: List[Dict[str, str]]) -> Dict[str, Any]:
         """
-        Analyze drift using Gemini.
+        Analyze drift using Gemini through the unified client.
         Returns parsed JSON result.
+
+        This is an async method that uses the unified Google AI Studio client
+        which handles retry logic and OpenAI-compatible response format.
         """
         comments_text = "\n".join([f"- {c['author']}: {c['text']}" for c in comments])
-        
+
         prompt = f"""Analyze this Telegram post and its comments to determine if the discussion DRIFTED to other topics.
 
 POST (anchor):
@@ -163,34 +146,90 @@ Return ONLY valid JSON:
 }}"""
 
         try:
-            response = self.model.generate_content(
-                prompt,
-                generation_config={"response_mime_type": "application/json"}
+            response = await self.client.chat_completions_create(
+                model=self.model_name,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.2,
+                response_format={"type": "json_object"}
             )
-            
-            # Parse JSON
+
+            # Parse OpenAI-compatible response format
+            text_response = response.choices[0].message.content.strip()
+
+            # Robust JSON extraction (same as original)
             try:
-                return json.loads(response.text)
+                parsed = json.loads(text_response)
             except json.JSONDecodeError:
-                # Fallback cleanup
-                clean_text = response.text.replace("```json", "").replace("```", "").strip()
-                return json.loads(clean_text)
-                
-        except Exception as e:
-            if "429" in str(e) or "quota" in str(e).lower():
-                self._rotate_key()
-                time.sleep(2)
-                # Retry once with new key
-                return self.analyze_drift(post_text, comments)
+                # Heuristic extraction
+                idx_brace = text_response.find('{')
+                idx_bracket = text_response.find('[')
+
+                start_idx = -1
+                end_idx = -1
+
+                if idx_brace != -1 and idx_bracket != -1:
+                    if idx_brace < idx_bracket:
+                        start_idx = idx_brace
+                        end_idx = text_response.rfind('}')
+                    else:
+                        start_idx = idx_bracket
+                        end_idx = text_response.rfind(']')
+                elif idx_brace != -1:
+                    start_idx = idx_brace
+                    end_idx = text_response.rfind('}')
+                elif idx_bracket != -1:
+                    start_idx = idx_bracket
+                    end_idx = text_response.rfind(']')
+
+                if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
+                    json_str = text_response[start_idx : end_idx + 1]
+                    try:
+                        parsed = json.loads(json_str)
+                    except json.JSONDecodeError as e:
+                        logger.error(f"Failed to parse extracted JSON: {json_str[:100]}... Error: {e}")
+                        raise ValueError(f"Gemini returned invalid JSON structure even after extraction.")
+                else:
+                    raise ValueError(f"Could not find valid JSON object in response: {text_response[:100]}")
+
+            # Validate structure
+            if isinstance(parsed, list):
+                if len(parsed) > 0 and isinstance(parsed[0], dict):
+                    return parsed[0]
+                raise ValueError(f"Gemini returned invalid list structure: {str(parsed)[:100]}")
+
+            if not isinstance(parsed, dict):
+                raise ValueError(f"Gemini returned non-dict JSON: {type(parsed)}")
+
+            return parsed
+
+        except GoogleAIStudioError as e:
+            # The unified client handles rate limit retries automatically
+            # If we still get an error here, log and re-raise
+            if e.is_rate_limit:
+                logger.error(f"Rate limit error after retries: {str(e)}")
             else:
-                raise e
+                logger.error(f"Google AI Studio error: {str(e)}")
+            raise
+
+    def analyze_drift(self, post_text: str, comments: List[Dict[str, str]]) -> Dict[str, Any]:
+        """
+        Synchronous wrapper for analyze_drift_async.
+        Required for backwards compatibility with existing code.
+        """
+        # Run the async method in a new event loop
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            return loop.run_until_complete(self.analyze_drift_async(post_text, comments))
+        finally:
+            loop.close()
 
     def update_group_status(self, post_id: int, analysis_result: Dict[str, Any]):
         """Update database with analysis results."""
-        
+
         has_drift = analysis_result.get("has_drift", False)
         drift_topics = analysis_result.get("drift_topics")
-        
+
         # Ensure drift_topics is valid JSON string or NULL
         drift_topics_json = None
         if has_drift and drift_topics:
@@ -199,17 +238,17 @@ Return ONLY valid JSON:
                 "drift_topics": drift_topics
             }
             drift_topics_json = json.dumps(drift_data, ensure_ascii=False)
-        
+
         update_query = text("""
             UPDATE comment_group_drift
-            SET 
+            SET
                 has_drift = :has_drift,
                 drift_topics = :drift_topics,
                 analyzed_by = 'drift_checked_gemini',
                 analyzed_at = datetime('now')
             WHERE post_id = :post_id
         """)
-        
+
         self.db.execute(update_query, {
             "post_id": post_id,
             "has_drift": 1 if has_drift else 0,
@@ -220,13 +259,13 @@ Return ONLY valid JSON:
     def process_batch(self, batch_size: int = 10):
         """Process a batch of pending groups."""
         groups = self.get_pending_groups(limit=batch_size)
-        
+
         if not groups:
             logger.info("No pending groups found.")
             return 0
 
         logger.info(f"Starting processing batch of {len(groups)} groups")
-        
+
         success_count = 0
         for group in groups:
             try:
@@ -234,8 +273,8 @@ Return ONLY valid JSON:
                 if not group['comments']:
                     logger.info(f"Post {group['post_id']} has no comments, marking no-comments")
                     self.db.execute(text("""
-                        UPDATE comment_group_drift 
-                        SET analyzed_by = 'no-comments', analyzed_at = datetime('now') 
+                        UPDATE comment_group_drift
+                        SET analyzed_by = 'no-comments', analyzed_at = datetime('now')
                         WHERE post_id = :pid
                     """), {"pid": group['post_id']})
                     self.db.commit()
@@ -244,23 +283,24 @@ Return ONLY valid JSON:
                 # Analyze
                 logger.info(f"Analyzing post {group['post_id']} ({len(group['comments'])} comments)...")
                 result = self.analyze_drift(group['post_text'], group['comments'])
-                
+
                 # Update DB
                 self.update_group_status(group['post_id'], result)
                 success_count += 1
-                
+
                 if result.get('has_drift'):
                     logger.info(f"✅ DRIFT DETECTED for post {group['post_id']}")
-                
-                # Strict Rate Limiting
-                time.sleep(self.rate_limit_delay)
-                
+
+                # Rate limiting is handled by the unified client
+                # Small delay to be safe
+                time.sleep(1.0)
+
             except Exception as e:
                 logger.error(f"❌ Error analyzing post {group['post_id']}: {str(e)}")
                 # Mark as error so we don't loop forever
                 self.db.execute(text("""
-                    UPDATE comment_group_drift 
-                    SET analyzed_by = 'error', analyzed_at = datetime('now') 
+                    UPDATE comment_group_drift
+                    SET analyzed_by = 'error', analyzed_at = datetime('now')
                     WHERE post_id = :pid
                 """), {"pid": group['post_id']})
                 self.db.commit()
@@ -272,15 +312,15 @@ Return ONLY valid JSON:
         """Run until no pending groups remain."""
         logger.info("🚀 Starting Drift Scheduler Cycle")
         total_processed = 0
-        
+
         while True:
             count = self.process_batch(batch_size=10)
             total_processed += count
             if count == 0:
                 break
-            
+
             # Extra cooldown between batches
             logger.info("Batch cooldown (10s)...")
             time.sleep(10)
-            
+
         logger.info(f"🏁 Cycle complete. Total processed: {total_processed}")

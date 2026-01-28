@@ -1,7 +1,6 @@
 """Language Validation Service for expert response language consistency."""
 
 import logging
-import os
 from typing import Dict, Any, Optional, Callable
 import asyncio
 import httpx
@@ -16,12 +15,15 @@ logger = logging.getLogger(__name__)
 class LanguageValidationService:
     """Service for validating and ensuring language consistency of expert responses."""
 
-    def __init__(self, model: str = "gemini-2.0-flash"):
+    def __init__(self, model: str = None):
         """Initialize LanguageValidationService.
 
         Args:
-            model: Model to use (Gemini)
+            model: Model to use (Gemini). Defaults to MODEL_ANALYSIS from config.
         """
+        if model is None:
+            from .. import config
+            model = config.MODEL_ANALYSIS
         self.model = model
         # Initialize internal translation service
         self.translation_service = TranslationService(
