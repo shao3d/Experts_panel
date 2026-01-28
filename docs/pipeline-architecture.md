@@ -363,7 +363,7 @@ The final SSE 'complete' event contains the response payload. The structure of t
 Parameters such as chunk sizes, thresholds, and limits are defined as constants within their respective service files in `backend/src/services/`. For example, `MEDIUM_SCORE_THRESHOLD` is defined in `medium_scoring_service.py`.
 
 ### Model Configuration
-Default models for each pipeline phase are configured using environment variables. The primary source for this configuration is `backend/src/config.py`, which defines variables such as `MODEL_MAP_PRIMARY`, `MODEL_SYNTHESIS_PRIMARY`, etc.
+Default models for each pipeline phase are configured using environment variables. The primary source for this configuration is `backend/src/config.py`, which defines variables such as `MODEL_MAP`, `MODEL_SYNTHESIS`, etc.
 
 ## 🔍 Debugging and Monitoring
 
@@ -373,8 +373,8 @@ Default models for each pipeline phase are configured using environment variable
 - **Phase Tracking**: Clear indication of current pipeline phase
 
 ### Common Issues
-1. **Map Phase Failures**: Check retry logs and API status. Map phase has a specialized retry logic that waits 65s if all keys are exhausted before giving up.
-2. **Key Rotation**: Check logs for `🔄` (rotation) and `❌` (exhaustion) emojis to verify key rotation behavior.
+1. **Map Phase Failures**: Check retry logs and API status. Map phase has a specialized retry logic that waits 65s if the key is exhausted (429) before giving up.
+2. **Rate Limits**: Check logs for `Rate limit/Exhaustion hit` messages to verify auto-retry behavior.
 3. **Empty Results**: Verify data exists for expert.
 4. **Timeout Issues**: Check chunk size and API limits.
 

@@ -211,18 +211,7 @@ Return ONLY valid JSON:
                 logger.error(f"Google AI Studio error: {str(e)}")
             raise
 
-    def analyze_drift(self, post_text: str, comments: List[Dict[str, str]]) -> Dict[str, Any]:
-        """
-        Synchronous wrapper for analyze_drift_async.
-        Required for backwards compatibility with existing code.
-        """
-        # Run the async method in a new event loop
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        try:
-            return loop.run_until_complete(self.analyze_drift_async(post_text, comments))
-        finally:
-            loop.close()
+
 
     def update_group_status(self, post_id: int, analysis_result: Dict[str, Any]):
         """Update database with analysis results."""
@@ -256,7 +245,7 @@ Return ONLY valid JSON:
         })
         self.db.commit()
 
-    def process_batch(self, batch_size: int = 10):
+    async def process_batch(self, batch_size: int = 10):
         """Process a batch of pending groups."""
         groups = self.get_pending_groups(limit=batch_size)
 
@@ -282,7 +271,7 @@ Return ONLY valid JSON:
 
                 # Analyze
                 logger.info(f"Analyzing post {group['post_id']} ({len(group['comments'])} comments)...")
-                result = self.analyze_drift(group['post_text'], group['comments'])
+                result = await self.analyze_drift_async(group['post_text'], group['comments'])
 
                 # Update DB
                 self.update_group_status(group['post_id'], result)
@@ -293,7 +282,7 @@ Return ONLY valid JSON:
 
                 # Rate limiting is handled by the unified client
                 # Small delay to be safe
-                time.sleep(1.0)
+                await asyncio.sleep(1.0)
 
             except Exception as e:
                 logger.error(f"❌ Error analyzing post {group['post_id']}: {str(e)}")
@@ -308,19 +297,19 @@ Return ONLY valid JSON:
         logger.info(f"Batch complete. Processed {success_count}/{len(groups)} successfully.")
         return len(groups)
 
-    def run_full_cycle(self):
+    async def run_full_cycle(self):
         """Run until no pending groups remain."""
         logger.info("🚀 Starting Drift Scheduler Cycle")
         total_processed = 0
 
         while True:
-            count = self.process_batch(batch_size=10)
+            count = await self.process_batch(batch_size=10)
             total_processed += count
             if count == 0:
                 break
 
             # Extra cooldown between batches
             logger.info("Batch cooldown (10s)...")
-            time.sleep(10)
+            await asyncio.sleep(10)
 
         logger.info(f"🏁 Cycle complete. Total processed: {total_processed}")

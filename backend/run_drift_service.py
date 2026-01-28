@@ -14,6 +14,8 @@ sys.path.append(str(Path(__file__).parent))
 from src.services.drift_scheduler_service import DriftSchedulerService
 from src.models.base import SessionLocal
 
+import asyncio
+
 def main():
     print("🚀 Starting Drift Analysis Service...")
     
@@ -24,10 +26,13 @@ def main():
     db = SessionLocal()
     try:
         scheduler = DriftSchedulerService(db)
-        scheduler.run_full_cycle()
+        # Run the full cycle asynchronously
+        asyncio.run(scheduler.run_full_cycle())
         print("✅ Drift Analysis Cycle Completed Successfully.")
     except Exception as e:
         print(f"❌ Fatal Error in Drift Analysis: {e}")
+        import traceback
+        traceback.print_exc()
         sys.exit(1)
     finally:
         db.close()
