@@ -138,7 +138,7 @@ The system uses Google AI Studio with automatic retry on rate limit errors (65s 
 - 65-second wait on rate limit (429) errors with 2 retry attempts
 - Centralized error handling and monitoring
 
-**Note**: Model `gemini-3-flash-preview` (released 2025-12-17) is used for synthesis and drift analysis for enhanced reasoning capabilities while maintaining cost efficiency.
+**Note**: Model `gemini-3-flash-preview` (released 2026-01-17) is used for synthesis and drift analysis for enhanced reasoning capabilities while maintaining cost efficiency.
 
 ### Retry Mechanism (Map Phase)
 - Two-layer retry strategy: 3 per-chunk + 1 global retry attempts

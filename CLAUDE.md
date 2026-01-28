@@ -104,7 +104,7 @@ Model configuration is managed via environment variables as defined in `.env.exa
 - **Comment Groups** (`MODEL_COMMENT_GROUPS`): `gemini-2.0-flash` - Comment relevance
 - **Drift Analysis** (`MODEL_DRIFT_ANALYSIS`): `gemini-3-flash-preview` - Advanced topic drift detection
 
-**Note:** The `gemini-3-flash-preview` model (released December 2025) provides significantly improved reasoning capabilities while maintaining high speed and cost efficiency compared to earlier Gemini models.
+**Note:** The `gemini-3-flash-preview` model (released January 2026) provides significantly improved reasoning capabilities while maintaining high speed and cost efficiency compared to earlier Gemini models.
 
 ### Testing Pipeline
 To test the pipeline, use the interactive API documentation (available at `/api/docs` when the server is running) to send requests to the `/api/v1/query` endpoint. You can test the entire pipeline or filter for specific experts. Individual posts can also be retrieved via the `/api/v1/posts/{post_id}` endpoint.
