@@ -35,6 +35,7 @@ The application's UI is built from a set of modular React components located in 
 - **`QueryForm.tsx`**: Provides the user input form with real-time validation.
 - **`ProgressSection.tsx`**: Displays real-time, multi-expert progress updates streamed from the backend via SSE.
 - **`ExpertAccordion.tsx`**: The primary UI element for organizing and displaying responses from multiple experts.
+- **`ExpertSelectionBar.tsx`**: A component for filtering results by expert, featuring grouped categories, post/comment statistics, and a collapsible desktop interface.
 - **`ExpertResponse.tsx`**: Renders the formatted answer, sources, and metadata for a single expert.
 - **`PostsList.tsx` & `PostCard.tsx`**: Work together to display the list of source posts, handle selection, and manage navigation. They use a consistent DOM ID pattern (`post-{expertId}-{postId}`) to link sources in the answer to the corresponding post in the list.
 

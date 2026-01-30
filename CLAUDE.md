@@ -159,6 +159,9 @@ To debug the pipeline, monitor the backend log file for messages containing spec
 **Architecture:** Multi-expert, Gemini-only LLM pipeline with unified client and real-time progress tracking
 **Key Features:** Parallel expert processing, unified `google_ai_studio_client`, cost optimization with Gemini 3 Flash, language validation, comment synthesis, enhanced error handling, admin authentication
 **Recent Updates:**
+- ✅ Added real-time stats (posts/comments) to expert selection UI
+- ✅ Implemented collapsible expert selection bar for cleaner UX
+- ✅ Added new experts: Ilia, Polyakov, Doronin
 - ✅ Migrated to `gemini-2.5-flash-lite` for Map phase (ultra-fast)
 - ✅ Upgraded to `gemini-3-flash-preview` for Synthesis and Drift Analysis (pro-grade reasoning)
 - ✅ Unified all services to use `google_ai_studio_client.py` for consistent API access
