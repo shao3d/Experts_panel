@@ -33,6 +33,10 @@ export interface ExpertInfo {
   expert_id: string;
   display_name: string;
   channel_username: string;
+  stats: {
+    posts_count: number;
+    comments_count: number;
+  };
 }
 
 // ============================================================================

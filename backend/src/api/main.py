@@ -213,11 +213,16 @@ def get_db():
 
 
 # Pydantic model for expert info
+class ExpertStats(BaseModel):
+    posts_count: int
+    comments_count: int
+
 class ExpertInfo(BaseModel):
     """Expert information for frontend."""
     expert_id: str
     display_name: str
     channel_username: str
+    stats: ExpertStats
 
 
 # Health check endpoint
@@ -251,23 +256,43 @@ async def health_check() -> Dict[str, Any]:
 # Experts endpoint
 @app.get("/api/v1/experts", response_model=List[ExpertInfo], tags=["experts"])
 def get_experts(db = Depends(get_db)) -> List[ExpertInfo]:
-    """Get all experts from expert_metadata table.
+    """Get all experts from expert_metadata table with dynamic stats.
 
     Returns list of experts for dynamic frontend loading.
     Added in Migration 009 as part of expert metadata centralization.
+    Updated to include real-time post and comment counts.
     """
     from ..models.expert import Expert
+    from ..models.post import Post
+    from ..models.comment import Comment
+    from sqlalchemy import func
 
+    # Fetch experts
     experts = db.query(Expert).order_by(Expert.expert_id).all()
-
-    return [
-        ExpertInfo(
+    
+    # Calculate stats for each expert
+    # We do this in code to avoid complex group by logic with potential zero counts
+    # Ideally this would be a single optimized query, but for < 20 experts this is fine
+    results = []
+    
+    for e in experts:
+        # Count posts
+        posts_count = db.query(func.count(Post.post_id)).filter(Post.expert_id == e.expert_id).scalar() or 0
+        
+        # Count comments (join through posts)
+        comments_count = db.query(func.count(Comment.comment_id)).join(Post, Comment.post_id == Post.post_id).filter(Post.expert_id == e.expert_id).scalar() or 0
+        
+        results.append(ExpertInfo(
             expert_id=e.expert_id,
             display_name=e.display_name,
-            channel_username=e.channel_username
-        )
-        for e in experts
-    ]
+            channel_username=e.channel_username,
+            stats=ExpertStats(
+                posts_count=posts_count,
+                comments_count=comments_count
+            )
+        ))
+
+    return results
 
 
 # API info endpoint

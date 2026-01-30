@@ -5,12 +5,7 @@
  */
 
 import React from 'react';
-
-interface ExpertInfo {
-  expert_id: string;
-  display_name: string;
-  channel_username: string;
-}
+import { ExpertInfo } from '../types/api';
 
 interface ExpertSelectionBarProps {
   availableExperts: ExpertInfo[];
@@ -95,6 +90,11 @@ const ExpertSelectionBar: React.FC<ExpertSelectionBarProps> = ({
         />
         <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           {getDisplayName(expert)}
+          {expert.stats && (
+            <span style={{ fontSize: '0.75em', color: '#6c757d', marginLeft: '2px' }}>
+              {expert.stats.posts_count}/{expert.stats.comments_count}
+            </span>
+          )}
           <a
             href={`https://t.me/${expert.channel_username}`}
             title={`Open @${expert.channel_username} in Telegram`}
