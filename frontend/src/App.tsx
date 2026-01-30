@@ -201,7 +201,7 @@ export const App: React.FC = () => {
           onClick={() => setIsDesktopExpertBarOpen(!isDesktopExpertBarOpen)}
         >
           <span>
-            {isDesktopExpertBarOpen ? '▼' : '▶'} Expert Settings (Selected: {selectedExperts.size}/{availableExperts.length})
+            {isDesktopExpertBarOpen ? '▼' : '▶'} Experts
           </span>
         </div>
         <div className={`expert-bar-body ${isDesktopExpertBarOpen ? 'open' : 'closed'}`}>
