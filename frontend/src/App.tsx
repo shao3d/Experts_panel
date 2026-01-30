@@ -199,9 +199,10 @@ export const App: React.FC = () => {
         <div 
           className="expert-bar-header" 
           onClick={() => setIsDesktopExpertBarOpen(!isDesktopExpertBarOpen)}
+          title={isDesktopExpertBarOpen ? "Hide experts" : "Show experts"}
         >
-          <span>
-            {isDesktopExpertBarOpen ? '▼' : '▶'} Experts
+          <span className="toggle-arrow">
+            {isDesktopExpertBarOpen ? '▼' : '▶'}
           </span>
         </div>
         <div className={`expert-bar-body ${isDesktopExpertBarOpen ? 'open' : 'closed'}`}>
