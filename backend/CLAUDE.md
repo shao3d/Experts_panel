@@ -31,7 +31,7 @@ The backend implements a sophisticated query processing system that retrieves re
 
 ## API Endpoints
 - `GET /health` - Health check with service status validation
-- `GET /api/v1/experts` - Dynamic expert loading from database with metadata
+- `GET /api/v1/experts` - Dynamic expert loading from database with metadata and real-time stats (posts/comments count)
 - `POST /api/v1/query` - Main multi-expert query endpoint with enhanced SSE streaming and parallel processing
 - `GET /api/v1/posts/{post_id}` - Retrieve individual post details with comments and translation support
 - `POST /api/v1/import` - Import Telegram JSON data with expert assignment

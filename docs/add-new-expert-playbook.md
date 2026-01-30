@@ -1,7 +1,7 @@
 # 🚀 Добавление нового эксперта (Полный алгоритм)
 
-**Версия:** 5.0 (UI интеграция + Gemini CLI)
-**Дата:** 2025-12-19
+**Версия:** 6.0 (Stats update + Collapsible UI)
+**Дата:** 2026-01-30
 **Статус:** Актуально
 
 ---
@@ -11,7 +11,7 @@
 ```
 1. Экспорт JSON из Telegram Desktop
 2. ./scripts/add_new_expert.sh <id> "<name>" <username> <json>
-3. Drift Analysis через Gemini CLI (бесплатно!)
+3. Drift Analysis (автоматически или через Gemini CLI)
 4. UI интеграция (2 файла)
 5. Деплой: ./scripts/update_production_db.sh + git push
 ```
@@ -28,7 +28,7 @@
    - `TELEGRAM_API_HASH`
    - `TELEGRAM_SESSION_NAME`
 
-3. **Gemini CLI** (для бесплатного Drift Analysis):
+3. **Gemini CLI** (опционально, для бесплатного Drift Analysis):
    ```bash
    npm install -g @google/gemini-cli
    ```
@@ -41,9 +41,9 @@
 
 | Поле | Пример | Правила |
 |------|--------|---------|
-| `expert_id` | `crypto_guru` | Только `a-z`, `0-9`, `_` |
-| `display_name` | `"Crypto Guru"` | В кавычках, для UI |
-| `username` | `crypto_insider` | Telegram username без `@` |
+| `expert_id` | `doronin` | Только `a-z`, `0-9`, `_` |
+| `display_name` | `"Doronin"` | В кавычках, для UI |
+| `username` | `kdoronin_blog` | Telegram username без `@` |
 | `json_path` | `data/exports/result.json` | Путь к экспорту |
 
 ### Step 2: Запустите скрипт регистрации
@@ -54,7 +54,7 @@
 
 **Пример (из корня проекта):**
 ```bash
-./scripts/add_new_expert.sh llm_under_hood "Rinat" llm_under_hood path/to/result.json
+./scripts/add_new_expert.sh polyakov "Polyakov" countwithsasha data/exports/polyakov.json
 ```
 
 **Что произойдёт автоматически:**
