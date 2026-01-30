@@ -756,3 +756,40 @@
     display: none !important;
   }
 }
+
+/* Desktop Expert Bar Accordion */
+.expert-bar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 20px;
+  background-color: #f8f9fa;
+  cursor: pointer;
+  border-bottom: 1px solid #e9ecef;
+  user-select: none;
+  font-size: 13px;
+  color: #495057;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.expert-bar-header:hover {
+  background-color: #e9ecef;
+}
+
+.expert-bar-body {
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  opacity: 1;
+}
+
+.expert-bar-body.closed {
+  max-height: 0;
+  opacity: 0;
+  border-bottom: none; 
+}
+
+.expert-bar-body.open {
+  max-height: 1000px; /* Sufficient height for content */
+  opacity: 1;
+}

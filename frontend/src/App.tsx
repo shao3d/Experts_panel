@@ -25,6 +25,9 @@ export const App: React.FC = () => {
   
   // Mobile Expert Selector Drawer State
   const [isExpertSelectorOpen, setIsExpertSelectorOpen] = useState(false);
+  
+  // Desktop Expert Bar State (Accordion)
+  const [isDesktopExpertBarOpen, setIsDesktopExpertBarOpen] = useState(true);
 
   // Timer state for processing time
   const [startTime, setStartTime] = useState<number | null>(null);
@@ -89,6 +92,7 @@ export const App: React.FC = () => {
     setError(null);
     setCurrentQuery(query);
     setIsExpertSelectorOpen(false); // Close selector on submit
+    setIsDesktopExpertBarOpen(false); // Close desktop expert bar on submit
 
     try {
       const experts = Array.from(selectedExperts);
@@ -192,12 +196,22 @@ export const App: React.FC = () => {
 
       {/* Desktop: Expert Selection Bar */}
       <div className="expert-bar-container desktop-only">
-        <ExpertSelectionBar
-          availableExperts={availableExperts}
-          selectedExperts={selectedExperts}
-          onExpertsChange={setSelectedExperts}
-          disabled={isProcessing}
-        />
+        <div 
+          className="expert-bar-header" 
+          onClick={() => setIsDesktopExpertBarOpen(!isDesktopExpertBarOpen)}
+        >
+          <span>
+            {isDesktopExpertBarOpen ? '▼' : '▶'} Expert Settings (Selected: {selectedExperts.size}/{availableExperts.length})
+          </span>
+        </div>
+        <div className={`expert-bar-body ${isDesktopExpertBarOpen ? 'open' : 'closed'}`}>
+          <ExpertSelectionBar
+            availableExperts={availableExperts}
+            selectedExperts={selectedExperts}
+            onExpertsChange={setSelectedExperts}
+            disabled={isProcessing}
+          />
+        </div>
       </div>
 
       {/* Main Content Area - Expert Accordions */}
