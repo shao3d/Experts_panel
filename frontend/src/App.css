@@ -528,8 +528,9 @@
 
 .expert-group-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* Changed from center to allow wrapping */
   gap: 16px;
+  margin-bottom: 8px; /* Add some spacing between rows */
 }
 
 .expert-group-label {
@@ -539,11 +540,12 @@
   letter-spacing: 0.3px;
   min-width: 120px;
   flex-shrink: 0;
+  padding-top: 6px; /* Align text with the first row of checkboxes */
 }
 
 .expert-group-items {
   display: flex;
-  gap: 16px;
+  gap: 12px; /* Reduced from 16px to fit more items */
   align-items: center;
   flex-wrap: wrap;
 }
