@@ -1,80 +1,275 @@
-import sys
+#!/usr/bin/env python3
+"""
+Безопасное удаление старых постов (до 2024) у экспертов polyakov и ai_grabli.
+
+Скрипт удаляет:
+- 34 поста (25 ai_grabli + 9 polyakov)
+- 10 комментариев (cascade)
+- 3 ссылки (cascade)  
+- 7 drift-записей (вручную, т.к. нет cascade)
+
+Перед удалением создаётся backup!
+"""
+
 import os
-from pathlib import Path
+import sys
+import shutil
 from datetime import datetime
-from sqlalchemy import text
+from pathlib import Path
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import sessionmaker
 
-# Add parent directory to path to import from src
-current_dir = Path(__file__).resolve().parent
-project_root = current_dir.parent  # backend/
-sys.path.append(str(project_root / 'src'))
+# Настройки
+DB_PATH = Path(__file__).parent.parent / "data" / "experts.db"
+BACKUP_DIR = Path(__file__).parent.parent / "data" / "backups"
 
-# Load environment variables just in case (though usually not needed for SessionLocal if env is set)
-from dotenv import load_dotenv
-load_dotenv(project_root.parent / '.env')
+# Эксперты и дата для удаления
+EXPERTS_TO_PRUNE = ['polyakov', 'ai_grabli']
+CUTOFF_DATE = '2024-01-01'
 
-# FORCE DATABASE PATH to be absolute to avoid relative path confusion
-db_path = project_root.parent / 'backend' / 'data' / 'experts.db'
-os.environ["DATABASE_URL"] = f"sqlite:///{db_path.resolve()}"
-print(f"🔧 Using Database: {os.environ['DATABASE_URL']}")
 
-from models.base import SessionLocal
+def create_backup():
+    """Создать резервную копию БД."""
+    BACKUP_DIR.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    backup_path = BACKUP_DIR / f"experts.db.backup.{timestamp}"
+    
+    print(f"📦 Создание backup: {backup_path}")
+    shutil.copy2(DB_PATH, backup_path)
+    
+    backup_size = backup_path.stat().st_size / (1024 * 1024)
+    print(f"   Размер backup: {backup_size:.2f} MB")
+    
+    return backup_path
 
-def prune_old_posts():
-    """
-    Deletes all posts created before January 1, 2025.
-    Due to ON DELETE CASCADE in schema, this also deletes linked comments and links.
-    """
-    db = SessionLocal()
-    try:
-        print("=" * 60)
-        print("🧹 DATABASE CLEANUP TOOL")
-        print("=" * 60)
-        print("Target: Delete posts older than 2025-01-01")
-        
-        # Define the cutoff date string for SQL comparison
-        # SQLite stores dates as strings 'YYYY-MM-DD HH:MM:SS' usually
-        cutoff_date = '2025-01-01 00:00:00'
-        
-        # Count posts to be deleted
-        print("\n📊 Analyzing database...")
-        count_query = text("SELECT COUNT(*) FROM posts WHERE created_at < :cutoff")
-        count = db.execute(count_query, {"cutoff": cutoff_date}).scalar()
-        
-        if count == 0:
-            print("✅ No old posts found. Database is already clean.")
-            return
 
-        print(f"⚠️  Found {count} posts older than {cutoff_date}")
-        print("   These posts (and their comments/links) will be permanently deleted.")
-        
-        # Confirmation
-        response = input("\n❓ Type 'delete' to confirm execution: ")
-        if response.lower() != 'delete':
-            print("❌ Operation cancelled.")
-            return
+def analyze_impact(session):
+    """Проанализировать, что будет удалено."""
+    print("\n📊 Анализ данных для удаления:")
+    print("-" * 50)
+    
+    # Посты
+    result = session.execute(text("""
+        SELECT expert_id, COUNT(*) as count,
+               MIN(DATE(created_at)) as oldest,
+               MAX(DATE(created_at)) as newest
+        FROM posts
+        WHERE created_at < :cutoff AND expert_id IN ('polyakov', 'ai_grabli')
+        GROUP BY expert_id
+    """), {'cutoff': CUTOFF_DATE})
+    
+    total_posts = 0
+    for row in result:
+        print(f"   Посты {row.expert_id}: {row.count} шт. ({row.oldest} → {row.newest})")
+        total_posts += row.count
+    
+    # Комментарии
+    result = session.execute(text("""
+        SELECT p.expert_id, COUNT(*) as count
+        FROM comments c
+        JOIN posts p ON c.post_id = p.post_id
+        WHERE p.created_at < :cutoff AND p.expert_id IN ('polyakov', 'ai_grabli')
+        GROUP BY p.expert_id
+    """), {'cutoff': CUTOFF_DATE})
+    
+    total_comments = 0
+    for row in result:
+        print(f"   Комментарии {row.expert_id}: {row.count} шт.")
+        total_comments += row.count
+    
+    # Drift
+    result = session.execute(text("""
+        SELECT p.expert_id, COUNT(*) as count
+        FROM comment_group_drift cgd
+        JOIN posts p ON cgd.post_id = p.post_id
+        WHERE p.created_at < :cutoff AND p.expert_id IN ('polyakov', 'ai_grabli')
+        GROUP BY p.expert_id
+    """), {'cutoff': CUTOFF_DATE})
+    
+    total_drift = 0
+    for row in result:
+        print(f"   Drift records {row.expert_id}: {row.count} шт.")
+        total_drift += row.count
+    
+    # Ссылки
+    result = session.execute(text("""
+        SELECT COUNT(*) as count
+        FROM links l
+        JOIN posts src ON l.source_post_id = src.post_id
+        JOIN posts tgt ON l.target_post_id = tgt.post_id
+        WHERE (src.created_at < :cutoff AND src.expert_id IN ('polyakov', 'ai_grabli'))
+           OR (tgt.created_at < :cutoff AND tgt.expert_id IN ('polyakov', 'ai_grabli'))
+    """), {'cutoff': CUTOFF_DATE})
+    
+    total_links = result.scalar()
+    print(f"   Ссылки (связанные): {total_links} шт.")
+    
+    print("-" * 50)
+    print(f"   ИТОГО: {total_posts} постов, {total_comments} комментариев, {total_drift} drift, {total_links} ссылок")
+    
+    return total_posts, total_comments, total_drift, total_links
 
-        print("\n🗑️  Deleting...")
-        
-        # Execute deletion
-        delete_query = text("DELETE FROM posts WHERE created_at < :cutoff")
-        db.execute(delete_query, {"cutoff": cutoff_date})
-        db.commit()
-        
-        print(f"✅ Successfully deleted {count} posts.")
-        
-        # Optimize DB size
-        print("\n🧹 Running VACUUM to optimize database size...")
-        db.execute(text("VACUUM"))
-        print("✅ VACUUM complete.")
-        
-        print("\n✨ Database cleanup finished successfully.")
 
-    except Exception as e:
-        print(f"\n❌ Error during pruning: {e}")
-        db.rollback()
-    finally:
-        db.close()
+def execute_deletion(session):
+    """Выполнить удаление в правильном порядке."""
+    print("\n🗑️  Удаление данных...")
+    print("-" * 50)
+    
+    # Шаг 1: Удалить drift-записи (нет cascade)
+    result = session.execute(text("""
+        DELETE FROM comment_group_drift 
+        WHERE post_id IN (
+            SELECT post_id FROM posts 
+            WHERE created_at < :cutoff AND expert_id IN ('polyakov', 'ai_grabli')
+        )
+        RETURNING id
+    """), {'cutoff': CUTOFF_DATE})
+    
+    drift_deleted = result.rowcount
+    print(f"   ✅ Drift records удалено: {drift_deleted}")
+    
+    # Шаг 2: Удалить посты (cascade удалит comments и links)
+    result = session.execute(text("""
+        DELETE FROM posts 
+        WHERE created_at < :cutoff AND expert_id IN ('polyakov', 'ai_grabli')
+        RETURNING post_id
+    """), {'cutoff': CUTOFF_DATE})
+    
+    posts_deleted = result.rowcount
+    print(f"   ✅ Постов удалено: {posts_deleted}")
+    
+    return posts_deleted, drift_deleted
+
+
+def verify_deletion(session):
+    """Проверить, что всё удалено корректно."""
+    print("\n🔍 Проверка после удаления:")
+    print("-" * 50)
+    
+    # Проверить, что посты удалены
+    result = session.execute(text("""
+        SELECT COUNT(*) FROM posts
+        WHERE created_at < :cutoff AND expert_id IN ('polyakov', 'ai_grabli')
+    """), {'cutoff': CUTOFF_DATE})
+    
+    remaining_posts = result.scalar()
+    print(f"   Осталось постов: {remaining_posts} (должно быть 0)")
+    
+    # Проверить, что drift удалены (теперь post_id не существует)
+    result = session.execute(text("""
+        SELECT COUNT(*) FROM comment_group_drift cgd
+        LEFT JOIN posts p ON cgd.post_id = p.post_id
+        WHERE p.post_id IS NULL
+    """))
+    
+    orphaned_drift = result.scalar()
+    print(f"   Orphaned drift: {orphaned_drift} (проверяем что не появились новые)")
+    
+    # Проверяем, что удалились drift для наших постов (они должны быть удалены)
+    result = session.execute(text("""
+        SELECT COUNT(*) FROM comment_group_drift cgd
+        WHERE cgd.post_id IN (
+            SELECT post_id FROM posts 
+            WHERE created_at < :cutoff AND expert_id IN ('polyakov', 'ai_grabli')
+        )
+    """), {'cutoff': CUTOFF_DATE})
+    
+    remaining_target_drift = result.scalar()
+    print(f"   Осталось drift целевых постов: {remaining_target_drift} (должно быть 0)")
+    
+    all_ok = (remaining_posts == 0 and remaining_target_drift == 0)
+    
+    return all_ok
+
+
+def vacuum_database():
+    """Выполнить VACUUM для освобождения места."""
+    print("\n🧹 Очистка БД (VACUUM)...")
+    
+    size_before = DB_PATH.stat().st_size / (1024 * 1024)
+    
+    engine = create_engine(f"sqlite:///{DB_PATH}")
+    with engine.connect() as conn:
+        conn.execute(text("VACUUM"))
+        conn.commit()
+    
+    size_after = DB_PATH.stat().st_size / (1024 * 1024)
+    freed = size_before - size_after
+    
+    print(f"   Размер до: {size_before:.2f} MB")
+    print(f"   Размер после: {size_after:.2f} MB")
+    print(f"   Освобождено: {freed:.2f} MB")
+
+
+def main():
+    print("=" * 60)
+    print("🧹 Prune Old Posts - Безопасное удаление старых постов")
+    print("=" * 60)
+    
+    # Проверить существование БД
+    if not DB_PATH.exists():
+        print(f"❌ Ошибка: БД не найдена: {DB_PATH}")
+        sys.exit(1)
+    
+    print(f"\n📁 БД: {DB_PATH}")
+    print(f"📅 Удаляем посты до: {CUTOFF_DATE}")
+    print(f"👤 Эксперты: {', '.join(EXPERTS_TO_PRUNE)}")
+    
+    # Создать backup
+    backup_path = create_backup()
+    
+    # Подключиться к БД
+    engine = create_engine(f"sqlite:///{DB_PATH}")
+    Session = sessionmaker(bind=engine)
+    
+    with Session() as session:
+        # Анализ
+        total_posts, total_comments, total_drift, total_links = analyze_impact(session)
+        
+        if total_posts == 0:
+            print("\n⚠️  Нет данных для удаления!")
+            sys.exit(0)
+        
+        # Подтверждение
+        print(f"\n⚠️  ВНИМАНИЕ: Будет удалено {total_posts} постов и связанных данных!")
+        print(f"   Backup создан: {backup_path}")
+        
+        if os.environ.get('FORCE_DELETE') == '1':
+            confirm = 'y'
+        else:
+            confirm = input("\n❓ Продолжить удаление? [y/N]: ").strip().lower()
+        
+        if confirm != 'y':
+            print("❌ Отменено пользователем")
+            sys.exit(0)
+        
+        try:
+            # Выполнить удаление
+            posts_deleted, drift_deleted = execute_deletion(session)
+            
+            # Проверить
+            all_ok = verify_deletion(session)
+            
+            if all_ok:
+                session.commit()
+                print("\n✅ Транзакция успешно завершена!")
+            else:
+                print("\n❌ Обнаружены проблемы! Откат транзакции...")
+                session.rollback()
+                sys.exit(1)
+                
+        except Exception as e:
+            print(f"\n❌ Ошибка: {e}")
+            session.rollback()
+            sys.exit(1)
+    
+    # VACUUM (вне транзакции)
+    vacuum_database()
+    
+    print("\n" + "=" * 60)
+    print("✅ Готово! Старые посты удалены.")
+    print("=" * 60)
+
 
 if __name__ == "__main__":
-    prune_old_posts()
+    main()
