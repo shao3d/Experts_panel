@@ -49,6 +49,7 @@ from ..services.medium_scoring_service import MediumScoringService
 from ..services.translation_service import TranslationService
 from ..services.language_validation_service import LanguageValidationService
 from ..utils.error_handler import error_handler
+from ..utils.date_utils import get_cutoff_date
 
 logger = logging.getLogger(__name__)
 
@@ -104,15 +105,22 @@ async def process_expert_pipeline(
     """
     start_time = time.time()
 
-    # 1. Get posts for this expert only
-    query = db.query(Post).filter(
-        Post.expert_id == expert_id
-    ).order_by(Post.created_at.desc())
+    # 1. Calculate cutoff date if filtering enabled
+    cutoff_date = None
+    if request.use_recent_only:
+        cutoff_date = get_cutoff_date(months=3)
+        logger.info(f"[{expert_id}] use_recent_only enabled, cutoff_date: {cutoff_date.isoformat()}")
+
+    # 2. Get posts for this expert (with optional date filter)
+    query = db.query(Post).filter(Post.expert_id == expert_id)
+
+    if cutoff_date:
+        query = query.filter(Post.created_at >= cutoff_date)
 
     if request.max_posts is not None:
         query = query.limit(request.max_posts)
 
-    posts = query.all()
+    posts = query.order_by(Post.created_at.desc()).all()
 
     if not posts:
         return ExpertResponse(
@@ -247,6 +255,7 @@ async def process_expert_pipeline(
             relevant_posts=high_posts,
             query=request.query,
             expert_id=expert_id,  # CRITICAL: Pass expert_id
+            cutoff_date=cutoff_date,  # Pass cutoff_date for filtering linked posts
             progress_callback=resolve_progress
         )
 
@@ -344,6 +353,7 @@ async def process_expert_pipeline(
             expert_id=expert_id,  # CRITICAL: Pass expert_id
             exclude_post_ids=main_sources,  # Exclude main_sources from drift search
             main_source_ids=main_sources,   # NEW: Extract author clarifications from main_sources
+            cutoff_date=cutoff_date,  # Pass cutoff_date for filtering drift groups
             progress_callback=cg_progress
         )
 

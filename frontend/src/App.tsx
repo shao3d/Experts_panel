@@ -84,7 +84,7 @@ export const App: React.FC = () => {
   /**
    * Handle query submission
    */
-  const handleQuerySubmit = async (query: string): Promise<void> => {
+  const handleQuerySubmit = async (query: string, options?: { use_recent_only?: boolean }): Promise<void> => {
     // Reset state
     setIsProcessing(true);
     setProgressEvents([]);
@@ -98,7 +98,7 @@ export const App: React.FC = () => {
       const experts = Array.from(selectedExperts);
       // Submit query with progress callback
       const response = await apiClient.submitQuery(
-        { query, expert_filter: experts, stream_progress: true, include_comments: true, include_comment_groups: true },
+        { query, expert_filter: experts, stream_progress: true, include_comments: true, include_comment_groups: true, use_recent_only: options?.use_recent_only },
         (event: ProgressEvent) => {
           // Add progress event to log
           setProgressEvents(prev => [...prev, event]);

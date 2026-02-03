@@ -64,6 +64,9 @@ export interface QueryRequest {
 
   /** List of expert IDs to filter results (default: all experts) */
   expert_filter?: string[];
+
+  /** Use only recent data (last 3 months) for fresh news (default: false) */
+  use_recent_only?: boolean;
 }
 
 // ============================================================================

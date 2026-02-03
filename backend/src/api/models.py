@@ -53,6 +53,12 @@ class QueryRequest(BaseModel):
         default=None,
         description="Filter by specific expert IDs. None = all experts"
     )
+    use_recent_only: Optional[bool] = Field(
+        default=False,
+        description="Use only recent data (last 3 months) for fresh news and current models. "
+                    "When false, uses all available data for comprehensive answers including "
+                    "methodology and historical context."
+    )
 
 
 class PostReference(BaseModel):

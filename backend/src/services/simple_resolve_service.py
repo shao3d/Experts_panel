@@ -1,6 +1,7 @@
 """Simplified Resolve service - enriches posts by following author's links without GPT evaluation."""
 
 import logging
+from datetime import datetime
 from typing import List, Dict, Any, Optional, Callable, Set
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
@@ -53,7 +54,8 @@ class SimpleResolveService:
         self,
         db: Session,
         initial_post_ids: Set[int],
-        expert_id: str
+        expert_id: str,
+        cutoff_date: Optional[datetime] = None
     ) -> Set[int]:
         """Get all posts linked at depth 1 from initial posts.
 
@@ -64,6 +66,7 @@ class SimpleResolveService:
             db: Database session
             initial_post_ids: Set of telegram_message_ids to expand from
             expert_id: Expert identifier to filter posts
+            cutoff_date: Optional cutoff date for filtering linked posts
 
         Returns:
             Set of all linked telegram_message_ids (including initial)
@@ -105,17 +108,24 @@ class SimpleResolveService:
 
         # Convert database IDs back to telegram_message_ids
         if linked_db_ids:
-            linked_posts = db.query(Post).filter(
+            linked_query = db.query(Post).filter(
                 Post.post_id.in_(linked_db_ids),
                 Post.expert_id == expert_id
-            ).all()
+            )
+            
+            # Apply date filter if specified
+            if cutoff_date:
+                linked_query = linked_query.filter(Post.created_at >= cutoff_date)
+            
+            linked_posts = linked_query.all()
 
             for post in linked_posts:
                 linked_telegram_ids.add(post.telegram_message_id)
 
+        filter_info = " (filtered by date)" if cutoff_date else ""
         logger.info(
             f"[{expert_id}] Expanded {len(initial_post_ids)} posts to {len(linked_telegram_ids)} "
-            f"(+{len(linked_telegram_ids) - len(initial_post_ids)} linked posts)"
+            f"(+{len(linked_telegram_ids) - len(initial_post_ids)} linked posts){filter_info}"
         )
 
         return linked_telegram_ids
@@ -125,6 +135,7 @@ class SimpleResolveService:
         relevant_posts: List[Dict[str, Any]],
         query: str,  # Kept for interface compatibility
         expert_id: str,
+        cutoff_date: Optional[datetime] = None,
         progress_callback: Optional[Callable] = None
     ) -> Dict[str, Any]:
         """Process and enrich posts with linked context at depth 1.
@@ -133,6 +144,7 @@ class SimpleResolveService:
             relevant_posts: List of relevant post data from Map phase
             query: User's query (not used in simplified version)
             expert_id: Expert identifier to filter posts
+            cutoff_date: Optional cutoff date for filtering linked posts
             progress_callback: Optional callback for progress updates
 
         Returns:
@@ -170,7 +182,8 @@ class SimpleResolveService:
             all_post_ids = self._get_linked_posts(
                 db,
                 set(relevant_ids),
-                expert_id
+                expert_id,
+                cutoff_date=cutoff_date
             )
 
             # Fetch all posts (original + linked)

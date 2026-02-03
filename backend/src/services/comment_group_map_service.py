@@ -230,7 +230,8 @@ class CommentGroupMapService:
         self,
         db: Session,
         expert_id: str,
-        exclude_post_ids: Optional[List[int]] = None
+        exclude_post_ids: Optional[List[int]] = None,
+        cutoff_date: Optional[datetime] = None
     ) -> List[Dict[str, Any]]:
         """Load comment groups with drift from database."""
         print(f"[DEBUG CGS] _load_drift_groups called for expert_id={expert_id}, exclude_post_ids={exclude_post_ids}")  # DEBUG
@@ -250,16 +251,14 @@ class CommentGroupMapService:
             comment_group_drift.c.expert_id == expert_id
         )
 
-        if exclude_post_ids:
-            validated_ids = []
-            for post_id in exclude_post_ids:
-                if isinstance(post_id, int) and post_id > 0:
-                    validated_ids.append(post_id)
+        # Apply date filter if specified
+        if cutoff_date:
+            query = query.filter(Post.created_at >= cutoff_date)
 
+        if exclude_post_ids:
+            validated_ids = [pid for pid in exclude_post_ids if isinstance(pid, int) and pid > 0]
             if validated_ids:
-                query = query.filter(
-                    Post.telegram_message_id.notin_(validated_ids)
-                )
+                query = query.filter(Post.telegram_message_id.notin_(validated_ids))
 
         results = query.all()
         print(f"[DEBUG CGS] DB query returned {len(results)} results")  # DEBUG
@@ -459,6 +458,7 @@ class CommentGroupMapService:
         expert_id: str,
         exclude_post_ids: Optional[List[int]] = None,
         main_source_ids: Optional[List[int]] = None,  # NEW: Process author comments from these
+        cutoff_date: Optional[datetime] = None,
         progress_callback: Optional[Callable] = None
     ) -> List[Dict[str, Any]]:
         """Process drift groups to find relevant ones.
@@ -469,6 +469,7 @@ class CommentGroupMapService:
             expert_id: Expert identifier
             exclude_post_ids: Post IDs to exclude from drift search
             main_source_ids: Main source post IDs to extract author comments from (NEW!)
+            cutoff_date: Optional cutoff date for filtering drift groups
             progress_callback: Optional callback for progress updates
             
         Returns:
@@ -495,7 +496,7 @@ class CommentGroupMapService:
             logger.info(f"[{expert_id}] Loaded {len(main_source_community_groups)} main_source community groups")
 
         # Load drift groups from database (excluding main_sources as before)
-        all_groups = self._load_drift_groups(db, expert_id, exclude_post_ids)
+        all_groups = self._load_drift_groups(db, expert_id, exclude_post_ids, cutoff_date=cutoff_date)
 
         print(f"[DEBUG CGS] all_groups loaded: {len(all_groups)}")  # DEBUG
 

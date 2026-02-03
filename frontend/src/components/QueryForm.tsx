@@ -7,7 +7,7 @@ import React, { useState, FormEvent } from 'react';
 
 interface QueryFormProps {
   /** Callback when query is submitted */
-  onSubmit: (query: string) => void;
+  onSubmit: (query: string, options?: { use_recent_only?: boolean }) => void;
 
   /** Whether form is disabled during processing */
   disabled?: boolean;
@@ -33,6 +33,7 @@ export const QueryForm: React.FC<QueryFormProps> = ({
   selectedExperts = new Set()
 }) => {
   const [query, setQuery] = useState('');
+  const [useRecentOnly, setUseRecentOnly] = useState(false);
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
@@ -43,7 +44,7 @@ export const QueryForm: React.FC<QueryFormProps> = ({
       return;
     }
 
-    onSubmit(trimmed);
+    onSubmit(trimmed, { use_recent_only: useRecentOnly });
   };
 
   const isButtonDisabled = disabled || query.trim().length < 3 || selectedExperts.size === 0;
@@ -74,6 +75,24 @@ export const QueryForm: React.FC<QueryFormProps> = ({
           {disabled ? `${elapsedSeconds}s` : 'Ask'}
         </button>
       </div>
+
+      <label className="flex items-center space-x-2 cursor-pointer mt-2">
+        <input
+          type="checkbox"
+          checked={useRecentOnly}
+          onChange={(e) => setUseRecentOnly(e.target.checked)}
+          disabled={disabled}
+          className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+        />
+        <div className="flex flex-col">
+          <span className="text-sm font-medium text-gray-700">
+            🕒 Только последние 3 месяца
+          </span>
+          <span className="text-xs text-gray-500">
+            Для свежих новостей и актуальных моделей
+          </span>
+        </div>
+      </label>
     </form>
   );
 };
