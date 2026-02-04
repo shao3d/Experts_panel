@@ -117,10 +117,13 @@ async def process_expert_pipeline(
     if cutoff_date:
         query = query.filter(Post.created_at >= cutoff_date)
 
+    # Order by date first (newest first), then apply limit
+    query = query.order_by(Post.created_at.desc())
+
     if request.max_posts is not None:
         query = query.limit(request.max_posts)
 
-    posts = query.order_by(Post.created_at.desc()).all()
+    posts = query.all()
 
     if not posts:
         return ExpertResponse(

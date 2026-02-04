@@ -103,6 +103,8 @@ class CommentGroupMapService:
             return []
         
         # Get posts by telegram_message_id
+        # Note: main_source_ids come from reduce_results which already processed
+        # filtered posts (respecting cutoff_date), so no date filter needed here
         posts = db.query(Post).filter(
             Post.telegram_message_id.in_(main_source_ids),
             Post.expert_id == expert_id
