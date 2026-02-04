@@ -336,6 +336,45 @@
   box-shadow: none;
 }
 
+/* Recent Filter Checkbox Styles */
+.recent-filter-row {
+  margin-top: 8px;
+  padding: 4px 0;
+}
+
+.recent-filter-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #495057;
+  user-select: none;
+}
+
+.recent-filter-checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #0066cc;
+}
+
+.recent-filter-checkbox:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.recent-filter-text {
+  font-weight: 500;
+  color: #212529;
+}
+
+.recent-filter-hint {
+  font-size: 11px;
+  color: #6c757d;
+  margin-left: 4px;
+}
+
 /* Mobile Footer Override */
 .mobile-footer .query-textarea {
   min-height: 50px;

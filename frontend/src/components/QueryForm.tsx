@@ -76,23 +76,19 @@ export const QueryForm: React.FC<QueryFormProps> = ({
         </button>
       </div>
 
-      <label className="flex items-center space-x-2 cursor-pointer mt-2">
-        <input
-          type="checkbox"
-          checked={useRecentOnly}
-          onChange={(e) => setUseRecentOnly(e.target.checked)}
-          disabled={disabled}
-          className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-        />
-        <div className="flex flex-col">
-          <span className="text-sm font-medium text-gray-700">
-            🕒 Только последние 3 месяца
-          </span>
-          <span className="text-xs text-gray-500">
-            Для свежих новостей и актуальных моделей
-          </span>
-        </div>
-      </label>
+      <div className="recent-filter-row">
+        <label className="recent-filter-label">
+          <input
+            type="checkbox"
+            checked={useRecentOnly}
+            onChange={(e) => setUseRecentOnly(e.target.checked)}
+            disabled={disabled}
+            className="recent-filter-checkbox"
+          />
+          <span className="recent-filter-text">🕒 Только последние 3 месяца</span>
+          <span className="recent-filter-hint">Для свежих новостей</span>
+        </label>
+      </div>
     </form>
   );
 };
