@@ -7,7 +7,7 @@ import React, { useState, FormEvent } from 'react';
 
 interface QueryFormProps {
   /** Callback when query is submitted */
-  onSubmit: (query: string, options?: { use_recent_only?: boolean }) => void;
+  onSubmit: (query: string, options?: { use_recent_only?: boolean; include_reddit?: boolean }) => void;
 
   /** Whether form is disabled during processing */
   disabled?: boolean;
@@ -34,6 +34,7 @@ export const QueryForm: React.FC<QueryFormProps> = ({
 }) => {
   const [query, setQuery] = useState('');
   const [useRecentOnly, setUseRecentOnly] = useState(false);
+  const [includeReddit, setIncludeReddit] = useState(true);
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
@@ -44,7 +45,7 @@ export const QueryForm: React.FC<QueryFormProps> = ({
       return;
     }
 
-    onSubmit(trimmed, { use_recent_only: useRecentOnly });
+    onSubmit(trimmed, { use_recent_only: useRecentOnly, include_reddit: includeReddit });
   };
 
   const isButtonDisabled = disabled || query.trim().length < 3 || selectedExperts.size === 0;
@@ -87,6 +88,18 @@ export const QueryForm: React.FC<QueryFormProps> = ({
           />
           <span className="recent-filter-text">🕒 Только последние 3 месяца</span>
           <span className="recent-filter-hint">Для свежих новостей</span>
+        </label>
+
+        <label className="recent-filter-label reddit-filter-label">
+          <input
+            type="checkbox"
+            checked={includeReddit}
+            onChange={(e) => setIncludeReddit(e.target.checked)}
+            disabled={disabled}
+            className="recent-filter-checkbox"
+          />
+          <span className="recent-filter-text">👥 Искать на Reddit</span>
+          <span className="recent-filter-hint">Сообщества и обсуждения</span>
         </label>
       </div>
     </form>

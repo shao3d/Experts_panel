@@ -59,6 +59,10 @@ class QueryRequest(BaseModel):
                     "When false, uses all available data for comprehensive answers including "
                     "methodology and historical context."
     )
+    include_reddit: Optional[bool] = Field(
+        default=True,
+        description="Include Reddit community insights in response (default: true)"
+    )
 
 
 class PostReference(BaseModel):
@@ -461,6 +465,60 @@ class ExpertResponse(BaseModel):
     )
 
 
+class RedditSource(BaseModel):
+    """Reddit post source information."""
+
+    title: str = Field(
+        ...,
+        description="Post title"
+    )
+    url: str = Field(
+        ...,
+        description="Post URL on Reddit"
+    )
+    score: int = Field(
+        ...,
+        description="Post score (upvotes - downvotes)"
+    )
+    comments_count: int = Field(
+        ...,
+        description="Number of comments"
+    )
+    subreddit: str = Field(
+        ...,
+        description="Subreddit name"
+    )
+
+
+class RedditResponse(BaseModel):
+    """Response from Reddit community analysis."""
+
+    markdown: str = Field(
+        ...,
+        description="Raw markdown content from Reddit search"
+    )
+    synthesis: str = Field(
+        ...,
+        description="AI-generated synthesis of Reddit discussions"
+    )
+    found_count: int = Field(
+        ...,
+        description="Number of posts found"
+    )
+    sources: List[RedditSource] = Field(
+        default_factory=list,
+        description="List of Reddit post sources"
+    )
+    query: str = Field(
+        ...,
+        description="Query used for Reddit search"
+    )
+    processing_time_ms: int = Field(
+        ...,
+        description="Reddit processing time in milliseconds"
+    )
+
+
 class MultiExpertQueryResponse(BaseModel):
     """Response containing results from multiple experts."""
 
@@ -471,6 +529,10 @@ class MultiExpertQueryResponse(BaseModel):
     expert_responses: List[ExpertResponse] = Field(
         default_factory=list,
         description="Responses from each expert"
+    )
+    reddit_response: Optional[RedditResponse] = Field(
+        default=None,
+        description="Community insights from Reddit (optional)"
     )
     total_processing_time_ms: int = Field(
         ...,

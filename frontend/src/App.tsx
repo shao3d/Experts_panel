@@ -8,15 +8,18 @@ import { QueryForm } from './components/QueryForm';
 import ExpertAccordion from './components/ExpertAccordion';
 import ProgressSection from './components/ProgressSection';
 import ExpertSelectionBar from './components/ExpertSelectionBar';
+import CommunityInsightsSection from './components/CommunityInsightsSection';
 import { apiClient } from './services/api';
-import { ExpertResponse as ExpertResponseType, ProgressEvent, ExpertInfo } from './types/api';
+import { ExpertResponse as ExpertResponseType, ProgressEvent, ExpertInfo, RedditResponse } from './types/api';
 import { transformExpertsForUI, EXPERT_UI_CONFIG } from './config/expertConfig';
 import './App.css';
+import './components/CommunityInsightsSection.css';
 
 export const App: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [progressEvents, setProgressEvents] = useState<ProgressEvent[]>([]);
   const [expertResponses, setExpertResponses] = useState<ExpertResponseType[]>([]);
+  const [redditResponse, setRedditResponse] = useState<RedditResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [availableExperts, setAvailableExperts] = useState<ExpertInfo[]>([]);
   const [expandedExperts, setExpandedExperts] = useState<Set<string>>(new Set());
@@ -84,11 +87,12 @@ export const App: React.FC = () => {
   /**
    * Handle query submission
    */
-  const handleQuerySubmit = async (query: string, options?: { use_recent_only?: boolean }): Promise<void> => {
+  const handleQuerySubmit = async (query: string, options?: { use_recent_only?: boolean; include_reddit?: boolean }): Promise<void> => {
     // Reset state
     setIsProcessing(true);
     setProgressEvents([]);
     setExpertResponses([]);
+    setRedditResponse(null);
     setError(null);
     setCurrentQuery(query);
     setIsExpertSelectorOpen(false); // Close selector on submit
@@ -98,12 +102,17 @@ export const App: React.FC = () => {
       const experts = Array.from(selectedExperts);
       // Submit query with progress callback
       const response = await apiClient.submitQuery(
-        { query, expert_filter: experts, stream_progress: true, include_comments: true, include_comment_groups: true, use_recent_only: options?.use_recent_only },
+        { query, expert_filter: experts, stream_progress: true, include_comments: true, include_comment_groups: true, use_recent_only: options?.use_recent_only, include_reddit: options?.include_reddit },
         (event: ProgressEvent) => {
           // Add progress event to log
           setProgressEvents(prev => [...prev, event]);
         }
       );
+
+      // Set Reddit response if available
+      if (response.reddit_response) {
+        setRedditResponse(response.reddit_response);
+      }
 
       // Check if response has expert_responses (multi-expert) or is a legacy single response
       if (response.expert_responses && response.expert_responses.length > 0) {
@@ -215,7 +224,7 @@ export const App: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Content Area - Expert Accordions */}
+      {/* Main Content Area - Expert Accordions + Reddit */}
       <div className="main-content">
         <div className="accordion-container">
           {error ? (
@@ -223,38 +232,47 @@ export const App: React.FC = () => {
               <h3>⚠️ Error</h3>
               <p>{error}</p>
             </div>
-          ) : expertResponses.length > 0 ? (
-            [...expertResponses]
-              .sort((a, b) => {
-                // Sort according to UI configuration order
-                const uiOrder = EXPERT_UI_CONFIG.order;
-                const aIndex = uiOrder.indexOf(a.expert_id);
-                const bIndex = uiOrder.indexOf(b.expert_id);
+          ) : expertResponses.length > 0 || redditResponse ? (
+            <>
+              {/* Expert Responses */}
+              {[...expertResponses]
+                .sort((a, b) => {
+                  // Sort according to UI configuration order
+                  const uiOrder = EXPERT_UI_CONFIG.order;
+                  const aIndex = uiOrder.indexOf(a.expert_id);
+                  const bIndex = uiOrder.indexOf(b.expert_id);
 
-                // If both experts are in the UI order, sort by that order
-                if (aIndex !== -1 && bIndex !== -1) {
-                  return aIndex - bIndex;
-                }
+                  // If both experts are in the UI order, sort by that order
+                  if (aIndex !== -1 && bIndex !== -1) {
+                    return aIndex - bIndex;
+                  }
 
-                // If only one expert is in the UI order, prioritize it
-                if (aIndex !== -1) return -1;
-                if (bIndex !== -1) return 1;
+                  // If only one expert is in the UI order, prioritize it
+                  if (aIndex !== -1) return -1;
+                  if (bIndex !== -1) return 1;
 
-                // If neither is in UI order, sort alphabetically
-                return a.expert_id.localeCompare(b.expert_id);
-              })
-              .map((expert) => (
-                <ExpertAccordion
-                  key={expert.expert_id}
-                  expert={expert}
-                  isExpanded={expandedExperts.has(expert.expert_id)}
-                  onToggle={() => handleToggleExpert(expert.expert_id)}
-                  query={currentQuery}
-                />
-              ))
+                  // If neither is in UI order, sort alphabetically
+                  return a.expert_id.localeCompare(b.expert_id);
+                })
+                .map((expert) => (
+                  <ExpertAccordion
+                    key={expert.expert_id}
+                    expert={expert}
+                    isExpanded={expandedExperts.has(expert.expert_id)}
+                    onToggle={() => handleToggleExpert(expert.expert_id)}
+                    query={currentQuery}
+                  />
+                ))}
+              
+              {/* Reddit Community Insights */}
+              <CommunityInsightsSection
+                redditResponse={redditResponse}
+                isLoading={isProcessing}
+              />
+            </>
           ) : (
             <div className="empty-placeholder">
-              {isProcessing ? 'Stages query...' : 'Experts answers will appear here'}
+              {isProcessing ? 'Processing query...' : 'Expert answers and community insights will appear here'}
             </div>
           )}
         </div>

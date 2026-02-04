@@ -342,6 +342,13 @@
   margin-bottom: 4px;
   padding: 2px 0 4px 0;
   flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.reddit-filter-label {
+  /* Additional spacing for Reddit checkbox */
 }
 
 .recent-filter-label {

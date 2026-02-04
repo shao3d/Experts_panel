@@ -291,7 +291,7 @@ To deploy, use the Fly.io CLI (`flyctl`). You will need to set the required secr
 
 ## 📚 Documentation
 
-- [Pipeline Architecture](CLAUDE.md) - Complete 8-phase pipeline documentation
+- [Pipeline Architecture](docs/pipeline-architecture.md) - Complete 8-phase pipeline documentation
 - [Backend Architecture](backend/CLAUDE.md) - FastAPI services and API reference
 - [Frontend Development](frontend/CLAUDE.md) - React components and SSE integration
 - [API Documentation](https://experts-panel.fly.dev/docs) - Interactive OpenAPI docs

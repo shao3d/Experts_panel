@@ -1,0 +1,527 @@
+/* ============================================================================
+   CommunityInsightsSection Styles
+   ============================================================================ */
+
+.community-insights {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+/* ============================================================================
+   Loading State
+   ============================================================================ */
+
+.community-insights.loading {
+  padding: 2rem;
+}
+
+.skeleton-header {
+  height: 30px;
+  width: 200px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 4px;
+  margin-bottom: 1.5rem;
+}
+
+.skeleton-content {
+  margin-bottom: 1.5rem;
+}
+
+.skeleton-line {
+  height: 16px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 4px;
+  margin-bottom: 0.75rem;
+}
+
+.skeleton-line.short {
+  width: 60%;
+}
+
+.skeleton-sources {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.skeleton-source {
+  height: 50px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 6px;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ============================================================================
+   Empty & Error States
+   ============================================================================ */
+
+.community-insights.empty,
+.community-insights.error {
+  padding: 3rem 2rem;
+  text-align: center;
+}
+
+.empty-icon,
+.error-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.empty-title,
+.error-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.empty-message,
+.error-message {
+  color: #6c757d;
+  max-width: 400px;
+  margin: 0 auto 1.5rem;
+  line-height: 1.5;
+}
+
+.retry-button {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.retry-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* ============================================================================
+   Header
+   ============================================================================ */
+
+.insights-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+  color: white;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.header-icon {
+  font-size: 1.5rem;
+}
+
+.header-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.header-badge {
+  padding: 0.25rem 0.75rem;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action-button {
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.action-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.action-button.active {
+  background: rgba(255, 255, 255, 0.4);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* ============================================================================
+   Content / Synthesis
+   ============================================================================ */
+
+.insights-synthesis {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid #e1e4e8;
+}
+
+.formatted-content {
+  line-height: 1.7;
+}
+
+.formatted-content .content-header {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 1.5rem 0 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #ee5a5a;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.formatted-content .content-header:first-child {
+  margin-top: 0;
+}
+
+.formatted-content .content-subheader {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #34495e;
+  margin: 1.25rem 0 0.75rem;
+}
+
+.formatted-content .content-bullet {
+  margin: 0.5rem 0 0.5rem 1.5rem;
+  color: #495057;
+  position: relative;
+}
+
+.formatted-content .content-bullet::marker {
+  color: #ee5a5a;
+  font-weight: 600;
+}
+
+.formatted-content .content-paragraph {
+  margin: 0.75rem 0;
+  color: #495057;
+}
+
+.formatted-content .content-spacer {
+  height: 0.5rem;
+}
+
+.formatted-content .content-link {
+  color: #ee5a5a;
+  text-decoration: none;
+  border-bottom: 1px dashed #ee5a5a;
+  transition: all 0.2s ease;
+}
+
+.formatted-content .content-link:hover {
+  color: #c44444;
+  border-bottom-style: solid;
+}
+
+/* ============================================================================
+   Raw Content
+   ============================================================================ */
+
+.insights-raw {
+  padding: 1.5rem 2rem;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e1e4e8;
+}
+
+.raw-title {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #495057;
+}
+
+.raw-content {
+  margin: 0;
+  padding: 1rem;
+  background: #f1f3f4;
+  border-radius: 6px;
+  font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: #333;
+  max-height: 300px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* ============================================================================
+   Sources
+   ============================================================================ */
+
+.insights-sources {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid #e1e4e8;
+}
+
+.sources-title {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.sources-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.source-card {
+  background: #f8f9fa;
+  border: 1px solid #e1e4e8;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.source-card:hover {
+  border-color: #ee5a5a;
+  box-shadow: 0 2px 8px rgba(238, 90, 90, 0.1);
+}
+
+.source-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.source-header:hover {
+  background: #f1f3f4;
+}
+
+.source-toggle {
+  color: #6c757d;
+  font-size: 0.8rem;
+  transition: transform 0.2s ease;
+}
+
+.source-title {
+  flex: 1;
+  font-weight: 500;
+  color: #2c3e50;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.source-subreddit {
+  padding: 0.25rem 0.5rem;
+  background: #ee5a5a;
+  color: white;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.source-details {
+  padding: 1rem;
+  padding-top: 0;
+  border-top: 1px solid #e1e4e8;
+  background: #f1f3f4;
+}
+
+.source-stats {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  padding-top: 0.75rem;
+}
+
+.source-stats .stat {
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+.source-link {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: white;
+  color: #ee5a5a;
+  text-decoration: none;
+  border: 1px solid #ee5a5a;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.source-link:hover {
+  background: #ee5a5a;
+  color: white;
+}
+
+/* ============================================================================
+   Footer
+   ============================================================================ */
+
+.insights-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: #f8f9fa;
+  font-size: 0.9rem;
+}
+
+.footer-meta {
+  color: #6c757d;
+}
+
+.footer-link {
+  color: #ee5a5a;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.footer-link:hover {
+  color: #c44444;
+}
+
+/* ============================================================================
+   Mobile Responsive
+   ============================================================================ */
+
+@media (max-width: 768px) {
+  .insights-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+    padding: 1rem;
+  }
+
+  .header-left {
+    flex-wrap: wrap;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .insights-synthesis,
+  .insights-raw,
+  .insights-sources {
+    padding: 1.25rem 1rem;
+  }
+
+  .source-header {
+    padding: 0.75rem;
+  }
+
+  .source-title {
+    font-size: 0.9rem;
+  }
+
+  .insights-footer {
+    flex-direction: column;
+    gap: 0.75rem;
+    text-align: center;
+  }
+}
+
+/* ============================================================================
+   Empty States
+   ============================================================================ */
+
+.empty-synthesis {
+  padding: 1.5rem;
+  text-align: center;
+  color: #6c757d;
+  font-style: italic;
+  background: #f8f9fa;
+  border-radius: 6px;
+  margin: 1rem 0;
+}
+
+/* ============================================================================
+   Dark Mode Support (if app supports it)
+   ============================================================================ */
+
+@media (prefers-color-scheme: dark) {
+  .community-insights {
+    background: #1a1a2e;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .insights-synthesis,
+  .insights-sources {
+    border-color: #2d2d44;
+  }
+
+  .formatted-content .content-header,
+  .formatted-content .content-subheader {
+    color: #e1e1e6;
+  }
+
+  .formatted-content .content-bullet,
+  .formatted-content .content-paragraph {
+    color: #a0a0b0;
+  }
+
+  .source-card {
+    background: #252542;
+    border-color: #2d2d44;
+  }
+
+  .source-title {
+    color: #e1e1e6;
+  }
+
+  .source-details {
+    background: #1e1e36;
+    border-color: #2d2d44;
+  }
+
+  .insights-footer {
+    background: #252542;
+  }
+
+  .raw-content {
+    background: #1e1e36;
+    color: #e1e1e6;
+  }
+
+  .insights-raw {
+    background: #252542;
+  }
+}

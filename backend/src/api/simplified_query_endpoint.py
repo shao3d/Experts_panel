@@ -32,6 +32,8 @@ from .models import (
     AnchorPost,
     ExpertResponse,
     MultiExpertQueryResponse,
+    RedditResponse,
+    RedditSource,
     ConfidenceLevel,
     get_expert_name,
     get_channel_username
@@ -48,6 +50,8 @@ from ..services.comment_synthesis_service import CommentSynthesisService
 from ..services.medium_scoring_service import MediumScoringService
 from ..services.translation_service import TranslationService
 from ..services.language_validation_service import LanguageValidationService
+from ..services.reddit_service import RedditService, RedditServiceError
+from ..services.reddit_synthesis_service import RedditSynthesisService
 from ..utils.error_handler import error_handler
 from ..utils.date_utils import get_cutoff_date
 
@@ -431,6 +435,137 @@ async def process_expert_pipeline(
     )
 
 
+async def process_reddit_pipeline(
+    query: str,
+    progress_callback: Optional[Callable] = None
+) -> Optional[RedditResponse]:
+    """Process Reddit community pipeline.
+    
+    Searches Reddit via Proxy Service and synthesizes insights via Gemini.
+    
+    Args:
+        query: User query
+        progress_callback: Optional callback for progress updates
+    
+    Returns:
+        RedditResponse with community insights or None if failed
+    """
+    start_time = time.time()
+    reddit_service = RedditService()
+    
+    try:
+        # Report start
+        if progress_callback:
+            await progress_callback({
+                "phase": "reddit_pipeline",
+                "status": "starting",
+                "message": "Starting Reddit community search",
+                "source": "reddit"
+            })
+        
+        # 1. Search Reddit via Proxy Service
+        if progress_callback:
+            await progress_callback({
+                "phase": "reddit_search",
+                "status": "processing",
+                "message": "Searching Reddit discussions...",
+                "source": "reddit"
+            })
+        
+        search_result = await reddit_service.search(
+            query=query,
+            limit=10,
+            sort="relevance",
+            time="all"
+        )
+        
+        if progress_callback:
+            await progress_callback({
+                "phase": "reddit_search",
+                "status": "complete",
+                "message": f"Found {search_result.found_count} Reddit posts",
+                "source": "reddit",
+                "found_count": search_result.found_count
+            })
+        
+        # 2. Synthesize with Gemini
+        if progress_callback:
+            await progress_callback({
+                "phase": "reddit_synthesis",
+                "status": "processing",
+                "message": "Analyzing community discussions...",
+                "source": "reddit"
+            })
+        
+        synthesis_service = RedditSynthesisService()
+        synthesis = await synthesis_service.synthesize(query, search_result)
+        
+        if progress_callback:
+            await progress_callback({
+                "phase": "reddit_synthesis",
+                "status": "complete",
+                "message": "Community analysis complete",
+                "source": "reddit"
+            })
+        
+        # Build response
+        reddit_response = RedditResponse(
+            markdown=search_result.markdown,
+            synthesis=synthesis,
+            found_count=search_result.found_count,
+            sources=[
+                RedditSource(
+                    title=src.title,
+                    url=src.url,
+                    score=src.score,
+                    comments_count=src.comments_count,
+                    subreddit=src.subreddit
+                )
+                for src in search_result.sources
+            ],
+            query=search_result.query,
+            processing_time_ms=int((time.time() - start_time) * 1000)
+        )
+        
+        # Report completion
+        if progress_callback:
+            await progress_callback({
+                "phase": "reddit_pipeline",
+                "status": "completed",
+                "message": f"Reddit pipeline complete: {reddit_response.found_count} posts analyzed",
+                "source": "reddit",
+                "found_count": reddit_response.found_count
+            })
+        
+        return reddit_response
+        
+    except RedditServiceError as e:
+        logger.error(f"Reddit service error: {e}")
+        if progress_callback:
+            await progress_callback({
+                "phase": "reddit_pipeline",
+                "status": "error",
+                "message": f"Reddit search failed: {e.error_type}",
+                "source": "reddit",
+                "error": str(e)
+            })
+        return None
+    except Exception as e:
+        logger.error(f"Reddit pipeline error: {e}")
+        if progress_callback:
+            await progress_callback({
+                "phase": "reddit_pipeline",
+                "status": "error",
+                "message": "Reddit analysis failed",
+                "source": "reddit",
+                "error": str(e)
+            })
+        return None
+    finally:
+        # FIX: Always close the client to prevent resource leak
+        await reddit_service.close()
+
+
 async def event_generator_parallel(
     request: QueryRequest,
     db: Session,
@@ -493,6 +628,68 @@ async def event_generator_parallel(
         sanitized = sanitize_for_json(event.model_dump(mode='json'))
         yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
 
+        # 1.5. Start Reddit pipeline in parallel (if enabled)
+        reddit_progress_queue = asyncio.Queue(maxsize=50)
+        reddit_complete = False
+        reddit_result: Optional[RedditResponse] = None
+
+        # Check if Reddit search is enabled (default: true)
+        include_reddit = request.include_reddit if request.include_reddit is not None else True
+
+        async def reddit_progress_callback(data: dict):
+            """Callback for Reddit pipeline progress."""
+            event = ProgressEvent(
+                event_type="progress",
+                phase=f"reddit_{data.get('phase', 'pipeline')}",
+                status=data.get('status', 'processing'),
+                message=f"[Reddit] {data.get('message', 'Processing...')}",
+                data={"source": "reddit", **data}
+            )
+            try:
+                reddit_progress_queue.put_nowait(event)
+            except asyncio.QueueFull:
+                logger.warning("Reddit progress queue full, dropping event")
+
+        async def run_reddit_pipeline():
+            """Run Reddit pipeline and track completion."""
+            nonlocal reddit_complete, reddit_result
+            try:
+                reddit_result = await process_reddit_pipeline(
+                    query=request.query,
+                    progress_callback=reddit_progress_callback
+                )
+            except Exception as e:
+                logger.error(f"Reddit pipeline failed: {e}")
+                reddit_result = None
+            finally:
+                reddit_complete = True
+                # Send completion event
+                try:
+                    event = ProgressEvent(
+                        event_type="reddit_complete" if reddit_result else "reddit_error",
+                        phase="reddit_pipeline",
+                        status="completed" if reddit_result else "error",
+                        message=f"Reddit analysis: {reddit_result.found_count if reddit_result else 0} posts found" if reddit_result else "Reddit analysis failed",
+                        data={
+                            "source": "reddit",
+                            "found_count": reddit_result.found_count if reddit_result else 0,
+                            "success": reddit_result is not None
+                        }
+                    )
+                    reddit_progress_queue.put_nowait(event)
+                except asyncio.QueueFull:
+                    pass
+
+        # Launch Reddit pipeline as background task (only if enabled)
+        if include_reddit:
+            reddit_task = asyncio.create_task(run_reddit_pipeline())
+        else:
+            # Reddit disabled - mark as complete immediately with null result
+            reddit_complete = True
+            reddit_result = None
+            # Create a dummy task for compatibility with rest of the code
+            reddit_task = asyncio.create_task(asyncio.sleep(0))
+
         # 2. Create queue for real-time progress events
         # SECURITY: Limit queue size to prevent memory leaks
         progress_queue = asyncio.Queue(maxsize=100)  # Max 100 buffered events
@@ -537,29 +734,49 @@ async def event_generator_parallel(
         async def stream_progress_events():
             """Stream progress events from queue in real-time with keep-alive."""
             last_activity_time = time.time()
-            keep_alive_interval = 5.0  # Send keep-alive every 5 seconds (aggressive)
+            keep_alive_interval = 2.5  # Send keep-alive every 2.5 seconds (faster for Reddit)
 
             while True:
+                event_yielded = False
+                
+                # Check expert progress queue
                 try:
-                    event = await asyncio.wait_for(progress_queue.get(), timeout=0.1)
+                    event = progress_queue.get_nowait()
                     sanitized = sanitize_for_json(event.model_dump(mode='json'))
                     yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
                     last_activity_time = time.time()
-                except asyncio.TimeoutError:
-                    # No event available
+                    event_yielded = True
+                except asyncio.QueueEmpty:
+                    pass
+                
+                # Check Reddit progress queue
+                try:
+                    event = reddit_progress_queue.get_nowait()
+                    sanitized = sanitize_for_json(event.model_dump(mode='json'))
+                    yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+                    last_activity_time = time.time()
+                    event_yielded = True
+                except asyncio.QueueEmpty:
+                    pass
+                
+                # If no events, wait a bit
+                if not event_yielded:
+                    try:
+                        await asyncio.wait_for(asyncio.sleep(0.05), timeout=0.1)
+                    except asyncio.TimeoutError:
+                        pass
                     
-                    # Check if tasks are done
-                    if all(task.done() for _, task in tasks):
+                    # Check if all tasks are done
+                    expert_tasks_done = all(task.done() for _, task in tasks)
+                    if expert_tasks_done and reddit_complete:
                         break
                     
-                    # Send keep-alive with padding to prevent timeouts and flush proxy buffers
+                    # Send keep-alive while waiting for Reddit (can be slow)
                     if time.time() - last_activity_time > keep_alive_interval:
                         # Add 2KB of padding to force proxy buffer flush
                         padding = " " * 2048
                         yield f": keep-alive {padding}\n\n"
                         last_activity_time = time.time()
-                    
-                    continue
 
         # 4. Launch PARALLEL tasks for each expert
         tasks = []
@@ -576,15 +793,23 @@ async def event_generator_parallel(
 
         # 5. Stream progress events while waiting for completion
         expert_responses = []
-        stream_task = asyncio.create_task(stream_progress_events().__anext__())
+        # FIX: Removed orphaned stream_task that was never used
 
         for expert_id, task in tasks:
             try:
                 # Wait for both expert completion and stream events
                 while not task.done():
-                    # Try to get progress events
+                    # Try to get progress events from both queues
                     try:
                         event = progress_queue.get_nowait()
+                        sanitized = sanitize_for_json(event.model_dump(mode='json'))
+                        yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+                    except asyncio.QueueEmpty:
+                        pass
+                    
+                    # Check Reddit events
+                    try:
+                        event = reddit_progress_queue.get_nowait()
                         sanitized = sanitize_for_json(event.model_dump(mode='json'))
                         yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
                     except asyncio.QueueEmpty:
@@ -648,23 +873,87 @@ async def event_generator_parallel(
                 sanitized = sanitize_for_json(event.model_dump(mode='json'))
                 yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
 
+        # Wait for Reddit pipeline to complete (with timeout)
+        # Reddit can be slow, so we give it up to 30 seconds after experts complete
+        reddit_wait_start = time.time()
+        reddit_timeout = 30.0  # 30 second additional wait for Reddit
+        last_activity_time_outer = time.time()  # FIX: Define in outer scope
+        
+        # FIX: Also check if task is done to avoid waiting full timeout if task crashed
+        while (not reddit_complete and 
+               (time.time() - reddit_wait_start) < reddit_timeout and
+               not reddit_task.done()):
+            # Send any Reddit progress events while waiting
+            try:
+                event = reddit_progress_queue.get_nowait()
+                sanitized = sanitize_for_json(event.model_dump(mode='json'))
+                yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+                last_activity_time_outer = time.time()
+            except asyncio.QueueEmpty:
+                pass
+            
+            # Send keep-alive while waiting
+            if time.time() - last_activity_time_outer > 2.5:
+                padding = " " * 2048
+                yield f": keep-alive {padding}\n\n"
+                last_activity_time_outer = time.time()
+            
+            await asyncio.sleep(0.1)
+        
+        # If Reddit still not complete, cancel it (but don't fail the whole request)
+        if not reddit_complete and not reddit_task.done():
+            reddit_task.cancel()
+            logger.warning("Reddit pipeline timed out, proceeding without Reddit results")
+            try:
+                await reddit_task
+            except asyncio.CancelledError:
+                pass
+            reddit_result = None
+        elif not reddit_complete and reddit_task.done():
+            # Task done but flag not set (error case)
+            try:
+                reddit_result = reddit_task.result()
+            except asyncio.CancelledError:
+                logger.warning("Reddit pipeline was cancelled")
+                reddit_result = None
+            except Exception as e:
+                logger.error(f"Reddit pipeline failed: {e}")
+                reddit_result = None
+
+        # Send final Reddit events
+        while not reddit_progress_queue.empty():
+            try:
+                event = reddit_progress_queue.get_nowait()
+                sanitized = sanitize_for_json(event.model_dump(mode='json'))
+                yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+            except asyncio.QueueEmpty:
+                break
+
         # 5. Calculate total processing time
         processing_time_ms = int((time.time() - start_time) * 1000)
 
-        # 6. Build multi-expert response
+        # 6. Build multi-expert response (including Reddit if available)
         response = MultiExpertQueryResponse(
             query=request.query,
             expert_responses=expert_responses,
+            reddit_response=reddit_result,  # NEW: Include Reddit results
             total_processing_time_ms=processing_time_ms,
             request_id=request_id
         )
 
         # 7. Send final result
+        reddit_message = ""
+        if reddit_result:
+            reddit_message = f" | Reddit: {reddit_result.found_count} posts"
+        elif include_reddit and reddit_result is None and reddit_complete:
+            # Only show "unavailable" if Reddit was enabled but failed/unavailable
+            reddit_message = " | Reddit: unavailable"
+        
         event = ProgressEvent(
             event_type="complete",
             phase="final",
             status="success",
-            message=f"Multi-expert query completed: {len(expert_responses)} experts responded",
+            message=f"Query completed: {len(expert_responses)} experts{reddit_message}",
             data={"response": response.model_dump(mode='json')}
         )
 

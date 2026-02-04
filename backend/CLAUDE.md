@@ -126,6 +126,7 @@ python backend/scripts/prune_old_posts.py
 5. **Language Validation Phase** - Language consistency validation and translation
 6. **Comment Groups Phase** - Drift analysis for relevant discussions
 7. **Comment Synthesis Phase** - Complementary insights extraction
+8. **Response Building Phase** - Assemble final multi-expert response with metadata
 
 ### Gemini-Only Model Strategy
 The system uses Google AI Studio with automatic retry on rate limit errors (65s wait). For a detailed breakdown of the models used in each pipeline phase, see the **[Pipeline Architecture Guide](../docs/pipeline-architecture.md)**.

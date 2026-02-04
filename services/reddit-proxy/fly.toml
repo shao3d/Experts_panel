@@ -1,0 +1,38 @@
+# fly.toml - Reddit MCP Proxy Service
+# Fly.io configuration for sidecar deployment
+
+app = "experts-reddit-proxy"
+primary_region = "ams"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "3000"
+  LOG_LEVEL = "info"
+  MCP_TIMEOUT_MS = "15000"
+  CACHE_TTL_MS = "300000"
+  MCP_COMMAND = "npx"
+  MCP_ARGS = "-y reddit-mcp-buddy"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+[[http_service.checks]]
+  interval = "30s"
+  timeout = "10s"
+  grace_period = "40s"
+  method = "GET"
+  path = "/health"
+  protocol = "http"
+  tls_skip_verify = false
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512

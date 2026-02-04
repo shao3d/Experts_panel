@@ -202,6 +202,7 @@ export class APIClient {
       }
 
       // No experts responded, create empty response with user-friendly message
+      // FIX: Include reddit_response even when no experts found
       return {
         query: multiResponse.query || '',
         answer: errorMessage,
@@ -214,7 +215,8 @@ export class APIClient {
         relevance_distribution: {},
         processing_time_ms: multiResponse.total_processing_time_ms || 0,
         request_id: multiResponse.request_id || '',
-        expert_responses: multiResponse.expert_responses || []
+        expert_responses: multiResponse.expert_responses || [],
+        reddit_response: multiResponse.reddit_response
       };
     }
 
@@ -234,7 +236,8 @@ export class APIClient {
       request_id: multiResponse.request_id || '',
       relevant_comment_groups: firstExpert.relevant_comment_groups,
       comment_groups_synthesis: firstExpert.comment_groups_synthesis,
-      expert_responses: multiResponse.expert_responses || []
+      expert_responses: multiResponse.expert_responses || [],
+      reddit_response: multiResponse.reddit_response
     };
   }
 

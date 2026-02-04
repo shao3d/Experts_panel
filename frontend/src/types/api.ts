@@ -67,6 +67,9 @@ export interface QueryRequest {
 
   /** Use only recent data (last 3 months) for fresh news (default: false) */
   use_recent_only?: boolean;
+
+  /** Include Reddit community insights in response (default: true) */
+  include_reddit?: boolean;
 }
 
 // ============================================================================
@@ -162,6 +165,49 @@ export interface ExpertResponse {
 }
 
 /**
+ * Reddit post source information (matches backend RedditSource)
+ */
+export interface RedditSource {
+  /** Post title */
+  title: string;
+
+  /** Post URL on Reddit */
+  url: string;
+
+  /** Post score (upvotes - downvotes) */
+  score: number;
+
+  /** Number of comments */
+  comments_count: number;
+
+  /** Subreddit name */
+  subreddit: string;
+}
+
+/**
+ * Reddit community response (matches backend RedditResponse)
+ */
+export interface RedditResponse {
+  /** Raw markdown content from Reddit search */
+  markdown: string;
+
+  /** AI-generated synthesis of Reddit discussions */
+  synthesis: string;
+
+  /** Number of posts found */
+  found_count: number;
+
+  /** List of Reddit post sources */
+  sources: RedditSource[];
+
+  /** Query used for Reddit search */
+  query: string;
+
+  /** Reddit processing time in milliseconds */
+  processing_time_ms: number;
+}
+
+/**
  * Multi-expert query response (matches backend MultiExpertQueryResponse)
  */
 export interface MultiExpertQueryResponse {
@@ -170,6 +216,9 @@ export interface MultiExpertQueryResponse {
 
   /** Responses from each expert */
   expert_responses: ExpertResponse[];
+
+  /** Community insights from Reddit (optional) */
+  reddit_response?: RedditResponse | null;
 
   /** Total processing time across all experts */
   total_processing_time_ms: number;
@@ -226,6 +275,9 @@ export interface QueryResponse {
 
   /** Expert responses for multi-expert mode */
   expert_responses?: ExpertResponse[];
+
+  /** Reddit community insights (optional) */
+  reddit_response?: RedditResponse | null;
 }
 
 // ============================================================================
