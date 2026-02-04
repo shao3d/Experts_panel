@@ -10,7 +10,7 @@
 
 /* Desktop: Top Section (Query + Progress) */
 .top-section {
-  height: 140px;
+  height: 160px;
   display: flex;
   gap: 20px;
   padding: 20px;
