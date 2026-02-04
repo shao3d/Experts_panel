@@ -23,10 +23,12 @@ The backend implements a sophisticated query processing system that retrieves re
 - `src/services/drift_scheduler_service.py` - Offline Drift Analysis with **gemini-3-flash-preview** via unified client
 - `src/services/translation_service.py` - Translation service with Gemini
 - `src/utils/error_handler.py` - Enhanced user-friendly error processing system
+- `src/utils/date_utils.py` - Date utility functions including `get_cutoff_date()` for use_recent_only filtering
 - `src/config.py` - Gemini-only model configuration management
 - `src/services/google_ai_studio_client.py` - Google AI Studio API client (single-key with auto-retry)
 - `src/services/monitored_client.py` - LLM call monitoring wrapper
 - `src/services/llm_monitor.py` - LLM statistics and health tracking
+- `migrations/016_add_expert_created_index.sql` - Composite index for efficient date filtering
 - `fly.toml` - Fly.io production deployment configuration
 
 ## API Endpoints
@@ -35,6 +37,8 @@ The backend implements a sophisticated query processing system that retrieves re
   - `expert_id`, `display_name`, `channel_username`
   - `stats`: `{ posts_count: int, comments_count: int }`
 - `POST /api/v1/query` - Main multi-expert query endpoint with enhanced SSE streaming and parallel processing
+  - **Request Body**: `QueryRequest` with `query`, `expert_filter`, `use_recent_only`, etc.
+  - **use_recent_only**: Optional boolean to filter data to last 3 months (default: false)
 - `GET /api/v1/posts/{post_id}` - Retrieve individual post details with comments and translation support
 - `POST /api/v1/import` - Import Telegram JSON data with expert assignment
 - `POST /api/v1/log-batch` - Enhanced debug logging endpoint for frontend development

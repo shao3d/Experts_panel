@@ -147,6 +147,7 @@ graph TD
 - **⚡ Real-time**: Processing progress display via Server-Sent Events with error handling
 - **👥 Multi-expert Support**: Complete data isolation with `expert_id` and parallel processing
 - **🔄 Dynamic Expert Loading**: Experts loaded from database with metadata centralization
+- **🕒 Date Filtering**: Optional `use_recent_only` filter for last 3 months of data (fresh news vs historical context)
 - **🔒 Production Ready**: Admin authentication, security hardening with API key masking and robust error handling
 
 ## 🚀 Quick Start

@@ -18,6 +18,7 @@ The system uses an advanced **eight-phase pipeline** for analysis and a hybrid, 
 - **Multi-Expert Architecture**: Complete data isolation between experts and parallel processing.
 - **Cost Optimization**: Gemini-only strategy with Tier 1 paid account (high rate limits).
 - **Real-time Progress**: SSE streaming for frontend progress tracking.
+- **Date Filtering**: Optional `use_recent_only` filter for last 3 months of data.
 
 ## 📁 Component Documentation
 
@@ -105,6 +106,22 @@ Model configuration is managed via environment variables as defined in `.env.exa
 - **Drift Analysis** (`MODEL_DRIFT_ANALYSIS`): `gemini-3-flash-preview` - Advanced topic drift detection
 
 **Note:** The `gemini-3-flash-preview` model (released January 2026) provides significantly improved reasoning capabilities while maintaining high speed and cost efficiency compared to earlier Gemini models.
+
+### Date Filtering (use_recent_only)
+The system supports filtering queries to only use recent data (last 3 months):
+
+- **API Parameter**: `use_recent_only: bool` in `QueryRequest`
+- **Behavior**: When `true`, only posts and comments from the last 3 months are used
+- **UI**: Checkbox "🕒 Только последние 3 месяца" in the query form
+- **Implementation**: 
+  - Posts filtered by `created_at >= cutoff_date` in endpoint
+  - Linked posts filtered in `SimpleResolveService`
+  - Drift groups filtered in `CommentGroupMapService`
+  - Cutoff date calculated as 3 months ago using `get_cutoff_date()` utility
+
+**Use cases:**
+- **OFF (default)**: All data for comprehensive answers, methodology, historical context
+- **ON**: Recent data only for fresh news, current models, faster processing
 
 ### Testing Pipeline
 To test the pipeline, use the interactive API documentation (available at `/api/docs` when the server is running) to send requests to the `/api/v1/query` endpoint. You can test the entire pipeline or filter for specific experts. Individual posts can also be retrieved via the `/api/v1/posts/{post_id}` endpoint.

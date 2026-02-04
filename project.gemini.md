@@ -1,6 +1,6 @@
 # Project Context: Experts Panel
 
-**Last Updated:** 2026-01-28
+**Last Updated:** 2026-02-04
 **Status:** Production (Stable) - Tier 1 Optimized
 
 ## 🎯 Quick Start for AI Agent
@@ -25,6 +25,7 @@
 | Models | gemini-2.5-flash-lite, gemini-3-flash-preview, gemini-2.0-flash | MODEL_* env vars |
 | Map Parallelism | 25 (Tier 1) / 8 (Free Tier) | MAP_MAX_PARALLEL in config.py |
 | Chunk Size | 100 posts | config.py |
+| Date Filter | use_recent_only (3 months) | QueryRequest parameter |
 
 ## 🚀 Deployment
 - **Platform:** Fly.io (auto-deploy via GitHub Actions)
@@ -51,3 +52,4 @@ backend/
 1. **Fly.io secrets must match local .env** — After code refactoring, always verify secrets: `fly secrets list` vs `cat backend/.env`
 2. **Works locally but not on Fly.io?** — Check MODEL_* env vars on Fly: `fly ssh console -C "env | grep MODEL"`
 3. **429 Quota errors** — Auto-waits 65s and retries (automatic recovery)
+4. **Date filtering** — `use_recent_only` filters posts, linked posts, and drift groups to last 3 months. Cutoff calculated via `get_cutoff_date()` in `backend/src/utils/date_utils.py`

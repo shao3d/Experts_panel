@@ -32,7 +32,7 @@ The frontend source code is located in `frontend/src/` and is organized as follo
 The application's UI is built from a set of modular React components located in `frontend/src/components/`.
 
 - **`App.tsx`**: The main application component responsible for overall state management, component orchestration, and handling the primary query lifecycle.
-- **`QueryForm.tsx`**: Provides the user input form with real-time validation.
+- **`QueryForm.tsx`**: Provides the user input form with real-time validation and date filtering checkbox (`use_recent_only`).
 - **`ProgressSection.tsx`**: Displays real-time, multi-expert progress updates streamed from the backend via SSE.
 - **`ExpertAccordion.tsx`**: The primary UI element for organizing and displaying responses from multiple experts.
 - **`ExpertSelectionBar.tsx`**: A component for filtering results by expert, featuring grouped categories, post/comment statistics, and a collapsible desktop interface.
@@ -50,6 +50,12 @@ The application's logic for communicating with the backend is centralized in the
 
 ### Type System
 All TypeScript types and interfaces are defined in the `frontend/src/types/` directory, primarily within `api.ts`. These interfaces are kept in sync with the backend's Pydantic models to ensure type safety across the application.
+
+**Key Interfaces:**
+- **`QueryRequest`**: Main query payload with `query`, `expert_filter`, `use_recent_only`, etc.
+- **`QueryResponse`**: Multi-expert response structure
+- **`ExpertInfo`**: Expert metadata with display names and statistics
+- **`ProgressEvent`**: SSE event types for real-time updates
 
 ### Code Patterns
 The codebase follows several key patterns:

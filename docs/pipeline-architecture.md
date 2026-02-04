@@ -15,6 +15,65 @@ The Experts Panel uses a sophisticated **eight-phase pipeline** to process user 
 7. **Comment Synthesis** - Extract complementary insights
 8. **Response Building** - Assemble final multi-expert response
 
+## 📅 Date Filtering (use_recent_only)
+
+The pipeline supports optional date filtering to limit queries to recent content only.
+
+### Overview
+- **Parameter**: `use_recent_only: bool` in `QueryRequest`
+- **Period**: Last 3 months (calculated dynamically)
+- **UI**: Checkbox "🕒 Только последние 3 месяца"
+
+### Behavior
+| Setting | Data Used | Use Case |
+|---------|-----------|----------|
+| **OFF (default)** | All posts | Comprehensive answers, methodology, historical context |
+| **ON** | Last 3 months only | Fresh news, current models, faster processing |
+
+### Implementation
+Date filtering is applied at multiple stages:
+
+1. **Initial Post Loading** (`simplified_query_endpoint.py`)
+   - `WHERE created_at >= cutoff_date`
+   - Cutoff calculated via `get_cutoff_date(months=3)` utility
+
+2. **Linked Posts** (`simple_resolve_service.py`)
+   - Filters linked posts in `_get_linked_posts()`
+   - Old linked posts excluded from context
+
+3. **Drift Groups** (`comment_group_map_service.py`)
+   - Filters drift groups in `_load_drift_groups()`
+   - Only recent comment discussions analyzed
+
+4. **Main Source Comments**
+   - Not explicitly filtered (inherits from post filtering)
+   - Comments loaded only for posts that passed date filter
+
+### Technical Details
+```python
+# Cutoff date calculation (backend/src/utils/date_utils.py)
+def get_cutoff_date(months: int = 3) -> datetime:
+    now = datetime.utcnow()
+    month = now.month - months
+    year = now.year
+    if month <= 0:
+        month += 12
+        year -= 1
+    # Handles day overflow (e.g., May 31 → Feb 28/29)
+    try:
+        return now.replace(year=year, month=month)
+    except ValueError:
+        last_day = calendar.monthrange(year, month)[1]
+        return now.replace(year=year, month=month, day=last_day)
+```
+
+### Database Index
+Migration `016_add_expert_created_index.sql` creates composite index:
+```sql
+CREATE INDEX idx_posts_expert_created ON posts(expert_id, created_at);
+```
+This ensures efficient filtering even with large datasets.
+
 ## 🚀 Map Phase
 
 ### Purpose
