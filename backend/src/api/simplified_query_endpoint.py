@@ -476,16 +476,21 @@ async def process_reddit_pipeline(
                 target_lang="English"
             )
             # Simplify to keywords for better Reddit search
-            # Remove fluff words, keep only key concepts
+            # Keep important short terms (AI, ML, etc.), remove only fluff
             search_query = translated.lower()
-            # Remove common stop words that hurt Reddit search
+            # Remove only the most common stop words that hurt search
             stop_words = ['which', 'what', 'should', 'would', 'could', 'how', 'the', 'a', 'an', 
                          'for', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'of', 'is', 'are',
                          'do', 'does', 'did', 'can', 'will', 'first', 'need', 'make', 'get',
-                         'someone', 'beginner', 'novice', 'newbie', 'person', 'people']
+                         'someone', 'beginner', 'novice', 'newbie', 'person', 'people', 'be']
             words = search_query.split()
-            keywords = [w for w in words if w not in stop_words and len(w) > 2]
-            search_query = ' '.join(keywords[:6])  # Max 6 keywords
+            # Keep words if: not stop word AND (len > 2 OR is AI/ML/LLM/etc.)
+            important_short = ['ai', 'ml', 'llm', 'rag', 'api', 'ui', 'ux', 'qa', 'db']
+            keywords = [w for w in words if w not in stop_words and (len(w) > 2 or w in important_short)]
+            search_query = ' '.join(keywords[:8])  # Max 8 keywords
+            if not search_query:
+                # Fallback if all words were removed
+                search_query = translated
             logger.info(f"Translated Reddit query: '{query[:50]}...' -> '{translated[:50]}...' -> keywords: '{search_query}'")
         except Exception as e:
             logger.warning(f"Failed to translate Reddit query, using original: {e}")
