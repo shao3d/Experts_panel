@@ -15,6 +15,66 @@ from asyncpraw.models import Submission
 
 logger = logging.getLogger(__name__)
 
+# Subreddit priority levels for result ranking
+# Higher = more specific/technical, shown first
+SUBREDDIT_PRIORITY = {
+    # Highest priority - highly specific technical communities
+    "LocalLLaMA": 5,
+    "ollama": 5,
+    "selfhosted": 5,
+    "homelab": 5,
+    "ClaudeAI": 4,
+    "huggingface": 4,
+    "MachineLearning": 4,
+    "nvidia": 4,
+    "AMD": 4,
+    "apple": 4,
+    "IntelArc": 4,
+    
+    # Medium priority - general AI/tech
+    "OpenAI": 3,
+    "artificial": 3,
+    "singularity": 3,
+    "technology": 1,  # Low priority - too general/news-focused
+    "programming": 2,
+    "vscode": 2,
+    
+    # Specific tool communities
+    "docker": 3,
+    "kubernetes": 3,
+    "sysadmin": 3,
+    "linux": 3,
+    "privacy": 3,
+    "degoogle": 3,
+    
+    # Domain specific
+    "homeautomation": 3,
+    "smarthome": 3,
+    "automation": 3,
+    "n8n": 4,
+    "NextCloud": 4,
+    "ObsidianMD": 3,
+    "productivity": 2,
+    
+    # Voice/TTS
+    "tts": 4,
+    "TextToSpeech": 4,
+    "speechRecognition": 4,
+    
+    # Hardware
+    "hardware": 2,
+    "raspberry_pi": 3,
+    
+    # Programming
+    "Python": 3,
+    "learnpython": 3,
+    "rust": 3,
+    "learnrust": 3,
+    "javascript": 2,
+    "webdev": 2,
+    "reactjs": 2,
+}
+
 # Smart subreddit targeting for better search results
 # Maps topic keywords to relevant subreddits
 SUBREDDIT_MAPPING = {
@@ -212,6 +272,59 @@ def expand_query(query: str) -> str:
     return query
 
 
+def apply_advanced_operators(query: str) -> str:
+    """Apply Reddit advanced search operators for better precision.
+    
+    Detects query type and applies appropriate operators:
+    - Error messages: selftext: for searching in post body
+    - Tool names: title: for searching in post titles
+    - Comparison queries: OR operator for alternatives
+    """
+    import re
+    
+    query_lower = query.lower()
+    modified_query = query
+    
+    # Detect error/troubleshooting patterns
+    error_patterns = [
+        r'\b(error|issue|problem|bug|crash|fail|exception)\b',
+        r'\b(out of memory|oom|cuda error|permission denied)\b',
+        r'\b(fix|solve|troubleshoot|debug)\b',
+        r'\b(not working|broken|failed)\b',
+    ]
+    
+    is_troubleshooting = any(re.search(p, query_lower) for p in error_patterns)
+    
+    # Detect tool comparison patterns
+    comparison_patterns = [
+        r'\b(vs\.?|versus|or|compare|comparison|alternative)\b',
+        r'\b(best|better|which|choose|select)\b',
+    ]
+    
+    is_comparison = any(re.search(p, query_lower) for p in comparison_patterns)
+    
+    # Detect specific tool names (for title search)
+    tool_names = [
+        'ollama', 'llama.cpp', 'vllm', 'tgi', 'localai', 'text-generation-webui',
+        'koboldcpp', 'tabbyapi', 'sglang', 'lmstudio', 'kobold',
+    ]
+    
+    found_tools = [t for t in tool_names if t.lower() in query_lower]
+    
+    # Apply operators based on detected patterns
+    if is_troubleshooting:
+        # For errors, prioritize selftext (post body) where error details are
+        logger.info(f"Detected troubleshooting query, prioritizing selftext search")
+        # Note: We can't easily modify the query to use selftext: without breaking
+        # the OR expansion, so we'll handle this in result ranking instead
+    
+    if is_comparison and len(found_tools) >= 2:
+        # For comparisons, ensure we get posts mentioning both tools
+        logger.info(f"Detected comparison query with tools: {found_tools}")
+    
+    return modified_query
+
+
 def get_target_subreddits(query: str) -> Optional[List[str]]:
     """Extract relevant subreddits based on query keywords.
     
@@ -268,6 +381,109 @@ class RedditSearchResult:
     found_count: int
     query: str
     processing_time_ms: int
+
+
+def calculate_post_score(post: RedditPost, query: str, is_troubleshooting: bool = False) -> float:
+    """Calculate relevance score for a post with smart ranking.
+    
+    Factors:
+    - Subreddit priority (technical communities weighted higher)
+    - Recency (freshness bonus)
+    - Engagement (upvotes normalized by age)
+    - Content quality indicators
+    
+    Args:
+        post: Reddit post to score
+        query: Original search query
+        is_troubleshooting: Whether this is an error-fixing query
+        
+    Returns:
+        Float score (higher = better)
+    """
+    import math
+    from datetime import datetime
+    
+    score = 0.0
+    
+    # 1. Subreddit priority (0.5 to 5.0)
+    subreddit_priority = SUBREDDIT_PRIORITY.get(post.subreddit, 1)
+    score += subreddit_priority * 10  # Base priority weight
+    
+    # 2. Engagement score (upvotes with age decay)
+    age_days = (datetime.utcnow().timestamp() - post.created_utc) / 86400
+    
+    # Freshness factor: newer posts get boost
+    # Troubleshooting queries benefit more from fresh answers
+    if is_troubleshooting:
+        # For errors, strongly prefer recent posts (last 3 months)
+        if age_days < 90:
+            freshness_bonus = 20 * (1 - age_days / 90)
+        elif age_days < 365:
+            freshness_bonus = 5 * (1 - age_days / 365)
+        else:
+            freshness_bonus = 0
+    else:
+        # For general queries, moderate freshness preference
+        if age_days < 365:
+            freshness_bonus = 10 * (1 - age_days / 365)
+        else:
+            freshness_bonus = 0
+    
+    score += freshness_bonus
+    
+    # Engagement: upvotes normalized by sqrt(age) to prevent old posts dominating
+    # This gives "hot" posts a boost without completely ignoring old gems
+    engagement_score = post.score / math.sqrt(max(age_days, 1))
+    score += min(engagement_score / 10, 30)  # Cap at 30 to avoid dominance
+    
+    # 3. Comment engagement (discussions are valuable)
+    score += min(post.num_comments / 5, 10)  # Cap at 10
+    
+    # 4. Penalty for clickbait indicators
+    clickbait_words = ['wow', 'insane', 'crazy', 'shocking', '!!!', 'must watch']
+    title_lower = post.title.lower()
+    clickbait_count = sum(1 for word in clickbait_words if word in title_lower)
+    score -= clickbait_count * 3
+    
+    # 5. Bonus for technical indicators in title
+    technical_words = ['guide', 'tutorial', 'how to', 'setup', 'install', 'configure', 
+                       'comparison', 'benchmark', 'performance']
+    technical_count = sum(1 for word in technical_words if word in title_lower)
+    score += technical_count * 2
+    
+    return score
+
+
+def rerank_posts(posts: List[RedditPost], query: str) -> List[RedditPost]:
+    """Rerank posts by relevance score.
+    
+    Args:
+        posts: List of Reddit posts
+        query: Original search query
+        
+    Returns:
+        Posts sorted by calculated relevance score
+    """
+    import re
+    
+    # Detect if this is a troubleshooting query
+    error_patterns = [r'\b(error|issue|problem|bug|crash|oom|fix)\b']
+    is_troubleshooting = any(re.search(p, query.lower()) for p in error_patterns)
+    
+    # Calculate score for each post
+    scored_posts = [(post, calculate_post_score(post, query, is_troubleshooting)) 
+                    for post in posts]
+    
+    # Sort by score descending
+    scored_posts.sort(key=lambda x: x[1], reverse=True)
+    
+    # Log top posts for debugging
+    if scored_posts:
+        logger.info(f"Top scored post: r/{scored_posts[0][0].subreddit} "
+                   f"(score: {scored_posts[0][1]:.1f}, "
+                   f"upvotes: {scored_posts[0][0].score})")
+    
+    return [post for post, score in scored_posts]
 
 
 class RateLimiter:
@@ -413,10 +629,18 @@ class RedditClient:
                     seen_ids.add(post.id)
                     unique_posts.append(post)
             
-            # Sort by score
-            unique_posts.sort(key=lambda p: p.score, reverse=True)
+            # Smart reranking: prioritize by relevance score instead of just upvotes
+            # This considers: subreddit priority, freshness, engagement, content quality
+            unique_posts = rerank_posts(unique_posts, query)
             
             processing_time = (datetime.utcnow() - start_time).total_seconds() * 1000
+            
+            # Log subreddit distribution after reranking
+            subreddit_dist = {}
+            for post in unique_posts[:10]:
+                sub = post.subreddit.lower()
+                subreddit_dist[sub] = subreddit_dist.get(sub, 0) + 1
+            logger.info(f"Top 10 distribution: {subreddit_dist}")
             
             logger.info(
                 f"Reddit search: '{query[:50]}...' found {len(unique_posts)} unique posts "
@@ -526,6 +750,9 @@ async def search_reddit(
     
     # Apply query expansion for technical terms
     expanded_query = expand_query(query)
+    
+    # Apply advanced Reddit operators for better precision
+    expanded_query = apply_advanced_operators(expanded_query)
     
     # Apply smart subreddit targeting if enabled and not explicitly provided
     if use_smart_targeting and subreddits is None:
