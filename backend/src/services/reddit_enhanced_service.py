@@ -161,11 +161,13 @@ class RedditEnhancedService:
             task = self._search_with_sort(query, sort=sort, limit=25, time="all")
             sort_tasks.append((f"search_{sort}", task))
         
-        # Strategy 2: Search in specific subreddits (if query looks technical)
-        if subreddits:
-            for subreddit in subreddits[:3]:  # Limit to top 3 subreddits
-                task = self._search_subreddit(query, subreddit, limit=25)
-                sort_tasks.append((f"subreddit_{subreddit}", task))
+        # DISABLED: Search in specific subreddits
+        # Reason: Reddit Proxy uses browse_subreddit (popular posts) instead of 
+        # search_reddit when subreddits specified, giving irrelevant results
+        # if subreddits:
+        #     for subreddit in subreddits[:3]:
+        #         task = self._search_subreddit(query, subreddit, limit=25)
+        #         sort_tasks.append((f"subreddit_{subreddit}", task))
         
         # Strategy 3: Fallback general search without subreddit restriction (broader results)
         task = self._search_with_sort(query, sort="hot", limit=25, time="year")
