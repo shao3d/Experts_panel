@@ -7,8 +7,8 @@
  * - Vibe Check: Sentiment and opinions
  */
 
-import React, { useState } from 'react';
-import { RedditResponse, RedditSource } from '../types/api';
+import React from 'react';
+import { RedditResponse } from '../types/api';
 
 interface CommunityInsightsSectionProps {
   redditResponse: RedditResponse | null | undefined;
@@ -164,47 +164,7 @@ const formatInlineMarkdown = (text: string): React.ReactNode => {
   return <>{elements}</>;
 };
 
-/**
- * Source card for a Reddit post
- */
-const SourceCard: React.FC<{ source: RedditSource }> = ({ source }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  
-  return (
-    <div className="source-card">
-      <div 
-        className="source-header"
-        onClick={() => setIsExpanded(!isExpanded)}
-      >
-        <span className="source-toggle">{isExpanded ? '▼' : '▶'}</span>
-        <span className="source-title" title={source.title || 'Untitled'}>
-          {/* FIX: Add null check for title */}
-          {(source.title?.length || 0) > 60 
-            ? (source.title || 'Untitled').slice(0, 60) + '...' 
-            : (source.title || 'Untitled')}
-        </span>
-        <span className="source-subreddit">r/{source.subreddit}</span>
-      </div>
-      
-      {isExpanded && (
-        <div className="source-details">
-          <div className="source-stats">
-            <span className="stat">⬆️ {source.score}</span>
-            <span className="stat">💬 {source.comments_count} comments</span>
-          </div>
-          <a 
-            href={source.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="source-link"
-          >
-            View on Reddit →
-          </a>
-        </div>
-      )}
-    </div>
-  );
-};
+
 
 /**
  * Loading skeleton for community insights
@@ -262,8 +222,6 @@ export const CommunityInsightsSection: React.FC<CommunityInsightsSectionProps> =
   redditResponse,
   isLoading = false
 }) => {
-  const [showRaw, setShowRaw] = useState(false);
-  const [showSources, setShowSources] = useState(true);
 
   if (isLoading) {
     return <LoadingSkeleton />;
@@ -285,26 +243,10 @@ export const CommunityInsightsSection: React.FC<CommunityInsightsSectionProps> =
       <div className="insights-header">
         <div className="header-left">
           <span className="header-icon">👥</span>
-          <h3 className="header-title">Community Insights</h3>
+          <h3 className="header-title">Reddit Insights</h3>
           <span className="header-badge">
             {redditResponse.found_count} posts from Reddit
           </span>
-        </div>
-        <div className="header-actions">
-          <button 
-            className={`action-button ${showSources ? 'active' : ''}`}
-            onClick={() => setShowSources(!showSources)}
-            title="Toggle sources"
-          >
-            📋
-          </button>
-          <button 
-            className={`action-button ${showRaw ? 'active' : ''}`}
-            onClick={() => setShowRaw(!showRaw)}
-            title="Show raw markdown"
-          >
-            📝
-          </button>
         </div>
       </div>
 
@@ -313,27 +255,7 @@ export const CommunityInsightsSection: React.FC<CommunityInsightsSectionProps> =
         <FormattedContent content={redditResponse.synthesis} />
       </div>
 
-      {/* Raw Markdown (toggleable) */}
-      {showRaw && (
-        <div className="insights-raw">
-          <h4 className="raw-title">Raw Reddit Results</h4>
-          <pre className="raw-content">{redditResponse.markdown}</pre>
-        </div>
-      )}
 
-      {/* Sources */}
-      {showSources && redditResponse.sources.length > 0 && (
-        <div className="insights-sources">
-          <h4 className="sources-title">
-            📚 Sources ({redditResponse.sources.length})
-          </h4>
-          <div className="sources-list">
-            {redditResponse.sources.map((source, index) => (
-              <SourceCard key={index} source={source} />
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Footer */}
       <div className="insights-footer">
