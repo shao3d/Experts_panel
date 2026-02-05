@@ -24,10 +24,10 @@ SUBREDDIT_MAPPING = {
     "local": ["LocalLLaMA", "selfhosted", "homelab"],
     
     # Voice / TTS / STT
-    "tts": ["tts", "TextToSpeech", "voice", "LocalLLaMA", "HomeAssistantAI"],
-    "stt": ["speechRecognition", "voice", "LocalLLaMA", "HomeAssistantAI"],
-    "voice": ["voice", "speechRecognition", "tts", "LocalLLaMA"],
-    "speech": ["speechRecognition", "voice", "tts"],
+    "tts": ["tts", "TextToSpeech", "LocalLLaMA", "selfhosted"],
+    "stt": ["speechRecognition", "LocalLLaMA", "selfhosted"],
+    "voice": ["speechRecognition", "tts", "LocalLLaMA", "selfhosted"],
+    "speech": ["speechRecognition", "tts", "LocalLLaMA", "selfhosted"],
     "audio": ["audio", "voice", "musicproduction", "WeAreTheMusicMakers"],
     
     # Programming
@@ -43,8 +43,8 @@ SUBREDDIT_MAPPING = {
     # Tools / Software
     "docker": ["docker", "selfhosted", "homelab", "sysadmin"],
     "ollama": ["LocalLLaMA", "ollama", "selfhosted"],
-    "home assistant": ["HomeAssistantAI", "homeautomation", "smarthome"],
-    "automation": ["automation", "HomeAssistantAI", "selfhosted"],
+    "home assistant": ["homeautomation", "smarthome", "selfhosted"],
+    "automation": ["automation", "selfhosted", "homeautomation"],
     
     # General tech
     "self-hosted": ["selfhosted", "homelab", "LocalLLaMA"],
@@ -313,7 +313,7 @@ class RedditClient:
             num_comments=submission.num_comments if submission.num_comments is not None else 0,
             subreddit=subreddit_name,
             url=submission.url or "",
-            permalink=f"https://reddit.com{submission.permalink}" if submission.permalink else "",
+            permalink=f"https://reddit.com{submission.permalink}" if submission.permalink and not submission.permalink.startswith('http') else submission.permalink or "",
             created_utc=submission.created_utc if submission.created_utc is not None else 0.0,
             author=author_name
         )
