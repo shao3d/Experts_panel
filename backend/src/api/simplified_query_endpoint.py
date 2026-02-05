@@ -450,8 +450,30 @@ async def process_reddit_pipeline(
     Returns:
         RedditResponse with community insights or None if failed
     """
+    import time
     start_time = time.time()
     reddit_service = RedditService()
+    
+    # Detect query language and translate to English if needed
+    from ..utils.language_utils import detect_query_language
+    query_language = detect_query_language(query)
+    
+    # Reddit is English-centric, so translate non-English queries for better results
+    search_query = query
+    if query_language == "Russian":
+        try:
+            from ..services.translation_service import TranslationService
+            translator = TranslationService()
+            # Quick translation of query to English
+            search_query = await translator.translate_text(
+                text=query,
+                source_lang="Russian",
+                target_lang="English"
+            )
+            logger.info(f"Translated Reddit search query: '{query[:50]}...' -> '{search_query[:50]}...'")
+        except Exception as e:
+            logger.warning(f"Failed to translate Reddit query, using original: {e}")
+            search_query = query
     
     try:
         # Report start
@@ -473,7 +495,7 @@ async def process_reddit_pipeline(
             })
         
         search_result = await reddit_service.search(
-            query=query,
+            query=search_query,
             limit=10,
             sort="relevance",
             time="all"

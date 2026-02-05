@@ -109,6 +109,55 @@ class TranslationService:
             logger.error(f"Error translating post: {str(e)}")
             return post_text
 
+    async def translate_text(
+        self,
+        text: str,
+        source_lang: str = "Russian",
+        target_lang: str = "English"
+    ) -> str:
+        """Translate text from source language to target language.
+        
+        Args:
+            text: Text to translate
+            source_lang: Source language name (e.g., "Russian", "English")
+            target_lang: Target language name (e.g., "English", "Russian")
+        
+        Returns:
+            Translated text
+        """
+        if not text or not text.strip():
+            return text
+        
+        # If source and target are the same, return original
+        if source_lang.lower() == target_lang.lower():
+            return text
+        
+        try:
+            messages = [
+                {
+                    "role": "system",
+                    "content": f"You are a translator. Translate from {source_lang} to {target_lang}. Preserve meaning and technical terms. Return only the translation, no explanations."
+                },
+                {
+                    "role": "user",
+                    "content": f"Translate this text from {source_lang} to {target_lang}:\n\n{text}"
+                }
+            ]
+            
+            response = await self._call_llm(self.primary_model, messages)
+            translated = response.choices[0].message.content.strip()
+            
+            if translated:
+                logger.debug(f"Translated text: {text[:50]}... -> {translated[:50]}...")
+                return translated
+            else:
+                logger.warning("Empty translation, returning original")
+                return text
+                
+        except Exception as e:
+            logger.error(f"Error translating text: {e}")
+            return text
+
     async def translate_posts_batch(
         self,
         posts: List[Dict[str, Any]],
