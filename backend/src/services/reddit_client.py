@@ -55,6 +55,61 @@ SUBREDDIT_MAPPING = {
     "default": ["LocalLLaMA", "OpenAI", "artificial", "technology"],
 }
 
+# Query expansion for technical terms
+# Expands abbreviations to improve search coverage
+QUERY_EXPANSIONS = {
+    "tts": ["text to speech", "TTS", "voice synthesis"],
+    "stt": ["speech to text", "STT", "voice recognition", "speech recognition"],
+    "llm": ["LLM", "language model", "AI model", "large language model"],
+    "rag": ["RAG", "retrieval augmented generation", "vector search"],
+    "mcp": ["MCP", "model context protocol"],
+    "gpu": ["GPU", "graphics card", "video card"],
+    "cpu": ["CPU", "processor"],
+    "api": ["API", "application programming interface"],
+    "ui": ["UI", "user interface"],
+    "ux": ["UX", "user experience"],
+    "db": ["database", "DB"],
+    "docker": ["Docker", "containerization", "containers"],
+    "kubernetes": ["Kubernetes", "k8s"],
+    "selfhosted": ["selfhosted", "self-hosted", "homelab", "on-premise"],
+    "open source": ["open source", "FOSS", "free software"],
+}
+
+def expand_query(query: str) -> str:
+    """Expand technical abbreviations for better search coverage.
+    
+    Uses Reddit's OR operator to search for all variations.
+    Example: "TTS engines" → '("text to speech" OR "TTS" OR "voice synthesis") engines'
+    """
+    import re
+    
+    query_lower = query.lower()
+    expanded_terms = []
+    
+    for keyword, variations in QUERY_EXPANSIONS.items():
+        # Use word boundary check for short terms (<=3 chars) to avoid partial matches
+        if len(keyword) <= 3:
+            pattern = r'\b' + re.escape(keyword) + r'\b'
+            if re.search(pattern, query, re.IGNORECASE):
+                or_group = " OR ".join([f'"{v}"' for v in variations])
+                expanded_terms.append(f"({or_group})")
+                query = re.sub(pattern, "", query, count=1, flags=re.IGNORECASE)
+        elif keyword in query_lower:
+            # Create OR group for this term
+            or_group = " OR ".join([f'"{v}"' for v in variations])
+            expanded_terms.append(f"({or_group})")
+            # Remove original term (case-insensitive) to avoid duplication
+            query = re.sub(re.escape(keyword), "", query, count=1, flags=re.IGNORECASE)
+    
+    if expanded_terms:
+        # Combine expanded terms with remaining query
+        expanded_query = " ".join(expanded_terms) + " " + query.strip()
+        logger.info(f"Query expanded: '{query[:40]}...' → '{expanded_query[:60]}...'")
+        return expanded_query.strip()
+    
+    return query
+
+
 def get_target_subreddits(query: str) -> Optional[List[str]]:
     """Extract relevant subreddits based on query keywords.
     
@@ -222,41 +277,31 @@ class RedditClient:
         try:
             posts = []
             
-            # Filter and validate subreddits
-            filtered_subreddits = []
-            if subreddits:
-                filtered_subreddits = [s.strip().lower() for s in subreddits[:3] if s and s.strip()]
+            # Build optimized query with OR operator for subreddits
+            search_query = query
             
-            if filtered_subreddits:
-                # Search in specific subreddits (max 3)
-                per_subreddit_limit = max(1, limit // len(filtered_subreddits))
+            if subreddits:
+                # Filter and validate subreddits
+                filtered_subreddits = [s.strip() for s in subreddits[:5] if s and s.strip()]
                 
-                for subreddit_name in filtered_subreddits:
-                    await self.rate_limiter.acquire()
-                    try:
-                        subreddit = await self.reddit.subreddit(subreddit_name)
-                        
-                        async for submission in subreddit.search(
-                            query,
-                            limit=per_subreddit_limit,
-                            time_filter=time_filter,
-                            sort=sort
-                        ):
-                            posts.append(self._convert_submission(submission))
-                    except Exception as e:
-                        logger.warning(f"Failed to search r/{subreddit_name}: {e}")
-                        # Continue with other subreddits
-            else:
-                # Search all of Reddit
-                await self.rate_limiter.acquire()
-                subreddit = await self.reddit.subreddit("all")
-                async for submission in subreddit.search(
-                    query,
-                    limit=limit,
-                    time_filter=time_filter,
-                    sort=sort
-                ):
-                    posts.append(self._convert_submission(submission))
+                if filtered_subreddits:
+                    # Use Reddit's OR operator for efficient multi-subreddit search
+                    # subreddit:foo OR subreddit:bar OR subreddit:baz
+                    subreddit_filter = " OR ".join([f"subreddit:{s}" for s in filtered_subreddits])
+                    search_query = f"{query} ({subreddit_filter})"
+                    logger.info(f"OR search in: {filtered_subreddits}")
+            
+            # Single search call - more efficient than multiple subreddit searches
+            await self.rate_limiter.acquire()
+            subreddit = await self.reddit.subreddit("all")
+            
+            async for submission in subreddit.search(
+                search_query,
+                limit=limit,
+                time_filter=time_filter,
+                sort=sort
+            ):
+                posts.append(self._convert_submission(submission))
             
             # Remove duplicates by ID
             seen_ids = set()
@@ -377,18 +422,32 @@ async def search_reddit(
     if not query or not query.strip():
         raise ValueError("Search query cannot be empty")
     
+    # Apply query expansion for technical terms
+    expanded_query = expand_query(query)
+    
     # Apply smart subreddit targeting if enabled and not explicitly provided
     if use_smart_targeting and subreddits is None:
         subreddits = get_target_subreddits(query)
         if subreddits:
             logger.info(f"Smart targeting: searching in subreddits: {subreddits}")
     
+    # Adaptive sort strategy: use 'top' for quality-focused queries
+    adaptive_sort = sort
+    if sort == "relevance":
+        quality_keywords = ['best', 'top', 'vs', 'comparison', 'alternative', 'recommended']
+        if any(kw in query.lower() for kw in quality_keywords):
+            adaptive_sort = "top"
+            logger.info(f"Adaptive sort: switched to 'top' for quality query")
+    
     last_error = None
+    
+    # Use expanded query for search
+    query = expanded_query
     
     for attempt in range(max_retries + 1):
         try:
             client = await get_global_reddit_client()
-            return await client.search(query, subreddits, limit, time_filter, sort)
+            return await client.search(query, subreddits, limit, time_filter, adaptive_sort)
             
         except ValueError:
             # Don't retry validation errors
