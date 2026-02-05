@@ -20,8 +20,10 @@ The backend implements a sophisticated query processing system that retrieves re
 - `src/services/language_validation_service.py` - Phase 5: Language consistency validation
 - `src/services/comment_group_map_service.py` - Phase 6: Comment drift analysis + main source author clarifications
 - `src/services/comment_synthesis_service.py` - Phase 7: Comment insights extraction with priority for main source clarifications
-- `src/services/reddit_service.py` - Reddit Proxy HTTP client with circuit breaker, retry logic, and fail-safe design
+- `src/services/reddit_service.py` - Legacy Reddit Proxy HTTP client with circuit breaker (basic single search)
+- `src/services/reddit_enhanced_service.py` - **NEW:** Enhanced multi-strategy Reddit aggregator with parallel searches, smart subreddit recommendations, and 60s timeout
 - `src/services/reddit_synthesis_service.py` - Reddit community analysis with Gemini and language detection (RU/EN synthesis)
+- `src/services/drift_scheduler_service.py` - Offline Drift Analysis with **gemini-3-flash-preview** via unified client
 - `src/services/drift_scheduler_service.py` - Offline Drift Analysis with **gemini-3-flash-preview** via unified client
 - `src/services/translation_service.py` - Translation service with `translate_text()` method for query translation
 - `src/utils/error_handler.py` - Enhanced user-friendly error processing system
@@ -42,7 +44,7 @@ The backend implements a sophisticated query processing system that retrieves re
   - **Request Body**: `QueryRequest` with `query`, `expert_filter`, `use_recent_only`, etc.
   - **use_recent_only**: Optional boolean to filter data to last 3 months (default: false)
   - **include_reddit**: Optional boolean to enable/disable Reddit community search (default: true)
-  - **Reddit Integration**: Parallel Reddit pipeline with 30s timeout, circuit breaker protection
+  - **Reddit Integration**: Parallel Reddit pipeline with 90s timeout (allows proxy cold start), multi-strategy search, circuit breaker protection
 - `GET /api/v1/posts/{post_id}` - Retrieve individual post details with comments and translation support
 - `POST /api/v1/import` - Import Telegram JSON data with expert assignment
 - `POST /api/v1/log-batch` - Enhanced debug logging endpoint for frontend development
@@ -281,12 +283,21 @@ Reddit community analysis integrated as a parallel pipeline alongside expert que
 
 ### Key Components
 
-#### RedditService (`src/services/reddit_service.py`)
+#### RedditService (`src/services/reddit_service.py`) - Legacy
 - **Circuit Breaker Pattern**: CLOSED/OPEN/HALF_OPEN states for resilience
 - **Retry Logic**: 3 attempts with exponential backoff
-- **Timeout**: 15s per request
+- **Timeout**: 15s per request (legacy, basic search)
 - **Error Types**: Connection, Timeout, Response, Parse errors
 - **Fail-Safe**: Graceful degradation if Reddit is unavailable
+
+#### RedditEnhancedService (`src/services/reddit_enhanced_service.py`) - **NEW**
+- **Multi-Strategy Search**: Parallel searches with `relevance`, `hot`, `top` + subreddit-specific queries
+- **Smart Subreddit Recommendations**: Auto-detects topic (AI, LLM, programming, startup) and suggests relevant subreddits
+- **Russian Keyword Support**: Detects RU queries and uses appropriate subreddits
+- **Deduplication**: Merges results from multiple strategies, removes duplicates
+- **Timeout**: 60s per HTTP request (allows proxy cold start)
+- **Max Results**: Up to 25 unique posts (vs 10 in basic service)
+- **Fallback Strategy**: If specific subreddits return empty, tries broader search
 
 #### RedditSynthesisService (`src/services/reddit_synthesis_service.py`)
 - **Model**: `MODEL_SYNTHESIS` (gemini-3-flash-preview)
@@ -304,8 +315,8 @@ Reddit community analysis integrated as a parallel pipeline alongside expert que
 - **Parallel Execution**: Reddit pipeline runs concurrently with expert processing
 - **Query Translation**: Russian queries automatically translated to English for better Reddit search
 - **Keep-Alive SSE**: Events every 2.5s during Reddit processing
-- **Timeout**: 30s for Reddit after experts complete
-- **Fail-Safe**: Expert responses returned even if Reddit fails
+- **Timeout**: 90s for Reddit after experts complete (allows proxy cold start ~15s + search ~30s + buffer)
+- **Fail-Safe**: Expert responses returned even if Reddit fails or times out
 
 ### API Request/Response
 

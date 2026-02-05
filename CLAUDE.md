@@ -16,7 +16,7 @@ The system uses an advanced **eight-phase pipeline** for analysis and a hybrid, 
 
 ### Key Architectural Principles
 - **Multi-Expert Architecture**: Complete data isolation between experts and parallel processing.
-- **Reddit MCP Integration**: Sidecar microservice for community insights with circuit breaker pattern.
+- **Reddit MCP Integration**: Sidecar microservice for community insights with multi-strategy search, smart subreddit targeting, and 90s cold start timeout.
 - **Cost Optimization**: Gemini-only strategy with Tier 1 paid account (high rate limits).
 - **Real-time Progress**: SSE streaming for frontend progress tracking.
 - **Date Filtering**: Optional `use_recent_only` filter for last 3 months of data.
@@ -38,11 +38,12 @@ Complete FastAPI backend with:
 - Dynamic expert loading from database with expert metadata centralization
 
 **Key Files:**
-- `src/api/simplified_query_endpoint.py` - Main multi-expert query processing with parallel experts and Reddit pipeline
+- `src/api/simplified_query_endpoint.py` - Main multi-expert query processing with parallel experts and Reddit pipeline (90s timeout)
 - `src/api/admin_endpoints.py` - Admin authentication and production configuration
 - `src/services/map_service.py` - Content relevance detection with hybrid models
 - `src/services/medium_scoring_service.py` - Advanced post reranking with cost optimization
-- `src/services/reddit_service.py` - Reddit Proxy HTTP client with circuit breaker
+- `src/services/reddit_service.py` - Legacy Reddit HTTP client with circuit breaker
+- `src/services/reddit_enhanced_service.py` - **NEW:** Multi-strategy Reddit aggregator (parallel searches, smart subreddits)
 - `src/services/reddit_synthesis_service.py` - Reddit community analysis with Gemini
 - `src/services/translation_service.py` - Hybrid translation service with Google Gemini
 - `src/services/language_validation_service.py` - Language consistency validation

@@ -15,9 +15,13 @@ This specification details the architecture for integrating Reddit search capabi
 - Phase 1: Local Prototype with Watchdog pattern
 - Phase 2: Production Deployment on Fly.io
 - Phase 3: Backend Integration with multi-language support
+- Phase 4: Enhanced Multi-Strategy Search (NEW)
 - Reddit Proxy Service live and operational
 - Automatic query translation (RU → EN) implemented
 - Multi-language synthesis (responses in query language)
+- Smart subreddit recommendations (EN + RU keywords)
+- Multi-strategy parallel search (relevance + hot + top + subreddits)
+- Cold start handling with 90s timeout
 
 ---
 
@@ -442,6 +446,9 @@ if (subreddits.length > 0) {
 | `search_reddit` returns `results` not `posts` | Handle both formats in code | ✅ Fixed |
 | Reddit search can be empty | Fallback to `browse_subreddit` | ✅ Implemented |
 | MCP Stdio transport | Requires persistent process | ✅ Watchdog handles |
+| Proxy cold start (15s) | 90s timeout in backend | ✅ Implemented |
+| Russian queries | Auto-detect + translate + RU keywords | ✅ Implemented |
+| Limited results | Multi-strategy parallel search | ✅ Implemented |
 
 ---
 
@@ -472,6 +479,7 @@ services/reddit-proxy/
 backend/src/
 ├── services/
 │   ├── reddit_service.py              # ✅ HTTP client with circuit breaker
+│   ├── reddit_enhanced_service.py     # ✅ NEW: Multi-strategy aggregator
 │   ├── reddit_synthesis_service.py    # ✅ Multi-language synthesis
 │   └── translation_service.py         # ✅ translate_text() method added
 ├── api/
@@ -482,6 +490,21 @@ frontend/src/components/
 └── CommunityInsightsSection.tsx       # ✅ Neutral styling, no emojis
 ├── CommunityInsightsSection.css       # ✅ System palette colors
 ```
+
+### Phase 4: Enhanced Search (NEW)
+
+**RedditEnhancedService** (`reddit_enhanced_service.py`):
+- Parallel search strategies: `relevance`, `hot`, `top`
+- Smart subreddit targeting based on query topic
+- Russian keyword support ("ии", "агент", "нейросеть")
+- Fallback search if specific subreddits return empty
+- Deduplication across multiple search results
+- Up to 25 unique posts (vs 10 in basic service)
+
+**Timeout Configuration**:
+- HTTP client timeout: 60s (was 15s)
+- Reddit wait timeout: 90s (was 30s)
+- Allows proxy cold start (~15s) + search processing
 
 ---
 
@@ -544,10 +567,14 @@ Create `backend/src/services/reddit_service.py` with HTTP client to Reddit Proxy
 
 ---
 
-**Phase 3 Status:** COMPLETE ✅  
+**Phase 3 & 4 Status:** COMPLETE ✅  
 **Recent Enhancements:**
 - Query translation RU→EN for better search results
 - Multi-language synthesis (responses in query language)
 - Neutral UI styling (system palette)
+- **NEW:** RedditEnhancedService with multi-strategy search
+- **NEW:** Smart subreddit recommendations (RU + EN keywords)
+- **NEW:** 90s timeout for proxy cold start handling
+- **NEW:** Up to 25 posts with deduplication
 
 **Contact:** External-Way5292 (Reddit credentials owner)
