@@ -8,6 +8,7 @@ import logging
 from typing import Optional, List, Dict, Any
 
 from .. import config
+from ..utils.language_utils import detect_query_language
 from .reddit_service import RedditSearchResult, RedditSource
 from .google_ai_studio_client import create_google_ai_studio_client, GoogleAIStudioError
 
@@ -50,16 +51,22 @@ class RedditSynthesisService:
             max_sources_in_context: Max number of sources to include in prompt
         
         Returns:
-            Markdown-formatted synthesis with insights
+            Markdown-formatted synthesis with insights (in query language)
         """
         if not reddit_result.sources:
+            query_lang = detect_query_language(query)
+            if query_lang == "Russian":
+                return "Обсуждения в сообществе не найдены для этого запроса."
             return "No community discussions found for this query."
+        
+        # Detect query language for response
+        query_language = detect_query_language(query)
         
         # Build context from sources
         context = self._build_context(reddit_result, max_sources_in_context)
         
-        # Create synthesis prompt
-        messages = self._create_synthesis_prompt(query, context)
+        # Create synthesis prompt in query language
+        messages = self._create_synthesis_prompt(query, context, query_language)
         
         try:
             response = await self._client.chat_completions_create(
@@ -79,10 +86,10 @@ class RedditSynthesisService:
         except GoogleAIStudioError as e:
             logger.error(f"Gemini synthesis failed: {e}")
             # Fallback: return raw markdown if synthesis fails
-            return self._create_fallback_response(reddit_result)
+            return self._create_fallback_response(reddit_result, query_language)
         except Exception as e:
             logger.error(f"Unexpected error in synthesis: {e}")
-            return self._create_fallback_response(reddit_result)
+            return self._create_fallback_response(reddit_result, query_language)
     
     def _build_context(
         self,
@@ -113,18 +120,70 @@ class RedditSynthesisService:
     def _create_synthesis_prompt(
         self,
         query: str,
-        context: str
+        context: str,
+        query_language: str = "English"
     ) -> List[Dict[str, str]]:
         """Create synthesis prompt for Gemini.
         
         Args:
             query: User query
             context: Reddit posts context
+            query_language: Language of the query (English or Russian)
         
         Returns:
             Messages list for chat completion
         """
-        system_prompt = """You are a Community Analyst specializing in extracting actionable insights from Reddit discussions.
+        # Determine response language
+        is_russian = query_language == "Russian"
+        
+        if is_russian:
+            system_prompt = """Вы — Аналитик Сообществ, специализирующийся на извлечении практических инсайтов из обсуждений на Reddit.
+
+Ваша задача — проанализировать посты Reddit, связанные с запросом пользователя, и предоставить структурированный анализ:
+
+1. **Проверка реальности**: Баги, edge cases, проблемы с железом/софтом, упомянутые пользователями
+2. **Лайфхаки и обходные пути**: Неофициальные решения, креативные фиксы, советы от сообщества
+3. **Атмосфера**: Общий сентимент, частые фрустрации, консенсус сообщества
+
+Правила:
+- Будьте краткими, но конкретными — ссылайтесь на конкретные посты
+- Используйте bullet points для удобства чтения
+- Если в категории нет инсайтов, напишите "Ничего конкретного не упомянуто"
+- Тон — информативный и нейтральный
+- Фокус на практичной, actionable информации
+- Упоминайте конкретные сабреддиты
+
+ВАЖНО: Отвечайте ТОЛЬКО на русском языке, даже если посты Reddit на английском.
+
+Формат ответа — markdown с секциями:
+
+### 🔍 Проверка реальности
+- Упомянутые баги и проблемы
+- Edge cases от пользователей
+- Проблемы совместимости
+
+### 🛠️ Лайфхаки и обходные пути
+- Неофициальные решения
+- Советы от сообщества
+- Креативные фиксы
+
+### 😎 Атмосфера
+- Общий сентимент сообщества
+- Частые жалобы или похвала
+- Консенсус, если есть
+
+### 📊 Краткое резюме
+- Краткое резюме ключевых выводов (2-3 предложения)"""
+
+            user_prompt = f"""**Запрос пользователя:** {query}
+
+**Найденные посты Reddit:**
+
+{context}
+
+Проанализируйте эти обсуждения на Reddit и извлеките инсайты. Отвечайте на русском языке."""
+        else:
+            system_prompt = """You are a Community Analyst specializing in extracting actionable insights from Reddit discussions.
 
 Your task is to analyze Reddit posts related to the user's query and provide a structured analysis focusing on:
 
@@ -160,7 +219,7 @@ Format your response as markdown with these sections:
 ### 📊 Summary
 - Brief 2-3 sentence summary of key takeaways"""
 
-        user_prompt = f"""**User Query:** {query}
+            user_prompt = f"""**User Query:** {query}
 
 **Reddit Posts Found:**
 
@@ -173,20 +232,34 @@ Please analyze these Reddit discussions and extract insights."""
             {"role": "user", "content": user_prompt}
         ]
     
-    def _create_fallback_response(self, reddit_result: RedditSearchResult) -> str:
+    def _create_fallback_response(
+        self, 
+        reddit_result: RedditSearchResult,
+        query_language: str = "English"
+    ) -> str:
         """Create fallback response when synthesis fails.
         
         Args:
             reddit_result: Reddit search result
+            query_language: Language of the query
         
         Returns:
             Basic markdown response with sources
         """
+        is_russian = query_language == "Russian"
+        
         if not reddit_result.sources:
+            if is_russian:
+                return "Обсуждения в сообществе не найдены для этого запроса."
             return "No community discussions found for this query."
         
-        lines = ["### Community Discussions", ""]
-        lines.append(f"Found {reddit_result.found_count} relevant posts on Reddit:")
+        if is_russian:
+            lines = ["### Обсуждения в сообществе", ""]
+            lines.append(f"Найдено {reddit_result.found_count} релевантных постов на Reddit:")
+        else:
+            lines = ["### Community Discussions", ""]
+            lines.append(f"Found {reddit_result.found_count} relevant posts on Reddit:")
+        
         lines.append("")
         
         for src in reddit_result.sources[:5]:
@@ -194,7 +267,10 @@ Please analyze these Reddit discussions and extract insights."""
             escaped_title = src.title.replace("[", "\\[").replace("]", "\\]")
             escaped_url = src.url.replace(")", "%29")  # URL-encode closing parenthesis
             lines.append(f"- **[{escaped_title}]({escaped_url})** (r/{src.subreddit})")
-            lines.append(f"  Score: {src.score} | Comments: {src.comments_count}")
+            if is_russian:
+                lines.append(f"  Рейтинг: {src.score} | Комментариев: {src.comments_count}")
+            else:
+                lines.append(f"  Score: {src.score} | Comments: {src.comments_count}")
             lines.append("")
         
         return "\n".join(lines)
