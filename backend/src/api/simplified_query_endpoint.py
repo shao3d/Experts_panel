@@ -553,7 +553,8 @@ async def process_reddit_pipeline(
                 url=url,
                 score=post.score or 0,
                 comments_count=post.num_comments or 0,
-                subreddit=post.subreddit or "unknown"
+                subreddit=post.subreddit or "unknown",
+                content=post.selftext or ""  # CRITICAL: Pass post content to LLM
             ))
         
         search_result = RedditSearchResult(
@@ -693,7 +694,9 @@ async def event_generator_parallel(
         yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
 
         # 1. Determine which experts to process
-        if request.expert_filter:
+        if request.expert_filter is not None:
+            # Empty list [] means NO experts (Reddit-only mode)
+            # Non-empty list means specific experts only
             expert_ids = request.expert_filter
         else:
             # Default: ALL experts from database
@@ -969,9 +972,9 @@ async def event_generator_parallel(
                 yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
 
         # Wait for Reddit pipeline to complete (with timeout)
-        # Reddit can be slow, so we give it up to 30 seconds after experts complete
+        # Reddit usually takes 10-30s (cold start + search), 30s is sufficient
         reddit_wait_start = time.time()
-        reddit_timeout = 90.0  # 90 second additional wait for Reddit (allows proxy to cold start)
+        reddit_timeout = 30.0  # 30 seconds max wait after experts complete
         last_activity_time_outer = time.time()  # FIX: Define in outer scope
         
         # FIX: Also check if task is done to avoid waiting full timeout if task crashed

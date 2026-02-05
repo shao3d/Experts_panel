@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 # Configuration
 REDDIT_PROXY_URL = "https://experts-reddit-proxy.fly.dev"
-DEFAULT_TIMEOUT = 60.0  # Increased for cold start (proxy needs ~15s to wake up)
+DEFAULT_TIMEOUT = 30.0  # HTTP timeout - enough for cold start (~15s) + search
 MAX_RETRIES = 3
 RETRY_BACKOFF_BASE = 2.0
 

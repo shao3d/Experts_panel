@@ -109,8 +109,14 @@ class RedditSynthesisService:
         
         context_parts = []
         for i, src in enumerate(sources, 1):
+            # Include post content (truncated to ~800 chars to fit context window)
+            content_preview = src.content[:800] if src.content else "[No content available]"
+            if len(src.content) > 800:
+                content_preview += "..."
+            
             context_parts.append(
                 f"{i}. **{src.title}** (r/{src.subreddit})\n"
+                f"   - Content: {content_preview}\n"
                 f"   - Score: {src.score} | Comments: {src.comments_count}\n"
                 f"   - URL: {src.url}"
             )

@@ -38,6 +38,7 @@ class RedditSource:
     score: int
     comments_count: int
     subreddit: str
+    content: str = ""  # Post body/selftext for LLM analysis
 
 
 @dataclass
