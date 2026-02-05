@@ -50,11 +50,9 @@ from ..services.comment_synthesis_service import CommentSynthesisService
 from ..services.medium_scoring_service import MediumScoringService
 from ..services.translation_service import TranslationService
 from ..services.language_validation_service import LanguageValidationService
-from ..services.reddit_enhanced_service import (
-    RedditEnhancedService, 
-    get_recommended_subreddits
-)
+from ..services.reddit_client import search_reddit
 from ..services.reddit_synthesis_service import RedditSynthesisService
+from ..services.reddit_service import RedditSearchResult, RedditSource as RS
 from ..utils.error_handler import error_handler
 from ..utils.date_utils import get_cutoff_date
 
@@ -442,28 +440,24 @@ async def process_reddit_pipeline(
     query: str,
     progress_callback: Optional[Callable] = None
 ) -> Optional[RedditResponse]:
-    """Process Reddit community pipeline with enhanced multi-strategy search.
+    """Process Reddit community pipeline using direct Reddit API (asyncpraw).
     
-    Uses parallel searches with different parameters and subreddits to maximize
-    relevant content discovery. Synthesizes insights via Gemini.
+    Direct Reddit API integration with OAuth authentication.
     
     Args:
-        query: User query
+        query: User query (will be translated to English if Russian)
         progress_callback: Optional callback for progress updates
-    
+        
     Returns:
-        RedditResponse with community insights or None if failed
+        RedditResponse with community insights or None if failed/no results
     """
     import time
     start_time = time.time()
-    enhanced_service = RedditEnhancedService()
     
-    # Detect query language and translate to English if needed
+    # Detect query language and translate if needed
     from ..utils.language_utils import detect_query_language
     query_language = detect_query_language(query)
     
-    # Reddit is English-centric - use Gemini to formulate optimal search query
-    # Gemini converts question to optimal keyword query for Reddit search
     search_query = query
     if query_language == "Russian":
         try:
@@ -489,13 +483,12 @@ Search query:"""
             )
             
             search_query = response.choices[0].message.content.strip()
-            # Remove quotes if present
             search_query = search_query.strip('"\'')
             
             logger.info(f"Gemini formulated Reddit query: '{query[:50]}...' -> '{search_query}'")
         except Exception as e:
-            logger.warning(f"Failed to formulate Reddit query with Gemini: {e}")
-            search_query = query  # Fallback
+            logger.warning(f"Failed to formulate Reddit query: {e}")
+            search_query = query
     
     try:
         # Report start
@@ -503,90 +496,82 @@ Search query:"""
             await progress_callback({
                 "phase": "reddit_pipeline",
                 "status": "starting",
-                "message": "Starting enhanced Reddit search...",
+                "message": "Starting Reddit search...",
                 "source": "reddit"
             })
         
-        # 1. Get recommended subreddits based on query topic
-        recommended_subreddits = get_recommended_subreddits(search_query)
-        logger.info(f"Recommended subreddits for query: {recommended_subreddits}")
-        
-        # 2. Enhanced search with parallel strategies
+        # Search Reddit using asyncpraw
         if progress_callback:
             await progress_callback({
                 "phase": "reddit_search",
                 "status": "processing",
-                "message": f"Searching Reddit (multi-strategy: relevance, hot, top + {len(recommended_subreddits)} subreddits)...",
+                "message": f"Searching Reddit for: {search_query[:50]}...",
                 "source": "reddit"
             })
         
-        enhanced_result = await enhanced_service.search_enhanced(
+        reddit_result = await search_reddit(
             query=search_query,
-            target_posts=25,  # Get up to 25 unique posts
-            include_comments=True,
-            subreddits=recommended_subreddits
+            limit=25,
+            time_filter="all",
+            sort="relevance"
         )
         
-        # DEBUG: Log what we got from Reddit Proxy
-        logger.info(
-            f"REDDIT DEBUG: Got {len(enhanced_result.posts)} posts from "
-            f"strategies: {enhanced_result.strategies_used}"
-        )
+        # Check if we found anything relevant
+        if not reddit_result.posts:
+            logger.info(f"No Reddit posts found for query: {search_query}")
+            if progress_callback:
+                await progress_callback({
+                    "phase": "reddit_search",
+                    "status": "complete",
+                    "message": "No relevant discussions found",
+                    "source": "reddit",
+                    "found_count": 0
+                })
+            return None
         
-        # Check if posts have content
-        for i, post in enumerate(enhanced_result.posts[:3]):
-            content_preview = post.selftext[:100] if post.selftext else "[EMPTY]"
-            logger.info(f"REDDIT DEBUG: Post {i}: title='{post.title[:50]}...' selftext='{content_preview}...'")
+        logger.info(f"Found {len(reddit_result.posts)} Reddit posts via asyncpraw")
         
         if progress_callback:
             await progress_callback({
                 "phase": "reddit_search",
                 "status": "complete",
-                "message": f"Found {len(enhanced_result.posts)} unique posts from {len(enhanced_result.strategies_used)} search strategies",
+                "message": f"Found {len(reddit_result.posts)} relevant posts",
                 "source": "reddit",
-                "found_count": len(enhanced_result.posts),
-                "strategies": enhanced_result.strategies_used
+                "found_count": len(reddit_result.posts)
             })
         
-        # 3. Synthesize with Gemini
+        # Build sources for synthesis
+        sources = []
+        for post in reddit_result.posts:
+            sources.append(RS(
+                title=post.title or "Untitled",
+                url=post.permalink,
+                score=post.score or 0,
+                comments_count=post.num_comments or 0,
+                subreddit=post.subreddit or "unknown",
+                content=post.selftext or ""
+            ))
+        
+        # Build markdown for display
+        markdown = _build_reddit_markdown(reddit_result)
+        
+        # Synthesize with Gemini
         if progress_callback:
             await progress_callback({
                 "phase": "reddit_synthesis",
                 "status": "processing",
-                "message": "Analyzing community discussions with AI...",
+                "message": "Analyzing community discussions...",
                 "source": "reddit"
             })
         
         synthesis_service = RedditSynthesisService()
         
-        # Build enhanced search result in format expected by synthesis service
-        from ..services.reddit_service import RedditSearchResult, RedditSource as RS
-        # Build sources with safe permalink handling
-        sources = []
-        for post in enhanced_result.posts:
-            permalink = post.permalink or ""
-            if permalink.startswith('http'):
-                url = permalink
-            elif permalink.startswith('/'):
-                url = f"https://reddit.com{permalink}"
-            else:
-                url = f"https://reddit.com/{permalink}"
-            
-            sources.append(RS(
-                title=post.title or "Untitled",
-                url=url,
-                score=post.score or 0,
-                comments_count=post.num_comments or 0,
-                subreddit=post.subreddit or "unknown",
-                content=post.selftext or ""  # CRITICAL: Pass post content to LLM
-            ))
-        
         search_result = RedditSearchResult(
-            markdown=build_enhanced_markdown(enhanced_result),
-            found_count=len(enhanced_result.posts),
+            markdown=markdown,
+            found_count=len(reddit_result.posts),
             sources=sources,
             query=search_query,
-            processing_time_ms=enhanced_result.processing_time_ms
+            processing_time_ms=reddit_result.processing_time_ms
         )
         
         synthesis = await synthesis_service.synthesize(query, search_result)
@@ -595,15 +580,15 @@ Search query:"""
             await progress_callback({
                 "phase": "reddit_synthesis",
                 "status": "complete",
-                "message": "Community analysis complete",
+                "message": "Analysis complete",
                 "source": "reddit"
             })
         
         # Build response
         reddit_response = RedditResponse(
-            markdown=search_result.markdown,
+            markdown=markdown,
             synthesis=synthesis,
-            found_count=len(enhanced_result.posts),
+            found_count=len(reddit_result.posts),
             sources=[
                 RedditSource(
                     title=src.title,
@@ -618,15 +603,13 @@ Search query:"""
             processing_time_ms=int((time.time() - start_time) * 1000)
         )
         
-        # Report completion
         if progress_callback:
             await progress_callback({
                 "phase": "reddit_pipeline",
                 "status": "completed",
-                "message": f"Reddit analysis complete: {reddit_response.found_count} posts from {len(enhanced_result.strategies_used)} strategies",
+                "message": f"Reddit analysis complete: {reddit_response.found_count} posts",
                 "source": "reddit",
-                "found_count": reddit_response.found_count,
-                "strategies": enhanced_result.strategies_used
+                "found_count": reddit_response.found_count
             })
         
         return reddit_response
@@ -642,48 +625,32 @@ Search query:"""
                 "error": str(e)
             })
         return None
-    finally:
-        # Always close the client to prevent resource leak
-        await enhanced_service.close()
 
 
-def build_enhanced_markdown(result) -> str:
-    """Build markdown from enhanced search results.
-    
-    Args:
-        result: Enhanced search result with posts
-    
-    Returns:
-        Markdown formatted string
-    """
+def _build_reddit_markdown(result) -> str:
+    """Build markdown from Reddit search result."""
     if not result.posts:
-        return f"No Reddit discussions found for '{result.query}'."
+        return "No relevant Reddit discussions found."
     
-    sections = []
-    for i, post in enumerate(result.posts[:25], 1):
-        # Safely handle permalink
-        permalink = post.permalink or ""
-        if permalink.startswith('http'):
-            url = permalink
-        elif permalink.startswith('/'):
-            url = f"https://reddit.com{permalink}"
+    markdown_parts = []
+    for i, post in enumerate(result.posts, 1):
+        # Build content preview
+        if post.selftext:
+            content_preview = post.selftext[:500]
+            if len(post.selftext) > 500:
+                content_preview += "..."
         else:
-            url = f"https://reddit.com/{permalink}"
+            content_preview = ""
         
-        # Include full content if available
-        content = post.full_content or post.selftext or ""
-        truncated_content = content[:500] + "..." if len(content) > 500 else content
-        
-        section = f"""### {i}. {post.title}
+        markdown_parts.append(f"""### {i}. {post.title}
 
 **r/{post.subreddit}** | ⬆️ {post.score} | 💬 {post.num_comments} comments
 
-{truncated_content}
+{content_preview}
 
-[Read on Reddit]({url})"""
-        sections.append(section)
+[Read on Reddit]({post.permalink})""")
     
-    return "\n\n---\n\n".join(sections)
+    return "\n\n---\n\n".join(markdown_parts)
 
 
 async def event_generator_parallel(
