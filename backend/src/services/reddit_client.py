@@ -186,7 +186,8 @@ class RedditClient:
             else:
                 # Search all of Reddit
                 await self.rate_limiter.acquire()
-                async for submission in self.reddit.subreddit("all").search(
+                subreddit = await self.reddit.subreddit("all")
+                async for submission in subreddit.search(
                     query,
                     limit=limit,
                     time_filter=time_filter,
