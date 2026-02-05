@@ -463,18 +463,30 @@ async def process_reddit_pipeline(
     query_language = detect_query_language(query)
     
     # Reddit is English-centric, so translate non-English queries for better results
+    # CRITICAL: Reddit API works better with keyword-style queries, not full sentences
     search_query = query
     if query_language == "Russian":
         try:
             from ..services.translation_service import TranslationService
             translator = TranslationService()
-            # Quick translation of query to English
-            search_query = await translator.translate_text(
+            # Translate to English
+            translated = await translator.translate_text(
                 text=query,
                 source_lang="Russian",
                 target_lang="English"
             )
-            logger.info(f"Translated Reddit search query: '{query[:50]}...' -> '{search_query[:50]}...'")
+            # Simplify to keywords for better Reddit search
+            # Remove fluff words, keep only key concepts
+            search_query = translated.lower()
+            # Remove common stop words that hurt Reddit search
+            stop_words = ['which', 'what', 'should', 'would', 'could', 'how', 'the', 'a', 'an', 
+                         'for', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'of', 'is', 'are',
+                         'do', 'does', 'did', 'can', 'will', 'first', 'need', 'make', 'get',
+                         'someone', 'beginner', 'novice', 'newbie', 'person', 'people']
+            words = search_query.split()
+            keywords = [w for w in words if w not in stop_words and len(w) > 2]
+            search_query = ' '.join(keywords[:6])  # Max 6 keywords
+            logger.info(f"Translated Reddit query: '{query[:50]}...' -> '{translated[:50]}...' -> keywords: '{search_query}'")
         except Exception as e:
             logger.warning(f"Failed to translate Reddit query, using original: {e}")
             search_query = query
