@@ -32,7 +32,8 @@ The frontend source code is located in `frontend/src/` and is organized as follo
 The application's UI is built from a set of modular React components located in `frontend/src/components/`.
 
 - **`App.tsx`**: The main application component responsible for overall state management, component orchestration, and handling the primary query lifecycle.
-- **`QueryForm.tsx`**: Provides the user input form with real-time validation and date filtering checkbox (`use_recent_only`).
+- **`QueryForm.tsx`**: Provides the user input form with real-time validation and checkboxes for `use_recent_only` and `include_reddit`.
+- **`CommunityInsightsSection.tsx`**: Displays Reddit community analysis with markdown rendering and source cards.
 - **`ProgressSection.tsx`**: Displays real-time, multi-expert progress updates streamed from the backend via SSE.
 - **`ExpertAccordion.tsx`**: The primary UI element for organizing and displaying responses from multiple experts.
 - **`ExpertSelectionBar.tsx`**: A component for filtering results by expert, featuring grouped categories, post/comment statistics, and a collapsible desktop interface.
@@ -52,10 +53,12 @@ The application's logic for communicating with the backend is centralized in the
 All TypeScript types and interfaces are defined in the `frontend/src/types/` directory, primarily within `api.ts`. These interfaces are kept in sync with the backend's Pydantic models to ensure type safety across the application.
 
 **Key Interfaces:**
-- **`QueryRequest`**: Main query payload with `query`, `expert_filter`, `use_recent_only`, etc.
-- **`QueryResponse`**: Multi-expert response structure
+- **`QueryRequest`**: Main query payload with `query`, `expert_filter`, `use_recent_only`, `include_reddit`, etc.
+- **`QueryResponse`**: Multi-expert response structure with optional `reddit_response`
 - **`ExpertInfo`**: Expert metadata with display names and statistics
 - **`ProgressEvent`**: SSE event types for real-time updates
+- **`RedditResponse`**: Community analysis with synthesis and sources
+- **`RedditSource`**: Individual Reddit post metadata (title, url, score, subreddit)
 
 ### Code Patterns
 The codebase follows several key patterns:
@@ -137,6 +140,70 @@ Frontend-specific configuration, such as server port, path aliases, and the prox
 - **Post Translation**: Verify query language detection and translation API calls
 - **Language Detection**: Check TranslationService language logic
 - **Mixed Languages**: Ensure language validation phase is working
+
+## 🔗 Reddit Community Insights
+
+### Overview
+Frontend integration for Reddit community analysis with safe markdown rendering and collapsible source cards.
+
+### Key Components
+
+#### CommunityInsightsSection (`components/CommunityInsightsSection.tsx`)
+- **Markdown Rendering**: Safe iterative parser (no regex, O(n) complexity)
+- **Sections**: Reality Check, Hacks & Workarounds, Vibe Check, Summary
+- **Source Cards**: Collapsible Reddit post references with null-safety
+- **States**: Loading, Empty, Error, Success
+- **Toggle**: Show/hide raw markdown and sources list
+
+#### QueryForm Integration (`components/QueryForm.tsx`)
+- **Checkbox**: "👥 Искать на Reddit" (default: enabled)
+- **State**: `includeReddit: boolean` passed to query request
+- **Location**: Next to `use_recent_only` checkbox
+
+### SSE Events for Reddit
+```typescript
+// Search initiated
+{ type: 'reddit_search', status: 'in_progress', message: 'Searching Reddit...' }
+
+// Search complete
+{ type: 'reddit_search', status: 'complete' }
+
+// Synthesis in progress
+{ type: 'reddit_synthesis', status: 'in_progress', message: 'Analyzing community discussions...' }
+
+// Reddit pipeline complete
+{ type: 'reddit_complete', status: 'complete', result: {...} }
+
+// Error handling
+{ type: 'error', error_type: 'reddit_error', message: '...' }
+```
+
+### Type Definitions
+```typescript
+interface RedditSource {
+  title: string;
+  url: string;
+  score: number;
+  subreddit: string;
+  num_comments: number;
+}
+
+interface RedditResponse {
+  synthesis: string;  // Markdown formatted
+  sources: RedditSource[];
+}
+
+interface QueryResponse {
+  reddit_response: RedditResponse | null;
+  // ... other fields
+}
+```
+
+### Security Considerations
+- **Safe Markdown Parsing**: No regex-based parsing (ReDoS prevention)
+- **Null Safety**: Optional chaining and null-checks for all Reddit data
+- **URL Validation**: Direct links to Reddit with no redirects
+- **XSS Prevention**: All user-generated content escaped before rendering
 
 ---
 

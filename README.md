@@ -6,9 +6,9 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com)
 [![React](https://img.shields.io/badge/React-18+-blue.svg)](https://reactjs.org)
 
-**Intelligent system for analyzing expert Telegram channels using Google Gemini AI**
+**Intelligent system for analyzing expert Telegram channels and Reddit communities using Google Gemini AI**
 
-Experts Panel is a powerful tool for semantic search and analysis of content from expert Telegram channels. The system uses an advanced **8-phase Map-Resolve-Reduce pipeline architecture** with Google Gemini AI to provide accurate and contextually relevant answers.
+Experts Panel is a powerful tool for semantic search and analysis of content from expert Telegram channels and Reddit communities. The system uses an advanced **8-phase Map-Resolve-Reduce pipeline architecture** with Google Gemini AI to provide accurate and contextually relevant answers, now enhanced with **Reddit MCP Integration** for community insights.
 
 ## 🏗️ System Architecture
 
@@ -39,12 +39,19 @@ graph TD
         GoogleAI[Google AI Studio API - Gemini]
     end
 
+    subgraph "External Services"
+        RedditProxy[Reddit Proxy Service]
+        RedditAPI[Reddit API]
+    end
+
     User -- "Sends query" --> Frontend
     Frontend -- "SSE streaming /api/v1/query" --> Backend
     Backend -- "Admin API" --> Admin
     Backend -- "LLM calls with auto-retry" --> GoogleAI
     Backend -- "Multi-expert data access" --> DB
     Backend -- "Real-time progress" --> Frontend
+    Backend -- "Reddit search" --> RedditProxy
+    RedditProxy -- "MCP Stdio" --> RedditAPI
     Frontend -- "Expert responses" --> User
 
     classDef ai_service fill:#e6f3ff,stroke:#0066cc,stroke-width:2px
@@ -121,10 +128,12 @@ graph TD
 
     classDef storage fill:#fdf,stroke:#333,stroke-width:2px
     classDef external fill:#e6f3ff,stroke:#0066cc,stroke-width:2px
+    classDef reddit fill:#fff3e6,stroke:#ff6b6b,stroke-width:2px
     classDef note fill:#f0f8ff,stroke:#ccc,stroke-width:1px
     classDef admin fill:#FFE4B5,stroke:#D2691E,stroke-width:2px
     class Volume,DB storage
     class GoogleAI external
+    class RedditProxy,RedditAPI reddit
     class AdminLayer admin
 
     subgraph "Production Notes"
@@ -148,6 +157,7 @@ graph TD
 - **👥 Multi-expert Support**: Complete data isolation with `expert_id` and parallel processing
 - **🔄 Dynamic Expert Loading**: Experts loaded from database with metadata centralization
 - **🕒 Date Filtering**: Optional `use_recent_only` filter for last 3 months of data (fresh news vs historical context)
+- **👥 Reddit MCP Integration**: Sidecar microservice for community insights with circuit breaker pattern
 - **🔒 Production Ready**: Admin authentication, security hardening with API key masking and robust error handling
 
 ## 🚀 Quick Start
@@ -220,19 +230,21 @@ To set up your local environment, copy this file to `.env` and fill in the requi
 backend/
 ├── src/
 │   ├── models/       # SQLAlchemy models with expert_id fields
-│   ├── services/     # 8-phase Map-Resolve-Reduce pipeline
+│   ├── services/     # 8-phase Map-Resolve-Reduce pipeline + Reddit
 │   │   ├── map_service.py                 # Map Phase (Gemini)
 │   │   ├── medium_scoring_service.py      # Medium Posts Reranking (Gemini)
 │   │   ├── simple_resolve_service.py      # Resolve Phase (depth 1)
 │   │   ├── reduce_service.py              # Reduce Phase (Gemini)
 │   │   ├── comment_group_map_service.py   # Comment Groups (Gemini)
 │   │   ├── comment_synthesis_service.py   # Comment Synthesis (Gemini)
+│   │   ├── reddit_service.py              # Reddit Proxy HTTP Client
+│   │   ├── reddit_synthesis_service.py    # Reddit Community Analysis (Gemini)
 │   │   ├── google_ai_studio_client.py     # Google AI Studio Client (single-key with auto-retry)
 │   │   ├── monitored_client.py            # LLM call monitoring wrapper
 │   │   └── llm_monitor.py                 # LLM statistics and health tracking
 │   ├── api/          # FastAPI endpoints
 │   │   ├── main.py                        # Main application entrypoint
-│   │   ├── simplified_query_endpoint.py   # Main Query Processing
+│   │   ├── simplified_query_endpoint.py   # Main Query Processing (Expert + Reddit)
 │   │   └── admin_endpoints.py             # Admin Authentication
 │   ├── data/         # Telegram data import and parsing
 │   ├── utils/        # Utilities and enhanced error handling
@@ -245,9 +257,10 @@ frontend/
 ├── src/
 │   ├── components/   # React components with real-time SSE progress
 │   │   ├── ExpertAccordion.tsx            # Primary Expert UI Component
+│   │   ├── CommunityInsightsSection.tsx   # Reddit Community Analysis UI
 │   │   ├── ProgressSection.tsx            # Enhanced pipeline progress
 │   │   ├── ExpertResponse.tsx             # Expert response rendering
-│   │   └── QueryForm.tsx                  # User input form
+│   │   └── QueryForm.tsx                  # User input form (with Reddit toggle)
 │   ├── services/     # API client with SSE streaming
 │   ├── types/        # TypeScript interfaces
 │   └── utils/        # Utility functions
@@ -258,6 +271,13 @@ data/
 ├── exports/          # Telegram JSON files by expert_id
 ├── experts.db        # SQLite database (18MB, 10+ migrations)
 └── backend.log       # Backend API and pipeline logs
+
+services/
+└── reddit-proxy/     # Reddit MCP Microservice (Sidecar)
+    ├── src/index.ts              # Main application with Watchdog pattern
+    ├── package.json              # Dependencies: Fastify, MCP SDK
+    ├── fly.toml                  # Fly.io deployment config
+    └── Dockerfile                # Production container
 ```
 
 ### Multi-Expert Architecture
@@ -292,6 +312,7 @@ To deploy, use the Fly.io CLI (`flyctl`). You will need to set the required secr
 ## 📚 Documentation
 
 - [Pipeline Architecture](docs/pipeline-architecture.md) - Complete 8-phase pipeline documentation
+- [Reddit MCP Integration](specs/004-reddit-mcp-integration.md) - Reddit Proxy microservice specification
 - [Backend Architecture](backend/CLAUDE.md) - FastAPI services and API reference
 - [Frontend Development](frontend/CLAUDE.md) - React components and SSE integration
 - [API Documentation](https://experts-panel.fly.dev/docs) - Interactive OpenAPI docs

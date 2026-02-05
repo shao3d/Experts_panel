@@ -11,7 +11,7 @@ The backend implements a sophisticated query processing system that retrieves re
 
 ## Key Files
 - `src/api/main.py` - FastAPI application with CORS, SSE, error handling, admin auth, and production configuration
-- `src/api/simplified_query_endpoint.py` - Main multi-expert query endpoint with parallel processing and enhanced SSE
+- `src/api/simplified_query_endpoint.py` - Main multi-expert query endpoint with parallel processing, enhanced SSE, and Reddit pipeline
 - `src/api/admin_endpoints.py` - Admin authentication and production configuration endpoints
 - `src/services/map_service.py` - Phase 1: Content relevance detection with Gemini
 - `src/services/medium_scoring_service.py` - Phase 2: Advanced post reranking with Gemini
@@ -20,6 +20,8 @@ The backend implements a sophisticated query processing system that retrieves re
 - `src/services/language_validation_service.py` - Phase 5: Language consistency validation
 - `src/services/comment_group_map_service.py` - Phase 6: Comment drift analysis + main source author clarifications
 - `src/services/comment_synthesis_service.py` - Phase 7: Comment insights extraction with priority for main source clarifications
+- `src/services/reddit_service.py` - Reddit Proxy HTTP client with circuit breaker, retry logic, and fail-safe design
+- `src/services/reddit_synthesis_service.py` - Reddit community analysis with Gemini (Reality Check, Hacks & Workarounds, Vibe Check)
 - `src/services/drift_scheduler_service.py` - Offline Drift Analysis with **gemini-3-flash-preview** via unified client
 - `src/services/translation_service.py` - Translation service with Gemini
 - `src/utils/error_handler.py` - Enhanced user-friendly error processing system
@@ -39,6 +41,8 @@ The backend implements a sophisticated query processing system that retrieves re
 - `POST /api/v1/query` - Main multi-expert query endpoint with enhanced SSE streaming and parallel processing
   - **Request Body**: `QueryRequest` with `query`, `expert_filter`, `use_recent_only`, etc.
   - **use_recent_only**: Optional boolean to filter data to last 3 months (default: false)
+  - **include_reddit**: Optional boolean to enable/disable Reddit community search (default: true)
+  - **Reddit Integration**: Parallel Reddit pipeline with 30s timeout, circuit breaker protection
 - `GET /api/v1/posts/{post_id}` - Retrieve individual post details with comments and translation support
 - `POST /api/v1/import` - Import Telegram JSON data with expert assignment
 - `POST /api/v1/log-batch` - Enhanced debug logging endpoint for frontend development
@@ -81,11 +85,13 @@ The project can be deployed to Fly.io using the `fly.toml` configuration file an
 - **Google AI Studio API** - Gemini models for all LLM processing (single-key with auto-retry)
 - **SQLite Database** - Local and VPS data storage
 - **Telegram API** - Channel synchronization and comment fetching
+- **Reddit Proxy API** - Community insights microservice (`experts-reddit-proxy.fly.dev`)
 
 ### Provides
 - **REST API** - Query processing and data management endpoints
 - **SSE Streaming** - Real-time progress updates during query processing
 - **Health Endpoint** - Service status and configuration validation
+- **Reddit Community Insights** - Real-time Reddit analysis with source attribution
 
 ## Local Development Setup
 
@@ -257,6 +263,70 @@ The language system is integrated into all core LLM services:
 
 ### Usage Pattern
 The usage pattern, involving `prepare_system_message_with_language` and `prepare_prompt_with_language_instruction`, can be seen in practice in the various service files, such as `services/map_service.py` and `services/reduce_service.py`.
+
+## Reddit Community Insights Integration
+
+### Overview
+Reddit community analysis integrated as a parallel pipeline alongside expert queries. Provides real-world perspectives, practical hacks, and community sentiment through AI-powered synthesis.
+
+### Architecture
+**Sidecar Pattern**: Reddit Proxy runs as a separate microservice (`experts-reddit-proxy.fly.dev`), main backend calls it via HTTP API.
+
+### Key Components
+
+#### RedditService (`src/services/reddit_service.py`)
+- **Circuit Breaker Pattern**: CLOSED/OPEN/HALF_OPEN states for resilience
+- **Retry Logic**: 3 attempts with exponential backoff
+- **Timeout**: 15s per request
+- **Error Types**: Connection, Timeout, Response, Parse errors
+- **Fail-Safe**: Graceful degradation if Reddit is unavailable
+
+#### RedditSynthesisService (`src/services/reddit_synthesis_service.py`)
+- **Model**: `MODEL_SYNTHESIS` (gemini-3-flash-preview)
+- **Analysis Categories**:
+  - **Reality Check** - Real-world experiences vs marketing claims
+  - **Hacks & Workarounds** - Practical tips and alternatives
+  - **Vibe Check** - Community sentiment and frustrations
+  - **Summary** - Concise synthesis of all insights
+- **Source Attribution**: All claims linked to original Reddit posts
+- **Markdown Escaping**: Prevents injection attacks in titles/URLs
+
+#### Pipeline Integration (`src/api/simplified_query_endpoint.py`)
+- **Parallel Execution**: Reddit pipeline runs concurrently with expert processing
+- **Keep-Alive SSE**: Events every 2.5s during Reddit processing
+- **Timeout**: 30s for Reddit after experts complete
+- **Fail-Safe**: Expert responses returned even if Reddit fails
+
+### API Request/Response
+
+**Request Parameter**: `include_reddit: bool` (default: true)
+
+**SSE Events**:
+```json
+{"type": "reddit_search", "status": "in_progress", "message": "Searching Reddit..."}
+{"type": "reddit_complete", "status": "complete", "result": {...}}
+{"type": "error", "error_type": "reddit_error", "message": "..."}
+```
+
+**Response Structure**:
+```json
+{
+  "reddit_response": {
+    "synthesis": "markdown formatted analysis",
+    "sources": [{"title": "...", "url": "...", "score": 42, "subreddit": "..."}]
+  }
+}
+```
+
+### Configuration
+- `REDDIT_PROXY_URL` - Reddit Proxy endpoint (default: https://experts-reddit-proxy.fly.dev)
+- `MODEL_SYNTHESIS` - Used for Reddit synthesis (same as expert synthesis)
+
+### Security Considerations
+- **Circuit Breaker**: Prevents cascade failures
+- **Input Validation**: Query sanitization and length limits
+- **Markdown Escaping**: Prevents XSS via titles/URLs
+- **No Regex Parsing**: Iterative O(n) parsing to prevent ReDoS
 
 ## Related Documentation
 - `DEPLOYMENT.md` - Complete production deployment guide

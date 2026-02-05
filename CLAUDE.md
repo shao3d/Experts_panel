@@ -16,9 +16,11 @@ The system uses an advanced **eight-phase pipeline** for analysis and a hybrid, 
 
 ### Key Architectural Principles
 - **Multi-Expert Architecture**: Complete data isolation between experts and parallel processing.
+- **Reddit MCP Integration**: Sidecar microservice for community insights with circuit breaker pattern.
 - **Cost Optimization**: Gemini-only strategy with Tier 1 paid account (high rate limits).
 - **Real-time Progress**: SSE streaming for frontend progress tracking.
 - **Date Filtering**: Optional `use_recent_only` filter for last 3 months of data.
+- **Reddit Toggle**: Optional `include_reddit` parameter to enable/disable Reddit search.
 
 ## 📁 Component Documentation
 
@@ -27,7 +29,8 @@ The system uses an advanced **eight-phase pipeline** for analysis and a hybrid, 
 
 Complete FastAPI backend with:
 - Multi-expert query processing pipeline with parallel processing
-- 9+ specialized services for different phases with Gemini integration
+- **Reddit MCP Integration**: Parallel pipeline for community insights with circuit breaker
+- 11+ specialized services for different phases with Gemini integration
 - Real-time SSE streaming for progress tracking with enhanced error handling
 - Google AI Studio LLM integration (single-key with auto-retry)
 - SQLite database with 10+ migration scripts (18MB active database)
@@ -35,10 +38,12 @@ Complete FastAPI backend with:
 - Dynamic expert loading from database with expert metadata centralization
 
 **Key Files:**
-- `src/api/simplified_query_endpoint.py` - Main multi-expert query processing with parallel experts
+- `src/api/simplified_query_endpoint.py` - Main multi-expert query processing with parallel experts and Reddit pipeline
 - `src/api/admin_endpoints.py` - Admin authentication and production configuration
 - `src/services/map_service.py` - Content relevance detection with hybrid models
 - `src/services/medium_scoring_service.py` - Advanced post reranking with cost optimization
+- `src/services/reddit_service.py` - Reddit Proxy HTTP client with circuit breaker
+- `src/services/reddit_synthesis_service.py` - Reddit community analysis with Gemini
 - `src/services/translation_service.py` - Hybrid translation service with Google Gemini
 - `src/services/language_validation_service.py` - Language consistency validation
 - `src/config.py` - Comprehensive hybrid model configuration management
@@ -49,6 +54,7 @@ Complete FastAPI backend with:
 
 React 18 + TypeScript frontend with:
 - Real-time query progress with expert tracking
+- **Reddit Community Insights** - Community analysis display with markdown rendering
 - Post selection and navigation system
 - Answer display with source references
 - Advanced debug logging system
@@ -56,8 +62,10 @@ React 18 + TypeScript frontend with:
 
 **Key Components:**
 - `App.tsx` - Main application state management
+- `CommunityInsightsSection.tsx` - Reddit community analysis UI
 - `ProgressSection.tsx` - Enhanced progress display
 - `ExpertResponse.tsx` - Answer rendering with sources
+- `QueryForm.tsx` - User input form with Reddit toggle checkbox
 
 ### Database & Data Management
 **Location:** `backend/data/experts.db` (18MB active database)
@@ -171,11 +179,38 @@ To debug the pipeline, monitor the backend log file for messages containing spec
 
 ---
 
+## Reddit Community Insights
+
+**Overview:** Real-time Reddit community analysis integrated into expert queries
+
+**Architecture:** Sidecar pattern - Reddit Proxy microservice (`experts-reddit-proxy.fly.dev`)
+
+**Key Features:**
+- ✅ Parallel Reddit search with expert pipelines
+- ✅ AI-powered community synthesis (Reality Check, Hacks & Workarounds, Vibe Check)
+- ✅ Source attribution with direct Reddit links
+- ✅ Circuit breaker pattern for reliability
+- ✅ User-toggleable (👥 Искать на Reddit checkbox, default: enabled)
+
+**Components:**
+- `RedditService` - HTTP client with retry logic, 15s timeout, 3 attempts
+- `RedditSynthesisService` - Gemini-powered community analysis
+- `CommunityInsightsSection` - React component with markdown rendering
+- Reddit Proxy - Node.js/Fastify microservice on Fly.io
+
+**Fail-Safe Design:**
+- Expert responses returned even if Reddit fails/times out
+- 30s timeout for Reddit after experts complete
+- Keep-alive SSE events (2.5s) during Reddit processing
+
+---
+
 **Project Status:** Production-ready with active development
 **Last Updated:** 2026-01-28
 **Architecture:** Multi-expert, Gemini-only LLM pipeline with unified client and real-time progress tracking
-**Key Features:** Parallel expert processing, unified `google_ai_studio_client`, cost optimization with Gemini 3 Flash, language validation, comment synthesis, enhanced error handling, admin authentication
+**Key Features:** Parallel expert processing, unified `google_ai_studio_client`, cost optimization with Gemini 3 Flash, language validation, comment synthesis, enhanced error handling, admin authentication, Reddit community insights
 **Recent Updates:**
+- ✅ **Phase 3 Complete:** Reddit MCP Integration with community insights
 - ✅ Added real-time stats (posts/comments) to expert selection UI
 - ✅ Implemented collapsible expert selection bar for cleaner UX
 - ✅ Added new experts: Ilia, Polyakov, Doronin
