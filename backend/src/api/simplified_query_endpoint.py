@@ -509,10 +509,16 @@ async def process_reddit_pipeline(
             subreddits=recommended_subreddits
         )
         
+        # DEBUG: Log what we got from Reddit Proxy
         logger.info(
-            f"Enhanced Reddit search: {len(enhanced_result.posts)} posts from "
+            f"REDDIT DEBUG: Got {len(enhanced_result.posts)} posts from "
             f"strategies: {enhanced_result.strategies_used}"
         )
+        
+        # Check if posts have content
+        for i, post in enumerate(enhanced_result.posts[:3]):
+            content_preview = post.selftext[:100] if post.selftext else "[EMPTY]"
+            logger.info(f"REDDIT DEBUG: Post {i}: title='{post.title[:50]}...' selftext='{content_preview}...'")
         
         if progress_callback:
             await progress_callback({

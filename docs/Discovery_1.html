@@ -1,0 +1,888 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2113.65">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 12.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000; min-height: 14.0px}
+    p.p3 {margin: 0.0px 0.0px 14.9px 0.0px; font: 18.0px Times; -webkit-text-stroke: #000000}
+    p.p4 {margin: 0.0px 0.0px 12.0px 0.0px; font: 13.0px Courier; -webkit-text-stroke: #000000}
+    p.p5 {margin: 0.0px 0.0px 0.0px 0.0px; text-align: center; font: 11.0px 'Helvetica Neue'; color: #000000; color: rgba(0, 0, 0, 0.85); -webkit-text-stroke: rgba(0, 0, 0, 0.85); min-height: 12.0px}
+    p.p6 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px Courier; -webkit-text-stroke: #000000}
+    p.p7 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px Menlo; color: #3c3c3b; -webkit-text-stroke: #3c3c3b}
+    p.p8 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px Courier; color: #3c3c3b; -webkit-text-stroke: #3c3c3b}
+    p.p9 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px Courier; color: #5f7c03; -webkit-text-stroke: #5f7c03}
+    p.p10 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px Courier; color: #7b7e79; -webkit-text-stroke: #7b7e79}
+    p.p11 {margin: 0.0px 0.0px 12.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000; min-height: 14.0px}
+    p.p14 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px Courier; -webkit-text-stroke: #000000; min-height: 16.0px}
+    p.p15 {margin: 0.0px 0.0px 0.0px 0.0px; text-align: center; font: 12.0px Times; -webkit-text-stroke: #000000}
+    p.p16 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000}
+    li.li1 {margin: 0.0px 0.0px 12.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000}
+    li.li4 {margin: 0.0px 0.0px 12.0px 0.0px; font: 13.0px Courier; -webkit-text-stroke: #000000}
+    span.s1 {font-kerning: none}
+    span.s2 {font: 12.0px Symbol; font-kerning: none}
+    span.s3 {font: 13.0px Courier; font-kerning: none}
+    span.s4 {font: 12.0px Times; font-kerning: none}
+    span.s5 {-webkit-text-stroke: 0px #3c3c3b}
+    span.s6 {font-kerning: none; color: #5f7c03; -webkit-text-stroke: 0px #5f7c03}
+    span.s7 {font-kerning: none; color: #f07319; -webkit-text-stroke: 0px #f07319}
+    span.s8 {font: 12.0px Times}
+    span.s9 {text-decoration: underline ; font-kerning: none; color: #0000e9; -webkit-text-stroke: 0px #0000e9}
+    span.s10 {font: 13.0px Courier}
+    span.s11 {font-kerning: none; color: #3c3c3b; -webkit-text-stroke: 0px #3c3c3b}
+    span.s12 {font-kerning: none; color: #754297; -webkit-text-stroke: 0px #754297}
+    span.s13 {font: 13.0px Menlo; font-kerning: none}
+    span.s14 {font: 24.0px 'Apple Color Emoji'; font-kerning: none}
+    span.s15 {-webkit-text-stroke: 0px #000000}
+    span.s16 {font: 12.0px 'Apple Color Emoji'; font-kerning: none}
+    span.s17 {font: 18.0px 'Apple Color Emoji'; font-kerning: none}
+    span.s18 {font: 14.0px 'Apple Color Emoji'; font-kerning: none}
+    td.td1 {width: 57.7px; margin: 0.5px 0.5px 0.5px 0.5px; padding: 1.0px 1.0px 1.0px 1.0px}
+    td.td2 {width: 65.3px; margin: 0.5px 0.5px 0.5px 0.5px; padding: 1.0px 1.0px 1.0px 1.0px}
+    td.td3 {width: 48.7px; margin: 0.5px 0.5px 0.5px 0.5px; padding: 1.0px 1.0px 1.0px 1.0px}
+    td.td4 {width: 38.5px; margin: 0.5px 0.5px 0.5px 0.5px; padding: 1.0px 1.0px 1.0px 1.0px}
+    td.td5 {width: 69.3px; margin: 0.5px 0.5px 0.5px 0.5px; padding: 1.0px 1.0px 1.0px 1.0px}
+    ol.ol1 {list-style-type: decimal}
+    ul.ul1 {list-style-type: circle}
+    ul.ul2 {list-style-type: disc}
+    ul.ul3 {list-style-type: square}
+  </style>
+</head>
+<body>
+<p class="p1"><span class="s1">Ниже разбор по пунктам + рекомендации, опираясь и на практику Fly.io, и на паттерны для LLM‑сервисов.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p3"><span class="s1"><b>0. Общая архитектурная картина (предложение)</b></span></p>
+<p class="p1"><span class="s1">Высокоуровнево для Reddit‑интеграции в вашей системе на Fly.io имеет смысл целиться в такую схему:</span></p>
+<ol class="ol1">
+  <li class="li1"><b></b><span class="s1"><b>Реддит как “ненадёжный, но полезный” источник</b>:<br>
+Expert Pipeline — всегда “truth first”. Reddit — только дополнительный слой “community insight”, который:</span></li>
+  <ul class="ul1">
+    <li class="li1"><span class="s1">не может ломать или переопределять экспертный ответ;</span></li>
+    <li class="li1"><span class="s1">может вообще не появиться (no results / timeout / rate limit).</span></li>
+  </ul>
+  <li class="li1"><b></b><span class="s1"><b>Жёсткая развязка Reddit‑поиска и LLM‑синтеза</b>:</span></li>
+  <ul class="ul1">
+    <li class="li1"><span class="s1">Если данных нет или запрос упал </span><span class="s2">→</span><span class="s1"> вообще не вызывать Gemini для Reddit‑синтеза.</span></li>
+    <li class="li1"><span class="s1">Если данные есть </span><span class="s2">→</span><span class="s1"> звать Gemini по строгой JSON‑схеме, с явной семантикой “разрешено говорить только на основе этих постов”.</span></li>
+  </ul>
+  <li class="li1"><b></b><span class="s1"><b>Архитектура на Fly.io</b>:</span></li>
+  <ul class="ul1">
+    <li class="li1"><span class="s1">Reddit‑клиент ближе к Main Backend (либо как встроенная библиотека, либо как “очень тонкий” сервис без MCP‑слоя).</span></li>
+    <li class="li1"><span class="s1">Чёткие таймауты и отдельное состояние для </span><span class="s3">no_results</span><span class="s1"> vs </span><span class="s3">unavailable</span><span class="s1">.</span></li>
+    <li class="li1"><span class="s1">Лёгкий кеш на уровне Main Backend.</span></li>
+  </ul>
+</ol>
+<p class="p1"><span class="s1">Ниже детали по вашим вопросам.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p3"><span class="s1"><b>1. Гарантия достоверности и борьба с галлюцинациями Gemini</b></span></p>
+<p class="p3"><span class="s1"><b>1.1. Не звать LLM, когда данных нет</b></span></p>
+<p class="p1"><span class="s1">Самый надёжный guardrail — <b>вообще не вызывать RedditSynthesisService</b>, если:</span></p>
+<ul class="ul2">
+  <li class="li4"><span class="s1">found_count == 0</span><span class="s4">, или</span></li>
+  <li class="li4"><span class="s1">status in {timeout, error, rate_limited}</span><span class="s4">.</span></li>
+</ul>
+<p class="p1"><span class="s1">Тогда:</span></p>
+<ul class="ul2">
+  <li class="li1"><span class="s1">Вы <b>не тратите токены</b>,</span></li>
+  <li class="li1"><span class="s1">LLM <b>не может “додумать”</b> контент, потому что запрос не отправлялся.</span></li>
+</ul>
+<p class="p1"><span class="s1">В UI:</span></p>
+<ul class="ul2">
+  <li class="li1"><span class="s1">“Reddit: обсуждений не найдено” или “Reddit временно недоступен” — генерируется бекендом шаблоном, без LLM.</span></li>
+</ul>
+<p class="p1"><span class="s1">Это ключевой момент: проблема “LLM галлюцинирует, когда нет данных” архитектурно решается тем, что LLM к этой ситуации просто не допускается.</span></p>
+<p class="p3"><span class="s1"><b>1.2. Жёстко зафиксировать режим “RAG‑только‑по‑контексту”</b></span></p>
+<p class="p1"><span class="s1">Когда посты есть — для RedditSynthesisService используйте сочетание:</span></p>
+<ol class="ol1">
+  <li class="li1"><b></b><span class="s1"><b>Системный промпт</b> (схематически):</span></li>
+</ol>
+<p class="p5"><span class="s1"></span><br></p>
+<p class="p6"><span class="s1">text</span></p>
+<p class="p7"><span class="s1">Ты</span><span class="s3"> — </span><span class="s1">аналитик</span><span class="s3"> Reddit. </span><span class="s1">У</span><span class="s3"> </span><span class="s1">тебя</span><span class="s3"> </span><span class="s1">есть</span><span class="s3"> </span><span class="s1">только</span><span class="s3"> </span><span class="s1">список</span><span class="s3"> </span><span class="s1">постов</span><span class="s3"> </span><span class="s1">и</span><span class="s3"> </span><span class="s1">комментариев</span><span class="s3"> </span><span class="s1">из</span><span class="s3"> Reddit.</span></p>
+<p class="p7"><span class="s1">ТВОЯ</span><span class="s3"> </span><span class="s1">ЗАДАЧА</span><span class="s3">:</span></p>
+<p class="p7"><span class="s3">- </span><span class="s1">Анализировать</span><span class="s3"> </span><span class="s1">только</span><span class="s3"> </span><span class="s1">эти</span><span class="s3"> </span><span class="s1">посты</span><span class="s3">.</span></p>
+<p class="p7"><span class="s3">- </span><span class="s1">НИКОГДА</span><span class="s3"> </span><span class="s1">не</span><span class="s3"> </span><span class="s1">использовать</span><span class="s3"> </span><span class="s1">свои</span><span class="s3"> </span><span class="s1">общие</span><span class="s3"> </span><span class="s1">знания</span><span class="s3">.</span></p>
+<p class="p7"><span class="s3">- </span><span class="s1">Если</span><span class="s3"> </span><span class="s1">информации</span><span class="s3"> </span><span class="s1">в</span><span class="s3"> </span><span class="s1">постах</span><span class="s3"> </span><span class="s1">недостаточно</span><span class="s3"> </span><span class="s1">для</span><span class="s3"> </span><span class="s1">какого</span><span class="s3">‑</span><span class="s1">то</span><span class="s3"> </span><span class="s1">вывода</span><span class="s3"> — </span><span class="s1">явно</span><span class="s3"> </span><span class="s1">так</span><span class="s3"> </span><span class="s1">и</span><span class="s3"> </span><span class="s1">скажи</span><span class="s3">.</span></p>
+<p class="p7"><span class="s3">- </span><span class="s1">ВСЕ</span><span class="s3"> </span><span class="s1">утверждения</span><span class="s3">, </span><span class="s1">завязанные</span><span class="s3"> </span><span class="s1">на</span><span class="s3"> </span><span class="s1">факты</span><span class="s3">, </span><span class="s1">должны</span><span class="s3"> </span><span class="s1">ссылаться</span><span class="s3"> </span><span class="s1">на</span><span class="s3"> </span><span class="s1">конкретные</span><span class="s3"> </span><span class="s1">посты</span><span class="s3"> (</span><span class="s1">по</span><span class="s3"> id) </span><span class="s1">и</span><span class="s3">/</span><span class="s1">или</span><span class="s3"> </span><span class="s1">содержать</span><span class="s3"> </span><span class="s1">короткую</span><span class="s3"> </span><span class="s1">цитату</span><span class="s3">.</span></p>
+<ol class="ol1">
+  <li class="li1"><span class="s5"><b></b></span><span class="s1"><b>Явно передавать флаг и количество данных</b>:</span></li>
+</ol>
+<p class="p5"><span class="s1"></span><br></p>
+<p class="p6"><span class="s1">json</span></p>
+<p class="p8"><span class="s1">{</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">  </span>"user_query": </span><span class="s6">"..."</span><span class="s1">,</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">  </span>"reddit_context": {</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">    </span>"status": </span><span class="s6">"ok"</span><span class="s1">,</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">    </span>"found_count": </span><span class="s7">7</span><span class="s1">,</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">    </span>"posts": [</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">      </span>{</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">        </span>"id": </span><span class="s6">"t3_abc"</span><span class="s1">,</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">        </span>"subreddit": </span><span class="s6">"r/..."</span><span class="s1">,</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">        </span>"score": </span><span class="s7">423</span><span class="s1">,</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">        </span>"title": </span><span class="s6">"..."</span><span class="s1">,</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">        </span>"body": </span><span class="s6">"..."</span><span class="s1">,</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">        </span>"top_comments": [...]</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">      </span>}</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">    </span>]</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">  </span>}</span></p>
+<p class="p8"><span class="s1">}</span></p>
+<ol class="ol1">
+  <li class="li1"><span class="s5"><b></b></span><span class="s1"><b>Задать строгую JSON‑схему ответа через </b></span><span class="s3"><b>response_schema</b></span><span class="s1"><b>/</b></span><span class="s3"><b>response_mime_type</b></span><span class="s1"> (в Gemini API это уже поддерживается):</span></li>
+</ol>
+<p class="p1"><span class="s1">Например:</span></p>
+<p class="p5"><span class="s1"></span><br></p>
+<p class="p6"><span class="s1">json</span></p>
+<p class="p8"><span class="s1">{</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">  </span>"type": </span><span class="s6">"object"</span><span class="s1">,</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">  </span>"properties": {</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">    </span>"status": { "enum": [</span><span class="s6">"ok"</span><span class="s1">, </span><span class="s6">"not_enough_evidence"</span><span class="s1">] },</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">    </span>"summary": { "type": </span><span class="s6">"string"</span><span class="s1"> },</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">    </span>"reality_check": { "type": </span><span class="s6">"string"</span><span class="s1"> },</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">    </span>"hacks": { "type": </span><span class="s6">"string"</span><span class="s1"> },</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">    </span>"vibe_check": { "type": </span><span class="s6">"string"</span><span class="s1"> },</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">    </span>"evidence": {</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">      </span>"type": </span><span class="s6">"array"</span><span class="s1">,</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">      </span>"items": {</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">        </span>"type": </span><span class="s6">"object"</span><span class="s1">,</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">        </span>"properties": {</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">          </span>"post_id": { "type": </span><span class="s6">"string"</span><span class="s1"> },</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">          </span>"quote": { "type": </span><span class="s6">"string"</span><span class="s1"> }</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">        </span>},</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">        </span>"required": [</span><span class="s6">"post_id"</span><span class="s1">, </span><span class="s6">"quote"</span><span class="s1">]</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">      </span>}</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">  </span>},</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">  </span>"required": [</span><span class="s6">"status"</span><span class="s1">]</span></p>
+<p class="p8"><span class="s1">}</span></p>
+<p class="p1"><span class="s1">И в системном промпте:</span></p>
+<ul class="ul2">
+  <li class="li4"><span class="s8"></span><span class="s4">“Если </span><span class="s1">found_count == 0</span><span class="s4">, верни JSON </span><span class="s1">{ "status": "not_enough_evidence" }</span><span class="s4"> и <b>ничего больше</b>.”</span></li>
+</ul>
+<ol class="ol1">
+  <li class="li1"><b></b><span class="s1"><b>Низкая температура</b>:</span></li>
+</ol>
+<ul class="ul2">
+  <li class="li1"><span class="s1">Для Reddit‑синтеза: </span><span class="s3">temperature = 0–0.2</span><span class="s1"> (минимум креатива, максимум детерминизма).</span></li>
+</ul>
+<ol class="ol1">
+  <li class="li1"><b></b><span class="s1"><b>Обязательное указание ограничений</b>:</span></li>
+</ol>
+<ul class="ul2">
+  <li class="li1"><span class="s1">“Тебе НЕЛЬЗЯ добавлять свой опыт или общие советы, если они не отражены в постах.”</span></li>
+  <li class="li1"><span class="s1">“Если пользователь просит совета, а в постах его нет — скажи, что Reddit по этому запросу почти ничего не обсуждает и материал скудный.”</span></li>
+</ul>
+<p class="p1"><span class="s1">Такие протоколы “accuracy‑mode” описываются и в практиках для Gemini / “truth prompt” режимах: строгая роль, явное ограничение источников, требование цитат и явного признания неопределенности.<a href="https://ai.google.dev/gemini-api/docs/google-search"><span class="s9">google+1</span></a>[<a href="https://www.youtube.com/watch?v=ysrDRwxynws"><span class="s9">youtube</span></a>]</span></p>
+<p class="p3"><span class="s1"><b>1.3. Двухшаговый Reddit‑синтез (по желанию)</b></span></p>
+<p class="p1"><span class="s1">При желании можно сделать так:</span></p>
+<ol class="ol1">
+  <li class="li1"><b></b><span class="s1"><b>Step 1 – классификация достаточности данных</b>:<br>
+Передать посты и попросить модель только ответить:</span></li>
+  <ul class="ul1">
+    <li class="li4"><span class="s1">have_enough_data: true/false</span></li>
+    <li class="li4"><span class="s1">coverage_level: "high" | "medium" | "low"</span></li>
+  </ul>
+  <li class="li1"><b></b><span class="s1"><b>Step 2 – полноценный синтез</b> только если </span><span class="s3">have_enough_data == true</span><span class="s1">.</span></li>
+  <ul class="ul1">
+    <li class="li1"><span class="s1">Если false — отдаёте пользователю аккуратную формулировку “На Reddit мало релевантных обсуждений, будьте осторожны”.</span></li>
+  </ul>
+</ol>
+<p class="p1"><span class="s1">Это добавляет задержку и токены, поэтому имеет смысл только если нужна очень строгая политика.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p3"><span class="s1"><b>2. Fly.io: Sidecar‑прокси vs интеграция в Main Backend</b></span></p>
+<p class="p1"><span class="s1">Сейчас: отдельное приложение Reddit Proxy (Node.js/Fastify + MCP), </span><span class="s3">min_machines_running = 0</span><span class="s1">, холодный старт 10–15 секунд.</span></p>
+<p class="p3"><span class="s1"><b>2.1. Что даёт отдельный сервис</b></span></p>
+<p class="p1"><span class="s1"><b>Плюсы:</b></span></p>
+<ul class="ul2">
+  <li class="li1"><span class="s1">Изоляция: отдельный процесс, свои переменные окружения, можно рестартить/деплоить независимо.</span></li>
+  <li class="li1"><span class="s1">Независимое масштабирование: можно масштабировать Reddit‑прокси по другим метрикам.</span></li>
+  <li class="li1"><span class="s1">Чёткая граница: можно встроить его как “generic Reddit service” для других систем.</span></li>
+</ul>
+<p class="p1"><span class="s1"><b>Минусы:</b></span></p>
+<ul class="ul2">
+  <li class="li1"><b></b><span class="s1"><b>Дополнительный cold start</b>: отдельный Fly app = отдельные машины, которые тоже могут быть остановлены. Даже если Main Backend уже тёплый, Reddit Proxy стартует с нуля.</span></li>
+  <li class="li1"><span class="s1">Дополнительный hop по сети </span><span class="s2">→</span><span class="s1"> лишние миллисекунды/секунды.</span></li>
+  <li class="li1"><span class="s1">Больше точек отказа и сложнее трейсить (Main </span><span class="s2">→</span><span class="s1"> Proxy </span><span class="s2">→</span><span class="s1"> MCP </span><span class="s2">→</span><span class="s1"> Reddit).</span></li>
+</ul>
+<p class="p1"><span class="s1">На Fly.io машины действительно могут стартовать быстро, но при тяжёлом Node + MCP + зависимостях легко получить описанные 10–15 сек, особенно без оптимизации образа и старта.<a href="https://fly.io/autoscaling"><span class="s9">fly+2</span></a></span></p>
+<p class="p3"><span class="s1"><b>2.2. Интеграция Reddit‑логики в Main Backend</b></span></p>
+<p class="p1"><span class="s1"><b>Вариант А: полностью отказаться от MCP и Reddit Proxy</b></span></p>
+<ul class="ul2">
+  <li class="li1"><span class="s1">Поднять Reddit‑клиент (PRAW/asyncpraw или просто HTTPX + “сырой” Reddit API) прямо в FastAPI.</span></li>
+  <li class="li1"><span class="s1">Тогда:</span></li>
+  <ul class="ul1">
+    <li class="li1"><span class="s1">Нет отдельного cold start для Reddit.</span></li>
+    <li class="li1"><span class="s1">Всё логирование и метрики в одном сервисе.</span></li>
+    <li class="li1"><span class="s1">Меньше hop’ов, проще трейсинг.</span></li>
+  </ul>
+</ul>
+<p class="p1"><span class="s1"><b>Минусы:</b></span></p>
+<ul class="ul2">
+  <li class="li1"><span class="s1">Потеря MCP‑слоя как универсального “tool” для LLM (если вы планировали использовать именно MCP‑оркестрацию).</span></li>
+  <li class="li1"><span class="s1">Нужно самим следить за Reddit API, rate limit’ами, ретраями и т.п..<a href="https://data365.co/blog/reddit-api-limits"><span class="s9">data365+2</span></a></span></li>
+</ul>
+<p class="p1"><span class="s1"><b>Когда это выгодно</b>:</span></p>
+<ul class="ul2">
+  <li class="li1"><span class="s1">Трафик небольшой/средний.</span></li>
+  <li class="li1"><span class="s1">Reddit — вспомогательная фича.</span></li>
+  <li class="li1"><span class="s1">Нужна предсказуемая latency в рамках одного сервиса.</span></li>
+</ul>
+<p class="p1"><span class="s1"><b>Вариант B: Reddit Proxy как “co‑located” sidecar внутри того же Fly‑приложения</b></span></p>
+<p class="p1"><span class="s1">Если MCP вам нужен, можно:</span></p>
+<ul class="ul2">
+  <li class="li1"><span class="s1">Запускать MCP‑процесс <b>в том же контейнере</b> (как дочерний процесс) и общаться по STDIO/локальному сокету.</span></li>
+  <li class="li1"><span class="s1">Либо в том же Fly app, но как <b>вторую машину</b> в той же org/app (общий приватный network) — тогда autoscaling может быть согласованным.</span></li>
+</ul>
+<p class="p1"><span class="s1">Плюсы:</span></p>
+<ul class="ul2">
+  <li class="li1"><span class="s1">В лучшем случае <b>один cold start</b> для всего приложения.</span></li>
+  <li class="li1"><span class="s1">Локальная сеть/процесс — меньше задержка, чем отдельный публичный HTTP сервис.</span></li>
+</ul>
+<p class="p1"><span class="s1">Минусы:</span></p>
+<ul class="ul2">
+  <li class="li1"><span class="s1">Чуть более сложный Dockerfile / процесс‑менеджер (supervisord, s6, etc.).</span></li>
+</ul>
+<p class="p3"><span class="s1"><b>2.3. Cold start trade‑off и настройки Fly</b></span></p>
+<p class="p1"><span class="s1">Конкретные приёмы на Fly.io:</span></p>
+<ol class="ol1">
+  <li class="li1"><b></b><span class="s1"><b>min_machines_running</b>:</span></li>
+  <ul class="ul1">
+    <li class="li1"><span class="s1">Для Main Backend, скорее всего, уже </span><span class="s3">&gt;= 1</span><span class="s1"> (иначе Expert Pipeline тоже грелся бы по 10–15 сек).</span></li>
+    <li class="li1"><span class="s1">Для Reddit Proxy:</span></li>
+    <ul class="ul3">
+      <li class="li1"><span class="s1">Если оставляете отдельное приложение и Reddit‑фича важна — имеет смысл <b>поднять до 1</b> хотя бы в одном регионе.</span></li>
+      <li class="li1"><span class="s1">Если Reddit — “nice‑to‑have” </span><span class="s2">→</span><span class="s1"> можно оставить </span><span class="s3">0</span><span class="s1">, но тогда:</span></li>
+      <ul class="ul3">
+        <li class="li1"><span class="s1">Ставить <b>жёсткий timeout</b> (например, 10–15 сек) и <b>не блокировать</b> выдачу эксперта.</span></li>
+      </ul>
+    </ul>
+  </ul>
+  <li class="li1"><b></b><span class="s1"><b>Pre‑warm</b>:</span></li>
+  <ul class="ul1">
+    <li class="li1"><span class="s1">При запуске запроса SSE можно <b>немедленно</b> дернуть лёгкий </span><span class="s3">/health</span><span class="s1"> у Reddit Proxy, чтобы к моменту, когда нужны реальные данные, машина уже поднялась.</span></li>
+    <li class="li1"><span class="s1">Если Reddit часто используется — добавить периодический ping (crontab, scheduler) раз в N минут; это будет стоить немного, но снизит холодные старты.</span></li>
+  </ul>
+  <li class="li1"><b></b><span class="s1"><b>Оптимизация старта контейнера</b>:</span></li>
+  <ul class="ul1">
+    <li class="li1"><span class="s1">Минимизировать размер образа и время установки зависимостей.</span></li>
+    <li class="li1"><span class="s1">Ленивая инициализация тяжелых компонентов (например, MCP‑клиент поднимать по первому реальному запросу).</span></li>
+  </ul>
+</ol>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p3"><span class="s1"><b>3. Observability: что мерить и логировать на каждом слое</b></span></p>
+<p class="p1"><span class="s1">Цель — понимать, где теряется качество: Reddit поиск, MCP, LLM‑синтез или что‑то ещё.</span></p>
+<p class="p3"><span class="s1"><b>3.1. Main Backend</b></span></p>
+<p class="p1"><span class="s1"><b>Метрики:</b></span></p>
+<ul class="ul2">
+  <li class="li1"><span class="s1">Время по этапам:</span></li>
+  <ul class="ul1">
+    <li class="li4"><span class="s1">expert_pipeline_duration</span><span class="s4"> (p50/p95)</span></li>
+    <li class="li4"><span class="s1">reddit_search_duration</span></li>
+    <li class="li4"><span class="s1">reddit_synthesis_duration</span></li>
+    <li class="li4"><span class="s1">overall_request_duration</span></li>
+  </ul>
+  <li class="li1"><span class="s1">Доли:</span></li>
+  <ul class="ul1">
+    <li class="li4"><span class="s1">reddit_success_rate</span><span class="s4"> (запросы с </span><span class="s1">status="ok"</span><span class="s4">)</span></li>
+    <li class="li4"><span class="s1">reddit_no_results_rate</span></li>
+    <li class="li1"><span class="s10"></span><span class="s3">reddit_unavailable_rate</span><span class="s1"> (timeout, ошибки, rate limit).</span></li>
+  </ul>
+  <li class="li1"><span class="s1">Количество:</span></li>
+  <ul class="ul1">
+    <li class="li1"><span class="s10"></span><span class="s3">reddit_found_count</span><span class="s1"> (распределение по бинам: 0, 1–3, 4–10, &gt;10).</span></li>
+  </ul>
+</ul>
+<p class="p1"><span class="s1"><b>Логи (с trace_id / request_id):</b></span></p>
+<ul class="ul2">
+  <li class="li1"><span class="s1">Входной запрос (обезличенный).</span></li>
+  <li class="li1"><span class="s1">Результат Reddit‑поиска (метаданные: сколько постов, какие сабреддиты, не обязательно полный текст).</span></li>
+  <li class="li1"><span class="s1">Вызов LLM: model, параметры (temperature, max_output_tokens), token usage.</span></li>
+  <li class="li1"><span class="s1">Статус итогового Reddit‑синтеза (</span><span class="s3">status</span><span class="s1"> из JSON).</span></li>
+</ul>
+<p class="p3"><span class="s1"><b>3.2. Reddit Proxy / MCP / Reddit API</b></span></p>
+<p class="p1"><span class="s1"><b>Метрики:</b></span></p>
+<ul class="ul2">
+  <li class="li4"><span class="s1">reddit_api_latency</span><span class="s4"> по endpoint’ам (</span><span class="s1">/search</span><span class="s4">, </span><span class="s1">/comments</span><span class="s4">, …).</span></li>
+  <li class="li4"><span class="s1">reddit_api_status_code_count</span><span class="s4"> (2xx, 4xx, 5xx, 429).</span></li>
+  <li class="li1"><span class="s10"></span><span class="s3">rate_limit_remaining</span><span class="s1"> (по заголовкам </span><span class="s3">X-Ratelimit-Remaining</span><span class="s1">), плюс алерты при частом 429.<a href="https://painonsocial.com/blog/reddit-api-limitations"><span class="s9">painonsocial+1</span></a></span></li>
+  <li class="li1"><span class="s1">Средний </span><span class="s3">found_count</span><span class="s1"> по запросам.</span></li>
+</ul>
+<p class="p1"><span class="s1"><b>Логи:</b></span></p>
+<ul class="ul2">
+  <li class="li1"><span class="s1">Для каждого запроса:</span></li>
+  <ul class="ul1">
+    <li class="li1"><span class="s1">query, subreddit (если есть), sort, time_filter.</span></li>
+    <li class="li1"><span class="s1">HTTP status, latency, количество постов.</span></li>
+    <li class="li1"><span class="s1">rate‑limit заголовки.</span></li>
+  </ul>
+</ul>
+<p class="p1"><span class="s1"><b>Для MCP‑уровня:</b></span></p>
+<ul class="ul2">
+  <li class="li1"><span class="s1">Сколько времени уходит на tool‑call.</span></li>
+  <li class="li1"><span class="s1">Ошибки MPC (парсинг, протокол, timeouts).</span></li>
+  <li class="li1"><span class="s1">Retrires circuit breaker’а.</span></li>
+</ul>
+<p class="p3"><span class="s1"><b>3.3. LLM‑качество Reddit‑синтеза</b></span></p>
+<p class="p1"><span class="s1">Чтобы понимать “модель игнорирует посты и пишет воду”:</span></p>
+<ul class="ul2">
+  <li class="li1"><span class="s1">Вводить в JSON‑ответ поля </span><span class="s3">evidence</span><span class="s1"> (как выше), и на бекенде:</span></li>
+  <ul class="ul1">
+    <li class="li1"><span class="s1">считать, в каком проценте ответов </span><span class="s3">evidence.length &gt; 0</span><span class="s1">;</span></li>
+    <li class="li1"><span class="s1">логи, где </span><span class="s3">status == "ok"</span><span class="s1">, но </span><span class="s3">evidence.length == 0</span><span class="s1"> </span><span class="s2">→</span><span class="s1"> кандидаты на ручной разбор.</span></li>
+  </ul>
+  <li class="li1"><span class="s1">Можно периодически:</span></li>
+  <ul class="ul1">
+    <li class="li1"><span class="s1">сохранять (в отдельное хранилище) пару “контекст постов” + “ответ LLM” для 0.1–1% запросов и прогонять оффлайн‑оценку.</span></li>
+  </ul>
+</ul>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p3"><span class="s1"><b>4. Обработка отсутствия данных: контракт и UX</b></span></p>
+<p class="p1"><span class="s1">Лучше всего разделить <b>три состояния</b>:</span></p>
+<ol class="ol1">
+  <li class="li1"><span class="s10"><b></b></span><span class="s3"><b>status = "ok"</b></span><span class="s1"><b> + </b></span><span class="s3"><b>found_count &gt; 0</b></span><span class="s1"><br>
+– нормальный Reddit‑ответ с синтезом.</span></li>
+  <li class="li1"><span class="s10"><b></b></span><span class="s3"><b>status = "no_results"</b></span><span class="s1"><br>
+– Reddit отвечает нормально, но поиска нет:</span></li>
+  <ul class="ul1">
+    <li class="li1"><span class="s1">UI: “На Reddit не нашлось релевантных обсуждений по этому запросу.”</span></li>
+    <li class="li1"><span class="s1">Можно показывать подсказку: “Попробуйте переформулировать запрос / другое ключевое слово”.</span></li>
+  </ul>
+  <li class="li1"><span class="s10"><b></b></span><span class="s3"><b>status = "unavailable"</b></span><span class="s1"> (timeout / 5xx / rate limit):</span></li>
+  <ul class="ul1">
+    <li class="li1"><span class="s1">UI: “Reddit временно недоступен, показываем только экспертный ответ.”</span></li>
+    <li class="li1"><span class="s1">Если есть кеш — можно дополнить: “Показаны последние сохранённые результаты (N часов назад).”</span></li>
+  </ul>
+</ol>
+<p class="p1"><span class="s1">Контракт ответа из Main Backend (пример):</span></p>
+<p class="p5"><span class="s1"></span><br></p>
+<p class="p6"><span class="s1">json</span></p>
+<p class="p8"><span class="s1">"reddit": {</span></p>
+<p class="p9"><span class="s11"><span class="Apple-converted-space">  </span>"status": </span><span class="s1">"ok"</span><span class="s11"> | </span><span class="s1">"no_results"</span><span class="s11"> | </span><span class="s1">"unavailable"</span><span class="s11">,</span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">  </span>"found_count": </span><span class="s7">0</span><span class="s1">,</span></p>
+<p class="p10"><span class="s11"><span class="Apple-converted-space">  </span>"synthesis": </span><span class="s12"><b>null</b></span><span class="s11">,<span class="Apple-converted-space">  </span></span><span class="s1"><i>// </i></span><span class="s13"><i>или</i></span><span class="s1"><i> </i></span><span class="s13"><i>объект</i></span><span class="s1"><i>, </i></span><span class="s13"><i>если</i></span><span class="s1"><i> status="ok"</i></span></p>
+<p class="p8"><span class="s1"><span class="Apple-converted-space">  </span>"from_cache": false</span></p>
+<p class="p8"><span class="s1">}</span></p>
+<p class="p1"><span class="s1">Из ваших вариантов:</span></p>
+<ul class="ul2">
+  <li class="li1"><span class="s10"><b></b></span><span class="s3"><b>reddit_response: null</b></span><span class="s1"> — плохо в плане явности, UI’ю сложно понять, что случилось.</span></li>
+  <li class="li1"><b></b><span class="s1"><b>Пустой объект с </b></span><span class="s3"><b>found_count: 0</b></span><span class="s1"> — хорошо, но стоит добавить </span><span class="s3">status</span><span class="s1">, чтобы отличать “нет данных” от “ошибка”.</span></li>
+  <li class="li1"><b></b><span class="s1"><b>Fallback‑кеш</b> — хорош как <i>дополнение</i> к </span><span class="s3">status</span><span class="s1">, но не как замена.</span></li>
+</ul>
+<p class="p1"><span class="s1">Рекомендация:</span></p>
+<p class="p1"><span class="s1">Использовать контракт вида </span><span class="s3">status + found_count + from_cache</span><span class="s1">,<br>
+а в случае </span><span class="s3">unavailable</span><span class="s1"> пытаться достать кеш и помечать </span><span class="s3">from_cache = true</span><span class="s1">.</span></p>
+<p class="p5"><span class="s1"></span><br></p>
+<p class="p5"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p3"><span class="s1"><b>5. Кэширование Reddit на уровне Main Backend</b></span></p>
+<p class="p3"><span class="s1"><b>5.1. Зачем</b></span></p>
+<ul class="ul2">
+  <li class="li1"><span class="s1">Reddit API имеет реальные rate limit’ы (типично ~60 запросов/минуту на OAuth‑клиент + ограничение на 100 элементов в выдаче и 1000 при пагинации).<a href="https://painonsocial.com/blog/reddit-api-rate-limits-guide"><span class="s9">painonsocial+2</span></a></span></li>
+  <li class="li1"><span class="s1">Поисковые запросы часто повторяются: популярные темы, типовые формулировки.</span></li>
+  <li class="li1"><span class="s1">Вы дорого платите и за Reddit, и за токены LLM.</span></li>
+</ul>
+<p class="p3"><span class="s1"><b>5.2. Где лучше кешировать</b></span></p>
+<p class="p1"><span class="s1"><b>На уровне Main Backend:</b></span></p>
+<ul class="ul2">
+  <li class="li1"><span class="s1">Универсальный вариант: один слой кеша перед Reddit Proxy / Reddit API.</span></li>
+  <li class="li1"><span class="s1">Можно использовать:</span></li>
+  <ul class="ul1">
+    <li class="li1"><span class="s1">In‑memory LRU (для простоты, если один‑два инстанса).</span></li>
+    <li class="li1"><span class="s1">Внешний Redis (Upstash / Managed Redis), если нужна разделяемость между машинами.</span></li>
+  </ul>
+</ul>
+<p class="p1"><span class="s1"><b>Плюсы:</b></span></p>
+<ul class="ul2">
+  <li class="li1"><span class="s1">Прозрачность: остальные слои не знают о кешировании.</span></li>
+  <li class="li1"><span class="s1">Единая точка контроля TTL / инвалидации.</span></li>
+</ul>
+<p class="p1"><span class="s1"><b>Альтернатива: кеш в Reddit Proxy:</b></span></p>
+<ul class="ul2">
+  <li class="li1"><span class="s1">Годится, но:</span></li>
+  <ul class="ul1">
+    <li class="li1"><span class="s1">Если у вас несколько инстансов Proxy — нужен shared cache (опять Redis).</span></li>
+    <li class="li1"><span class="s1">Добавляется ещё один уровень сложности.</span></li>
+  </ul>
+</ul>
+<p class="p1"><span class="s1">Рекомендация:<br>
+Если трафик умеренный и Fly‑приложение масштабируется не агрессивно, <b>in‑memory LRU + TTL в Main Backend</b> будет простым и эффективным решением. Если начнётся интенсивный масштаб — перейти на Redis.</span></p>
+<p class="p3"><span class="s1"><b>5.3. Что именно кешировать</b></span></p>
+<p class="p1"><span class="s1">2 уровня:</span></p>
+<ol class="ol1">
+  <li class="li1"><b></b><span class="s1"><b>Сырые Reddit‑результаты</b>:</span></li>
+  <ul class="ul1">
+    <li class="li1"><span class="s1">Ключ: нормализованный запрос (lowercase, обрезка пробелов, сортировка параметров).</span></li>
+    <li class="li1"><span class="s1">Значение: список постов/комментов в своём формате.</span></li>
+    <li class="li1"><span class="s1">TTL:</span></li>
+    <ul class="ul3">
+      <li class="li1"><span class="s1">Общие topic‑запросы: 30–120 минут.</span></li>
+      <li class="li1"><span class="s1">Очень динамичные темы (крипта, новости): 5–15 минут.</span></li>
+    </ul>
+  </ul>
+  <li class="li1"><b></b><span class="s1"><b>Синтез LLM</b>:</span></li>
+  <ul class="ul1">
+    <li class="li1"><span class="s1">Если synthesis зависит только от (query, posts) </span><span class="s2">→</span><span class="s1"> логично делать “synthesis cache”.</span></li>
+    <li class="li1"><span class="s1">Ключ: hash(query + IDs постов + их content версии).</span></li>
+    <li class="li1"><span class="s1">TTL — дольше, чем у сырых результатов (например, вдвое).</span></li>
+  </ul>
+</ol>
+<p class="p3"><span class="s1"><b>5.4. Fallback‑кеш</b></span></p>
+<p class="p4"><span class="s4">Когда </span><span class="s1">status = "unavailable"</span><span class="s4">:</span></p>
+<ul class="ul2">
+  <li class="li1"><span class="s1">Пытаетесь найти последнюю запись в кеше по этому запросу.</span></li>
+  <li class="li1"><span class="s1">Если есть — возвращаете c </span><span class="s3">status="ok"</span><span class="s1"> и </span><span class="s3">from_cache=true</span><span class="s1">, плюс UI‑бэйдж “Старые данные”.</span></li>
+</ul>
+<p class="p1"><span class="s1">Это аккуратный баланс между UX и честностью.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p3"><span class="s1"><b>6. Альтернативы MCP: прямой Reddit API в Main Backend</b></span></p>
+<p class="p3"><span class="s1"><b>6.1. Когда MCP оправдан</b></span></p>
+<p class="p1"><span class="s1">MCP хорош, когда:</span></p>
+<ul class="ul2">
+  <li class="li1"><span class="s1">Модель сама делает tool‑calls (интерактивный агент, множество инструментов).</span></li>
+  <li class="li1"><span class="s1">Вам нужен <b>единый протокол</b> подключения разных инструментов к разным LLM‑провайдерам.</span></li>
+</ul>
+<p class="p1"><span class="s1">В вашем сценарии уже есть <b>жёстко оркестрированный pipeline</b>:</span></p>
+<ul class="ul2">
+  <li class="li1"><span class="s1">Backend решает, когда и как звать Reddit.</span></li>
+  <li class="li1"><span class="s1">LLM получает уже готовый контекст и не инициирует запросы сама.</span></li>
+</ul>
+<p class="p1"><span class="s1">В такой ситуации MCP добавляет лишний слой без особой пользы.</span></p>
+<p class="p3"><span class="s1"><b>6.2. Прямой Reddit API в Main Backend: риски и как их снять</b></span></p>
+<p class="p1"><span class="s1"><b>Риски:</b></span></p>
+<ul class="ul2">
+  <li class="li1"><span class="s1">Rate limit’ы и возможные 429/ban, если плохо троттлить.<a href="https://data365.co/blog/reddit-api-limits"><span class="s9">data365+2</span></a></span></li>
+  <li class="li1"><span class="s1">Обновления Reddit API (сейчас ситуация нестабильная, периодически меняют правила).</span></li>
+  <li class="li1"><span class="s1">Потенциальные block’и за scraping‑подобное поведение.</span></li>
+</ul>
+<p class="p1"><span class="s1"><b>Практики, чтобы снизить риски:</b></span></p>
+<ul class="ul2">
+  <li class="li1"><b></b><span class="s1"><b>OAuth‑аутентификация</b> и соблюдение лимитов.</span></li>
+  <li class="li1"><span class="s1">Глобальный <b>throttle/queue</b>:</span></li>
+  <ul class="ul1">
+    <li class="li1"><span class="s1">очередь исходящих запросов;</span></li>
+    <li class="li1"><span class="s1">лимит 50–55 req/min на клиент, чтобы не упираться в потолок.</span></li>
+  </ul>
+  <li class="li1"><b></b><span class="s1"><b>Агрессивное кеширование</b> (см. выше).</span></li>
+  <li class="li1"><span class="s1">Логи и алерты на:</span></li>
+  <ul class="ul1">
+    <li class="li1"><span class="s1">частоту 429;</span></li>
+    <li class="li4"><span class="s1">X-Ratelimit-Remaining</span><span class="s4"> &lt; порога.</span></li>
+  </ul>
+  <li class="li1"><span class="s1">Ограничить сложность запросов:</span></li>
+  <ul class="ul1">
+    <li class="li1"><span class="s1">разумный limit (до 50–70 постов на запрос);</span></li>
+    <li class="li1"><span class="s1">чёткие фильтры по subreddits, если возможно.</span></li>
+  </ul>
+</ul>
+<p class="p1"><span class="s1">Если всё это сделать, прямая интеграция с Reddit API в Main Backend:</span></p>
+<ul class="ul2">
+  <li class="li1"><span class="s1">Упростит архитектуру.</span></li>
+  <li class="li1"><span class="s1">Уменьшит latency.</span></li>
+  <li class="li1"><span class="s1">Уберёт один источник cold start.</span></li>
+</ul>
+<p class="p1"><span class="s1">Рекомендация:</span></p>
+<p class="p1"><span class="s1">Если палитра MCP‑инструментов не является стратегическим приоритетом,<br>
+<b>разумно постепенно мигрировать с MCP‑прокси на прямой Reddit API в Main Backend</b>.</span></p>
+<p class="p5"><span class="s1"></span><br></p>
+<p class="p5"><span class="s1"></span><br></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p3"><span class="s1"><b>7. Приоритизация: что делать в первую очередь</b></span></p>
+<p class="p1"><span class="s1">Если расставить шаги по value / effort:</span></p>
+<ol class="ol1">
+  <li class="li1"><b></b><span class="s1"><b>Смена контракта и логики вокруг отсутствия данных</b>:</span></li>
+  <ul class="ul1">
+    <li class="li4"><span class="s8"></span><span class="s4">Ввести </span><span class="s1">status: "ok" | "no_results" | "unavailable"</span><span class="s4"> и </span><span class="s1">found_count</span><span class="s4">.</span></li>
+    <li class="li1"><span class="s1">Не вызывать RedditSynthesisService при </span><span class="s3">found_count == 0</span><span class="s1"> или </span><span class="s3">unavailable</span><span class="s1">.</span></li>
+  </ul>
+  <li class="li1"><b></b><span class="s1"><b>Жёсткий промпт + JSON‑schema + низкая температура для RedditSynthesisService</b>:</span></li>
+  <ul class="ul1">
+    <li class="li1"><span class="s1">Внедрить RAG‑ограничения и требование цитат.</span></li>
+    <li class="li1"><span class="s1">Ввести </span><span class="s3">status</span><span class="s1"> и </span><span class="s3">evidence</span><span class="s1"> в ответе.</span></li>
+  </ul>
+  <li class="li1"><b></b><span class="s1"><b>Кеширование Reddit на уровне Main Backend</b>:</span></li>
+  <ul class="ul1">
+    <li class="li1"><span class="s1">LRU in‑memory + TTL.</span></li>
+    <li class="li1"><span class="s1">Опционально кеш synthesis.</span></li>
+  </ul>
+  <li class="li1"><b></b><span class="s1"><b>Улучшить observability</b>:</span></li>
+  <ul class="ul1">
+    <li class="li1"><span class="s1">Ввести метрики по этапам и статусам Reddit.</span></li>
+    <li class="li1"><span class="s1">Добавить trace_id и минимальный сет логов.</span></li>
+  </ul>
+  <li class="li1"><b></b><span class="s1"><b>Решить архитектурно вопрос с Reddit Proxy</b>:</span></li>
+  <ul class="ul1">
+    <li class="li1"><span class="s1">Либо поднять </span><span class="s3">min_machines_running</span><span class="s1"> до 1 для Reddit Proxy.</span></li>
+    <li class="li1"><span class="s1">Либо постепенно переносить Reddit‑интеграцию в Main Backend (без MCP).</span></li>
+  </ul>
+</ol>
+<p class="p1"><span class="s1">Если нужно, можно дальше разобрать конкретные варианты fly.toml/health‑checks или пример промпта/JSON‑schema под ваш формат “Reality Check / Hacks / Vibe Check / Summary”.</span></p>
+<p class="p11"><span class="s1"></span><br></p>
+<p class="p11"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">============================</span></p>
+<p class="p11"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">Да — готово. Ниже — <b>полный архитектурный отчёт</b>, уже адаптированный под <i>твою конкретную реализацию</i> (FastAPI + Gemini + Fly + MCP + SSE), без теории ради теории.</span></p>
+<p class="p1"><span class="s1">Я буду предельно прямолинеен.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<h1 style="margin: 0.0px 0.0px 16.1px 0.0px; font: 24.0px Times; -webkit-text-stroke: #000000"><span class="s14">🧠</span><span class="s1"><b> Executive summary (коротко)</b></span></h1>
+<p class="p1"><span class="s1">У тебя сейчас <b>не LLM проблема</b>.</span></p>
+<p class="p1"><span class="s1">У тебя <b>data contract problem + over-engineering Reddit layer</b>.</span></p>
+<p class="p1"><span class="s1">Главные причины деградации:</span></p>
+<ol class="ol1">
+  <li class="li1"><span class="s15"></span><span class="s1">Gemini НЕ получает первичные данные (selftext / comments) </span><span class="s2">→</span><span class="s1"> hallucination by design</span></li>
+  <li class="li1"><span class="s15"></span><span class="s1">MCP + sidecar даёт latency без выигрыша (2–3 req/day)</span></li>
+  <li class="li1"><span class="s15"></span><span class="s1">Нет explicit “NO DATA” состояния в протоколе</span></li>
+  <li class="li1"><span class="s15"></span><span class="s1">Нет трассировки этапов</span></li>
+  <li class="li1"><span class="s15"></span><span class="s1">Cold start убивает SSE UX</span></li>
+</ol>
+<p class="p1"><span class="s1">Решение:</span></p>
+<p class="p1"><span class="s16">👉</span><span class="s1"> убрать MCP<br>
+</span><span class="s16">👉</span><span class="s1"> упростить Reddit в backend<br>
+</span><span class="s16">👉</span><span class="s1"> передавать реальные тексты<br>
+</span><span class="s16">👉</span><span class="s1"> ввести structured guardrails<br>
+</span><span class="s16">👉</span><span class="s1"> добавить минимальную observability<br>
+</span><span class="s16">👉</span><span class="s1"> cache на 24h</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<h1 style="margin: 0.0px 0.0px 16.1px 0.0px; font: 24.0px Times; -webkit-text-stroke: #000000"><span class="s14">1️⃣</span><span class="s1"><b> Гарантия достоверности (LLM Guardrails)</b></span></h1>
+<h2 style="margin: 0.0px 0.0px 14.9px 0.0px; font: 18.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>Сейчас</b></span></h2>
+<p class="p1"><span class="s1">Ты передаёшь:</span></p>
+<p class="p6"><span class="s1">title</span></p>
+<p class="p6"><span class="s1">subreddit</span></p>
+<p class="p6"><span class="s1">score</span></p>
+<p class="p6"><span class="s1">comments_count</span></p>
+<p class="p1"><span class="s1">Это НЕ evidence.</span></p>
+<p class="p1"><span class="s1">Это equivalent:</span></p>
+<p class="p1"><span class="s1">«Вот заголовки статей, сделай исследование».</span></p>
+<p class="p1"><span class="s1">LLM закономерно достраивает.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<h2 style="margin: 0.0px 0.0px 14.9px 0.0px; font: 18.0px Times; -webkit-text-stroke: #000000"><span class="s17">✅</span><span class="s1"><b> Правильный контракт данных</b></span></h2>
+<p class="p1"><span class="s1">Ты обязан передавать:</span></p>
+<h3 style="margin: 0.0px 0.0px 14.0px 0.0px; font: 14.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>минимум:</b></span></h3>
+<p class="p6"><span class="s1">RedditEvidence:</span></p>
+<p class="p6"><span class="s1"><span class="Apple-converted-space">  </span>title</span></p>
+<p class="p6"><span class="s1"><span class="Apple-converted-space">  </span>selftext (trim 1–2k chars)</span></p>
+<p class="p6"><span class="s1"><span class="Apple-converted-space">  </span>top_comments (3–5)</span></p>
+<p class="p6"><span class="s1"><span class="Apple-converted-space">  </span>score</span></p>
+<p class="p6"><span class="s1"><span class="Apple-converted-space">  </span>created_utc</span></p>
+<p class="p1"><span class="s1">НЕ url.<br>
+НЕ subreddit.<br>
+НЕ только title.</span></p>
+<h3 style="margin: 0.0px 0.0px 14.0px 0.0px; font: 14.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>Почему:</b></span></h3>
+<p class="p1"><span class="s1">Gemini reasoning работает ТОЛЬКО поверх натурального текста.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<h2 style="margin: 0.0px 0.0px 14.9px 0.0px; font: 18.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>Canonical pattern: Evidence-first synthesis</b></span></h2>
+<p class="p1"><span class="s1">Prompt должен начинаться так:</span></p>
+<p class="p6"><span class="s1">SYSTEM:</span></p>
+<p class="p14"><span class="s1"></span><br></p>
+<p class="p6"><span class="s1">You are performing grounded synthesis.</span></p>
+<p class="p14"><span class="s1"></span><br></p>
+<p class="p6"><span class="s1">Rules:</span></p>
+<p class="p14"><span class="s1"></span><br></p>
+<p class="p6"><span class="s1">1. Use ONLY provided sources.</span></p>
+<p class="p6"><span class="s1">2. If sources are empty or insufficient, explicitly reply:</span></p>
+<p class="p14"><span class="s1"></span><br></p>
+<p class="p6"><span class="s1">"Reddit discussions were not found for this query."</span></p>
+<p class="p14"><span class="s1"></span><br></p>
+<p class="p6"><span class="s1">3. Do NOT use general knowledge.</span></p>
+<p class="p6"><span class="s1">4. Every claim must be traceable to sources.</span></p>
+<p class="p6"><span class="s1">5. If uncertain — say so.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<h3 style="margin: 0.0px 0.0px 14.0px 0.0px; font: 14.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>Затем:</b></span></h3>
+<p class="p6"><span class="s1">&lt;reddit_sources&gt;</span></p>
+<p class="p6"><span class="s1">SOURCE 1:</span></p>
+<p class="p6"><span class="s1">Title: ...</span></p>
+<p class="p6"><span class="s1">Body: ...</span></p>
+<p class="p6"><span class="s1">Top comments:</span></p>
+<p class="p6"><span class="s1">- ...</span></p>
+<p class="p6"><span class="s1">- ...</span></p>
+<p class="p14"><span class="s1"></span><br></p>
+<p class="p6"><span class="s1">SOURCE 2:</span></p>
+<p class="p6"><span class="s1">...</span></p>
+<p class="p6"><span class="s1">&lt;/reddit_sources&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<h2 style="margin: 0.0px 0.0px 14.9px 0.0px; font: 18.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>Anti hallucination switch</b></span></h2>
+<p class="p1"><span class="s1">Перед вызовом Gemini:</span></p>
+<p class="p6"><span class="s1">if len(sources) == 0:</span></p>
+<p class="p6"><span class="s1"><span class="Apple-converted-space">    </span>return RedditSynthesis(</span></p>
+<p class="p6"><span class="s1"><span class="Apple-converted-space">        </span>status="no_data",</span></p>
+<p class="p6"><span class="s1"><span class="Apple-converted-space">        </span>message="No Reddit discussions found"</span></p>
+<p class="p6"><span class="s1"><span class="Apple-converted-space">    </span>)</span></p>
+<p class="p1"><span class="s1">LLM НЕ вызывается вообще.</span></p>
+<p class="p1"><span class="s1">Это critical.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<h1 style="margin: 0.0px 0.0px 16.1px 0.0px; font: 24.0px Times; -webkit-text-stroke: #000000"><span class="s14">2️⃣</span><span class="s1"><b> Sidecar vs In-process Reddit</b></span></h1>
+<p class="p1"><span class="s1">При твоей нагрузке:</span></p>
+<p class="p1"><span class="s1">2–3 запроса в сутки</span></p>
+<p class="p1"><span class="s1">Sidecar + MCP = чистый вред.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<h2 style="margin: 0.0px 0.0px 14.9px 0.0px; font: 18.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>MCP оправдан если:</b></span></h2>
+<table cellspacing="0" cellpadding="0">
+  <tbody>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p15"><span class="s1"><b>Condition</b></span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p16"><span class="s1">≥1000 rpm</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p16"><span class="s1">shared infra</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p16"><span class="s1">multi tenant</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td1">
+        <p class="p16"><span class="s1">sandboxing</span></p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p class="p1"><span class="s1">У тебя ничего этого нет.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<h2 style="margin: 0.0px 0.0px 14.9px 0.0px; font: 18.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>Recommendation</b></span></h2>
+<h3 style="margin: 0.0px 0.0px 14.0px 0.0px; font: 14.0px Times; -webkit-text-stroke: #000000"><span class="s18">❌</span><span class="s1"><b> Убрать:</b></span></h3>
+<p class="p6"><span class="s1">Fly App Reddit Proxy</span></p>
+<p class="p6"><span class="s1">MCP STDIO</span></p>
+<p class="p6"><span class="s1">Fastify</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<h3 style="margin: 0.0px 0.0px 14.0px 0.0px; font: 14.0px Times; -webkit-text-stroke: #000000"><span class="s18">✅</span><span class="s1"><b> Вместо этого:</b></span></h3>
+<p class="p6"><span class="s1">asyncpraw + aiohttp</span></p>
+<p class="p1"><span class="s1">прямо внутри FastAPI.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<h3 style="margin: 0.0px 0.0px 14.0px 0.0px; font: 14.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>Результат:</b></span></h3>
+<table cellspacing="0" cellpadding="0">
+  <tbody>
+    <tr>
+      <td valign="middle" class="td2">
+        <p class="p15"><span class="s1"><b>Metric</b></span></p>
+      </td>
+      <td valign="middle" class="td3">
+        <p class="p15"><span class="s1"><b>Сейчас</b></span></p>
+      </td>
+      <td valign="middle" class="td4">
+        <p class="p15"><span class="s1"><b>После</b></span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td2">
+        <p class="p16"><span class="s1">Latency</span></p>
+      </td>
+      <td valign="middle" class="td3">
+        <p class="p16"><span class="s1">+10–15s</span></p>
+      </td>
+      <td valign="middle" class="td4">
+        <p class="p16"><span class="s1">~400ms</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td2">
+        <p class="p16"><span class="s1">Cold start</span></p>
+      </td>
+      <td valign="middle" class="td3">
+        <p class="p16"><span class="s1">painful</span></p>
+      </td>
+      <td valign="middle" class="td4">
+        <p class="p16"><span class="s1">none</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td2">
+        <p class="p16"><span class="s1">Observability</span></p>
+      </td>
+      <td valign="middle" class="td3">
+        <p class="p16"><span class="s1">opaque</span></p>
+      </td>
+      <td valign="middle" class="td4">
+        <p class="p16"><span class="s1">native</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td2">
+        <p class="p16"><span class="s1">Debug</span></p>
+      </td>
+      <td valign="middle" class="td3">
+        <p class="p16"><span class="s1">nightmare</span></p>
+      </td>
+      <td valign="middle" class="td4">
+        <p class="p16"><span class="s1">trivial</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td2">
+        <p class="p16"><span class="s1">Complexity</span></p>
+      </td>
+      <td valign="middle" class="td3">
+        <p class="p16"><span class="s1">high</span></p>
+      </td>
+      <td valign="middle" class="td4">
+        <p class="p16"><span class="s1">low</span></p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p class="p2"><span class="s1"></span><br></p>
+<h1 style="margin: 0.0px 0.0px 16.1px 0.0px; font: 24.0px Times; -webkit-text-stroke: #000000"><span class="s14">3️⃣</span><span class="s1"><b> Fly.io cold start</b></span></h1>
+<p class="p1"><span class="s1">Ты сам себе стреляешь:</span></p>
+<p class="p6"><span class="s1">min_machines_running = 0</span></p>
+<p class="p1"><span class="s1">но SSE UX требует warm.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<h2 style="margin: 0.0px 0.0px 14.9px 0.0px; font: 18.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>Pattern:</b></span></h2>
+<h3 style="margin: 0.0px 0.0px 14.0px 0.0px; font: 14.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>main backend:</b></span></h3>
+<p class="p6"><span class="s1">min_machines_running = 1</span></p>
+<h3 style="margin: 0.0px 0.0px 14.0px 0.0px; font: 14.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>Reddit:</b></span></h3>
+<p class="p1"><span class="s1">in-process</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">Стоимость:</span></p>
+<p class="p1"><span class="s1">~$5/mo</span></p>
+<p class="p1"><span class="s1">UX выигрыш:</span></p>
+<p class="p1"><span class="s1">massive.</span></p>
+<p class="p1"><span class="s1">Worth it.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<h1 style="margin: 0.0px 0.0px 16.1px 0.0px; font: 24.0px Times; -webkit-text-stroke: #000000"><span class="s14">4️⃣</span><span class="s1"><b> Observability (минимальный набор)</b></span></h1>
+<p class="p1"><span class="s1">Тебе НЕ нужен Prometheus.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<h2 style="margin: 0.0px 0.0px 14.9px 0.0px; font: 18.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>Просто:</b></span></h2>
+<h3 style="margin: 0.0px 0.0px 14.0px 0.0px; font: 14.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>structured logs:</b></span></h3>
+<p class="p6"><span class="s1">logger.info("reddit.search",</span></p>
+<p class="p6"><span class="s1"><span class="Apple-converted-space">    </span>query=query,</span></p>
+<p class="p6"><span class="s1"><span class="Apple-converted-space">    </span>found=len(posts),</span></p>
+<p class="p6"><span class="s1"><span class="Apple-converted-space">    </span>latency=ms</span></p>
+<p class="p6"><span class="s1">)</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<h3 style="margin: 0.0px 0.0px 14.0px 0.0px; font: 14.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>correlation id:</b></span></h3>
+<p class="p6"><span class="s1">X-Request-ID</span></p>
+<p class="p1"><span class="s1">протащить:</span></p>
+<p class="p1"><span class="s1">Frontend </span><span class="s2">→</span><span class="s1"> Backend </span><span class="s2">→</span><span class="s1"> Reddit </span><span class="s2">→</span><span class="s1"> Gemini</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<h3 style="margin: 0.0px 0.0px 14.0px 0.0px; font: 14.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>Gemini:</b></span></h3>
+<p class="p1"><span class="s1">log:</span></p>
+<p class="p6"><span class="s1">prompt_tokens</span></p>
+<p class="p6"><span class="s1">completion_tokens</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<h3 style="margin: 0.0px 0.0px 14.0px 0.0px; font: 14.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>stages:</b></span></h3>
+<table cellspacing="0" cellpadding="0">
+  <tbody>
+    <tr>
+      <td valign="middle" class="td5">
+        <p class="p15"><span class="s1"><b>stage</b></span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td5">
+        <p class="p16"><span class="s1">reddit_fetch</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td5">
+        <p class="p16"><span class="s1">reddit_rank</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td5">
+        <p class="p16"><span class="s1">reddit_context</span></p>
+      </td>
+    </tr>
+    <tr>
+      <td valign="middle" class="td5">
+        <p class="p16"><span class="s1">gemini_synth</span></p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">Это даст тебе сразу root cause.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<h1 style="margin: 0.0px 0.0px 16.1px 0.0px; font: 24.0px Times; -webkit-text-stroke: #000000"><span class="s14">5️⃣</span><span class="s1"><b> Empty data semantics</b></span></h1>
+<p class="p1"><span class="s1">НЕ null.</span></p>
+<p class="p1"><span class="s1">НЕ silent fallback.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">Canonical:</span></p>
+<p class="p6"><span class="s1">reddit: {</span></p>
+<p class="p6"><span class="s1"><span class="Apple-converted-space">  </span>status: "no_data",</span></p>
+<p class="p6"><span class="s1"><span class="Apple-converted-space">  </span>found: 0,</span></p>
+<p class="p6"><span class="s1"><span class="Apple-converted-space">  </span>reason: "no_matches"</span></p>
+<p class="p6"><span class="s1">}</span></p>
+<p class="p1"><span class="s1">Frontend:</span></p>
+<p class="p1"><span class="s1">No Reddit discussions found for this topic.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">Если timeout:</span></p>
+<p class="p6"><span class="s1">status: "unavailable"</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">LLM вызывается ТОЛЬКО если:</span></p>
+<p class="p6"><span class="s1">status == "ok"</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<h1 style="margin: 0.0px 0.0px 16.1px 0.0px; font: 24.0px Times; -webkit-text-stroke: #000000"><span class="s14">6️⃣</span><span class="s1"><b> Кэширование</b></span></h1>
+<p class="p1"><span class="s1">Да.</span></p>
+<p class="p1"><span class="s1">Обязательно.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<h3 style="margin: 0.0px 0.0px 14.0px 0.0px; font: 14.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>Простое LRU:</b></span></h3>
+<p class="p6"><span class="s1">@alru_cache(ttl=86400)</span></p>
+<p class="p6"><span class="s1">async def reddit_search(query)</span></p>
+<p class="p1"><span class="s1">или Redis если есть.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">Ты делаешь 2–3 запроса в день.</span></p>
+<p class="p1"><span class="s1">Это бесплатно.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<h1 style="margin: 0.0px 0.0px 16.1px 0.0px; font: 24.0px Times; -webkit-text-stroke: #000000"><span class="s14">7️⃣</span><span class="s1"><b> MCP removal</b></span></h1>
+<p class="p1"><span class="s1">MCP хорош для:</span></p>
+<p class="p1"><span class="s1">agent tooling<br>
+dynamic plugins<br>
+IDE integrations</span></p>
+<p class="p1"><span class="s1">НЕ для production RAG.</span></p>
+<p class="p1"><span class="s1">Ты используешь MCP как HTTP wrapper.</span></p>
+<p class="p1"><span class="s1">Это анти-паттерн.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<h1 style="margin: 0.0px 0.0px 16.1px 0.0px; font: 24.0px Times; -webkit-text-stroke: #000000"><span class="s14">🎯</span><span class="s1"><b> Recommended refactor roadmap (1 день работы)</b></span></h1>
+<h2 style="margin: 0.0px 0.0px 14.9px 0.0px; font: 18.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>Phase 1 (2h)</b></span></h2>
+<ul class="ul2">
+  <li class="li1"><span class="s15"></span><span class="s1">убрать MCP</span></li>
+  <li class="li1"><span class="s15"></span><span class="s1">asyncpraw in backend</span></li>
+</ul>
+<p class="p2"><span class="s1"></span><br></p>
+<h2 style="margin: 0.0px 0.0px 14.9px 0.0px; font: 18.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>Phase 2 (2h)</b></span></h2>
+<ul class="ul2">
+  <li class="li1"><span class="s15"></span><span class="s1">добавить selftext + top comments</span></li>
+  <li class="li1"><span class="s15"></span><span class="s1">truncate 1500 chars</span></li>
+</ul>
+<p class="p2"><span class="s1"></span><br></p>
+<h2 style="margin: 0.0px 0.0px 14.9px 0.0px; font: 18.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>Phase 3 (1h)</b></span></h2>
+<ul class="ul2">
+  <li class="li1"><span class="s15"></span><span class="s1">structured NO_DATA guard</span></li>
+  <li class="li1"><span class="s15"></span><span class="s1">skip Gemini if empty</span></li>
+</ul>
+<p class="p2"><span class="s1"></span><br></p>
+<h2 style="margin: 0.0px 0.0px 14.9px 0.0px; font: 18.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>Phase 4 (1h)</b></span></h2>
+<ul class="ul2">
+  <li class="li1"><span class="s15"></span><span class="s1">LRU cache</span></li>
+  <li class="li1"><span class="s15"></span><span class="s1">request_id logging</span></li>
+</ul>
+<p class="p2"><span class="s1"></span><br></p>
+<h2 style="margin: 0.0px 0.0px 14.9px 0.0px; font: 18.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>Phase 5 (optional)</b></span></h2>
+<p class="p1"><span class="s1">min_machines_running = 1</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<h1 style="margin: 0.0px 0.0px 16.1px 0.0px; font: 24.0px Times; -webkit-text-stroke: #000000"><span class="s1"><b>Final verdict</b></span></h1>
+<p class="p1"><span class="s1">Ты построил infra как для scale-stage startup.</span></p>
+<p class="p1"><span class="s1">А у тебя prototype-stage product.</span></p>
+<p class="p1"><span class="s1">Simplify.</span></p>
+<p class="p1"><span class="s1">Let data flow.</span></p>
+<p class="p1"><span class="s1">Let LLM see reality.</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">Если хочешь — могу следующим шагом:</span></p>
+<p class="p1"><span class="s16">✅</span><span class="s1"> дать пример нового Gemini prompt<br>
+</span><span class="s16">✅</span><span class="s1"> показать RedditEvidence schema<br>
+</span><span class="s16">✅</span><span class="s1"> предложить конкретный asyncpraw implementation<br>
+</span><span class="s16">✅</span><span class="s1"> нарисовать target architecture diagram</span></p>
+<p class="p1"><span class="s1">Просто скажи.</span></p>
+<p class="p11"><span class="s1"></span><br></p>
+</body>
+</html>

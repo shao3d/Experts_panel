@@ -107,6 +107,12 @@ class RedditSynthesisService:
         """
         sources = reddit_result.sources[:max_sources]
         
+        # DEBUG: Log sources content
+        logger.info(f"SYNTHESIS DEBUG: Building context from {len(sources)} sources")
+        for i, src in enumerate(sources[:3]):
+            has_content = bool(src.content) and len(src.content) > 10
+            logger.info(f"SYNTHESIS DEBUG: Source {i}: title='{src.title[:50]}...' has_content={has_content} content_len={len(src.content) if src.content else 0}")
+        
         context_parts = []
         for i, src in enumerate(sources, 1):
             # Include post content (truncated to ~800 chars to fit context window)

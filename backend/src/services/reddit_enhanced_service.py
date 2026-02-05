@@ -296,6 +296,14 @@ class RedditEnhancedService:
         
         data = response.json()
         
+        # DEBUG: Check what we got from proxy
+        sources = data.get("sources", [])
+        logger.info(f"REDDIT PROXY DEBUG: Got {len(sources)} sources")
+        if sources:
+            first = sources[0]
+            has_selftext = bool(first.get("selftext"))
+            logger.info(f"REDDIT PROXY DEBUG: First source has selftext: {has_selftext}, keys: {list(first.keys())}")
+        
         posts = []
         for src in data.get("sources", []):
             url = src.get("url", "")
@@ -322,7 +330,8 @@ class RedditEnhancedService:
                 num_comments=src.get("commentsCount") or 0,
                 subreddit=src.get("subreddit") or "unknown",
                 author="unknown",
-                created_utc=0
+                created_utc=0,
+                selftext=src.get("selftext") or ""  # CRITICAL: Get content from proxy
             )
             posts.append(post)
         
