@@ -15,6 +15,69 @@ from asyncpraw.models import Submission
 
 logger = logging.getLogger(__name__)
 
+# Smart subreddit targeting for better search results
+# Maps topic keywords to relevant subreddits
+SUBREDDIT_MAPPING = {
+    # AI / LLM
+    "llm": ["LocalLLaMA", "OpenAI", "ClaudeAI", "artificial", "MachineLearning"],
+    "ai": ["artificial", "MachineLearning", "singularity", "OpenAI"],
+    "local": ["LocalLLaMA", "selfhosted", "homelab"],
+    
+    # Voice / TTS / STT
+    "tts": ["tts", "TextToSpeech", "voice", "LocalLLaMA", "HomeAssistantAI"],
+    "stt": ["speechRecognition", "voice", "LocalLLaMA", "HomeAssistantAI"],
+    "voice": ["voice", "speechRecognition", "tts", "LocalLLaMA"],
+    "speech": ["speechRecognition", "voice", "tts"],
+    "audio": ["audio", "voice", "musicproduction", "WeAreTheMusicMakers"],
+    
+    # Programming
+    "python": ["Python", "learnpython", "MachineLearning"],
+    "javascript": ["javascript", "webdev", "reactjs"],
+    "rust": ["rust", "learnrust", "Programming"],
+    
+    # Hardware
+    "gpu": ["LocalLLaMA", "nvidia", "AMD", "hardware"],
+    "nvidia": ["nvidia", "LocalLLaMA", "hardware"],
+    "amd": ["AMD", "LocalLLaMA", "hardware"],
+    
+    # Tools / Software
+    "docker": ["docker", "selfhosted", "homelab", "sysadmin"],
+    "ollama": ["LocalLLaMA", "ollama", "selfhosted"],
+    "home assistant": ["HomeAssistantAI", "homeautomation", "smarthome"],
+    "automation": ["automation", "HomeAssistantAI", "selfhosted"],
+    
+    # General tech
+    "self-hosted": ["selfhosted", "homelab", "LocalLLaMA"],
+    "selfhosted": ["selfhosted", "homelab", "LocalLLaMA"],
+    "privacy": ["privacy", "selfhosted", "degoogle", "privacytoolsIO"],
+    
+    # Default fallback
+    "default": ["LocalLLaMA", "OpenAI", "artificial", "technology"],
+}
+
+def get_target_subreddits(query: str) -> Optional[List[str]]:
+    """Extract relevant subreddits based on query keywords.
+    
+    Args:
+        query: User search query (English recommended)
+        
+    Returns:
+        List of subreddit names or None for search all
+    """
+    query_lower = query.lower()
+    matched_subreddits = set()
+    
+    # Check each keyword in mapping
+    for keyword, subreddits in SUBREDDIT_MAPPING.items():
+        if keyword in query_lower:
+            matched_subreddits.update(subreddits)
+    
+    # Return matched subreddits or default if none matched
+    if matched_subreddits:
+        return list(matched_subreddits)[:5]  # Max 5 subreddits
+    return SUBREDDIT_MAPPING["default"]
+
+
 # Reddit API credentials (from Fly.io secrets)
 REDDIT_CLIENT_ID = "-SPb2C1BNI82qJVWSej41Q"
 REDDIT_CLIENT_SECRET = "ry0Pvmuf9fEC-vgu4XFh5tDE82ehnQ"
@@ -290,7 +353,8 @@ async def search_reddit(
     limit: int = 25,
     time_filter: str = "all",
     sort: str = "relevance",
-    max_retries: int = 2
+    max_retries: int = 2,
+    use_smart_targeting: bool = True
 ) -> RedditSearchResult:
     """Convenience function to search Reddit using global client.
     
@@ -312,6 +376,12 @@ async def search_reddit(
     # Validate query early (don't retry on validation errors)
     if not query or not query.strip():
         raise ValueError("Search query cannot be empty")
+    
+    # Apply smart subreddit targeting if enabled and not explicitly provided
+    if use_smart_targeting and subreddits is None:
+        subreddits = get_target_subreddits(query)
+        if subreddits:
+            logger.info(f"Smart targeting: searching in subreddits: {subreddits}")
     
     last_error = None
     

@@ -467,10 +467,16 @@ async def process_reddit_pipeline(
             prompt = f"""Convert this Russian question into an optimal English search query for Reddit.
 
 Rules:
-1. Use only key concepts (no fluff words like "which", "should", "how")
-2. 4-6 words maximum  
-3. Think: what keywords would Reddit users use?
-4. Output ONLY the search query, nothing else
+1. Use only key concepts (no fluff words like "which", "should", "how", "best")
+2. Include specific technical terms (TTS, STT, LLM, API, etc.) as-is
+3. 4-6 words maximum  
+4. Think: what keywords would Reddit users in r/LocalLLaMA or r/technology use?
+5. Output ONLY the search query, nothing else
+
+Examples:
+- "Какие движки TTS?" → "TTS engines text to speech"
+- "Что использовать для STT?" → "STT speech recognition tools"
+- "Локальные LLM" → "local LLM models ollama"
 
 Question: {query}
 
