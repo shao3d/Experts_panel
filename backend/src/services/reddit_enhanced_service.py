@@ -167,6 +167,10 @@ class RedditEnhancedService:
                 task = self._search_subreddit(query, subreddit, limit=25)
                 sort_tasks.append((f"subreddit_{subreddit}", task))
         
+        # Strategy 3: Fallback general search without subreddit restriction (broader results)
+        task = self._search_with_sort(query, sort="hot", limit=25, time="year")
+        sort_tasks.append(("search_hot_year", task))
+        
         # Execute all searches in parallel with error isolation
         results = await asyncio.gather(
             *[task for _, task in sort_tasks],
@@ -189,6 +193,21 @@ class RedditEnhancedService:
                     existing.num_comments = max(existing.num_comments, post.num_comments)
         
         logger.info(f"Enhanced search found {len(all_posts)} unique posts from strategies: {strategies_used}")
+        
+        # Fallback: if no posts found with specific strategies, try broader search
+        if len(all_posts) == 0 and len(strategies_used) > 0:
+            logger.warning("No posts found with specific strategies, trying broader search...")
+            try:
+                # Try without subreddit restrictions, last year, sorted by top
+                fallback_posts = await self._search_with_sort(query, sort="top", limit=25, time="year")
+                for post in fallback_posts:
+                    if post.id not in all_posts:
+                        all_posts[post.id] = post
+                if fallback_posts:
+                    strategies_used.append("fallback_top_year")
+                    logger.info(f"Fallback search found {len(fallback_posts)} posts")
+            except Exception as e:
+                logger.error(f"Fallback search also failed: {e}")
         
         # Sort by combined engagement score (upvotes + comments*2)
         sorted_posts = sorted(
@@ -375,18 +394,27 @@ async def search_reddit_enhanced(
 
 # Subreddit recommendations by topic
 SUBREDDIT_BY_TOPIC = {
-    "ai": ["MachineLearning", "artificial", "LocalLLaMA", "ChatGPT", "claudeAI", "OpenAI"],
-    "llm": ["LocalLLaMA", "ChatGPT", "claudeAI", "OpenAI", "Anthropic"],
-    "programming": ["programming", "webdev", "python", "rust", "javascript", "coding"],
-    "startup": ["startups", "Entrepreneur", "SaaS", "indiehackers", "smallbusiness"],
-    "business": ["business", "Entrepreneur", "marketing", "sales"],
-    "productivity": ["productivity", "LifeProTips", "selfimprovement", "getdisciplined"],
+    "ai": [
+        "MachineLearning", "artificial", "LocalLLaMA", "ChatGPT", "claudeAI", "OpenAI",
+        "singularity", "Futurology", "technology", "AutoGPT", "AgentGPT", "OpenAICustomGPTs"
+    ],
+    "llm": [
+        "LocalLLaMA", "ChatGPT", "claudeAI", "OpenAI", "Anthropic", "ollama", 
+        "textgenerationwebui", "SillyTavernAI", "aiwars"
+    ],
+    "programming": ["programming", "webdev", "python", "rust", "javascript", "coding", "developer", "coding"],
+    "startup": ["startups", "Entrepreneur", "SaaS", "indiehackers", "smallbusiness", "sideproject"],
+    "business": ["business", "Entrepreneur", "marketing", "sales", "agency", "consulting"],
+    "productivity": ["productivity", "LifeProTips", "selfimprovement", "getdisciplined", "Notion", "obsidianmd"],
     "general": ["AskReddit", "explainlikeimfive", "NoStupidQuestions"],
 }
 
 
 def get_recommended_subreddits(query: str) -> List[str]:
     """Get recommended subreddits based on query keywords.
+    
+    Supports both English and Russian queries. Falls back to tech subreddits
+    if no specific topic detected.
     
     Args:
         query: User query
@@ -397,21 +425,60 @@ def get_recommended_subreddits(query: str) -> List[str]:
     query_lower = query.lower()
     recommended: Set[str] = set()
     
-    # Check each topic for keyword matches
+    # Check each topic for keyword matches (English + Russian)
     topic_keywords = {
-        "ai": ["ai", "artificial intelligence", "machine learning", "ml", "model", "gpt", "claude", "llm", "neural"],
-        "llm": ["llm", "large language model", "gpt", "claude", "openai", "anthropic", "mistral", "llama"],
-        "programming": ["code", "programming", "developer", "software", "app", "web", "python", "javascript", "rust"],
-        "startup": ["startup", "founder", "entrepreneur", "business idea", "mvp", "funding", "vc"],
-        "business": ["business", "marketing", "sales", "revenue", "customer", "product"],
-        "productivity": ["productivity", "habit", "routine", "focus", "procrastination", "time management"],
+        "ai": [
+            # English
+            "ai", "artificial intelligence", "machine learning", "ml", "model", "gpt", "claude", "llm", "neural",
+            # Russian
+            "ии", "искусственный интеллект", "машинное обучение", "модель", "агент", "нейросеть", "чатбот",
+            "нейронная сеть", "языковая модель", "большая модель", "искусственный", "интеллект"
+        ],
+        "llm": [
+            # English
+            "llm", "large language model", "gpt", "claude", "openai", "anthropic", "mistral", "llama",
+            # Russian
+            "большая языковая модель", "гпт", "клод", "опенаи", "anthropic", "mistral", "llama",
+            "llm", "языковая модель", "трансформер"
+        ],
+        "programming": [
+            # English
+            "code", "programming", "developer", "software", "app", "web", "python", "javascript", "rust",
+            # Russian
+            "код", "программирование", "разработчик", "софт", "приложение", "веб", "пайтон", "жаваскрипт",
+            "rust", "rustlang", "golang", "typescript"
+        ],
+        "startup": [
+            # English
+            "startup", "founder", "entrepreneur", "business idea", "mvp", "funding", "vc",
+            # Russian
+            "стартап", "основатель", "предприниматель", "бизнес идея", "фандинг", "венчур",
+            "инвестиции", "бизнес", "запуск"
+        ],
+        "business": [
+            # English
+            "business", "marketing", "sales", "revenue", "customer", "product",
+            # Russian
+            "бизнес", "маркетинг", "продажи", "выручка", "клиент", "продукт", "монетизация"
+        ],
+        "productivity": [
+            # English
+            "productivity", "habit", "routine", "focus", "procrastination", "time management",
+            # Russian
+            "продуктивность", "привычка", "рутина", "фокус", "прокрастинация", "тайм-менеджмент",
+            "организация", "эффективность"
+        ],
     }
     
     for topic, keywords in topic_keywords.items():
         if any(kw in query_lower for kw in keywords):
             recommended.update(SUBREDDIT_BY_TOPIC.get(topic, []))
     
-    # Always include some general subreddits
+    # If no specific topic detected, include tech subreddits as fallback
+    if not recommended:
+        recommended.update(["technology", "Futurology", "singularity"])
+    
+    # Always include some general subreddits as fallback
     recommended.update(SUBREDDIT_BY_TOPIC["general"])
     
     return list(recommended)[:5]  # Return top 5 matches
