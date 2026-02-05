@@ -188,14 +188,17 @@ To debug the pipeline, monitor the backend log file for messages containing spec
 **Key Features:**
 - ✅ Parallel Reddit search with expert pipelines
 - ✅ AI-powered community synthesis (Reality Check, Hacks & Workarounds, Vibe Check)
+- ✅ Automatic query translation (RU → EN) for better Reddit search results
+- ✅ Multi-language synthesis (responses in query language)
 - ✅ Source attribution with direct Reddit links
 - ✅ Circuit breaker pattern for reliability
-- ✅ User-toggleable (👥 Искать на Reddit checkbox, default: enabled)
+- ✅ User-toggleable (Искать на Reddit checkbox, default: enabled)
 
 **Components:**
 - `RedditService` - HTTP client with retry logic, 15s timeout, 3 attempts
-- `RedditSynthesisService` - Gemini-powered community analysis
-- `CommunityInsightsSection` - React component with markdown rendering
+- `RedditSynthesisService` - Gemini-powered community analysis with language detection
+- `TranslationService` - Query translation for non-English searches
+- `CommunityInsightsSection` - React component with neutral styling
 - Reddit Proxy - Node.js/Fastify microservice on Fly.io
 
 **Fail-Safe Design:**
@@ -210,6 +213,9 @@ To debug the pipeline, monitor the backend log file for messages containing spec
 **Architecture:** Multi-expert, Gemini-only LLM pipeline with unified client and real-time progress tracking
 **Key Features:** Parallel expert processing, unified `google_ai_studio_client`, cost optimization with Gemini 3 Flash, language validation, comment synthesis, enhanced error handling, admin authentication, Reddit community insights
 **Recent Updates:**
+- ✅ **Reddit Enhancement:** Automatic RU→EN query translation for better search results
+- ✅ **UI Polish:** Neutral color scheme for Community Insights (system palette)
+- ✅ **Multi-language:** Reddit synthesis now responds in query language (RU/EN)
 - ✅ **Phase 3 Complete:** Reddit MCP Integration with community insights
 - ✅ Added real-time stats (posts/comments) to expert selection UI
 - ✅ Implemented collapsible expert selection bar for cleaner UX

@@ -150,13 +150,14 @@ Frontend integration for Reddit community analysis with safe markdown rendering 
 
 #### CommunityInsightsSection (`components/CommunityInsightsSection.tsx`)
 - **Markdown Rendering**: Safe iterative parser (no regex, O(n) complexity)
-- **Sections**: Reality Check, Hacks & Workarounds, Vibe Check, Summary
+- **Sections**: Reality Check, Hacks & Workarounds, Vibe Check, Summary (localized RU/EN)
+- **Styling**: Neutral system palette (gray backgrounds, blue accents)
 - **Source Cards**: Collapsible Reddit post references with null-safety
 - **States**: Loading, Empty, Error, Success
 - **Toggle**: Show/hide raw markdown and sources list
 
 #### QueryForm Integration (`components/QueryForm.tsx`)
-- **Checkbox**: "👥 Искать на Reddit" (default: enabled)
+- **Checkbox**: "Искать на Reddit" (default: enabled)
 - **State**: `includeReddit: boolean` passed to query request
 - **Location**: Next to `use_recent_only` checkbox
 

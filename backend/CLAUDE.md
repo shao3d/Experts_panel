@@ -21,9 +21,9 @@ The backend implements a sophisticated query processing system that retrieves re
 - `src/services/comment_group_map_service.py` - Phase 6: Comment drift analysis + main source author clarifications
 - `src/services/comment_synthesis_service.py` - Phase 7: Comment insights extraction with priority for main source clarifications
 - `src/services/reddit_service.py` - Reddit Proxy HTTP client with circuit breaker, retry logic, and fail-safe design
-- `src/services/reddit_synthesis_service.py` - Reddit community analysis with Gemini (Reality Check, Hacks & Workarounds, Vibe Check)
+- `src/services/reddit_synthesis_service.py` - Reddit community analysis with Gemini and language detection (RU/EN synthesis)
 - `src/services/drift_scheduler_service.py` - Offline Drift Analysis with **gemini-3-flash-preview** via unified client
-- `src/services/translation_service.py` - Translation service with Gemini
+- `src/services/translation_service.py` - Translation service with `translate_text()` method for query translation
 - `src/utils/error_handler.py` - Enhanced user-friendly error processing system
 - `src/utils/date_utils.py` - Date utility functions including `get_cutoff_date()` for use_recent_only filtering
 - `src/config.py` - Gemini-only model configuration management
@@ -264,6 +264,13 @@ The language system is integrated into all core LLM services:
 ### Usage Pattern
 The usage pattern, involving `prepare_system_message_with_language` and `prepare_prompt_with_language_instruction`, can be seen in practice in the various service files, such as `services/map_service.py` and `services/reduce_service.py`.
 
+### TranslationService Enhancements
+**New Method:** `translate_text()` - General-purpose text translation
+- **Purpose**: Translate any text between supported languages (RU↔EN)
+- **Used by**: Reddit pipeline for query translation
+- **Implementation**: Direct Gemini API call with language-specific prompts
+- **Signature**: `async def translate_text(text, source_lang, target_lang) -> str`
+
 ## Reddit Community Insights Integration
 
 ### Overview
@@ -283,16 +290,19 @@ Reddit community analysis integrated as a parallel pipeline alongside expert que
 
 #### RedditSynthesisService (`src/services/reddit_synthesis_service.py`)
 - **Model**: `MODEL_SYNTHESIS` (gemini-3-flash-preview)
-- **Analysis Categories**:
-  - **Reality Check** - Real-world experiences vs marketing claims
-  - **Hacks & Workarounds** - Practical tips and alternatives
-  - **Vibe Check** - Community sentiment and frustrations
-  - **Summary** - Concise synthesis of all insights
+- **Language Detection**: Automatically detects query language (RU/EN)
+- **Multi-language Support**: Synthesizes responses in query language
+- **Analysis Categories** (localized):
+  - **Reality Check / Проверка реальности** - Real-world experiences vs marketing claims
+  - **Hacks & Workarounds / Лайфхаки и обходные пути** - Practical tips and alternatives
+  - **Vibe Check / Атмосфера** - Community sentiment and frustrations
+  - **Summary / Краткое резюме** - Concise synthesis of all insights
 - **Source Attribution**: All claims linked to original Reddit posts
 - **Markdown Escaping**: Prevents injection attacks in titles/URLs
 
 #### Pipeline Integration (`src/api/simplified_query_endpoint.py`)
 - **Parallel Execution**: Reddit pipeline runs concurrently with expert processing
+- **Query Translation**: Russian queries automatically translated to English for better Reddit search
 - **Keep-Alive SSE**: Events every 2.5s during Reddit processing
 - **Timeout**: 30s for Reddit after experts complete
 - **Fail-Safe**: Expert responses returned even if Reddit fails

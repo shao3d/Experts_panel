@@ -1,7 +1,7 @@
 # Spec 004: Reddit MCP Microservice Integration ("Sidecar" Architecture)
 
-**Status:** Phase 1 & 2 COMPLETE ✅ | Phase 3 READY TO START  
-**Date:** 2026-02-04  
+**Status:** ALL PHASES COMPLETE ✅  
+**Date:** 2026-02-05  
 **Target System:** Fly.io Microservices Architecture  
 **Production URL:** https://experts-reddit-proxy.fly.dev/
 
@@ -14,9 +14,10 @@ This specification details the architecture for integrating Reddit search capabi
 **✅ COMPLETED:**
 - Phase 1: Local Prototype with Watchdog pattern
 - Phase 2: Production Deployment on Fly.io
+- Phase 3: Backend Integration with multi-language support
 - Reddit Proxy Service live and operational
-
-**⏳ NEXT:** Phase 3 - Backend Integration
+- Automatic query translation (RU → EN) implemented
+- Multi-language synthesis (responses in query language)
 
 ---
 
@@ -255,13 +256,20 @@ class RedditService:
 You are a Community Analyst analyzing Reddit discussions.
 Given the user's query and Reddit posts found, extract insights:
 
-1. **Reality Check**: Bugs, edge cases, hardware issues mentioned
-2. **Hacks**: Workarounds and unofficial solutions
-3. **Vibe**: Overall sentiment and community opinion
+1. **Reality Check / Проверка реальности**: Bugs, edge cases, hardware issues mentioned
+2. **Hacks & Workarounds / Лайфхаки**: Workarounds and unofficial solutions
+3. **Vibe Check / Атмосфера**: Overall sentiment and community opinion
+4. **Summary / Краткое резюме**: Concise synthesis of all insights
 
 Format output as markdown with bullet points.
 Cite specific posts when making claims.
+Respond in the same language as the user's query (RU/EN).
 ```
+
+**Language Support:**
+- Automatic query language detection (RU/EN)
+- Russian queries translated to English for Reddit search
+- Synthesis generated in query language (not English)
 
 **Interface:**
 ```python
@@ -376,6 +384,8 @@ Add new tab/section:
 | Reddit fails | Expert response still returned |
 | Reddit slow | Keep-alive pings prevent timeout |
 | Empty Reddit results | "No community discussions found" |
+| Russian query | Translated to EN for search, synthesis in RU |
+| English query | Direct search, synthesis in EN |
 
 ---
 
@@ -456,19 +466,21 @@ services/reddit-proxy/
 └── PHASE2_FINAL_REPORT.md    # Summary
 ```
 
-### To Create (Phase 3)
+### Created (Phase 3 - COMPLETE)
 
 ```
 backend/src/
 ├── services/
-│   ├── reddit_service.py              # NEW
-│   └── reddit_synthesis_service.py    # NEW
+│   ├── reddit_service.py              # ✅ HTTP client with circuit breaker
+│   ├── reddit_synthesis_service.py    # ✅ Multi-language synthesis
+│   └── translation_service.py         # ✅ translate_text() method added
 ├── api/
-│   └── simplified_query_endpoint.py   # MODIFY
-└── models.py                          # MODIFY
+│   └── simplified_query_endpoint.py   # ✅ Query translation integrated
+└── models.py                          # ✅ RedditResponse models
 
 frontend/src/components/
-└── CommunityInsightsSection.tsx       # NEW
+└── CommunityInsightsSection.tsx       # ✅ Neutral styling, no emojis
+├── CommunityInsightsSection.css       # ✅ System palette colors
 ```
 
 ---
@@ -532,6 +544,10 @@ Create `backend/src/services/reddit_service.py` with HTTP client to Reddit Proxy
 
 ---
 
-**Phase 3 Status:** Ready to Start  
-**Next Action:** Implement Python Reddit Service  
+**Phase 3 Status:** COMPLETE ✅  
+**Recent Enhancements:**
+- Query translation RU→EN for better search results
+- Multi-language synthesis (responses in query language)
+- Neutral UI styling (system palette)
+
 **Contact:** External-Way5292 (Reddit credentials owner)
