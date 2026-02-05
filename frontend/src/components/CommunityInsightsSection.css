@@ -126,8 +126,9 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.25rem 1.5rem;
-  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-  color: white;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e1e4e8;
+  color: #495057;
 }
 
 .header-left {
@@ -148,10 +149,11 @@
 
 .header-badge {
   padding: 0.25rem 0.75rem;
-  background: rgba(255, 255, 255, 0.2);
+  background: #e9ecef;
   border-radius: 20px;
   font-size: 0.85rem;
   font-weight: 500;
+  color: #6c757d;
 }
 
 .header-actions {
@@ -161,9 +163,9 @@
 
 .action-button {
   padding: 0.5rem;
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: #e9ecef;
+  color: #6c757d;
+  border: 1px solid #dee2e6;
   border-radius: 6px;
   cursor: pointer;
   font-size: 1rem;
@@ -171,13 +173,14 @@
 }
 
 .action-button:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: #dee2e6;
   transform: translateY(-1px);
 }
 
 .action-button.active {
-  background: rgba(255, 255, 255, 0.4);
-  border-color: rgba(255, 255, 255, 0.6);
+  background: #0066cc;
+  border-color: #0066cc;
+  color: white;
 }
 
 /* ============================================================================
@@ -196,10 +199,10 @@
 .formatted-content .content-header {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #2c3e50;
+  color: #495057;
   margin: 1.5rem 0 0.75rem;
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid #34495e;
+  border-bottom: 2px solid #0066cc;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -223,7 +226,7 @@
 }
 
 .formatted-content .content-bullet::marker {
-  color: #34495e;
+  color: #0066cc;
   font-weight: 600;
 }
 
@@ -311,8 +314,8 @@
 }
 
 .source-card:hover {
-  border-color: #34495e;
-  box-shadow: 0 2px 8px rgba(52, 73, 94, 0.15);
+  border-color: #0066cc;
+  box-shadow: 0 2px 8px rgba(0, 102, 204, 0.1);
 }
 
 .source-header {
@@ -345,7 +348,7 @@
 
 .source-subreddit {
   padding: 0.25rem 0.5rem;
-  background: #34495e;
+  background: #6c757d;
   color: white;
   border-radius: 4px;
   font-size: 0.8rem;

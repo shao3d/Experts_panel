@@ -157,22 +157,22 @@ class RedditSynthesisService:
 
 Формат ответа — markdown с секциями:
 
-### 🔍 Проверка реальности
+### Проверка реальности
 - Упомянутые баги и проблемы
 - Edge cases от пользователей
 - Проблемы совместимости
 
-### 🛠️ Лайфхаки и обходные пути
+### Лайфхаки и обходные пути
 - Неофициальные решения
 - Советы от сообщества
 - Креативные фиксы
 
-### 😎 Атмосфера
+### Атмосфера
 - Общий сентимент сообщества
 - Частые жалобы или похвала
 - Консенсус, если есть
 
-### 📊 Краткое резюме
+### Краткое резюме
 - Краткое резюме ключевых выводов (2-3 предложения)"""
 
             user_prompt = f"""**Запрос пользователя:** {query}
@@ -201,22 +201,22 @@ Guidelines:
 
 Format your response as markdown with these sections:
 
-### 🔍 Reality Check
+### Reality Check
 - Any bugs or issues mentioned
 - Edge cases reported by users
 - Hardware/software compatibility problems
 
-### 🛠️ Hacks & Workarounds  
+### Hacks & Workarounds  
 - Unofficial solutions
 - Community tips and tricks
 - Creative workarounds
 
-### 😎 Vibe Check
+### Vibe Check
 - Overall community sentiment
 - Common frustrations or praise
 - Consensus opinion if any
 
-### 📊 Summary
+### Summary
 - Brief 2-3 sentence summary of key takeaways"""
 
             user_prompt = f"""**User Query:** {query}
