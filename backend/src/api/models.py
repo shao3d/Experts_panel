@@ -488,6 +488,10 @@ class RedditSource(BaseModel):
         ...,
         description="Subreddit name"
     )
+    content: Optional[str] = Field(
+        default=None,
+        description="Post content/selftext for detailed analysis"
+    )
 
 
 class RedditResponse(BaseModel):

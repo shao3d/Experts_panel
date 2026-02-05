@@ -601,7 +601,8 @@ Search query:"""
                     url=src.url,
                     score=src.score,
                     comments_count=src.comments_count,
-                    subreddit=src.subreddit
+                    subreddit=src.subreddit,
+                    content=src.content[:2000] if hasattr(src, 'content') and src.content else ""
                 )
                 for src in search_result.sources
             ],
