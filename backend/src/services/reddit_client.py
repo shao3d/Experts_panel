@@ -22,6 +22,20 @@ SUBREDDIT_MAPPING = {
     "llm": ["LocalLLaMA", "OpenAI", "ClaudeAI", "artificial", "MachineLearning"],
     "ai": ["artificial", "MachineLearning", "singularity", "OpenAI"],
     "local": ["LocalLLaMA", "selfhosted", "homelab"],
+    "mcp": ["LocalLLaMA", "ClaudeAI", "MachineLearning", "artificial"],
+    "cursor": ["CursorAI", "vscode", "LocalLLaMA", "artificial"],
+    "cline": ["ClaudeAI", "vscode", "LocalLLaMA"],
+    "vllm": ["LocalLLaMA", "MachineLearning", "artificial"],
+    "tgi": ["LocalLLaMA", "huggingface", "MachineLearning"],
+    "llamacpp": ["LocalLLaMA"],
+    "llama.cpp": ["LocalLLaMA"],
+    "gguf": ["LocalLLaMA"],
+    "speculative decoding": ["LocalLLaMA", "MachineLearning"],
+    "prompt caching": ["LocalLLaMA", "OpenAI", "ClaudeAI"],
+    "structured output": ["LocalLLaMA", "OpenAI", "ClaudeAI", "MachineLearning"],
+    "function calling": ["LocalLLaMA", "OpenAI", "ClaudeAI"],
+    "mlx": ["LocalLLaMA", "apple", "MachineLearning"],
+    "ipex": ["IntelArc", "LocalLLaMA", "MachineLearning"],
     
     # Voice / TTS / STT
     "tts": ["tts", "TextToSpeech", "LocalLLaMA", "selfhosted"],
@@ -29,6 +43,8 @@ SUBREDDIT_MAPPING = {
     "voice": ["speechRecognition", "tts", "LocalLLaMA", "selfhosted"],
     "speech": ["speechRecognition", "tts", "LocalLLaMA", "selfhosted"],
     "audio": ["audio", "voice", "musicproduction", "WeAreTheMusicMakers"],
+    "whisper": ["LocalLLaMA", "speechRecognition", "selfhosted"],
+    "kokoro": ["LocalLLaMA", "tts", "TextToSpeech"],
     
     # Programming
     "python": ["Python", "learnpython", "MachineLearning"],
@@ -39,17 +55,72 @@ SUBREDDIT_MAPPING = {
     "gpu": ["LocalLLaMA", "nvidia", "AMD", "hardware"],
     "nvidia": ["nvidia", "LocalLLaMA", "hardware"],
     "amd": ["AMD", "LocalLLaMA", "hardware"],
+    "intel": ["IntelArc", "LocalLLaMA", "hardware"],
+    "arc": ["IntelArc", "LocalLLaMA"],
+    "rtx": ["nvidia", "LocalLLaMA", "hardware"],
+    "mac": ["LocalLLaMA", "apple"],
+    "apple silicon": ["LocalLLaMA", "apple", "MachineLearning"],
+    "m1": ["LocalLLaMA", "apple"],
+    "m2": ["LocalLLaMA", "apple"],
+    "m3": ["LocalLLaMA", "apple"],
+    "m4": ["LocalLLaMA", "apple"],
+    "raspberry": ["LocalLLaMA", "raspberry_pi", "selfhosted"],
     
     # Tools / Software
     "docker": ["docker", "selfhosted", "homelab", "sysadmin"],
+    "compose": ["docker", "selfhosted", "homelab"],
+    "kubernetes": ["kubernetes", "selfhosted", "homelab", "sysadmin"],
+    "k8s": ["kubernetes", "selfhosted", "homelab"],
     "ollama": ["LocalLLaMA", "ollama", "selfhosted"],
+    "localai": ["LocalLLaMA", "selfhosted"],
     "home assistant": ["homeautomation", "smarthome", "selfhosted"],
     "automation": ["automation", "selfhosted", "homeautomation"],
+    "n8n": ["n8n", "selfhosted", "automation"],
+    "nodered": ["homeautomation", "smarthome", "selfhosted"],
+    "homebridge": ["homeautomation", "smarthome", "selfhosted"],
+    "nginx": ["selfhosted", "homelab", "sysadmin"],
+    "systemd": ["linux", "selfhosted", "sysadmin"],
+    "reverse proxy": ["selfhosted", "homelab", "sysadmin"],
+    "obsidian": ["ObsidianMD", "productivity", "selfhosted"],
+    "nextcloud": ["NextCloud", "selfhosted", "privacy"],
     
-    # General tech
-    "self-hosted": ["selfhosted", "homelab", "LocalLLaMA"],
-    "selfhosted": ["selfhosted", "homelab", "LocalLLaMA"],
+    # RAG / Vector DB
+    "rag": ["LocalLLaMA", "MachineLearning", "artificial"],
+    "vector": ["LocalLLaMA", "MachineLearning", "artificial"],
+    "embedding": ["LocalLLaMA", "MachineLearning"],
+    "database": ["LocalLLaMA", "database", "selfhosted"],
+    "chromadb": ["LocalLLaMA", "selfhosted"],
+    "qdrant": ["LocalLLaMA", "selfhosted"],
+    
+    # Privacy / Security
     "privacy": ["privacy", "selfhosted", "degoogle", "privacytoolsIO"],
+    "security": ["privacy", "selfhosted", "sysadmin"],
+    "offline": ["privacy", "selfhosted", "LocalLLaMA"],
+    "air gapped": ["privacy", "selfhosted", "sysadmin"],
+    "hipaa": ["privacy", "selfhosted", "sysadmin"],
+    "compliance": ["privacy", "selfhosted"],
+    "enterprise": ["LocalLLaMA", "selfhosted"],
+    
+    # Errors / Troubleshooting
+    "cuda": ["LocalLLaMA", "nvidia", "MachineLearning"],
+    "oom": ["LocalLLaMA", "nvidia", "MachineLearning"],
+    "error": ["LocalLLaMA", "selfhosted"],
+    "troubleshooting": ["LocalLLaMA", "selfhosted"],
+    "fix": ["LocalLLaMA", "selfhosted"],
+    "permission": ["linux", "selfhosted", "sysadmin"],
+    "docker socket": ["docker", "selfhosted"],
+    
+    # Download / Setup
+    "download": ["LocalLLaMA", "selfhosted"],
+    "weights": ["LocalLLaMA"],
+    "model": ["LocalLLaMA", "MachineLearning"],
+    "quantized": ["LocalLLaMA"],
+    "quantization": ["LocalLLaMA"],
+    "q4": ["LocalLLaMA"],
+    "q5": ["LocalLLaMA"],
+    "q6": ["LocalLLaMA"],
+    "q8": ["LocalLLaMA"],
+    "fp16": ["LocalLLaMA"],
     
     # Default fallback
     "default": ["LocalLLaMA", "OpenAI", "artificial", "technology"],
@@ -73,6 +144,19 @@ QUERY_EXPANSIONS = {
     "kubernetes": ["Kubernetes", "k8s"],
     "selfhosted": ["selfhosted", "self-hosted", "homelab", "on-premise"],
     "open source": ["open source", "FOSS", "free software"],
+    "mlx": ["MLX", "machine learning accelerators", "Apple Silicon ML"],
+    "ipex": ["IPEX", "Intel Extension for PyTorch", "Intel GPU"],
+    "gguf": ["GGUF", "Georgi Gerganov Universal Format", "llama.cpp format"],
+    "q4": ["Q4", "4-bit quantization", "Q4_K_M"],
+    "q5": ["Q5", "5-bit quantization", "Q5_K_M"],
+    "speculative decoding": ["speculative decoding", "medusa decoding", "lookahead decoding"],
+    "prompt caching": ["prompt caching", "context caching", "KV cache"],
+    "structured output": ["structured output", "JSON mode", "function calling"],
+    "cuda": ["CUDA", "NVIDIA GPU", "GPU acceleration"],
+    "oom": ["OOM", "out of memory", "CUDA out of memory"],
+    "hipaa": ["HIPAA", "healthcare compliance", "data privacy"],
+    "json": ["JSON", "JavaScript Object Notation"],
+    "yaml": ["YAML", "YAML Ain't Markup Language"],
 }
 
 def expand_query(query: str) -> str:
@@ -80,30 +164,48 @@ def expand_query(query: str) -> str:
     
     Uses Reddit's OR operator to search for all variations.
     Example: "TTS engines" → '("text to speech" OR "TTS" OR "voice synthesis") engines'
+    
+    Respects Reddit search operators:
+    - Excludes negative terms (-keyword) from expansion
+    - Preserves title:, selftext:, author:, url: operators
     """
     import re
     
-    query_lower = query.lower()
+    # Extract negative terms (e.g., -docker, -kubernetes) to preserve them
+    negative_terms = re.findall(r'(-\w+)', query)
+    
+    # Create a working copy without negative terms for expansion
+    working_query = query
+    for neg_term in negative_terms:
+        working_query = working_query.replace(neg_term, "")
+    
+    query_lower = working_query.lower()
     expanded_terms = []
     
     for keyword, variations in QUERY_EXPANSIONS.items():
+        # Skip if keyword is in negative terms
+        if f"-{keyword}" in query.lower():
+            continue
+            
         # Use word boundary check for short terms (<=3 chars) to avoid partial matches
         if len(keyword) <= 3:
             pattern = r'\b' + re.escape(keyword) + r'\b'
-            if re.search(pattern, query, re.IGNORECASE):
+            if re.search(pattern, working_query, re.IGNORECASE):
                 or_group = " OR ".join([f'"{v}"' for v in variations])
                 expanded_terms.append(f"({or_group})")
-                query = re.sub(pattern, "", query, count=1, flags=re.IGNORECASE)
+                working_query = re.sub(pattern, "", working_query, count=1, flags=re.IGNORECASE)
         elif keyword in query_lower:
             # Create OR group for this term
             or_group = " OR ".join([f'"{v}"' for v in variations])
             expanded_terms.append(f"({or_group})")
             # Remove original term (case-insensitive) to avoid duplication
-            query = re.sub(re.escape(keyword), "", query, count=1, flags=re.IGNORECASE)
+            working_query = re.sub(re.escape(keyword), "", working_query, count=1, flags=re.IGNORECASE)
     
     if expanded_terms:
-        # Combine expanded terms with remaining query
-        expanded_query = " ".join(expanded_terms) + " " + query.strip()
+        # Combine expanded terms with remaining query and add back negative terms
+        expanded_query = " ".join(expanded_terms) + " " + working_query.strip()
+        if negative_terms:
+            expanded_query += " " + " ".join(negative_terms)
         logger.info(f"Query expanded: '{query[:40]}...' → '{expanded_query[:60]}...'")
         return expanded_query.strip()
     
