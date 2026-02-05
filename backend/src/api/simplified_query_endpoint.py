@@ -462,39 +462,40 @@ async def process_reddit_pipeline(
     from ..utils.language_utils import detect_query_language
     query_language = detect_query_language(query)
     
-    # Reddit is English-centric, so translate non-English queries for better results
-    # CRITICAL: Reddit API works better with keyword-style queries, not full sentences
+    # Reddit is English-centric - use Gemini to formulate optimal search query
+    # Gemini converts question to optimal keyword query for Reddit search
     search_query = query
     if query_language == "Russian":
         try:
-            from ..services.translation_service import TranslationService
-            translator = TranslationService()
-            # Translate to English
-            translated = await translator.translate_text(
-                text=query,
-                source_lang="Russian",
-                target_lang="English"
+            from ..services.google_ai_studio_client import create_google_ai_studio_client
+            client = create_google_ai_studio_client()
+            
+            prompt = f"""Convert this Russian question into an optimal English search query for Reddit.
+
+Rules:
+1. Use only key concepts (no fluff words like "which", "should", "how")
+2. 4-6 words maximum  
+3. Think: what keywords would Reddit users use?
+4. Output ONLY the search query, nothing else
+
+Question: {query}
+
+Search query:"""
+            
+            response = await client.chat_completions_create(
+                model="gemini-2.0-flash",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.1
             )
-            # Simplify to keywords for better Reddit search
-            # Keep important short terms (AI, ML, etc.), remove only fluff
-            search_query = translated.lower()
-            # Remove only the most common stop words that hurt search
-            stop_words = ['which', 'what', 'should', 'would', 'could', 'how', 'the', 'a', 'an', 
-                         'for', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'of', 'is', 'are',
-                         'do', 'does', 'did', 'can', 'will', 'first', 'need', 'make', 'get',
-                         'someone', 'beginner', 'novice', 'newbie', 'person', 'people', 'be']
-            words = search_query.split()
-            # Keep words if: not stop word AND (len > 2 OR is AI/ML/LLM/etc.)
-            important_short = ['ai', 'ml', 'llm', 'rag', 'api', 'ui', 'ux', 'qa', 'db']
-            keywords = [w for w in words if w not in stop_words and (len(w) > 2 or w in important_short)]
-            search_query = ' '.join(keywords[:8])  # Max 8 keywords
-            if not search_query:
-                # Fallback if all words were removed
-                search_query = translated
-            logger.info(f"Translated Reddit query: '{query[:50]}...' -> '{translated[:50]}...' -> keywords: '{search_query}'")
+            
+            search_query = response.choices[0].message.content.strip()
+            # Remove quotes if present
+            search_query = search_query.strip('"\'')
+            
+            logger.info(f"Gemini formulated Reddit query: '{query[:50]}...' -> '{search_query}'")
         except Exception as e:
-            logger.warning(f"Failed to translate Reddit query, using original: {e}")
-            search_query = query
+            logger.warning(f"Failed to formulate Reddit query with Gemini: {e}")
+            search_query = query  # Fallback
     
     try:
         # Report start
