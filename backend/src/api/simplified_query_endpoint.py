@@ -971,7 +971,7 @@ async def event_generator_parallel(
         # Wait for Reddit pipeline to complete (with timeout)
         # Reddit can be slow, so we give it up to 30 seconds after experts complete
         reddit_wait_start = time.time()
-        reddit_timeout = 30.0  # 30 second additional wait for Reddit
+        reddit_timeout = 90.0  # 90 second additional wait for Reddit (allows proxy to cold start)
         last_activity_time_outer = time.time()  # FIX: Define in outer scope
         
         # FIX: Also check if task is done to avoid waiting full timeout if task crashed

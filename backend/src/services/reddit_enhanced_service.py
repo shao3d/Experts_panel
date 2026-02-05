@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 # Configuration
 REDDIT_PROXY_URL = "https://experts-reddit-proxy.fly.dev"
-DEFAULT_TIMEOUT = 20.0  # Increased for deep analysis
+DEFAULT_TIMEOUT = 60.0  # Increased for cold start (proxy needs ~15s to wake up)
 MAX_RETRIES = 3
 RETRY_BACKOFF_BASE = 2.0
 
@@ -192,7 +192,7 @@ class RedditEnhancedService:
                     existing.score = max(existing.score, post.score)
                     existing.num_comments = max(existing.num_comments, post.num_comments)
         
-        logger.info(f"Enhanced search found {len(all_posts)} unique posts from strategies: {strategies_used}")
+        logger.info(f"🔍 REDDIT SEARCH: query='{query[:50]}...' | strategies={len(strategies_used)} | unique_posts={len(all_posts)} | strategies_used={strategies_used}")
         
         # Fallback: if no posts found with specific strategies, try broader search
         if len(all_posts) == 0 and len(strategies_used) > 0:
