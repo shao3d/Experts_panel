@@ -28,7 +28,7 @@ asyncpg==0.29.0
 telethon==1.41.2
 
 # Reddit Integration
-asyncpraw==7.8.1
+asyncpraw>=7.8.1
 
 # JSON Processing
 json-repair==0.25.2
