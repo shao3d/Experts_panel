@@ -546,16 +546,24 @@ Search query:"""
                 "found_count": len(reddit_result.posts)
             })
         
-        # Build sources for synthesis
+        # Build sources for synthesis with comments included
         sources = []
         for post in reddit_result.posts:
+            # Safely build comments section
+            comments_section = ""
+            if hasattr(post, 'comments') and post.comments:
+                # Filter out None/non-string values and join safely
+                valid_comments = [c for c in post.comments if isinstance(c, str) and c.strip()]
+                if valid_comments:
+                    comments_section = "\n\n--- TOP COMMENTS ---\n" + "\n\n".join(valid_comments)
+
             sources.append(RS(
                 title=post.title or "Untitled",
                 url=post.permalink,
                 score=post.score or 0,
                 comments_count=post.num_comments or 0,
                 subreddit=post.subreddit or "unknown",
-                content=post.selftext or ""
+                content=(post.selftext or "") + comments_section
             ))
         
         # Build markdown for display
@@ -602,7 +610,7 @@ Search query:"""
                     score=src.score,
                     comments_count=src.comments_count,
                     subreddit=src.subreddit,
-                    content=src.content[:2000] if hasattr(src, 'content') and src.content else ""
+                    content=src.content[:2500] if hasattr(src, 'content') and src.content else ""
                 )
                 for src in search_result.sources
             ],

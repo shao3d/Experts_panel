@@ -6,7 +6,7 @@ Uses authenticated API for 60-100 req/min rate limit.
 
 import asyncio
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Optional
 from datetime import datetime
 
@@ -372,6 +372,7 @@ class RedditPost:
     permalink: str
     created_utc: float
     author: str
+    comments: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -632,6 +633,10 @@ class RedditClient:
             # Smart reranking: prioritize by relevance score instead of just upvotes
             # This considers: subreddit priority, freshness, engagement, content quality
             unique_posts = rerank_posts(unique_posts, query)
+
+            # Enrich top posts with comments for better insights
+            # Only fetch for top 5 to respect rate limits and latency
+            await self._enrich_posts_with_comments(unique_posts, limit=5)
             
             processing_time = (datetime.utcnow() - start_time).total_seconds() * 1000
             
@@ -688,6 +693,42 @@ class RedditClient:
             created_utc=submission.created_utc if submission.created_utc is not None else 0.0,
             author=author_name
         )
+
+    async def _enrich_posts_with_comments(self, posts: List[RedditPost], limit: int = 5):
+        """Fetch top comments for the most relevant posts.
+
+        Args:
+            posts: List of Reddit posts to enrich with comments
+            limit: Maximum number of posts to fetch comments for (default 5)
+        """
+        if not self.reddit:
+            return
+
+        async def fetch_comments_for_post(post: RedditPost):
+            try:
+                # Re-fetch submission by ID to get comments
+                submission = await self.reddit.submission(id=post.id)
+                # This triggers network call to load comments
+                comments = await submission.comments()
+                await comments.replace_more(limit=0)
+
+                # Extract top 3 text comments
+                top_comments = []
+                for comment in comments[:3]:
+                    if (comment.body and
+                        comment.body not in ["[deleted]", "[removed]"] and
+                        len(comment.body) > 30):
+                        author_name = str(comment.author) if comment.author else "[deleted]"
+                        top_comments.append(f"{author_name}: {comment.body}")
+                post.comments = top_comments
+            except Exception as e:
+                logger.warning(f"Failed to fetch comments for {post.id}: {e}")
+
+        # Run concurrently for better performance
+        # Use return_exceptions=True so one failure doesn't abort all comment fetching
+        tasks = [fetch_comments_for_post(post) for post in posts[:limit]]
+        if tasks:
+            await asyncio.gather(*tasks, return_exceptions=True)
 
 
 # Global client instance - initialized once and reused

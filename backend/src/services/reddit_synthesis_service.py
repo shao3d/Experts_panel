@@ -115,9 +115,9 @@ class RedditSynthesisService:
         
         context_parts = []
         for i, src in enumerate(sources, 1):
-            # Include post content (truncated to ~800 chars to fit context window)
-            content_preview = src.content[:800] if src.content else "[No content available]"
-            if len(src.content) > 800:
+            # Include post content (truncated to ~2500 chars to fit context window including comments)
+            content_preview = src.content[:2500] if src.content else "[No content available]"
+            if len(src.content) > 2500:
                 content_preview += "..."
             
             context_parts.append(
@@ -164,6 +164,7 @@ class RedditSynthesisService:
 - Тон — информативный и нейтральный
 - Фокус на практичной, actionable информации
 - Упоминайте конкретные сабреддиты
+- ОБРАЩАЙТЕ ВНИМАНИЕ НА КОММЕНТАРИИ: Часто решение находится именно там (раздел "TOP COMMENTS")
 
 ВАЖНО: Отвечайте ТОЛЬКО на русском языке, даже если посты Reddit на английском.
 
@@ -210,6 +211,7 @@ Guidelines:
 - Keep tone informative and neutral
 - Focus on practical, actionable information
 - Mention specific subreddits when relevant
+- PAY ATTENTION TO COMMENTS: Often the real solution is in the "TOP COMMENTS" section
 
 Format your response as markdown with these sections:
 
