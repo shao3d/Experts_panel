@@ -490,7 +490,10 @@ Search query:"""
             
             search_query = response.choices[0].message.content.strip()
             search_query = search_query.strip('"\'')
-            
+            # Remove common prefixes if Gemini adds them
+            if search_query.lower().startswith("search query:"):
+                search_query = search_query[13:].strip()
+
             logger.info(f"Gemini formulated Reddit query: '{query[:50]}...' -> '{search_query}'")
         except Exception as e:
             logger.warning(f"Failed to formulate Reddit query: {e}")
@@ -523,7 +526,7 @@ Search query:"""
         )
         
         # Check if we found anything relevant
-        if not reddit_result.posts:
+        if not reddit_result or not reddit_result.posts:
             logger.info(f"No Reddit posts found for query: {search_query}")
             if progress_callback:
                 await progress_callback({

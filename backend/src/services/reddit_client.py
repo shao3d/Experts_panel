@@ -532,8 +532,12 @@ class RedditClient:
             )
             
             # Verify authentication
-            user = await self.reddit.user.me()
-            logger.info(f"Reddit API authenticated as: {user.name}")
+            try:
+                user = await self.reddit.user.me()
+                logger.info(f"Reddit API authenticated as: {user.name}")
+            except Exception as e:
+                logger.warning(f"Reddit API authentication verification failed: {e}. Proceeding anyway.")
+
             self._initialized = True
             
         except Exception as e:
@@ -612,15 +616,35 @@ class RedditClient:
             
             # Single search call - more efficient than multiple subreddit searches
             await self.rate_limiter.acquire()
-            subreddit = await self.reddit.subreddit("all")
-            
-            async for submission in subreddit.search(
-                search_query,
-                limit=limit,
-                time_filter=time_filter,
-                sort=sort
-            ):
-                posts.append(self._convert_submission(submission))
+            subreddit_param = "all"
+
+            try:
+                subreddit = await self.reddit.subreddit(subreddit_param)
+
+                async for submission in subreddit.search(
+                    search_query,
+                    limit=limit,
+                    time_filter=time_filter,
+                    sort=sort
+                ):
+                    post = self._convert_submission(submission)
+                    if post:  # Check if conversion succeeded
+                        posts.append(post)
+
+            except Exception as search_error:
+                logger.warning(f"Complex search failed: {search_error}. Retrying with simple query.")
+                # Fallback: simple search without subreddit filters
+                await self.rate_limiter.acquire()
+                subreddit = await self.reddit.subreddit("all")
+                async for submission in subreddit.search(
+                    query, # Use original simple query
+                    limit=limit,
+                    time_filter=time_filter,
+                    sort=sort
+                ):
+                    post = self._convert_submission(submission)
+                    if post:
+                        posts.append(post)
             
             # Remove duplicates by ID
             seen_ids = set()
@@ -663,36 +687,40 @@ class RedditClient:
             logger.error(f"Reddit search failed for query '{query[:50]}...': {e}")
             raise
     
-    def _convert_submission(self, submission: Submission) -> RedditPost:
+    def _convert_submission(self, submission: Submission) -> Optional[RedditPost]:
         """Convert asyncpraw Submission to RedditPost."""
-        # Safely extract subreddit name
-        subreddit_name = "unknown"
-        if submission.subreddit:
-            try:
-                subreddit_name = str(submission.subreddit)
-            except Exception:
-                pass
-        
-        # Safely extract author
-        author_name = "[deleted]"
-        if submission.author:
-            try:
-                author_name = str(submission.author)
-            except Exception:
-                pass
-        
-        return RedditPost(
-            id=submission.id or "unknown",
-            title=submission.title or "",
-            selftext=submission.selftext or "",
-            score=submission.score if submission.score is not None else 0,
-            num_comments=submission.num_comments if submission.num_comments is not None else 0,
-            subreddit=subreddit_name,
-            url=submission.url or "",
-            permalink=f"https://reddit.com{submission.permalink}" if submission.permalink and not submission.permalink.startswith('http') else submission.permalink or "",
-            created_utc=submission.created_utc if submission.created_utc is not None else 0.0,
-            author=author_name
-        )
+        try:
+            # Safely extract subreddit name
+            subreddit_name = "unknown"
+            if hasattr(submission, 'subreddit') and submission.subreddit:
+                try:
+                    subreddit_name = str(submission.subreddit)
+                except Exception:
+                    pass
+
+            # Safely extract author
+            author_name = "[deleted]"
+            if hasattr(submission, 'author') and submission.author:
+                try:
+                    author_name = str(submission.author)
+                except Exception:
+                    pass
+
+            return RedditPost(
+                id=getattr(submission, 'id', "unknown"),
+                title=getattr(submission, 'title', "") or "",
+                selftext=getattr(submission, 'selftext', "") or "",
+                score=getattr(submission, 'score', 0) or 0,
+                num_comments=getattr(submission, 'num_comments', 0) or 0,
+                subreddit=subreddit_name,
+                url=getattr(submission, 'url', "") or "",
+                permalink=f"https://reddit.com{submission.permalink}" if hasattr(submission, 'permalink') and submission.permalink and not submission.permalink.startswith('http') else getattr(submission, 'permalink', "") or "",
+                created_utc=getattr(submission, 'created_utc', 0.0) or 0.0,
+                author=author_name
+            )
+        except Exception as e:
+            logger.warning(f"Failed to convert submission: {e}")
+            return None
 
     async def _enrich_posts_with_comments(self, posts: List[RedditPost], limit: int = 5):
         """Fetch top comments for the most relevant posts.
