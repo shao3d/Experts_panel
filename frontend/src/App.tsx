@@ -114,10 +114,15 @@ export const App: React.FC = () => {
         setRedditResponse(response.reddit_response);
       }
 
-      // Check if response has expert_responses (multi-expert) or is a legacy single response
-      if (response.expert_responses && response.expert_responses.length > 0) {
+      // Check if response has expert_responses (multi-expert)
+      if (response.expert_responses !== undefined) {
         console.log('[DEBUG] Multi-expert response with', response.expert_responses.length, 'experts');
         setExpertResponses(response.expert_responses);
+        
+        // If no experts and no reddit, show error from answer if present
+        if (response.expert_responses.length === 0 && !response.reddit_response && response.answer) {
+             setError(response.answer);
+        }
       } else if (response.answer) {
         // Fallback: convert legacy response to expert response format
         console.log('[DEBUG] Legacy single response, converting to expert format');

@@ -29,6 +29,15 @@ const FormattedContent: React.FC<{ content: string | null | undefined }> = ({ co
   return (
     <div className="formatted-content">
       {lines.map((line, index) => {
+        // Headers (#### Header) - Deepest supported level
+        if (line.startsWith('#### ')) {
+          return (
+            <h5 key={index} className="content-sub-subheader">
+              {line.replace('#### ', '')}
+            </h5>
+          );
+        }
+
         // Headers (### Header)
         if (line.startsWith('### ')) {
           return (
