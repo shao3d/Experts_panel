@@ -252,6 +252,7 @@ export class APIClient {
     response: Response,
     onProgress?: ProgressCallback
   ): Promise<QueryResponse> {
+    console.log('[API] Using robust SSE parser v2');
     const reader = response.body?.getReader();
     const decoder = new TextDecoder();
 
