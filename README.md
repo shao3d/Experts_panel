@@ -31,6 +31,7 @@ For a detailed breakdown of the 8-phase pipeline, component responsibilities, da
 - **👥 Multi-expert Support**: Complete data isolation with `expert_id` and parallel processing
 - **🕒 Date Filtering**: Optional `use_recent_only` filter for last 3 months of data
 - **👽 Reddit Integration**: Parallel analysis of technical subreddits with smart query expansion and ranking
+- **🚀 Reddit-Only Mode**: Can run as a standalone community search tool without expert analysis
 - **🔒 Production Ready**: Admin authentication, security hardening with API key masking and robust error handling
 
 ## 🚀 Quick Start

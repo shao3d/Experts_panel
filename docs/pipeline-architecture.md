@@ -12,6 +12,7 @@ The system processes user queries through an **eight-phase pipeline** using a **
 2.  **Differential Processing**: HIGH relevance posts get deeper context (Resolve) than MEDIUM posts.
 3.  **Cost Optimization**: Uses `Gemini 2.5 Flash Lite` for heavy lifting (Map) and `Gemini 3 Flash Preview` for intelligence (Reduce).
 4.  **Date Filtering**: Optional "Recent Only" mode (last 3 months).
+5.  **Reddit-Only Mode**: Ability to bypass expert analysis entirely for broad community searches.
 
 ---
 
@@ -130,3 +131,10 @@ When enabled (UI checkbox):
 
 ### Expert Isolation
 All database queries are strictly filtered by `expert_id`. No data leakage between experts.
+
+### Reddit-Only Execution Path
+If no experts are selected but "Search Reddit" is enabled:
+1.  **Pipeline Bypass**: Phases 1-7 (Map, Resolve, Reduce) are skipped entirely.
+2.  **Reddit Execution**: Only Phase 8 (Reddit Sidecar) is executed.
+3.  **Response**: Returns valid JSON with empty `expert_responses` list and populated `reddit_response`.
+4.  **UI Handling**: Frontend displays "Community Insights" section while hiding empty expert placeholders.
