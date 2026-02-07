@@ -271,6 +271,8 @@ export class APIClient {
           // Process all remaining complete lines in buffer
           const remainingLines = buffer.split('\n').filter(line => line.trim());
           for (const line of remainingLines) {
+            // Skip keep-alive messages
+            if (line.trim().startsWith(':')) continue;
             if (!line.startsWith('data:')) continue;
 
             let jsonString = line.substring(5).trim();
@@ -319,6 +321,8 @@ export class APIClient {
         buffer = lines.pop() || '';
 
         for (const line of lines) {
+          // Skip keep-alive messages
+          if (line.trim().startsWith(':')) continue;
           if (!line.startsWith('data:')) continue;
 
           // Extract JSON after "data: " prefix
