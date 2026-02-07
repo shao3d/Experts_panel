@@ -722,44 +722,52 @@ async def event_generator_parallel(
 
         # 1. Determine which experts to process
         if request.expert_filter is not None:
-            # Empty list [] means NO experts (Reddit-only mode)
-            # Non-empty list means specific experts only
+            # Empty list [] means specific filter (could be empty if user deselected all)
             expert_ids = request.expert_filter
         else:
-            # Default: ALL experts from database
+            # Default (None): ALL experts from database
             expert_rows = db.query(Post.expert_id).distinct().filter(
                 Post.expert_id.isnot(None)
             ).all()
             expert_ids = [row[0] for row in expert_rows if row[0]]
 
-        if not expert_ids:
+        # Check if Reddit search is enabled (default: true)
+        include_reddit = request.include_reddit if request.include_reddit is not None else True
+
+        if not expert_ids and not include_reddit:
             error_event = ProgressEvent(
                 event_type="error",
                 phase="initialization",
                 status="error",
-                message="No experts found in database",
+                message="No experts selected and Reddit search is disabled",
                 data={"request_id": request_id}
             )
-            yield f"data: {json.dumps(error_event.model_dump(mode='json'), ensure_ascii=False)}\n\n"
+            yield f"data: {json.dumps(sanitize_for_json(error_event.model_dump(mode='json')), ensure_ascii=False)}\n\n"
             return
 
-        event = ProgressEvent(
-            event_type="phase_start",
-            phase="multi_expert",
-            status="starting",
-            message=f"Processing {len(expert_ids)} experts in parallel: {', '.join(expert_ids)}",
-            data={"experts": expert_ids}
-        )
-        sanitized = sanitize_for_json(event.model_dump(mode='json'))
-        yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+        if expert_ids:
+            event = ProgressEvent(
+                event_type="phase_start",
+                phase="multi_expert",
+                status="starting",
+                message=f"Processing {len(expert_ids)} experts in parallel: {', '.join(expert_ids)}",
+                data={"experts": expert_ids}
+            )
+            yield f"data: {json.dumps(sanitize_for_json(event.model_dump(mode='json')), ensure_ascii=False)}\n\n"
+        else:
+             event = ProgressEvent(
+                event_type="phase_start",
+                phase="multi_expert",
+                status="skipped",
+                message="No experts selected, proceeding with Reddit search only...",
+                data={"experts": []}
+            )
+             yield f"data: {json.dumps(sanitize_for_json(event.model_dump(mode='json')), ensure_ascii=False)}\n\n"
 
         # 1.5. Start Reddit pipeline in parallel (if enabled)
         reddit_progress_queue = asyncio.Queue(maxsize=50)
         reddit_complete = False
         reddit_result: Optional[RedditResponse] = None
-
-        # Check if Reddit search is enabled (default: true)
-        include_reddit = request.include_reddit if request.include_reddit is not None else True
 
         async def reddit_progress_callback(data: dict):
             """Callback for Reddit pipeline progress."""

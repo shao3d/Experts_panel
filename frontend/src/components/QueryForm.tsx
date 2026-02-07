@@ -48,7 +48,8 @@ export const QueryForm: React.FC<QueryFormProps> = ({
     onSubmit(trimmed, { use_recent_only: useRecentOnly, include_reddit: includeReddit });
   };
 
-  const isButtonDisabled = disabled || query.trim().length < 3 || selectedExperts.size === 0;
+  const hasAnySource = selectedExperts.size > 0 || includeReddit;
+  const isButtonDisabled = disabled || query.trim().length < 3 || !hasAnySource;
 
   return (
     <form onSubmit={handleSubmit} className="query-form">

@@ -9,6 +9,7 @@ This module provides advanced Reddit aggregation strategies:
 
 import asyncio
 import logging
+import re
 from dataclasses import dataclass, field
 from typing import Optional, List, Dict, Any, Set
 from datetime import datetime
@@ -45,6 +46,34 @@ TECH_SUBREDDITS = [
     "SaaS",
     "indiehackers",
 ]
+
+# Query Expansions for Technical Terms
+# Maps short acronyms to broader search terms including synonyms and related concepts
+QUERY_EXPANSIONS = {
+    "llm": ['"Large Language Model"', "LLM", "GPT", "Claude", "Llama", "Mistral", "LocalLLaMA"],
+    "rag": ["RAG", '"Retrieval Augmented Generation"', '"vector database"', "embeddings"],
+    "tts": ["TTS", '"text to speech"', '"voice synthesis"', "ElevenLabs", "Kokoro"],
+    "stt": ["STT", '"speech to text"', '"voice recognition"', "Whisper", "transcription"],
+    "mcp": ["MCP", '"Model Context Protocol"'],
+    "gpu": ["GPU", "NVIDIA", "CUDA", "VRAM", "hardware"],
+    "docker": ["Docker", "container", "kubernetes", "k8s"],
+    "python": ["Python", "pip", "PyPI", "script"],
+    "rust": ["Rust", "Rustlang", "cargo", "crate"],
+    "react": ["React", "ReactJS", "NextJS", "frontend"],
+}
+
+# Pre-compile expansion logic for performance
+# 1. Build map: 'llm' -> '(Large Language Model OR LLM ...)'
+_EXPANSION_MAP = {k.lower(): f"({' OR '.join(v)})" for k, v in QUERY_EXPANSIONS.items()}
+
+# 2. Build regex pattern once: \b(llm|rag|...)\b
+_EXPANSION_PATTERN = re.compile(
+    r'\b(' + '|'.join(re.escape(k) for k in _EXPANSION_MAP.keys()) + r')\b',
+    re.IGNORECASE
+)
+
+# Constants
+MAX_TARGET_SUBREDDITS = 7
 
 # General popular subreddits
 POPULAR_SUBREDDITS = [
@@ -132,6 +161,23 @@ class RedditEnhancedService:
     
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.close()
+
+    def _expand_query(self, query: str) -> str:
+        """Expand query with technical synonyms to improve recall.
+        
+        Uses pre-compiled single-pass regex replacement.
+        Example: "best LLM" -> "best (LLM OR "Large Language Model" OR GPT ...)"
+        """
+        # Avoid double expansion if query already contains OR/AND
+        if " OR " in query or " AND " in query:
+            return query
+            
+        def replace_callback(match):
+            word = match.group(0).lower()
+            return _EXPANSION_MAP.get(word, match.group(0))
+
+        # Perform single-pass substitution using global pre-compiled pattern
+        return _EXPANSION_PATTERN.sub(replace_callback, query)
     
     async def search_enhanced(
         self,
@@ -155,42 +201,86 @@ class RedditEnhancedService:
         strategies_used = []
         all_posts: Dict[str, RedditPost] = {}  # id -> post for deduplication
         
-        # Auto-detect subreddits if not provided (Critical for endpoints that don't do it)
+        # 1. Expand Query (Smart Query Expansion)
+        # "best LLM" -> "best (LLM OR GPT OR Claude...)"
+        original_query = query
+        expanded_query = self._expand_query(query)
+        if expanded_query != original_query:
+            logger.info(f"Expanded query: '{original_query}' -> '{expanded_query}'")
+        
+        # 2. Auto-detect subreddits if not provided
         if subreddits is None:
             subreddits = get_recommended_subreddits(query)
             if subreddits:
                 logger.info(f"Auto-detected subreddits for query '{query[:30]}...': {subreddits}")
         
-        # Strategy 1: General search with different sort parameters
         sort_tasks = []
         
-        # LOGIC CHANGE: Mutually exclusive strategies to prevent noise
+        # 3. Strategy Selection
         if subreddits:
-            # OPTION A: Topic Detected -> STRICT Targeted Search Only
-            # We skip global search (Strategy 1) because global posts (r/memes, r/pics) 
-            # have huge karma and will drown out niche technical posts in sorting.
-            logger.info(f"Targeted search active ({len(subreddits)} subs) - Disabling global search to reduce noise")
+            # OPTION A: Targeted Search via OR Operator (Optimization #1)
+            # Instead of N requests for N subreddits, we make parallel requests 
+            # with different SORTS on the COMBINED set of subreddits.
+            # Query: "(expanded_query) AND (subreddit:A OR subreddit:B ...)"
             
-            # Strategy 2: Search in specific subreddits
-            # Search in top 5 subreddits to ensure good coverage
-            for subreddit in subreddits[:5]:
-                task = self._search_subreddit(query, subreddit, limit=25)
-                sort_tasks.append((f"subreddit_{subreddit}", task))
+            logger.info(f"Targeted search active ({len(subreddits)} subs) - Using Combined OR Strategy")
+            
+            # Construct subreddit filter: (subreddit:A OR subreddit:B)
+            # Limit number of subreddits to prevent extremely long URLs
+            target_subs = [s.strip() for s in subreddits[:MAX_TARGET_SUBREDDITS] if s.strip()]
+            
+            if target_subs:
+                # Use quotes for safety, though typically not needed for strict alphanumeric names
+                subreddit_filter = " OR ".join([f"subreddit:{s}" for s in target_subs])
+                
+                # Combine logic: (Query) AND (Subreddits)
+                final_query = f"({expanded_query}) AND ({subreddit_filter})"
+                
+                # Run parallel sorts on this combined scope
+                # "relevance": Best match overall
+                # "top": Highest quality/engagement (year)
+                # "new": Freshness check (month)
+                
+                # Task 1: Relevance (All time)
+                sort_tasks.append((
+                    "combined_relevance", 
+                    self._search_with_sort(final_query, sort="relevance", limit=25, time="all")
+                ))
+                
+                # Task 2: Top (Past Year) - High quality signal
+                sort_tasks.append((
+                    "combined_top_year", 
+                    self._search_with_sort(final_query, sort="top", limit=25, time="year")
+                ))
+                
+                # Task 3: New (Past Month) - Freshness signal
+                sort_tasks.append((
+                    "combined_new_month", 
+                    self._search_with_sort(final_query, sort="new", limit=25, time="month")
+                ))
+            else:
+                # Fallback if sanitization removed all subs (unlikely)
+                logger.warning("All subreddits filtered out, falling back to global")
+                sort_tasks.append((
+                    "global_relevance", 
+                    self._search_with_sort(expanded_query, sort="relevance", limit=25, time="all")
+                ))
                 
         else:
-            # OPTION B: No Topic -> Broad Global Search
+            # OPTION B: Global Search (No specific topic detected)
             logger.info("No specific topic detected - Enabling global search")
-            for sort in ["relevance", "hot", "top"]:
-                task = self._search_with_sort(query, sort=sort, limit=25, time="all")
-                sort_tasks.append((f"search_{sort}", task))
-        
-        # Strategy 3: Fallback general search (DISABLED for AI queries to prevent noise)
-        # Only use this if NO specific strategies were used AND no global strategies
-        if not sort_tasks:
-             task = self._search_with_sort(query, sort="hot", limit=25, time="year")
-             sort_tasks.append(("search_hot_year", task))
-        
-        # Execute all searches in parallel with error isolation
+            
+            # Task 1: Global Relevance
+            sort_tasks.append((
+                "global_relevance", 
+                self._search_with_sort(expanded_query, sort="relevance", limit=25, time="all")
+            ))
+            
+            # Task 2: Global Hot (Trending)
+            sort_tasks.append((
+                "global_hot", 
+                self._search_with_sort(expanded_query, sort="hot", limit=25, time="month")
+            ))
         results = await asyncio.gather(
             *[task for _, task in sort_tasks],
             return_exceptions=True
@@ -211,14 +301,14 @@ class RedditEnhancedService:
                     existing.score = max(existing.score, post.score)
                     existing.num_comments = max(existing.num_comments, post.num_comments)
         
-        logger.info(f"🔍 REDDIT SEARCH: query='{query[:50]}...' | strategies={len(strategies_used)} | unique_posts={len(all_posts)} | strategies_used={strategies_used}")
+        logger.info(f"🔍 REDDIT SEARCH: query='{query[:50]}...' | strategies={strategies_used} | unique_posts={len(all_posts)}")
         
-        # Fallback: if no posts found with specific strategies, try broader search
+        # Fallback: if no posts found with specific strategies, try broader search without expansion/filters
         if len(all_posts) == 0 and len(strategies_used) > 0:
-            logger.warning("No posts found with specific strategies, trying broader search...")
+            logger.warning("No posts found, trying fallback broader search...")
             try:
-                # Try without subreddit restrictions, last year, sorted by top
-                fallback_posts = await self._search_with_sort(query, sort="top", limit=25, time="year")
+                # Try simple query (no expansion), global, top/year
+                fallback_posts = await self._search_with_sort(original_query, sort="top", limit=25, time="year")
                 for post in fallback_posts:
                     if post.id not in all_posts:
                         all_posts[post.id] = post
@@ -238,7 +328,7 @@ class RedditEnhancedService:
         # Take top posts for deep analysis
         top_posts = sorted_posts[:target_posts]
         
-        # Strategy 3: Deep content fetching for top posts (if enabled)
+        # Deep content fetching for top posts (if enabled)
         if include_comments and top_posts:
             logger.info(f"Fetching deep content for top {len(top_posts)} posts...")
             deep_tasks = [
@@ -514,10 +604,9 @@ def get_recommended_subreddits(query: str) -> List[str]:
             recommended.update(SUBREDDIT_BY_TOPIC.get(topic, []))
             topic_found = True
     
-    # If no specific topic detected, include tech subreddits as fallback
+    # If no specific topic detected, return empty list to trigger Global Search (Option B)
+    # Previously we forced "technology" etc, which prevented searching for non-tech topics (e.g. Cooking)
     if not topic_found:
-        recommended.update(["technology", "Futurology", "singularity"])
-        # Only add general noise if NO topic is found
-        recommended.update(SUBREDDIT_BY_TOPIC["general"])
+        return []
     
     return list(recommended)[:5]  # Return top 5 matches
