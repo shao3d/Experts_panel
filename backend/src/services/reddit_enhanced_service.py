@@ -161,13 +161,11 @@ class RedditEnhancedService:
             task = self._search_with_sort(query, sort=sort, limit=25, time="all")
             sort_tasks.append((f"search_{sort}", task))
         
-        # DISABLED: Search in specific subreddits
-        # Reason: Reddit Proxy uses browse_subreddit (popular posts) instead of 
-        # search_reddit when subreddits specified, giving irrelevant results
-        # if subreddits:
-        #     for subreddit in subreddits[:3]:
-        #         task = self._search_subreddit(query, subreddit, limit=25)
-        #         sort_tasks.append((f"subreddit_{subreddit}", task))
+        # Strategy 2: Search in specific subreddits (Now enabled)
+        if subreddits:
+            for subreddit in subreddits[:3]:
+                task = self._search_subreddit(query, subreddit, limit=25)
+                sort_tasks.append((f"subreddit_{subreddit}", task))
         
         # Strategy 3: Fallback general search without subreddit restriction (broader results)
         task = self._search_with_sort(query, sort="hot", limit=25, time="year")
@@ -417,6 +415,7 @@ SUBREDDIT_BY_TOPIC = {
     "programming": ["programming", "webdev", "python", "rust", "javascript", "coding", "developer", "coding"],
     "startup": ["startups", "Entrepreneur", "SaaS", "indiehackers", "smallbusiness", "sideproject"],
     "business": ["business", "Entrepreneur", "marketing", "sales", "agency", "consulting"],
+    "product_management": ["ProductManagement", "softwareengineering", "agile", "scrum", "projectmanagement", "devops"],
     "productivity": ["productivity", "LifeProTips", "selfimprovement", "getdisciplined", "Notion", "obsidianmd"],
     "general": ["AskReddit", "explainlikeimfive", "NoStupidQuestions"],
 }
@@ -458,14 +457,20 @@ def get_recommended_subreddits(query: str) -> List[str]:
             "code", "programming", "developer", "software", "app", "web", "python", "javascript", "rust",
             # Russian
             "код", "программирование", "разработчик", "софт", "приложение", "веб", "пайтон", "жаваскрипт",
-            "rust", "rustlang", "golang", "typescript"
+            "rust", "rustlang", "golang", "typescript", "разрабатывать", "разработка"
+        ],
+        "product_management": [
+            # English
+            "spec", "specification", "requirements", "prd", "jira", "confluence", "linear", "agile", "scrum", "product manager", "project",
+            # Russian
+            "спецификация", "тз", "техническое задание", "требования", "jira", "confluence", "linear", "эджайл", "скрам", "продукт", "проект", "документация"
         ],
         "startup": [
             # English
             "startup", "founder", "entrepreneur", "business idea", "mvp", "funding", "vc",
             # Russian
             "стартап", "основатель", "предприниматель", "бизнес идея", "фандинг", "венчур",
-            "инвестиции", "бизнес", "запуск"
+            "инвестиции", "бизнес", "запуск", "мвп"
         ],
         "business": [
             # English

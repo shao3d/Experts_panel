@@ -433,44 +433,10 @@ class RedditAggregator {
       limit: number;
     }
   ): Promise<RedditSearchResult[]> {
-    // Try browse_subreddit first (works better for popular subreddits)
-    if (options.subreddits && options.subreddits.length > 0) {
-      try {
-        logger.info('Trying browse_subreddit for:', options.subreddits[0]);
-        const browseResult = await this.mcp.executeTool<unknown>('browse_subreddit', {
-          subreddit: options.subreddits[0],
-          sort: options.sort === 'relevance' ? 'hot' : options.sort,
-          time: options.time,
-          limit: options.limit,
-        });
-        
-        logger.debug('Browse result:', JSON.stringify(browseResult, null, 2));
-        
-        if (browseResult && typeof browseResult === 'object' && 'posts' in browseResult) {
-          const result = browseResult as { posts?: Array<{id: string; title: string; author: string; score: number; upvote_ratio: number; num_comments: number; created_utc: number; url: string; permalink: string; subreddit: string; is_video: boolean; is_text_post: boolean; content?: string; nsfw: boolean; stickied: boolean; link_flair_text?: string;}> };
-          if (result.posts && result.posts.length > 0) {
-            logger.info(`Browse found ${result.posts.length} posts`);
-            return result.posts.map(post => ({
-              id: post.id,
-              title: post.title,
-              url: post.url,
-              score: post.score,
-              numComments: post.num_comments,
-              subreddit: post.subreddit,
-              author: post.author,
-              createdUtc: post.created_utc,
-              selftext: post.content,
-              permalink: post.permalink,
-            }));
-          }
-        }
-      } catch (error) {
-        logger.warn('Browse failed, falling back to search:', error);
-      }
-    }
-
-    // Fallback to search_reddit
-    logger.info('Trying search_reddit for query:', query);
+    // Always use search_reddit to ensure the query is respected.
+    // browse_subreddit ignores the query and just returns top posts, which is bad for specific searches.
+    
+    logger.info('Executing search_reddit for query:', query, 'subreddits:', options.subreddits);
     const rawResult = await this.mcp.executeTool<unknown>('search_reddit', {
       query,
       subreddits: options.subreddits || [],
