@@ -157,19 +157,30 @@ class RedditEnhancedService:
         
         # Strategy 1: General search with different sort parameters
         sort_tasks = []
-        for sort in ["relevance", "hot", "top"]:
-            task = self._search_with_sort(query, sort=sort, limit=25, time="all")
-            sort_tasks.append((f"search_{sort}", task))
         
-        # Strategy 2: Search in specific subreddits (Now enabled)
+        # LOGIC CHANGE: Mutually exclusive strategies to prevent noise
         if subreddits:
-            for subreddit in subreddits[:3]:
+            # OPTION A: Topic Detected -> STRICT Targeted Search Only
+            # We skip global search (Strategy 1) because global posts (r/memes, r/pics) 
+            # have huge karma and will drown out niche technical posts in sorting.
+            logger.info(f"Targeted search active ({len(subreddits)} subs) - Disabling global search to reduce noise")
+            
+            # Strategy 2: Search in specific subreddits
+            # Search in top 5 subreddits to ensure good coverage
+            for subreddit in subreddits[:5]:
                 task = self._search_subreddit(query, subreddit, limit=25)
                 sort_tasks.append((f"subreddit_{subreddit}", task))
+                
+        else:
+            # OPTION B: No Topic -> Broad Global Search
+            logger.info("No specific topic detected - Enabling global search")
+            for sort in ["relevance", "hot", "top"]:
+                task = self._search_with_sort(query, sort=sort, limit=25, time="all")
+                sort_tasks.append((f"search_{sort}", task))
         
         # Strategy 3: Fallback general search (DISABLED for AI queries to prevent noise)
-        # Only use this if NO specific strategies were used (i.e., no topic detected)
-        if not strategies_used:
+        # Only use this if NO specific strategies were used AND no global strategies
+        if not sort_tasks:
              task = self._search_with_sort(query, sort="hot", limit=25, time="year")
              sort_tasks.append(("search_hot_year", task))
         
