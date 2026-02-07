@@ -271,14 +271,22 @@ export class APIClient {
           // Process all remaining complete lines in buffer
           const remainingLines = buffer.split('\n').filter(line => line.trim());
           for (const line of remainingLines) {
-            const trimmedLine = line.trim();
+            let trimmedLine = line.trim();
+            // Skip comments and non-data lines
             if (!trimmedLine.startsWith('data:')) continue;
 
-            let jsonString = trimmedLine.substring(5).trim();
-            if (!jsonString) continue;
+            // Remove 'data:' prefix and trim
+            trimmedLine = trimmedLine.substring(5).trim();
+
+            // Aggressively remove any duplicate 'data:' prefixes (backend/proxy artifact)
+            while (trimmedLine.startsWith('data:')) {
+              trimmedLine = trimmedLine.substring(5).trim();
+            }
+
+            if (!trimmedLine) continue;
 
             try {
-              const event: ProgressEvent = JSON.parse(jsonString);
+              const event: ProgressEvent = JSON.parse(trimmedLine);
 
               // Log SSE events for debugging
               logSSEEvent(event.phase || 'unknown', event.event_type, event, event.message);
@@ -298,7 +306,7 @@ export class APIClient {
                 finalResponse = this.normalizeResponse(rawResponse);
               }
             } catch (e) {
-              console.error('Failed to parse final SSE event:', jsonString, e);
+              console.error('Failed to parse final SSE event:', trimmedLine, e);
             }
           }
           break;
@@ -316,14 +324,22 @@ export class APIClient {
         buffer = lines.pop() || '';
 
         for (const line of lines) {
-          const trimmedLine = line.trim();
+          let trimmedLine = line.trim();
+          // Skip comments and non-data lines
           if (!trimmedLine.startsWith('data:')) continue;
 
-          let jsonString = trimmedLine.substring(5).trim();
-          if (!jsonString) continue;
+          // Remove 'data:' prefix and trim
+          trimmedLine = trimmedLine.substring(5).trim();
+
+          // Aggressively remove any duplicate 'data:' prefixes (backend/proxy artifact)
+          while (trimmedLine.startsWith('data:')) {
+            trimmedLine = trimmedLine.substring(5).trim();
+          }
+
+          if (!trimmedLine) continue;
 
           try {
-            const event: ProgressEvent = JSON.parse(jsonString);
+            const event: ProgressEvent = JSON.parse(trimmedLine);
 
             // Track error events for later use
             if (event.event_type === 'error' || event.event_type === 'expert_error') {
@@ -362,7 +378,7 @@ export class APIClient {
               throw new Error(event.message || 'Query processing failed');
             }
           } catch (parseError) {
-            console.error('Failed to parse SSE event:', jsonString, parseError);
+            console.error('Failed to parse SSE event:', trimmedLine, parseError);
             // Continue processing other events
           }
         }
