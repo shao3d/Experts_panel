@@ -406,7 +406,7 @@ async def search_reddit_enhanced(
 SUBREDDIT_BY_TOPIC = {
     "ai": [
         "MachineLearning", "artificial", "LocalLLaMA", "ChatGPT", "claudeAI", "OpenAI",
-        "singularity", "Futurology", "technology", "AutoGPT", "AgentGPT", "OpenAICustomGPTs"
+        "singularity", "Futurology", "technology", "learnmachinelearning", "deeplearning", "CSCareerQuestions", "AskEngineers"
     ],
     "llm": [
         "LocalLLaMA", "ChatGPT", "claudeAI", "OpenAI", "Anthropic", "ollama", 
@@ -435,15 +435,16 @@ def get_recommended_subreddits(query: str) -> List[str]:
     """
     query_lower = query.lower()
     recommended: Set[str] = set()
+    topic_found = False
     
     # Check each topic for keyword matches (English + Russian)
     topic_keywords = {
         "ai": [
             # English
-            "ai", "artificial intelligence", "machine learning", "ml", "model", "gpt", "claude", "llm", "neural",
+            "ai", "artificial intelligence", "machine learning", "ml", "model", "gpt", "claude", "llm", "neural", "architecture", "learn", "understand", "system",
             # Russian
             "ии", "искусственный интеллект", "машинное обучение", "модель", "агент", "нейросеть", "чатбот",
-            "нейронная сеть", "языковая модель", "большая модель", "искусственный", "интеллект"
+            "нейронная сеть", "языковая модель", "большая модель", "искусственный", "интеллект", "архитектура", "разбираться", "понимать", "учиться", "система"
         ],
         "llm": [
             # English
@@ -490,12 +491,12 @@ def get_recommended_subreddits(query: str) -> List[str]:
     for topic, keywords in topic_keywords.items():
         if any(kw in query_lower for kw in keywords):
             recommended.update(SUBREDDIT_BY_TOPIC.get(topic, []))
+            topic_found = True
     
     # If no specific topic detected, include tech subreddits as fallback
-    if not recommended:
+    if not topic_found:
         recommended.update(["technology", "Futurology", "singularity"])
-    
-    # Always include some general subreddits as fallback
-    recommended.update(SUBREDDIT_BY_TOPIC["general"])
+        # Only add general noise if NO topic is found
+        recommended.update(SUBREDDIT_BY_TOPIC["general"])
     
     return list(recommended)[:5]  # Return top 5 matches
