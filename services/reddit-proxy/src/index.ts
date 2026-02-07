@@ -559,7 +559,8 @@ class RedditAggregator {
         const details = await this.mcp.executeTool<any>('get_post_details', {
           post_id: post.id,
           subreddit: post.subreddit,
-          comment_limit: 5 // Get top 5 comments
+          comment_limit: 50, // Get top 50 comments for broad coverage
+          comment_depth: 3   // Capture depth (replies) to understand the debate
         });
 
         // DEBUG LOGGING

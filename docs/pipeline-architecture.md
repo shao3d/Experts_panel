@@ -92,16 +92,20 @@ The system processes user queries through an **eight-phase pipeline** using a **
 - **Localization**: Section titles adapt to query language (RU/EN).
 
 ### 8. Reddit Pipeline (Parallel Sidecar)
-**Goal**: Provide community reality-check.
+**Goal**: Provide community reality-check and engineering insights.
 - **Service**: `RedditEnhancedService` (`backend/src/services/reddit_enhanced_service.py`)
 - **Architecture**: Sidecar Pattern.
     - **Backend**: Calls `experts-reddit-proxy` microservice (HTTP).
-    - **Proxy**: Uses MCP (`reddit-mcp-buddy`) to safely scrape Reddit (avoids datacenter IP bans).
+    - **Proxy**: Uses MCP (`reddit-mcp-buddy`) to safely scrape Reddit.
+- **Deep Analysis Capabilities (New in Round 3)**:
+    - **Comment Trees**: Fetches nested discussions (Depth 3) to capture debates (Argument -> Counter-argument).
+    - **Volume**: Analyzes top 50 comments per post (vs 25 flat previously).
+    - **Context Window**: Synthesis limit increased to **15,000 chars** per post.
+- **Synthesis Strategy ("Inverted Pyramid")**:
+    - **Format**: Starts with Direct Solution -> Technical Details -> Nuance & Debate -> Edge Cases.
+    - **Freshness**: Injects `Current Date` into prompt to penalize outdated info (e.g., distinguishing 2024 vs 2026 advice).
+    - **Critical Filter**: Explicitly instructed to filter sarcasm ("Llama 5 released") and unverified rumors.
 - **Execution**: Runs in parallel with Expert Pipeline.
-- **Features**:
-    - **Smart Targeting**: Multi-strategy search (Relevance + Hot + Top + Year).
-    - **Deep Analysis**: Fetches full post content and top comments.
-    - **Synthesis**: Uses `Gemini 3 Flash Preview` to summarize findings.
 
 ---
 

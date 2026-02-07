@@ -40,7 +40,7 @@ class RedditSynthesisService:
     async def synthesize(
         self,
         query: str,
-        reddit_result: RedditSearchResult,
+        reddit_result: Any, # Typed as Any to support both result types
         max_sources_in_context: int = 10
     ) -> str:
         """Synthesize Reddit insights via Gemini.
@@ -53,7 +53,14 @@ class RedditSynthesisService:
         Returns:
             Markdown-formatted synthesis with insights (in query language)
         """
-        if not reddit_result.sources:
+        # Unified check for empty results
+        has_posts = False
+        if hasattr(reddit_result, 'posts') and reddit_result.posts:
+            has_posts = True
+        elif hasattr(reddit_result, 'sources') and reddit_result.sources:
+            has_posts = True
+            
+        if not has_posts:
             query_lang = detect_query_language(query)
             if query_lang == "Russian":
                 return "Обсуждения в сообществе не найдены для этого запроса."
@@ -76,9 +83,16 @@ class RedditSynthesisService:
             )
             
             synthesis = response.choices[0].message.content.strip()
+            
+            # Unified access for logging
+            if hasattr(reddit_result, 'posts'):
+                count = reddit_result.total_found
+            else:
+                count = reddit_result.found_count
+                
             logger.info(
                 f"Reddit synthesis completed for query: {query[:50]}... "
-                f"(found {reddit_result.found_count} posts)"
+                f"(found {count} posts)"
             )
             
             return synthesis
@@ -91,40 +105,101 @@ class RedditSynthesisService:
             logger.error(f"Unexpected error in synthesis: {e}")
             return self._create_fallback_response(reddit_result, query_language)
     
+    def _format_comments_recursive(self, comments: List[Dict[str, Any]], depth: int = 0, max_depth: int = 3) -> str:
+        """Recursively format comments tree."""
+        if depth > max_depth or not comments:
+            return ""
+        
+        output = []
+        indent = "  " * (depth + 1)
+        
+        for i, comment in enumerate(comments, 1):
+            # Handle different comment structures
+            if isinstance(comment, dict):
+                author = comment.get('author', 'unknown')
+                body = comment.get('body', '') or comment.get('text', '')
+                score = comment.get('score', 0)
+                replies = comment.get('replies', [])
+            else:
+                # Fallback for objects
+                author = getattr(comment, 'author', 'unknown')
+                body = getattr(comment, 'body', '') or getattr(comment, 'text', '')
+                score = getattr(comment, 'score', 0)
+                replies = getattr(comment, 'replies', [])
+
+            if body:
+                # Truncate extremely long comments but keep enough for context (2000 chars)
+                if len(body) > 2000:
+                    body = body[:2000] + "... (truncated)"
+                
+                prefix = "└─ " if depth > 0 else f"{i}. "
+                header = f"{indent}{prefix}[{author} | {score}]: "
+                
+                # Handle multi-line content (code blocks, paragraphs) by indenting subsequent lines
+                # This preserves structure for the LLM
+                content_indent = "\n" + indent + ("   " if depth > 0 else "   ")
+                formatted_body = body.replace("\n", content_indent)
+                
+                output.append(f"{header}{formatted_body}")
+                
+                # Process replies if they exist and we haven't hit max depth
+                if replies:
+                    replies_text = self._format_comments_recursive(replies, depth + 1, max_depth)
+                    if replies_text:
+                        output.append(replies_text)
+        
+        return "\n".join(output)
+
     def _build_context(
         self,
-        reddit_result: RedditSearchResult,
+        reddit_result: Any, # Typed as Any to support both result types during migration
         max_sources: int
     ) -> str:
         """Build context string from Reddit sources.
         
         Args:
-            reddit_result: Reddit search result
+            reddit_result: Reddit search result (EnhancedSearchResult or RedditSearchResult)
             max_sources: Maximum sources to include
         
         Returns:
             Formatted context string
         """
-        sources = reddit_result.sources[:max_sources]
+        # Handle both result types
+        if hasattr(reddit_result, 'posts'):
+            sources = reddit_result.posts[:max_sources]
+        else:
+            sources = reddit_result.sources[:max_sources]
         
         # DEBUG: Log sources content
         logger.info(f"SYNTHESIS DEBUG: Building context from {len(sources)} sources")
-        for i, src in enumerate(sources[:3]):
-            has_content = bool(src.content) and len(src.content) > 10
-            logger.info(f"SYNTHESIS DEBUG: Source {i}: title='{src.title[:50]}...' has_content={has_content} content_len={len(src.content) if src.content else 0}")
         
         context_parts = []
         for i, src in enumerate(sources, 1):
-            # Include post content (truncated to ~2500 chars to fit context window including comments)
-            content_preview = src.content[:2500] if src.content else "[No content available]"
-            if len(src.content) > 2500:
-                content_preview += "..."
+            # Handle different content attributes (selftext vs content)
+            raw_content = getattr(src, 'selftext', '') or getattr(src, 'content', '') or "[No content available]"
+            
+            # Increase limit to 15,000 chars to leverage Gemini's context window
+            content_preview = raw_content[:15000]
+            if len(raw_content) > 15000:
+                content_preview += "... (truncated)"
+            
+            # Format top comments with tree structure
+            comments_section = ""
+            # Handle comments attribute (top_comments vs comments)
+            comments_data = getattr(src, 'top_comments', []) or getattr(src, 'comments', [])
+            
+            if comments_data:
+                comments_text = self._format_comments_recursive(comments_data)
+                if comments_text:
+                    comments_section = f"\n   - **Discussion Tree:**\n{comments_text}"
             
             context_parts.append(
                 f"{i}. **{src.title}** (r/{src.subreddit})\n"
                 f"   - Content: {content_preview}\n"
-                f"   - Score: {src.score} | Comments: {src.comments_count}\n"
+                # Use getattr for stats to be safe
+                f"   - Stats: Score: {getattr(src, 'score', 0)} | Comments: {getattr(src, 'num_comments', getattr(src, 'comments_count', 0))}\n"
                 f"   - URL: {src.url}"
+                f"{comments_section}"
             )
         
         return "\n\n".join(context_parts)
@@ -148,98 +223,82 @@ class RedditSynthesisService:
         # Determine response language
         is_russian = query_language == "Russian"
         
+        # Get current date for context (Project is in 2026)
+        from datetime import datetime
+        current_date_str = datetime.now().strftime("%Y-%m-%d")
+        
         if is_russian:
-            system_prompt = """Вы — Аналитик Сообществ, специализирующийся на извлечении практических инсайтов из обсуждений на Reddit.
+            system_prompt = f"""Вы — Ведущий Инженер (Staff Engineer), анализирующий базу знаний Reddit для коллеги.
+СЕГОДНЯ: {current_date_str}. Учитывайте, что мы в 2026 году.
 
-Ваша задача — проанализировать посты Reddit, связанные с запросом пользователя, и предоставить структурированный анализ:
+Ваша задача — синтезировать исчерпывающий технический ответ на основе предоставленных тредов (пост + дерево комментариев).
 
-1. **Проверка реальности**: Баги, edge cases, проблемы с железом/софтом, упомянутые пользователями
-2. **Лайфхаки и обходные пути**: Неофициальные решения, креативные фиксы, советы от сообщества
-3. **Атмосфера**: Общий сентимент, частые фрустрации, консенсус сообщества
+ВХОДНЫЕ ДАННЫЕ:
+- Вопрос пользователя.
+- Структурированные треды с Reddit (включая вложенные комментарии).
 
-Правила:
-- Будьте краткими, но конкретными — ссылайтесь на конкретные посты
-- Используйте bullet points для удобства чтения
-- Если в категории нет инсайтов, напишите "Ничего конкретного не упомянуто"
-- Тон — информативный и нейтральный
-- Фокус на практичной, actionable информации
-- Упоминайте конкретные сабреддиты
-- ОБРАЩАЙТЕ ВНИМАНИЕ НА КОММЕНТАРИИ: Часто решение находится именно там (раздел "TOP COMMENTS")
+КРИТИЧЕСКИЙ АНАЛИЗ (ВАЖНО):
+- Приоритет СВЕЖЕСТИ: Информация за 2026 год важнее, чем за 2025/24. Если пост старый, укажите, что данные могут устареть.
+- Reddit полон шуток, сарказма и слухов. Фильтруйте их.
+- Доверяйте техническим деталям (код, конфиги), но проверяйте громкие анонсы.
 
-ВАЖНО: Отвечайте ТОЛЬКО на русском языке, даже если посты Reddit на английском.
+СТРУКТУРА ОТВЕТА (Перевернутая пирамида):
+1. **Прямой ответ / Решение:** Сразу дайте работающее решение, консенсус сообщества или "лучшую практику" на 2026 год.
+2. **Технические детали:** Конфиги, флаги, примеры кода, названия библиотек. Если в комментариях предложили код лучше, чем в посте — приведите его.
+3. **Нюансы и Споры:** Если есть разногласия (например, "метод А устарел, используй Б"), четко укажите это. Используйте структуру комментариев для анализа споров.
+4. **Edge Cases:** О чем предупреждают пользователи (баги, ограничения, лимиты).
 
-Формат ответа — markdown с секциями:
+СТИЛЬ:
+- Профессиональный, плотный, "без воды".
+- Используйте Markdown для кода и списков.
+- Если топ-комментарий опровергает пост — это ИСТИНА.
+- Ссылайтесь на источники как [Название поста].
 
-### Проверка реальности
-- Упомянутые баги и проблемы
-- Edge cases от пользователей
-- Проблемы совместимости
+Отвечайте ТОЛЬКО на русском языке."""
 
-### Лайфхаки и обходные пути
-- Неофициальные решения
-- Советы от сообщества
-- Креативные фиксы
+            user_prompt = f"""**Вопрос:** {query}
 
-### Атмосфера
-- Общий сентимент сообщества
-- Частые жалобы или похвала
-- Консенсус, если есть
-
-### Краткое резюме
-- Краткое резюме ключевых выводов (2-3 предложения)"""
-
-            user_prompt = f"""**Запрос пользователя:** {query}
-
-**Найденные посты Reddit:**
+**База знаний Reddit:**
 
 {context}
 
-Проанализируйте эти обсуждения на Reddit и извлеките инсайты. Отвечайте на русском языке."""
+Дайте экспертный ответ, актуальный на {current_date_str}."""
         else:
-            system_prompt = """You are a Community Analyst specializing in extracting actionable insights from Reddit discussions.
+            system_prompt = f"""You are a Staff Engineer analyzing the Reddit knowledge base for a colleague.
+TODAY IS: {current_date_str}. Keep in mind we are in 2026.
 
-Your task is to analyze Reddit posts related to the user's query and provide a structured analysis focusing on:
+Your task is to synthesize a comprehensive technical answer based on the provided threads (post + comment trees).
 
-1. **Reality Check**: Bugs, edge cases, hardware issues, or problems mentioned by users
-2. **Hacks & Workarounds**: Unofficial solutions, creative fixes, or community-discovered tips
-3. **Vibe Check**: Overall sentiment, common frustrations, and community consensus
+INPUT:
+- User Query.
+- Structured Reddit threads (including nested comments).
 
-Guidelines:
-- Be concise but specific - cite specific posts when making claims
-- Use bullet points for readability
-- If no relevant insights found in a category, say "Nothing specific mentioned"
-- Keep tone informative and neutral
-- Focus on practical, actionable information
-- Mention specific subreddits when relevant
-- PAY ATTENTION TO COMMENTS: Often the real solution is in the "TOP COMMENTS" section
+CRITICAL ANALYSIS (IMPORTANT):
+- FRESHNESS IS KING: Info from 2026 overrides 2025/24. If a post is old, explicitly warn about staleness.
+- Filter out jokes/rumors.
+- Trust technical details (code, configs) but verify loud announcements.
 
-Format your response as markdown with these sections:
+RESPONSE STRUCTURE (Inverted Pyramid):
+1. **Direct Answer / Solution:** Start immediately with the working solution, community consensus, or "best practice" for 2026.
+2. **Technical Details:** Configs, flags, code snippets, library names. If comments offer better code than the OP, use it.
+3. **Nuance & Debate:** If there is disagreement (e.g., "Method A is deprecated, use B"), state it clearly. Use the comment tree structure to analyze debates.
+4. **Edge Cases:** Warnings from users (bugs, limitations, quotas).
 
-### Reality Check
-- Any bugs or issues mentioned
-- Edge cases reported by users
-- Hardware/software compatibility problems
+STYLE:
+- Professional, dense, no fluff.
+- Use Markdown for code and lists.
+- If a top comment refutes the post, treat the comment as TRUTH.
+- Cite sources as [Post Title].
 
-### Hacks & Workarounds  
-- Unofficial solutions
-- Community tips and tricks
-- Creative workarounds
+Answer in English."""
 
-### Vibe Check
-- Overall community sentiment
-- Common frustrations or praise
-- Consensus opinion if any
+            user_prompt = f"""**Query:** {query}
 
-### Summary
-- Brief 2-3 sentence summary of key takeaways"""
-
-            user_prompt = f"""**User Query:** {query}
-
-**Reddit Posts Found:**
+**Reddit Knowledge Base:**
 
 {context}
 
-Please analyze these Reddit discussions and extract insights."""
+Provide an expert technical synthesis relevant for {current_date_str}."""
 
         return [
             {"role": "system", "content": system_prompt},
@@ -248,7 +307,7 @@ Please analyze these Reddit discussions and extract insights."""
     
     def _create_fallback_response(
         self, 
-        reddit_result: RedditSearchResult,
+        reddit_result: Any,
         query_language: str = "English"
     ) -> str:
         """Create fallback response when synthesis fails.
@@ -262,29 +321,43 @@ Please analyze these Reddit discussions and extract insights."""
         """
         is_russian = query_language == "Russian"
         
-        if not reddit_result.sources:
+        # Unified access
+        if hasattr(reddit_result, 'posts'):
+            sources = reddit_result.posts
+            count = reddit_result.total_found
+        else:
+            sources = reddit_result.sources
+            count = reddit_result.found_count
+            
+        if not sources:
             if is_russian:
                 return "Обсуждения в сообществе не найдены для этого запроса."
             return "No community discussions found for this query."
         
         if is_russian:
             lines = ["### Обсуждения в сообществе", ""]
-            lines.append(f"Найдено {reddit_result.found_count} релевантных постов на Reddit:")
+            lines.append(f"Найдено {count} релевантных постов на Reddit:")
         else:
             lines = ["### Community Discussions", ""]
-            lines.append(f"Found {reddit_result.found_count} relevant posts on Reddit:")
+            lines.append(f"Found {count} relevant posts on Reddit:")
         
         lines.append("")
         
-        for src in reddit_result.sources[:5]:
+        for src in sources[:5]:
             # FIX: Escape markdown special characters to prevent injection/broken formatting
             escaped_title = src.title.replace("[", "\\[").replace("]", "\\]")
             escaped_url = src.url.replace(")", "%29")  # URL-encode closing parenthesis
-            lines.append(f"- **[{escaped_title}]({escaped_url})** (r/{src.subreddit})")
+            
+            # Use getattr for unified access
+            subreddit = getattr(src, 'subreddit', 'unknown')
+            score = getattr(src, 'score', 0)
+            comments = getattr(src, 'num_comments', getattr(src, 'comments_count', 0))
+            
+            lines.append(f"- **[{escaped_title}]({escaped_url})** (r/{subreddit})")
             if is_russian:
-                lines.append(f"  Рейтинг: {src.score} | Комментариев: {src.comments_count}")
+                lines.append(f"  Рейтинг: {score} | Комментариев: {comments}")
             else:
-                lines.append(f"  Score: {src.score} | Comments: {src.comments_count}")
+                lines.append(f"  Score: {score} | Comments: {comments}")
             lines.append("")
         
         return "\n".join(lines)
@@ -292,7 +365,7 @@ Please analyze these Reddit discussions and extract insights."""
     async def quick_synthesize(
         self,
         query: str,
-        reddit_result: RedditSearchResult
+        reddit_result: Any
     ) -> Dict[str, Any]:
         """Quick synthesis returning structured data.
         
@@ -305,10 +378,18 @@ Please analyze these Reddit discussions and extract insights."""
         """
         synthesis_text = await self.synthesize(query, reddit_result)
         
+        # Unified access for stats
+        if hasattr(reddit_result, 'posts'):
+            count = len(reddit_result.posts)
+            total = reddit_result.total_found
+        else:
+            count = len(reddit_result.sources)
+            total = reddit_result.found_count
+        
         return {
             "synthesis": synthesis_text,
-            "sources_count": len(reddit_result.sources),
-            "total_found": reddit_result.found_count,
+            "sources_count": count,
+            "total_found": total,
             "processing_time_ms": reddit_result.processing_time_ms,
             "model_used": self.model
         }
