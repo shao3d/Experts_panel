@@ -155,6 +155,12 @@ class RedditEnhancedService:
         strategies_used = []
         all_posts: Dict[str, RedditPost] = {}  # id -> post for deduplication
         
+        # Auto-detect subreddits if not provided (Critical for endpoints that don't do it)
+        if subreddits is None:
+            subreddits = get_recommended_subreddits(query)
+            if subreddits:
+                logger.info(f"Auto-detected subreddits for query '{query[:30]}...': {subreddits}")
+        
         # Strategy 1: General search with different sort parameters
         sort_tasks = []
         
