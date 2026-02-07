@@ -167,9 +167,11 @@ class RedditEnhancedService:
                 task = self._search_subreddit(query, subreddit, limit=25)
                 sort_tasks.append((f"subreddit_{subreddit}", task))
         
-        # Strategy 3: Fallback general search without subreddit restriction (broader results)
-        task = self._search_with_sort(query, sort="hot", limit=25, time="year")
-        sort_tasks.append(("search_hot_year", task))
+        # Strategy 3: Fallback general search (DISABLED for AI queries to prevent noise)
+        # Only use this if NO specific strategies were used (i.e., no topic detected)
+        if not strategies_used:
+             task = self._search_with_sort(query, sort="hot", limit=25, time="year")
+             sort_tasks.append(("search_hot_year", task))
         
         # Execute all searches in parallel with error isolation
         results = await asyncio.gather(
@@ -441,7 +443,7 @@ def get_recommended_subreddits(query: str) -> List[str]:
     topic_keywords = {
         "ai": [
             # English
-            "ai", "artificial intelligence", "machine learning", "ml", "model", "gpt", "claude", "llm", "neural", "architecture", "learn", "understand", "system",
+            "ai", "artificial intelligence", "machine learning", "ml", "model", "gpt", "claude", "llm", "neural", "architecture", "architect", "engineer", "learn", "understand", "system",
             "hallucination", "rag", "retrieval", "embedding", "vector", "context", "token", "fine-tuning", "training", "inference",
             # Russian
             "ии", "искусственный интеллект", "машинное обучение", "модель", "агент", "нейросеть", "чатбот",
@@ -457,10 +459,10 @@ def get_recommended_subreddits(query: str) -> List[str]:
         ],
         "programming": [
             # English
-            "code", "programming", "developer", "software", "app", "web", "python", "javascript", "rust",
+            "code", "programming", "developer", "software", "app", "web", "python", "javascript", "rust", "engineer", "build", "design", "tech",
             # Russian
             "код", "программирование", "разработчик", "софт", "приложение", "веб", "пайтон", "жаваскрипт",
-            "rust", "rustlang", "golang", "typescript", "разрабатывать", "разработка"
+            "rust", "rustlang", "golang", "typescript", "разрабатывать", "разработка", "инженер", "строить", "дизайн"
         ],
         "product_management": [
             # English
