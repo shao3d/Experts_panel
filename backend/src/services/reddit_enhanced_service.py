@@ -333,7 +333,8 @@ class RedditEnhancedService:
                 subreddit=src.get("subreddit") or "unknown",
                 author="unknown",
                 created_utc=0,
-                selftext=src.get("selftext") or ""  # CRITICAL: Get content from proxy
+                selftext=src.get("selftext") or "",  # CRITICAL: Get content from proxy
+                top_comments=src.get("top_comments") or [] # NEW: Get comments from proxy
             )
             posts.append(post)
         

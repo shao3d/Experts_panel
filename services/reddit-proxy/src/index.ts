@@ -47,6 +47,7 @@ interface RedditSearchResult {
   selftext?: string;
   body?: string;
   permalink: string;
+  top_comments?: any[];
 }
 
 interface SearchResponse {
@@ -408,6 +409,8 @@ class RedditAggregator {
           score: r.score,
           commentsCount: r.numComments,
           subreddit: r.subreddit,
+          selftext: r.selftext,
+          top_comments: r.top_comments
         })),
         query,
         processingTimeMs,
@@ -572,11 +575,76 @@ class RedditAggregator {
   }
 
   /**
-   * Enrich results with full content
+   * Enrich results with full content using get_post_details
    */
   private async enrichResults(results: RedditSearchResult[]): Promise<RedditSearchResult[]> {
-    // For now, use the data we have. In future, could fetch full post content via MCP
-    return results;
+    const enriched: RedditSearchResult[] = [];
+    // Limit to top 5 to keep latency reasonable
+    const topResults = results.slice(0, 5);
+    const others = results.slice(5);
+
+    logger.info(`Enriching top ${topResults.length} posts with details...`);
+
+    // Process in parallel with concurrency limit
+    const promises = topResults.map(async (post) => {
+      try {
+        // Call get_post_details tool
+        // Note: reddit-mcp-buddy uses 'url' or 'post_id' + 'subreddit'
+        const details = await this.mcp.executeTool<any>('get_post_details', {
+          post_id: post.id,
+          subreddit: post.subreddit,
+          comment_limit: 5 // Get top 5 comments
+        });
+
+        // DEBUG LOGGING
+        logger.info(`[DEBUG] get_post_details for ${post.id} returned keys:`, details ? Object.keys(details) : 'null');
+        if (details && typeof details === 'object') {
+            logger.debug(`[DEBUG] details sample:`, JSON.stringify(details).substring(0, 200));
+        }
+
+        if (details) {
+            // Extract content and comments from tool output
+            // The structure depends on reddit-mcp-buddy implementation
+            // Usually returns { selftext: "...", comments: [...] } or string content
+            
+            let fullContent = post.selftext || "";
+            let comments: any[] = [];
+
+            // Helper to extract text from generic tool result
+            if (typeof details === 'string') {
+                fullContent = details;
+            } else if (typeof details === 'object') {
+                // Handle nested 'post' object (reddit-mcp-buddy structure)
+                if (details.post) {
+                    fullContent = details.post.selftext || details.post.content || fullContent;
+                } else {
+                    // Fallback for flat structure
+                    if (details.selftext) fullContent = details.selftext;
+                    if (details.content) fullContent = details.content;
+                }
+
+                // Handle comments - prioritize top_comments from result
+                if (Array.isArray(details.top_comments)) {
+                    comments = details.top_comments;
+                } else if (Array.isArray(details.comments)) {
+                    comments = details.comments;
+                }
+            }
+
+            return {
+                ...post,
+                selftext: fullContent || post.selftext, // Update if we got better content
+                top_comments: comments // Add comments
+            };
+        }
+      } catch (e) {
+        logger.warn(`Failed to enrich post ${post.id}:`, e);
+      }
+      return post; // Return original if failed
+    });
+
+    const enrichedTop = await Promise.all(promises);
+    return [...enrichedTop, ...others];
   }
 
   /**

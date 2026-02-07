@@ -50,7 +50,7 @@ from ..services.comment_synthesis_service import CommentSynthesisService
 from ..services.medium_scoring_service import MediumScoringService
 from ..services.translation_service import TranslationService
 from ..services.language_validation_service import LanguageValidationService
-from ..services.reddit_client import search_reddit
+from ..services.reddit_enhanced_service import search_reddit_enhanced
 from ..services.reddit_synthesis_service import RedditSynthesisService
 from ..services.reddit_service import RedditSearchResult, RedditSource as RS
 from ..utils.error_handler import error_handler
@@ -509,7 +509,7 @@ Search query:"""
                 "source": "reddit"
             })
         
-        # Search Reddit using asyncpraw
+        # Search Reddit using enhanced proxy service
         if progress_callback:
             await progress_callback({
                 "phase": "reddit_search",
@@ -518,11 +518,12 @@ Search query:"""
                 "source": "reddit"
             })
         
-        reddit_result = await search_reddit(
+        # Use enhanced service (via Proxy) instead of direct client
+        # This fixes 429/Block issues by routing through a separate IP/service
+        reddit_result = await search_reddit_enhanced(
             query=search_query,
-            limit=25,
-            time_filter="all",
-            sort="relevance"
+            target_posts=25,
+            include_comments=True # Will be populated when proxy supports it
         )
         
         # Check if we found anything relevant
@@ -538,7 +539,10 @@ Search query:"""
                 })
             return None
         
-        logger.info(f"Found {len(reddit_result.posts)} Reddit posts via asyncpraw")
+        # Map total_found to found_count for compatibility
+        found_count = getattr(reddit_result, 'total_found', len(reddit_result.posts))
+        
+        logger.info(f"Found {len(reddit_result.posts)} Reddit posts via Proxy")
         
         if progress_callback:
             await progress_callback({
@@ -554,9 +558,23 @@ Search query:"""
         for post in reddit_result.posts:
             # Safely build comments section
             comments_section = ""
+            
+            # Handle old format (direct client)
             if hasattr(post, 'comments') and post.comments:
-                # Filter out None/non-string values and join safely
                 valid_comments = [c for c in post.comments if isinstance(c, str) and c.strip()]
+                if valid_comments:
+                    comments_section = "\n\n--- TOP COMMENTS ---\n" + "\n\n".join(valid_comments)
+            
+            # Handle new format (enhanced proxy service)
+            elif hasattr(post, 'top_comments') and post.top_comments:
+                valid_comments = []
+                for c in post.top_comments:
+                    if isinstance(c, dict) and c.get('body'):
+                        author = c.get('author', 'unknown')
+                        body = c.get('body', '').strip()
+                        if body:
+                            valid_comments.append(f"{author}: {body}")
+                
                 if valid_comments:
                     comments_section = "\n\n--- TOP COMMENTS ---\n" + "\n\n".join(valid_comments)
 
@@ -585,7 +603,7 @@ Search query:"""
         
         search_result = RedditSearchResult(
             markdown=markdown,
-            found_count=len(reddit_result.posts),
+            found_count=found_count,
             sources=sources,
             query=search_query,
             processing_time_ms=reddit_result.processing_time_ms
@@ -605,7 +623,7 @@ Search query:"""
         reddit_response = RedditResponse(
             markdown=markdown,
             synthesis=synthesis,
-            found_count=len(reddit_result.posts),
+            found_count=found_count,
             sources=[
                 RedditSource(
                     title=src.title,
