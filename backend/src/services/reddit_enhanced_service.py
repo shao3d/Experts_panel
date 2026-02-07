@@ -442,16 +442,18 @@ def get_recommended_subreddits(query: str) -> List[str]:
         "ai": [
             # English
             "ai", "artificial intelligence", "machine learning", "ml", "model", "gpt", "claude", "llm", "neural", "architecture", "learn", "understand", "system",
+            "hallucination", "rag", "retrieval", "embedding", "vector", "context", "token", "fine-tuning", "training", "inference",
             # Russian
             "ии", "искусственный интеллект", "машинное обучение", "модель", "агент", "нейросеть", "чатбот",
-            "нейронная сеть", "языковая модель", "большая модель", "искусственный", "интеллект", "архитектура", "разбираться", "понимать", "учиться", "система"
+            "нейронная сеть", "языковая модель", "большая модель", "искусственный", "интеллект", "архитектура", "разбираться", "понимать", "учиться", "система",
+            "галлюцинаци", "rag", "рэг", "эмбеддинг", "вектор", "контекст", "токен", "файн-тюнинг", "обучение", "инференс"
         ],
         "llm": [
             # English
-            "llm", "large language model", "gpt", "claude", "openai", "anthropic", "mistral", "llama",
+            "llm", "large language model", "gpt", "claude", "openai", "anthropic", "mistral", "llama", "prompt", "prompting", "jailbreak",
             # Russian
             "большая языковая модель", "гпт", "клод", "опенаи", "anthropic", "mistral", "llama",
-            "llm", "языковая модель", "трансформер"
+            "llm", "языковая модель", "трансформер", "промпт", "промт", "джейлбрейк"
         ],
         "programming": [
             # English
