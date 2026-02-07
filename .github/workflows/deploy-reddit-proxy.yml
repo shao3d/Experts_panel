@@ -1,0 +1,44 @@
+name: Deploy Reddit Proxy
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'services/reddit-proxy/**'
+      - '.github/workflows/deploy-reddit-proxy.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy-proxy:
+    name: Deploy Reddit Proxy
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Fly.io CLI
+      uses: superfly/flyctl-actions/setup-flyctl@master
+
+    - name: Deploy Proxy to Fly.io
+      run: |
+        cd services/reddit-proxy
+        flyctl deploy --remote-only
+      env:
+        FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+    - name: Deployment Summary
+      if: always()
+      run: |
+        echo "## 🤖 Reddit Proxy Deployment Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        if [ "${{ job.status }}" == "success" ]; then
+          echo "✅ **Status**: DEPLOYED SUCCESSFULLY" >> $GITHUB_STEP_SUMMARY
+          echo "🌐 **Service**: experts-reddit-proxy" >> $GITHUB_STEP_SUMMARY
+          echo "⏱️ **Time**: $(date -u)" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **Status**: FAILED" >> $GITHUB_STEP_SUMMARY
+          echo "🔧 **Check logs for details**" >> $GITHUB_STEP_SUMMARY
+        fi
