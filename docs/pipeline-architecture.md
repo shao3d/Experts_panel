@@ -102,6 +102,12 @@ The system processes user queries through an **eight-phase pipeline** using a **
     - **Comment Trees**: Fetches nested discussions (Depth 3) to capture debates (Argument -> Counter-argument).
     - **Volume**: Analyzes top 50 comments per post (vs 25 flat previously).
     - **Context Window**: Synthesis limit increased to **15,000 chars** per post.
+- **Advanced Ranking & Verification (New in Round 4)**:
+    - **Time Decay Sorting**: Implements logarithmic age decay (Hacker News style). Fresh content (2026) is prioritized over ancient high-score posts.
+        - Formula: `Score = (Votes + Comments*2) / (Age_Hours + 2)^1.5`
+    - **OP Verification**: Automatically detects "Golden Answers" where the post author (OP) confirms a solution.
+        - Logic: Scans comment trees for OP replies with keywords (`worked`, `fixed`, `solved`).
+        - Effect: Tags valid solutions with `[✅ OP VERIFIED SOLUTION]` for the LLM to prioritize.
 - **Synthesis Strategy ("Inverted Pyramid")**:
     - **Format**: Starts with Direct Solution -> Technical Details -> Nuance & Debate -> Edge Cases.
     - **Freshness**: Injects `Current Date` into prompt to penalize outdated info (e.g., distinguishing 2024 vs 2026 advice).

@@ -75,6 +75,20 @@ _EXPANSION_PATTERN = re.compile(
 # Constants
 MAX_TARGET_SUBREDDITS = 7
 
+# High-Signal Markers for "Title-Only" Strategy
+# Used to find structured guides, tutorials, and deep dives
+HIGH_SIGNAL_MARKERS = [
+    '"Guide"', '"Tutorial"', '"Deep Dive"', '"Analysis"', 
+    '"Benchmark"', '"Cheat Sheet"', '"Roadmap"', '"How to"'
+]
+
+# Conflict/Solution Markers for "Discussion" Strategy
+# Used to find comparisons and solved problems
+COMPARISON_MARKERS = [
+    "vs", "versus", "comparison", "alternative", 
+    "solved", "solution", "fixed", "workaround"
+]
+
 # General popular subreddits
 POPULAR_SUBREDDITS = [
     "AskReddit",
@@ -258,6 +272,38 @@ class RedditEnhancedService:
                     "combined_new_month", 
                     self._search_with_sort(final_query, sort="new", limit=25, time="month")
                 ))
+                
+                # OPTION C: High-Signal Strategies (Additive Improvements)
+                # These run in PARALLEL with the above to catch specific high-value post types
+                
+                # Task 4: "Sniper" Strategy - High Signal Guides (Title Only)
+                # Finds: "Ultimate Guide to LLMs", "RAG Deep Dive"
+                high_signal_or = " OR ".join(HIGH_SIGNAL_MARKERS)
+                # Note: We use expanded_query to catch specific tool names in titles (e.g. "Llama 3 Guide" for "LLM")
+                # Logic: title:(expanded_query) AND title:(Guide OR Tutorial...)
+                title_query = f"title:({expanded_query}) AND title:({high_signal_or})"
+                if subreddits:
+                     # Add subreddit filter if we have targets
+                    title_query = f"({title_query}) AND ({subreddit_filter})"
+                
+                sort_tasks.append((
+                    "high_signal_title",
+                    self._search_with_sort(title_query, sort="relevance", limit=15, time="all")
+                ))
+
+                # Task 5: "Conflict & Solution" Strategy
+                # Finds: "Claude vs GPT", "Solved: Docker error", "Alternative to X"
+                comparison_or = " OR ".join(COMPARISON_MARKERS)
+                # Logic: (expanded_query) AND (vs OR comparison OR solved...)
+                comparison_query = f"({expanded_query}) AND ({comparison_or})"
+                if subreddits:
+                    comparison_query = f"({comparison_query}) AND ({subreddit_filter})"
+
+                sort_tasks.append((
+                    "comparison_heavy",
+                    self._search_with_sort(comparison_query, sort="relevance", limit=15, time="all")
+                ))
+
             else:
                 # Fallback if sanitization removed all subs (unlikely)
                 logger.warning("All subreddits filtered out, falling back to global")
@@ -280,6 +326,24 @@ class RedditEnhancedService:
             sort_tasks.append((
                 "global_hot", 
                 self._search_with_sort(expanded_query, sort="hot", limit=25, time="month")
+            ))
+            
+            # Task 3: Global High Signal (Additive)
+            # Try to find guides even in global search
+            high_signal_or = " OR ".join(HIGH_SIGNAL_MARKERS)
+            title_query = f"title:({expanded_query}) AND title:({high_signal_or})"
+            sort_tasks.append((
+                "global_high_signal",
+                self._search_with_sort(title_query, sort="relevance", limit=15, time="all")
+            ))
+
+            # Task 4: Global Conflict & Solution (Additive)
+            # Try to find comparisons/solutions even in global search
+            comparison_or = " OR ".join(COMPARISON_MARKERS)
+            comparison_query = f"({expanded_query}) AND ({comparison_or})"
+            sort_tasks.append((
+                "global_comparison_heavy",
+                self._search_with_sort(comparison_query, sort="relevance", limit=15, time="all")
             ))
         results = await asyncio.gather(
             *[task for _, task in sort_tasks],
@@ -318,10 +382,32 @@ class RedditEnhancedService:
             except Exception as e:
                 logger.error(f"Fallback search also failed: {e}")
         
-        # Sort by combined engagement score (upvotes + comments*2)
+        # Sort by combined engagement score with Time Decay
+        # Algorithm: (Score) / (Time + 2)^1.5
+        # This boosts fresh content (2025/2026) over ancient high-score posts
+        current_time = datetime.utcnow().timestamp()
+        
+        def calculate_freshness_score(p: RedditPost) -> float:
+            # Base engagement
+            base_score = p.score + (p.num_comments * 2)
+            
+            # If no date, treat as moderately old (neutral decay) to be safe
+            if not p.created_utc:
+                return base_score
+                
+            # Calculate age in hours
+            age_seconds = max(0, current_time - p.created_utc)
+            age_hours = age_seconds / 3600
+            
+            # Gravity decay (Hacker News style)
+            # Fresh posts (0-24h) get almost full score. 
+            # 1 year old posts get heavy penalty.
+            gravity = 1.5
+            return base_score / pow((age_hours + 2), gravity)
+
         sorted_posts = sorted(
             all_posts.values(),
-            key=lambda p: p.score + p.num_comments * 2,
+            key=calculate_freshness_score,
             reverse=True
         )
         
@@ -430,6 +516,9 @@ class RedditEnhancedService:
                 elif len(parts) >= 1:
                     post_id = parts[-1]
             
+            # Try to parse creation date
+            created_utc = src.get("created_utc") or src.get("created") or 0
+            
             post = RedditPost(
                 id=post_id or "unknown",
                 title=src.get("title") or "Untitled",
@@ -438,8 +527,8 @@ class RedditEnhancedService:
                 score=src.get("score") or 0,
                 num_comments=src.get("commentsCount") or 0,
                 subreddit=src.get("subreddit") or "unknown",
-                author="unknown",
-                created_utc=0,
+                author=src.get("author") or "unknown",
+                created_utc=created_utc,
                 selftext=src.get("selftext") or "",  # CRITICAL: Get content from proxy
                 top_comments=src.get("top_comments") or [] # NEW: Get comments from proxy
             )

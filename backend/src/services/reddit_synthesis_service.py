@@ -105,8 +105,21 @@ class RedditSynthesisService:
             logger.error(f"Unexpected error in synthesis: {e}")
             return self._create_fallback_response(reddit_result, query_language)
     
-    def _format_comments_recursive(self, comments: List[Dict[str, Any]], depth: int = 0, max_depth: int = 3) -> str:
-        """Recursively format comments tree."""
+    # High-signal keywords indicating the OP found the solution helpful
+    VERIFICATION_KEYWORDS = {
+        "worked", "thanks", "thank you", "solved", "fixed", 
+        "сработало", "спасибо", "решил"
+    }
+
+    def _format_comments_recursive(self, comments: List[Dict[str, Any]], depth: int = 0, max_depth: int = 3, post_author: str = None) -> str:
+        """Recursively format comments tree.
+        
+        Args:
+            comments: List of comment dictionaries
+            depth: Current nesting depth
+            max_depth: Maximum recursion depth
+            post_author: Username of the post author (OP) to detect verified solutions
+        """
         if depth > max_depth or not comments:
             return ""
         
@@ -128,12 +141,28 @@ class RedditSynthesisService:
                 replies = getattr(comment, 'replies', [])
 
             if body:
+                # Detect OP Verification (Golden Answer)
+                # If the OP replied to this comment saying "thanks", "solved", "worked", etc.
+                is_verified = False
+                if post_author and post_author != "unknown" and replies:
+                    for reply in replies:
+                        # Check reply author safely
+                        r_author = reply.get('author') if isinstance(reply, dict) else getattr(reply, 'author', '')
+                        r_body = (reply.get('body') if isinstance(reply, dict) else getattr(reply, 'body', '')) or ""
+                        
+                        if r_author == post_author and any(kw in r_body.lower() for kw in self.VERIFICATION_KEYWORDS):
+                            is_verified = True
+                            break
+
                 # Truncate extremely long comments but keep enough for context (2000 chars)
                 if len(body) > 2000:
                     body = body[:2000] + "... (truncated)"
                 
+                # Add visual marker for LLM
+                verified_tag = "[✅ OP VERIFIED SOLUTION] " if is_verified else ""
+                
                 prefix = "└─ " if depth > 0 else f"{i}. "
-                header = f"{indent}{prefix}[{author} | {score}]: "
+                header = f"{indent}{prefix}{verified_tag}[{author} | {score}]: "
                 
                 # Handle multi-line content (code blocks, paragraphs) by indenting subsequent lines
                 # This preserves structure for the LLM
@@ -144,7 +173,7 @@ class RedditSynthesisService:
                 
                 # Process replies if they exist and we haven't hit max depth
                 if replies:
-                    replies_text = self._format_comments_recursive(replies, depth + 1, max_depth)
+                    replies_text = self._format_comments_recursive(replies, depth + 1, max_depth, post_author=post_author)
                     if replies_text:
                         output.append(replies_text)
         
@@ -189,7 +218,9 @@ class RedditSynthesisService:
             comments_data = getattr(src, 'top_comments', []) or getattr(src, 'comments', [])
             
             if comments_data:
-                comments_text = self._format_comments_recursive(comments_data)
+                # Pass post author to recursive formatter for OP verification detection
+                post_author = getattr(src, 'author', 'unknown')
+                comments_text = self._format_comments_recursive(comments_data, post_author=post_author)
                 if comments_text:
                     comments_section = f"\n   - **Discussion Tree:**\n{comments_text}"
             
