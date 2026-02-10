@@ -98,22 +98,25 @@ The system processes user queries through an **eight-phase pipeline** using a **
 - **Architecture**: Sidecar Pattern.
     - **Backend**: Calls `experts-reddit-proxy` microservice (HTTP).
     - **Proxy**: Uses MCP (`reddit-mcp-buddy`) to safely scrape Reddit.
-- **Deep Analysis Capabilities (New in Round 3)**:
-    - **Comment Trees**: Fetches nested discussions (Depth 3) to capture debates (Argument -> Counter-argument).
-    - **Volume**: Analyzes top 50 comments per post (vs 25 flat previously).
-    - **Context Window**: Synthesis limit increased to **15,000 chars** per post.
-- **Advanced Ranking & Verification (New in Round 4)**:
-    - **Time Decay Sorting**: Implements logarithmic age decay (Hacker News style). Fresh content (2026) is prioritized over ancient high-score posts.
-        - Formula: `Score = (Votes + Comments*2) / (Age_Hours + 2)^1.5`
-    - **OP Verification**: Automatically detects "Golden Answers" where the post author (OP) confirms a solution.
-        - Logic: Scans comment trees for OP replies with keywords (`worked`, `fixed`, `solved`).
-        - Effect: Tags valid solutions with `[✅ OP VERIFIED SOLUTION]` for the LLM to prioritize.
+- **AI Scout v2 (New in Round 5)**:
+    - **Intent-Based Planning**: Uses `Gemini 3 Flash` to generate a search plan instead of simple keyword matching.
+    - **Plan Components**:
+        1.  `Subreddits`: Target communities (e.g., `LocalLLaMA`, `Marketing`).
+        2.  `Intent Queries`: 3-5 specific natural language queries (e.g., `"Claude Code" setup guide`).
+        3.  `Keywords`: Critical terms for semantic ranking (e.g., `["Skills", "Config"]`).
+- **Context-Aware Ranking Strategy**:
+    - **Technical Guide Protection**: Posts identified as guides (via AI intent or title markers) are **exempt from Time Decay**. Evergreen content > Fresh news.
+    - **Semantic Keyword Boost**: Posts containing Scout-extracted keywords in the title receive a score multiplier (up to **x3.0**). This allows relevant niche answers to compete with viral posts.
+    - **Hacker News Gravity**: For non-guide content (News, Discussions), standard time decay applies to prioritize freshness.
+- **Deep Analysis Capabilities**:
+    - **Expanded Scope**: Deep fetches top **15** posts (increased from 10) to capture long-tail technical solutions.
+    - **Comment Trees**: Fetches nested discussions (Depth 3) to capture debates.
+    - **Code Preservation**: Proxy sanitization logic preserves code blocks (` ``` `) in Python/JSON configs.
 - **Synthesis Strategy ("Inverted Pyramid")**:
     - **Format**: Starts with Direct Solution -> Technical Details -> Nuance & Debate -> Edge Cases.
-    - **Freshness**: Injects `Current Date` into prompt to penalize outdated info (e.g., distinguishing 2024 vs 2026 advice).
-    - **Critical Filter**: Explicitly instructed to filter sarcasm ("Llama 5 released") and unverified rumors.
+    - **Freshness**: Injects `Current Date` into prompt to penalize outdated info.
 - **Execution**: Runs in parallel with Expert Pipeline.
-    - **Timeout**: **120 seconds**. If Reddit analysis takes longer (e.g., complex queries or cold start), the system waits up to 2 minutes after experts finish before returning results. This ensures deep analysis even in "Reddit-Only" mode.
+    - **Timeout**: **120 seconds**. If Reddit analysis takes longer, the system waits up to 2 minutes.
 
 ---
 
