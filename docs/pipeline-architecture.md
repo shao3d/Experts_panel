@@ -112,7 +112,9 @@ The system processes user queries through an **eight-phase pipeline** using a **
     - **Expanded Scope**: Deep fetches top **15** posts (increased from 10) to capture long-tail technical solutions.
     - **Comment Trees**: Fetches nested discussions (Depth 3) to capture debates.
     - **Code Preservation**: Proxy sanitization logic preserves code blocks (` ``` `) in Python/JSON configs.
-- **Synthesis Strategy ("Inverted Pyramid")**:
+- **Synthesis Strategy ("Inverted Pyramid" + "Smart Structure")**:
+    - **Smart Comparison Tables**: Automatically generates Markdown tables for "vs" queries (e.g., "LangGraph vs CrewAI"), comparing tools by criteria like Production Readiness, Control Flow, and Learning Curve based on community consensus.
+    - **Pivot Alert**: Detects "Consensus Shift" (e.g., "Don't use CRA in 2026"). If found, prepends a high-visibility `🚨 COMMUNITY PIVOT` alert explaining why the user's premise is outdated and what the new standard is.
     - **Format**: Starts with Direct Solution -> Technical Details -> Nuance & Debate -> Edge Cases.
     - **Freshness**: Injects `Current Date` into prompt to penalize outdated info.
 - **Execution**: Runs in parallel with Expert Pipeline.

@@ -269,13 +269,14 @@ class RedditSynthesisService:
 - Структурированные треды с Reddit (включая вложенные комментарии).
 
 КРИТИЧЕСКИЙ АНАЛИЗ (ВАЖНО):
-- FACT-MAXING: Игнорируйте эмоциональный шум ("Amazing!", "Game changer"). Ищите цифры, бенчмарки, версии библиотек, логи ошибок.
-- LINK PRIORITY: Если пост содержит ссылку на GitHub или HuggingFace, выделите её в начале как **[PRIMARY SOURCE]**, так как там лежит код/веса.
-- CODE VERIFICATION: Если в комментариях предложили исправление кода или конфига — используйте ИСПРАВЛЕННУЮ версию, а не оригинальную из поста.
-- Приоритет СВЕЖЕСТИ: Информация за 2026 год важнее, чем за 2025/24.
+- FACT-MAXING: Игнорируйте эмоциональный шум. Ищите цифры, бенчмарки, версии библиотек, логи.
+- LINK PRIORITY: Если пост содержит ссылку на GitHub/HuggingFace, выделите её как **[PRIMARY SOURCE]**.
+- CODE VERIFICATION: Если в комментариях предложили исправление кода — используйте ИСПРАВЛЕННУЮ версию.
+- PIVOT ALERT: Если сообщество РЕЗКО не рекомендует решение из запроса и советует альтернативу — начните ответ с блока `🚨 **СМЕНА ТРЕНДА (COMMUNITY PIVOT)**` и объясните почему.
+- COMPARISON TABLES: Если сравниваются несколько инструментов — ВЫ ОБЯЗАНЫ сделать Markdown-таблицу (Критерии vs Инструменты) с вердиктом сообщества.
 
 СТРУКТУРА ОТВЕТА (Перевернутая пирамида):
-1. **Прямой ответ / Решение:** Сразу дайте работающее решение, консенсус сообщества или "лучшую практику" на 2026 год.
+1. **Прямой ответ / Решение:** Сразу дайте работающее решение или консенсус на 2026 год.
 2. **Технические детали:** Конфиги, флаги, примеры кода. 
 3. **Нюансы и Споры:** Если есть разногласия, четко укажите это.
 4. **Edge Cases:** О чем предупреждают пользователи (баги, лимиты).
@@ -283,10 +284,7 @@ class RedditSynthesisService:
 СТИЛЬ:
 - Профессиональный, плотный, "без воды".
 - Используйте Markdown для кода и списков.
-- Если топ-комментарий опровергает пост — это ИСТИНА.
-- Ссылайтесь на источники как [Название поста].
-
-Отвечайте ТОЛЬКО на русском языке."""
+- Отвечайте ТОЛЬКО на русском языке."""
 
             user_prompt = f"""**Вопрос:** {query}
 
@@ -306,13 +304,14 @@ INPUT:
 - Structured Reddit threads (including nested comments).
 
 CRITICAL ANALYSIS (IMPORTANT):
-- FACT-MAXING: Ignore emotional noise ("This is huge!", "Hype"). Focus on numbers, benchmarks, library versions, error logs.
-- LINK PRIORITY: If a post contains a link to GitHub or HuggingFace, highlight it at the start as **[PRIMARY SOURCE]**, as it contains the code/weights.
-- CODE VERIFICATION: If comments offer a code fix or config correction, use the CORRECTED version, not the original from the post.
-- FRESHNESS IS KING: Info from 2026 overrides 2025/24.
+- FACT-MAXING: Ignore emotional noise. Focus on numbers, benchmarks, library versions, logs.
+- LINK PRIORITY: If a post contains a link to GitHub/HF, highlight it as **[PRIMARY SOURCE]**.
+- CODE VERIFICATION: If comments offer a code fix, use the CORRECTED version.
+- PIVOT ALERT: If the community STRONGLY advises against the user's premise/tool and suggests an alternative, start with a `🚨 **COMMUNITY PIVOT**` block explaining why.
+- COMPARISON TABLES: If multiple tools/approaches are compared, YOU MUST output a Markdown table summarizing the consensus (Criteria vs Tools).
 
 RESPONSE STRUCTURE (Inverted Pyramid):
-1. **Direct Answer / Solution:** Start immediately with the working solution, community consensus, or "best practice" for 2026.
+1. **Direct Answer / Solution:** Start immediately with the working solution or "best practice" for 2026.
 2. **Technical Details:** Configs, flags, code snippets.
 3. **Nuance & Debate:** If there is disagreement, state it clearly.
 4. **Edge Cases:** Warnings from users (bugs, limitations).
@@ -320,10 +319,7 @@ RESPONSE STRUCTURE (Inverted Pyramid):
 STYLE:
 - Professional, dense, no fluff.
 - Use Markdown for code and lists.
-- If a top comment refutes the post, treat the comment as TRUTH.
-- Cite sources as [Post Title].
-
-Answer in English."""
+- Answer in English."""
 
             user_prompt = f"""**Query:** {query}
 
