@@ -1007,9 +1007,9 @@ async def event_generator_parallel(
                 yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
 
         # Wait for Reddit pipeline to complete (with timeout)
-        # Reddit usually takes 10-30s (cold start + search), 30s is sufficient
+        # Reddit usually takes 10-30s (cold start + search), 60s is safer for complex queries
         reddit_wait_start = time.time()
-        reddit_timeout = 30.0  # 30 seconds max wait after experts complete
+        reddit_timeout = 60.0  # 60 seconds max wait after experts complete
         last_activity_time_outer = time.time()  # FIX: Define in outer scope
         
         # FIX: Also check if task is done to avoid waiting full timeout if task crashed
