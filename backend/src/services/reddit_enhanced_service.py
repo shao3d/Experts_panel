@@ -125,6 +125,7 @@ class RedditPost:
     created_utc: int
     selftext: str = ""
     is_self: bool = False
+    is_technical_guide: bool = False
     # Enriched data
     full_content: Optional[str] = None
     top_comments: List[Dict[str, Any]] = field(default_factory=list)
@@ -205,24 +206,30 @@ class RedditEnhancedService:
         # Perform single-pass substitution using global pre-compiled pattern
         return _EXPANSION_PATTERN.sub(replace_callback, query)
     
-    async def _scout_subreddits(self, query: str) -> List[str]:
-        """Use Gemini 3 Flash to detect relevant subreddits dynamically.
+    async def _plan_search_strategy(self, query: str) -> Dict[str, Any]:
+        """Use Gemini 3 Flash to create a search plan (Subreddits + Intent-based Queries).
         
-        This acts as an intelligent 'Navigator', mapping user intent to specific
-        Reddit communities, handling Russian queries, and prioritizing technical sources.
+        Returns:
+            Dict with keys 'subreddits' (List[str]), 'queries' (List[str]), and 'keywords' (List[str])
         """
         try:
             prompt = f"""You are an expert Reddit OSINT Navigator.
 User Query: "{query}"
 
-Task: Identify the top 3-7 most relevant *technical* subreddits for this query.
-Rules:
-1. If the query is in Russian, translate intent to English to find global communities.
-2. Prioritize specific technical communities (e.g., 'LocalLLaMA' over 'technology', 'rust' over 'programming').
-3. Include niche communities if the topic is specific (e.g., 'selfhosted', 'dataengineering').
-4. Return ONLY a raw JSON array of strings. No Markdown. No Explanations.
+Task: Create a precise Search Plan to find practical, technical information.
+1. Identify 3-7 relevant technical subreddits.
+2. Generate 3-5 SPECIFIC search queries to find guides, workflows, or technical details.
+3. Extract 2-3 CRITICAL keywords from the user query that MUST be in the result titles (e.g. tool names, specific concepts like "Skills", "MCP").
 
-Example Output: ["LocalLLaMA", "MachineLearning", "Ollama"]
+Output JSON structure:
+{{
+  "subreddits": ["LocalLLaMA", "ClaudeAI"],
+  "queries": [
+    "\"Claude Code\" workflow",
+    "\"Claude Code\" setup guide"
+  ],
+  "keywords": ["Skills", "CLI", "Claude"]
+}}
 """
             # Use Gemini 3 Flash Preview for high-intelligence scouting
             response = await self._llm_client.chat_completions_create(
@@ -233,25 +240,26 @@ Example Output: ["LocalLLaMA", "MachineLearning", "Ollama"]
             
             content = response.choices[0].message.content.strip()
             
-            # Robust JSON extraction: Find first '[' and last ']'
+            # Robust JSON extraction
             try:
-                start_idx = content.find('[')
-                end_idx = content.rfind(']')
+                start_idx = content.find('{')
+                end_idx = content.rfind('}')
                 
                 if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
                     json_str = content[start_idx:end_idx+1]
-                    subreddits = json.loads(json_str)
+                    plan = json.loads(json_str)
                 else:
-                    logger.warning(f"Gemini Scout returned no JSON array: {content[:100]}...")
-                    return []
+                    logger.warning(f"Gemini Scout returned no JSON object: {content[:100]}...")
+                    return {"subreddits": [], "queries": [], "keywords": []}
             except json.JSONDecodeError as e:
                 logger.warning(f"Gemini Scout JSON parse error: {e}. Content: {content[:100]}...")
-                return []
+                return {"subreddits": [], "queries": [], "keywords": []}
             
             # Validation and Sanitization
             valid_subs = []
-            if isinstance(subreddits, list):
-                for s in subreddits:
+            raw_subs = plan.get("subreddits", [])
+            if isinstance(raw_subs, list):
+                for s in raw_subs:
                     if isinstance(s, str) and len(s) > 1:
                         # Clean up 'r/' prefix if present
                         clean_name = s.strip().replace('r/', '').replace('/r/', '')
@@ -260,15 +268,25 @@ Example Output: ["LocalLLaMA", "MachineLearning", "Ollama"]
                         if clean_name:
                             valid_subs.append(clean_name)
             
-            if valid_subs:
-                logger.info(f"🤖 Gemini Scout found targets for '{query}': {valid_subs}")
-                return valid_subs
+            valid_queries = []
+            raw_queries = plan.get("queries", [])
+            if isinstance(raw_queries, list):
+                valid_queries = [q for q in raw_queries if isinstance(q, str) and len(q) > 3]
+
+            valid_keywords = []
+            raw_keywords = plan.get("keywords", [])
+            if isinstance(raw_keywords, list):
+                valid_keywords = [k for k in raw_keywords if isinstance(k, str) and len(k) > 2]
+
+            result = {"subreddits": valid_subs, "queries": valid_queries, "keywords": valid_keywords}
+            if valid_subs or valid_queries:
+                logger.info(f"🤖 Gemini Scout Plan for '{query}': {result}")
             
-            return []
+            return result
             
         except Exception as e:
             logger.warning(f"Gemini Scout failed: {e}. Falling back to global search.")
-            return []
+            return {"subreddits": [], "queries": [], "keywords": []}
     
     async def search_enhanced(
         self,
@@ -300,9 +318,13 @@ Example Output: ["LocalLLaMA", "MachineLearning", "Ollama"]
             logger.info(f"Expanded query: '{original_query}' -> '{expanded_query}'")
         
         # 2. Dynamic Scouting (AI-Powered)
+        search_plan = {"subreddits": [], "queries": [], "keywords": []}
         if subreddits is None:
-            # Use Gemini 3 Flash to find targets
-            subreddits = await self._scout_subreddits(query)
+            # Use Gemini 3 Flash to find targets and generate intent queries
+            search_plan = await self._plan_search_strategy(query)
+            subreddits = search_plan.get("subreddits", [])
+        
+        target_keywords = search_plan.get("keywords", [])
         
         sort_tasks = []
         
@@ -349,10 +371,20 @@ Example Output: ["LocalLLaMA", "MachineLearning", "Ollama"]
                     self._search_with_sort(final_query, sort="new", limit=25, time="month")
                 ))
                 
-                # OPTION C: High-Signal Strategies (Additive Improvements)
-                # These run in PARALLEL with the above to catch specific high-value post types
-                
-                # Task 4: "Sniper" Strategy - High Signal Guides (Title Only)
+                # Task 4: AI Intent Queries (NEW)
+                # Use specific queries generated by Gemini 3 Scout
+                ai_queries = search_plan.get("queries", [])
+                if ai_queries:
+                    logger.info(f"🤖 Adding AI Intent Queries: {ai_queries}")
+                    for i, ai_q in enumerate(ai_queries[:3]): # Limit to top 3 to prevent rate limits
+                        # Combine AI query with subreddit filter
+                        full_ai_q = f"({ai_q}) AND ({subreddit_filter})"
+                        sort_tasks.append((
+                            f"ai_intent_{i}",
+                            self._search_with_sort(full_ai_q, sort="relevance", limit=20, time="all")
+                        ))
+
+                # Task 5: "Sniper" Strategy - High Signal Guides (Title Only)
                 # Finds: "Ultimate Guide to LLMs", "RAG Deep Dive"
                 high_signal_or = " OR ".join(HIGH_SIGNAL_MARKERS)
                 # Note: We use expanded_query to catch specific tool names in titles (e.g. "Llama 3 Guide" for "LLM")
@@ -367,7 +399,7 @@ Example Output: ["LocalLLaMA", "MachineLearning", "Ollama"]
                     self._search_with_sort(title_query, sort="relevance", limit=15, time="all")
                 ))
 
-                # Task 5: "Conflict & Solution" Strategy
+                # Task 6: "Conflict & Solution" Strategy
                 # Finds: "Claude vs GPT", "Solved: Docker error", "Alternative to X"
                 comparison_or = " OR ".join(COMPARISON_MARKERS)
                 # Logic: (expanded_query) AND (vs OR comparison OR solved...)
@@ -432,14 +464,33 @@ Example Output: ["LocalLLaMA", "MachineLearning", "Ollama"]
                 continue
             
             strategies_used.append(strategy_name)
+            
+            # Determine if this strategy yields "technical guides" (evergreen content)
+            is_technical = (
+                strategy_name.startswith("ai_intent_") or 
+                strategy_name == "high_signal_title" or
+                strategy_name == "code_hunter"
+            )
+            
             for post in result:
                 if post.id not in all_posts:
+                    if is_technical:
+                        post.is_technical_guide = True
+                    # Track which strategy found this post (keep the first one if multiple find it)
+                    if not hasattr(post, "found_by_strategy"):
+                         post.found_by_strategy = strategy_name
                     all_posts[post.id] = post
                 else:
                     # Merge scores if post found via multiple strategies
                     existing = all_posts[post.id]
                     existing.score = max(existing.score, post.score)
                     existing.num_comments = max(existing.num_comments, post.num_comments)
+                    # If ANY strategy found it as technical, mark it so
+                    if is_technical:
+                        existing.is_technical_guide = True
+                    # If existing didn't have strategy tracked, add it (shouldn't happen given logic above)
+                    if not hasattr(existing, "found_by_strategy"):
+                         existing.found_by_strategy = strategy_name
         
         logger.info(f"🔍 REDDIT SEARCH: query='{query[:50]}...' | strategies={strategies_used} | unique_posts={len(all_posts)}")
         
@@ -451,6 +502,7 @@ Example Output: ["LocalLLaMA", "MachineLearning", "Ollama"]
                 fallback_posts = await self._search_with_sort(original_query, sort="top", limit=25, time="year")
                 for post in fallback_posts:
                     if post.id not in all_posts:
+                        post.found_by_strategy = "fallback"
                         all_posts[post.id] = post
                 if fallback_posts:
                     strategies_used.append("fallback_top_year")
@@ -467,19 +519,44 @@ Example Output: ["LocalLLaMA", "MachineLearning", "Ollama"]
             # Base engagement
             base_score = p.score + (p.num_comments * 2)
             
-            # If no date, treat as moderately old (neutral decay) to be safe
+            # Boost Factors
+            boost = 1.0
+            
+            # 1. Technical Guide Boost (Context-Aware)
+            # Rationale: Evergreen content should not decay
+            if p.is_technical_guide:
+                boost *= 1.2
+            
+            # 2. Semantic Keyword Boost (Relevance)
+            # Rationale: If title matches user's specific terms (e.g. "Skills"), boost it significantly
+            # to prevent viral off-topic posts from crowding out relevant answers.
+            if target_keywords:
+                title_lower = p.title.lower()
+                # Count how many critical keywords are in the title
+                matches = sum(1 for k in target_keywords if k.lower() in title_lower)
+                if matches > 0:
+                    # x1.5 for one match, x2.0 for two matches, etc. (capped at x3.0)
+                    keyword_boost = min(1.0 + (matches * 0.5), 3.0)
+                    boost *= keyword_boost
+            
+            # Apply Boost
+            score = base_score * boost
+            
+            # If it's a technical guide OR has strong keyword match, we SKIP Time Decay
+            # because relevance > freshness for these cases.
+            is_highly_relevant = p.is_technical_guide or (boost > 1.5)
+            
+            if is_highly_relevant:
+                return score
+            
+            # For others (News, General): Apply Gravity Decay
             if not p.created_utc:
-                return base_score
+                return score
                 
-            # Calculate age in hours
             age_seconds = max(0, current_time - p.created_utc)
             age_hours = age_seconds / 3600
-            
-            # Gravity decay (Hacker News style)
-            # Fresh posts (0-24h) get almost full score. 
-            # 1 year old posts get heavy penalty.
             gravity = 1.5
-            return base_score / pow((age_hours + 2), gravity)
+            return score / pow((age_hours + 2), gravity)
 
         sorted_posts = sorted(
             all_posts.values(),
@@ -495,7 +572,7 @@ Example Output: ["LocalLLaMA", "MachineLearning", "Ollama"]
             logger.info(f"Fetching deep content for top {len(top_posts)} posts...")
             deep_tasks = [
                 self._enrich_post_content(post)
-                for post in top_posts[:10]  # Limit deep analysis to top 10
+                for post in top_posts[:10]  # Limit deep analysis to top 10 (even if target > 10)
             ]
             enriched = await asyncio.gather(*deep_tasks, return_exceptions=True)
             

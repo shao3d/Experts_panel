@@ -2,7 +2,7 @@
 
 **Статус:** Production (Stable)
 **Архитектура:** Sidecar Proxy Pattern
-**Логика:** AI Scout (Gemini 3 Flash) + Code Preservation
+**Логика:** AI Scout v2 (Intent Plans) + Context-Aware Ranking
 **Дата обновления:** 10.02.2026
 
 ---
@@ -15,64 +15,77 @@
 graph LR
     User[User Query] --> Backend[FastAPI Backend]
     Backend -- "1. Translate (RU->EN)" --> Translation[Translation Service]
-    Translation --> Scout[🤖 AI Scout (Gemini 3 Flash)]
+    Translation -- "2. Generate Plan" --> Scout[🤖 AI Scout v2 (Gemini 3 Flash)]
     
-    Scout -- "Dynamic Targets" --> Proxy[Reddit Proxy Service]
+    Scout -- "Intent Queries + Keywords" --> Proxy[Reddit Proxy Service]
     
     Proxy -- "MCP Tool (Depth 3)" --> Reddit[Reddit API]
     Reddit --> Proxy
-    Proxy -- "Sanitized JSON (Code Preserved)" --> Backend
-    Backend -- "Fact-Maxing Synthesis" --> Gemini[Gemini 3 Flash]
+    Proxy -- "Sanitized JSON" --> Backend
+    Backend -- "3. Semantic Ranking" --> Ranker[Context-Aware Ranker]
+    Ranker -- "Top 15 Posts" --> Gemini[Synthesis Model]
 ```
 
 ### Компоненты
 
 1.  **Backend (`RedditEnhancedService`)**:
-    *   **🤖 AI Scout:** Вместо жестких словарей используется `Gemini 3 Flash Preview` для динамического подбора сабреддитов (например, понимает, что "RAG" это `LocalLLaMA` + `DataEngineering`).
-    *   **Query Expansion:** Расширяет запросы техническими терминами (`vram`, `gguf`, `latency`, `margin`).
-    *   **Parallel Search:** Запускает стратегии `Relevance`, `Top Year`, `Freshness`, `Comparison` и `High Signal`.
+    *   **🤖 AI Scout v2:** Вместо простого подбора сабреддитов, Gemini 3 создает **План Поиска** (Search Plan):
+        *   `Subreddits`: Целевые сообщества (например, `LocalLLaMA`).
+        *   `Intent Queries`: 3-5 конкретных поисковых фраз (например, `"Claude Code" config.json setup`).
+        *   `Keywords`: Ключевые слова для ранжирования (например, `Skills`, `CLI`).
+    *   **Context-Aware Ranking:**
+        *   **No Time Decay:** Технические гайды (флаг `is_technical_guide`) не теряют рейтинг со временем.
+        *   **Semantic Boost:** Посты, содержащие ключевые слова в заголовке, получают множитель Score до **x3.0**.
+    *   **Deep Fetch:** Анализирует топ-15 постов (ранее 10), чтобы захватить нишевые решения.
+
 2.  **Proxy (`services/reddit-proxy`)**:
     *   Node.js + Fastify микросервис.
     *   **Code Preservation:** Специальный алгоритм санитизации, который **не трогает** блоки кода (` ``` `), сохраняя отступы в Python/YAML конфигах.
-    *   **Deep Fetch:** Качает дерево комментариев (Depth 3, Limit 50).
+
 3.  **Synthesis (`RedditSynthesisService`)**:
     *   **Fact-Maxing:** Промпт жестко фильтрует эмоции ("Amazing!") и ищет цифры/бенчмарки.
-    *   **Link Priority:** Выделяет ссылки на GitHub/HuggingFace как **[PRIMARY SOURCE]**.
     *   **Inverted Pyramid:** Ответ строится по схеме "Решение -> Детали -> Споры".
 
 ---
 
-## 🧠 Логика "Smart Scout" (Dynamic Targeting)
+## 🧠 Логика "AI Scout v2" (Intent Planning)
 
-Вместо хардкодных списков (`SUBREDDIT_BY_TOPIC`) внедрен AI-агент.
+Вместо regex-расширения запроса (`OR`), мы используем LLM для генерации человеческих поисковых фраз.
 
-### Как это работает:
-1.  **Запрос:** "Как скейлить RAG?"
-2.  **Scout (Gemini 3):** Анализирует интеншн и возвращает JSON: `["LocalLLaMA", "DataEngineering", "SystemDesign", "DevOps"]`.
-3.  **Поиск:** Ищет только в этих сообществах через оператор `OR` (`subreddit:LocalLLaMA OR ...`).
+### Пример работы:
+**Запрос:** "как настроить скиллы в Claude Code?"
 
-**Преимущества:**
-*   Покрывает **любые** темы (Кулинария, Биотех, Бизнес), а не только IT.
-*   Находит нишевые сообщества (`r/selfhosted`, `r/homelab`), о которых мы могли не знать.
-*   Исключает шум из `r/all`.
+**Scout v2 Plan:**
+1.  **Subreddits:** `ClaudeAI`, `Anthropic`, `coding`
+2.  **Intent Queries:**
+    *   `"Claude Code" skills workflow guide`
+    *   `"Claude Code" MCP config.json`
+    *   `"Claude Code" custom tools setup`
+3.  **Keywords:** `["Skills", "Config", "MCP"]`
+
+**Результат:**
+Система находит конкретные гайды и конфиги, а не просто новости про Claude.
 
 ---
 
-## 🛡️ Code Preservation (Спасение кода)
+## 📊 Semantic Ranking Strategy
 
-Критическое улучшение для технических запросов.
+Как мы выбираем лучшее из найденного?
 
-*   **Было:** Функция очистки текста схлопывала все пробелы (`replace(/\s+/, ' ')`), уничтожая структуру Python и YAML.
-*   **Стало:** Алгоритм разбивает текст по разделителю ` ``` `, чистит обычный текст, но оставляет блоки кода **в первозданном виде**.
+1.  **Base Score:** `(Upvotes + Comments * 2)`
+2.  **Technical Guide Detection:** Если пост найден стратегией `ai_intent` или содержит маркеры "Guide/Tutorial" -> помечается как `is_technical_guide`.
+3.  **Keyword Boost:** Если в заголовке есть слова из `Keywords` (Scout) -> Score умножается на **1.5 - 3.0**.
+4.  **Time Decay (Умный):**
+    *   Для **Новостей**: Применяется классическая "Гравитация" (Hacker News), штрафующая за возраст.
+    *   Для **Гайдов**: Decay **ОТКЛЮЧЕН**. Старый, но полезный гайд с 2000 лайков будет выше свежей новости с 500 лайками.
 
 ---
 
 ## 🛠️ Технические детали
 
 ### Файлы
-- **Backend Service:** `backend/src/services/reddit_enhanced_service.py` (Scout Logic)
+- **Backend Service:** `backend/src/services/reddit_enhanced_service.py` (Scout Logic & Ranking)
 - **Proxy Service:** `services/reddit-proxy/src/index.ts` (Sanitization Logic)
-- **Synthesis:** `backend/src/services/reddit_synthesis_service.py` (Prompts)
 
 ### Proxy API
 ```http
@@ -80,14 +93,12 @@ POST https://experts-reddit-proxy.fly.dev/search
 Content-Type: application/json
 
 {
-  "query": "How to fight hallucinations?",
-  "subreddits": ["LocalLLaMA", "MachineLearning"], 
+  "query": "Claude Code skills guide",
+  "subreddits": ["ClaudeAI"], 
   "limit": 25,
   "sort": "relevance"
 }
 ```
-
-*Примечание: Если `subreddits` не передан, бэкенд вызовет Scout и заполнит этот список перед отправкой.*
 
 ---
 
@@ -95,10 +106,3 @@ Content-Type: application/json
 
 - **Backend:** Деплоится автоматически при изменениях в `backend/`.
 - **Proxy:** Деплоится автоматически при изменениях в `services/reddit-proxy/`.
-
----
-
-## 🔍 Troubleshooting
-
-1.  **Scout Errors:** Если Gemini 3 Scout недоступен, система падает в **Global Search** (`r/all`) с warning'ом в логах.
-2.  **Proxy Errors:** Если Proxy недоступен (Circuit Breaker Open), возвращается пустой результат Reddit, основной ответ эксперта не страдает.
