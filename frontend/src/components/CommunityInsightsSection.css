@@ -190,49 +190,69 @@
 .insights-synthesis {
   padding: 1.5rem 2rem;
   border-bottom: 1px solid #e1e4e8;
+  background-color: #ffffff;
 }
 
 .formatted-content {
-  line-height: 1.7;
+  line-height: 1.6;
+  color: #2c3e50;
+  font-size: 0.95rem;
 }
 
+/* H3: Subheaders (Level 2 - Main Sections) */
+.formatted-content .content-subheader {
+  font-size: 1.2rem; /* Largest inside content */
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 2rem 0 1rem;
+  letter-spacing: -0.01em;
+}
+
+/* H4: Headers (Level 3 - Subsections) */
 .formatted-content .content-header {
-  font-size: 1.1rem;
+  font-size: 1.1rem; /* Slightly smaller */
   font-weight: 600;
-  color: #495057;
+  color: #34495e; /* Slightly lighter */
   margin: 1.5rem 0 0.75rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 2px solid #0066cc;
+  padding-bottom: 0;
+  border-bottom: none;
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.formatted-content .content-header:first-child {
+.formatted-content .content-header:first-child,
+.formatted-content .content-subheader:first-child {
   margin-top: 0;
 }
 
-.formatted-content .content-subheader {
-  font-size: 1.25rem;
+/* H5: Deep headers (Level 4 - Details) */
+.formatted-content .content-sub-subheader {
+  font-size: 0.9rem;
   font-weight: 600;
-  color: #34495e;
-  margin: 1.25rem 0 0.75rem;
+  color: #5d6778;
+  margin: 1rem 0 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
+/* Lists: Tighten up to look like a group */
 .formatted-content .content-bullet {
-  margin: 0.5rem 0 0.5rem 1.5rem;
-  color: #495057;
+  margin: 0.25rem 0 0.25rem 1.25rem;
+  color: #4a5568;
   position: relative;
+  padding-left: 0.25rem;
 }
 
 .formatted-content .content-bullet::marker {
-  color: #0066cc;
-  font-weight: 600;
+  color: #0066cc; /* Back to Brand Blue */
+  font-size: 0.9em;
 }
 
+/* Paragraphs: Standard flow */
 .formatted-content .content-paragraph {
   margin: 0.75rem 0;
-  color: #495057;
+  color: #2d3748;
 }
 
 .formatted-content .content-spacer {
@@ -492,7 +512,8 @@
   }
 
   .formatted-content .content-header,
-  .formatted-content .content-subheader {
+  .formatted-content .content-subheader,
+  .formatted-content .content-sub-subheader {
     color: #e1e1e6;
   }
 

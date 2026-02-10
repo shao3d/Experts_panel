@@ -105,13 +105,26 @@ function normalizeWhitespace(text: string): string {
 }
 
 /**
- * Full sanitization pipeline
+ * Full sanitization pipeline that PRESERVES CODE BLOCKS
  */
 function sanitizeText(text: string): string {
   if (!text) return '';
-  let cleaned = sanitizeZalgo(text);
-  cleaned = normalizeWhitespace(cleaned);
-  return cleaned;
+  
+  // First, remove Zalgo characters globally
+  const noZalgo = sanitizeZalgo(text);
+  
+  // Split by markdown code blocks (```...```)
+  // The capturing group () ensures separators are included in the result array
+  const parts = noZalgo.split(/(```[\s\S]*?```)/g);
+  
+  return parts.map(part => {
+    // If it's a code block, keep it AS IS (preserve indentation)
+    if (part.startsWith('```')) {
+       return part; 
+    }
+    // If it's normal text, crush whitespaces to save tokens
+    return normalizeWhitespace(part);
+  }).join('');
 }
 
 /**

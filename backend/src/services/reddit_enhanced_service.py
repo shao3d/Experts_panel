@@ -10,13 +10,16 @@ This module provides advanced Reddit aggregation strategies:
 import asyncio
 import logging
 import re
+import json
 from dataclasses import dataclass, field
 from typing import Optional, List, Dict, Any, Set
 from datetime import datetime
 
 import httpx
 
+from .. import config
 from .reddit_service import RedditServiceError, CircuitBreaker
+from .google_ai_studio_client import create_google_ai_studio_client
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +28,10 @@ REDDIT_PROXY_URL = "https://experts-reddit-proxy.fly.dev"
 DEFAULT_TIMEOUT = 30.0  # HTTP timeout - enough for cold start (~15s) + search
 MAX_RETRIES = 3
 RETRY_BACKOFF_BASE = 2.0
+
+# Model for Subreddit Scouting
+# Using Gemini 3 Flash Preview as requested for high intelligence
+MODEL_SCOUT = "gemini-3-flash-preview"
 
 # Tech-related subreddits for targeted searches
 TECH_SUBREDDITS = [
@@ -50,16 +57,18 @@ TECH_SUBREDDITS = [
 # Query Expansions for Technical Terms
 # Maps short acronyms to broader search terms including synonyms and related concepts
 QUERY_EXPANSIONS = {
-    "llm": ['"Large Language Model"', "LLM", "GPT", "Claude", "Llama", "Mistral", "LocalLLaMA"],
-    "rag": ["RAG", '"Retrieval Augmented Generation"', '"vector database"', "embeddings"],
+    "llm": ['"Large Language Model"', "LLM", "GPT", "Claude", "Llama", "Mistral", "LocalLLaMA", "GGUF", "quantization"],
+    "rag": ["RAG", '"Retrieval Augmented Generation"', '"vector database"', "embeddings", "GraphRAG"],
     "tts": ["TTS", '"text to speech"', '"voice synthesis"', "ElevenLabs", "Kokoro"],
     "stt": ["STT", '"speech to text"', '"voice recognition"', "Whisper", "transcription"],
-    "mcp": ["MCP", '"Model Context Protocol"'],
-    "gpu": ["GPU", "NVIDIA", "CUDA", "VRAM", "hardware"],
-    "docker": ["Docker", "container", "kubernetes", "k8s"],
-    "python": ["Python", "pip", "PyPI", "script"],
+    "mcp": ["MCP", '"Model Context Protocol"', "server"],
+    "gpu": ["GPU", "NVIDIA", "CUDA", "VRAM", "hardware", "3090", "4090"],
+    "docker": ["Docker", "container", "kubernetes", "k8s", "compose"],
+    "python": ["Python", "pip", "PyPI", "script", "asyncio"],
     "rust": ["Rust", "Rustlang", "cargo", "crate"],
     "react": ["React", "ReactJS", "NextJS", "frontend"],
+    "arch": ["architecture", "design", "pattern", "trade-off", "latency", "throughput", "production"],
+    "biz": ["cost", "pricing", "billing", "margin", "COGS", "economics"],
 }
 
 # Pre-compile expansion logic for performance
@@ -79,14 +88,16 @@ MAX_TARGET_SUBREDDITS = 7
 # Used to find structured guides, tutorials, and deep dives
 HIGH_SIGNAL_MARKERS = [
     '"Guide"', '"Tutorial"', '"Deep Dive"', '"Analysis"', 
-    '"Benchmark"', '"Cheat Sheet"', '"Roadmap"', '"How to"'
+    '"Benchmark"', '"Cheat Sheet"', '"Roadmap"', '"How to"',
+    '"Post-Mortem"', '"Lessons Learned"'
 ]
 
 # Conflict/Solution Markers for "Discussion" Strategy
 # Used to find comparisons and solved problems
 COMPARISON_MARKERS = [
     "vs", "versus", "comparison", "alternative", 
-    "solved", "solution", "fixed", "workaround"
+    "solved", "solution", "fixed", "workaround",
+    "switched to", "migrated from", "failed", "regret"
 ]
 
 # General popular subreddits
@@ -151,6 +162,7 @@ class RedditEnhancedService:
         self.max_retries = max_retries
         self._circuit_breaker = CircuitBreaker()
         self._client: Optional[httpx.AsyncClient] = None
+        self._llm_client = create_google_ai_studio_client()
     
     async def _get_client(self) -> httpx.AsyncClient:
         """Get or create HTTP client."""
@@ -193,6 +205,71 @@ class RedditEnhancedService:
         # Perform single-pass substitution using global pre-compiled pattern
         return _EXPANSION_PATTERN.sub(replace_callback, query)
     
+    async def _scout_subreddits(self, query: str) -> List[str]:
+        """Use Gemini 3 Flash to detect relevant subreddits dynamically.
+        
+        This acts as an intelligent 'Navigator', mapping user intent to specific
+        Reddit communities, handling Russian queries, and prioritizing technical sources.
+        """
+        try:
+            prompt = f"""You are an expert Reddit OSINT Navigator.
+User Query: "{query}"
+
+Task: Identify the top 3-7 most relevant *technical* subreddits for this query.
+Rules:
+1. If the query is in Russian, translate intent to English to find global communities.
+2. Prioritize specific technical communities (e.g., 'LocalLLaMA' over 'technology', 'rust' over 'programming').
+3. Include niche communities if the topic is specific (e.g., 'selfhosted', 'dataengineering').
+4. Return ONLY a raw JSON array of strings. No Markdown. No Explanations.
+
+Example Output: ["LocalLLaMA", "MachineLearning", "Ollama"]
+"""
+            # Use Gemini 3 Flash Preview for high-intelligence scouting
+            response = await self._llm_client.chat_completions_create(
+                model=MODEL_SCOUT,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.1  # Deterministic
+            )
+            
+            content = response.choices[0].message.content.strip()
+            
+            # Robust JSON extraction: Find first '[' and last ']'
+            try:
+                start_idx = content.find('[')
+                end_idx = content.rfind(']')
+                
+                if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
+                    json_str = content[start_idx:end_idx+1]
+                    subreddits = json.loads(json_str)
+                else:
+                    logger.warning(f"Gemini Scout returned no JSON array: {content[:100]}...")
+                    return []
+            except json.JSONDecodeError as e:
+                logger.warning(f"Gemini Scout JSON parse error: {e}. Content: {content[:100]}...")
+                return []
+            
+            # Validation and Sanitization
+            valid_subs = []
+            if isinstance(subreddits, list):
+                for s in subreddits:
+                    if isinstance(s, str) and len(s) > 1:
+                        # Clean up 'r/' prefix if present
+                        clean_name = s.strip().replace('r/', '').replace('/r/', '')
+                        # Reddit names are alphanumeric + underscore
+                        clean_name = re.sub(r'[^a-zA-Z0-9_]', '', clean_name)
+                        if clean_name:
+                            valid_subs.append(clean_name)
+            
+            if valid_subs:
+                logger.info(f"🤖 Gemini Scout found targets for '{query}': {valid_subs}")
+                return valid_subs
+            
+            return []
+            
+        except Exception as e:
+            logger.warning(f"Gemini Scout failed: {e}. Falling back to global search.")
+            return []
+    
     async def search_enhanced(
         self,
         query: str,
@@ -222,11 +299,10 @@ class RedditEnhancedService:
         if expanded_query != original_query:
             logger.info(f"Expanded query: '{original_query}' -> '{expanded_query}'")
         
-        # 2. Auto-detect subreddits if not provided
+        # 2. Dynamic Scouting (AI-Powered)
         if subreddits is None:
-            subreddits = get_recommended_subreddits(query)
-            if subreddits:
-                logger.info(f"Auto-detected subreddits for query '{query[:30]}...': {subreddits}")
+            # Use Gemini 3 Flash to find targets
+            subreddits = await self._scout_subreddits(query)
         
         sort_tasks = []
         
@@ -600,102 +676,4 @@ async def search_reddit_enhanced(
     )
 
 
-# Subreddit recommendations by topic
-SUBREDDIT_BY_TOPIC = {
-    "ai": [
-        "MachineLearning", "artificial", "LocalLLaMA", "ChatGPT", "claudeAI", "OpenAI",
-        "singularity", "Futurology", "technology", "learnmachinelearning", "deeplearning", "CSCareerQuestions", "AskEngineers"
-    ],
-    "llm": [
-        "LocalLLaMA", "ChatGPT", "claudeAI", "OpenAI", "Anthropic", "ollama", 
-        "textgenerationwebui", "SillyTavernAI", "aiwars"
-    ],
-    "programming": ["programming", "webdev", "python", "rust", "javascript", "coding", "developer", "coding"],
-    "startup": ["startups", "Entrepreneur", "SaaS", "indiehackers", "smallbusiness", "sideproject"],
-    "business": ["business", "Entrepreneur", "marketing", "sales", "agency", "consulting"],
-    "product_management": ["ProductManagement", "softwareengineering", "agile", "scrum", "projectmanagement", "devops"],
-    "productivity": ["productivity", "LifeProTips", "selfimprovement", "getdisciplined", "Notion", "obsidianmd"],
-    "general": ["AskReddit", "explainlikeimfive", "NoStupidQuestions"],
-}
 
-
-def get_recommended_subreddits(query: str) -> List[str]:
-    """Get recommended subreddits based on query keywords.
-    
-    Supports both English and Russian queries. Falls back to tech subreddits
-    if no specific topic detected.
-    
-    Args:
-        query: User query
-    
-    Returns:
-        List of recommended subreddit names
-    """
-    query_lower = query.lower()
-    recommended: Set[str] = set()
-    topic_found = False
-    
-    # Check each topic for keyword matches (English + Russian)
-    topic_keywords = {
-        "ai": [
-            # English
-            "ai", "artificial intelligence", "machine learning", "ml", "model", "gpt", "claude", "llm", "neural", "architecture", "architect", "engineer", "learn", "understand", "system",
-            "hallucination", "rag", "retrieval", "embedding", "vector", "context", "token", "fine-tuning", "training", "inference",
-            # Russian
-            "ии", "искусственный интеллект", "машинное обучение", "модель", "агент", "нейросеть", "чатбот",
-            "нейронная сеть", "языковая модель", "большая модель", "искусственный", "интеллект", "архитектура", "разбираться", "понимать", "учиться", "система",
-            "галлюцинаци", "rag", "рэг", "эмбеддинг", "вектор", "контекст", "токен", "файн-тюнинг", "обучение", "инференс"
-        ],
-        "llm": [
-            # English
-            "llm", "large language model", "gpt", "claude", "openai", "anthropic", "mistral", "llama", "prompt", "prompting", "jailbreak",
-            # Russian
-            "большая языковая модель", "гпт", "клод", "опенаи", "anthropic", "mistral", "llama",
-            "llm", "языковая модель", "трансформер", "промпт", "промт", "джейлбрейк"
-        ],
-        "programming": [
-            # English
-            "code", "programming", "developer", "software", "app", "web", "python", "javascript", "rust", "engineer", "build", "design", "tech",
-            # Russian
-            "код", "программирование", "разработчик", "софт", "приложение", "веб", "пайтон", "жаваскрипт",
-            "rust", "rustlang", "golang", "typescript", "разрабатывать", "разработка", "инженер", "строить", "дизайн"
-        ],
-        "product_management": [
-            # English
-            "spec", "specification", "requirements", "prd", "jira", "confluence", "linear", "agile", "scrum", "product manager", "project",
-            # Russian
-            "спецификация", "тз", "техническое задание", "требования", "jira", "confluence", "linear", "эджайл", "скрам", "продукт", "проект", "документация"
-        ],
-        "startup": [
-            # English
-            "startup", "founder", "entrepreneur", "business idea", "mvp", "funding", "vc",
-            # Russian
-            "стартап", "основатель", "предприниматель", "бизнес идея", "фандинг", "венчур",
-            "инвестиции", "бизнес", "запуск", "мвп"
-        ],
-        "business": [
-            # English
-            "business", "marketing", "sales", "revenue", "customer", "product",
-            # Russian
-            "бизнес", "маркетинг", "продажи", "выручка", "клиент", "продукт", "монетизация"
-        ],
-        "productivity": [
-            # English
-            "productivity", "habit", "routine", "focus", "procrastination", "time management",
-            # Russian
-            "продуктивность", "привычка", "рутина", "фокус", "прокрастинация", "тайм-менеджмент",
-            "организация", "эффективность"
-        ],
-    }
-    
-    for topic, keywords in topic_keywords.items():
-        if any(kw in query_lower for kw in keywords):
-            recommended.update(SUBREDDIT_BY_TOPIC.get(topic, []))
-            topic_found = True
-    
-    # If no specific topic detected, return empty list to trigger Global Search (Option B)
-    # Previously we forced "technology" etc, which prevented searching for non-tech topics (e.g. Cooking)
-    if not topic_found:
-        return []
-    
-    return list(recommended)[:5]  # Return top 5 matches
