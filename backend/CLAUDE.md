@@ -24,7 +24,7 @@ The backend implements a sophisticated 8-phase query processing system. It uses 
 | `reddit_synthesis_service.py` | **Synthesis** | `gemini-3-flash-preview` | **Inverted Pyramid Synthesis**. Freshness Check (2026 aware). Critical Filter. |
 
 ### Infrastructure
-- `src/api/simplified_query_endpoint.py`: **Main Orchestrator**. Manages parallel expert tasks and SSE streaming.
+- `src/api/simplified_query_endpoint.py`: **Main Orchestrator**. Manages parallel expert tasks, SSE streaming, and Reddit Sidecar (120s timeout).
 - `src/config.py`: **Configuration Hub**. Reads all env vars.
 - `src/services/google_ai_studio_client.py`: **Unified LLM Client**. Handles API keys, retries, and rate limits.
 - `src/utils/error_handler.py`: **Error System**. Maps exceptions to user-friendly messages.
@@ -62,6 +62,7 @@ Defined in `.env`, loaded in `config.py`.
 - `MAP_MAX_PARALLEL`: 25 (Tier 1) / 8 (Free)
 - `MEDIUM_MAX_SELECTED_POSTS`: 5
 - `MEDIUM_SCORE_THRESHOLD`: 0.7
+- `REDDIT_TIMEOUT`: 120s (Hard limit in endpoint)
 
 ## Development
 - **Run**: `./quickstart.sh`

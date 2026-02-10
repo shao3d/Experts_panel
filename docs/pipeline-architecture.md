@@ -113,6 +113,7 @@ The system processes user queries through an **eight-phase pipeline** using a **
     - **Freshness**: Injects `Current Date` into prompt to penalize outdated info (e.g., distinguishing 2024 vs 2026 advice).
     - **Critical Filter**: Explicitly instructed to filter sarcasm ("Llama 5 released") and unverified rumors.
 - **Execution**: Runs in parallel with Expert Pipeline.
+    - **Timeout**: **120 seconds**. If Reddit analysis takes longer (e.g., complex queries or cold start), the system waits up to 2 minutes after experts finish before returning results. This ensures deep analysis even in "Reddit-Only" mode.
 
 ---
 

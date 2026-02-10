@@ -111,6 +111,7 @@ Frontend-specific configuration, such as server port, path aliases, and the prox
 ## 🐛 Troubleshooting
 
 ### SSE Connection Issues
+- **JSON Parse Errors**: Check for `keep-alive` comments (starting with `:`) being wrapped in `data:` prefix by backend. A fix is implemented in `api.ts` to ignore these lines.
 - Check CORS headers from backend
 - Verify Content-Type: text/event-stream
 - Monitor network tab for stream data

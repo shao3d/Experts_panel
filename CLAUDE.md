@@ -16,7 +16,7 @@ The system uses an advanced **eight-phase pipeline** for analysis and a hybrid, 
 
 ### Key Architectural Principles
 - **Multi-Expert Architecture**: Complete data isolation between experts and parallel processing.
-- **Reddit MCP Integration**: Sidecar microservice for community insights with multi-strategy search, smart subreddit targeting, and 90s cold start timeout.
+- **Reddit MCP Integration**: Sidecar microservice for community insights with multi-strategy search, smart subreddit targeting, and 120s cold start timeout.
 - **Cost Optimization**: Gemini-only strategy with Tier 1 paid account (high rate limits).
 - **Real-time Progress**: SSE streaming for frontend progress tracking.
 - **Date Filtering**: Optional `use_recent_only` filter for last 3 months of data.
@@ -204,16 +204,18 @@ To debug the pipeline, monitor the backend log file for messages containing spec
 
 **Fail-Safe Design:**
 - Expert responses returned even if Reddit fails/times out
-- 30s timeout for Reddit after experts complete
+- 120s timeout for Reddit after experts complete
 - Keep-alive SSE events (2.5s) during Reddit processing
 
 ---
 
 **Project Status:** Production-ready with active development
-**Last Updated:** 2026-01-28
+**Last Updated:** 2026-02-10
 **Architecture:** Multi-expert, Gemini-only LLM pipeline with unified client and real-time progress tracking
 **Key Features:** Parallel expert processing, unified `google_ai_studio_client`, cost optimization with Gemini 3 Flash, language validation, comment synthesis, enhanced error handling, admin authentication, Reddit community insights
 **Recent Updates:**
+- ✅ **Stability:** Increased Reddit pipeline timeout to 120s (fixes timeouts on complex queries)
+- ✅ **Bugfix:** Fixed frontend SSE parsing error for keep-alive events
 - ✅ **Reddit Enhancement:** Automatic RU→EN query translation for better search results
 - ✅ **UI Polish:** Neutral color scheme for Community Insights (system palette)
 - ✅ **Multi-language:** Reddit synthesis now responds in query language (RU/EN)
