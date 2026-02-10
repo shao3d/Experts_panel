@@ -284,6 +284,9 @@ export class APIClient {
               trimmedLine = trimmedLine.substring(5).trim();
             }
 
+            // Skip keep-alive comments that might be wrapped in data:
+            if (trimmedLine.startsWith(':')) continue;
+
             if (!trimmedLine) continue;
 
             try {
@@ -336,6 +339,9 @@ export class APIClient {
           while (trimmedLine.startsWith('data:')) {
             trimmedLine = trimmedLine.substring(5).trim();
           }
+
+          // Skip keep-alive comments that might be wrapped in data:
+          if (trimmedLine.startsWith(':')) continue;
 
           if (!trimmedLine) continue;
 
