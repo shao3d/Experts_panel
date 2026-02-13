@@ -38,7 +38,7 @@ The backend implements a sophisticated 8-phase query processing system. It uses 
 - **Active Client**: `src/services/reddit_enhanced_service.py` (Proxy Client).
 - **Architecture**: Uses `experts-reddit-proxy.fly.dev` sidecar service to avoid IP bans.
 - **New Features (Round 3)**:
-    - **Deep Trees**: Fetches nested comments (Depth 3) and top 50 comments per post.
+    - **Deep Trees**: Fetches nested comments (Depth 3) and top 50 comments per post via `/details` endpoint.
     - **Inverted Pyramid**: Synthesis format (Solution -> Details -> Debate).
     - **Freshness**: Injects current date to filter outdated info.
     - **Smart Targeting**: Detects AI/Dev/PM topics via keywords.

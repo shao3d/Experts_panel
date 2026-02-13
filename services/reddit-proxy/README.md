@@ -75,6 +75,28 @@ Search Reddit for discussions.
 }
 ```
 
+### POST /details
+
+Fetch full content and comments for a specific post.
+
+**Request:**
+```json
+{
+  "postId": "1h2j3k4",
+  "subreddit": "MechanicalKeyboards"
+}
+```
+
+**Response:**
+```json
+{
+  "id": "1h2j3k4",
+  "title": "Full Post Title",
+  "selftext": "Full markdown content...",
+  "top_comments": [...]
+}
+```
+
 ### GET /health
 
 Health check endpoint.

@@ -690,15 +690,40 @@ Output JSON structure:
         return posts
     
     async def _enrich_post_content(self, post: RedditPost) -> RedditPost:
-        """Fetch full content and comments for a post.
-        
-        Note: This would require the reddit-proxy to expose get_post_details
-        and get_comments tools. For now, it's a placeholder for future enhancement.
-        """
-        # TODO: Implement when reddit-proxy supports get_post_details
-        # This would make MCP calls to fetch:
-        # - Full selftext (not truncated)
-        # - Top comments with content
+        """Fetch full content and comments for a post via Proxy /details endpoint."""
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url}/details"
+            
+            payload = {
+                "postId": post.id,
+                "subreddit": post.subreddit
+            }
+            
+            # Using circuit breaker logic for robustness, though individual failures shouldn't stop the pipeline
+            response = await client.post(url, json=payload)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Enriched data from proxy
+                # Proxy returns sanitized 'selftext' which we treat as full_content
+                full_text = data.get("selftext") or data.get("body") or ""
+                post.full_content = full_text
+                post.top_comments = data.get("top_comments") or []
+                
+                # Update basic fields if better data available
+                # If original selftext was truncated or missing, update it
+                if full_text and len(full_text) > len(post.selftext):
+                     post.selftext = full_text
+
+                logger.info(f"✅ Enriched post {post.id} (r/{post.subreddit}): {len(post.top_comments)} comments")
+            else:
+                logger.warning(f"Failed to enrich post {post.id}: Status {response.status_code}")
+                
+        except Exception as e:
+            logger.warning(f"Error enriching post {post.id}: {e}")
+            
         return post
     
     async def health_check(self) -> bool:

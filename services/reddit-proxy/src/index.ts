@@ -670,6 +670,92 @@ ${truncatedContent}
 
     return sections.join('\n\n---\n\n');
   }
+
+  /**
+   * Fetch details for a single post
+   */
+  async getPostDetails(postId: string, subreddit?: string): Promise<RedditSearchResult | null> {
+    try {
+      const details = await this.mcp.executeTool<any>('get_post_details', {
+        post_id: postId,
+        subreddit: subreddit,
+        comment_limit: 50,
+        comment_depth: 3
+      });
+
+      if (details) {
+        let fullContent = "";
+        let comments: any[] = [];
+        let title = "";
+        let url = "";
+        let score = 0;
+        let numComments = 0;
+        let author = "";
+        let createdUtc = 0;
+        let permalink = "";
+        let sub = subreddit || "";
+        let id = postId;
+
+
+        if (typeof details === 'string') {
+           fullContent = details;
+        } else if (typeof details === 'object') {
+            // Handle nested 'post' object (reddit-mcp-buddy structure)
+             if (details.post) {
+                fullContent = details.post.selftext || details.post.content || fullContent;
+                title = details.post.title || title;
+                url = details.post.url || url;
+                score = details.post.score || score;
+                numComments = details.post.num_comments || numComments;
+                author = details.post.author || author;
+                createdUtc = details.post.created_utc || createdUtc;
+                permalink = details.post.permalink || permalink;
+                sub = details.post.subreddit || sub;
+                id = details.post.id || id;
+            } else {
+                 // Fallback for flat structure
+                if (details.selftext) fullContent = details.selftext;
+                if (details.content) fullContent = details.content;
+                title = details.title || title;
+                url = details.url || url;
+                score = details.score || score;
+                numComments = details.num_comments || numComments;
+                author = details.author || author;
+                createdUtc = details.created_utc || createdUtc;
+                permalink = details.permalink || permalink;
+                sub = details.subreddit || sub;
+                id = details.id || id;
+            }
+
+            if (Array.isArray(details.top_comments)) {
+                comments = details.top_comments;
+            } else if (Array.isArray(details.comments)) {
+                comments = details.comments;
+            }
+        }
+
+        const result: RedditSearchResult = {
+            id: id,
+            title: title || "Unknown Title", 
+            url: url,
+            score: score,
+            numComments: numComments,
+            subreddit: sub,
+            author: author,
+            createdUtc: createdUtc,
+            selftext: fullContent,
+            permalink: permalink,
+            top_comments: comments
+        };
+        
+        // Sanitize the single result
+        return this.sanitizeResults([result])[0];
+      }
+    } catch (e) {
+      logger.warn(`Failed to get details for post ${postId}:`, e);
+    }
+    return null;
+  }
 }
 
 // ============================================================================
@@ -697,6 +783,11 @@ const searchRequestSchema = z.object({
   subreddits: z.array(z.string()).optional(),
   sort: z.enum(['relevance', 'hot', 'new', 'top']).default('relevance'),
   time: z.enum(['hour', 'day', 'week', 'month', 'year', 'all']).default('all'),
+});
+
+const detailsRequestSchema = z.object({
+  postId: z.string().min(1),
+  subreddit: z.string().optional(),
 });
 
 // Health check endpoint
@@ -752,6 +843,41 @@ fastify.post('/search', async (request, reply) => {
     };
   }
 });
+
+// Details endpoint
+fastify.post('/details', async (request, reply) => {
+    const parseResult = detailsRequestSchema.safeParse(request.body);
+    
+    if (!parseResult.success) {
+      reply.code(400);
+      return {
+        error: 'Invalid request',
+        details: parseResult.error.format(),
+      };
+    }
+  
+    const { postId, subreddit } = parseResult.data;
+    
+    try {
+      const result = await aggregator.getPostDetails(postId, subreddit);
+      
+      if (!result) {
+        reply.code(404);
+        return {
+          error: 'Post not found or details unavailable',
+        };
+      }
+  
+      return result;
+    } catch (error) {
+      logger.error('Details fetch failed:', error);
+      reply.code(500);
+      return {
+        error: 'Details fetch failed',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  });
 
 // ============================================================================
 // Graceful Shutdown
