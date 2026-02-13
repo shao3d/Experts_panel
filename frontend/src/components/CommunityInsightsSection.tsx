@@ -8,6 +8,8 @@
  */
 
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { RedditResponse } from '../types/api';
 
 interface CommunityInsightsSectionProps {
@@ -16,164 +18,35 @@ interface CommunityInsightsSectionProps {
 }
 
 /**
- * Format markdown-like content with basic styling
+ * Format markdown-like content with proper styling using ReactMarkdown
  */
 const FormattedContent: React.FC<{ content: string | null | undefined }> = ({ content }) => {
-  // FIX: Handle null/undefined/empty content gracefully
   if (!content || content.trim() === '') {
     return <div className="empty-synthesis">No analysis available.</div>;
   }
   
-  const lines = content.split('\n');
-  
   return (
     <div className="formatted-content">
-      {lines.map((line, index) => {
-        // Headers (#### Header) - Deepest supported level
-        if (line.startsWith('#### ')) {
-          return (
-            <h5 key={index} className="content-sub-subheader">
-              {line.replace('#### ', '')}
-            </h5>
-          );
-        }
-
-        // Headers (### Header)
-        if (line.startsWith('### ')) {
-          return (
-            <h4 key={index} className="content-header">
-              {line.replace('### ', '')}
-            </h4>
-          );
-        }
-        
-        // Subheaders (## Header)
-        if (line.startsWith('## ')) {
-          return (
-            <h3 key={index} className="content-subheader">
-              {line.replace('## ', '')}
-            </h3>
-          );
-        }
-        
-        // Bullet points (- item or * item)
-        if (line.trim().startsWith('- ') || line.trim().startsWith('* ')) {
-          return (
-            <li key={index} className="content-bullet">
-              {formatInlineMarkdown(line.replace(/^[*-]\s*/, ''))}
-            </li>
-          );
-        }
-        
-        // Empty lines
-        if (line.trim() === '') {
-          return <div key={index} className="content-spacer" />;
-        }
-        
-        // Regular paragraph
-        return (
-          <p key={index} className="content-paragraph">
-            {formatInlineMarkdown(line)}
-          </p>
-        );
-      })}
+      <ReactMarkdown 
+        remarkPlugins={[remarkGfm]}
+        components={{
+          // Map markdown headers to our existing CSS classes
+          h3: ({node, ...props}) => <h3 className="content-subheader" {...props} />,
+          h4: ({node, ...props}) => <h4 className="content-header" {...props} />,
+          h5: ({node, ...props}) => <h5 className="content-sub-subheader" {...props} />,
+          // Map list items
+          li: ({node, ...props}) => <li className="content-bullet" {...props} />,
+          // Map paragraphs
+          p: ({node, ...props}) => <p className="content-paragraph" {...props} />,
+          // Map links
+          a: ({node, ...props}) => <a className="content-link" target="_blank" rel="noopener noreferrer" {...props} />,
+        }}
+      >
+        {content}
+      </ReactMarkdown>
     </div>
   );
 };
-
-/**
- * Format inline markdown (bold, italic, links)
- * FIX: Uses safer iterative parsing instead of regex to avoid ReDoS
- */
-const formatInlineMarkdown = (text: string): React.ReactNode => {
-  if (!text) return text;
-  
-  const elements: React.ReactNode[] = [];
-  let remaining = text;
-  let key = 0;
-  
-  while (remaining.length > 0) {
-    // Find earliest special marker
-    const boldIndex = remaining.indexOf('**');
-    const italicIndex = remaining.indexOf('*');
-    const linkStartIndex = remaining.indexOf('[');
-    
-    // Find which comes first
-    let earliestIndex = Infinity;
-    let markerType: 'bold' | 'italic' | 'link' | null = null;
-    
-    if (boldIndex !== -1 && boldIndex < earliestIndex) {
-      earliestIndex = boldIndex;
-      markerType = 'bold';
-    }
-    if (italicIndex !== -1 && italicIndex < earliestIndex && italicIndex !== boldIndex) {
-      earliestIndex = italicIndex;
-      markerType = 'italic';
-    }
-    if (linkStartIndex !== -1 && linkStartIndex < earliestIndex) {
-      earliestIndex = linkStartIndex;
-      markerType = 'link';
-    }
-    
-    // If no markers found, add rest as text
-    if (markerType === null) {
-      elements.push(<span key={key++}>{remaining}</span>);
-      break;
-    }
-    
-    // Add text before marker
-    if (earliestIndex > 0) {
-      elements.push(<span key={key++}>{remaining.slice(0, earliestIndex)}</span>);
-    }
-    
-    // Process marker
-    const afterMarker = remaining.slice(earliestIndex + (markerType === 'bold' ? 2 : 1));
-    
-    if (markerType === 'bold') {
-      const endIndex = afterMarker.indexOf('**');
-      if (endIndex !== -1) {
-        elements.push(<strong key={key++}>{afterMarker.slice(0, endIndex)}</strong>);
-        remaining = afterMarker.slice(endIndex + 2);
-      } else {
-        // No closing marker, treat as text
-        elements.push(<span key={key++}>{remaining.slice(earliestIndex)}</span>);
-        break;
-      }
-    } else if (markerType === 'italic') {
-      const endIndex = afterMarker.indexOf('*');
-      if (endIndex !== -1) {
-        elements.push(<em key={key++}>{afterMarker.slice(0, endIndex)}</em>);
-        remaining = afterMarker.slice(endIndex + 1);
-      } else {
-        elements.push(<span key={key++}>{remaining.slice(earliestIndex)}</span>);
-        break;
-      }
-    } else if (markerType === 'link') {
-      // Look for ](url) pattern
-      const textEndIndex = remaining.indexOf(']', earliestIndex);
-      const urlStartIndex = textEndIndex !== -1 ? remaining.indexOf('(', textEndIndex) : -1;
-      const urlEndIndex = urlStartIndex !== -1 ? remaining.indexOf(')', urlStartIndex) : -1;
-      
-      if (textEndIndex !== -1 && urlStartIndex === textEndIndex + 1 && urlEndIndex !== -1) {
-        const linkText = remaining.slice(earliestIndex + 1, textEndIndex);
-        const url = remaining.slice(urlStartIndex + 1, urlEndIndex);
-        elements.push(
-          <a key={key++} href={url} target="_blank" rel="noopener noreferrer" className="content-link">
-            {linkText}
-          </a>
-        );
-        remaining = remaining.slice(urlEndIndex + 1);
-      } else {
-        elements.push(<span key={key++}>{remaining[earliestIndex]}</span>);
-        remaining = remaining.slice(earliestIndex + 1);
-      }
-    }
-  }
-  
-  return <>{elements}</>;
-};
-
-
 
 /**
  * Loading skeleton for community insights
