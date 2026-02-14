@@ -412,6 +412,19 @@ Output JSON structure:
                     self._search_with_sort(comparison_query, sort="relevance", limit=15, time="all")
                 ))
 
+                # Task 7: "Timeless Classics" Strategy (New in R3)
+                # Finds: "Best practices", "Bible", "Handbook" - highly upvoted content from ANY time
+                # Logic: (expanded_query) AND (best practice OR bible OR handbook)
+                classic_markers = " OR ".join(['"Best practices"', '"Bible"', '"Handbook"', '"Cheatsheet"', '"Gold standard"'])
+                classic_query = f"({expanded_query}) AND ({classic_markers})"
+                if subreddits:
+                    classic_query = f"({classic_query}) AND ({subreddit_filter})"
+                
+                sort_tasks.append((
+                    "timeless_classic",
+                    self._search_with_sort(classic_query, sort="top", limit=10, time="all")
+                ))
+
             else:
                 # Fallback if sanitization removed all subs (unlikely)
                 logger.warning("All subreddits filtered out, falling back to global")
@@ -572,7 +585,7 @@ Output JSON structure:
             logger.info(f"Fetching deep content for top {len(top_posts)} posts...")
             deep_tasks = [
                 self._enrich_post_content(post)
-                for post in top_posts[:10]  # Limit deep analysis to top 10 (even if target > 10)
+                for post in top_posts[:15]  # Limit deep analysis to top 15 (increased from 10)
             ]
             enriched = await asyncio.gather(*deep_tasks, return_exceptions=True)
             
@@ -697,7 +710,9 @@ Output JSON structure:
             
             payload = {
                 "postId": post.id,
-                "subreddit": post.subreddit
+                "subreddit": post.subreddit,
+                "comment_limit": 100,  # CRITICAL: Get more comments for "30% more meat"
+                "comment_depth": 5     # CRITICAL: Go deeper into threads
             }
             
             # Using circuit breaker logic for robustness, though individual failures shouldn't stop the pipeline

@@ -674,13 +674,20 @@ ${truncatedContent}
   /**
    * Fetch details for a single post
    */
-  async getPostDetails(postId: string, subreddit?: string): Promise<RedditSearchResult | null> {
+  async getPostDetails(
+    postId: string, 
+    subreddit?: string,
+    comment_limit: number = 50,
+    comment_depth: number = 3
+  ): Promise<RedditSearchResult | null> {
     try {
+      logger.info(`[MCP Call] get_post_details: id=${postId}, limit=${comment_limit}, depth=${comment_depth}`);
+      
       const details = await this.mcp.executeTool<any>('get_post_details', {
         post_id: postId,
         subreddit: subreddit,
-        comment_limit: 50,
-        comment_depth: 3
+        comment_limit: comment_limit,
+        comment_depth: comment_depth
       });
 
       if (details) {
@@ -788,6 +795,8 @@ const searchRequestSchema = z.object({
 const detailsRequestSchema = z.object({
   postId: z.string().min(1),
   subreddit: z.string().optional(),
+  comment_limit: z.number().optional(),
+  comment_depth: z.number().optional(),
 });
 
 // Health check endpoint
@@ -856,10 +865,10 @@ fastify.post('/details', async (request, reply) => {
       };
     }
   
-    const { postId, subreddit } = parseResult.data;
+    const { postId, subreddit, comment_limit, comment_depth } = parseResult.data;
     
     try {
-      const result = await aggregator.getPostDetails(postId, subreddit);
+      const result = await aggregator.getPostDetails(postId, subreddit, comment_limit, comment_depth);
       
       if (!result) {
         reply.code(404);
