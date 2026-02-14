@@ -150,9 +150,9 @@ Frontend integration for Reddit community analysis with safe markdown rendering 
 ### Key Components
 
 #### CommunityInsightsSection (`components/CommunityInsightsSection.tsx`)
-- **Markdown Rendering**: Safe iterative parser (no regex, O(n) complexity)
+- **Markdown Rendering**: `react-markdown` + `remark-gfm` for full GFM support (Tables, Lists, Code).
+- **Styling**: "Premium Clean UI 2026" (Soft shadows, rounded corners, clean typography).
 - **Sections**: Reality Check, Hacks & Workarounds, Vibe Check, Summary (localized RU/EN)
-- **Styling**: Neutral system palette (gray backgrounds, blue accents)
 - **Source Cards**: Collapsible Reddit post references with null-safety
 - **States**: Loading, Empty, Error, Success
 - **Toggle**: Show/hide raw markdown and sources list

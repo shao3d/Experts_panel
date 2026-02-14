@@ -110,7 +110,7 @@ The system processes user queries through an **eight-phase pipeline** using a **
     - **Hacker News Gravity**: For non-guide content (News, Discussions), standard time decay applies to prioritize freshness.
 - **Deep Analysis Capabilities**:
     - **Expanded Scope**: Deep fetches top **15** posts (increased from 10) to capture long-tail technical solutions.
-    - **Comment Trees**: Fetches nested discussions (Depth 3) to capture debates.
+    - **Active Enrichment**: Calls `POST /details` on Proxy to fetch full content + 50 comments (Depth 3) for top results.
     - **Code Preservation**: Proxy sanitization logic preserves code blocks (` ``` `) in Python/JSON configs.
 - **Synthesis Strategy ("Inverted Pyramid" + "Smart Structure")**:
     - **Smart Comparison Tables**: Automatically generates Markdown tables for "vs" queries (e.g., "LangGraph vs CrewAI"), comparing tools by criteria like Production Readiness, Control Flow, and Learning Curve based on community consensus.
