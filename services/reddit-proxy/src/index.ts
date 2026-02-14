@@ -143,6 +143,95 @@ function escapeMarkdown(text: string): string {
 }
 
 // ============================================================================
+// Reddit Direct API Client (Bypassing limited MCP)
+// ============================================================================
+
+let redditAccessToken: string | null = null;
+let redditTokenExpiresAt = 0;
+
+async function getRedditAccessToken(): Promise<string> {
+  // Return cached token if valid (with 60s buffer)
+  if (redditAccessToken && Date.now() < redditTokenExpiresAt - 60000) {
+    return redditAccessToken;
+  }
+
+  const clientId = process.env.REDDIT_CLIENT_ID;
+  const clientSecret = process.env.REDDIT_CLIENT_SECRET;
+  const username = process.env.REDDIT_USERNAME;
+  const password = process.env.REDDIT_PASSWORD;
+
+  if (!clientId || !clientSecret || !username || !password) {
+    throw new Error('Missing Reddit credentials');
+  }
+
+  const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+  
+  try {
+    const response = await fetch('https://www.reddit.com/api/v1/access_token', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${auth}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'User-Agent': REDDIT_USER_AGENT
+      },
+      body: new URLSearchParams({
+        grant_type: 'password',
+        username,
+        password
+      }).toString()
+    });
+
+    if (!response.ok) {
+      throw new Error(`Token fetch failed: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json() as { access_token: string, expires_in: number };
+    
+    redditAccessToken = data.access_token;
+    redditTokenExpiresAt = Date.now() + (data.expires_in * 1000);
+    
+    logger.info('✅ Acquired new Reddit Access Token');
+    return redditAccessToken;
+  } catch (e) {
+    logger.error('Failed to get Reddit token:', e);
+    throw e;
+  }
+}
+
+async function fetchDeepThread(
+  postId: string, 
+  limit: number = 100, 
+  depth: number = 5
+): Promise<any> {
+  const token = await getRedditAccessToken();
+  const url = `https://oauth.reddit.com/comments/${postId}?limit=${limit}&depth=${depth}&sort=confidence`;
+  
+  logger.info(`Fetching deep thread: ${url}`);
+  
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'User-Agent': REDDIT_USER_AGENT
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`Reddit API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  // Reddit returns array: [post_listing, comment_listing]
+  if (!Array.isArray(data) || data.length < 2) {
+    throw new Error('Invalid Reddit API response format');
+  }
+
+  return {
+    post: data[0].data.children[0].data,
+    comments: data[1].data.children.map((c: any) => c.data)
+  };
+}
+
+// ============================================================================
 // Watchdog MCP Manager
 // ============================================================================
 
@@ -681,87 +770,71 @@ ${truncatedContent}
     comment_depth: number = 3
   ): Promise<RedditSearchResult | null> {
     try {
-      logger.info(`[MCP Call] get_post_details: id=${postId}, limit=${comment_limit}, depth=${comment_depth}`);
+      logger.info(`[Direct API] getPostDetails: id=${postId}, limit=${comment_limit}, depth=${comment_depth}`);
       
-      const details = await this.mcp.executeTool<any>('get_post_details', {
-        post_id: postId,
-        subreddit: subreddit,
-        comment_limit: comment_limit,
-        comment_depth: comment_depth
-      });
+      // Use direct API fetch instead of MCP
+      const rawData = await fetchDeepThread(postId, comment_limit, comment_depth);
+      
+      if (!rawData || !rawData.post) return null;
 
-      if (details) {
-        let fullContent = "";
-        let comments: any[] = [];
-        let title = "";
-        let url = "";
-        let score = 0;
-        let numComments = 0;
-        let author = "";
-        let createdUtc = 0;
-        let permalink = "";
-        let sub = subreddit || "";
-        let id = postId;
+      const post = rawData.post;
+      const rawComments = rawData.comments || [];
 
-
-        if (typeof details === 'string') {
-           fullContent = details;
-        } else if (typeof details === 'object') {
-            // Handle nested 'post' object (reddit-mcp-buddy structure)
-             if (details.post) {
-                fullContent = details.post.selftext || details.post.content || fullContent;
-                title = details.post.title || title;
-                url = details.post.url || url;
-                score = details.post.score || score;
-                numComments = details.post.num_comments || numComments;
-                author = details.post.author || author;
-                createdUtc = details.post.created_utc || createdUtc;
-                permalink = details.post.permalink || permalink;
-                sub = details.post.subreddit || sub;
-                id = details.post.id || id;
-            } else {
-                 // Fallback for flat structure
-                if (details.selftext) fullContent = details.selftext;
-                if (details.content) fullContent = details.content;
-                title = details.title || title;
-                url = details.url || url;
-                score = details.score || score;
-                numComments = details.num_comments || numComments;
-                author = details.author || author;
-                createdUtc = details.created_utc || createdUtc;
-                permalink = details.permalink || permalink;
-                sub = details.subreddit || sub;
-                id = details.id || id;
-            }
-
-            if (Array.isArray(details.top_comments)) {
-                comments = details.top_comments;
-            } else if (Array.isArray(details.comments)) {
-                comments = details.comments;
-            }
-        }
-
-        const result: RedditSearchResult = {
-            id: id,
-            title: title || "Unknown Title", 
-            url: url,
-            score: score,
-            numComments: numComments,
-            subreddit: sub,
-            author: author,
-            createdUtc: createdUtc,
-            selftext: fullContent,
-            permalink: permalink,
-            top_comments: comments
-        };
-        
-        // Sanitize the single result
-        return this.sanitizeResults([result])[0];
+      // Recursive function to flatten/format comments
+      // We keep the structure but simplify fields
+      function formatComments(comments: any[]): any[] {
+        return comments
+          .filter((c: any) => c.body && c.author !== '[deleted]')
+          .map((c: any) => ({
+            id: c.id,
+            author: c.author,
+            score: c.score,
+            body: c.body,
+            created_utc: c.created_utc,
+            depth: c.depth,
+            is_op: c.is_submitter,
+            permalink: `https://reddit.com${c.permalink}`,
+            replies: (c.replies && c.replies.data && c.replies.data.children) 
+              ? formatComments(c.replies.data.children.map((child: any) => child.data))
+              : []
+          }));
       }
+
+      const formattedComments = formatComments(rawComments);
+      
+      // Calculate stats
+      function countComments(comments: any[]): number {
+        let count = comments.length;
+        for (const c of comments) {
+          if (c.replies) count += countComments(c.replies);
+        }
+        return count;
+      }
+      
+      const totalFetched = countComments(formattedComments);
+      logger.info(`✅ Fetched deep thread: ${totalFetched} comments (requested limit: ${comment_limit})`);
+
+      const result: RedditSearchResult = {
+        id: post.id,
+        title: post.title || "Unknown Title", 
+        url: post.url,
+        score: post.score,
+        numComments: post.num_comments,
+        subreddit: post.subreddit,
+        author: post.author,
+        createdUtc: post.created_utc,
+        selftext: post.selftext || "",
+        permalink: `https://reddit.com${post.permalink}`,
+        top_comments: formattedComments // Now contains nested replies!
+      };
+      
+      // Sanitize the result
+      return this.sanitizeResults([result])[0];
+
     } catch (e) {
       logger.warn(`Failed to get details for post ${postId}:`, e);
+      return null;
     }
-    return null;
   }
 }
 
