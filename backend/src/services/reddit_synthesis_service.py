@@ -5,6 +5,7 @@ to extract insights, sentiment, and actionable information from community discus
 """
 
 import logging
+import html
 from typing import Optional, List, Dict, Any
 
 from .. import config
@@ -128,17 +129,43 @@ class RedditSynthesisService:
         
         for i, comment in enumerate(comments, 1):
             # Handle different comment structures
-            if isinstance(comment, dict):
+            if isinstance(comment, str):
+                # Legacy format: simple string comment
+                author = "unknown"
+                body = comment
+                score = 0
+                replies = []
+                flair = ""
+                distinguished = ""
+                stickied = False
+                is_op = False
+            elif isinstance(comment, dict):
                 author = comment.get('author', 'unknown')
-                body = comment.get('body', '') or comment.get('text', '')
+                raw_body = comment.get('body', '') or comment.get('text', '')
+                body = html.unescape(raw_body)
                 score = comment.get('score', 0)
-                replies = comment.get('replies', [])
+                replies = comment.get('replies') or []
+                # New Metadata Fields
+                flair = comment.get('flair', '')
+                distinguished = comment.get('distinguished', '')
+                stickied = comment.get('stickied', False)
+                # Check for explicit is_op flag or compare with post_author (ignoring deleted/unknown)
+                is_valid_author = author and author.lower() not in ["[deleted]", "unknown"]
+                is_op = comment.get('is_op', False) or (is_valid_author and post_author and author.lower() == post_author.lower())
             else:
                 # Fallback for objects
                 author = getattr(comment, 'author', 'unknown')
-                body = getattr(comment, 'body', '') or getattr(comment, 'text', '')
+                raw_body = getattr(comment, 'body', '') or getattr(comment, 'text', '')
+                body = html.unescape(raw_body)
                 score = getattr(comment, 'score', 0)
-                replies = getattr(comment, 'replies', [])
+                replies = getattr(comment, 'replies', []) or []
+                # New Metadata Fields
+                flair = getattr(comment, 'flair', '')
+                distinguished = getattr(comment, 'distinguished', '')
+                stickied = getattr(comment, 'stickied', False)
+                # Check for explicit is_op flag or compare with post_author (ignoring deleted/unknown)
+                is_valid_author = author and author.lower() not in ["[deleted]", "unknown"]
+                is_op = getattr(comment, 'is_op', False) or (is_valid_author and post_author and author.lower() == post_author.lower())
 
             if body:
                 # Detect OP Verification (Golden Answer)
@@ -147,8 +174,15 @@ class RedditSynthesisService:
                 if post_author and post_author != "unknown" and replies:
                     for reply in replies:
                         # Check reply author safely
-                        r_author = reply.get('author') if isinstance(reply, dict) else getattr(reply, 'author', '')
-                        r_body = (reply.get('body') if isinstance(reply, dict) else getattr(reply, 'body', '')) or ""
+                        if isinstance(reply, str):
+                            r_author = "unknown"
+                            r_body = reply
+                        elif isinstance(reply, dict):
+                            r_author = reply.get('author', 'unknown')
+                            r_body = reply.get('body', '') or reply.get('text', '')
+                        else:
+                            r_author = getattr(reply, 'author', 'unknown')
+                            r_body = getattr(reply, 'body', '') or getattr(reply, 'text', '')
                         
                         if r_author == post_author and any(kw in r_body.lower() for kw in self.VERIFICATION_KEYWORDS):
                             is_verified = True
@@ -158,11 +192,24 @@ class RedditSynthesisService:
                 if len(body) > 2000:
                     body = body[:2000] + "... (truncated)"
                 
-                # Add visual marker for LLM
-                verified_tag = "[✅ OP VERIFIED SOLUTION] " if is_verified else ""
+                # Build Metadata Tags
+                tags = []
+                if is_op:
+                    tags.append("[OP]")
+                if distinguished: # moderator/admin
+                    tags.append(f"[{distinguished.upper()}]")
+                if stickied:
+                    tags.append("[PINNED]")
+                if flair:
+                    tags.append(f'[Flair: "{flair}"]')
+                if is_verified:
+                    tags.append("[✅ OP VERIFIED SOLUTION]")
+                
+                tags_str = " ".join(tags) + " " if tags else ""
                 
                 prefix = "└─ " if depth > 0 else f"{i}. "
-                header = f"{indent}{prefix}{verified_tag}[{author} | {score}]: "
+                # Format: [OP] [Flair: "Dev"] [User | Score: 100]: Body
+                header = f"{indent}{prefix}{tags_str}[{author} | Score: {score}]: "
                 
                 # Handle multi-line content (code blocks, paragraphs) by indenting subsequent lines
                 # This preserves structure for the LLM
@@ -268,6 +315,11 @@ class RedditSynthesisService:
 - Вопрос пользователя.
 - Структурированные треды с Reddit (включая глубокие ветки комментариев).
 
+СИГНАЛЫ АВТОРИТЕТНОСТИ (AUTHORITY SIGNALS):
+- **FLAIRS:** Доверяйте пользователям с плашками типа "Maintainer", "Dev", "Contributor".
+- **OP VERIFICATION:** Решения, помеченные `[✅ OP VERIFIED SOLUTION]`, имеют наивысший приоритет (автор подтвердил, что это сработало).
+- **SCORE SKEPTICISM:** Высокий рейтинг комментария не всегда означает техническую правоту (это может быть шутка). Проверяйте факты.
+
 КРИТИЧЕСКИЙ АНАЛИЗ (NO FLUFF):
 - **HIDDEN GEMS:** Ищите в глубине комментариев конкретные флаги, конфиги, бенчмарки, которые упустил автор поста.
 - **CONTROVERSIAL TAKES:** Если есть сильные аргументы ПРОТИВ популярного мнения — вы обязаны их привести.
@@ -278,7 +330,7 @@ class RedditSynthesisService:
 СТРУКТУРА ОТВЕТА (Инженерный отчет):
 1.  **Executive Summary:** Прямой ответ, консенсус 2026 года.
 2.  **Deep Dive (Технические детали):** Код, конфиги, архитектура. Самая большая секция.
-3.  **Minority Report (Альтернативные мнения):** Что советуют опытные инженеры, несогласные с мейнстримом.
+3.  **Minority Report (Альтернативные мнения):** Что советуют опытные инженеры (особенно с Flair), несогласные с мейнстримом.
 4.  **Battle-tested Edge Cases:** Реальные баги и проблемы из продакшена.
 
 СТИЛЬ:
@@ -303,6 +355,11 @@ INPUT:
 - User Query.
 - Structured Reddit threads (including deep comment trees).
 
+AUTHORITY SIGNALS:
+- **FLAIRS:** Trust users with flairs like "Maintainer", "Dev", "Contributor".
+- **OP VERIFICATION:** Solutions marked `[✅ OP VERIFIED SOLUTION]` have highest priority (author confirmed it worked).
+- **SCORE SKEPTICISM:** High score does not always mean technical correctness (could be a joke). Verify facts.
+
 CRITICAL ANALYSIS (NO FLUFF):
 - **HIDDEN GEMS:** Dig deep into comments for specific flags, configs, benchmarks that the OP missed.
 - **CONTROVERSIAL TAKES:** If there are strong arguments AGAINST the popular opinion, you MUST include them.
@@ -313,7 +370,7 @@ CRITICAL ANALYSIS (NO FLUFF):
 RESPONSE STRUCTURE (Engineering Report):
 1.  **Executive Summary:** Direct answer, 2026 consensus.
 2.  **Deep Dive (Technical Details):** Code, configs, architecture. Largest section.
-3.  **Minority Report (Alternative Views):** What experienced engineers suggest against the mainstream.
+3.  **Minority Report (Alternative Views):** What experienced engineers suggest (esp. with Flair) against the mainstream.
 4.  **Battle-tested Edge Cases:** Real-world bugs and production issues.
 
 STYLE:

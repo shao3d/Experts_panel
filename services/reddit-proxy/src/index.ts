@@ -656,54 +656,16 @@ class RedditAggregator {
     // Process in parallel with concurrency limit
     const promises = topResults.map(async (post) => {
       try {
-        // Call get_post_details tool
-        // Note: reddit-mcp-buddy uses 'url' or 'post_id' + 'subreddit'
-        const details = await this.mcp.executeTool<any>('get_post_details', {
-          post_id: post.id,
-          subreddit: post.subreddit,
-          comment_limit: 50, // Get top 50 comments for broad coverage
-          comment_depth: 3   // Capture depth (replies) to understand the debate
-        });
-
-        // DEBUG LOGGING
-        logger.info(`[DEBUG] get_post_details for ${post.id} returned keys:`, details ? Object.keys(details) : 'null');
-        if (details && typeof details === 'object') {
-            logger.debug(`[DEBUG] details sample:`, JSON.stringify(details).substring(0, 200));
-        }
+        // Use our own getPostDetails method instead of MCP to ensure full metadata (flairs, etc.)
+        // and consistent sanitization.
+        // We request 50 comments with depth 3 for broad but reasonably deep context.
+        const details = await this.getPostDetails(post.id, post.subreddit, 50, 3);
 
         if (details) {
-            // Extract content and comments from tool output
-            // The structure depends on reddit-mcp-buddy implementation
-            // Usually returns { selftext: "...", comments: [...] } or string content
-            
-            let fullContent = post.selftext || "";
-            let comments: any[] = [];
-
-            // Helper to extract text from generic tool result
-            if (typeof details === 'string') {
-                fullContent = details;
-            } else if (typeof details === 'object') {
-                // Handle nested 'post' object (reddit-mcp-buddy structure)
-                if (details.post) {
-                    fullContent = details.post.selftext || details.post.content || fullContent;
-                } else {
-                    // Fallback for flat structure
-                    if (details.selftext) fullContent = details.selftext;
-                    if (details.content) fullContent = details.content;
-                }
-
-                // Handle comments - prioritize top_comments from result
-                if (Array.isArray(details.top_comments)) {
-                    comments = details.top_comments;
-                } else if (Array.isArray(details.comments)) {
-                    comments = details.comments;
-                }
-            }
-
             return {
                 ...post,
-                selftext: fullContent || post.selftext, // Update if we got better content
-                top_comments: comments // Add comments
+                selftext: details.selftext || post.selftext, // Update content if better
+                top_comments: details.top_comments // Add rich comments with flairs
             };
         }
       } catch (e) {
@@ -787,12 +749,15 @@ ${truncatedContent}
           .filter((c: any) => c.body && c.author !== '[deleted]')
           .map((c: any) => ({
             id: c.id,
-            author: c.author,
+            author: sanitizeText(c.author),
             score: c.score,
-            body: c.body,
+            body: sanitizeText(c.body),
             created_utc: c.created_utc,
             depth: c.depth,
             is_op: c.is_submitter,
+            flair: c.author_flair_text ? sanitizeText(c.author_flair_text) : null,
+            distinguished: c.distinguished ? sanitizeText(c.distinguished) : null,
+            stickied: c.stickied,
             permalink: `https://reddit.com${c.permalink}`,
             replies: (c.replies && c.replies.data && c.replies.data.children) 
               ? formatComments(c.replies.data.children.map((child: any) => child.data))

@@ -601,6 +601,14 @@ Search query:"""
         
         synthesis_service = RedditSynthesisService()
         
+        # CRITICAL FIX: Pass the original 'reddit_result' (EnhancedSearchResult) to synthesis
+        # This preserves the rich 'top_comments' structure with flairs and nesting,
+        # allowing _format_comments_recursive to do its job.
+        # Passing 'search_result' (RedditSearchResult with Pydantic sources) would flatten comments into string.
+        synthesis = await synthesis_service.synthesize(query, reddit_result)
+        
+        # We still need search_result for the legacy 'found_count' logic below if needed, 
+        # but for synthesis we must use the rich object.
         search_result = RedditSearchResult(
             markdown=markdown,
             found_count=found_count,
@@ -608,8 +616,6 @@ Search query:"""
             query=search_query,
             processing_time_ms=reddit_result.processing_time_ms
         )
-        
-        synthesis = await synthesis_service.synthesize(query, search_result)
         
         if progress_callback:
             await progress_callback({
