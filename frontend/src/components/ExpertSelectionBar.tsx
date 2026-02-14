@@ -28,13 +28,14 @@ const DISPLAY_NAME_MAP: Record<string, string> = {
   'ilia_izmailov': 'Ilia',
   'polyakov': 'Polyakov',
   'doronin': 'Doronin',
+  'etechlead': 'Etechlead',
 };
 
 /**
  * Expert category groups
  */
 const EXPERT_GROUPS: { label: string; expertIds: string[] }[] = [
-  { label: 'TechExperts', expertIds: ['ai_architect', 'neuraldeep', 'ilia_izmailov', 'polyakov'] },
+  { label: 'TechExperts', expertIds: ['ai_architect', 'neuraldeep', 'ilia_izmailov', 'polyakov', 'etechlead'] },
   { label: 'Tech&BizExperts', expertIds: ['ai_grabli', 'refat', 'akimov', 'llm_under_hood', 'elkornacio', 'doronin'] },
 ];
 

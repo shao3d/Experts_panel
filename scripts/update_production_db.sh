@@ -141,7 +141,7 @@ fi
 rm -f "$DB_PATH.gz"
 
 # 8. Restart Application
-echo "hj  [8/8] Restarting application to load new DB..."
+echo "🔄 [8/8] Restarting application to load new DB..."
 fly apps restart "$APP_NAME"
 echo "   ✅ Restart command sent."
 
