@@ -16,6 +16,7 @@ This specification details the architecture for integrating Reddit search capabi
 - Phase 2: Production Deployment on Fly.io
 - Phase 3: Backend Integration with multi-language support
 - Phase 4: Enhanced Multi-Strategy Search (NEW)
+- Phase 5: Deep Drill (100 comments) & Staff Engineer Persona
 - Reddit Proxy Service live and operational
 - Automatic query translation (RU → EN) implemented
 - Multi-language synthesis (responses in query language)
@@ -501,10 +502,26 @@ frontend/src/components/
 - Deduplication across multiple search results
 - Up to 25 unique posts (vs 10 in basic service)
 
-**Timeout Configuration**:
-- HTTP client timeout: 60s (was 15s)
-- Reddit wait timeout: 90s (was 30s)
-- Allows proxy cold start (~15s) + search processing
+### Phase 5: Deep Drill & Direct API (COMPLETE ✅)
+
+**Problem**: External MCP server (`reddit-mcp-buddy`) had hardcoded limits (5 comments/post), starving the LLM of context.
+
+**Solution**: Hybrid Architecture in Proxy Service.
+- **Search**: Still uses MCP tools for discovery and smart sorting.
+- **Details**: Uses **Direct Reddit API (OAuth)** for content fetching.
+    - **Endpoint**: `GET https://oauth.reddit.com/comments/{id}`
+    - **Credentials**: Reuses the same Client ID/Secret as MCP.
+    - **Capacity**: Fetches **100 comments** (limit=100) with **Depth 5**.
+    - **Result**: +500% more context for synthesis ("The Meat").
+
+**Synthesis Upgrade ("Staff Engineer")**:
+- **Role**: Staff Engineer analysing for a colleague.
+- **Goal**: Find "Hidden Gems" in deep comments (configs, bug fixes).
+- **Structure**:
+    1. Executive Summary
+    2. Deep Dive (Technical)
+    3. Minority Report (Dissenting opinions)
+    4. Edge Cases
 
 ---
 

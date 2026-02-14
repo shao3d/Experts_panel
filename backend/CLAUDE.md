@@ -20,8 +20,8 @@ The backend implements a sophisticated 8-phase query processing system. It uses 
 | `language_validation_service.py` | **5. Validate** | `gemini-2.0-flash` | Ensures response language matches query (RU/EN). |
 | `comment_group_map_service.py` | **6. Comments** | `gemini-2.0-flash` | Finds comment groups. Prioritizes author clarifications on main sources. |
 | `comment_synthesis_service.py` | **7. Synthesis** | `gemini-3-flash-preview` | Extracts insights into 4 sections (Expert/Community). |
-| `reddit_enhanced_service.py` | **8. Reddit** | *None (HTTP Proxy)* | **Sidecar Proxy Client**. Deep Comment Trees (Depth 3, Limit 50). Smart Targeting. |
-| `reddit_synthesis_service.py` | **Synthesis** | `gemini-3-flash-preview` | **Inverted Pyramid Synthesis**. Freshness Check (2026 aware). Critical Filter. |
+| `reddit_enhanced_service.py` | **8. Reddit** | *None (HTTP Proxy)* | **Sidecar Proxy Client**. Deep Drill (100 comments, Depth 5). Hybrid MCP/Direct API. |
+| `reddit_synthesis_service.py` | **Synthesis** | `gemini-3-flash-preview` | **Staff Engineer Persona**. Finds Hidden Gems & Minority Reports. No Fluff. |
 
 ### Infrastructure
 - `src/api/simplified_query_endpoint.py`: **Main Orchestrator**. Manages parallel expert tasks, SSE streaming, and Reddit Sidecar (120s timeout).
@@ -36,12 +36,14 @@ The backend implements a sophisticated 8-phase query processing system. It uses 
 
 ## Reddit Integration
 - **Active Client**: `src/services/reddit_enhanced_service.py` (Proxy Client).
-- **Architecture**: Uses `experts-reddit-proxy.fly.dev` sidecar service to avoid IP bans.
-- **New Features (Round 3)**:
-    - **Deep Trees**: Fetches nested comments (Depth 3) and top 50 comments per post via `/details` endpoint.
-    - **Inverted Pyramid**: Synthesis format (Solution -> Details -> Debate).
-    - **Freshness**: Injects current date to filter outdated info.
-    - **Smart Targeting**: Detects AI/Dev/PM topics via keywords.
+- **Architecture**: Hybrid Sidecar.
+    - **Search**: via MCP (Discovery).
+    - **Details**: via Direct Reddit API (Deep Fetch 100 comments).
+- **New Features (Round 5 - Deep Drill)**:
+    - **Deep Trees**: Fetches 100 comments/post (Depth 5) bypassing MCP limits.
+    - **Staff Engineer Persona**: Synthesis focused on "Hidden Gems" and "Minority Reports".
+    - **No Fluff**: Strict density requirements.
+    - **Timeless Classics**: New search strategy `time="all"` for guides.
 - **Logic**: 
     - **Strict Mode (Mutual Exclusion)**: If topic found -> Search **ONLY** target subreddits. If no topic -> Global search.
     - **Auto-detection**: Service automatically detects topic if endpoint misses it.
