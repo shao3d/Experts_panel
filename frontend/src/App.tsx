@@ -7,7 +7,8 @@ import React, { useState, useEffect } from 'react';
 import { QueryForm } from './components/QueryForm';
 import ExpertAccordion from './components/ExpertAccordion';
 import ProgressSection from './components/ProgressSection';
-import ExpertSelectionBar from './components/ExpertSelectionBar';
+import ExpertSelectionBar from './components/ExpertSelectionBar'; // Kept for Mobile
+import { Sidebar } from './components/Sidebar'; // New Desktop Sidebar
 import CommunityInsightsSection from './components/CommunityInsightsSection';
 import { apiClient } from './services/api';
 import { ExpertResponse as ExpertResponseType, ProgressEvent, ExpertInfo, RedditResponse } from './types/api';
@@ -28,9 +29,6 @@ export const App: React.FC = () => {
   
   // Mobile Expert Selector Drawer State
   const [isExpertSelectorOpen, setIsExpertSelectorOpen] = useState(false);
-  
-  // Desktop Expert Bar State (Accordion)
-  const [isDesktopExpertBarOpen, setIsDesktopExpertBarOpen] = useState(true);
 
   // Timer state for processing time
   const [startTime, setStartTime] = useState<number | null>(null);
@@ -96,7 +94,6 @@ export const App: React.FC = () => {
     setError(null);
     setCurrentQuery(query);
     setIsExpertSelectorOpen(false); // Close selector on submit
-    setIsDesktopExpertBarOpen(false); // Close desktop expert bar on submit
 
     try {
       const experts = Array.from(selectedExperts);
@@ -178,145 +175,128 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="app-container">
-      {/* Mobile: Sticky Header for Progress */}
-      <div className="mobile-header mobile-only">
-        <ProgressSection
-          isProcessing={isProcessing}
-          progressEvents={progressEvents}
-          stats={expertResponses.length > 0 ? getTotalStats() : undefined}
+    // Main Container with Sidebar Layout
+    <div className="flex h-screen overflow-hidden bg-gray-50">
+      
+      {/* 1. Desktop Sidebar (Hidden on Mobile) */}
+      <div className="hidden md:flex shrink-0 z-20 h-full">
+        <Sidebar 
+          availableExperts={availableExperts}
+          selectedExperts={selectedExperts}
+          onExpertsChange={setSelectedExperts}
+          disabled={isProcessing}
         />
       </div>
 
-      {/* Desktop: Top Section */}
-      <div className="top-section desktop-only">
-        <div className="query-container">
-          <QueryForm
-            onSubmit={handleQuerySubmit}
-            disabled={isProcessing}
-            elapsedSeconds={elapsedSeconds}
-            selectedExperts={selectedExperts}
-          />
-        </div>
-
-        <div className="progress-container">
+      {/* 2. Main Content Area (Flex Column) */}
+      <div className="flex-1 flex flex-col h-full overflow-hidden relative w-full">
+        
+        {/* Mobile Header (Original) */}
+        <div className="mobile-header mobile-only md:hidden">
           <ProgressSection
             isProcessing={isProcessing}
             progressEvents={progressEvents}
             stats={expertResponses.length > 0 ? getTotalStats() : undefined}
           />
         </div>
-      </div>
 
-      {/* Desktop: Expert Selection Bar */}
-      <div className="expert-bar-container desktop-only">
-        <div 
-          className="expert-bar-header" 
-          onClick={() => setIsDesktopExpertBarOpen(!isDesktopExpertBarOpen)}
-          title={isDesktopExpertBarOpen ? "Hide experts" : "Show experts"}
-        >
-          <span className="toggle-arrow">
-            {isDesktopExpertBarOpen ? '▼' : '▶'}
-          </span>
-        </div>
-        <div className={`expert-bar-body ${isDesktopExpertBarOpen ? 'open' : 'closed'}`}>
-          <ExpertSelectionBar
-            availableExperts={availableExperts}
-            selectedExperts={selectedExperts}
-            onExpertsChange={setSelectedExperts}
-            disabled={isProcessing}
-          />
-        </div>
-      </div>
-
-      {/* Main Content Area - Expert Accordions + Reddit */}
-      <div className="main-content">
-        <div className="accordion-container">
-          {error ? (
-            <div className="error-message">
-              <h3>⚠️ Error</h3>
-              <p>{error}</p>
-            </div>
-          ) : expertResponses.length > 0 || redditResponse ? (
-            <>
-              {/* Expert Responses */}
-              {[...expertResponses]
-                .sort((a, b) => {
-                  // Sort according to UI configuration order
-                  const uiOrder = EXPERT_UI_CONFIG.order;
-                  const aIndex = uiOrder.indexOf(a.expert_id);
-                  const bIndex = uiOrder.indexOf(b.expert_id);
-
-                  // If both experts are in the UI order, sort by that order
-                  if (aIndex !== -1 && bIndex !== -1) {
-                    return aIndex - bIndex;
-                  }
-
-                  // If only one expert is in the UI order, prioritize it
-                  if (aIndex !== -1) return -1;
-                  if (bIndex !== -1) return 1;
-
-                  // If neither is in UI order, sort alphabetically
-                  return a.expert_id.localeCompare(b.expert_id);
-                })
-                .map((expert) => (
-                  <ExpertAccordion
-                    key={expert.expert_id}
-                    expert={expert}
-                    isExpanded={expandedExperts.has(expert.expert_id)}
-                    onToggle={() => handleToggleExpert(expert.expert_id)}
-                    query={currentQuery}
-                  />
-                ))}
-              
-              {/* Reddit Community Insights */}
-              <CommunityInsightsSection
-                redditResponse={redditResponse}
-                isLoading={isProcessing}
+        {/* Desktop Top Section (Query + Progress) */}
+        <div className="hidden md:flex flex-shrink-0 bg-white border-b border-gray-200 p-5 gap-5 min-h-[160px] h-auto">
+           <div className="flex-1 flex flex-col gap-2 overflow-visible">
+              <QueryForm
+                onSubmit={handleQuerySubmit}
+                disabled={isProcessing}
+                elapsedSeconds={elapsedSeconds}
+                selectedExperts={selectedExperts}
               />
-            </>
-          ) : (
-            <div className="empty-placeholder">
-              {isProcessing ? 'Processing query...' : 'Expert answers and community insights will appear here'}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Mobile: Sticky Footer */}
-      <div className="mobile-footer mobile-only">
-        {/* Expert Selector Toggle Strip */}
-        <div 
-          className="expert-toggle-bar"
-          onClick={() => setIsExpertSelectorOpen(!isExpertSelectorOpen)}
-        >
-          <span>
-            Select Experts ({selectedExperts.size}/{availableExperts.length})
-          </span>
-          <span className="toggle-icon">
-            {isExpertSelectorOpen ? '▼' : '▲'}
-          </span>
+           </div>
+           <div className="flex-1 flex flex-col gap-2 overflow-hidden">
+              <ProgressSection
+                isProcessing={isProcessing}
+                progressEvents={progressEvents}
+                stats={expertResponses.length > 0 ? getTotalStats() : undefined}
+              />
+           </div>
         </div>
 
-        {/* Collapsible Expert List */}
-        <div className={`mobile-expert-selector ${isExpertSelectorOpen ? 'open' : ''}`}>
-          <ExpertSelectionBar
-            availableExperts={availableExperts}
-            selectedExperts={selectedExperts}
-            onExpertsChange={setSelectedExperts}
-            disabled={isProcessing}
-          />
+        {/* Scrollable Results Area */}
+        <main className="flex-1 overflow-y-auto p-4 md:p-6" id="main-scroll-container">
+           <div className="max-w-[1600px] mx-auto w-full pb-24 md:pb-10">
+              {error ? (
+                <div className="p-5 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                  <h3 className="font-bold mb-2">⚠️ Error</h3>
+                  <p>{error}</p>
+                </div>
+              ) : expertResponses.length > 0 || redditResponse ? (
+                <>
+                  {/* Expert Responses */}
+                  {[...expertResponses]
+                    .sort((a, b) => {
+                      const uiOrder = EXPERT_UI_CONFIG.order;
+                      const aIndex = uiOrder.indexOf(a.expert_id);
+                      const bIndex = uiOrder.indexOf(b.expert_id);
+                      if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+                      if (aIndex !== -1) return -1;
+                      if (bIndex !== -1) return 1;
+                      return a.expert_id.localeCompare(b.expert_id);
+                    })
+                    .map((expert) => (
+                      <ExpertAccordion
+                        key={expert.expert_id}
+                        expert={expert}
+                        isExpanded={expandedExperts.has(expert.expert_id)}
+                        onToggle={() => handleToggleExpert(expert.expert_id)}
+                        query={currentQuery}
+                      />
+                    ))}
+                  
+                  {/* Reddit Insights */}
+                  <CommunityInsightsSection
+                    redditResponse={redditResponse}
+                    isLoading={isProcessing}
+                  />
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-64 text-gray-500">
+                  <p className="text-lg">{isProcessing ? 'Processing query...' : 'Expert answers and community insights will appear here'}</p>
+                </div>
+              )}
+           </div>
+        </main>
+
+        {/* Mobile Footer (Original) */}
+        <div className="mobile-footer mobile-only md:hidden">
+          <div 
+            className="expert-toggle-bar"
+            onClick={() => setIsExpertSelectorOpen(!isExpertSelectorOpen)}
+          >
+            <span>
+              Select Experts ({selectedExperts.size}/{availableExperts.length})
+            </span>
+            <span className="toggle-icon">
+              {isExpertSelectorOpen ? '▼' : '▲'}
+            </span>
+          </div>
+
+          <div className={`mobile-expert-selector ${isExpertSelectorOpen ? 'open' : ''}`}>
+            <ExpertSelectionBar
+              availableExperts={availableExperts}
+              selectedExperts={selectedExperts}
+              onExpertsChange={setSelectedExperts}
+              disabled={isProcessing}
+            />
+          </div>
+          
+          <div className="mobile-query-form-container">
+            <QueryForm
+              onSubmit={handleQuerySubmit}
+              disabled={isProcessing}
+              elapsedSeconds={elapsedSeconds}
+              selectedExperts={selectedExperts}
+            />
+          </div>
         </div>
-        
-        {/* Always Visible Query Form */}
-        <div className="mobile-query-form-container">
-          <QueryForm
-            onSubmit={handleQuerySubmit}
-            disabled={isProcessing}
-            elapsedSeconds={elapsedSeconds}
-            selectedExperts={selectedExperts}
-          />
-        </div>
+
       </div>
     </div>
   );

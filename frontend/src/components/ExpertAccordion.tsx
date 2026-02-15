@@ -208,14 +208,14 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
 
       {/* Body - only when expanded */}
       {isExpanded && (
-        <div className="accordion-body">
+        <div className="accordion-body flex flex-col md:flex-row border-t border-gray-200 bg-white h-auto min-h-[400px] max-h-[80vh]">
           {/* Left Column - Expert Response */}
-          <div className="accordion-col-left">
-            <div className="col-header">
-              <h2 className="column-title" style={{fontSize: '16px', margin: 0}}>Expert Response</h2>
+          <div className="accordion-col-left flex-1 flex flex-col min-w-0 border-r border-gray-200 overflow-hidden">
+            <div className="col-header p-3 bg-gray-50 border-b border-gray-200 text-center font-semibold text-gray-600">
+              <h2 className="column-title text-base m-0">Expert Response</h2>
             </div>
 
-            <div className="scrollable-content">
+            <div className="scrollable-content flex-1 overflow-y-auto p-6 custom-scrollbar">
               {expert.answer ? (
                 <>
                   <ExpertResponse
@@ -248,14 +248,14 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
 
           {/* Right Column - Posts */}
           {/* On mobile, this is hidden by default until toggled */}
-          <div className={`accordion-col-right ${!showMobileSources ? 'mobile-hidden' : ''}`}>
-            <div className="col-header">
-              <h2 className="column-title" style={{fontSize: '16px', margin: 0}}>
+          <div className={`accordion-col-right flex-1 flex flex-col min-w-0 bg-gray-50 overflow-hidden ${!showMobileSources ? 'mobile-hidden' : ''}`}>
+            <div className="col-header p-3 bg-gray-50 border-b border-gray-200 text-center font-semibold text-gray-600">
+              <h2 className="column-title text-base m-0">
                 Source posts with comments
               </h2>
             </div>
 
-            <div className="scrollable-content">
+            <div className="scrollable-content flex-1 overflow-y-auto p-4 custom-scrollbar">
               {isTranslating ? (
                 <div>
                   {/* Progress indicator */}

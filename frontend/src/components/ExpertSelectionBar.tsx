@@ -1,11 +1,12 @@
 /**
- * Grouped expert selection bar component.
- * Displays experts in two category rows: TechExperts and Tech&BizExperts.
- * Supports desktop row and mobile wrapping layouts via CSS.
+ * Grouped expert selection bar component (Mobile View).
+ * Displays experts in two category rows.
+ * Supports "Select All" functionality by clicking group labels.
  */
 
 import React from 'react';
 import { ExpertInfo } from '../types/api';
+import { EXPERT_GROUPS, getExpertDisplayName } from '../config/expertConfig';
 
 interface ExpertSelectionBarProps {
   availableExperts: ExpertInfo[];
@@ -13,38 +14,6 @@ interface ExpertSelectionBarProps {
   onExpertsChange: (selected: Set<string>) => void;
   disabled?: boolean;
 }
-
-/**
- * Frontend display name overrides (short, clean names for UI)
- */
-const DISPLAY_NAME_MAP: Record<string, string> = {
-  'ai_architect': 'AI_Arch',
-  'neuraldeep': 'Kovalskii',
-  'ai_grabli': 'AI_Grabli',
-  'refat': 'Refat',
-  'akimov': 'Akimov',
-  'llm_under_hood': 'Rinat',
-  'elkornacio': 'Elkornacio',
-  'ilia_izmailov': 'Ilia',
-  'polyakov': 'Polyakov',
-  'doronin': 'Doronin',
-  'etechlead': 'Etechlead',
-};
-
-/**
- * Expert category groups
- */
-const EXPERT_GROUPS: { label: string; expertIds: string[] }[] = [
-  { label: 'TechExperts', expertIds: ['ai_architect', 'neuraldeep', 'ilia_izmailov', 'polyakov', 'etechlead'] },
-  { label: 'Tech&BizExperts', expertIds: ['ai_grabli', 'refat', 'akimov', 'llm_under_hood', 'elkornacio', 'doronin'] },
-];
-
-/**
- * Get display name for expert (frontend override or fallback to backend name)
- */
-const getDisplayName = (expert: ExpertInfo): string => {
-  return DISPLAY_NAME_MAP[expert.expert_id] || expert.display_name;
-};
 
 /**
  * Grouped expert selection bar component
@@ -55,15 +24,29 @@ const ExpertSelectionBar: React.FC<ExpertSelectionBarProps> = ({
   onExpertsChange,
   disabled = false
 }) => {
-  /**
-   * Toggle expert selection
-   */
+  
   const handleToggleExpert = (expertId: string): void => {
+    if (disabled) return;
     const newSelected = new Set(selectedExperts);
     if (newSelected.has(expertId)) {
       newSelected.delete(expertId);
     } else {
       newSelected.add(expertId);
+    }
+    onExpertsChange(newSelected);
+  };
+
+  const handleToggleGroup = (groupIds: string[]) => {
+    if (disabled) return;
+    const allSelected = groupIds.every(id => selectedExperts.has(id));
+    const newSelected = new Set(selectedExperts);
+    
+    if (allSelected) {
+      // Deselect all
+      groupIds.forEach(id => newSelected.delete(id));
+    } else {
+      // Select all
+      groupIds.forEach(id => newSelected.add(id));
     }
     onExpertsChange(newSelected);
   };
@@ -90,7 +73,7 @@ const ExpertSelectionBar: React.FC<ExpertSelectionBarProps> = ({
           }}
         />
         <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          {getDisplayName(expert)}
+          {getExpertDisplayName(expert.expert_id, expert.display_name)}
           {expert.stats && (
             <span style={{ fontSize: '0.75em', color: '#6c757d', marginLeft: '2px' }}>
               {expert.stats.posts_count}/{expert.stats.comments_count}
@@ -136,9 +119,21 @@ const ExpertSelectionBar: React.FC<ExpertSelectionBarProps> = ({
 
         if (groupExperts.length === 0) return null;
 
+        const allGroupSelected = groupExperts.every(e => selectedExperts.has(e.expert_id));
+
         return (
           <div key={group.label} className="expert-group-row">
-            <span className="expert-group-label">{group.label}:</span>
+            <span 
+              className="expert-group-label" 
+              onClick={() => handleToggleGroup(group.expertIds)}
+              style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+              title="Click to toggle group"
+            >
+              {group.label}
+              <span style={{ fontSize: '10px', opacity: 0.6, fontWeight: 'normal' }}>
+                {allGroupSelected ? '(All)' : '(Select)'}
+              </span>
+            </span>
             <div className="expert-group-items">
               {groupExperts.map(renderExpertItem)}
             </div>

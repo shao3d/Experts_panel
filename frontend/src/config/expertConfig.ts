@@ -1,6 +1,6 @@
 /**
- * Configuration for expert display names and order in UI
- * This maps backend expert IDs to UI display names and defines the order
+ * Configuration for expert display names, order, and grouping in UI
+ * This centralizes all UI-related expert configuration
  */
 
 import { ExpertInfo } from '../types/api';
@@ -9,6 +9,19 @@ export interface ExpertUIConfig {
   displayNames: Record<string, string>;
   order: string[];
 }
+
+export interface ExpertGroup {
+  label: string;
+  expertIds: string[];
+}
+
+/**
+ * Expert Groups Definition (Used in Sidebar and Mobile Selection)
+ */
+export const EXPERT_GROUPS: ExpertGroup[] = [
+  { label: 'Tech', expertIds: ['ai_architect', 'neuraldeep', 'ilia_izmailov', 'polyakov', 'etechlead'] },
+  { label: 'Business', expertIds: ['ai_grabli', 'refat', 'akimov', 'llm_under_hood', 'elkornacio', 'doronin'] },
+];
 
 /**
  * UI Configuration for Experts Panel
@@ -28,7 +41,31 @@ export const EXPERT_UI_CONFIG: ExpertUIConfig = {
     'doronin': 'Doronin',
     'etechlead': 'Etechlead'
   },
+  // Order used for sorting results
   order: ['refat', 'ai_architect', 'neuraldeep', 'ai_grabli', 'akimov', 'llm_under_hood', 'elkornacio', 'ilia_izmailov', 'polyakov', 'doronin', 'etechlead']
+};
+
+/**
+ * Helper to get display name for an expert
+ */
+export const getExpertDisplayName = (expertId: string, defaultName?: string): string => {
+  // Try to find in custom mapping first
+  if (EXPERT_UI_CONFIG.displayNames[expertId]) {
+    // Clean up internal names for display if needed (e.g. remove "Tech_" prefix if desired, 
+    // but for now we use the mapping as is)
+    const mappedName = EXPERT_UI_CONFIG.displayNames[expertId];
+    // Map specific short names for UI consistency if they differ from the config above
+    // This allows using the full config names for sorting but shorter names for Sidebar
+    const shortNames: Record<string, string> = {
+      'Tech_AIarch': 'AI_Arch',
+      'Tech_Kovalskii': 'Kovalskii',
+      'Tech_AIgrabli': 'AI_Grabli',
+      'Tech_Refat': 'Refat',
+      'Biz_Akimov': 'Akimov'
+    };
+    return shortNames[mappedName] || mappedName;
+  }
+  return defaultName || expertId;
 };
 
 /**

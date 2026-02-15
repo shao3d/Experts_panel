@@ -26,7 +26,7 @@ const FormattedContent: React.FC<{ content: string | null | undefined }> = ({ co
   }
   
   return (
-    <div className="formatted-content">
+    <div className="formatted-content prose prose-base prose-blue max-w-none">
       <ReactMarkdown 
         remarkPlugins={[remarkGfm]}
         components={{

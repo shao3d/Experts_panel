@@ -147,10 +147,10 @@ const ExpertResponse: React.FC<ExpertResponseProps> = ({ answer, sources, onPost
 
   // Custom components for ReactMarkdown
   const markdownComponents = {
-    // Handle paragraph nodes
+    // Handle paragraph nodes - REMOVED Inline Styles
     p: ({ children }: any) => {
       return (
-        <p style={{ margin: '0 0 1em 0' }}>
+        <p>
           {React.Children.map(children, (child) => {
             if (typeof child === 'string') {
               return processTextNode(child);
@@ -167,36 +167,20 @@ const ExpertResponse: React.FC<ExpertResponseProps> = ({ answer, sources, onPost
       }
       return children;
     },
-    // Style for links
+    // Style for links - REMOVED Inline Styles (handled by prose)
     a: ({ href, children }: any) => (
       <a
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        style={{ color: '#0066cc', textDecoration: 'underline' }}
       >
         {children}
       </a>
     ),
-    // Style for strong/bold text
-    strong: ({ children }: any) => (
-      <strong style={{ fontWeight: 600 }}>{children}</strong>
-    ),
-    // Style for emphasis/italic text
-    em: ({ children }: any) => (
-      <em style={{ fontStyle: 'italic' }}>{children}</em>
-    ),
-    // Style for lists
-    ul: ({ children }: any) => (
-      <ul style={{ margin: '0.5em 0', paddingLeft: '1.5em' }}>{children}</ul>
-    ),
-    ol: ({ children }: any) => (
-      <ol style={{ margin: '0.5em 0', paddingLeft: '1.5em' }}>{children}</ol>
-    ),
-    // Style for list items
+    // Style for list items - REMOVED Inline Styles
     li: ({ children }: any) => {
       return (
-        <li style={{ margin: '0.25em 0' }}>
+        <li>
           {React.Children.map(children, (child) => {
             if (typeof child === 'string') {
               return processTextNode(child);
@@ -206,16 +190,6 @@ const ExpertResponse: React.FC<ExpertResponseProps> = ({ answer, sources, onPost
         </li>
       );
     },
-    // Style for headings
-    h1: ({ children }: any) => (
-      <h1 style={{ fontSize: '1.5em', fontWeight: 600, margin: '0.5em 0' }}>{children}</h1>
-    ),
-    h2: ({ children }: any) => (
-      <h2 style={{ fontSize: '1.3em', fontWeight: 600, margin: '0.5em 0' }}>{children}</h2>
-    ),
-    h3: ({ children }: any) => (
-      <h3 style={{ fontSize: '1.1em', fontWeight: 600, margin: '0.5em 0' }}>{children}</h3>
-    ),
   };
 
   return (
@@ -235,6 +209,7 @@ const ExpertResponse: React.FC<ExpertResponseProps> = ({ answer, sources, onPost
           lineHeight: '1.6',
           color: '#212529',
         }}
+        className="prose prose-base prose-blue max-w-none"
       >
         <ReactMarkdown
           components={markdownComponents}
