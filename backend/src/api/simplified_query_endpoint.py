@@ -466,24 +466,27 @@ async def process_reddit_pipeline(
             
             prompt = f"""Convert this Russian question into an optimal English search query for Reddit.
 
+Context Analysis:
+1. Is the user BUILDING AI SYSTEMS (Architecture)? E.g. "how RAG works", "best vector DB". -> Keywords: "RAG", "Vector DB", "Embeddings".
+2. Is the user CODING WITH AI (Workflow)? E.g. "using Cursor", "docs for Copilot context". -> Keywords: "AI coding context", "repo structure", "cursor rules", "developer experience".
+
 Rules:
-1. Use only key concepts (no fluff words like "which", "should", "how", "best")
-2. Include specific technical terms (TTS, STT, LLM, API, etc.) as-is
-3. 4-6 words maximum  
-4. Think: what keywords would Reddit users in r/LocalLLaMA or r/technology use?
-5. Output ONLY the search query, nothing else
+1. Use specific technical terms relevant to the context.
+2. If user asks about "documentation" for BUILDING AI (RAG) -> use "RAG documentation parsing chunking strategy".
+3. If user asks about "documentation" for CODING WITH AI (Context) -> use "AI coding context repo structure documentation best practices".
+4. CRITICAL: If intent is Workflow/Coding, DO NOT use architecture terms like "Vector DB" or "RAG".
 
 Examples:
-- "Какие движки TTS?" → "TTS engines text to speech"
-- "Что использовать для STT?" → "STT speech recognition tools"
-- "Локальные LLM" → "local LLM models ollama"
+- "Какую документацию писать для AI разработки?" (Workflow) -> "AI coding context documentation repo structure best practices"
+- "Как готовить доки для поиска?" (Architecture) -> "RAG documentation parsing chunking strategy"
+- "Лучшие промпты для кода" (Workflow) -> "best system prompts for coding LLM"
 
 Question: {query}
 
 Search query:"""
             
             response = await client.chat_completions_create(
-                model="gemini-2.0-flash",
+                model="gemini-3-flash-preview",
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.1
             )

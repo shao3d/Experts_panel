@@ -100,6 +100,10 @@ The system processes user queries through an **eight-phase pipeline** using a **
     - **Deep Dive**: Uses **Direct Reddit API (OAuth)** via Proxy to bypass MCP pagination limits and fetch full trees.
 
 #### Phase 1: Search & Scout
+- **Query Translation & Formulation**:
+    - **Model**: `gemini-3-flash-preview` (Upgraded from 2.0 Flash).
+    - **Logic**: Analyzes user intent to distinguish between **Building AI** (Architecture/RAG) and **Using AI** (Workflow/Coding).
+    - **Anti-Hallucination**: Strictly forbids architecture terms (Vector DB, RAG) for workflow queries (e.g., "docs for Copilot").
 - **AI Scout v3 (Temporal & Intent Aware)**:
     - **Model**: `Gemini 3 Flash Preview`.
     - **Capabilities**:
