@@ -210,25 +210,33 @@ class RedditEnhancedService:
         """Use Gemini 3 Flash to create a search plan (Subreddits + Intent-based Queries).
         
         Returns:
-            Dict with keys 'subreddits' (List[str]), 'queries' (List[str]), and 'keywords' (List[str])
+            Dict with keys:
+            - 'subreddits': List[str]
+            - 'queries': List[str]
+            - 'keywords': List[str]
+            - 'time_filter': str ('month' | 'year' | 'all')
+            - 'intent': str ('how_to' | 'comparison' | 'troubleshooting' | 'news' | 'discussion')
         """
         try:
             prompt = f"""You are an expert Reddit OSINT Navigator.
 User Query: "{query}"
 
-Task: Create a precise Search Plan to find practical, technical information.
+Task: Create a precise Search Plan.
 1. Identify 3-7 relevant technical subreddits.
-2. Generate 3-5 SPECIFIC search queries to find guides, workflows, or technical details.
-3. Extract 2-3 CRITICAL keywords from the user query that MUST be in the result titles (e.g. tool names, specific concepts like "Skills", "MCP").
+2. Generate 3-5 SPECIFIC search queries.
+3. Extract 2-3 CRITICAL keywords.
+4. Assess Temporal Context:
+   - Is this a fast-moving topic (AI, News, Bugs)? -> "month" or "year"
+   - Is this evergreen (Concepts, Algorithms)? -> "all"
+5. Classify Intent: how_to, comparison, troubleshooting, news, discussion.
 
 Output JSON structure:
 {{
   "subreddits": ["LocalLLaMA", "ClaudeAI"],
-  "queries": [
-    "\"Claude Code\" workflow",
-    "\"Claude Code\" setup guide"
-  ],
-  "keywords": ["Skills", "CLI", "Claude"]
+  "queries": ["Claude Code workflow", "Claude setup"],
+  "keywords": ["Skills", "CLI"],
+  "time_filter": "month",
+  "intent": "how_to"
 }}
 """
             # Use Gemini 3 Flash Preview for high-intelligence scouting
@@ -250,10 +258,10 @@ Output JSON structure:
                     plan = json.loads(json_str)
                 else:
                     logger.warning(f"Gemini Scout returned no JSON object: {content[:100]}...")
-                    return {"subreddits": [], "queries": [], "keywords": []}
+                    return {"subreddits": [], "queries": [], "keywords": [], "time_filter": "all", "intent": "discussion"}
             except json.JSONDecodeError as e:
                 logger.warning(f"Gemini Scout JSON parse error: {e}. Content: {content[:100]}...")
-                return {"subreddits": [], "queries": [], "keywords": []}
+                return {"subreddits": [], "queries": [], "keywords": [], "time_filter": "all", "intent": "discussion"}
             
             # Validation and Sanitization
             valid_subs = []
@@ -277,8 +285,21 @@ Output JSON structure:
             raw_keywords = plan.get("keywords", [])
             if isinstance(raw_keywords, list):
                 valid_keywords = [k for k in raw_keywords if isinstance(k, str) and len(k) > 2]
+                
+            time_filter = plan.get("time_filter", "all")
+            if time_filter not in ["hour", "day", "week", "month", "year", "all"]:
+                time_filter = "all"
+                
+            intent = plan.get("intent", "discussion")
 
-            result = {"subreddits": valid_subs, "queries": valid_queries, "keywords": valid_keywords}
+            result = {
+                "subreddits": valid_subs, 
+                "queries": valid_queries, 
+                "keywords": valid_keywords,
+                "time_filter": time_filter,
+                "intent": intent
+            }
+            
             if valid_subs or valid_queries:
                 logger.info(f"🤖 Gemini Scout Plan for '{query}': {result}")
             
@@ -286,7 +307,7 @@ Output JSON structure:
             
         except Exception as e:
             logger.warning(f"Gemini Scout failed: {e}. Falling back to global search.")
-            return {"subreddits": [], "queries": [], "keywords": []}
+            return {"subreddits": [], "queries": [], "keywords": [], "time_filter": "all", "intent": "discussion"}
     
     async def search_enhanced(
         self,
@@ -318,13 +339,14 @@ Output JSON structure:
             logger.info(f"Expanded query: '{original_query}' -> '{expanded_query}'")
         
         # 2. Dynamic Scouting (AI-Powered)
-        search_plan = {"subreddits": [], "queries": [], "keywords": []}
+        search_plan = {"subreddits": [], "queries": [], "keywords": [], "time_filter": "all", "intent": "discussion"}
         if subreddits is None:
             # Use Gemini 3 Flash to find targets and generate intent queries
             search_plan = await self._plan_search_strategy(query)
             subreddits = search_plan.get("subreddits", [])
         
         target_keywords = search_plan.get("keywords", [])
+        scout_time_filter = search_plan.get("time_filter", "all")
         
         sort_tasks = []
         
@@ -335,7 +357,7 @@ Output JSON structure:
             # with different SORTS on the COMBINED set of subreddits.
             # Query: "(expanded_query) AND (subreddit:A OR subreddit:B ...)"
             
-            logger.info(f"Targeted search active ({len(subreddits)} subs) - Using Combined OR Strategy")
+            logger.info(f"Targeted search active ({len(subreddits)} subs) - Using Combined OR Strategy. Time Filter: {scout_time_filter}")
             
             # Construct subreddit filter: (subreddit:A OR subreddit:B)
             # Limit number of subreddits to prevent extremely long URLs
@@ -353,10 +375,10 @@ Output JSON structure:
                 # "top": Highest quality/engagement (year)
                 # "new": Freshness check (month)
                 
-                # Task 1: Relevance (All time)
+                # Task 1: Relevance (Context Aware Time)
                 sort_tasks.append((
                     "combined_relevance", 
-                    self._search_with_sort(final_query, sort="relevance", limit=25, time="all")
+                    self._search_with_sort(final_query, sort="relevance", limit=25, time=scout_time_filter)
                 ))
                 
                 # Task 2: Top (Past Year) - High quality signal
@@ -381,7 +403,7 @@ Output JSON structure:
                         full_ai_q = f"({ai_q}) AND ({subreddit_filter})"
                         sort_tasks.append((
                             f"ai_intent_{i}",
-                            self._search_with_sort(full_ai_q, sort="relevance", limit=20, time="all")
+                            self._search_with_sort(full_ai_q, sort="relevance", limit=20, time=scout_time_filter)
                         ))
 
                 # Task 5: "Sniper" Strategy - High Signal Guides (Title Only)
@@ -396,7 +418,7 @@ Output JSON structure:
                 
                 sort_tasks.append((
                     "high_signal_title",
-                    self._search_with_sort(title_query, sort="relevance", limit=15, time="all")
+                    self._search_with_sort(title_query, sort="relevance", limit=15, time=scout_time_filter)
                 ))
 
                 # Task 6: "Conflict & Solution" Strategy
@@ -409,7 +431,7 @@ Output JSON structure:
 
                 sort_tasks.append((
                     "comparison_heavy",
-                    self._search_with_sort(comparison_query, sort="relevance", limit=15, time="all")
+                    self._search_with_sort(comparison_query, sort="relevance", limit=15, time=scout_time_filter)
                 ))
 
                 # Task 7: "Timeless Classics" Strategy (New in R3)
@@ -420,6 +442,7 @@ Output JSON structure:
                 if subreddits:
                     classic_query = f"({classic_query}) AND ({subreddit_filter})"
                 
+                # Timeless always uses "all"
                 sort_tasks.append((
                     "timeless_classic",
                     self._search_with_sort(classic_query, sort="top", limit=10, time="all")
@@ -430,17 +453,17 @@ Output JSON structure:
                 logger.warning("All subreddits filtered out, falling back to global")
                 sort_tasks.append((
                     "global_relevance", 
-                    self._search_with_sort(expanded_query, sort="relevance", limit=25, time="all")
+                    self._search_with_sort(expanded_query, sort="relevance", limit=25, time=scout_time_filter)
                 ))
                 
         else:
             # OPTION B: Global Search (No specific topic detected)
-            logger.info("No specific topic detected - Enabling global search")
+            logger.info(f"No specific topic detected - Enabling global search. Time Filter: {scout_time_filter}")
             
             # Task 1: Global Relevance
             sort_tasks.append((
                 "global_relevance", 
-                self._search_with_sort(expanded_query, sort="relevance", limit=25, time="all")
+                self._search_with_sort(expanded_query, sort="relevance", limit=25, time=scout_time_filter)
             ))
             
             # Task 2: Global Hot (Trending)
@@ -455,7 +478,7 @@ Output JSON structure:
             title_query = f"title:({expanded_query}) AND title:({high_signal_or})"
             sort_tasks.append((
                 "global_high_signal",
-                self._search_with_sort(title_query, sort="relevance", limit=15, time="all")
+                self._search_with_sort(title_query, sort="relevance", limit=15, time=scout_time_filter)
             ))
 
             # Task 4: Global Conflict & Solution (Additive)
@@ -464,7 +487,7 @@ Output JSON structure:
             comparison_query = f"({expanded_query}) AND ({comparison_or})"
             sort_tasks.append((
                 "global_comparison_heavy",
-                self._search_with_sort(comparison_query, sort="relevance", limit=15, time="all")
+                self._search_with_sort(comparison_query, sort="relevance", limit=15, time=scout_time_filter)
             ))
         results = await asyncio.gather(
             *[task for _, task in sort_tasks],
@@ -523,9 +546,17 @@ Output JSON structure:
             except Exception as e:
                 logger.error(f"Fallback search also failed: {e}")
         
+        # --- PHASE 2: DEDUPLICATION & CLEANUP ---
+        unique_posts = self._deduplicate_posts(list(all_posts.values()))
+        logger.info(f"Deduplication: {len(all_posts)} -> {len(unique_posts)} unique posts")
+
+        # --- PHASE 3: AI RERANKING (The Brain) ---
+        # Instead of relying solely on mathematical formula, we use Gemini 3 Flash
+        # to assess semantic relevance.
+        
+        # 1. Pre-sort by heuristic to send only promising candidates to LLM (save tokens)
         # Sort by combined engagement score with Time Decay
         # Algorithm: (Score) / (Time + 2)^1.5
-        # This boosts fresh content (2025/2026) over ancient high-score posts
         current_time = datetime.utcnow().timestamp()
         
         def calculate_freshness_score(p: RedditPost) -> float:
@@ -536,33 +567,24 @@ Output JSON structure:
             boost = 1.0
             
             # 1. Technical Guide Boost (Context-Aware)
-            # Rationale: Evergreen content should not decay
             if p.is_technical_guide:
                 boost *= 1.2
             
-            # 2. Semantic Keyword Boost (Relevance)
-            # Rationale: If title matches user's specific terms (e.g. "Skills"), boost it significantly
-            # to prevent viral off-topic posts from crowding out relevant answers.
+            # 2. Semantic Keyword Boost
             if target_keywords:
                 title_lower = p.title.lower()
-                # Count how many critical keywords are in the title
                 matches = sum(1 for k in target_keywords if k.lower() in title_lower)
                 if matches > 0:
-                    # x1.5 for one match, x2.0 for two matches, etc. (capped at x3.0)
                     keyword_boost = min(1.0 + (matches * 0.5), 3.0)
                     boost *= keyword_boost
             
-            # Apply Boost
             score = base_score * boost
             
-            # If it's a technical guide OR has strong keyword match, we SKIP Time Decay
-            # because relevance > freshness for these cases.
             is_highly_relevant = p.is_technical_guide or (boost > 1.5)
-            
             if is_highly_relevant:
                 return score
             
-            # For others (News, General): Apply Gravity Decay
+            # Gravity Decay
             if not p.created_utc:
                 return score
                 
@@ -571,21 +593,39 @@ Output JSON structure:
             gravity = 1.5
             return score / pow((age_hours + 2), gravity)
 
-        sorted_posts = sorted(
-            all_posts.values(),
+        heuristic_sorted = sorted(
+            unique_posts,
             key=calculate_freshness_score,
             reverse=True
         )
+
+        # 2. AI Reranking (Top 40 candidates)
+        # We assume top 40 heuristic posts contain the best answer.
+        CANDIDATES_FOR_RERANK = 40
+        candidates = heuristic_sorted[:CANDIDATES_FOR_RERANK]
+        others = heuristic_sorted[CANDIDATES_FOR_RERANK:]
+        
+        # Only run AI rerank if we have enough candidates
+        if candidates:
+            try:
+                reranked_candidates = await self._ai_rerank_posts(query, candidates)
+                # Combine: AI reranked (high confidence) + others (low confidence fallback)
+                final_sorted = reranked_candidates + others
+            except Exception as e:
+                logger.error(f"AI Reranking failed: {e}. Falling back to heuristic sort.")
+                final_sorted = heuristic_sorted
+        else:
+            final_sorted = heuristic_sorted
         
         # Take top posts for deep analysis
-        top_posts = sorted_posts[:target_posts]
+        top_posts = final_sorted[:target_posts]
         
         # Deep content fetching for top posts (if enabled)
         if include_comments and top_posts:
             logger.info(f"Fetching deep content for top {len(top_posts)} posts...")
             deep_tasks = [
                 self._enrich_post_content(post)
-                for post in top_posts[:15]  # Limit deep analysis to top 15 (increased from 10)
+                for post in top_posts[:15]  # Limit deep analysis to top 15
             ]
             enriched = await asyncio.gather(*deep_tasks, return_exceptions=True)
             
@@ -599,11 +639,146 @@ Output JSON structure:
         
         return EnhancedSearchResult(
             posts=top_posts,
-            total_found=len(all_posts),
+            total_found=len(unique_posts),
             query=query,
             strategies_used=strategies_used,
             processing_time_ms=processing_time_ms
         )
+
+    def _deduplicate_posts(self, posts: List[RedditPost]) -> List[RedditPost]:
+        """Deduplicate posts based on URL and fuzzy title match."""
+        unique = []
+        seen_urls = set()
+        seen_titles = set()
+        
+        # Helper to normalize URL (remove query params, trailing slash)
+        def normalize_url(url: str) -> str:
+            if not url: return ""
+            u = url.split('?')[0].rstrip('/')
+            return u
+            
+        # Helper to normalize title (simple alphanum sort)
+        def normalize_title(title: str) -> str:
+            # "How to fix X?" -> "howtofixx"
+            return re.sub(r'[^a-z0-9]', '', title.lower())
+
+        for post in posts:
+            norm_url = normalize_url(post.url)
+            norm_title = normalize_title(post.title)
+            
+            # Check URL exact match
+            if norm_url in seen_urls:
+                continue
+                
+            # Check Title exact match (simple dedup)
+            # This handles cross-posts effectively enough for MVP
+            if norm_title in seen_titles:
+                continue
+                
+            seen_urls.add(norm_url)
+            seen_titles.add(norm_title)
+            unique.append(post)
+            
+        return unique
+
+    async def _ai_rerank_posts(self, query: str, posts: List[RedditPost]) -> List[RedditPost]:
+        """Rerank posts using Gemini 3 Flash based on semantic relevance."""
+        if not posts:
+            return []
+            
+        logger.info(f"🧠 AI Reranking {len(posts)} posts for query: '{query}'")
+        
+        # Prepare batch prompt
+        posts_context = []
+        for i, p in enumerate(posts):
+            # Limit content to save tokens, title is most important for filtering
+            preview = (p.selftext or "")[:300].replace("\n", " ")
+            posts_context.append(f"ID: {i} | Title: {p.title} | Sub: {p.subreddit} | Preview: {preview}")
+            
+        context_str = "\n".join(posts_context)
+        
+        prompt = f"""You are a Relevance Ranking Engine.
+Query: "{query}"
+
+Task: Rate the relevance of the following Reddit posts to the query on a scale of 0.0 to 1.0.
+- 1.0: Perfect answer, technical guide, solution, or highly relevant discussion.
+- 0.0: Spam, joke, completely unrelated, or question without answers.
+
+Posts:
+{context_str}
+
+Output JSON format ONLY:
+{{
+  "ratings": [
+    {{"id": 0, "score": 0.95, "reason": "Exact guide"}},
+    {{"id": 1, "score": 0.1, "reason": "Joke thread"}}
+  ]
+}}
+"""
+        try:
+            # Use MODEL_SYNTHESIS (Gemini 3 Flash Preview) for intelligence
+            response = await self._llm_client.chat_completions_create(
+                model=config.MODEL_SYNTHESIS, 
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.0
+            )
+            
+            content = response.choices[0].message.content.strip()
+            
+            # Parse JSON
+            try:
+                start_idx = content.find('{')
+                end_idx = content.rfind('}')
+                if start_idx != -1 and end_idx != -1:
+                    data = json.loads(content[start_idx:end_idx+1])
+                    # Robust parsing: handle string IDs from LLM
+                    ratings = {}
+                    for r in data.get('ratings', []):
+                        try:
+                            r_id = int(r.get('id'))
+                            ratings[r_id] = r
+                        except (ValueError, TypeError):
+                            continue
+                else:
+                    ratings = {}
+            except Exception:
+                logger.warning("Failed to parse reranking JSON")
+                ratings = {}
+                
+            # Assign scores and sort
+            # We combine AI score with original engagement signal for robustness
+            scored_posts = []
+            for i, post in enumerate(posts):
+                rating = ratings.get(i)
+                ai_score = rating['score'] if rating else 0.5 # Default neutral
+                
+                # Formula: 70% AI Relevance + 30% Normalized Engagement
+                # This ensures highly relevant but low-upvote posts (niche answers) win,
+                # but absolute trash with high AI score (hallucination guard) is kept in check slightly,
+                # and massive viral posts (high engagement) get a small boost if relevance is okay.
+                
+                # Normalize engagement (log scale roughly)
+                engagement = post.score + post.num_comments
+                norm_engagement = min(engagement / 1000.0, 1.0) # Cap at 1000 points
+                
+                final_score = (ai_score * 0.8) + (norm_engagement * 0.2)
+                
+                # Store AI reasoning for debugging/logging
+                if rating and 'reason' in rating:
+                    # You could attach this to post if you want to show it in UI later
+                    pass
+                    
+                scored_posts.append((post, final_score))
+            
+            # Sort desc
+            scored_posts.sort(key=lambda x: x[1], reverse=True)
+            
+            # Return just posts
+            return [p for p, _ in scored_posts]
+            
+        except Exception as e:
+            logger.error(f"Error in _ai_rerank_posts: {e}")
+            return posts # Fallback to original order
     
     async def _search_with_sort(
         self,

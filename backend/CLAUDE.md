@@ -39,14 +39,16 @@ The backend implements a sophisticated 8-phase query processing system. It uses 
 - **Architecture**: Hybrid Sidecar.
     - **Search**: via MCP (Discovery).
     - **Details**: via Direct Reddit API (Deep Fetch 100 comments).
-- **New Features (Round 5 - Deep Drill)**:
-    - **Deep Trees**: Fetches 100 comments/post (Depth 5) bypassing MCP limits.
-    - **Staff Engineer Persona**: Synthesis focused on "Hidden Gems" and "Minority Reports".
-    - **No Fluff**: Strict density requirements.
-    - **Timeless Classics**: New search strategy `time="all"` for guides.
+- **New Features (Round 5 - Deep Drill & AI Brain)**:
+    - **AI Reranking**: Filters viral noise using Gemini 3 relevance check (80% AI + 20% Engagement).
+    - **Smart Deduplication**: Normalized URL/Title check to remove cross-posts.
+    - **Temporal Awareness**: Scout detects "Fast-moving" vs "Evergreen" intent (`time="month"` vs `"all"`).
+    - **Deep Trees**: Fetches 100 comments/post (Depth 5).
+    - **Staff Engineer Persona**: Synthesis focused on "Hidden Gems".
+    - **Timeless Classics**: Strategy for guides.
 - **Logic**: 
-    - **Strict Mode (Mutual Exclusion)**: If topic found -> Search **ONLY** target subreddits. If no topic -> Global search.
-    - **Auto-detection**: Service automatically detects topic if endpoint misses it.
+    - **Strict Mode**: If topic found -> Search **ONLY** target subreddits.
+    - **Auto-detection**: Service automatically detects topic.
 - **Legacy**: `reddit_client.py` (Direct `asyncpraw`) - deprecated/fallback only.
 
 ## Configuration (Environment Variables)

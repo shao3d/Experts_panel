@@ -5,6 +5,7 @@ import logging
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 from string import Template
+from collections import OrderedDict
 
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 import httpx
@@ -43,6 +44,10 @@ class TranslationService:
 
         logger.info(f"TranslationService Config: Model={self.primary_model}")
         self._prompt_template = self._load_prompt_template()
+        
+        # Simple LRU Cache
+        self._cache = OrderedDict()
+        self._cache_max_size = 1000
 
     def _load_prompt_template(self) -> Template:
         """Load the translation prompt template."""
@@ -55,6 +60,21 @@ class TranslationService:
         except FileNotFoundError:
             logger.error(f"Translation prompt template not found at {prompt_path}")
             return Template("Translate the following Russian Telegram post to natural English:\n\n${post_text}\n\nKeep all links [text](url) unchanged and preserve formatting.")
+            
+    def _get_from_cache(self, key: str) -> Optional[str]:
+        """Get item from cache and move to end (LRU)."""
+        if key in self._cache:
+            self._cache.move_to_end(key)
+            return self._cache[key]
+        return None
+
+    def _add_to_cache(self, key: str, value: str):
+        """Add item to cache, removing oldest if full."""
+        if key in self._cache:
+            self._cache.move_to_end(key)
+        self._cache[key] = value
+        if len(self._cache) > self._cache_max_size:
+            self._cache.popitem(last=False)
 
     async def _call_llm(self, model_name: str, messages: List[Dict[str, str]]):
         """Call Google AI Studio."""
@@ -78,6 +98,12 @@ class TranslationService:
         try:
             if not post_text or not post_text.strip():
                 return post_text
+                
+            # Check cache
+            cache_key = f"post:{post_text}:{author_name}"
+            cached = self._get_from_cache(cache_key)
+            if cached:
+                return cached
 
             # Create prompt
             prompt = self._prompt_template.substitute(
@@ -103,6 +129,10 @@ class TranslationService:
                 return post_text
 
             logger.debug(f"Translated post from {author_name} using Gemini")
+            
+            # Update cache
+            self._add_to_cache(cache_key, translated_text)
+            
             return translated_text
 
         except Exception as e:
@@ -131,6 +161,12 @@ class TranslationService:
         # If source and target are the same, return original
         if source_lang.lower() == target_lang.lower():
             return text
+            
+        # Check cache
+        cache_key = f"text:{text}:{source_lang}:{target_lang}"
+        cached = self._get_from_cache(cache_key)
+        if cached:
+            return cached
         
         try:
             messages = [
@@ -149,6 +185,7 @@ class TranslationService:
             
             if translated:
                 logger.debug(f"Translated text: {text[:50]}... -> {translated[:50]}...")
+                self._add_to_cache(cache_key, translated)
                 return translated
             else:
                 logger.warning("Empty translation, returning original")
