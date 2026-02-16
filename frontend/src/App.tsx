@@ -27,6 +27,10 @@ export const App: React.FC = () => {
   const [currentQuery, setCurrentQuery] = useState<string>('');
   const [selectedExperts, setSelectedExperts] = useState<Set<string>>(new Set());
   
+  // Search Options State (Lifted from QueryForm)
+  const [useRecentOnly, setUseRecentOnly] = useState(false);
+  const [includeReddit, setIncludeReddit] = useState(true);
+  
   // Mobile Expert Selector Drawer State
   const [isExpertSelectorOpen, setIsExpertSelectorOpen] = useState(false);
 
@@ -85,7 +89,7 @@ export const App: React.FC = () => {
   /**
    * Handle query submission
    */
-  const handleQuerySubmit = async (query: string, options?: { use_recent_only?: boolean; include_reddit?: boolean }): Promise<void> => {
+  const handleQuerySubmit = async (query: string): Promise<void> => {
     // Reset state
     setIsProcessing(true);
     setProgressEvents([]);
@@ -99,7 +103,7 @@ export const App: React.FC = () => {
       const experts = Array.from(selectedExperts);
       // Submit query with progress callback
       const response = await apiClient.submitQuery(
-        { query, expert_filter: experts, stream_progress: true, include_comments: true, include_comment_groups: true, use_recent_only: options?.use_recent_only, include_reddit: options?.include_reddit },
+        { query, expert_filter: experts, stream_progress: true, include_comments: true, include_comment_groups: true, use_recent_only: useRecentOnly, include_reddit: includeReddit },
         (event: ProgressEvent) => {
           // Add progress event to log
           setProgressEvents(prev => [...prev, event]);
@@ -184,6 +188,10 @@ export const App: React.FC = () => {
           availableExperts={availableExperts}
           selectedExperts={selectedExperts}
           onExpertsChange={setSelectedExperts}
+          useRecentOnly={useRecentOnly}
+          onUseRecentOnlyChange={setUseRecentOnly}
+          includeReddit={includeReddit}
+          onIncludeRedditChange={setIncludeReddit}
           disabled={isProcessing}
         />
       </div>
@@ -208,6 +216,7 @@ export const App: React.FC = () => {
                 disabled={isProcessing}
                 elapsedSeconds={elapsedSeconds}
                 selectedExperts={selectedExperts}
+                hasRedditEnabled={includeReddit}
               />
            </div>
            <div className="flex-1 flex flex-col gap-2 overflow-hidden">
@@ -285,6 +294,17 @@ export const App: React.FC = () => {
               onExpertsChange={setSelectedExperts}
               disabled={isProcessing}
             />
+             {/* Simple filter toggles for mobile inside the drawer */}
+             <div className="p-4 border-t border-gray-100 flex flex-col gap-3">
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" checked={useRecentOnly} onChange={e => setUseRecentOnly(e.target.checked)} disabled={isProcessing} className="w-4 h-4 accent-blue-600"/>
+                  <span className="text-sm font-medium text-gray-700">Recent Only (3m)</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" checked={includeReddit} onChange={e => setIncludeReddit(e.target.checked)} disabled={isProcessing} className="w-4 h-4 accent-blue-600"/>
+                  <span className="text-sm font-medium text-gray-700">Search Reddit</span>
+                </label>
+             </div>
           </div>
           
           <div className="mobile-query-form-container">
@@ -293,6 +313,7 @@ export const App: React.FC = () => {
               disabled={isProcessing}
               elapsedSeconds={elapsedSeconds}
               selectedExperts={selectedExperts}
+              hasRedditEnabled={includeReddit}
             />
           </div>
         </div>

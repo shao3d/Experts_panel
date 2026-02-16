@@ -7,6 +7,10 @@ interface SidebarProps {
   availableExperts: ExpertInfo[];
   selectedExperts: Set<string>;
   onExpertsChange: (selected: Set<string>) => void;
+  useRecentOnly: boolean;
+  onUseRecentOnlyChange: (value: boolean) => void;
+  includeReddit: boolean;
+  onIncludeRedditChange: (value: boolean) => void;
   disabled?: boolean;
   className?: string;
 }
@@ -15,6 +19,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   availableExperts,
   selectedExperts,
   onExpertsChange,
+  useRecentOnly,
+  onUseRecentOnlyChange,
+  includeReddit,
+  onIncludeRedditChange,
   disabled = false,
   className
 }) => {
@@ -50,17 +58,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const getInitials = (name: string) => {
-    // Remove "Tech_" or "Biz_" prefix if present (though displayName usually handles this)
+    // Remove "Tech_" or "Biz_" prefix if present
     const cleanName = name.replace(/^(Tech_|Biz_)/, '');
     
     // Split by underscore or space
     const parts = cleanName.split(/[_\s]+/);
     
     if (parts.length >= 2) {
-      // "AI Arch" -> "AA"
       return (parts[0][0] + parts[1][0]).toUpperCase();
     } else {
-      // "Refat" -> "Re"
       return cleanName.substring(0, 2).toUpperCase();
     }
   };
@@ -68,24 +74,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <div 
       className={clsx(
-        "flex flex-col bg-gray-900 text-gray-300 transition-all duration-300 ease-in-out border-r border-gray-800 shadow-xl z-20",
+        "flex flex-col bg-white text-gray-700 transition-all duration-300 ease-in-out border-r border-gray-200 shadow-sm z-20",
         isCollapsed ? "w-16" : "w-72",
         className
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-center p-4 border-b border-gray-800 h-16 shrink-0 relative">
+      <div className="flex items-center justify-between p-4 border-b border-gray-100 h-16 shrink-0">
         {!isCollapsed && (
-          <span className="font-bold text-white tracking-wider text-sm uppercase absolute left-4">
+          <span className="font-bold text-gray-800 tracking-wider text-sm uppercase">
             Experts Panel
           </span>
         )}
         <button 
           onClick={toggleSidebar}
-          className={clsx(
-            "p-1.5 rounded-md hover:bg-gray-800 text-gray-400 transition-colors",
-            !isCollapsed && "ml-auto"
-          )}
+          className="p-1.5 rounded-md hover:bg-gray-100 text-gray-500 transition-colors mx-auto"
           title={isCollapsed ? "Expand" : "Collapse"}
         >
           {isCollapsed ? (
@@ -98,6 +101,101 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 custom-scrollbar">
+        
+        {/* Search Options Section */}
+        <div className={clsx("mb-6", isCollapsed ? "px-2" : "px-4")}>
+          {!isCollapsed && (
+            <div className="mb-3 text-xs font-bold text-gray-400 uppercase tracking-wider">
+              Search Options
+            </div>
+          )}
+          
+          <div className="flex flex-col gap-2">
+            {/* Recent Only Toggle */}
+            <div 
+              className={clsx(
+                "flex items-center rounded-lg cursor-pointer transition-colors",
+                isCollapsed ? "justify-center p-2" : "px-3 py-2",
+                useRecentOnly ? "bg-blue-50 text-blue-700" : "hover:bg-gray-50 text-gray-600"
+              )}
+              onClick={() => !disabled && onUseRecentOnlyChange(!useRecentOnly)}
+              title={isCollapsed ? "Recent posts only (3 months)" : undefined}
+            >
+              <div className={clsx("shrink-0", isCollapsed ? "" : "mr-3")}>
+                {useRecentOnly ? (
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                )}
+              </div>
+              {!isCollapsed && (
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium">Recent Only</span>
+                  <span className="text-[10px] opacity-70">Last 3 months</span>
+                </div>
+              )}
+              {/* Toggle Switch (Desktop) */}
+              {!isCollapsed && (
+                <div className={clsx(
+                  "ml-auto w-8 h-4 rounded-full relative transition-colors",
+                  useRecentOnly ? "bg-blue-500" : "bg-gray-300"
+                )}>
+                  <div className={clsx(
+                    "absolute top-0.5 w-3 h-3 rounded-full bg-white shadow-sm transition-all",
+                    useRecentOnly ? "left-4.5" : "left-0.5"
+                  )} />
+                </div>
+              )}
+            </div>
+
+            {/* Reddit Toggle */}
+            <div 
+              className={clsx(
+                "flex items-center rounded-lg cursor-pointer transition-colors",
+                isCollapsed ? "justify-center p-2" : "px-3 py-2",
+                includeReddit ? "bg-orange-50 text-orange-700" : "hover:bg-gray-50 text-gray-600"
+              )}
+              onClick={() => !disabled && onIncludeRedditChange(!includeReddit)}
+              title={isCollapsed ? "Search Reddit" : undefined}
+            >
+              <div className={clsx("shrink-0", isCollapsed ? "" : "mr-3")}>
+                {includeReddit ? (
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/>
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/>
+                  </svg>
+                )}
+              </div>
+              {!isCollapsed && (
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium">Reddit</span>
+                  <span className="text-[10px] opacity-70">Community</span>
+                </div>
+              )}
+              {/* Toggle Switch (Desktop) */}
+              {!isCollapsed && (
+                <div className={clsx(
+                  "ml-auto w-8 h-4 rounded-full relative transition-colors",
+                  includeReddit ? "bg-orange-500" : "bg-gray-300"
+                )}>
+                  <div className={clsx(
+                    "absolute top-0.5 w-3 h-3 rounded-full bg-white shadow-sm transition-all",
+                    includeReddit ? "left-4.5" : "left-0.5"
+                  )} />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Experts List */}
         {EXPERT_GROUPS.map((group) => {
           const groupExperts = group.expertIds
             .map(id => expertMap.get(id))
@@ -109,24 +207,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
           const someGroupSelected = groupExperts.some(e => selectedExperts.has(e.expert_id));
 
           return (
-            <div key={group.label} className={clsx("mb-6", isCollapsed ? "px-2" : "px-3")}>
+            <div key={group.label} className={clsx("mb-6", isCollapsed ? "px-2" : "px-4")}>
               {!isCollapsed && (
                 <div 
                   onClick={() => handleToggleGroup(group.expertIds)}
-                  className="px-3 mb-2 flex items-center justify-between cursor-pointer group/header hover:text-white transition-colors"
+                  className="px-3 mb-2 flex items-center justify-between cursor-pointer group/header hover:text-blue-600 transition-colors"
                   title="Click to toggle all"
                 >
-                  <span className="text-xs font-bold text-gray-500 uppercase tracking-wider group-hover/header:text-gray-300">
+                  <span className="text-xs font-bold text-gray-400 uppercase tracking-wider group-hover/header:text-blue-600">
                     {group.label}
                   </span>
-                  <span className="text-[10px] text-gray-600 group-hover/header:text-gray-400">
+                  <span className="text-[10px] text-gray-400 group-hover/header:text-blue-500">
                     {allGroupSelected ? 'All' : someGroupSelected ? 'Some' : 'None'}
                   </span>
                 </div>
               )}
               {isCollapsed && (
                 <div 
-                  className="w-8 h-px bg-gray-800 my-3 mx-auto cursor-pointer hover:bg-gray-600" 
+                  className="w-full h-px bg-gray-200 my-3 mx-auto w-8 cursor-pointer hover:bg-gray-400" 
                   title={`Toggle ${group.label}`}
                   onClick={() => handleToggleGroup(group.expertIds)}
                 />
@@ -144,8 +242,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       className={clsx(
                         "group flex items-center rounded-lg cursor-pointer transition-all duration-200 relative",
                         isCollapsed ? "justify-center p-2" : "px-3 py-2",
-                        !isCollapsed && isSelected && "bg-blue-600/20 text-blue-400",
-                        !isCollapsed && !isSelected && "hover:bg-gray-800 text-gray-400 hover:text-gray-200",
+                        !isCollapsed && isSelected && "bg-blue-50 text-blue-700",
+                        !isCollapsed && !isSelected && "hover:bg-gray-50 text-gray-600 hover:text-gray-900",
                         disabled && "opacity-50 cursor-not-allowed"
                       )}
                       title={displayName}
@@ -155,8 +253,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                          <div className={clsx(
                            "w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold border transition-colors select-none",
                            isSelected 
-                             ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-900/50" 
-                             : "bg-gray-800 border-gray-700 text-gray-500 group-hover:border-gray-500 group-hover:text-gray-300"
+                             ? "bg-blue-600 border-blue-500 text-white shadow-md shadow-blue-200" 
+                             : "bg-gray-100 border-gray-200 text-gray-500 group-hover:border-gray-300 group-hover:text-gray-700"
                          )}>
                            {getInitials(displayName)}
                          </div>
@@ -167,7 +265,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             "shrink-0 flex items-center justify-center border rounded transition-colors w-4 h-4 mr-3",
                             isSelected 
                               ? "bg-blue-600 border-blue-600" 
-                              : "border-gray-600 group-hover:border-gray-500 bg-transparent"
+                              : "border-gray-300 group-hover:border-gray-400 bg-white"
                           )}>
                             {isSelected && (
                               <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -179,12 +277,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           <div className="flex flex-col truncate">
                             <span className={clsx(
                               "text-sm font-medium truncate",
-                              isSelected ? "text-white" : "text-gray-300"
+                              isSelected ? "text-gray-900" : "text-gray-600"
                             )}>
                               {displayName}
                             </span>
                             {expert.stats && (
-                              <span className="text-[10px] text-gray-600">
+                              <span className="text-[10px] text-gray-400">
                                 {expert.stats.posts_count} posts
                               </span>
                             )}
@@ -196,7 +294,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            className="ml-auto opacity-0 group-hover:opacity-100 text-gray-500 hover:text-blue-400 p-1"
+                            className="ml-auto opacity-0 group-hover:opacity-100 text-gray-400 hover:text-blue-500 p-1"
                             title="Open Telegram"
                           >
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -217,14 +315,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Footer Info */}
-      <div className="p-4 border-t border-gray-800 text-xs text-gray-600">
+      <div className="p-4 border-t border-gray-100 text-xs text-gray-400">
          {!isCollapsed ? (
            <div className="flex flex-col gap-1">
              <span>Gemini 2.5/3.0 Powered</span>
              <span>v2.1 Production</span>
            </div>
          ) : (
-           <div className="text-center font-bold">AI</div>
+           <div className="text-center font-bold text-gray-300">AI</div>
          )}
       </div>
     </div>

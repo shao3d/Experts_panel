@@ -7,7 +7,7 @@ import React, { useState, FormEvent } from 'react';
 
 interface QueryFormProps {
   /** Callback when query is submitted */
-  onSubmit: (query: string, options?: { use_recent_only?: boolean; include_reddit?: boolean }) => void;
+  onSubmit: (query: string) => void;
 
   /** Whether form is disabled during processing */
   disabled?: boolean;
@@ -20,6 +20,9 @@ interface QueryFormProps {
 
   /** Set of selected expert IDs, used to disable submit button */
   selectedExperts?: Set<string>;
+
+  /** Whether Reddit search is enabled (for submit button validation) */
+  hasRedditEnabled?: boolean;
 }
 
 /**
@@ -30,11 +33,10 @@ export const QueryForm: React.FC<QueryFormProps> = ({
   disabled = false,
   placeholder = "Ask experts about AI and related...",
   elapsedSeconds = 0,
-  selectedExperts = new Set()
+  selectedExperts = new Set(),
+  hasRedditEnabled = true
 }) => {
   const [query, setQuery] = useState('');
-  const [useRecentOnly, setUseRecentOnly] = useState(false);
-  const [includeReddit, setIncludeReddit] = useState(true);
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
@@ -45,23 +47,22 @@ export const QueryForm: React.FC<QueryFormProps> = ({
       return;
     }
 
-    onSubmit(trimmed, { use_recent_only: useRecentOnly, include_reddit: includeReddit });
+    onSubmit(trimmed);
   };
 
-  const hasAnySource = selectedExperts.size > 0 || includeReddit;
+  const hasAnySource = selectedExperts.size > 0 || hasRedditEnabled;
   const isButtonDisabled = disabled || query.trim().length < 3 || !hasAnySource;
 
   return (
-    <form onSubmit={handleSubmit} className="query-form">
-      <div className="query-input-row">
-        <div className="query-textarea-container">
+    <form onSubmit={handleSubmit} className="query-form h-full">
+      <div className="query-input-row h-full">
+        <div className="query-textarea-container h-full">
           <textarea
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             disabled={disabled}
             placeholder={placeholder}
-            rows={2}
-            className="query-textarea"
+            className="query-textarea h-full min-h-[100px] resize-none"
             maxLength={1000}
           />
           <span className="query-counter">
@@ -72,36 +73,10 @@ export const QueryForm: React.FC<QueryFormProps> = ({
         <button
           type="submit"
           disabled={isButtonDisabled}
-          className="query-submit-button"
+          className="query-submit-button h-full"
         >
           {disabled ? `${elapsedSeconds}s` : 'Ask'}
         </button>
-      </div>
-
-      <div className="recent-filter-row">
-        <label className="recent-filter-label">
-          <input
-            type="checkbox"
-            checked={useRecentOnly}
-            onChange={(e) => setUseRecentOnly(e.target.checked)}
-            disabled={disabled}
-            className="recent-filter-checkbox"
-          />
-          <span className="recent-filter-text">🕒 Только последние 3 месяца</span>
-          <span className="recent-filter-hint">Для свежих новостей</span>
-        </label>
-
-        <label className="recent-filter-label reddit-filter-label">
-          <input
-            type="checkbox"
-            checked={includeReddit}
-            onChange={(e) => setIncludeReddit(e.target.checked)}
-            disabled={disabled}
-            className="recent-filter-checkbox"
-          />
-          <span className="recent-filter-text">👥 Искать на Reddit</span>
-          <span className="recent-filter-hint">Сообщества и обсуждения</span>
-        </label>
       </div>
     </form>
   );
