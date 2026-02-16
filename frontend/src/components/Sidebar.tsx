@@ -148,8 +148,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   useRecentOnly ? "bg-blue-500" : "bg-gray-300"
                 )}>
                   <div className={clsx(
-                    "absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ease-in-out",
-                    useRecentOnly ? "translate-x-4.5 left-0.5" : "translate-x-0.5 left-0"
+                    "absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ease-in-out",
+                    useRecentOnly ? "translate-x-4" : "translate-x-0"
                   )} />
                 </div>
               )}
@@ -189,8 +189,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   includeReddit ? "bg-orange-500" : "bg-gray-300"
                 )}>
                   <div className={clsx(
-                    "absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ease-in-out",
-                    includeReddit ? "translate-x-4.5 left-0.5" : "translate-x-0.5 left-0"
+                    "absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ease-in-out",
+                    includeReddit ? "translate-x-4" : "translate-x-0"
                   )} />
                 </div>
               )}
