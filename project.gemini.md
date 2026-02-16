@@ -1,6 +1,6 @@
 # Project Context: Experts Panel
 
-**Last Updated:** 2026-02-10
+**Last Updated:** 2026-02-16
 **Status:** Production (Stable) - Tier 1 Optimized
 
 ## 🎯 Quick Start for AI Agent
@@ -46,3 +46,8 @@ backend/
 │   ├── reddit_enhanced_service.py  # Phase 8: Reddit Proxy Client
 │   └── google_ai_studio_client.py  # Unified LLM Client
 ```
+
+## 🆕 Recent Updates
+- **New Expert:** Added `glebkudr` (Glebkudr) to the system.
+- **Stability:** Increased Reddit pipeline timeout to 120s.
+- **Reddit Enhancement:** Automatic RU→EN query translation.

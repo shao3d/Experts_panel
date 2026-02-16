@@ -19,7 +19,7 @@ export interface ExpertGroup {
  * Expert Groups Definition (Used in Sidebar and Mobile Selection)
  */
 export const EXPERT_GROUPS: ExpertGroup[] = [
-  { label: 'Tech', expertIds: ['ai_architect', 'neuraldeep', 'ilia_izmailov', 'polyakov', 'etechlead'] },
+  { label: 'Tech', expertIds: ['ai_architect', 'neuraldeep', 'ilia_izmailov', 'polyakov', 'etechlead', 'glebkudr'] },
   { label: 'Tech & Business', expertIds: ['ai_grabli', 'refat', 'akimov', 'llm_under_hood', 'elkornacio', 'doronin'] },
 ];
 
@@ -39,10 +39,11 @@ export const EXPERT_UI_CONFIG: ExpertUIConfig = {
     'ilia_izmailov': 'Ilia',
     'polyakov': 'Polyakov',
     'doronin': 'Doronin',
-    'etechlead': 'Etechlead'
+    'etechlead': 'Etechlead',
+    'glebkudr': 'Glebkudr'
   },
   // Order used for sorting results
-  order: ['refat', 'ai_architect', 'neuraldeep', 'ai_grabli', 'akimov', 'llm_under_hood', 'elkornacio', 'ilia_izmailov', 'polyakov', 'doronin', 'etechlead']
+  order: ['refat', 'ai_architect', 'neuraldeep', 'ai_grabli', 'akimov', 'llm_under_hood', 'elkornacio', 'ilia_izmailov', 'polyakov', 'doronin', 'etechlead', 'glebkudr']
 };
 
 /**

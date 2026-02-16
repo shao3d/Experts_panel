@@ -1,7 +1,7 @@
 # Pipeline Architecture Guide
 
 **The Single Source of Truth** for the Experts Panel 8-phase pipeline.
-*Last Verified against Codebase: 2026-02-07*
+*Last Verified against Codebase: 2026-02-16*
 
 ## 🏗️ High-Level Overview
 
