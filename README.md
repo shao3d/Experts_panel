@@ -3,6 +3,8 @@
 [![CI/CD](https://github.com/andreysazonov/Experts_panel/workflows/CI%2FCD/badge.svg)](https://github.com/andreysazonov/Experts_panel/actions)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://python.org)
+[![React](https://img.shields.io/badge/react-18-blue.svg)](https://reactjs.org)
+[![Tailwind](https://img.shields.io/badge/tailwind-3-38bdf8.svg)](https://tailwindcss.com)
 
 **Intelligent system for analyzing expert Telegram channels and Reddit communities using Google Gemini AI**
 
@@ -12,8 +14,6 @@ Experts Panel is a powerful tool for semantic search and analysis of content fro
 
 The system uses an advanced **eight-phase pipeline** to provide accurate and contextually relevant answers. The architecture includes cost-optimized Gemini-only strategy, differential processing for posts based on relevance, and parallel pipelines for content and comment analysis.
 
-For a detailed breakdown of the 8-phase pipeline, component responsibilities, data flow, and model strategy, please see the **[Pipeline Architecture Guide](docs/pipeline-architecture.md)**.
-
 ### Models Strategy (Gemini Only)
 - **Map Phase**: Gemini 2.5 Flash Lite (Speed & Instruction Following)
 - **Synthesis/Reduce**: Gemini 3 Flash Preview (Reasoning)
@@ -21,18 +21,17 @@ For a detailed breakdown of the 8-phase pipeline, component responsibilities, da
 
 ## ✨ Key Features
 
-- **🧠 8-phase Map-Resolve-Reduce Architecture**: Advanced pipeline with differential HIGH/MEDIUM posts processing
-- **🎯 Cost-Optimized Gemini Strategy**: Google AI Studio with Tier 1 account (high rate limits)
-- **🔍 Smart Semantic Search**: Finds relevant posts by meaning, not keywords
-- **📊 Medium Posts Reranking**: Gemini-based scoring system with threshold ≥0.7 and top-5 selection
-- **💬 Comment Groups & Synthesis**: Gemini pipeline for comment drift analysis and insights extraction
-- **🌐 Language Validation**: Response language validation and translation when needed
-- **⚡ Real-time**: Processing progress display via Server-Sent Events with error handling
-- **👥 Multi-expert Support**: Complete data isolation with `expert_id` and parallel processing
-- **🕒 Date Filtering**: Optional `use_recent_only` filter for last 3 months of data
-- **👽 Reddit Integration**: Parallel analysis of technical subreddits with smart query expansion and ranking
-- **🚀 Reddit-Only Mode**: Can run as a standalone community search tool without expert analysis
-- **🔒 Production Ready**: Admin authentication, security hardening with API key masking and robust error handling
+- **🎨 Modern UI**: Clean, responsive interface built with React, Tailwind CSS, and a collapsible Sidebar.
+- **🧠 8-phase Map-Resolve-Reduce Architecture**: Advanced pipeline with differential HIGH/MEDIUM posts processing.
+- **🎯 Cost-Optimized Gemini Strategy**: Google AI Studio with Tier 1 account (high rate limits).
+- **🔍 Smart Semantic Search**: Finds relevant posts by meaning, not keywords.
+- **📊 Medium Posts Reranking**: Gemini-based scoring system with threshold ≥0.7.
+- **💬 Comment Groups & Synthesis**: Gemini pipeline for comment drift analysis.
+- **⚡ Real-time**: Server-Sent Events (SSE) for instant progress updates.
+- **👥 Multi-expert Support**: "Select All" groups, smart avatar initials, and complete data isolation.
+- **🕒 Smart Filters**: "Recent Only" (3 months) and "Reddit Search" toggles directly in the Sidebar.
+- **👽 Reddit Integration**: Parallel analysis via Sidecar Proxy (`experts-reddit-proxy`).
+- **🚀 Reddit-Only Mode**: Bypass expert analysis for broad community searches.
 
 ## 🚀 Quick Start
 
@@ -51,8 +50,8 @@ For a guided setup experience, execute the `quickstart.sh` script located in the
 ## 📚 Documentation
 
 - [Pipeline Architecture](docs/pipeline-architecture.md) - **The Source of Truth** for the 8-phase pipeline.
+- [Frontend Guide](frontend/CLAUDE.md) - **NEW**: React + Tailwind architecture, Sidebar layout, and State management.
 - [Backend Guide](backend/CLAUDE.md) - Services, Config, and API details.
-- [Frontend Guide](frontend/CLAUDE.md) - React components and SSE integration.
 - [Reddit Integration](docs/pipeline-architecture.md#reddit-pipeline-parallel) - Details on smart targeting and ranking.
 
 ## 🤝 Contributing

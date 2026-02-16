@@ -2,215 +2,99 @@
 
 **📖 See main documentation:** `../CLAUDE.md` (Quick Start, Architecture Overview)
 
-React 18 + TypeScript frontend with real-time multi-expert query progress tracking and comprehensive error handling.
+React 18 + TypeScript frontend with a modern Sidebar layout, Tailwind CSS styling, and real-time multi-expert query progress tracking.
 
 ## 🛠️ Technology Stack
 
 - **React 18** - Function components with hooks and concurrent features
-- **TypeScript** - Strict mode, full type safety with comprehensive interfaces
-- **Vite** - Build tool and dev server (port 3000) with path aliases and HMR
-- **SSE (Server-Sent Events)** - Real-time multi-expert progress streaming with enhanced error handling
-- **Advanced Debug Logging** - Console/API/SSE event batching system with production compatibility
-- **React Markdown** - Markdown rendering with syntax highlighting and GFM support
-- **React Query (TanStack Query)** - Server state management and caching (v5.56.2)
-- **React Hot Toast** - Elegant notification system for user feedback
-- **React Loading Skeleton** - Smooth loading states and skeleton screens
-- **clsx** - Conditional className utility for cleaner styling
-- **Inline styles** - No CSS frameworks for MVP simplicity with planned migration to CSS modules
+- **TypeScript** - Strict mode, full type safety
+- **Vite** - Build tool and dev server
+- **Tailwind CSS (v3)** - Utility-first CSS framework for responsive design and theming
+- **@tailwindcss/typography** - Plugin for beautiful Markdown rendering (`prose` classes)
+- **SSE (Server-Sent Events)** - Real-time progress streaming
+- **React Markdown** - Markdown rendering with GFM support
+- **React Hot Toast** - Notifications
 
 ## 📁 Project Structure
-The frontend source code is located in `frontend/src/` and is organized as follows:
-- **`App.tsx`**: The main application component containing the primary state management.
-- **`index.tsx`**: The entry point for the React application.
-- **`components/`**: Contains all React components, such as `QueryForm.tsx`, `ProgressSection.tsx`, and `ExpertAccordion.tsx`.
-- **`services/`**: Houses the API client (`api.ts`) for communicating with the backend, including SSE streaming logic.
-- **`utils/`**: Includes utility functions, notably the `debugLogger.ts` for advanced logging.
-- **`types/`**: Contains all TypeScript interface definitions, primarily in `api.ts`, which mirror the backend models.
+The frontend source code is located in `frontend/src/`:
+- **`App.tsx`**: Main layout controller. Manages global state (filters, experts) and orchestration.
+- **`components/`**:
+  - **`Sidebar.tsx`**: Left navigation panel with expert selection and search filters.
+  - **`QueryForm.tsx`**: Clean input area for user queries.
+  - **`ExpertAccordion.tsx`**: Collapsible result view per expert.
+  - **`ExpertResponse.tsx`**: Renders the AI answer with source citations.
+  - **`CommunityInsightsSection.tsx`**: Reddit analysis display.
+  - **`ProgressSection.tsx`**: Real-time progress bars.
+- **`config/`**:
+  - **`expertConfig.ts`**: Central configuration for expert names, groups, and sorting order.
+- **`services/`**: API client (`api.ts`) and error handling.
+- **`styles/`**: Tailwind directives in `index.css`.
 
-## 🎯 Core Components
+## 🎯 Core Layout & UX
 
-The application's UI is built from a set of modular React components located in `frontend/src/components/`.
+### Sidebar Layout (Desktop)
+The application uses a responsive two-pane layout:
+- **Left Sidebar**:
+  - Contains **Search Options** ("Recent Only", "Search Reddit").
+  - Displays **Expert Groups** (Tech, Business) with "Select All" functionality.
+  - Collapsible: Shows smart **Initials Avatars** when collapsed (e.g., "AI_Arch" -> "AA").
+- **Main Content**:
+  - Top: Query Input and Progress.
+  - Center: Scrollable list of results (Accordions).
 
-- **`App.tsx`**: The main application component responsible for overall state management, component orchestration, and handling the primary query lifecycle.
-- **`QueryForm.tsx`**: Provides the user input form with real-time validation and checkboxes for `use_recent_only` and `include_reddit`.
-- **`CommunityInsightsSection.tsx`**: Displays Reddit community analysis with markdown rendering and source cards.
-- **`ProgressSection.tsx`**: Displays real-time, multi-expert progress updates streamed from the backend via SSE.
-- **`ExpertAccordion.tsx`**: The primary UI element for organizing and displaying responses from multiple experts.
-- **`ExpertSelectionBar.tsx`**: A component for filtering results by expert, featuring grouped categories, post/comment statistics, and a collapsible desktop interface.
-- **`ExpertResponse.tsx`**: Renders the formatted answer, sources, and metadata for a single expert.
-- **`PostsList.tsx` & `PostCard.tsx`**: Work together to display the list of source posts, handle selection, and manage navigation. They use a consistent DOM ID pattern (`post-{expertId}-{postId}`) to link sources in the answer to the corresponding post in the list.
+### Mobile Experience
+- Sidebar is hidden.
+- Bottom Sticky Footer provides access to:
+  - **Expert Selector Drawer** (includes filters).
+  - **Query Input**.
+- Sticky Header shows progress.
 
-For detailed implementation, props, and state management of each component, refer to its source file in the `frontend/src/components/` directory.
+## 🔄 State Management
 
-## 🔄 Services, Types, and Patterns
+### Lifting State Up
+Key query parameters are managed at the **App level** (`App.tsx`) to synchronize the Sidebar and Query submission:
+- `selectedExperts`: Set<string>
+- `useRecentOnly`: boolean
+- `includeReddit`: boolean
 
-### Services Layer
-The application's logic for communicating with the backend is centralized in the `frontend/src/services/` directory.
-- **`api.ts`**: Contains the `APIClient` class, which encapsulates all `fetch` calls to the backend API. It includes robust logic for handling the SSE stream for progress updates.
-- **`error-handler.ts`**: Provides utilities for processing and displaying user-friendly error messages.
+The `Sidebar` updates these states, and `App` passes the current values to the API when `QueryForm` triggers a submit.
 
-### Type System
-All TypeScript types and interfaces are defined in the `frontend/src/types/` directory, primarily within `api.ts`. These interfaces are kept in sync with the backend's Pydantic models to ensure type safety across the application.
+## 🎨 Styling Strategy (Tailwind CSS)
 
-**Key Interfaces:**
-- **`QueryRequest`**: Main query payload with `query`, `expert_filter`, `use_recent_only`, `include_reddit`, etc.
-- **`QueryResponse`**: Multi-expert response structure with optional `reddit_response`
-- **`ExpertInfo`**: Expert metadata with display names and statistics
-- **`ProgressEvent`**: SSE event types for real-time updates
-- **`RedditResponse`**: Community analysis with synthesis and sources
-- **`RedditSource`**: Individual Reddit post metadata (title, url, score, subreddit)
+- **Typography**: We use `prose prose-base prose-blue` for all AI-generated content (Markdown) to ensure excellent readability.
+- **Clean UI**: Removed nested "card-in-card" borders. Content sits cleanly on the background.
+- **Light Theme**: The interface is designed in a modern Light mode (White/Gray/Blue).
+- **Custom Scrollbars**: Thin, unobtrusive scrollbars (`.custom-scrollbar`) that match the light theme.
 
-### Code Patterns
-The codebase follows several key patterns:
-- **State Management**: Component state is managed using React hooks (`useState`, `useEffect`). For server state, caching, and data fetching, the application uses TanStack Query (React Query).
-- **Styling**: To simplify development, the application currently uses inline style objects.
-- **Error Handling**: API calls are wrapped in `try/catch` blocks, with a centralized error handler service and user-facing notifications provided by `react-hot-toast`.
-- **Dynamic Loading**: Data such as the list of available experts is fetched from the API on application load to ensure the UI is always up-to-date without requiring a deployment.
+## 📡 Data Flow
 
-## 📡 Multi-Expert SSE Communication Flow
-
-```
-1. User submits query → App.handleQuerySubmit()
-   └─> apiClient.submitQuery(request, onProgressCallback)
-
-2. Backend processes all experts in parallel, streams SSE events
-   └─> Phase events per expert: map → medium_scoring → resolve → reduce → language_validation → final
-   └─> Expert completion events: expert_complete, expert_error
-   └─> Format: "data: {json}\n\n" per line (sanitized for safety)
-
-3. Frontend parses stream line-by-line
-   └─> parseSSEStream() processes incremental chunks
-   └─> Buffers incomplete JSON lines
-   └─> sanitize_for_json() prevents XSS/JSON parse errors
-   └─> Calls onProgressCallback for each event with expert tracking
-
-4. Multi-expert Progress UI updates in real-time
-   └─> ProgressSection re-renders with active expert count
-   └─> Contextual phase messages and warnings
-   └─> Individual expert status tracking
-   └─> User-friendly error message display
-
-5. Multi-expert final event received
-   └─> event_type: 'complete' with MultiExpertQueryResponse data
-   └─> App sets result state → ExpertResponse renders per expert
-   └─> Expert accordion organization for multiple responses
-```
+1. **User interacts** with Sidebar (selects experts/filters).
+2. **User submits** query in `QueryForm`.
+3. **App.tsx** gathers state + query and calls `apiClient.submitQuery()`.
+4. **SSE Stream** updates `progressEvents`.
+5. **Results** populate `expertResponses` and `redditResponse`.
 
 ## 🛠️ Build and Development
 
-### Development Commands
-All development scripts are defined in the `scripts` section of `package.json`. Key commands include:
-- `dev`: Starts the Vite development server.
-- `build`: Compiles the TypeScript and builds the application for production.
-- `lint`: Runs the ESLint static analysis.
-- `type-check`: Validates TypeScript types without a full build.
+```bash
+# Install dependencies (ensure Tailwind packages are present)
+npm install
 
-### Configuration
-Frontend-specific configuration, such as server port, path aliases, and the proxy to the backend API, is located in `vite.config.ts`.
+# Start Dev Server
+npm run dev
+
+# Build for Production
+npm run build
+```
 
 ## 🐛 Troubleshooting
 
-### SSE Connection Issues
-- **JSON Parse Errors**: Check for `keep-alive` comments (starting with `:`) being wrapped in `data:` prefix by backend. A fix is implemented in `api.ts` to ignore these lines.
-- Check CORS headers from backend
-- Verify Content-Type: text/event-stream
-- Monitor network tab for stream data
-
-### Type Errors
-- Ensure types/api.ts matches backend models
-- Run `npm run type-check` to validate
-- Check for outdated backend API changes
-
-### Post Reference Clicking Issues
-- **Element Not Found**: Verify expertId prop passed to PostCard
-- **Inconsistent IDs**: Check DOM ID pattern between components
-- **Console Errors**: Look for "element not found" when clicking sources
-
-### Debug Logger Issues
-- **Missing Logs**: Check `/api/v1/log-batch` endpoint availability
-- **Memory Issues**: Monitor circular buffer (1000 event limit)
-- **Performance**: Batch processing every 10 seconds
-
-### Multi-Expert Issues
-- **Expert Not Processing**: Check expert_filter parameter and database expert IDs
-- **Uneven Processing**: Monitor individual expert completion times
-- **Expert Errors**: Look for expert_error events with user-friendly messages
-- **Response Organization**: Check expert accordion rendering for multiple responses
-
-### Translation Issues
-- **Post Translation**: Verify query language detection and translation API calls
-- **Language Detection**: Check TranslationService language logic
-- **Mixed Languages**: Ensure language validation phase is working
-
-## 🔗 Reddit Community Insights
-
-### Overview
-Frontend integration for Reddit community analysis with safe markdown rendering and collapsible source cards.
-
-### Key Components
-
-#### CommunityInsightsSection (`components/CommunityInsightsSection.tsx`)
-- **Markdown Rendering**: `react-markdown` + `remark-gfm` for full GFM support (Tables, Lists, Code).
-- **Styling**: "Premium Clean UI 2026" (Soft shadows, rounded corners, clean typography).
-- **Sections**: Reality Check, Hacks & Workarounds, Vibe Check, Summary (localized RU/EN)
-- **Source Cards**: Collapsible Reddit post references with null-safety
-- **States**: Loading, Empty, Error, Success
-- **Toggle**: Show/hide raw markdown and sources list
-
-#### QueryForm Integration (`components/QueryForm.tsx`)
-- **Checkbox**: "Искать на Reddit" (default: enabled)
-- **State**: `includeReddit: boolean` passed to query request
-- **Location**: Next to `use_recent_only` checkbox
-
-### SSE Events for Reddit
-```typescript
-// Search initiated
-{ type: 'reddit_search', status: 'in_progress', message: 'Searching Reddit...' }
-
-// Search complete
-{ type: 'reddit_search', status: 'complete' }
-
-// Synthesis in progress
-{ type: 'reddit_synthesis', status: 'in_progress', message: 'Analyzing community discussions...' }
-
-// Reddit pipeline complete
-{ type: 'reddit_complete', status: 'complete', result: {...} }
-
-// Error handling
-{ type: 'error', error_type: 'reddit_error', message: '...' }
-```
-
-### Type Definitions
-```typescript
-interface RedditSource {
-  title: string;
-  url: string;
-  score: number;
-  subreddit: string;
-  num_comments: number;
-}
-
-interface RedditResponse {
-  synthesis: string;  // Markdown formatted
-  sources: RedditSource[];
-}
-
-interface QueryResponse {
-  reddit_response: RedditResponse | null;
-  // ... other fields
-}
-```
-
-### Security Considerations
-- **Safe Markdown Parsing**: No regex-based parsing (ReDoS prevention)
-- **Null Safety**: Optional chaining and null-checks for all Reddit data
-- **URL Validation**: Direct links to Reddit with no redirects
-- **XSS Prevention**: All user-generated content escaped before rendering
+- **Tailwind Styles Missing?** Check `postcss.config.js` and `tailwind.config.js`. Ensure you are using compat build (v3) if PostCSS errors occur.
+- **Scrollbars Ugly?** Check `index.css` for `.custom-scrollbar` styles.
+- **Sidebar Glitches?** Ensure `isCollapsed` logic correctly toggles width classes and hides text labels.
 
 ---
 
 **Related Documentation:**
-- **Main Project**: `../CLAUDE.md` - Quick Start and full architecture
-- **Backend API**: `../backend/CLAUDE.md` - Complete API reference and endpoints
-- **Model Configuration**: `../backend/src/config.py` - Environment variables and models
-- **Environment Setup**: `../.env.example` - Complete configuration reference
+- **Main Project**: `../CLAUDE.md`
+- **Backend API**: `../backend/CLAUDE.md`
