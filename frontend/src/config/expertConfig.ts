@@ -19,8 +19,8 @@ export interface ExpertGroup {
  * Expert Groups Definition (Used in Sidebar and Mobile Selection)
  */
 export const EXPERT_GROUPS: ExpertGroup[] = [
-  { label: 'Tech', expertIds: ['ai_architect', 'neuraldeep', 'ilia_izmailov', 'polyakov', 'etechlead', 'glebkudr', 'air_ai'] },
-  { label: 'Tech & Business', expertIds: ['ai_grabli', 'refat', 'akimov', 'llm_under_hood', 'elkornacio', 'doronin'] },
+  { label: 'Tech', expertIds: ['ai_architect', 'neuraldeep', 'ilia_izmailov', 'polyakov', 'etechlead', 'glebkudr'] },
+  { label: 'Tech & Business', expertIds: ['ai_grabli', 'refat', 'akimov', 'llm_under_hood', 'elkornacio', 'doronin', 'air_ai'] },
   { label: 'Knowledge Hub', expertIds: ['video_hub'] },
 ];
 

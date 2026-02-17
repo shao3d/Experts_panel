@@ -221,7 +221,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     {group.label}
                   </span>
                   <span className="text-[10px] text-gray-400 group-hover/header:text-blue-500">
-                    {allGroupSelected ? 'All' : someGroupSelected ? 'Some' : 'None'}
+                    {allGroupSelected ? 'Deselect' : 'Select'}
                   </span>
                 </div>
               )}
