@@ -89,6 +89,13 @@ To add a new expert, use the automated script:
 This script handles registration, post import, full comment sync, and prepares drift analysis automatically. It will prompt you to run the production update script at the end.
 For a detailed guide, see **[Add New Expert Playbook](docs/add-new-expert-playbook.md)**.
 
+### Adding New Video (Video Hub)
+To import a video and deploy it to production:
+```bash
+./scripts/deploy_video.sh <json_path>
+```
+See **[Add Video Guide](docs/guides/add-video.md)** for JSON format details.
+
 ### Updating Production & Data
 To synchronize all experts, run drift analysis, and deploy the updated database to production:
 ```bash

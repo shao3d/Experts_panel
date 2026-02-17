@@ -142,6 +142,34 @@ The system processes user queries through an **eight-phase pipeline** using a **
 - **Execution**: Runs in parallel with Expert Pipeline.
     - **Timeout**: **120 seconds**.
 
+### 9. Video Hub Sidecar (Digital Twin)
+**Goal**: Analyze long-form video content without losing narrative context.
+- **Service**: `VideoHubService` (`backend/src/services/video_hub_service.py`)
+- **Expert ID**: `video_hub` (Aggregate expert).
+- **Architecture**: **Parent-Child Indexing with Summary Bridging**.
+
+#### Phase 1: Segment Map
+- **Model**: `gemini-2.5-flash-lite`.
+- **Unit**: Individual video segments (~2-5 mins).
+- **Scoring**: Identifies `HIGH` relevance segments based on query.
+
+#### Phase 2: Resolve (Summary Bridging)
+**The Core Innovation**: Solves the "Lost Middle" problem.
+- **Logic**:
+    - **HIGH Segments**: Loaded as **Full Transcript** (Parent).
+    - **Topic Neighbors**: If a segment is `HIGH`, all other segments with the same `topic_id` are loaded as **Summaries** (Child).
+- **Result**: The LLM sees a continuous narrative where key moments are detailed, and gaps are bridged by summaries.
+- **Requirement**: `topic_id` must change every 10-15 minutes (logical chapters).
+
+#### Phase 3: Synthesis (Digital Twin)
+- **Model**: `gemini-3.0-pro` (High reasoning).
+- **Persona**: "Expert's Digital Twin".
+- **Instruction**: "Do not summarize. Reconstruct the expert's reasoning flow using the transcripts."
+
+#### Phase 4: Validation
+- **Model**: `gemini-3.0-flash`.
+- **Goal**: Ensure style consistency and language matching.
+
 ---
 
 ## 📊 Model Configuration (Env Vars)

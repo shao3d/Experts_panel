@@ -35,10 +35,12 @@ Use these files as your Source of Truth. Do NOT trust `plan_*.md` files in archi
 ## 🚨 Operational Rules
 1.  **Drift Analysis:** ALWAYS use `run_drift_service.py` (CLI wrapper) or `./scripts/update_production_db.sh`.
 2.  **Expert Config:** ALWAYS update `frontend/src/config/expertConfig.ts` when adding experts.
-3.  **Reddit Proxy:** Do not modify `services/reddit-proxy` unless explicitly asked (it's a separate microservice).
-4.  **No Hallucinations:** If a file is in `docs/archive/`, treat it as history, not current truth.
+3.  **Video Hub:** Ensure `topic_id` in JSON changes every 10-15 mins (logical chapters) for proper Summary Bridging context.
+4.  **Reddit Proxy:** Do not modify `services/reddit-proxy` unless explicitly asked (it's a separate microservice).
+5.  **No Hallucinations:** If a file is in `docs/archive/`, treat it as history, not current truth.
 
 ## 🛠️ Quick Commands
 - **Start All:** `./quickstart.sh`
 - **Deploy DB:** `./scripts/update_production_db.sh`
+- **Deploy Video:** `./scripts/deploy_video.sh <json_path>`
 - **Add Expert:** `./scripts/add_new_expert.sh <id> "<Name>" <user> <json>`
