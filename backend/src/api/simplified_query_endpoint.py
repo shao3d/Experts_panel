@@ -1197,10 +1197,10 @@ async def process_simplified_query(
 
 def validate_post_id(post_id: int) -> int:
     """Validate post_id parameter to prevent database issues."""
-    if post_id <= 0 or post_id > 10_000_000:  # Reasonable range for Telegram message IDs
+    if post_id <= 0 or post_id > 1_000_000_000:  # Increased to 1B to support virtual Video Hub IDs
         raise HTTPException(
             status_code=400,
-            detail="Invalid post_id. Must be between 1 and 10,000,000"
+            detail="Invalid post_id. Must be between 1 and 1,000,000,000"
         )
     return post_id
 
