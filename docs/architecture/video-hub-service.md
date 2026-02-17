@@ -12,7 +12,7 @@ The Video Hub operates as an **isolated sidecar**, running in parallel with the 
 
 ### Core Principles for Fullness & Style:
 1.  **Semantic Boundaries**: Transcripts are segmented only at logical completion points (complete arguments).
-2.  **The "Author's Voice" Mandate**: The system is strictly required to reconstruct the expert's original reasoning flow, vocabulary, and rhetorical style.
+2.  **The "Author's Voice" Mandate**: The system is strictly required to reconstruct the expert's original reasoning flow, vocabulary, and rhetorical style. No dry summaries allowed.
 3.  **Dual-Layer Overlap**: 15-20% physical text overlap between segments + `context_bridge` metadata for narrative continuity.
 4.  **Isolation of Themes**: `topic_id` is a composite key: `hash(video_url) + topic_slug`. This ensures narrative continuity within a single video.
 5.  **Differential Retrieval (Narrative Logic)**:
@@ -69,15 +69,21 @@ The Video Hub runs as a dedicated stream in `event_generator_parallel`.
 -   **Goal**: To reconstruct the full arc of the expert's thought, even if scattered.
 
 ### 3. Video Synthesis (The Digital Twin)
--   **Model**: `gemini-3.0-pro` (The "Frontier Beast").
+-   **Model**: `gemini-3-pro-preview` (Config: `MODEL_VIDEO_PRO`).
 -   **Persona**: "Expert's Digital Twin".
--   **Instruction**: "Synthesize a full-text response in the expert's original style. Use [FULL TRANSCRIPT] for details and [SUMMARY] to bridge the gaps. Maintain specific metaphors and technical depth."
+-   **Instruction**: "Reconstruct the expert's original reasoning flow and vocabulary. Use [FULL TRANSCRIPT] for details and [SUMMARY] to bridge the gaps."
 -   **Citations**: MANDATORY `[post:ID]` format for deep-links.
 
 ### 4. Style-Preserving Validation/Translation
--   **Model**: `gemini-3.0-flash`.
+-   **Model**: `gemini-3-flash-preview` (Config: `MODEL_VIDEO_FLASH`).
 -   **Task**: Ensures response language matches user query (RU/EN).
 -   **Specialty**: Preserves metaphors and 'vibe' during translation using transcript-derived glossary.
+
+---
+
+## 🏗️ Technical Constraints & Safety
+-   **ID Limits**: Virtual `telegram_message_id` for video segments can reach up to **1,000,000,000** (hashed MD5). Backend validation is increased to support this.
+-   **Storage**: Video segments are stored in the same `posts` table but isolated by `expert_id="video_hub"`.
 
 ---
 
@@ -95,7 +101,7 @@ The Video Hub runs as a dedicated stream in `event_generator_parallel`.
 
 ## ⚙️ Model Configuration (Env Vars)
 
-| Phase | Variable | Recommended Model |
+| Phase | Variable | Working Model (Feb 2026) |
 |-------|----------|-------------------|
 | Video Map | `MODEL_MAP` | `gemini-2.5-flash-lite` |
 | Video Synthesis | `MODEL_VIDEO_PRO` | `gemini-3-pro-preview` |
