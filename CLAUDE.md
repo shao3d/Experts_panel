@@ -94,7 +94,7 @@ To import a video and deploy it to production:
 ```bash
 ./scripts/deploy_video.sh <json_path>
 ```
-See **[Add Video Guide](docs/guides/add-video.md)** for JSON format details.
+See **[Video Hub Playbook](docs/guides/video-hub-operator.md)** for prompts, JSON format, and merge workflows.
 
 ### Updating Production & Data
 To synchronize all experts, run drift analysis, and deploy the updated database to production:

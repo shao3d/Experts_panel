@@ -21,6 +21,7 @@ Use these files as your Source of Truth. Do NOT trust `plan_*.md` files in archi
 
 ### 📘 Guides & Workflows
 - **Add New Expert:** `docs/guides/add-expert.md`
+- **Video Hub Playbook:** `docs/guides/video-hub-operator.md`
 - **Drift Analysis:** `docs/guides/drift-analysis.md`
 
 ## ⚙️ Critical Configuration
