@@ -21,6 +21,7 @@ export interface ExpertGroup {
 export const EXPERT_GROUPS: ExpertGroup[] = [
   { label: 'Tech', expertIds: ['ai_architect', 'neuraldeep', 'ilia_izmailov', 'polyakov', 'etechlead', 'glebkudr'] },
   { label: 'Tech & Business', expertIds: ['ai_grabli', 'refat', 'akimov', 'llm_under_hood', 'elkornacio', 'doronin'] },
+  { label: 'Knowledge Hub', expertIds: ['video_hub'] },
 ];
 
 /**
@@ -40,10 +41,11 @@ export const EXPERT_UI_CONFIG: ExpertUIConfig = {
     'polyakov': 'Polyakov',
     'doronin': 'Doronin',
     'etechlead': 'Etechlead',
-    'glebkudr': 'Glebkudr'
+    'glebkudr': 'Glebkudr',
+    'video_hub': 'Video_Hub'
   },
   // Order used for sorting results
-  order: ['refat', 'ai_architect', 'neuraldeep', 'ai_grabli', 'akimov', 'llm_under_hood', 'elkornacio', 'ilia_izmailov', 'polyakov', 'doronin', 'etechlead', 'glebkudr']
+  order: ['refat', 'ai_architect', 'neuraldeep', 'ai_grabli', 'akimov', 'llm_under_hood', 'elkornacio', 'ilia_izmailov', 'polyakov', 'doronin', 'etechlead', 'glebkudr', 'video_hub']
 };
 
 /**

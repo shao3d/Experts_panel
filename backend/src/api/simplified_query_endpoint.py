@@ -50,6 +50,7 @@ from ..services.comment_synthesis_service import CommentSynthesisService
 from ..services.medium_scoring_service import MediumScoringService
 from ..services.translation_service import TranslationService
 from ..services.language_validation_service import LanguageValidationService
+from ..services.video_hub_service import VideoHubService
 from ..services.reddit_enhanced_service import search_reddit_enhanced
 from ..services.reddit_synthesis_service import RedditSynthesisService
 from ..services.reddit_service import RedditSearchResult, RedditSource as RS
@@ -139,6 +140,35 @@ async def process_expert_pipeline(
             main_sources=[],
             confidence=ConfidenceLevel.LOW,
             posts_analyzed=0,
+            processing_time_ms=int((time.time() - start_time) * 1000),
+            relevant_comment_groups=[],
+            comment_groups_synthesis=None
+        )
+
+    # NEW: Specialized Video Hub Pipeline
+    if expert_id == "video_hub":
+        video_service = VideoHubService()
+        
+        async def video_progress(data: dict):
+            if progress_callback:
+                data['expert_id'] = expert_id
+                await progress_callback(data)
+        
+        video_result = await video_service.process(
+            query=request.query,
+            video_segments=posts,
+            expert_id=expert_id,
+            progress_callback=video_progress
+        )
+        
+        return ExpertResponse(
+            expert_id=expert_id,
+            expert_name=get_expert_name(expert_id),
+            channel_username=get_channel_username(expert_id),
+            answer=sanitize_for_json(video_result["answer"]),
+            main_sources=video_result["main_sources"],
+            confidence=video_result["confidence"],
+            posts_analyzed=video_result["posts_analyzed"],
             processing_time_ms=int((time.time() - start_time) * 1000),
             relevant_comment_groups=[],
             comment_groups_synthesis=None

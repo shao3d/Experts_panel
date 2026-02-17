@@ -5,7 +5,7 @@
 
 ## 🏗️ High-Level Overview
 
-The system processes user queries through an **eight-phase pipeline** using a **Gemini-only** strategy. It features parallel expert processing, differential context expansion, and a dedicated side-pipeline for Reddit analysis.
+The system processes user queries through an **eight-phase pipeline** using a **Gemini-only** strategy. It features parallel expert processing, differential context expansion, a dedicated side-pipeline for Reddit analysis, and a specialized **Video Hub Sidecar** for video transcript analysis.
 
 ### Core Principles
 1.  **Multi-Expert Isolation**: Each expert is processed independently (Map -> Reduce).
@@ -13,6 +13,7 @@ The system processes user queries through an **eight-phase pipeline** using a **
 3.  **Cost Optimization**: Uses `Gemini 2.5 Flash Lite` for heavy lifting (Map) and `Gemini 3 Flash Preview` for intelligence (Reduce).
 4.  **Date Filtering**: Optional "Recent Only" mode (last 3 months).
 5.  **Reddit-Only Mode**: Ability to bypass expert analysis entirely for broad community searches.
+6.  **Parallel Multi-Stream**: Telegram Experts, Reddit Community, and Video Hub Insights run in parallel for maximum recall.
 
 ---
 

@@ -193,10 +193,15 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
       {/* Header - always visible */}
       <div className="accordion-header" onClick={onToggle}>
         <span className="accordion-icon">{isExpanded ? '▼' : '▶'}</span>
-        <span className="expert-name">{expert.expert_name}</span>
-        <span className="channel-name">@{expert.channel_username}</span>
+        <span className="expert-name">
+          {expert.expert_id === 'video_hub' && <span className="mr-2">🎥</span>}
+          {expert.expert_name}
+        </span>
+        <span className="channel-name">
+          {expert.expert_id === 'video_hub' ? 'Video Archive' : `@${expert.channel_username}`}
+        </span>
         <span className="header-stats">
-          {expert.posts_analyzed} posts • {(expert.processing_time_ms / 1000).toFixed(1)}s
+          {expert.posts_analyzed} segments • {(expert.processing_time_ms / 1000).toFixed(1)}s
         </span>
         <span 
           className="confidence-badge"

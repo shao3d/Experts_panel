@@ -17,16 +17,17 @@ React 18 + TypeScript frontend with a modern Sidebar layout, Tailwind CSS stylin
 
 ## 📁 Project Structure
 The frontend source code is located in `frontend/src/`:
-- **`App.tsx`**: Main layout controller. Manages global state (filters, experts) and orchestration.
+- **`App.tsx`**: Main layout controller. Manages global state and orchestrates parallel streams (Experts, Reddit, Video).
 - **`components/`**:
   - **`Sidebar.tsx`**: Left navigation panel with expert selection and search filters.
   - **`QueryForm.tsx`**: Clean input area for user queries.
-  - **`ExpertAccordion.tsx`**: Collapsible result view per expert.
+  - **`ExpertAccordion.tsx`**: Specialized view for expert and video insights (🎥 icons, "Video Archive" labels).
+  - **`PostCard.tsx`**: Renders Telegram posts and Video segments (YouTube deep-links via `media_metadata`).
   - **`ExpertResponse.tsx`**: Renders the AI answer with source citations.
   - **`CommunityInsightsSection.tsx`**: Reddit analysis display.
   - **`ProgressSection.tsx`**: Real-time progress bars.
 - **`config/`**:
-  - **`expertConfig.ts`**: Central configuration for expert names, groups, and sorting order.
+  - **`expertConfig.ts`**: Central configuration for expert groups, including the new **Knowledge Hub** (Video Hub).
 - **`services/`**: API client (`api.ts`) and error handling.
 - **`styles/`**: Tailwind directives in `index.css`.
 

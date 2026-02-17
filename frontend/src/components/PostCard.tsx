@@ -100,6 +100,11 @@ const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments,
     </div>
   );
 
+  const isVideoSegment = post.media_metadata?.type === 'video_segment';
+  const videoUrl = post.media_metadata?.video_url;
+  const timestampSeconds = post.media_metadata?.timestamp_seconds;
+  const originalAuthor = post.media_metadata?.original_author;
+
   return (
     <div
       id={`post-${expertId || 'unknown'}-${post.telegram_message_id}`}
@@ -125,11 +130,11 @@ const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments,
               [{post.telegram_message_id}]
             </span>
             <span style={{ fontSize: '14px', color: '#6c757d' }}>
-              <strong>{post.author_name || 'Unknown'}</strong> • {formatDate(post.created_at)}
+              <strong>{originalAuthor || post.author_name || 'Unknown'}</strong> • {formatDate(post.created_at)}
             </span>
           </div>
           {/* Telegram Link */}
-          {post.channel_name && (
+          {post.channel_name && !isVideoSegment && (
             <a
               href={`https://t.me/${post.channel_name}/${post.telegram_message_id}`}
               target="_blank"
@@ -156,6 +161,36 @@ const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments,
             >
               <span style={{ fontSize: '16px' }}>📱</span>
               Telegram
+            </a>
+          )}
+          {/* YouTube Link */}
+          {isVideoSegment && videoUrl && (
+            <a
+              href={timestampSeconds !== undefined ? `${videoUrl}&t=${timestampSeconds}s` : videoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '4px 8px',
+                backgroundColor: '#FF0000',
+                color: 'white',
+                borderRadius: '4px',
+                textDecoration: 'none',
+                fontSize: '13px',
+                fontWeight: '500',
+                transition: 'background-color 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#CC0000';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#FF0000';
+              }}
+            >
+              <span style={{ fontSize: '16px' }}>🎥</span>
+              Watch Video {timestampSeconds !== undefined && `(${Math.floor(timestampSeconds / 60)}:${(timestampSeconds % 60).toString().padStart(2, '0')})`}
             </a>
           )}
         </div>

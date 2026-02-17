@@ -20,6 +20,7 @@ The backend implements a sophisticated 8-phase query processing system. It uses 
 | `language_validation_service.py` | **5. Validate** | `gemini-2.0-flash` | Ensures response language matches query (RU/EN). |
 | `comment_group_map_service.py` | **6. Comments** | `gemini-2.0-flash` | Finds comment groups. Prioritizes author clarifications on main sources. |
 | `comment_synthesis_service.py` | **7. Synthesis** | `gemini-3-flash-preview` | Extracts insights into 4 sections (Expert/Community). |
+| `video_hub_service.py` | **Video Sidecar** | `gemini-3.0-pro` | **Digital Twin**. 4-phase video analysis (Map -> Resolve -> Synthesis -> Translation). |
 | `reddit_enhanced_service.py` | **8. Reddit** | *None (HTTP Proxy)* | **Sidecar Proxy Client**. Deep Drill (100 comments, Depth 5). Hybrid MCP/Direct API. |
 | `reddit_synthesis_service.py` | **Synthesis** | `gemini-3-flash-preview` | **Staff Engineer Persona**. Finds Hidden Gems & Minority Reports. No Fluff. |
 
@@ -71,3 +72,4 @@ Defined in `.env`, loaded in `config.py`.
 ## Development
 - **Run**: `./quickstart.sh`
 - **Logs**: `backend/data/backend.log`
+- **Import Video**: `python3 backend/scripts/import_video_json.py <path_to_json>`
