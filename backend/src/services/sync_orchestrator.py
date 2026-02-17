@@ -40,10 +40,11 @@ def get_all_experts(db: Session) -> List[Dict[str, Any]]:
     """
     Получает всех экспертов из expert_metadata с их статистикой из posts.
     """
-    # Query expert_metadata for all experts
+    # Query expert_metadata for all experts, excluding video_hub
     experts_query = text("""
         SELECT expert_id, channel_username
         FROM expert_metadata
+        WHERE expert_id != 'video_hub'
         ORDER BY expert_id
     """)
 
