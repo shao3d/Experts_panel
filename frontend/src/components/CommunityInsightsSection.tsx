@@ -15,6 +15,7 @@ import { RedditResponse } from '../types/api';
 interface CommunityInsightsSectionProps {
   redditResponse: RedditResponse | null | undefined;
   isLoading?: boolean;
+  isEnabled?: boolean;
 }
 
 /**
@@ -102,8 +103,13 @@ const ErrorState: React.FC<{ onRetry?: () => void }> = ({ onRetry }) => (
  */
 export const CommunityInsightsSection: React.FC<CommunityInsightsSectionProps> = ({
   redditResponse,
-  isLoading = false
+  isLoading = false,
+  isEnabled = true
 }) => {
+  // If explicitly disabled in UI, don't show anything at all
+  if (!isEnabled) {
+    return null;
+  }
 
   if (isLoading) {
     return <LoadingSkeleton />;

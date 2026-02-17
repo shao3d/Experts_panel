@@ -263,6 +263,7 @@ export const App: React.FC = () => {
                   <CommunityInsightsSection
                     redditResponse={redditResponse}
                     isLoading={isProcessing}
+                    isEnabled={includeReddit}
                   />
                 </>
               ) : (
