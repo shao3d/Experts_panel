@@ -207,7 +207,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           if (groupExperts.length === 0) return null;
           
           const allGroupSelected = groupExperts.every(e => selectedExperts.has(e.expert_id));
-          const someGroupSelected = groupExperts.some(e => selectedExperts.has(e.expert_id));
 
           return (
             <div key={group.label} className={clsx("mb-6", isCollapsed ? "px-2" : "px-4")}>
