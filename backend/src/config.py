@@ -37,8 +37,8 @@ MODEL_COMMENT_GROUPS: str = os.getenv("MODEL_COMMENT_GROUPS", "gemini-2.0-flash"
 MODEL_DRIFT_ANALYSIS: str = os.getenv("MODEL_DRIFT_ANALYSIS", "gemini-3-flash-preview")
 
 # --- Video Hub Models ---
-MODEL_VIDEO_PRO: str = os.getenv("MODEL_VIDEO_PRO", "gemini-3.0-pro")
-MODEL_VIDEO_FLASH: str = os.getenv("MODEL_VIDEO_FLASH", "gemini-3.0-flash")
+MODEL_VIDEO_PRO: str = os.getenv("MODEL_VIDEO_PRO", "gemini-1.5-pro")
+MODEL_VIDEO_FLASH: str = os.getenv("MODEL_VIDEO_FLASH", "gemini-2.0-flash")
 
 # --- Medium Scoring Configuration ---
 # Threshold for accepting medium posts (0.0-1.0)

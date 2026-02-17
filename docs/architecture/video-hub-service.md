@@ -98,5 +98,5 @@ The Video Hub runs as a dedicated stream in `event_generator_parallel`.
 | Phase | Variable | Recommended Model |
 |-------|----------|-------------------|
 | Video Map | `MODEL_MAP` | `gemini-2.5-flash-lite` |
-| Video Synthesis | `MODEL_VIDEO_PRO` | `gemini-3.0-pro` |
-| Video Validation | `MODEL_VIDEO_FLASH` | `gemini-3.0-flash` |
+| Video Synthesis | `MODEL_VIDEO_PRO` | `gemini-1.5-pro` |
+| Video Validation | `MODEL_VIDEO_FLASH` | `gemini-2.0-flash` |
