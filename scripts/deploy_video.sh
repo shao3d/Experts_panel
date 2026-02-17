@@ -96,15 +96,40 @@ log "   ✅ Database compressed: $(ls -lh $GZ_PATH | awk '{print $5}')"
 log "☁️  [4/5] Uploading to Fly.io Production..."
 
 # Check machine status
-MACHINE_STATUS=$(fly status --json | python3 -c "import sys, json; print(json.load(sys.stdin)['Machines'][0]['state'])")
-MACHINE_ID=$(fly status --json | python3 -c "import sys, json; print(json.load(sys.stdin)['Machines'][0]['id'])")
+try_machine_id=$(fly status --json | python3 -c "import sys, json; data=json.load(sys.stdin); print(data['Machines'][0]['id']) if data.get('Machines') else print('')")
+try_machine_state=$(fly status --json | python3 -c "import sys, json; data=json.load(sys.stdin); print(data['Machines'][0]['state']) if data.get('Machines') else print('')")
 
-if [ "$MACHINE_STATUS" != "started" ]; then
-    log "   💤 Machine is $MACHINE_STATUS. Waking it up..."
-    fly machine start "$MACHINE_ID" > /dev/null
-    log "   ✅ Machine started."
-    sleep 5 # Wait for SSH to be ready
+if [ -z "$try_machine_id" ]; then
+    error "No machines found in Fly.io app '$APP_NAME'. Is it deployed?"
 fi
+
+if [ "$try_machine_state" != "started" ]; then
+    log "   💤 Machine is $try_machine_state. Waking it up..."
+    fly machine start "$try_machine_id" > /dev/null
+    log "   ✅ Start signal sent."
+fi
+
+# Robust SSH Wait Function
+wait_for_ssh() {
+    local max_retries=15
+    local wait_sec=3
+    log "   ⏳ Waiting for SSH connectivity..."
+    
+    for i in $(seq 1 $max_retries); do
+        if fly ssh console -C "echo ready" > /dev/null 2>&1; then
+            log "   ✅ SSH is ready."
+            return 0
+        fi
+        echo -n "."
+        sleep $wait_sec
+    done
+    
+    echo ""
+    error "Timed out waiting for SSH connectivity ($((max_retries * wait_sec))s). Check fly logs."
+}
+
+# Always verify SSH before SFTP
+wait_for_ssh
 
 log "   📤 Uploading compressed DB..."
 if fly sftp put "$GZ_PATH" "$REMOTE_DB_PATH.gz"; then
@@ -117,12 +142,18 @@ fi
 # 5. Deploy (Unzip & Restart)
 log "🔄 [5/5] Finalizing Deployment (Unzip & Restart)..."
 
-log "   📦 Unzipping on server..."
-if fly ssh console -C "gunzip -f $REMOTE_DB_PATH.gz"; then
-    log "   ✅ Unzip successful."
+log "   📦 Cleaning up old WAL files & Unzipping..."
+# Critical: 
+# 1. Delete WAL/SHM files to prevent corruption on DB swap
+# 2. Gunzip (overwrite)
+# 3. Fix permissions for appuser
+REMOTE_CMD="rm -f $REMOTE_DB_PATH-wal $REMOTE_DB_PATH-shm && gunzip -f $REMOTE_DB_PATH.gz && chown appuser:appuser $REMOTE_DB_PATH"
+
+if fly ssh console -C "$REMOTE_CMD"; then
+    log "   ✅ Cleanup, Unzip & Permissions Fix successful."
 else
     rm -f "$GZ_PATH"
-    error "Remote unzip failed."
+    error "Remote operations failed."
 fi
 
 log "   🔄 Restarting application..."
