@@ -68,6 +68,7 @@ Defined in `.env`, loaded in `config.py`.
 - `MEDIUM_MAX_SELECTED_POSTS`: 5
 - `MEDIUM_SCORE_THRESHOLD`: 0.7
 - `REDDIT_TIMEOUT`: 120s (Hard limit in endpoint)
+- `REDDIT_HTTP_TIMEOUT`: 60s (HTTP client timeout for Fly.io cold start)
 
 ## Development
 - **Run**: `./quickstart.sh`
