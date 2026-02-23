@@ -170,6 +170,7 @@ class MediumScoringService:
                 model=model_name,
                 messages=messages,
                 temperature=0.3,
+                max_tokens=2048,
                 # Note: We DON'T force json_object here because the prompt expects Markdown text output
             )
         raise ValueError("Google Client not initialized")

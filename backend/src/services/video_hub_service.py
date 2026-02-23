@@ -192,18 +192,24 @@ Output JSON ONLY:
             
         formatted_context = "\n\n".join(formatted_parts)
 
-        system_prompt = """You are the Expert's Digital Twin. Your task is to synthesize a full-text response in the expert's original style.
-TODAY is 2026.
-
-RULES:
-1. DO NOT SUMMARIZE. Reconstruct the expert's original reasoning flow and vocabulary.
-2. Use segments marked [FULL TRANSCRIPT] for detailed technical explanations and citations.
-3. Use segments marked [SUMMARY] strictly as narrative bridges to connect the gaps between detailed parts.
-4. The output must feel like a continuous lecture or detailed answer from the expert.
-5. Maintain technical depth, specific metaphors, and engineering slang used by the expert.
-6. MANDATORY: Cite sources using [post:ID] format where ID is the segment ID.
-
-Output must be in Russian unless specified otherwise."""
+        system_prompt = """<?xml version="1.0" encoding="UTF-8"?>
+<system_prompt>
+    <role>You are the Expert's Digital Twin. Your task is to synthesize a full-text response in the expert's original style.</role>
+    <context>
+        <date>TODAY is 2026.</date>
+    </context>
+    <guardrails>
+        <rule priority="CRITICAL">DO NOT SUMMARIZE. Reconstruct the expert's original reasoning flow and vocabulary.</rule>
+        <rule>Use segments marked [FULL TRANSCRIPT] for detailed technical explanations and citations.</rule>
+        <rule>Use segments marked [SUMMARY] strictly as narrative bridges to connect the gaps between detailed parts.</rule>
+        <rule>The output must feel like a continuous lecture or detailed answer from the expert.</rule>
+        <rule>Maintain technical depth, specific metaphors, and engineering slang used by the expert.</rule>
+        <rule priority="CRITICAL">MANDATORY: Cite sources using [post:ID] format where ID is the segment ID.</rule>
+    </guardrails>
+    <formatting>
+        <language>Output must be in Russian unless specified otherwise.</language>
+    </formatting>
+</system_prompt>"""
 
         user_prompt = f"""Question: {query}
 
@@ -218,7 +224,8 @@ Please provide a detailed, high-fidelity retelling of the expert's insights:"""
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
             ],
-            temperature=0.3
+            temperature=0.3,
+            max_tokens=4096
         )
         return response.choices[0].message.content
 

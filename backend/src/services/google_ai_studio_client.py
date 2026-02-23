@@ -79,34 +79,30 @@ class GoogleAIClient:
         error_lower = error_content.lower()
         return any(pattern in error_lower for pattern in RATE_LIMIT_PATTERNS)
 
-    def _convert_messages_to_gemini_format(self, messages: List[Dict[str, str]]) -> List[str]:
-        """Convert OpenAI message format to Gemini message format.
+    def _extract_system_instruction(self, messages: List[Dict[str, str]]) -> tuple:
+        """Extract system instruction and convert remaining messages to Gemini format.
 
         Args:
             messages: List of OpenAI format messages
 
         Returns:
-            List of Gemini format messages (simplified to content strings)
+            Tuple of (system_instruction, gemini_messages)
         """
+        system_instruction = ""
         gemini_messages = []
-        system_prompt = ""
 
         for message in messages:
             role = message.get("role", "user")
             content = message.get("content", "")
 
             if role == "system":
-                system_prompt = content
+                system_instruction = content
             elif role == "user":
-                if system_prompt:
-                    gemini_messages.append(f"{system_prompt}\n\n{content}")
-                    system_prompt = ""
-                else:
-                    gemini_messages.append(content)
+                gemini_messages.append(content)
             elif role == "assistant":
                 gemini_messages.append(f"Assistant: {content}")
 
-        return gemini_messages
+        return system_instruction, gemini_messages
 
     def _convert_gemini_response_to_openai_format(self, gemini_response: Any) -> Any:
         """Convert Gemini response to OpenAI format for compatibility.
@@ -174,6 +170,7 @@ class GoogleAIClient:
         messages: List[Dict[str, str]],
         temperature: float = 0.7,
         response_format: Optional[Dict[str, str]] = None,
+        max_tokens: Optional[int] = None,
         **kwargs
     ) -> Any:
         """Create chat completion using Google AI Studio API.
@@ -185,6 +182,7 @@ class GoogleAIClient:
             messages: List of message dictionaries
             temperature: Sampling temperature
             response_format: Response format specification
+            max_tokens: Maximum tokens in response (maps to max_output_tokens)
             **kwargs: Additional parameters
 
         Returns:
@@ -203,8 +201,13 @@ class GoogleAIClient:
                 if model.startswith("google/"):
                     model = model.replace("google/", "")
 
-                gemini_messages = self._convert_messages_to_gemini_format(messages)
+                # Extract system instruction separately for proper Gemini handling
+                system_instruction, gemini_messages = self._extract_system_instruction(messages)
                 generation_config = {"temperature": temperature, "candidate_count": 1}
+
+                # Add max_output_tokens if specified
+                if max_tokens:
+                    generation_config["max_output_tokens"] = max_tokens
 
                 # Handle JSON response format
                 if response_format and response_format.get("type") == "json_object":
@@ -215,12 +218,13 @@ class GoogleAIClient:
 
                 # Add any extra kwargs
                 for key, value in kwargs.items():
-                    if key not in ["response_format"]:
+                    if key not in ["response_format", "max_tokens"]:
                         generation_config[key] = value
 
                 gemini_model = genai.GenerativeModel(
                     model_name=model,
                     generation_config=generation_config,
+                    system_instruction=system_instruction if system_instruction else None,
                     safety_settings={
                         HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
                         HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,

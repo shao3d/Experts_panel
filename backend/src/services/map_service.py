@@ -165,7 +165,8 @@ class MapService:
                 model=model_name,
                 messages=[{"role": "system", "content": system_message}, {"role": "user", "content": prompt}],
                 temperature=0.3,
-                response_format={"type": "json_object"}
+                response_format={"type": "json_object"},
+                max_tokens=2048
             )
         raise ValueError("Google Client not initialized")
 

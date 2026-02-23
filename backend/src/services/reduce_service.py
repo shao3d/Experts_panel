@@ -155,6 +155,7 @@ class ReduceService:
             ],
             temperature=0.4,  # Balance between accuracy and natural language
             response_format={"type": "json_object"},
+            max_tokens=4096,
             service_name="reduce"
         )
 
