@@ -138,12 +138,24 @@ class GoogleAIClient:
                 self.usage = MockUsage()
 
         try:
+            # Check if response was blocked by safety settings
+            if hasattr(gemini_response, 'candidates') and gemini_response.candidates:
+                candidate = gemini_response.candidates[0]
+                # In google-generativeai, finish_reason can be an enum or int.
+                # Usually FinishReason.SAFETY is 3
+                finish_reason = getattr(candidate, 'finish_reason', None)
+                if finish_reason and str(finish_reason).endswith('SAFETY') or finish_reason == 3:
+                    logger.warning("Google AI Studio response blocked by SAFETY settings.")
+                    return MockOpenAIResponse("Запрос был заблокирован фильтрами безопасности (Safety Settings). Пожалуйста, переформулируйте запрос.", "gemini")
+            
             content = gemini_response.text
         except (AttributeError, ValueError):
             try:
                 content = gemini_response.candidates[0].content.parts[0].text
             except (AttributeError, IndexError, ValueError):
-                content = str(gemini_response)
+                logger.error(f"Failed to extract text from Gemini response. Raw response: {gemini_response}")
+                # Don't leak the raw proto object to the UI. Provide a generic error instead.
+                content = "Не удалось сгенерировать ответ из-за внутренней ошибки формата (возможно, сработал фильтр безопасности)."
 
         return MockOpenAIResponse(content, "gemini")
 
