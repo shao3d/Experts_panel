@@ -72,7 +72,8 @@ The Video Hub runs as a dedicated stream in `event_generator_parallel`.
 -   **Model**: `gemini-3-pro-preview` (Config: `MODEL_VIDEO_PRO`).
 -   **Persona**: "Expert's Digital Twin".
 -   **Instruction**: "Reconstruct the expert's original reasoning flow and vocabulary. Use [FULL TRANSCRIPT] for details and [SUMMARY] to bridge the gaps."
--   **Citations**: MANDATORY `[post:ID]` format for deep-links.
+-   **Visual Elements (`[НА ЭКРАНЕ]`)**: The model is strictly instructed to extract the *meaning* from visual markers and organically weave it into the narrative (as if the expert is speaking it), rather than mechanically quoting the metadata.
+-   **Citations**: MANDATORY `[post:ID]` format for deep-links. **All** segments provided in the context (both HIGH and MEDIUM) are included in the `main_sources` list, ensuring every cited link is clickable on the frontend.
 
 ### 4. Style-Preserving Validation/Translation
 -   **Model**: `gemini-3-flash-preview` (Config: `MODEL_VIDEO_FLASH`).
@@ -90,7 +91,12 @@ The Video Hub runs as a dedicated stream in `event_generator_parallel`.
 ## 🖥️ Phase 3: SSE & UI Integration
 
 ### Streaming (SSE):
--   Events: `video_map`, `video_resolve`, `video_synthesis`, `video_validation`.
+-   **Phase Mapping**: To animate the main frontend progress bar, specific video phases are dynamically mapped to standard ones:
+    -   `video_map` -> `map`
+    -   `video_resolve` -> `resolve`
+    -   `video_synthesis` -> `reduce`
+    -   `video_validation` -> `language_validation`
+-   Messages include a 🎥 emoji (e.g., "🎥 Synthesizing digital twin response...") to distinguish video operations.
 
 ### UI Integration:
 -   **Expert ID**: `video_hub` (Mapped to "Video_Hub" in `expertConfig.ts`).
