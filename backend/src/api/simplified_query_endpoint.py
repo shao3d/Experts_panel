@@ -809,12 +809,31 @@ async def event_generator_parallel(
         reddit_result: Optional[RedditResponse] = None
 
         async def reddit_progress_callback(data: dict):
-            """Callback for Reddit pipeline progress."""
+            """Callback for Reddit pipeline progress.
+            
+            Maps Reddit-specific phases to standard pipeline phases (map, resolve, reduce)
+            to ensure the frontend progress bar lights up correctly.
+            """
+            raw_phase = data.get('phase', 'pipeline')
+            
+            # Map Reddit phases to standard ones
+            phase_mapping = {
+                "scout": "map",
+                "search": "map",
+                "reddit_search": "map",
+                "ranking": "resolve",
+                "reranking": "resolve",
+                "synthesis": "reduce",
+                "reddit_synthesis": "reduce"
+            }
+            
+            mapped_phase = phase_mapping.get(raw_phase, f"reddit_{raw_phase}")
+            
             event = ProgressEvent(
                 event_type="progress",
-                phase=f"reddit_{data.get('phase', 'pipeline')}",
+                phase=mapped_phase,
                 status=data.get('status', 'processing'),
-                message=f"[Reddit] {data.get('message', 'Processing...')}",
+                message=f"🌐 [Reddit] {data.get('message', 'Processing...')}",
                 data={"source": "reddit", **data}
             )
             try:

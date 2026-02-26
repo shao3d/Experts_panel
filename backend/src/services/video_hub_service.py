@@ -34,7 +34,7 @@ class VideoHubService:
         
         # 1. Video Map Phase (Segment-Level Scoring)
         if progress_callback:
-            await progress_callback({"phase": "video_map", "status": "processing", "message": "Scoring individual video segments..."})
+            await progress_callback({"phase": "map", "status": "processing", "message": "🎥 Scoring video segments..."})
         
         scored_segments = await self._map_segments(query, video_segments)
         
@@ -52,19 +52,19 @@ class VideoHubService:
 
         # 2. Video Resolve Phase (Semantic Thread Expansion)
         if progress_callback:
-            await progress_callback({"phase": "video_resolve", "status": "processing", "message": "Expanding knowledge threads for continuity..."})
+            await progress_callback({"phase": "resolve", "status": "processing", "message": "🎥 Expanding knowledge threads..."})
         
         thread_context = self._resolve_threads(scored_segments, video_segments)
 
         # 3. Video Synthesis Phase (The Digital Twin)
         if progress_callback:
-            await progress_callback({"phase": "video_synthesis", "status": "processing", "message": "Synthesizing expert response (Gemini 3.0 Pro)..."})
+            await progress_callback({"phase": "reduce", "status": "processing", "message": "🎥 Synthesizing digital twin response..."})
         
         answer = await self._synthesize_response(query, thread_context)
 
         # 4. Language Validation (Style-Preserving)
         if progress_callback:
-            await progress_callback({"phase": "video_validation", "status": "processing", "message": "Applying style-aware translation..."})
+            await progress_callback({"phase": "language_validation", "status": "processing", "message": "🎥 Style-aware translation..."})
         
         validator = LanguageValidationService(model=self.flash_model)
         validation_result = await validator.process(answer, query, expert_id)
@@ -72,7 +72,7 @@ class VideoHubService:
 
         return {
             "answer": final_answer,
-            "main_sources": [s["telegram_message_id"] for s in thread_context if s["relevance"] == "HIGH"],
+            "main_sources": [s["telegram_message_id"] for s in thread_context],
             "confidence": "HIGH" if high_segments else "MEDIUM",
             "posts_analyzed": len(video_segments)
         }
@@ -204,7 +204,8 @@ Output JSON ONLY:
         <rule>Use segments marked [SUMMARY] strictly as narrative bridges to connect the gaps between detailed parts.</rule>
         <rule>The output must feel like a continuous lecture or detailed answer from the expert.</rule>
         <rule>Maintain technical depth, specific metaphors, and engineering slang used by the expert.</rule>
-        <rule priority="CRITICAL">MANDATORY: Cite sources using [post:ID] format where ID is the segment ID.</rule>
+        <rule priority="CRITICAL">VISUAL ELEMENTS: If the transcript contains metadata about what is on screen (e.g., "[НА ЭКРАНЕ: ...]", "[SLIDE: ...]"), DO NOT ignore them. Instead, format them as blockquotes like this: "> 📺 **На экране:** [Описание слайда или текста]". Integrate them logically into the flow of the answer.</rule>
+        <rule priority="CRITICAL">MANDATORY CITATIONS: Cite sources using [post:ID] format where ID is the segment ID. Every technical claim or specific insight should be cited.</rule>
     </guardrails>
     <formatting>
         <language>Output must be in Russian unless specified otherwise.</language>
