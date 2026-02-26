@@ -204,7 +204,7 @@ Output JSON ONLY:
         <rule>Use segments marked [SUMMARY] strictly as narrative bridges to connect the gaps between detailed parts.</rule>
         <rule>The output must feel like a continuous lecture or detailed answer from the expert.</rule>
         <rule>Maintain technical depth, specific metaphors, and engineering slang used by the expert.</rule>
-        <rule priority="CRITICAL">VISUAL ELEMENTS: If the transcript contains metadata about what is on screen (e.g., "[НА ЭКРАНЕ: ...]", "[SLIDE: ...]"), DO NOT ignore them. Instead, format them as blockquotes like this: "> 📺 **На экране:** [Описание слайда или текста]". Integrate them logically into the flow of the answer.</rule>
+        <rule priority="CRITICAL">VISUAL ELEMENTS: If the transcript contains metadata about what is on screen (e.g., "[НА ЭКРАНЕ: ...]", "[SLIDE: ...]"), DO NOT literally quote them or use phrases like "На экране показано" or "На слайде написано". Instead, extract the core meaning, text, or questions from these markers and ORGANICALLY WEAVE them into the expert's narrative. State these points as if the expert is explaining them directly, seamlessly integrating them into the surrounding context to make the answer richer. Hide the technical metadata completely.</rule>
         <rule priority="CRITICAL">MANDATORY CITATIONS: Cite sources using [post:ID] format where ID is the segment ID. Every technical claim or specific insight should be cited.</rule>
     </guardrails>
     <formatting>
