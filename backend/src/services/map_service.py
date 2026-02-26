@@ -64,7 +64,7 @@ class MapService:
         self.lock = asyncio.Lock()
 
         # Rate limiting metrics
-        self.rate_limit_hits = 0
+        # Note: rate_limit_hits counter removed — rate limiting is now handled\n        # entirely by tenacity in google_ai_studio_client.py
         self.total_requests = 0
 
     def _reset_rate_limit_state(self):
@@ -252,37 +252,10 @@ class MapService:
                 logger.info(f"Chunk {chunk_index}: Model '{self.primary_model}' successful.")
 
             except (GoogleAIStudioError, httpx.HTTPStatusError) as e:
-                error_str = str(e).lower()
-                is_rate_limit_error = (
-                    (isinstance(e, GoogleAIStudioError) and e.is_rate_limit) or
-                    '429' in error_str or 'rate limit' in error_str or 'quota' in error_str
-                )
-
-                if is_rate_limit_error:
-                    # Even with rotation, if we hit a global limit, wait and retry once
-                    self.rate_limit_hits += 1
-                    wait_time = 65.0  # Simple, robust wait time to ensure the next minute window
-                    logger.warning(f"Chunk {chunk_index}: Rate limit/Exhaustion hit. Waiting {wait_time}s before retry.")
-
-                    # The sleep happens outside the lock, so other tasks are not blocked
-                    await asyncio.sleep(wait_time)
-
-                    # After waiting, briefly lock to reset the shared stopwatch state.
-                    # This is a very short operation, avoiding contention.
-                    async with self.lock:
-                        self.minute_start_time = time.time()  # Set to current time, not None
-                        self.requests_in_current_minute = 0
-
-                    # Retry the same call once. If this also fails, it will propagate up.
-                    try:
-                        response = await self._call_llm(self.primary_model, prompt, enhanced_system)
-                        logger.info(f"Chunk {chunk_index}: Retry after rate limit wait successful.")
-                    except Exception as retry_e:
-                        logger.error(f"Chunk {chunk_index}: Retry after wait FAILED. Giving up on this chunk. Error: {retry_e}")
-                        raise retry_e # Re-raise to mark the chunk as failed
-                else:
-                    # Not a rate limit error, re-raise to be handled by tenacity
-                    raise e
+                # Client handles rate limit retries internally via Tenacity.
+                # If we get here, client exhausted all attempts. Just propagate.
+                logger.error(f"Chunk {chunk_index}: API error after client retries: {e}")
+                raise e
 
             if response is None:
                 raise ValueError("Primary model failed to produce a response after retry.")
@@ -453,7 +426,12 @@ class MapService:
                     "message": f"Global retry {retry_attempts} for {len(failed_chunks)} failed chunks"
                 })
 
-            # Retry failed chunks
+            # Retry failed chunks with cooldown for RPM window reset
+            # Client retries take ~15s; adding 45s ensures we cross the 60s RPM boundary
+            cooldown_seconds = 45
+            logger.info(f"[{expert_id}] Waiting {cooldown_seconds}s for API rate limit window to reset...")
+            await asyncio.sleep(cooldown_seconds)
+
             retry_tasks = [
                 self._process_chunk(chunk, query, index, expert_id, progress_callback)
                 for chunk, index in failed_chunks

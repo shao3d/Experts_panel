@@ -11,6 +11,8 @@ import logging
 import asyncio
 from typing import Dict, Any, Optional, List
 
+from tenacity import AsyncRetrying, stop_after_attempt, wait_random_exponential
+
 import google.generativeai as genai
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
 
@@ -31,9 +33,10 @@ else:
     genai.configure(api_key=_api_key)
     logger.info(f"✅ Google AI Studio configured with API key (first 5 chars: {_api_key[:5]}...)")
 
-# Retry settings for rate limit errors
-MAX_RETRIES = 2
-RETRY_WAIT_SECONDS = 65  # Wait for rate limit window to reset
+# Retry settings for rate limit errors (Tenacity-based)
+# 5 attempts with random exponential jitter, max 15s between attempts
+# Total worst-case: ~15 seconds for TPM spikes
+# RPM limits are handled by Global Chunk Retry in map_service.py
 
 
 class GoogleAIStudioError(Exception):
@@ -175,7 +178,9 @@ class GoogleAIClient:
     ) -> Any:
         """Create chat completion using Google AI Studio API.
 
-        Features simple retry on rate limit errors.
+        Uses Tenacity AsyncRetrying with jitter for intelligent retry on
+        rate limit (429) and timeout errors. Auth/BadRequest errors fail
+        immediately without retrying.
 
         Args:
             model: Model name (e.g., "gemini-2.0-flash")
@@ -191,76 +196,83 @@ class GoogleAIClient:
         Raises:
             GoogleAIStudioError: If API call fails
         """
-        last_error = None
+        # === Prompt Preparation (executed ONCE, before retry loop) ===
+        # This MUST stay outside the retry loop to avoid the concatenation bug:
+        # gemini_messages[0] += "IMPORTANT:..." would append on every retry.
 
-        for attempt in range(MAX_RETRIES):
-            logger.info(f"🚀 Google AI Studio: API call attempt {attempt + 1}/{MAX_RETRIES} with model {model}")
+        # Normalize model name
+        if model.startswith("google/"):
+            model = model.replace("google/", "")
 
-            try:
-                # Normalize model name
-                if model.startswith("google/"):
-                    model = model.replace("google/", "")
+        # Extract system instruction separately for proper Gemini handling
+        system_instruction, gemini_messages = self._extract_system_instruction(messages)
+        generation_config = {"temperature": temperature, "candidate_count": 1}
 
-                # Extract system instruction separately for proper Gemini handling
-                system_instruction, gemini_messages = self._extract_system_instruction(messages)
-                generation_config = {"temperature": temperature, "candidate_count": 1}
+        # Add max_output_tokens if specified
+        if max_tokens:
+            generation_config["max_output_tokens"] = max_tokens
 
-                # Add max_output_tokens if specified
-                if max_tokens:
-                    generation_config["max_output_tokens"] = max_tokens
+        # Handle JSON response format
+        if response_format and response_format.get("type") == "json_object":
+            generation_config["response_mime_type"] = "application/json"
+            # Add JSON instruction to prompt (once!)
+            if gemini_messages:
+                gemini_messages[0] += "\n\nIMPORTANT: You must respond with valid JSON only."
 
-                # Handle JSON response format
-                if response_format and response_format.get("type") == "json_object":
-                    generation_config["response_mime_type"] = "application/json"
-                    # Add JSON instruction to prompt
-                    if gemini_messages:
-                        gemini_messages[0] += "\n\nIMPORTANT: You must respond with valid JSON only."
+        # Add any extra kwargs
+        for key, value in kwargs.items():
+            if key not in ["response_format", "max_tokens"]:
+                generation_config[key] = value
 
-                # Add any extra kwargs
-                for key, value in kwargs.items():
-                    if key not in ["response_format", "max_tokens"]:
-                        generation_config[key] = value
+        gemini_model = genai.GenerativeModel(
+            model_name=model,
+            generation_config=generation_config,
+            system_instruction=system_instruction if system_instruction else None,
+            safety_settings={
+                HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+                HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+                HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+                HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+            }
+        )
 
-                gemini_model = genai.GenerativeModel(
-                    model_name=model,
-                    generation_config=generation_config,
-                    system_instruction=system_instruction if system_instruction else None,
-                    safety_settings={
-                        HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-                        HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-                        HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-                        HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-                    }
-                )
+        # === Retry predicate: only retry rate limit and timeout errors ===
+        def _should_retry(retry_state):
+            exc = retry_state.outcome.exception()
+            if exc is None:
+                return False
+            error_str = str(exc).lower()
+            return self._is_rate_limit_error(error_str) or "timeout" in error_str
 
-                response = await gemini_model.generate_content_async(gemini_messages)
-                logger.info(f"✅ Google AI Studio API call successful")
-                return self._convert_gemini_response_to_openai_format(response)
+        # === API Call with Tenacity retry ===
+        try:
+            async for attempt in AsyncRetrying(
+                stop=stop_after_attempt(5),
+                wait=wait_random_exponential(multiplier=1.5, max=15),
+                retry=_should_retry,
+                reraise=True
+            ):
+                with attempt:
+                    attempt_num = attempt.retry_state.attempt_number
+                    logger.info(f"🚀 Google AI Studio: API call attempt {attempt_num}/5 with model {model}")
+                    response = await gemini_model.generate_content_async(gemini_messages)
+                    logger.info("✅ Google AI Studio API call successful")
 
-            except Exception as error:
-                last_error = error
-                error_str = str(error)
-                logger.error(f"❌ Google AI Studio API error: {error_str[:200]}...")
+            return self._convert_gemini_response_to_openai_format(response)
 
-                # Check if rate limit error - retry after wait
-                if self._is_rate_limit_error(error_str) and attempt < MAX_RETRIES - 1:
-                    logger.warning(f"⏳ Rate limit hit. Waiting {RETRY_WAIT_SECONDS}s before retry...")
-                    await asyncio.sleep(RETRY_WAIT_SECONDS)
-                    continue
-                else:
-                    # Non-rate-limit error or last attempt - re-raise
-                    break
-
-        # All retries exhausted
-        if last_error:
+        except Exception as last_error:
+            # Wrap all exceptions in GoogleAIStudioError for uniform contract.
+            # Without this, Tenacity reraises raw Google SDK errors
+            # (e.g. google.api_core.exceptions.ResourceExhausted) which
+            # map_service.py and other consumers don't catch.
+            error_str = str(last_error)
+            logger.error(f"❌ Google AI Studio API error: {error_str[:200]}")
             error_details = self._extract_error_details(last_error)
             raise GoogleAIStudioError(
                 f"Google AI Studio API error: {error_details['message']}",
                 error_type=error_details["error_type"],
                 is_rate_limit=error_details["is_rate_limit"]
             ) from last_error
-        
-        raise GoogleAIStudioError("Google AI Studio API call failed with no error details.")
 
     def is_configured(self) -> bool:
         """Check if client is properly configured."""

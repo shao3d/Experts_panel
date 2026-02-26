@@ -27,9 +27,9 @@ The system processes user queries through an **eight-phase pipeline** using a **
 - **Chunking**: **100 posts** per chunk.
 - **Concurrency**: Dynamic, up to `MAP_MAX_PARALLEL` (Default: 25).
 - **Retry Logic (3-Layer Protection)**:
-    1.  **Internal Rate Limit Handle**: If 429/Quota -> Sleep 65s -> Retry once.
-    2.  **Tenacity Decorator**: Up to 3 retries with exponential backoff for network/JSON errors.
-    3.  **Global Chunk Retry**: Pipeline re-queues failed chunks once after main execution.
+    1.  **Client-Level Retry (Tenacity)**: `AsyncRetrying` with jitter (5 attempts, max ~15s). Handles TPM spikes and network glitches. Only retries rate limit/timeout errors (Auth/BadRequest fail immediately).
+    2.  **Service-Level Retry (Tenacity Decorator)**: Up to 3 retries with exponential backoff for JSON/network errors.
+    3.  **Global Chunk Retry**: Pipeline re-queues failed chunks once after 45s cooldown (crosses RPM window boundary).
 - **Output**: List of posts marked `HIGH`, `MEDIUM`, or `LOW`.
 
 ### 2. Medium Scoring Phase (Hybrid Reranking)

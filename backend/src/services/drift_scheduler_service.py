@@ -48,7 +48,7 @@ class DriftSchedulerService:
         self.client = create_google_ai_studio_client()
         self.model_name = MODEL_DRIFT_ANALYSIS
         # Rate limiting is handled by the google_ai_studio_client
-        # which includes 65s wait on rate limit errors
+        # which uses Tenacity with exponential backoff + jitter
         logger.info(f"DriftSchedulerService initialized with model: {self.model_name}")
 
     def get_pending_groups(self, limit: int = 10) -> List[Dict[str, Any]]:
