@@ -16,6 +16,7 @@ Use these files as your Source of Truth. Do NOT trust `plan_*.md` files in archi
 ### 🏗️ Architecture
 - **Pipeline Logic:** `docs/architecture/pipeline.md` (The Brain)
 - **Reddit Integration:** `docs/architecture/reddit-service.md` (The Sidecar)
+- **Video Hub:** `docs/architecture/video-hub-service.md` (Digital Twin)
 - **Backend Services:** `backend/CLAUDE.md` (Service mapping)
 - **Frontend Components:** `frontend/CLAUDE.md` (UI structure)
 
@@ -32,6 +33,8 @@ Use these files as your Source of Truth. Do NOT trust `plan_*.md` files in archi
 | **Synthesis** | `gemini-3-flash-preview` | `MODEL_SYNTHESIS` |
 | **Drift** | `gemini-3-flash-preview` | `MODEL_DRIFT_ANALYSIS` |
 | **Scoring** | `gemini-2.0-flash` | `MODEL_MEDIUM_SCORING` |
+| **Video Twin** | `gemini-3-pro-preview` | `MODEL_VIDEO_PRO` |
+| **Video Validation** | `gemini-3-flash-preview` | `MODEL_VIDEO_FLASH` |
 | **Reddit** | Sidecar Proxy | `REDDIT_PROXY_URL` |
 
 ## 🚨 Operational Rules
