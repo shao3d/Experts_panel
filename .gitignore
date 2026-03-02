@@ -134,4 +134,4 @@ cache/
 # =========================
 test_results/
 backend/test_results/
-*.test.db
+*.test.dbtmp_fly_logs.txt
