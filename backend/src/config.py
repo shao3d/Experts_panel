@@ -52,6 +52,10 @@ MEDIUM_MAX_POSTS: int = int(os.getenv("MEDIUM_MAX_POSTS", "50"))
 # For Tier 1 (paid) with 300-1000 RPM, 25 is optimal. For Free Tier with 15 RPM, use 8.
 MAP_MAX_PARALLEL: int = int(os.getenv("MAP_MAX_PARALLEL", "25"))
 
+# --- Expert Concurrency ---
+# Global limit for parallel expert processing (prevents OOM at scale)
+MAX_CONCURRENT_EXPERTS: int = int(os.getenv("MAX_CONCURRENT_EXPERTS", "5"))
+
 # --- Прочие настройки ---
 DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///data/experts.db")
 
@@ -79,6 +83,10 @@ if os.getenv("ENVIRONMENT") != "production":
     print(f"  Анализ:            {MODEL_ANALYSIS}")
     print(f"  Drift Analysis:    {MODEL_DRIFT_ANALYSIS}")
     print("--------------------------------------")
+    print("--- Загруженная конфигурация лимитов ---")
+    print(f"  Map Max Parallel:      {MAP_MAX_PARALLEL}")
+    print(f"  Max Concurrent Experts: {MAX_CONCURRENT_EXPERTS}")
+    print("----------------------------------------")
     print("--- Загруженная конфигурация логирования ---")
     print(f"  Log Level:         {LOG_LEVEL}")
     print(f"  Backend Log File:  {BACKEND_LOG_FILE}")

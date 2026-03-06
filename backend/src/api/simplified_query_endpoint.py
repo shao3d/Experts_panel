@@ -19,6 +19,7 @@ import os
 
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from sse_starlette.sse import EventSourceResponse
 
 from .models import (
@@ -117,8 +118,12 @@ async def process_expert_pipeline(
         cutoff_date = get_cutoff_date(months=3)
         logger.info(f"[{expert_id}] use_recent_only enabled, cutoff_date: {cutoff_date.isoformat()}")
 
-    # 2. Get posts for this expert (with optional date filter)
-    query = db.query(Post).filter(Post.expert_id == expert_id)
+    # 2. Get posts for this expert (with optional date filter + media-only exclusion)
+    query = db.query(Post).filter(
+        Post.expert_id == expert_id,
+        Post.message_text.isnot(None),
+        func.length(Post.message_text) > 30  # Exclude media-only posts (7% of total)
+    )
 
     if cutoff_date:
         query = query.filter(Post.created_at >= cutoff_date)
@@ -969,17 +974,31 @@ async def event_generator_parallel(
                         yield f": keep-alive {padding}\n\n"
                         last_activity_time = time.time()
 
-        # 4. Launch PARALLEL tasks for each expert
-        tasks = []
-        for expert_id in expert_ids:
-            task = asyncio.create_task(
-                process_expert_pipeline(
-                    expert_id=expert_id,
+        # 4. Launch PARALLEL tasks for each expert (with global semaphore)
+        expert_semaphore = asyncio.Semaphore(config.MAX_CONCURRENT_EXPERTS)
+
+        async def run_expert_with_semaphore(eid: str) -> ExpertResponse:
+            """Wrapper to limit concurrent expert processing."""
+            # SSE: notify frontend that expert is queued
+            await expert_progress_callback({
+                "event_type": "progress",
+                "phase": "queued",
+                "status": "waiting",
+                "message": f"[{eid}] В очереди...",
+                "expert_id": eid
+            })
+
+            async with expert_semaphore:
+                return await process_expert_pipeline(
+                    expert_id=eid,
                     request=request,
                     db=db,
                     progress_callback=expert_progress_callback
                 )
-            )
+
+        tasks = []
+        for expert_id in expert_ids:
+            task = asyncio.create_task(run_expert_with_semaphore(expert_id))
             tasks.append((expert_id, task))
 
         # 5. Stream progress events while waiting for completion
