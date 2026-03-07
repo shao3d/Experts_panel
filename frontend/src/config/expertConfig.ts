@@ -20,8 +20,8 @@ export interface ExpertGroup {
  */
 export const EXPERT_GROUPS: ExpertGroup[] = [
   { label: 'Tech', expertIds: ['ai_architect', 'neuraldeep', 'ilia_izmailov', 'polyakov', 'etechlead', 'glebkudr', 'ostrikov'] },
-  { label: 'Tech & Business', expertIds: ['ai_grabli', 'refat', 'akimov', 'llm_under_hood', 'elkornacio', 'doronin', 'air_ai', 'mkarpov'] },
-  { label: 'Knowledge Hub', expertIds: ['video_hub', 'silicbag'] },
+  { label: 'Tech & Business', expertIds: ['ai_grabli', 'refat', 'akimov', 'llm_under_hood', 'elkornacio', 'doronin', 'air_ai', 'mkarpov', 'silicbag'] },
+  { label: 'Knowledge Hub', expertIds: ['video_hub'] },
 ];
 
 /**
