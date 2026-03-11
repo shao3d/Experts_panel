@@ -55,6 +55,9 @@ from ..services.video_hub_service import VideoHubService
 from ..services.reddit_enhanced_service import search_reddit_enhanced
 from ..services.reddit_synthesis_service import RedditSynthesisService
 from ..services.reddit_service import RedditSearchResult, RedditSource as RS
+from ..services.fts5_retrieval_service import FTS5RetrievalService
+from ..services.ai_scout_service import AIScoutService
+from ..services.shadow_testing_service import ShadowTestingService
 from ..utils.error_handler import error_handler
 from ..utils.date_utils import get_cutoff_date
 
@@ -97,7 +100,8 @@ async def process_expert_pipeline(
     expert_id: str,
     request: QueryRequest,
     db: Session,
-    progress_callback: Optional[Callable] = None
+    progress_callback: Optional[Callable] = None,
+    scout_query: Optional[str] = None
 ) -> ExpertResponse:
     """Process full pipeline for one expert.
 
@@ -106,6 +110,7 @@ async def process_expert_pipeline(
         request: Query request
         db: Database session
         progress_callback: Optional callback for progress updates
+        scout_query: Optional FTS5 MATCH query from AI Scout (for Super-Passport mode)
 
     Returns:
         ExpertResponse with answer from this expert
@@ -118,23 +123,85 @@ async def process_expert_pipeline(
         cutoff_date = get_cutoff_date(months=3)
         logger.info(f"[{expert_id}] use_recent_only enabled, cutoff_date: {cutoff_date.isoformat()}")
 
-    # 2. Get posts for this expert (with optional date filter + media-only exclusion)
-    query = db.query(Post).filter(
-        Post.expert_id == expert_id,
-        Post.message_text.isnot(None),
-        func.length(Post.message_text) > 30  # Exclude media-only posts (7% of total)
-    )
+    # 2. Get posts for this expert
+    # Use FTS5 pre-filtering if scout_query is provided (Super-Passport mode)
+    posts = []
+    used_fts5 = False
 
-    if cutoff_date:
-        query = query.filter(Post.created_at >= cutoff_date)
+    if scout_query and expert_id != "video_hub":
+        # Super-Passport mode: FTS5 pre-filtering
+        fts5_service = FTS5RetrievalService(db)
 
-    # Order by date first (newest first), then apply limit
-    query = query.order_by(Post.created_at.desc())
+        # Time FTS5 retrieval
+        start_fts5 = time.time()
+        posts, used_fts5 = fts5_service.search_posts(
+            expert_id=expert_id,
+            match_query=scout_query,
+            cutoff_date=cutoff_date,
+            exclude_media_only=True
+        )
+        latency_fts5_ms = (time.time() - start_fts5) * 1000
 
-    if request.max_posts is not None:
-        query = query.limit(request.max_posts)
+        if not used_fts5 or not posts:
+            # Fallback to standard retrieval
+            logger.info(f"[{expert_id}] FTS5 returned no results, using fallback")
+            posts = fts5_service.get_fallback_posts(
+                expert_id=expert_id,
+                cutoff_date=cutoff_date,
+                max_posts=request.max_posts
+            )
 
-    posts = query.all()
+        # Apply max_posts limit if specified
+        if request.max_posts is not None and len(posts) > request.max_posts:
+            posts = posts[:request.max_posts]
+
+        logger.info(f"[{expert_id}] Super-Passport mode: {len(posts)} posts (FTS5: {used_fts5})")
+
+        # SHADOW TESTING: Compare with standard retrieval (only in Super-Passport mode)
+        if request.use_super_passport:
+            try:
+                from ..services.shadow_testing_service import ShadowTestingService
+                shadow_service = ShadowTestingService(db)
+
+                # Time standard retrieval
+                start_standard = time.time()
+                standard_post_ids = shadow_service.get_standard_post_ids(
+                    expert_id=expert_id,
+                    cutoff_date=cutoff_date,
+                    max_posts=request.max_posts
+                )
+                latency_standard_ms = (time.time() - start_standard) * 1000
+
+                # Compare results
+                fts5_post_ids = [p.post_id for p in posts]
+                shadow_service.compare_retrieval(
+                    expert_id=expert_id,
+                    fts5_post_ids=fts5_post_ids,
+                    standard_post_ids=standard_post_ids,
+                    query=request.query,
+                    latency_fts5_ms=latency_fts5_ms,
+                    latency_standard_ms=latency_standard_ms
+                )
+            except Exception as e:
+                logger.warning(f"[{expert_id}] Shadow testing failed: {e}")
+    else:
+        # Standard mode: load all posts
+        query = db.query(Post).filter(
+            Post.expert_id == expert_id,
+            Post.message_text.isnot(None),
+            func.length(Post.message_text) > 30  # Exclude media-only posts (7% of total)
+        )
+
+        if cutoff_date:
+            query = query.filter(Post.created_at >= cutoff_date)
+
+        # Order by date first (newest first), then apply limit
+        query = query.order_by(Post.created_at.desc())
+
+        if request.max_posts is not None:
+            query = query.limit(request.max_posts)
+
+        posts = query.all()
 
     if not posts:
         return ExpertResponse(
@@ -789,6 +856,38 @@ async def event_generator_parallel(
             yield f"data: {json.dumps(sanitize_for_json(error_event.model_dump(mode='json')), ensure_ascii=False)}\n\n"
             return
 
+        # 1.6. Run AI Scout for Super-Passport mode (FTS5 pre-filtering)
+        scout_query = None
+        if request.use_super_passport and expert_ids:
+            # Send SSE event for scout phase
+            scout_event = ProgressEvent(
+                event_type="progress",
+                phase="scout",
+                status="processing",
+                message="AI Scout: генерация поискового запроса...",
+                data={"source": "super_passport"}
+            )
+            yield f"data: {json.dumps(sanitize_for_json(scout_event.model_dump(mode='json')), ensure_ascii=False)}\n\n"
+
+            # Generate FTS5 MATCH query
+            scout_service = AIScoutService()
+            scout_query, scout_success = await scout_service.generate_match_query(request.query)
+
+            scout_complete_event = ProgressEvent(
+                event_type="phase_complete",
+                phase="scout",
+                status="completed" if scout_success else "fallback",
+                message=f"AI Scout: {scout_query[:50]}..." if scout_query else "AI Scout: using fallback",
+                data={
+                    "source": "super_passport",
+                    "success": scout_success,
+                    "query_preview": scout_query[:100] if scout_query else None
+                }
+            )
+            yield f"data: {json.dumps(sanitize_for_json(scout_complete_event.model_dump(mode='json')), ensure_ascii=False)}\n\n"
+
+            logger.info(f"[Super-Passport] Scout query: {scout_query} (success: {scout_success})")
+
         if expert_ids:
             event = ProgressEvent(
                 event_type="phase_start",
@@ -993,7 +1092,8 @@ async def event_generator_parallel(
                     expert_id=eid,
                     request=request,
                     db=db,
-                    progress_callback=expert_progress_callback
+                    progress_callback=expert_progress_callback,
+                    scout_query=scout_query  # Pass FTS5 query for Super-Passport mode
                 )
 
         tasks = []

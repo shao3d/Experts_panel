@@ -56,6 +56,12 @@ MAP_MAX_PARALLEL: int = int(os.getenv("MAP_MAX_PARALLEL", "25"))
 # Global limit for parallel expert processing (prevents OOM at scale)
 MAX_CONCURRENT_EXPERTS: int = int(os.getenv("MAX_CONCURRENT_EXPERTS", "5"))
 
+# --- Super-Passport Search (FTS5) ---
+# Maximum posts to retrieve via FTS5 before Map Phase
+MAX_FTS_RESULTS: int = int(os.getenv("MAX_FTS_RESULTS", "300"))
+# Feature flag: enable FTS5 pre-filtering (default: False for A/B testing)
+USE_SUPER_PASSPORT_DEFAULT: bool = os.getenv("USE_SUPER_PASSPORT_DEFAULT", "false").lower() == "true"
+
 # --- Прочие настройки ---
 DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///data/experts.db")
 

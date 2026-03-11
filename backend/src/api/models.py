@@ -63,6 +63,10 @@ class QueryRequest(BaseModel):
         default=True,
         description="Include Reddit community insights in response (default: true)"
     )
+    use_super_passport: Optional[bool] = Field(
+        default=False,
+        description="Use FTS5 pre-filtering + AI Scout for faster search (default: false, for A/B testing)"
+    )
 
 
 class PostReference(BaseModel):
