@@ -67,6 +67,51 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1", tags=["query"])
 
 
+class FTS5CircuitBreaker:
+    """Circuit breaker for FTS5 retrieval to prevent latency amplification.
+
+    When multiple experts fallback to standard retrieval, it indicates
+    the FTS5 query is not matching well. This circuit breaker disables
+    FTS5 for remaining experts to avoid compounding latency.
+
+    Thread-safe via asyncio.Lock for concurrent expert tasks.
+    """
+
+    def __init__(self, threshold: int = None):
+        """Initialize circuit breaker.
+
+        Args:
+            threshold: Max fallbacks before opening circuit (default: from config)
+        """
+        self.threshold = threshold or config.FTS5_CIRCUIT_BREAKER_THRESHOLD
+        self._fallback_count = 0
+        self._lock = asyncio.Lock()
+        self._is_open = False
+
+    async def should_skip_fts5(self) -> bool:
+        """Check if FTS5 should be skipped (circuit is open)."""
+        return self._is_open
+
+    async def record_fallback(self) -> None:
+        """Record a fallback event and potentially open the circuit."""
+        async with self._lock:
+            self._fallback_count += 1
+            if self._fallback_count >= self.threshold and not self._is_open:
+                self._is_open = True
+                logger.warning(
+                    f"[Circuit Breaker] FTS5 disabled for remaining experts "
+                    f"({self._fallback_count} fallbacks >= threshold {self.threshold})"
+                )
+
+    def get_stats(self) -> dict:
+        """Get current circuit breaker stats."""
+        return {
+            "fallback_count": self._fallback_count,
+            "threshold": self.threshold,
+            "is_open": self._is_open
+        }
+
+
 def sanitize_for_json(obj):
     """Recursively sanitize all strings in nested data structures for safe JSON transmission.
 
@@ -101,7 +146,8 @@ async def process_expert_pipeline(
     request: QueryRequest,
     db: Session,
     progress_callback: Optional[Callable] = None,
-    scout_query: Optional[str] = None
+    scout_query: Optional[str] = None,
+    circuit_breaker: Optional[FTS5CircuitBreaker] = None
 ) -> ExpertResponse:
     """Process full pipeline for one expert.
 
@@ -111,6 +157,7 @@ async def process_expert_pipeline(
         db: Database session
         progress_callback: Optional callback for progress updates
         scout_query: Optional FTS5 MATCH query from AI Scout (for Super-Passport mode)
+        circuit_breaker: Optional circuit breaker to disable FTS5 on repeated fallbacks
 
     Returns:
         ExpertResponse with answer from this expert
@@ -127,38 +174,65 @@ async def process_expert_pipeline(
     # Use FTS5 pre-filtering if scout_query is provided (Super-Passport mode)
     posts = []
     used_fts5 = False
+    circuit_breaker_triggered = False
+    latency_fts5_ms = 0  # Initialize for shadow testing
 
     if scout_query and expert_id != "video_hub":
-        # Super-Passport mode: FTS5 pre-filtering
-        fts5_service = FTS5RetrievalService(db)
+        # Check circuit breaker first
+        if circuit_breaker and await circuit_breaker.should_skip_fts5():
+            logger.info(f"[{expert_id}] Circuit breaker OPEN - skipping FTS5, using standard retrieval")
+            circuit_breaker_triggered = True
+        else:
+            # Super-Passport mode: FTS5 pre-filtering
+            fts5_service = FTS5RetrievalService(db)
 
-        # Time FTS5 retrieval
-        start_fts5 = time.time()
-        posts, used_fts5 = fts5_service.search_posts(
-            expert_id=expert_id,
-            match_query=scout_query,
-            cutoff_date=cutoff_date,
-            exclude_media_only=True
-        )
-        latency_fts5_ms = (time.time() - start_fts5) * 1000
-
-        if not used_fts5 or not posts:
-            # Fallback to standard retrieval
-            logger.info(f"[{expert_id}] FTS5 returned no results, using fallback")
-            posts = fts5_service.get_fallback_posts(
+            # Time FTS5 retrieval
+            start_fts5 = time.time()
+            posts, used_fts5 = fts5_service.search_posts(
                 expert_id=expert_id,
+                match_query=scout_query,
                 cutoff_date=cutoff_date,
-                max_posts=request.max_posts
+                exclude_media_only=True
             )
+            latency_fts5_ms = (time.time() - start_fts5) * 1000
 
-        # Apply max_posts limit if specified
-        if request.max_posts is not None and len(posts) > request.max_posts:
-            posts = posts[:request.max_posts]
+            if not used_fts5 or not posts:
+                # Fallback to standard retrieval
+                logger.info(f"[{expert_id}] FTS5 returned no results, using fallback")
+                # Record fallback for circuit breaker
+                if circuit_breaker:
+                    await circuit_breaker.record_fallback()
+                posts = fts5_service.get_fallback_posts(
+                    expert_id=expert_id,
+                    cutoff_date=cutoff_date,
+                    max_posts=request.max_posts
+                )
 
-        logger.info(f"[{expert_id}] Super-Passport mode: {len(posts)} posts (FTS5: {used_fts5})")
+    # Handle circuit breaker triggered case - use standard retrieval
+    if scout_query and expert_id != "video_hub" and circuit_breaker_triggered:
+        # Circuit breaker was open - use standard retrieval
+        query = db.query(Post).filter(
+            Post.expert_id == expert_id,
+            Post.message_text.isnot(None),
+            func.length(Post.message_text) > 30  # Exclude media-only posts
+        )
+        if cutoff_date:
+            query = query.filter(Post.created_at >= cutoff_date)
+        query = query.order_by(Post.created_at.desc())
+        if request.max_posts is not None:
+            query = query.limit(request.max_posts)
+        posts = query.all()
+        logger.info(f"[{expert_id}] Circuit breaker mode: {len(posts)} posts (standard retrieval)")
 
-        # SHADOW TESTING: Compare with standard retrieval (only in Super-Passport mode)
-        if request.use_super_passport:
+    # Apply max_posts limit if specified (for FTS5 results)
+    if scout_query and expert_id != "video_hub" and request.max_posts is not None and len(posts) > request.max_posts:
+        posts = posts[:request.max_posts]
+
+    if scout_query and expert_id != "video_hub":
+        logger.info(f"[{expert_id}] Super-Passport mode: {len(posts)} posts (FTS5: {used_fts5}, CB: {circuit_breaker_triggered})")
+
+        # SHADOW TESTING: Compare with standard retrieval (only if FTS5 was attempted, not when CB triggered)
+        if request.use_super_passport and not circuit_breaker_triggered:
             try:
                 from ..services.shadow_testing_service import ShadowTestingService
                 shadow_service = ShadowTestingService(db)
@@ -1076,6 +1150,9 @@ async def event_generator_parallel(
         # 4. Launch PARALLEL tasks for each expert (with global semaphore)
         expert_semaphore = asyncio.Semaphore(config.MAX_CONCURRENT_EXPERTS)
 
+        # Create circuit breaker for FTS5 (shared across all expert tasks)
+        fts5_circuit_breaker = FTS5CircuitBreaker() if scout_query else None
+
         async def run_expert_with_semaphore(eid: str) -> ExpertResponse:
             """Wrapper to limit concurrent expert processing."""
             # SSE: notify frontend that expert is queued
@@ -1093,7 +1170,8 @@ async def event_generator_parallel(
                     request=request,
                     db=db,
                     progress_callback=expert_progress_callback,
-                    scout_query=scout_query  # Pass FTS5 query for Super-Passport mode
+                    scout_query=scout_query,  # Pass FTS5 query for Super-Passport mode
+                    circuit_breaker=fts5_circuit_breaker  # Pass circuit breaker for FTS5 fallback tracking
                 )
 
         tasks = []

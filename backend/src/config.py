@@ -61,6 +61,8 @@ MAX_CONCURRENT_EXPERTS: int = int(os.getenv("MAX_CONCURRENT_EXPERTS", "5"))
 MAX_FTS_RESULTS: int = int(os.getenv("MAX_FTS_RESULTS", "300"))
 # Feature flag: enable FTS5 pre-filtering (default: False for A/B testing)
 USE_SUPER_PASSPORT_DEFAULT: bool = os.getenv("USE_SUPER_PASSPORT_DEFAULT", "false").lower() == "true"
+# Circuit Breaker: max fallbacks before disabling FTS5 for remaining experts
+FTS5_CIRCUIT_BREAKER_THRESHOLD: int = int(os.getenv("FTS5_CIRCUIT_BREAKER_THRESHOLD", "3"))
 
 # --- Прочие настройки ---
 DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///data/experts.db")
