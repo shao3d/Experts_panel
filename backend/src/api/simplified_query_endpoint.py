@@ -74,7 +74,8 @@ class FTS5CircuitBreaker:
     the FTS5 query is not matching well. This circuit breaker disables
     FTS5 for remaining experts to avoid compounding latency.
 
-    Thread-safe via asyncio.Lock for concurrent expert tasks.
+    Note: Uses asyncio.Lock for state mutations. In asyncio's single-threaded
+    event loop, reads of _is_open are effectively atomic without lock.
     """
 
     def __init__(self, threshold: int = None):
