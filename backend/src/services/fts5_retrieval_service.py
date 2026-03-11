@@ -5,6 +5,7 @@ posts before the Map Phase, reducing token usage and latency.
 """
 
 import logging
+import re
 from datetime import datetime
 from typing import List, Optional, Tuple
 from sqlalchemy import text
@@ -14,6 +15,58 @@ from ..models.post import Post
 from ..config import MAX_FTS_RESULTS
 
 logger = logging.getLogger(__name__)
+
+
+def sanitize_fts5_query(query: str) -> str:
+    """Sanitize FTS5 MATCH query to prevent injection and syntax errors.
+
+    FTS5 has special characters that need careful handling:
+    - Parentheses must be balanced
+    - Quotes must be balanced
+    - Special chars: * ^ ( ) " ' -
+    - Column names cannot be injected
+
+    Args:
+        query: Raw FTS5 query string
+
+    Returns:
+        Sanitized query safe for FTS5 MATCH clause
+    """
+    if not query or not query.strip():
+        return ""
+
+    original = query
+
+    # Remove any attempt to reference column names (FTS5 injection)
+    # FTS5 syntax: column:term - we only allow searching all columns
+    query = re.sub(r'\b\w+\s*:', '', query)
+
+    # Remove dangerous SQL characters that could escape the MATCH context
+    query = re.sub(r'[;\'\\"\\]', '', query)
+
+    # Check parentheses balance
+    if query.count('(') != query.count(')'):
+        logger.warning(f"[FTS5 Sanitize] Unbalanced parentheses, simplifying: {original[:50]}")
+        # Remove all parentheses as a safe fallback
+        query = re.sub(r'[()]', '', query)
+
+    # Check quotes balance
+    if query.count('"') % 2 != 0:
+        logger.warning(f"[FTS5 Sanitize] Unbalanced quotes, removing: {original[:50]}")
+        query = query.replace('"', '')
+
+    # Limit query length to prevent DoS
+    if len(query) > 500:
+        logger.warning(f"[FTS5 Sanitize] Query too long ({len(query)}), truncating")
+        query = query[:500]
+
+    # Validate that query still has meaningful content
+    cleaned = query.strip()
+    if not cleaned or len(cleaned) < 2:
+        logger.warning(f"[FTS5 Sanitize] Query empty after sanitization: {original[:50]}")
+        return ""
+
+    return cleaned
 
 
 class FTS5RetrievalService:
@@ -53,12 +106,18 @@ class FTS5RetrievalService:
             used_fts5 is True if FTS5 returned results, False if fallback was used
         """
         try:
+            # CRITICAL: Sanitize FTS5 query to prevent injection
+            safe_query = sanitize_fts5_query(match_query)
+            if not safe_query:
+                logger.warning(f"[FTS5] Query rejected after sanitization: {match_query[:50]}...")
+                return [], False
+
             # Build FTS5 query
-            sql = self._build_fts5_query(expert_id, match_query, cutoff_date, exclude_media_only)
+            sql = self._build_fts5_query(expert_id, safe_query, cutoff_date, exclude_media_only)
 
             result = self.db.execute(text(sql), {
                 "expert_id": expert_id,
-                "match_query": match_query,
+                "match_query": safe_query,
                 "cutoff_date": cutoff_date.isoformat() if cutoff_date else None,
                 "max_results": self.max_results
             })

@@ -6,6 +6,8 @@ from enum import Enum
 
 from pydantic import BaseModel, Field
 
+from .. import config
+
 
 class RelevanceLevel(str, Enum):
     """Relevance levels for posts."""
@@ -64,7 +66,7 @@ class QueryRequest(BaseModel):
         description="Include Reddit community insights in response (default: true)"
     )
     use_super_passport: Optional[bool] = Field(
-        default=False,
+        default=config.USE_SUPER_PASSPORT_DEFAULT,
         description="Use FTS5 pre-filtering + AI Scout for faster search (default: false, for A/B testing)"
     )
 

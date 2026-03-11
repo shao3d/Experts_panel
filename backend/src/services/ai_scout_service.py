@@ -184,21 +184,26 @@ OUTPUT:"""
         """Validate FTS5 MATCH query syntax.
 
         Basic validation to catch obvious errors.
+        Returns True if query is valid, False otherwise.
         """
-        # Check for balanced parentheses
-        if match_query.count("(") != match_query.count(")"):
-            return False
-
-        # Check for basic FTS5 syntax issues
-        if "MATCH" in match_query.upper():
-            return False  # Should not contain MATCH keyword
-
         # Check for empty query
         if not match_query.strip():
             return False
 
-        # Check for unbalanced quotes
+        # Should not contain MATCH keyword (it's added by the SQL query itself)
+        if "MATCH" in match_query.upper():
+            return False
+
+        # Check for balanced parentheses
+        if match_query.count("(") != match_query.count(")"):
+            return False
+
+        # Check for balanced quotes
         if match_query.count('"') % 2 != 0:
             return False
+
+        # Warn about potentially too-simple queries (but still allow them)
+        if len(match_query) < 20:
+            logger.warning(f"[AI Scout] Generated query may be too simple/short: {match_query}")
 
         return True
