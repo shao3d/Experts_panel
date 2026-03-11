@@ -30,6 +30,8 @@ MODEL_SYNTHESIS: str = os.getenv("MODEL_SYNTHESIS", "gemini-3-flash-preview")
 
 MODEL_ANALYSIS: str = os.getenv("MODEL_ANALYSIS", "gemini-2.0-flash")
 
+MODEL_SCOUT: str = os.getenv("MODEL_SCOUT", "gemini-3.1-flash-lite-preview")
+
 MODEL_MEDIUM_SCORING: str = os.getenv("MODEL_MEDIUM_SCORING", "gemini-2.0-flash")
 
 MODEL_COMMENT_GROUPS: str = os.getenv("MODEL_COMMENT_GROUPS", "gemini-2.0-flash")
@@ -89,6 +91,7 @@ if os.getenv("ENVIRONMENT") != "production":
     print(f"  Map фаза:          {MODEL_MAP}")
     print(f"  Синтез:            {MODEL_SYNTHESIS}")
     print(f"  Анализ:            {MODEL_ANALYSIS}")
+    print(f"  AI Scout:          {MODEL_SCOUT}")
     print(f"  Drift Analysis:    {MODEL_DRIFT_ANALYSIS}")
     print("--------------------------------------")
     print("--- Загруженная конфигурация лимитов ---")

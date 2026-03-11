@@ -4,6 +4,7 @@ Provides full-text search capabilities using SQLite FTS5 for pre-filtering
 posts before the Map Phase, reducing token usage and latency.
 """
 
+import json
 import logging
 import re
 from datetime import datetime
@@ -42,7 +43,9 @@ def sanitize_fts5_query(query: str) -> str:
     query = re.sub(r'\b\w+\s*:', '', query)
 
     # Remove dangerous SQL characters that could escape the MATCH context
-    query = re.sub(r'[;\'\\"\\]', '', query)
+    # NOTE: Double quotes (") are NOT removed to allow FTS5 phrase search (e.g., "си плюс плюс")
+    # Only remove: ; ' \
+    query = re.sub(r'[;\'\\]', '', query)
 
     # Check parentheses balance
     if query.count('(') != query.count(')'):
@@ -132,14 +135,28 @@ class FTS5RetrievalService:
                 post_map = {p.post_id: p for p in posts}
                 sorted_posts = [post_map[pid] for pid in post_ids if pid in post_map]
 
-                logger.info(f"[FTS5] Found {len(sorted_posts)} posts for expert {expert_id} with query: {match_query[:50]}...")
+                logger.info(f"[FTS5 Metrics] " + json.dumps({
+                    "event": "hit",
+                    "expert_id": expert_id,
+                    "posts": len(sorted_posts),
+                    "query": match_query[:50]
+                }, ensure_ascii=False))
                 return sorted_posts, True
             else:
-                logger.info(f"[FTS5] No results for expert {expert_id}, will use fallback")
+                logger.info(f"[FTS5 Metrics] " + json.dumps({
+                    "event": "miss",
+                    "expert_id": expert_id,
+                    "query": match_query[:50]
+                }, ensure_ascii=False))
                 return [], False
 
         except Exception as e:
-            logger.warning(f"[FTS5] Search failed for expert {expert_id}: {e}")
+            logger.error(f"[FTS5 Metrics] " + json.dumps({
+                "event": "error",
+                "expert_id": expert_id,
+                "error": str(e),
+                "query": match_query[:100]
+            }, ensure_ascii=False))
             return [], False
 
     def _build_fts5_query(

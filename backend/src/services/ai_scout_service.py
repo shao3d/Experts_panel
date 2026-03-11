@@ -6,9 +6,10 @@ Handles Russian-English slang translations and morphological variations.
 
 import json
 import logging
+import re
 from typing import Optional, Tuple
 from .google_ai_studio_client import create_google_ai_studio_client, GoogleAIStudioError
-from ..config import MODEL_ANALYSIS
+from ..config import MODEL_SCOUT
 
 logger = logging.getLogger(__name__)
 
@@ -55,16 +56,24 @@ class AIScoutService:
         "бигдат": "bigdata OR big OR data",
         "мл": "ml OR machine OR learning",
         "дата": "data",
+        # Special characters - must use safe equivalents (FTS5 ignores +, #, .)
+        "c++": "cpp OR cplusplus OR \"си плюс плюс\"",
+        "с++": "cpp OR cplusplus OR \"си плюс плюс\"",  # Russian 'с'
+        "c#": "csharp OR \"си шарп\"",
+        "с#": "csharp OR \"си шарп\"",  # Russian 'с'
+        "f#": "fsharp OR \"эф шарп\"",
+        ".net": "dotnet OR \"дотнет\"",
+        "node.js": "nodejs OR \"нода\"",
     }
 
     def __init__(self, model: str = None):
         """Initialize AI Scout Service.
 
         Args:
-            model: Model to use (default: MODEL_ANALYSIS)
+            model: Model to use (default: MODEL_SCOUT)
         """
         self.client = create_google_ai_studio_client()
-        self.model = model or MODEL_ANALYSIS
+        self.model = model or MODEL_SCOUT
         logger.info(f"AIScoutService initialized with model: {self.model}")
 
     async def generate_match_query(self, user_query: str) -> Tuple[str, bool]:
@@ -114,6 +123,14 @@ RULES:
 4. Use prefix wildcards (*) for morphological variations
 5. Use OR for synonyms, AND for combining concepts
 6. Keep it simple - don't over-generate
+7. CRITICAL: SQLite FTS5 tokenizer ignores special characters (+, #, .).
+   NEVER output raw special chars. ALWAYS replace them with safe equivalents:
+   - C++ → cpp, cplusplus, "си плюс плюс"
+   - C# → csharp, "си шарп"
+   - F# → fsharp, "эф шарп"
+   - .NET → dotnet, "дотнет"
+   - Node.js → nodejs, "нода"
+   NEVER attach wildcards (*) to special characters.
 
 OUTPUT FORMAT: Return ONLY the FTS5 MATCH string, nothing else.
 
@@ -126,6 +143,9 @@ Output: (deploy* OR деплой* OR раскатка) AND (prod* OR прода�
 
 Query: "postgresql performance tuning"
 Output: (postgresql OR postgres OR постгр*) AND (performance OR производитель*) AND (tuning OR настрой*)
+
+Query: "C++ best practices"
+Output: (cpp OR cplusplus OR "си плюс плюс") AND (best* OR практич*)
 
 USER QUERY: {user_query}
 OUTPUT:"""
@@ -166,7 +186,11 @@ OUTPUT:"""
             found_slang = False
             for ru, en in self.KNOWN_SLANG.items():
                 if ru in word or word in ru:
-                    expanded_terms.append(f"({word}* OR {en})")
+                    # Check if the word itself has special chars - don't add wildcard
+                    if any(c in word for c in '+#.'):
+                        expanded_terms.append(f"({en})")
+                    else:
+                        expanded_terms.append(f"({word}* OR {en})")
                     found_slang = True
                     break
 
@@ -200,6 +224,11 @@ OUTPUT:"""
 
         # Check for balanced quotes
         if match_query.count('"') % 2 != 0:
+            return False
+
+        # Protect against FTS5 Syntax Error on special chars (catches C++*, C#*, C+ *)
+        if re.search(r'[+#][+#\s]*\*', match_query):
+            logger.warning(f"[AI Scout] Invalid wildcard after special char: {match_query}")
             return False
 
         # Warn about potentially too-simple queries (but still allow them)
