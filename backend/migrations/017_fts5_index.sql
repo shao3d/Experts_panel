@@ -39,14 +39,15 @@ BEGIN
 END;
 
 -- Trigger: Sync on UPDATE of message_text
+-- IMPORTANT: Always delete old entry, then conditionally insert new one
 CREATE TRIGGER posts_fts_update AFTER UPDATE OF message_text ON posts
-WHEN LENGTH(COALESCE(new.message_text, '')) > 30
 BEGIN
-    -- Delete old entry if exists
+    -- Always delete old entry (handles case when post shrinks to <=30 chars)
     DELETE FROM posts_fts WHERE rowid = old.post_id;
-    -- Insert new entry
+    -- Only insert new entry if it's >30 chars
     INSERT INTO posts_fts(rowid, message_text)
-    VALUES (new.post_id, new.message_text);
+    SELECT new.post_id, new.message_text
+    WHERE LENGTH(COALESCE(new.message_text, '')) > 30;
 END;
 
 -- Trigger: Sync on DELETE

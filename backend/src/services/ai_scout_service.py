@@ -25,36 +25,35 @@ class AIScoutService:
 
     # Known Russian-English tech slang mappings for fallback
     KNOWN_SLANG = {
-        "кубер": "kubernetes k8s",
-        "кубер": "kubernetes",
+        "кубер": "kubernetes OR k8s",
         "куберу": "kubernetes",
-        "постгря": "postgresql postgres",
-        "постгрес": "postgresql postgres",
+        "постгря": "postgresql OR postgres",
+        "постгрес": "postgresql OR postgres",
         "эластик": "elasticsearch",
         "редис": "redis",
         "кафка": "kafka",
         "зукпер": "zookeeper",
         "докер": "docker",
         "контейнер": "container",
-        "деплой": "deploy deployment",
-        "раскатка": "deploy deployment rollout",
-        "пайплайн": "pipeline ci cd",
-        "хелм": "helm chart",
-        "чарт": "helm chart",
-        "инфра": "infrastructure infra",
+        "деплой": "deploy OR deployment",
+        "раскатка": "deploy OR deployment OR rollout",
+        "пайплайн": "pipeline OR ci OR cd",
+        "хелм": "helm OR chart",
+        "чарт": "helm OR chart",
+        "инфра": "infrastructure OR infra",
         "бэкенд": "backend",
         "фронтенд": "frontend",
-        "база": "database db",
+        "база": "database OR db",
         "бд": "database",
-        "нейронка": "neural network nn",
+        "нейронка": "neural OR network OR nn",
         "моделька": "model",
         "промпт": "prompt",
         "токен": "token",
-        "эмбеддинг": "embedding vector",
-        "раг": "rag retrieval",
-        "лм": "lm language model",
-        "бигдат": "bigdata big data",
-        "мл": "ml machine learning",
+        "эмбеддинг": "embedding OR vector",
+        "раг": "rag OR retrieval",
+        "лм": "lm OR language OR model",
+        "бигдат": "bigdata OR big OR data",
+        "мл": "ml OR machine OR learning",
         "дата": "data",
     }
 
@@ -81,6 +80,12 @@ class AIScoutService:
         """
         try:
             match_query = await self._generate_with_ai(user_query)
+
+            # Validate the generated query
+            if not self.validate_match_query(match_query):
+                logger.warning(f"[AI Scout] Generated invalid query, using fallback: {match_query}")
+                return self._generate_fallback(user_query), False
+
             logger.info(f"[AI Scout] Generated MATCH query: {match_query}")
             return match_query, True
         except Exception as e:
@@ -154,14 +159,14 @@ OUTPUT:"""
 
         for word in words:
             # Skip common stop words
-            if word in ("как", "что", "где", "когда", "зачем", "почему", "и", "или", "в", "на", "с", "для", "по"):
+            if word in ("как", "что", "где", "когда", "зачем", "почему", "и", "или", "в", "на", "с", "для", "по", "a", "an", "the", "is", "are", "to", "how"):
                 continue
 
             # Check for known slang
             found_slang = False
             for ru, en in self.KNOWN_SLANG.items():
                 if ru in word or word in ru:
-                    expanded_terms.append(f"({word}* OR {en.replace(' ', ' OR ')})")
+                    expanded_terms.append(f"({word}* OR {en})")
                     found_slang = True
                     break
 
@@ -187,5 +192,13 @@ OUTPUT:"""
         # Check for basic FTS5 syntax issues
         if "MATCH" in match_query.upper():
             return False  # Should not contain MATCH keyword
+
+        # Check for empty query
+        if not match_query.strip():
+            return False
+
+        # Check for unbalanced quotes
+        if match_query.count('"') % 2 != 0:
+            return False
 
         return True
