@@ -67,6 +67,31 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1", tags=["query"])
 
 
+def get_standard_posts_query(db: Session, expert_id: str, cutoff_date=None, max_posts=None):
+    """Build standard post retrieval query (used by both CB and standard path).
+
+    Args:
+        db: Database session
+        expert_id: Expert identifier
+        cutoff_date: Optional date filter
+        max_posts: Optional limit
+
+    Returns:
+        SQLAlchemy query object (call .all() to execute)
+    """
+    query = db.query(Post).filter(
+        Post.expert_id == expert_id,
+        Post.message_text.isnot(None),
+        func.length(Post.message_text) > 30  # Exclude media-only posts
+    )
+    if cutoff_date:
+        query = query.filter(Post.created_at >= cutoff_date)
+    query = query.order_by(Post.created_at.desc())
+    if max_posts is not None:
+        query = query.limit(max_posts)
+    return query
+
+
 class FTS5CircuitBreaker:
     """Circuit breaker for FTS5 retrieval to prevent latency amplification.
 
@@ -74,35 +99,34 @@ class FTS5CircuitBreaker:
     the FTS5 query is not matching well. This circuit breaker disables
     FTS5 for remaining experts to avoid compounding latency.
 
-    Note: Uses asyncio.Lock for state mutations. In asyncio's single-threaded
-    event loop, reads of _is_open are effectively atomic without lock.
+    Note: No lock needed - in asyncio's single-threaded event loop, code between
+    await points executes atomically. record_fallback() has no await, so it's
+    inherently atomic.
     """
 
     def __init__(self, threshold: int = None):
         """Initialize circuit breaker.
 
         Args:
-            threshold: Max fallbacks before opening circuit (default: from config)
+            threshold: Max fallbacks before opening circuit (None = from config)
         """
-        self.threshold = threshold or config.FTS5_CIRCUIT_BREAKER_THRESHOLD
+        self.threshold = threshold if threshold is not None else config.FTS5_CIRCUIT_BREAKER_THRESHOLD
         self._fallback_count = 0
-        self._lock = asyncio.Lock()
         self._is_open = False
 
-    async def should_skip_fts5(self) -> bool:
+    def should_skip_fts5(self) -> bool:
         """Check if FTS5 should be skipped (circuit is open)."""
         return self._is_open
 
-    async def record_fallback(self) -> None:
+    def record_fallback(self) -> None:
         """Record a fallback event and potentially open the circuit."""
-        async with self._lock:
-            self._fallback_count += 1
-            if self._fallback_count >= self.threshold and not self._is_open:
-                self._is_open = True
-                logger.warning(
-                    f"[Circuit Breaker] FTS5 disabled for remaining experts "
-                    f"({self._fallback_count} fallbacks >= threshold {self.threshold})"
-                )
+        self._fallback_count += 1
+        if self._fallback_count >= self.threshold and not self._is_open:
+            self._is_open = True
+            logger.warning(
+                f"[Circuit Breaker] FTS5 disabled for remaining experts "
+                f"({self._fallback_count} fallbacks >= threshold {self.threshold})"
+            )
 
     def get_stats(self) -> dict:
         """Get current circuit breaker stats."""
@@ -180,7 +204,7 @@ async def process_expert_pipeline(
 
     if scout_query and expert_id != "video_hub":
         # Check circuit breaker first
-        if circuit_breaker and await circuit_breaker.should_skip_fts5():
+        if circuit_breaker and circuit_breaker.should_skip_fts5():
             logger.info(f"[{expert_id}] Circuit breaker OPEN - skipping FTS5, using standard retrieval")
             circuit_breaker_triggered = True
         else:
@@ -202,7 +226,7 @@ async def process_expert_pipeline(
                 logger.info(f"[{expert_id}] FTS5 returned no results, using fallback")
                 # Record fallback for circuit breaker
                 if circuit_breaker:
-                    await circuit_breaker.record_fallback()
+                    circuit_breaker.record_fallback()
                 posts = fts5_service.get_fallback_posts(
                     expert_id=expert_id,
                     cutoff_date=cutoff_date,
@@ -211,18 +235,7 @@ async def process_expert_pipeline(
 
     # Handle circuit breaker triggered case - use standard retrieval
     if scout_query and expert_id != "video_hub" and circuit_breaker_triggered:
-        # Circuit breaker was open - use standard retrieval
-        query = db.query(Post).filter(
-            Post.expert_id == expert_id,
-            Post.message_text.isnot(None),
-            func.length(Post.message_text) > 30  # Exclude media-only posts
-        )
-        if cutoff_date:
-            query = query.filter(Post.created_at >= cutoff_date)
-        query = query.order_by(Post.created_at.desc())
-        if request.max_posts is not None:
-            query = query.limit(request.max_posts)
-        posts = query.all()
+        posts = get_standard_posts_query(db, expert_id, cutoff_date, request.max_posts).all()
         logger.info(f"[{expert_id}] Circuit breaker mode: {len(posts)} posts (standard retrieval)")
 
     # Apply max_posts limit if specified (for FTS5 results)
@@ -260,23 +273,8 @@ async def process_expert_pipeline(
             except Exception as e:
                 logger.warning(f"[{expert_id}] Shadow testing failed: {e}")
     else:
-        # Standard mode: load all posts
-        query = db.query(Post).filter(
-            Post.expert_id == expert_id,
-            Post.message_text.isnot(None),
-            func.length(Post.message_text) > 30  # Exclude media-only posts (7% of total)
-        )
-
-        if cutoff_date:
-            query = query.filter(Post.created_at >= cutoff_date)
-
-        # Order by date first (newest first), then apply limit
-        query = query.order_by(Post.created_at.desc())
-
-        if request.max_posts is not None:
-            query = query.limit(request.max_posts)
-
-        posts = query.all()
+        # Standard mode: load all posts (no scout_query or video_hub)
+        posts = get_standard_posts_query(db, expert_id, cutoff_date, request.max_posts).all()
 
     if not posts:
         return ExpertResponse(
