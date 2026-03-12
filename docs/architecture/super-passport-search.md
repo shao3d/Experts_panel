@@ -1,6 +1,7 @@
 # Super-Passport Search Architecture (Experts Panel v2.0)
 
-**Статус:** Draft / Proposed (Revised after Code Audit 2026-03-04)
+**Статус:** ⚠️ Experimental / A/B Testing (Updated 2026-03-12)
+**Feature Flag:** `use_super_passport: false` (default OFF, требует явного включения)
 **Цель:** Масштабирование системы для поддержки 30-50+ экспертов без OOM/CPU spikes и без лимитов Google API (429). Оптимизация скорости и стоимости Map Phase через гибридный FTS5-подход.
 
 ---
@@ -61,6 +62,82 @@ FTS5 влияет ТОЛЬКО на шаг 1. Все остальные фазы
 ```
 
 > **Ключевой инсайт:** FTS5 + AI Scout — это **PRE-FILTER, не замена Map Phase.** Map делает то, что FTS5 не может: семантическое понимание (контекст, импликации, фон — см. `map_prompt.txt`). Graceful Fallback — не «аварийный сценарий», а **ожидаемое поведение для ~10–20% запросов**, где ключевые слова не покрывают семантику.
+
+---
+
+## 🔬 Результаты A/B тестирования (2026-03-12)
+
+### Тестовый запрос: "Как настраивать RAG?"
+
+| Метрика | OLD Pipeline | NEW Pipeline (FTS5 + Scout) | Δ |
+|---------|--------------|------------------------------|---|
+| FTS5 Results | 212 постов | 5 постов | -97.6% |
+| Map Output | 13 sources | 2 sources | -85% |
+| Recall | 100% (baseline) | **15%** | 🔴 |
+| Latency | ~26s | ~35s | +33% |
+
+### 🚨 Выявленная проблема: AND-фильтр убивает Recall
+
+**Корневая причина:** Текущий Scout промпт генерирует запросы с `AND`:
+
+```
+(rag OR retrieval* OR вектор*) AND (настрой* OR config* OR setup*)
+         ↑ Entity                      ↑ Intent
+         └────────── AND ──────────────┘
+                      ↓
+              Пост отсеян если нет Intent-слов!
+```
+
+**Анализ данных (expert: refat):**
+- 39 постов содержат RAG-термины
+- **Только 5 (13%)** содержат intent-слова (настрой/config/setup)
+- **34 поста (87%)** отсеиваются AND-фильтром!
+
+**Пример потерянного поста:**
+```
+Пост #130: "🤩 LangExtract для работы с RAG и не только"
+- ✅ Содержит "RAG" (Entity)
+- ❌ НЕ содержит "настрой/config/setup" (Intent)
+→ Отсеян Scout'ом!
+```
+
+### 🎯 Решение: Entity-Centric Scout v2
+
+**Изменение архитектуры Scout:**
+1. **Убрать AND** из Scout промпта
+2. Генерировать **только Entity Cloud** (OR-only)
+3. **НЕ включать** Intent-слова в FTS5 запрос
+4. Intent обрабатывается только в **Map Phase** (LLM)
+
+**Новый формат запроса:**
+```
+# OLD (убить!)
+(rag OR retrieval*) AND (настрой* OR config*)
+
+# NEW (Entity-Centric)
+(rag OR retrieval* OR augmented* OR generation* OR вектор* OR эмбеддинг* OR чанк* OR langchain)
+```
+
+**Ожидаемый результат:**
+- FTS5 Results: 5 → ~42 поста (8x улучшение)
+- Recall: 15% → **60-70%** (4x улучшение)
+
+### ⚠️ Остающиеся ограничения
+
+**Semantic Gap (FTS5 не найдёт никогда):**
+```
+"Как подавать данные в модель по документам" ← Это про RAG, но нет RAG-терминов!
+"Работа с длинными текстами в LLM" ← Это про RAG. Но нет RAG-терминов!
+```
+
+**Полный Recall невозможен без векторного поиска.**
+
+### 📋 Next Steps
+
+1. **Entity-Centric Scout v2** — переписать промпт (убрать AND)
+2. **Smart Fallback** — если FTS5 < 10 results → load ALL posts
+3. **Re-run A/B Test** — целевой Recall ≥70%
+4. **Long-term** — гибридный поиск (FTS5 + Vector DB) при 50+ экспертах
 
 ---
 

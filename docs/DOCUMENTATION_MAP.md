@@ -15,9 +15,23 @@
 ## 🏗️ 2. Архитектура (Логика): `docs/architecture/`
 Сюда направляем AI, если нужно понять или изменить **логику работы** системы.
 
+**⚠️ Важно:** Если файл помечен как ⚠️ Experimental — это значит, что фича находится в стадии A/B тестирования и Recall <80%. Не включать по умолчанию в production!
+
 *   **📄 `pipeline.md` (Главный файл)**
     *   **О чём:** "Мозг" системы. Описывает 8 фаз обработки постов (Map -> Resolve -> Reduce), использование моделей (Gemini 2.5 vs 3.0), фильтры по датам.
     *   **Пример команды:** *"Посмотри в `docs/architecture/pipeline.md`, как мы обрабатываем MEDIUM посты."*
+
+*   **📄 `super-passport-search.md` (⚠️ Experimental)**
+    *   **О чём:** FTS5 + AI Scout для оптимизации Map Phase. A/B тестирование показ Recall 15-25%, проблемы с AND-фильтром.
+    *   **Пример команды:** *"Изучи `docs/architecture/super-passport-search.md`, почему низкий Recall."*
+
+*   **📄 `ai-scout-level1-upgrade.md`**
+    *   **О чём:** План и реализация защиты FTS5 от Syntax Errors при поиске спецсимволов (C++, C#).
+    *   **Пример команды:** *"Проверь по `docs/architecture/ai-scout-level1-upgrade.md`, как мы маппим спецсимволы."*
+
+*   **📄 `ai-scout-level2-upgrade.md` (🔬 Proposed)**
+    *   **О чём:** План перехода на Entity-Centric Query Expansion для повышения Recall. Отказ от AND-фильтров.
+    *   **Пример команды:** *"Изучи план `docs/architecture/ai-scout-level2-upgrade.md` перед доработкой Scout."*
 
 *   **📄 `reddit-service.md`**
     *   **О чём:** Всё про Reddit Sidecar Proxy. Поиск, дедупликация, ранжирование, таймауты.
@@ -43,6 +57,11 @@
 *   **📄 `drift-analysis.md`**
     *   **О чём:** Как запускать анализ дрифта тем (смена контекста в комментариях) и интерпретировать результаты.
     *   **Пример команды:** *"Напомни по `docs/guides/drift-analysis.md`, как проверить статус дрифта."*
+
+*   **📄 `ab-testing-super-passport.md`** *(NEW)*
+    *   **О чём:** Руководство по сравнению старого (MapReduce) и нового (FTS5 + AI Scout) пайплайнов. A/B тестирование, Recall, latency.
+    *   **Пример команды:** *"Запусти A/B тест по гайду `docs/guides/ab-testing-super-passport.md`."*
+
 
 ---
 
