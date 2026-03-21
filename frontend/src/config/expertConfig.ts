@@ -20,7 +20,7 @@ export interface ExpertGroup {
  */
 export const EXPERT_GROUPS: ExpertGroup[] = [
   { label: 'Tech', expertIds: ['ai_architect', 'neuraldeep', 'ilia_izmailov', 'polyakov', 'etechlead', 'glebkudr', 'ostrikov'] },
-  { label: 'Tech & Business', expertIds: ['ai_grabli', 'refat', 'akimov', 'llm_under_hood', 'elkornacio', 'doronin', 'air_ai', 'mkarpov', 'silicbag'] },
+  { label: 'Tech & Business', expertIds: ['ai_grabli', 'refat', 'akimov', 'llm_under_hood', 'elkornacio', 'doronin', 'air_ai', 'mkarpov', 'silicbag', 'kornish'] },
   { label: 'Knowledge Hub', expertIds: ['video_hub'] },
 ];
 
@@ -46,10 +46,11 @@ export const EXPERT_UI_CONFIG: ExpertUIConfig = {
     'air_ai': 'Air',
     'ostrikov': 'Ostrikov',
     'mkarpov': 'MKarpov',
-    'silicbag': 'SilicBag'
+    'silicbag': 'SilicBag',
+    'kornish': 'Kornishev'
   },
   // Order used for sorting results
-  order: ['refat', 'ai_architect', 'neuraldeep', 'ai_grabli', 'akimov', 'llm_under_hood', 'elkornacio', 'ilia_izmailov', 'polyakov', 'doronin', 'etechlead', 'glebkudr', 'video_hub', 'air_ai', 'ostrikov', 'mkarpov', 'silicbag']
+  order: ['refat', 'ai_architect', 'neuraldeep', 'ai_grabli', 'akimov', 'llm_under_hood', 'elkornacio', 'ilia_izmailov', 'polyakov', 'doronin', 'etechlead', 'glebkudr', 'video_hub', 'air_ai', 'ostrikov', 'mkarpov', 'silicbag', 'kornish']
 };
 
 /**
