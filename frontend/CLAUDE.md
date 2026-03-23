@@ -36,7 +36,7 @@ The frontend source code is located in `frontend/src/`:
 ### Sidebar Layout (Desktop)
 The application uses a responsive two-pane layout:
 - **Left Sidebar**:
-  - Contains **Search Options** ("Recent Only", "Search Reddit").
+  - Contains **Search Options** ("Recent Only", "Search Reddit", "Fast Search (Super-Passport)").
   - Displays **Expert Groups** (Tech, Business) with "Select All" functionality.
   - Collapsible: Shows smart **Initials Avatars** when collapsed (e.g., "AI_Arch" -> "AA").
 - **Main Content**:
@@ -57,6 +57,7 @@ Key query parameters are managed at the **App level** (`App.tsx`) to synchronize
 - `selectedExperts`: Set<string>
 - `useRecentOnly`: boolean
 - `includeReddit`: boolean
+- `useSuperPassport`: boolean (Fast FTS5 Search toggle)
 
 The `Sidebar` updates these states, and `App` passes the current values to the API when `QueryForm` triggers a submit.
 

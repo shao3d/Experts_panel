@@ -13,6 +13,8 @@ The backend implements a sophisticated 8-phase query processing system. It uses 
 ### Core Pipeline Services
 | Service | Phase | Model (Default) | Responsibility |
 |---------|-------|-----------------|----------------|
+| `ai_scout_service.py` | **0. Scout** | `gemini-3.1-flash-lite-preview` | Generates FTS5 MATCH queries (OR-only Entity Clouds) before Map Phase. |
+| `fts5_retrieval_service.py` | **0. Retrieval** | *None (SQLite)* | Super-Passport search using BM25 and pre-computed metadata. |
 | `map_service.py` | **1. Map** | `gemini-2.5-flash-lite` | Chunks posts (100), scores relevance (HIGH/MEDIUM/LOW). 3-layer retry system. |
 | `medium_scoring_service.py` | **2. Score** | `gemini-2.0-flash` | Reranks MEDIUM posts. Keeps top 5 with score ≥ 0.7. |
 | `simple_resolve_service.py` | **3. Resolve** | *None (DB)* | Expands HIGH posts context (Depth 1). Bypassed for Medium posts. |
@@ -62,6 +64,8 @@ Defined in `.env`, loaded in `config.py`.
 - `MODEL_MEDIUM_SCORING`: `gemini-2.0-flash`
 - `MODEL_COMMENT_GROUPS`: `gemini-2.0-flash`
 - `MODEL_DRIFT_ANALYSIS`: `gemini-3-flash-preview`
+- `MODEL_SCOUT`: `gemini-3.1-flash-lite-preview` (AI Scout / FTS5)
+- `METADATA_MODEL`: `gemini-3.1-flash-lite-preview` (Cron Job Metadata)
 
 ### Limits
 - `MAP_MAX_PARALLEL`: 25 (Tier 1) / 8 (Free)
