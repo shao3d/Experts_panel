@@ -30,6 +30,7 @@ export const App: React.FC = () => {
   // Search Options State (Lifted from QueryForm)
   const [useRecentOnly, setUseRecentOnly] = useState(false);
   const [includeReddit, setIncludeReddit] = useState(true);
+  const [useSuperPassport, setUseSuperPassport] = useState(true);
   
   // Mobile Expert Selector Drawer State
   const [isExpertSelectorOpen, setIsExpertSelectorOpen] = useState(false);
@@ -103,7 +104,7 @@ export const App: React.FC = () => {
       const experts = Array.from(selectedExperts);
       // Submit query with progress callback
       const response = await apiClient.submitQuery(
-        { query, expert_filter: experts, stream_progress: true, include_comments: true, include_comment_groups: true, use_recent_only: useRecentOnly, include_reddit: includeReddit },
+        { query, expert_filter: experts, stream_progress: true, include_comments: true, include_comment_groups: true, use_recent_only: useRecentOnly, include_reddit: includeReddit, use_super_passport: useSuperPassport },
         (event: ProgressEvent) => {
           // Add progress event to log
           setProgressEvents(prev => [...prev, event]);
@@ -184,7 +185,7 @@ export const App: React.FC = () => {
       
       {/* 1. Desktop Sidebar (Hidden on Mobile) */}
       <div className="hidden md:flex shrink-0 z-20 h-full">
-        <Sidebar 
+        <Sidebar
           availableExperts={availableExperts}
           selectedExperts={selectedExperts}
           onExpertsChange={setSelectedExperts}
@@ -192,6 +193,8 @@ export const App: React.FC = () => {
           onUseRecentOnlyChange={setUseRecentOnly}
           includeReddit={includeReddit}
           onIncludeRedditChange={setIncludeReddit}
+          useSuperPassport={useSuperPassport}
+          onUseSuperPassportChange={setUseSuperPassport}
           disabled={isProcessing}
         />
       </div>
@@ -298,11 +301,15 @@ export const App: React.FC = () => {
              {/* Simple filter toggles for mobile inside the drawer */}
              <div className="p-4 border-t border-gray-100 flex flex-col gap-3">
                 <label className="flex items-center gap-2">
+                  <input type="checkbox" checked={useSuperPassport} onChange={e => setUseSuperPassport(e.target.checked)} disabled={isProcessing} className="w-4 h-4 accent-yellow-500"/>
+                  <span className="text-sm font-medium text-gray-700">Embs&amp;Keys Search</span>
+                </label>
+                <label className="flex items-center gap-2">
                   <input type="checkbox" checked={useRecentOnly} onChange={e => setUseRecentOnly(e.target.checked)} disabled={isProcessing} className="w-4 h-4 accent-blue-600"/>
                   <span className="text-sm font-medium text-gray-700">Recent Only (3m)</span>
                 </label>
                 <label className="flex items-center gap-2">
-                  <input type="checkbox" checked={includeReddit} onChange={e => setIncludeReddit(e.target.checked)} disabled={isProcessing} className="w-4 h-4 accent-blue-600"/>
+                  <input type="checkbox" checked={includeReddit} onChange={e => setIncludeReddit(e.target.checked)} disabled={isProcessing} className="w-4 h-4 accent-orange-600"/>
                   <span className="text-sm font-medium text-gray-700">Search Reddit</span>
                 </label>
              </div>

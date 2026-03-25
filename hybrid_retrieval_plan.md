@@ -81,8 +81,19 @@ class EmbeddingService:
         return await self.embed_text(query, task_type="RETRIEVAL_QUERY")
 
     async def embed_batch(self, texts: list[str], task_type="RETRIEVAL_DOCUMENT") -> list[list[float]]:
-        """Embed batch (sequential, rate-limit safe)."""
-        return [await self.embed_text(t, task_type) for t in texts]
+        """Embed batch via native genai.embed_content(content=list[str]).
+        
+        1 API call per batch instead of N. For embed_posts.py:
+        ~26 calls (batch 50) vs ~1300 calls (sequential).
+        """
+        result = await asyncio.to_thread(
+            genai.embed_content,
+            model=f"models/{self.model}",
+            content=texts,  # list[str] → native batch
+            task_type=task_type,
+            output_dimensionality=self.dimensions
+        )
+        return result['embedding']  # list[list[float]]
 
 # Singleton
 _embedding_instance = None
@@ -117,15 +128,20 @@ CREATE TABLE IF NOT EXISTS post_embeddings (
 );
 
 -- Vector index с partition key для фильтрации по expert_id
+-- created_at как metadata column — позволяет sqlite-vec фильтровать ДО KNN
 CREATE VIRTUAL TABLE IF NOT EXISTS vec_posts USING vec0(
     post_id INTEGER PRIMARY KEY,
     embedding float[768],
-    expert_id TEXT PARTITION KEY
+    expert_id TEXT PARTITION KEY,
+    created_at TEXT              -- metadata column: pre-KNN фильтр по дате
 );
 ```
 
 > [!IMPORTANT]
 > **`expert_id TEXT PARTITION KEY`** — критически важно! Без этого KNN ищет среди ВСЕХ 1300 постов всех экспертов. С partition key `sqlite-vec` делает pre-filter по expert_id ДО KNN-вычислений.
+
+> [!IMPORTANT]
+> **`created_at TEXT` metadata column** — без этого `cutoff_date` фильтрация через JOIN работает ПОСЛЕ KNN, обрезая recall. С metadata column — `sqlite-vec` фильтрует по дате ДО KNN-вычислений. Решение из CTO Review (баг `_vector_search` с JOIN + cutoff_date).
 
 **Размер:** ~1300 × 768 × 4 bytes ≈ **4MB**.
 
@@ -168,6 +184,8 @@ Vector Search        FTS5 Search
 ```
 
 ```python
+from sqlite_vec import serialize_float32
+
 class HybridRetrievalService:
     def __init__(self, db: Session):
         self.db = db
@@ -216,9 +234,12 @@ class HybridRetrievalService:
         # Returns: [(post_id, bm25_rank), ...] sorted by rank
 
         # 3. Apply Soft Freshness Decay BEFORE RRF Merge
-        # We apply a soft decay (max penalty is 0.7) to vectors and FTS5 before RRF.
-        # This prevents old posts from completely dominating fresh ones,
-        # but avoids the "double penalty" since Map Phase applies strict Hacker News Gravity.
+        # АРХИТЕКТУРНОЕ РЕШЕНИЕ (CTO Review, подтверждено):
+        # Soft Freshness ЗАМЕНЯЕТ Gravity из старого FTS5RetrievalService.
+        # Hybrid НЕ вызывает FTS5RetrievalService — использует собственный
+        # мягкий linear decay (max penalty 0.7), а не жёсткий HN Gravity.
+        # Строгий decay применяется позже в Map Phase.
+        # Это НЕ double penalty — это осознанная замена.
         vector_candidates = [pid for pid, _ in vector_results]
         fts5_candidates = [pid for pid, _ in fts5_results]
         all_candidates = list(set(vector_candidates + fts5_candidates))
@@ -304,9 +325,9 @@ class HybridRetrievalService:
 
     def _has_embeddings(self, expert_id: str) -> bool:
         """Check if vec_posts has any embeddings for this expert."""
-        sql = "SELECT COUNT(*) FROM vec_posts WHERE expert_id = :eid LIMIT 1"
-        result = self.db.execute(text(sql), {"eid": expert_id}).scalar()
-        return (result or 0) > 0
+        sql = "SELECT 1 FROM vec_posts WHERE expert_id = :eid LIMIT 1"
+        result = self.db.execute(text(sql), {"eid": expert_id}).fetchone()
+        return result is not None
 
     def _get_all_posts(self, expert_id, cutoff_date):
         """Fallback: Standard MapReduce (all posts, as in OLD pipeline)."""
@@ -320,12 +341,17 @@ class HybridRetrievalService:
         return query.order_by(Post.created_at.desc()).all()
 
     def _vector_search(self, embedding, expert_id, cutoff_date, top_k):
-        """KNN via sqlite-vec with expert_id partition key pre-filter."""
-        # vec0 with partition key: WHERE expert_id = ? is a pre-filter
+        """KNN via sqlite-vec with expert_id partition key pre-filter.
+        
+        CTO Review Fix: cutoff_date фильтруется через metadata column
+        created_at в vec0 (pre-KNN), а НЕ через JOIN с posts (post-KNN).
+        Без этого KNN возвращает top-k ДО фильтрации по дате, обрезая recall.
+        """
+        # vec0 metadata columns: expert_id (partition key) + created_at
+        # Оба применяются ДО KNN-вычислений
         sql = """
         SELECT v.post_id, v.distance
         FROM vec_posts v
-        JOIN posts p ON p.post_id = v.post_id
         WHERE v.expert_id = :expert_id
           AND v.embedding MATCH :embedding
           AND k = :top_k
@@ -336,7 +362,7 @@ class HybridRetrievalService:
             "top_k": top_k,
         }
         if cutoff_date:
-            sql += " AND p.created_at >= :cutoff_date"
+            sql += " AND v.created_at >= :cutoff_date"
             params["cutoff_date"] = cutoff_date.isoformat()
 
         result = self.db.execute(text(sql), params)
@@ -369,15 +395,20 @@ class HybridRetrievalService:
         return [(row[0], row[1]) for row in result.fetchall()]
 ```
 
-**Решения из CTO Review:**
+**Решения из CTO Review (v1 + v2):**
 
 | Проблема | Решение |
 |---|---|
 | vec0 без expert_id filter | `expert_id TEXT PARTITION KEY` — pre-filter в KNN |
 | Fallback при пустой vec_posts | `_has_embeddings()` → Standard MapReduce (все посты) |
 | EmbeddingService per-expert | `get_embedding_service()` singleton |
-| Freshness decay | **Сохранен как Soft Decay** — легкий пенальти (max 0.7) применяется до RRF к сырым скорам, чтобы избежать эффекта double penalty в Map Phase. |
+| Freshness decay | **Soft Decay заменяет Gravity** — осознанная замена HN Gravity из FTS5RetrievalService. Мягкий пенальти (max 0.7) до RRF, строгий decay — в Map Phase |
 | max_posts внутри hybrid | **Не нужен** — `top_k` уже ограничивает, Map Phase справится |
+| **cutoff_date + KNN (🔴 v2)** | `created_at TEXT` metadata column в vec0 — pre-KNN фильтр. JOIN post-KNN обрезал recall |
+| **serialize_float32 (🔴 v2)** | `from sqlite_vec import serialize_float32` — без этого NameError в runtime |
+| **Media-only посты (🟡 v2)** | Фильтр `LENGTH(message_text) > 30` в `embed_posts.py` — не эмбеддим мусор |
+| **embed_batch (🟢 v2)** | Native batch через `genai.embed_content(content=list)` — 26 calls vs 1300 |
+| **Shadow testing (🟡 v2)** | Адаптировать `fts5_post_ids` → `hybrid_post_ids` или временно отключить |
 
 **Почему RRF (k=60):**
 - Rank-based — не зависит от масштабов (cosine vs BM25)
@@ -393,12 +424,14 @@ class HybridRetrievalService:
 Паттерн — как [enrich_post_metadata.py](file:///Users/andreysazonov/Documents/Projects/Experts_panel/backend/scripts/enrich_post_metadata.py):
 - `.env` из `backend/`, `DATABASE_URL` → absolute path
 - `LEFT JOIN post_embeddings` — только посты без embedding
+- **Фильтр media-only**: `WHERE LENGTH(COALESCE(p.message_text, '')) > 30` — не эмбеддим посты-коротыши ("🙏", "Фото" и т.д.), экономим API calls и не загрязняем KNN мусорными embeddings (CTO Review Fix #3)
 - Batch + `asyncio.sleep(0.5)` между batch'ами (плюс retry logic для Gemini API rate limits)
+- **Native batch**: использовать `embed_batch()` (1 API call на batch вместо N) — ~26 calls vs ~1300
 - Rich progress bar, `--batch-size 50`, `--dry-run`, `--force`, `--continuous`
-- Записывает в ОБЕИХ таблиц: `vec_posts` (vector) + `post_embeddings` (metadata)
+- Записывает в ОБЕИХ таблиц: `vec_posts` (vector + `created_at` metadata) + `post_embeddings` (metadata)
 - **Идемпотентность**: `INSERT OR REPLACE INTO vec_posts` для безопасного перезапуска.
 - **Транзакционность**: Обязательная обертка в `try...except` с `db.commit()` / `db.rollback()` чтобы избежать orphaned vectors (Schema Evolution Risk).
-- `expert_id` берётся из `posts.expert_id` и записывается в `vec_posts`
+- `expert_id` и `created_at` берутся из `posts` и записываются в `vec_posts`
 
 ---
 
@@ -468,8 +501,10 @@ EMBEDDING_DIMENSIONS=768
 **Что НЕ меняется:**
 - `FTS5CircuitBreaker` — fallback логика
 - `AIScoutService` — Scout генерирует FTS5 MATCH
-- Shadow testing — API format adapt (stats dict vs bool)
 - Map → Score → Resolve → Reduce — **весь пайплайн без изменений**
+
+**Что ТРЕБУЕТ адаптации (CTO Review Fix #4):**
+- Shadow testing: `fts5_post_ids` → `hybrid_post_ids` (семантика изменилась). `used_fts5 = bool(posts)` теперь означает "есть результаты", а не "FTS5 сработал". Варианты: переименовать параметр или временно отключить shadow testing на время перехода.
 
 ---
 
@@ -488,30 +523,261 @@ EMBEDDING_DIMENSIONS=768
 
 ## Verification Plan
 
-### 1. Smoke Test
+> [!IMPORTANT]
+> **Каждый шаг имеет свой тест.** Имплементатор должен проверять работоспособность после КАЖДОГО шага, не откладывая до конца.
+
+### Справочные материалы
+
+Существующая тестовая инфраструктура (адаптируем, не переписываем с нуля):
+- [ab-testing-super-passport.md](file:///Users/andreysazonov/Documents/Projects/Experts_panel/docs/guides/ab-testing-super-passport.md) — гайд по A/B тестированию через API
+- [deep_compare_pipelines.py](file:///Users/andreysazonov/Documents/Projects/Experts_panel/backend/scripts/deep_compare_pipelines.py) — **ключевой скрипт**, сравнивает выходы Map Phase напрямую (OLD vs NEW). Нужно адаптировать для `--mode hybrid`
+- [ab_test_super_passport.py](file:///Users/andreysazonov/Documents/Projects/Experts_panel/backend/scripts/ab_test_super_passport.py) — A/B тест через API endpoint
+- [walkthrough.md](file:///Users/andreysazonov/Documents/Projects/Experts_panel/walkthrough.md) — результаты предыдущего deep compare (FTS5-only: **recall 28%** — это baseline, hybrid должен быть значительно лучше)
+
+---
+
+### Step 1 → Тест: sqlite-vec загрузка
+
+**После:** Модификации `base.py` + `pip install sqlite-vec`
+
 ```bash
+# 1. Установка
 pip install sqlite-vec
+
+# 2. Тест загрузки extension
+python3 -c "
+import sqlite_vec
+import sqlite3
+db = sqlite3.connect(':memory:')
+db.enable_load_extension(True)
+sqlite_vec.load(db)
+db.enable_load_extension(False)
+print('✅ sqlite-vec loaded:', db.execute('SELECT vec_version()').fetchone()[0])
+"
+
+# 3. Тест через SQLAlchemy (убедиться что event.listen работает)
+cd backend
+python3 -c "
+from src.models.base import engine
+with engine.connect() as conn:
+    result = conn.execute(__import__('sqlalchemy').text('SELECT vec_version()'))
+    print('✅ sqlite-vec via SQLAlchemy:', result.fetchone()[0])
+"
+```
+
+**Ожидаемый результат:** Версия sqlite-vec (например `v0.1.6`)
+
+---
+
+### Step 2 → Тест: Embedding Service
+
+**После:** Создание `embedding_service.py` + добавление конфигов в `config.py`
+
+```bash
+cd backend
+python3 -c "
+import asyncio
+from src.services.embedding_service import get_embedding_service
+
+async def test():
+    svc = get_embedding_service()
+    emb = await svc.embed_query('тестовый запрос')
+    print(f'✅ Embedding dimensions: {len(emb)}')
+    print(f'   First 5 values: {emb[:5]}')
+    assert len(emb) == 768, f'Expected 768, got {len(emb)}'
+    
+    # Тест batch
+    batch = await svc.embed_batch(['текст 1', 'текст 2'])
+    print(f'✅ Batch: {len(batch)} embeddings, each {len(batch[0])} dims')
+    assert len(batch) == 2
+
+asyncio.run(test())
+"
+```
+
+**Ожидаемый результат:** `768` dimensions, batch из 2 embeddings
+
+---
+
+### Step 3 → Тест: Миграция + Embedding Script
+
+**После:** Создание миграции `021_vector_embeddings.sql` + скрипта `embed_posts.py`
+
+```bash
+# 1. Миграция
 sqlite3 backend/data/experts.db < backend/migrations/021_vector_embeddings.sql
-python backend/scripts/embed_posts.py --batch-size 10
+
+# 2. Проверка таблиц
+sqlite3 backend/data/experts.db "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('vec_posts', 'post_embeddings');"
+# Ожидание: vec_posts и post_embeddings
+
+# 3. Smoke test embedding (10 постов)
+cd backend
+python3 scripts/embed_posts.py --batch-size 10 --dry-run
+# Ожидание: показывает сколько постов будет обработано, без API вызовов
+
+python3 scripts/embed_posts.py --batch-size 10
+# Ожидание: 10 постов эмбеддинг, записаны в vec_posts + post_embeddings
+
+# 4. Проверка данных
 sqlite3 backend/data/experts.db "SELECT COUNT(*) FROM post_embeddings;"
-```
+# Ожидание: 10
 
-### 2. Full Embedding
-```bash
-python backend/scripts/embed_posts.py --continuous --batch-size 50
+sqlite3 backend/data/experts.db "SELECT post_id, expert_id, created_at FROM vec_posts LIMIT 3;"
+# Ожидание: 3 строки с post_id, expert_id и created_at (не NULL!)
+
+# 5. Full embedding
+python3 scripts/embed_posts.py --continuous --batch-size 50
 # ~1300 постов, ~5-10 мин, ~$0.01
+# Ожидание: все посты с LENGTH(message_text) > 30 обработаны
 ```
 
-### 3. Deep Compare
+---
+
+### Step 4 → Тест: Hybrid Retrieval Service (unit)
+
+**После:** Создание `hybrid_retrieval_service.py`
+
 ```bash
-python backend/scripts/deep_compare_pipelines.py \
-  --query "Как работать со Skills?" --mode hybrid
-# Цель: recall ≥80%
+cd backend
+python3 -c "
+import asyncio
+from src.models.base import SessionLocal
+from src.services.hybrid_retrieval_service import HybridRetrievalService
+
+async def test():
+    db = SessionLocal()
+    svc = HybridRetrievalService(db)
+    
+    # Тест с реальным экспертом
+    posts, stats = await svc.search_posts(
+        expert_id='doronin',
+        query='Как работать со Skills?',
+        match_query='skills OR навык*'
+    )
+    
+    print(f'✅ Mode: {stats[\"mode\"]}')
+    print(f'   Vector: {stats[\"vector_count\"]}')
+    print(f'   FTS5: {stats[\"fts5_count\"]}')
+    print(f'   Merged: {stats[\"merged_count\"]}')
+    print(f'   Overlap: {stats[\"overlap\"]}')
+    print(f'   Final posts: {len(posts)}')
+    
+    assert stats['mode'] == 'hybrid', f'Expected hybrid, got {stats[\"mode\"]}'
+    assert len(posts) > 0, 'No posts returned!'
+    
+    db.close()
+
+asyncio.run(test())
+"
 ```
 
-### 4. API Test
+**Ожидаемый результат:** `mode=hybrid`, vector_count ~150, fts5_count ~100, overlap > 0
+
+---
+
+### Step 5 → Тест: Endpoint Integration
+
+**После:** Модификация `simplified_query_endpoint.py`
+
 ```bash
-uvicorn src.api.main:app --reload
-# POST /api/v1/query с use_super_passport: true
-# Логи: "[Hybrid Retrieval] vector: 120, fts5: 80, merged: 170, overlap: 30"
+# 1. Запустить бэкенд
+cd backend
+export $(grep -v '^#' .env | xargs) && python3 -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000
+
+# 2. В другом терминале — одиночный запрос через API
+curl -s -X POST http://localhost:8000/api/v1/query \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "Как работать со Skills?",
+    "use_super_passport": true,
+    "experts": ["doronin"]
+  }' | python3 -m json.tool | head -50
+
+# 3. Проверить логи
+tail -f backend/data/backend.log | grep -E "(Hybrid Retrieval|AI Scout)"
+# Ожидание: "[Hybrid Retrieval] doronin: {\"mode\": \"hybrid\", \"vector_count\": ...}"
+```
+
+**Ожидаемый результат:** Ответ с `main_sources`, логи показывают hybrid mode
+
+---
+
+### Step 6 → ФИНАЛЬНЫЙ E2E ТЕСТ: Deep Compare (OLD vs HYBRID)
+
+> [!CAUTION]
+> **Это самый важный тест.** Он сравнивает выходы Map Phase при старом пайплайне (ВСЕ посты) vs при hybrid (Vector + FTS5 → pre-filter). Адаптация [deep_compare_pipelines.py](file:///Users/andreysazonov/Documents/Projects/Experts_panel/backend/scripts/deep_compare_pipelines.py).
+
+**Что нужно сделать:** Скопировать `deep_compare_pipelines.py` → `deep_compare_hybrid.py` и заменить NEW pipeline:
+
+```python
+# БЫЛО в deep_compare_pipelines.py (строки 151-175):
+# NEW Pipeline: FTS5 + Scout → Map
+fts5_service = FTS5RetrievalService(db)
+fts5_posts, used_fts5 = fts5_service.search_posts(...)
+# Map на fts5_posts
+
+# СТАЛО в deep_compare_hybrid.py:
+# NEW Pipeline: Hybrid (Vector + FTS5 + RRF) → Map
+from src.services.hybrid_retrieval_service import HybridRetrievalService
+hybrid_service = HybridRetrievalService(db)
+hybrid_posts, hybrid_stats = await hybrid_service.search_posts(
+    expert_id=expert_id,
+    query=query,
+    match_query=scout_query
+)
+# Map на hybrid_posts
+# + логировать hybrid_stats (vector_count, fts5_count, overlap)
+```
+
+**Запуск:**
+```bash
+cd backend
+
+# Тест 1: Основной (тот же запрос что давал 28% recall у FTS5-only)
+python3 scripts/deep_compare_hybrid.py \
+  --query "Как работать со Skills?" \
+  --experts doronin akimov
+
+# Тест 2: Другой запрос
+python3 scripts/deep_compare_hybrid.py \
+  --query "Как настраивать RAG pipeline?" \
+  --experts doronin akimov
+
+# Тест 3: Эксперт с большим количеством постов
+python3 scripts/deep_compare_hybrid.py \
+  --query "Лучшие практики промпт-инженерии" \
+  --experts refat llm_under_hood
+```
+
+**Таблица результатов (заполнить):**
+
+| Запрос | Эксперт | OLD relevant | HYBRID relevant | Overlap | **True Recall** | Latency OLD → HYBRID |
+|---|---|---|---|---|---|---|
+| Skills | doronin | ? | ? | ? | **≥80%?** | ? → ? |
+| Skills | akimov | ? | ? | ? | **≥80%?** | ? → ? |
+| RAG | doronin | ? | ? | ? | **≥80%?** | ? → ? |
+
+**Критерии успеха:**
+
+| Метрика | Порог | Комментарий |
+|---|---|---|
+| **True Recall** | **≥ 70%** на каждом эксперте | FTS5-only давал 28%. Hybrid должен быть значительно лучше |
+| **Average True Recall** | **≥ 80%** | По всем экспертам и запросам |
+| Latency | Не медленнее OLD ×1.5 | Допускаем небольшой overhead от embedding query |
+| No errors | 0 crashes | Graceful degradation если нет embeddings |
+
+> [!TIP]
+> **Сравнение с предыдущим результатом:** FTS5-only давал [True Recall 28%](file:///Users/andreysazonov/Documents/Projects/Experts_panel/walkthrough.md). Если Hybrid даёт ≥70% — это улучшение в **2.5x+**. Цель плана — ~85%.
+
+---
+
+### Порядок отката при проблемах
+
+```bash
+# Если критическая проблема с sqlite-vec:
+sqlite3 backend/data/experts.db < backend/migrations/022_rollback_vector.sql
+
+# В endpoint: вернуть FTS5RetrievalService (git revert)
+# Graceful degradation: нет embeddings → fallback на старый пайплайн (все посты)
 ```

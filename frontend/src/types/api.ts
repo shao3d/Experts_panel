@@ -70,6 +70,9 @@ export interface QueryRequest {
 
   /** Include Reddit community insights in response (default: true) */
   include_reddit?: boolean;
+
+  /** Use Super-Passport fast search mode (default: true) */
+  use_super_passport?: boolean;
 }
 
 // ============================================================================

@@ -7,6 +7,7 @@ import os
 Все переменные окружения считываются здесь, чтобы обеспечить единый источник истины.
 """
 
+
 # --- Вспомогательные функции ---
 def _mask_value(value: str) -> str:
     """Маскирует чувствительные значения для безопасного вывода в логи."""
@@ -14,10 +15,13 @@ def _mask_value(value: str) -> str:
         return "Not configured or too short to mask"
     return f"{value[:5]}...{value[-4:]}"
 
+
 # --- API Ключи ---
 GOOGLE_AI_STUDIO_API_KEYS_STR = os.getenv("GOOGLE_AI_STUDIO_API_KEY")
 GOOGLE_AI_STUDIO_API_KEYS = [
-    key.strip() for key in (GOOGLE_AI_STUDIO_API_KEYS_STR or "").split(',') if key.strip()
+    key.strip()
+    for key in (GOOGLE_AI_STUDIO_API_KEYS_STR or "").split(",")
+    if key.strip()
 ]
 
 # --- Model Configuration ---
@@ -38,6 +42,19 @@ MODEL_COMMENT_GROUPS: str = os.getenv("MODEL_COMMENT_GROUPS", "gemini-2.0-flash"
 
 MODEL_DRIFT_ANALYSIS: str = os.getenv("MODEL_DRIFT_ANALYSIS", "gemini-3-flash-preview")
 
+# --- Embedding Configuration ---
+MODEL_EMBEDDING: str = os.getenv("MODEL_EMBEDDING", "gemini-embedding-001")
+EMBEDDING_DIMENSIONS: int = int(os.getenv("EMBEDDING_DIMENSIONS", "768"))
+
+# --- Hybrid Retrieval ---
+HYBRID_VECTOR_TOP_K: int = int(os.getenv("HYBRID_VECTOR_TOP_K", "150"))
+HYBRID_FTS5_TOP_K: int = int(os.getenv("HYBRID_FTS5_TOP_K", "100"))
+HYBRID_RRF_K: int = int(os.getenv("HYBRID_RRF_K", "60"))
+
+# --- Metadata Enrichment ---
+METADATA_MODEL: str = os.getenv("METADATA_MODEL", "gemini-3.1-flash-lite-preview")
+METADATA_BATCH_SIZE: int = int(os.getenv("METADATA_BATCH_SIZE", "50"))
+
 # --- Video Hub Models ---
 MODEL_VIDEO_PRO: str = os.getenv("MODEL_VIDEO_PRO", "gemini-3-pro-preview")
 MODEL_VIDEO_FLASH: str = os.getenv("MODEL_VIDEO_FLASH", "gemini-3-flash-preview")
@@ -53,6 +70,8 @@ MEDIUM_MAX_POSTS: int = int(os.getenv("MEDIUM_MAX_POSTS", "50"))
 # --- Лимиты (Rate Limiting) ---
 # For Tier 1 (paid) with 300-1000 RPM, 25 is optimal. For Free Tier with 15 RPM, use 8.
 MAP_MAX_PARALLEL: int = int(os.getenv("MAP_MAX_PARALLEL", "25"))
+# Chunk size for Map Phase (smaller = more reliable JSON, but more API calls)
+MAP_CHUNK_SIZE: int = int(os.getenv("MAP_CHUNK_SIZE", "50"))
 
 # --- Expert Concurrency ---
 # Global limit for parallel expert processing (prevents OOM at scale)
@@ -62,9 +81,13 @@ MAX_CONCURRENT_EXPERTS: int = int(os.getenv("MAX_CONCURRENT_EXPERTS", "5"))
 # Maximum posts to retrieve via FTS5 before Map Phase
 MAX_FTS_RESULTS: int = int(os.getenv("MAX_FTS_RESULTS", "300"))
 # Feature flag: enable FTS5 pre-filtering (default: False for A/B testing)
-USE_SUPER_PASSPORT_DEFAULT: bool = os.getenv("USE_SUPER_PASSPORT_DEFAULT", "false").lower() == "true"
+USE_SUPER_PASSPORT_DEFAULT: bool = (
+    os.getenv("USE_SUPER_PASSPORT_DEFAULT", "false").lower() == "true"
+)
 # Circuit Breaker: max fallbacks before disabling FTS5 for remaining experts
-FTS5_CIRCUIT_BREAKER_THRESHOLD: int = int(os.getenv("FTS5_CIRCUIT_BREAKER_THRESHOLD", "3"))
+FTS5_CIRCUIT_BREAKER_THRESHOLD: int = int(
+    os.getenv("FTS5_CIRCUIT_BREAKER_THRESHOLD", "3")
+)
 
 # --- Прочие настройки ---
 DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///data/experts.db")
@@ -83,7 +106,9 @@ else:
 if os.getenv("ENVIRONMENT") != "production":
     print("--- Загруженная конфигурация API ---")
     if GOOGLE_AI_STUDIO_API_KEYS:
-        print(f"  Google AI Studio Keys: Configured ({len(GOOGLE_AI_STUDIO_API_KEYS)} keys)")
+        print(
+            f"  Google AI Studio Keys: Configured ({len(GOOGLE_AI_STUDIO_API_KEYS)} keys)"
+        )
     else:
         print("  Google AI Studio Keys: Not configured")
 

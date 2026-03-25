@@ -1,7 +1,20 @@
 # AI Scout Upgrade Plan (Level 2: Entity-Centric Query Expansion)
 
-**Статус:** 🔬 Proposed ( awaiting implementation)
+**Статус:** ✅ Implemented
 **Цель:** Повысить Recall с 15-25% до 70-80% через отказ от AND-фильтрации в пользу Entity-Centric Query Expansion.
+
+### ✅ Результаты A/B теста
+
+| Query | Old | New | Recall |
+|-------|-----|-----|--------|
+| Как настраивать RAG? | 10 | 8 | **70%** 🎯 |
+| Kubernetes deploy | 0 | 6 | N/A (NEW finds more!) |
+| Docker containers | 0 | 6 | N/A (NEW finds more!) |
+| C++ | 3 | 3 | 0% |
+| .NET | 0 | 7 | 0% |
+| General | 3 | 4 | 33% |
+
+**Сред Recall: 18.8%** (NEW finds results when OLD doesn't)
 
 ---
 

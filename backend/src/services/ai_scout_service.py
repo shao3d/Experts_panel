@@ -79,6 +79,8 @@ class AIScoutService:
     async def generate_match_query(self, user_query: str) -> Tuple[str, bool]:
         """Generate FTS5 MATCH query from user query.
 
+        Entity-Centric v2: Enforces OR-only queries for maximum recall.
+
         Args:
             user_query: User's natural language query
 
@@ -89,6 +91,16 @@ class AIScoutService:
         """
         try:
             match_query = await self._generate_with_ai(user_query)
+
+            # ═══════════════════════════════════════════════════════════════
+            # ENTITY-CENTRIC v2: Force OR-only (replace AND with OR)
+            # The model sometimes ignores prompt instructions, so we enforce it
+            # ═══════════════════════════════════════════════════════════════
+            original_query = match_query
+            match_query = self._force_or_only(match_query)
+
+            if match_query != original_query:
+                logger.info(f"[AI Scout] Forced OR-only: {original_query[:80]}... → {match_query[:80]}...")
 
             # Validate the generated query
             if not self.validate_match_query(match_query):
@@ -103,52 +115,74 @@ class AIScoutService:
             logger.info(f"[AI Scout] Fallback MATCH query: {match_query}")
             return match_query, False
 
+    def _force_or_only(self, query: str) -> str:
+        """Force OR-only query by replacing AND with OR.
+
+        Entity-Centric v2: AND kills recall, so we replace all AND with OR.
+        Map Phase will handle semantic filtering.
+
+        NOTE: This replaces ALL AND operators, including inside quotes.
+        Scout v3 prompt prohibits AND entirely, so phrase search with AND
+        inside quotes should never occur in practice.
+        """
+        import re
+        # Replace AND (case-insensitive, word boundary) with OR
+        result = re.sub(r'\bAND\b', 'OR', query, flags=re.IGNORECASE)
+        return result
+
     async def _generate_with_ai(self, user_query: str) -> str:
         """Generate FTS5 MATCH query using AI."""
 
         prompt = f"""You are an expert at generating SQLite FTS5 MATCH queries for technical content search.
 
-Given the user query, generate an FTS5 MATCH expression that will find relevant posts.
+═══════════════════════════════════════════════════════════════════
+ENTITY-CENTRIC SCOUT v3 - ALIGNED WITH METADATA TAXONOMY
+═══════════════════════════════════════════════════════════════════
 
-RULES:
-1. Extract ALL keywords from the query (both Russian and English)
-2. Add English equivalents for Russian tech slang:
-   - кубер → kubernetes, k8s
-   - постгр* → postgresql, postgres
-   - докер → docker
-   - деплой → deploy, deployment
-   - раскатка → deploy, rollout
-   - пайплайн → pipeline, ci, cd
-3. Add Russian equivalents for English terms where applicable
-4. Use prefix wildcards (*) for morphological variations
-5. Use OR for synonyms, AND for combining concepts
-6. Keep it simple - don't over-generate
-7. CRITICAL: SQLite FTS5 tokenizer ignores special characters (+, #, .).
-   NEVER output raw special chars. ALWAYS replace them with safe equivalents:
-   - C++ → cpp, cplusplus, "си плюс плюс"
-   - C# → csharp, "си шарп"
-   - F# → fsharp, "эф шарп"
-   - .NET → dotnet, "дотнет"
-   - Node.js → nodejs, "нода"
-   NEVER attach wildcards (*) to special characters.
+The database you are searching is indexed using a strict taxonomy. Posts are tagged with normalized bilingual keywords.
+Your ONLY job: Extract entities and concepts from the user's query and expand them into OR-only synonyms matching this taxonomy.
+The Map Phase will handle semantic filtering. MAXIMIZE RECALL.
 
-OUTPUT FORMAT: Return ONLY the FTS5 MATCH string, nothing else.
+═══════════════════════════════════════════════════════════════════
+ABSOLUTE RULES:
+1. OUTPUT MUST BE OR-ONLY, NEVER USE AND.
+2. YOU MUST INCLUDE BOTH ENGLISH AND RUSSIAN TRANSLATIONS.
+═══════════════════════════════════════════════════════════════════
 
-EXAMPLES:
-Query: "как настроить kubernetes"
-Output: (kubernetes OR кубер* OR k8s) AND (настрой* OR config*)
+❌ FORBIDDEN: (term1) AND (term2)
+❌ FORBIDDEN: term1 AND term2
+✓ REQUIRED: term1 OR term2 OR term3 OR term4
 
-Query: "deploy в продакшен"
-Output: (deploy* OR деплой* OR раскатка) AND (prod* OR продакшен*)
+═══════════════════════════════════════════════════════════════════
+TAXONOMY ALIGNMENT (HOW POSTS ARE INDEXED):
+═══════════════════════════════════════════════════════════════════
 
-Query: "postgresql performance tuning"
-Output: (postgresql OR postgres OR постгр*) AND (performance OR производитель*) AND (tuning OR настрой*)
+1. RAG → rag OR retrieval* OR augmented* OR generation* OR вектор* OR эмбеддинг* OR чанк* OR langchain OR llamaindex OR faiss OR pinecone OR контекст* OR semantic* OR embedding* OR vector* OR chunk*
+2. LLM → llm OR "large language model*" OR нейросет* OR модель* OR gpt* OR claude* OR language*
+3. Kubernetes → kubernetes OR k8s OR кубер* OR container* OR контейнер* OR pod* OR helm* OR kubectl
+4. Database → database* OR баз* OR db OR postgres* OR mysql OR mongo*
+5. Special chars (CRITICAL for FTS5):
+   - C++ → cpp OR cplusplus OR "си плюс плюс"
+   - C# → csharp OR "си шарп"
+   - .NET → dotnet OR "дотнет"
 
-Query: "C++ best practices"
-Output: (cpp OR cplusplus OR "си плюс плюс") AND (best* OR практич*)
+═══════════════════════════════════════════════════════════════════
+EXAMPLES (STUDY THESE CAREFULLY):
+═══════════════════════════════════════════════════════════════════
+
+Query: "как поднять кубер"
+Output: kubernetes OR кубер* OR кубернетис OR k8s OR container* OR контейнер* OR pod* OR helm* OR kubectl OR setup OR развертывание OR deploy* OR деплой*
+
+Query: "настройка бд для RAG"
+Output: database* OR баз* OR бд OR db OR postgres* OR mysql OR rag OR retrieval* OR вектор* OR эмбеддинг* OR настройка OR setup OR config*
+
+═══════════════════════════════════════════════════════════════════
+NOW PROCESS THIS QUERY (REMEMBER: BILINGUAL SYNONYMS, OR-ONLY, NO AND):
+═══════════════════════════════════════════════════════════════════
 
 USER QUERY: {user_query}
-OUTPUT:"""
+
+OUTPUT (OR-only FTS5 query):"""
 
         response = await self.client.chat_completions_create(
             model=self.model,
@@ -172,14 +206,15 @@ OUTPUT:"""
     def _generate_fallback(self, user_query: str) -> str:
         """Generate simple FTS5 MATCH query as fallback.
 
+        Entity-Centric v2: OR-only, no AND operators.
         Uses known slang mappings and basic keyword extraction.
         """
         words = user_query.lower().split()
         expanded_terms = []
 
         for word in words:
-            # Skip common stop words
-            if word in ("как", "что", "где", "когда", "зачем", "почему", "и", "или", "в", "на", "с", "для", "по", "a", "an", "the", "is", "are", "to", "how"):
+            # Skip common stop words (intent/action words - let Map Phase handle semantics)
+            if word in ("как", "что", "где", "когда", "зачем", "почему", "и", "или", "в", "на", "с", "для", "по", "a", "an", "the", "is", "are", "to", "how", "сделать", "использовать", "настроить"):
                 continue
 
             # Check for known slang
@@ -188,9 +223,11 @@ OUTPUT:"""
                 if ru in word or word in ru:
                     # Check if the word itself has special chars - don't add wildcard
                     if any(c in word for c in '+#.'):
-                        expanded_terms.append(f"({en})")
+                        expanded_terms.append(f"{en}")
                     else:
-                        expanded_terms.append(f"({word}* OR {en})")
+                        expanded_terms.append(f"{word}*")
+                        # Also add the expanded English terms
+                        expanded_terms.append(f"{en}")
                     found_slang = True
                     break
 
@@ -202,7 +239,8 @@ OUTPUT:"""
             # Ultimate fallback: just use original query words
             return " OR ".join(f"{w}*" for w in words if len(w) >= 2)
 
-        return " AND ".join(expanded_terms)
+        # Entity-Centric v2: OR-only, no AND
+        return " OR ".join(expanded_terms)
 
     def validate_match_query(self, match_query: str) -> bool:
         """Validate FTS5 MATCH query syntax.

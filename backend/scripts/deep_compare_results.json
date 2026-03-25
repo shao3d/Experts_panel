@@ -1,0 +1,41 @@
+{
+  "query": "Как правильно сейчас настраивать и работать со Skills?",
+  "scout_query": "skills OR навык* OR компетенции OR competency OR \"soft skills\" OR \"hard skills\" OR обучение OR training OR development OR развитие OR профиль OR profile OR квалификация OR qualification OR аттестация OR assessment",
+  "experts": [
+    "doronin",
+    "akimov"
+  ],
+  "timestamp": "2026-03-15T16:42:16.695783",
+  "model": "gemini-2.5-flash-lite",
+  "total_recall": 0.28,
+  "results": [
+    {
+      "expert_id": "doronin",
+      "old_input": 631,
+      "new_input": 179,
+      "old_relevant": 165,
+      "new_relevant": 66,
+      "overlap": 39,
+      "true_recall": 0.236,
+      "lost_by_fts5": 165,
+      "lost_by_map": 0,
+      "new_only_wins": 27,
+      "old_time_s": 124.2,
+      "new_time_s": 43.9
+    },
+    {
+      "expert_id": "akimov",
+      "old_input": 657,
+      "new_input": 139,
+      "old_relevant": 28,
+      "new_relevant": 54,
+      "overlap": 15,
+      "true_recall": 0.536,
+      "lost_by_fts5": 25,
+      "lost_by_map": 2,
+      "new_only_wins": 39,
+      "old_time_s": 14.1,
+      "new_time_s": 45.6
+    }
+  ]
+}

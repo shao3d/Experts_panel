@@ -30,7 +30,9 @@ class MapService:
     relative to the user's query using configurable models.
     """
 
-    DEFAULT_CHUNK_SIZE = 100
+    # Default chunk size - sync with config.MAP_CHUNK_SIZE (50)
+    # This is fallback only; endpoint always passes config value explicitly
+    DEFAULT_CHUNK_SIZE = 50
 
     def __init__(
         self,
@@ -166,7 +168,7 @@ class MapService:
                 messages=[{"role": "system", "content": system_message}, {"role": "user", "content": prompt}],
                 temperature=0.3,
                 response_format={"type": "json_object"},
-                max_tokens=2048
+                max_tokens=4096
             )
         raise ValueError("Google Client not initialized")
 

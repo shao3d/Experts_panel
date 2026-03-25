@@ -11,6 +11,8 @@ interface SidebarProps {
   onUseRecentOnlyChange: (value: boolean) => void;
   includeReddit: boolean;
   onIncludeRedditChange: (value: boolean) => void;
+  useSuperPassport: boolean;
+  onUseSuperPassportChange: (value: boolean) => void;
   disabled?: boolean;
   className?: string;
 }
@@ -23,6 +25,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onUseRecentOnlyChange,
   includeReddit,
   onIncludeRedditChange,
+  useSuperPassport,
+  onUseSuperPassportChange,
   disabled = false,
   className
 }) => {
@@ -191,6 +195,47 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <div className={clsx(
                     "absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ease-in-out",
                     includeReddit ? "translate-x-4" : "translate-x-0"
+                  )} />
+                </div>
+              )}
+            </div>
+
+            {/* Embs&Keys Search Toggle */}
+            <div
+              className={clsx(
+                "flex items-center rounded-lg cursor-pointer transition-colors group",
+                isCollapsed ? "justify-center p-2" : "px-3 py-2",
+                useSuperPassport ? "bg-yellow-50 text-yellow-700" : "hover:bg-gray-50 text-gray-600"
+              )}
+              onClick={() => !disabled && onUseSuperPassportChange(!useSuperPassport)}
+              title={isCollapsed ? "Embs&Keys Search" : undefined}
+            >
+              <div className={clsx("shrink-0", isCollapsed ? "" : "mr-3")}>
+                {useSuperPassport ? (
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5 text-gray-400 group-hover:text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                )}
+              </div>
+              {!isCollapsed && (
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium">Embs&Keys</span>
+                  <span className="text-[10px] opacity-70">Hybrid Search</span>
+                </div>
+              )}
+              {/* Toggle Switch (Desktop) */}
+              {!isCollapsed && (
+                <div className={clsx(
+                  "ml-auto w-9 h-5 rounded-full relative transition-colors duration-200 ease-in-out",
+                  useSuperPassport ? "bg-yellow-500" : "bg-gray-300"
+                )}>
+                  <div className={clsx(
+                    "absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ease-in-out",
+                    useSuperPassport ? "translate-x-4" : "translate-x-0"
                   )} />
                 </div>
               )}

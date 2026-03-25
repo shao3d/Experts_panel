@@ -55,7 +55,7 @@ from ..services.video_hub_service import VideoHubService
 from ..services.reddit_enhanced_service import search_reddit_enhanced
 from ..services.reddit_synthesis_service import RedditSynthesisService
 from ..services.reddit_service import RedditSearchResult, RedditSource as RS
-from ..services.fts5_retrieval_service import FTS5RetrievalService
+from ..services.hybrid_retrieval_service import HybridRetrievalService
 from ..services.ai_scout_service import AIScoutService
 from ..services.shadow_testing_service import ShadowTestingService
 from ..utils.error_handler import error_handler
@@ -208,30 +208,30 @@ async def process_expert_pipeline(
             logger.info(f"[{expert_id}] Circuit breaker OPEN - skipping FTS5, using standard retrieval")
             circuit_breaker_triggered = True
         else:
-            # Super-Passport mode: FTS5 pre-filtering
-            fts5_service = FTS5RetrievalService(db)
+            # Super-Passport mode: Hybrid retrieval (Vector + FTS5 + RRF)
+            hybrid_service = HybridRetrievalService(db)
 
-            # Time FTS5 retrieval
+            # Time hybrid retrieval
             start_fts5 = time.time()
-            posts, used_fts5 = fts5_service.search_posts(
+            posts, retrieval_stats = await hybrid_service.search_posts(
                 expert_id=expert_id,
+                query=request.query,
                 match_query=scout_query,
                 cutoff_date=cutoff_date,
-                exclude_media_only=True
             )
             latency_fts5_ms = (time.time() - start_fts5) * 1000
+            used_fts5 = bool(posts)  # Compatibility with CB/shadow testing logic
 
-            if not used_fts5 or not posts:
-                # Fallback to standard retrieval
-                logger.info(f"[{expert_id}] FTS5 returned no results, using fallback")
-                # Record fallback for circuit breaker
+            if not posts:
+                # Fallback to standard retrieval (should not happen —
+                # HybridRetrievalService already falls back internally,
+                # but guard here for circuit breaker recording)
+                logger.info(f"[{expert_id}] Hybrid returned no results, using standard retrieval")
                 if circuit_breaker:
                     circuit_breaker.record_fallback()
-                posts = fts5_service.get_fallback_posts(
-                    expert_id=expert_id,
-                    cutoff_date=cutoff_date,
-                    max_posts=request.max_posts
-                )
+                posts = get_standard_posts_query(
+                    db, expert_id, cutoff_date, request.max_posts
+                ).all()
 
     # Handle circuit breaker triggered case - use standard retrieval
     if scout_query and expert_id != "video_hub" and circuit_breaker_triggered:
@@ -260,11 +260,11 @@ async def process_expert_pipeline(
                 )
                 latency_standard_ms = (time.time() - start_standard) * 1000
 
-                # Compare results
-                fts5_post_ids = [p.post_id for p in posts]
+                # Compare results (hybrid_post_ids replaces fts5_post_ids semantically)
+                hybrid_post_ids = [p.post_id for p in posts]
                 shadow_service.compare_retrieval(
                     expert_id=expert_id,
-                    fts5_post_ids=fts5_post_ids,
+                    fts5_post_ids=hybrid_post_ids,
                     standard_post_ids=standard_post_ids,
                     query=request.query,
                     latency_fts5_ms=latency_fts5_ms,
@@ -322,6 +322,7 @@ async def process_expert_pipeline(
     # 2. Map phase
     map_service = MapService(
         model=config.MODEL_MAP,
+        chunk_size=config.MAP_CHUNK_SIZE,
         max_parallel=config.MAP_MAX_PARALLEL
     )
 
@@ -1225,7 +1226,8 @@ async def event_generator_parallel(
                     data={
                         "expert_id": expert_id,
                         "posts_analyzed": result.posts_analyzed,
-                        "sources_found": len(result.main_sources)
+                        "sources_found": len(result.main_sources),
+                        "main_sources": result.main_sources  # Include for A/B testing
                     }
                 )
                 sanitized = sanitize_for_json(event.model_dump(mode='json'))

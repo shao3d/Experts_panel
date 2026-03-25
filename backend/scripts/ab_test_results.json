@@ -1,0 +1,134 @@
+{
+  "summary": {
+    "total_tests": 3,
+    "successful_tests": 2,
+    "avg_recall": 0.273,
+    "min_recall": 0.0,
+    "max_recall": 0.545,
+    "avg_latency_improvement_pct": -204.5,
+    "tests_with_good_recall": 0,
+    "tests_with_poor_recall": 2
+  },
+  "results": [
+    {
+      "test_id": "custom_1",
+      "query": "Как настраивать RAG?",
+      "description": "Custom query 1",
+      "timestamp": "2026-03-15T11:06:35.546941",
+      "old": {
+        "success": true,
+        "latency_ms": 31929.79907989502,
+        "error": null
+      },
+      "new": {
+        "success": true,
+        "latency_ms": 116582.16309547424,
+        "error": null
+      },
+      "metrics": {
+        "overall_recall": 0.545,
+        "total_old_sources": 11,
+        "total_new_sources": 10,
+        "latency_improvement_ms": -84652.36,
+        "latency_improvement_pct": -265.12
+      },
+      "expert_comparisons": {
+        "refat": {
+          "recall": 0.545,
+          "intersection": 6,
+          "old_only": 5,
+          "new_only": 4,
+          "old_sources": [
+            231,
+            146,
+            140,
+            75,
+            63
+          ],
+          "new_sources": [
+            75,
+            34,
+            106,
+            138,
+            231
+          ]
+        },
+        "nobilix": {
+          "recall": 0.0,
+          "intersection": 0,
+          "old_only": 0,
+          "new_only": 0,
+          "old_sources": [],
+          "new_sources": []
+        }
+      }
+    },
+    {
+      "test_id": "custom_2",
+      "query": "Kubernetes деплой",
+      "description": "Custom query 2",
+      "timestamp": "2026-03-15T11:06:50.629535",
+      "old": {
+        "success": true,
+        "latency_ms": 4385.848045349121,
+        "error": null
+      },
+      "new": {
+        "success": true,
+        "latency_ms": 10696.514129638672,
+        "error": null
+      },
+      "metrics": {
+        "overall_recall": 0.0,
+        "total_old_sources": 0,
+        "total_new_sources": 2,
+        "latency_improvement_ms": -6310.67,
+        "latency_improvement_pct": -143.89
+      },
+      "expert_comparisons": {
+        "refat": {
+          "recall": 0.0,
+          "intersection": 0,
+          "old_only": 0,
+          "new_only": 2,
+          "old_sources": [],
+          "new_sources": [
+            131,
+            67
+          ]
+        },
+        "nobilix": {
+          "recall": 0.0,
+          "intersection": 0,
+          "old_only": 0,
+          "new_only": 0,
+          "old_sources": [],
+          "new_sources": []
+        }
+      }
+    },
+    {
+      "test_id": "custom_3",
+      "query": "LLM промпты",
+      "description": "Custom query 3",
+      "timestamp": "2026-03-15T11:10:51.492729",
+      "old": {
+        "success": false,
+        "latency_ms": 120000,
+        "error": "Timeout after 120s"
+      },
+      "new": {
+        "success": true,
+        "latency_ms": 119924.28708076477,
+        "error": null
+      },
+      "metrics": null,
+      "expert_comparisons": null
+    }
+  ],
+  "config": {
+    "base_url": "http://localhost:8000",
+    "timeout": 120,
+    "timestamp": "2026-03-15T11:10:51.493030"
+  }
+}
