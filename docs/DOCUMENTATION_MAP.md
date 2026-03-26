@@ -21,9 +21,9 @@
     *   **О чём:** "Мозг" системы. Описывает 8 фаз обработки постов (Map -> Resolve -> Reduce), использование моделей (Gemini 2.5 vs 3.0), фильтры по датам.
     *   **Пример команды:** *"Посмотри в `docs/architecture/pipeline.md`, как мы обрабатываем MEDIUM посты."*
 
-*   **📄 `super-passport-search.md` (⚠️ Experimental)**
-    *   **О чём:** FTS5 + AI Scout для оптимизации Map Phase. A/B тестирование показ Recall 15-25%, проблемы с AND-фильтром.
-    *   **Пример команды:** *"Изучи `docs/architecture/super-passport-search.md`, почему низкий Recall."*
+*   **📄 `super-passport-search.md` (Embs&Keys Search)**
+    *   **О чём:** Гибридный поиск (Vector KNN + FTS5 + RRF). Эволюционировал из чистой FTS5 стратегии.
+    *   **Пример команды:** *"Изучи `docs/architecture/super-passport-search.md` для понимания предфильтрации."*
 
 *   **📄 `ai-scout-level1-upgrade.md`**
     *   **О чём:** План и реализация защиты FTS5 от Syntax Errors при поиске спецсимволов (C++, C#).
@@ -59,7 +59,7 @@
     *   **Пример команды:** *"Напомни по `docs/guides/drift-analysis.md`, как проверить статус дрифта."*
 
 *   **📄 `ab-testing-super-passport.md`** *(NEW)*
-    *   **О чём:** Руководство по сравнению старого (MapReduce) и нового (FTS5 + AI Scout) пайплайнов. A/B тестирование, Recall, latency.
+    *   **О чём:** Руководство по сравнению MapReduce и Hybrid Retrieval (Embs&Keys). A/B тестирование, Recall, latency.
     *   **Пример команды:** *"Запусти A/B тест по гайду `docs/guides/ab-testing-super-passport.md`."*
 
 
@@ -72,9 +72,9 @@
     *   **О чём:** План и реализация оффлайн-обогащения метаданными (Metadata Enrichment) для закрытия семантического разрыва (Semantic Gap) в FTS5.
     *   **Пример команды:** *"Посмотри в `docs/roadmap/scout-next-steps.md` как реализована генерация метаданных."*
 
-*   **📄 `hybrid_retrieval_plan.md`** *(NEW)*
-    *   **О чём:** План перехода на гибридный поиск (Векторный KNN через sqlite-vec + FTS5 BM25) с использованием RRF и алгоритма затухания по свежести.
-    *   **Пример команды:** *"Сверься с планом `hybrid_retrieval_plan.md` перед правками слоя Retrieval."*
+*   **📄 `hybrid_retrieval_plan.md`** *(✅ Implemented)*
+    *   **О чём:** Реализованный план гибридного поиска (Векторный KNN через sqlite-vec + FTS5 BM25 + RRF). Интегрирован в основную ветку как `HybridRetrievalService`.
+    *   **Пример команды:** *"Изучи реализованный план `hybrid_retrieval_plan.md` перед правками слоя Retrieval."*
 
 *   **📄 `docs/concepts/ai-architect-mode.md` (Генератор решений)**
     *   **О чём:** Концепция перехода от RAG-поиска к Agentic-синтезу решений на основе ТЗ клиента. "Газ-Квас-Алмаз" воркфлоу.

@@ -16,11 +16,11 @@ The system uses an advanced **eight-phase pipeline** for analysis and a hybrid, 
 
 ### Key Architectural Principles
 - **Multi-Expert Architecture**: Complete data isolation between experts and parallel processing.
-- **Super-Passport Search (FTS5 + Metadata)**: Two-stage retrieval using SQLite FTS5 with AI-generated OR-only entity clouds and offline metadata enrichment to prevent Semantic Gaps.
+- **Embs&Keys Hybrid Search**: Multi-stage retrieval using Vector KNN (sqlite-vec) and FTS5 with Reciprocal Rank Fusion (RRF), eliminating Semantic Gaps with pre-computed embeddings and offline metadata.
 - **Reddit MCP Integration**: Sidecar microservice for community insights with multi-strategy search, smart subreddit targeting, and 120s cold start timeout.
 - **Cost Optimization**: Gemini-only strategy with Tier 1 paid account (high rate limits).
 - **Real-time Progress**: SSE streaming for frontend progress tracking.
-- **Search Toggles**: Optional `use_recent_only` (last 3 months), `include_reddit` (Reddit search), and `use_super_passport` (Fast FTS5 search) parameters.
+- **Search Toggles**: Optional `use_recent_only` (last 3 months), `include_reddit` (Reddit search), and `use_super_passport` (Embs&Keys Hybrid search) parameters.
 
 ## 📁 Component Documentation
 
@@ -217,11 +217,11 @@ To debug the pipeline, monitor the backend log file for messages containing spec
 ---
 
 **Project Status:** Production-ready with active development
-**Last Updated:** 2026-02-10
+**Last Updated:** 2026-03-26
 **Architecture:** Multi-expert, Gemini-only LLM pipeline with unified client and real-time progress tracking
 **Key Features:** Parallel expert processing, unified `google_ai_studio_client`, cost optimization with Gemini 3 Flash, language validation, comment synthesis, enhanced error handling, admin authentication, Reddit community insights
 **Recent Updates:**
-- ✅ **Search Layer:** Implemented Super-Passport search with FTS5 and offline Metadata Enrichment.
+- ✅ **Search Layer:** Implemented Embs&Keys Hybrid Retrieval (Vector KNN + FTS5 + RRF) and offline Metadata Enrichment.
 - ✅ **AI Scout v2:** Upgraded to Entity-Centric OR-only search to fix Semantic Gap (Recall 70%+).
 - ✅ **Stability:** Increased Reddit pipeline timeout to 120s (fixes timeouts on complex queries)
 - ✅ **Bugfix:** Fixed frontend SSE parsing error for keep-alive events

@@ -1,8 +1,11 @@
 # Super-Passport Search Architecture (Experts Panel v2.0)
 
-**Статус:** ✅ Внедрено (с гибридным поиском и оффлайн-метаданными) (Updated 2026-03-14)
-**Feature Flag:** `use_super_passport: true` (доступно через UI чекбокс "⚡ Быстрый поиск")
-**Цель:** Масштабирование системы для поддержки 30-50+ экспертов без OOM/CPU spikes и без лимитов Google API (429). Оптимизация скорости и стоимости Map Phase через FTS5 + Metadata-подход.
+> [!NOTE]
+> **Эволюция Фичи:** Данная архитектура эволюционировала. Текущая реализация (Embs&Keys Search) объединяет описанный здесь Entity-Centric FTS5 подход с **векторным поиском (`sqlite-vec`)** и сливает их через алгоритм *Reciprocal Rank Fusion (RRF)*. См. `hybrid_retrieval_plan.md` и исходный код `hybrid_retrieval_service.py` как актуальный SSOT.
+
+**Статус:** ✅ Эволюционировало в Hybrid Retrieval (Updated 2026-03-26)
+**Feature Flag:** `use_super_passport: true` (доступно через UI чекбокс "Embs&Keys")
+**Цель:** Масштабирование предфильтрации постов для Map Phase через гибридный сплит (Vector + FTS5), предотвращение OOM/CPU spikes.
 
 ---
 

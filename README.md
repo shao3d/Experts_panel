@@ -24,12 +24,12 @@ The system uses an advanced **eight-phase pipeline** to provide accurate and con
 - **🎨 Modern UI**: Clean, responsive interface built with React, Tailwind CSS, and a collapsible Sidebar.
 - **🧠 8-phase Map-Resolve-Reduce Architecture**: Advanced pipeline with differential HIGH/MEDIUM posts processing.
 - **🎯 Cost-Optimized Gemini Strategy**: Google AI Studio with Tier 1 account (high rate limits).
-- **🔍 Smart Semantic Search**: Finds relevant posts by meaning, not keywords.
+- **🔍 Smart Semantic Search**: Finds relevant posts by meaning using Hybrid Retrieval (Vector KNN + FTS5 + RRF).
 - **📊 Medium Posts Reranking**: Gemini-based scoring system with threshold ≥0.7.
 - **💬 Comment Groups & Synthesis**: Gemini pipeline for comment drift analysis.
 - **⚡ Real-time**: Server-Sent Events (SSE) for instant progress updates.
 - **👥 Multi-expert Support**: "Select All" groups, smart avatar initials, and complete data isolation.
-- **🕒 Smart Filters**: "Recent Only" (3 months) and "Reddit Search" toggles directly in the Sidebar.
+- **🕒 Smart Filters**: "Embs&Keys" (Hybrid Search), "Recent Only" (3 months), and "Reddit Search" toggles directly in the Sidebar.
 - **👽 Reddit Integration**: Parallel analysis via Sidecar Proxy (`experts-reddit-proxy`).
 - **🚀 Reddit-Only Mode**: Bypass expert analysis for broad community searches.
 
