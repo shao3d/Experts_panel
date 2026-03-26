@@ -11,6 +11,7 @@ Architecture:
 
 import json
 import logging
+import time
 from datetime import datetime
 from typing import List, Optional, Tuple
 
@@ -70,6 +71,7 @@ class HybridRetrievalService:
         """
         vector_top_k = config.HYBRID_VECTOR_TOP_K  # 150
         fts5_top_k = config.HYBRID_FTS5_TOP_K  # 100
+        t_start = time.perf_counter()
 
         # ══════════════════════════════════════════════
         # GRACEFUL DEGRADATION: no embeddings yet
@@ -89,9 +91,11 @@ class HybridRetrievalService:
                 "overlap": 0,
                 "vector_only": 0,
                 "fts5_only": 0,
+                "timings_ms": {},
             }
 
         # 1. Vector Search (KNN with expert_id partition key + optional date pre-filter)
+        t_vec = time.perf_counter()
         if query_embedding is not None:
             embedding = query_embedding
         else:
@@ -99,18 +103,22 @@ class HybridRetrievalService:
         vector_results = self._vector_search(
             embedding, expert_id, cutoff_date, vector_top_k
         )
+        t_vec_ms = round((time.perf_counter() - t_vec) * 1000, 1)
         # Returns: [(post_id, distance), ...] sorted by distance ASC
 
         # 2. FTS5 Search (reuses sanitize_fts5_query from fts5_retrieval_service)
+        t_fts = time.perf_counter()
         fts5_results = self._fts5_search(
             match_query, expert_id, cutoff_date, fts5_top_k
         )
+        t_fts_ms = round((time.perf_counter() - t_fts) * 1000, 1)
         # Returns: [(post_id, bm25_rank), ...] sorted by rank
 
         # 3. Soft Freshness Decay BEFORE RRF
         # DESIGN: Soft Freshness REPLACES HN Gravity from FTS5RetrievalService.
         # Max penalty 0.7 (linear decay over 1 year), NOT double-penalty —
         # strict decay is applied later in Map Phase.
+        t_rrf = time.perf_counter()
         all_candidate_ids = list(
             set(pid for pid, _ in vector_results) | set(pid for pid, _ in fts5_results)
         )
@@ -139,12 +147,17 @@ class HybridRetrievalService:
 
         # 4. RRF Merge (rank-based, no score-scale dependencies)
         merged = self._rrf_merge(rescored_vector, rescored_fts5)
+        t_rrf_ms = round((time.perf_counter() - t_rrf) * 1000, 1)
 
         # 5. Load Post objects preserving RRF order
+        t_load = time.perf_counter()
         post_ids = [pid for pid, _ in merged]
         posts_raw = self.db.query(Post).filter(Post.post_id.in_(post_ids)).all()
         posts_by_id = {p.post_id: p for p in posts_raw}
         ordered = [posts_by_id[pid] for pid, _ in merged if pid in posts_by_id]
+        t_load_ms = round((time.perf_counter() - t_load) * 1000, 1)
+
+        t_total_ms = round((time.perf_counter() - t_start) * 1000, 1)
 
         vector_ids = {pid for pid, _ in vector_results}
         fts5_ids = {pid for pid, _ in fts5_results}
@@ -158,9 +171,21 @@ class HybridRetrievalService:
             "overlap": len(vector_ids & fts5_ids),
             "vector_only": len(vector_ids - fts5_ids),
             "fts5_only": len(fts5_ids - vector_ids),
+            "timings_ms": {
+                "vector_search": t_vec_ms,
+                "fts5_search": t_fts_ms,
+                "rrf_merge_freshness": t_rrf_ms,
+                "post_load": t_load_ms,
+                "total": t_total_ms,
+            },
         }
         logger.info(
-            f"[Hybrid Retrieval] {expert_id}: " + json.dumps(stats, ensure_ascii=False)
+            f"[Hybrid Retrieval] {expert_id}: "
+            f"vector={t_vec_ms}ms ({len(vector_results)}) | "
+            f"fts5={t_fts_ms}ms ({len(fts5_results)}) | "
+            f"rrf={t_rrf_ms}ms ({len(merged)}) | "
+            f"load={t_load_ms}ms ({len(ordered)}) | "
+            f"total={t_total_ms}ms"
         )
 
         return ordered, stats

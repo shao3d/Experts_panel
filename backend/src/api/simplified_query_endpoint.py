@@ -193,6 +193,7 @@ async def process_expert_pipeline(
         ExpertResponse with answer from this expert
     """
     start_time = time.time()
+    timings = {}  # Track per-phase timing for detailed logging
 
     # 1. Calculate cutoff date if filtering enabled
     cutoff_date = None
@@ -227,6 +228,7 @@ async def process_expert_pipeline(
                 query_embedding=query_embedding,
             )
             used_fts5 = bool(posts)
+            timings["retrieval"] = retrieval_stats
 
             if not posts:
                 # Fallback to standard retrieval (should not happen —
@@ -313,6 +315,7 @@ async def process_expert_pipeline(
         )
 
     # 2. Map phase
+    t_map = time.perf_counter()
     map_service = MapService(
         model=config.MODEL_MAP,
         chunk_size=config.MAP_CHUNK_SIZE,
@@ -330,6 +333,7 @@ async def process_expert_pipeline(
         expert_id=expert_id,
         progress_callback=map_progress,
     )
+    timings["map"] = round((time.perf_counter() - t_map) * 1000, 1)
 
     relevant_posts = map_results.get("relevant_posts", [])
 
@@ -343,6 +347,7 @@ async def process_expert_pipeline(
     # 4. NEW: Score MEDIUM posts and filter (two-stage: score >= 0.7 → top-5)
     selected_medium_posts = []
     if medium_posts:
+        t_medium = time.perf_counter()
         from ..services.medium_scoring_service import MediumScoringService
 
         # Use Google Gemini with automatic key rotation
@@ -427,12 +432,17 @@ async def process_expert_pipeline(
             logger.error(f"[{expert_id}] Medium scoring failed: {e}")
             # Fallback: use empty list (graceful degradation)
             selected_medium_posts = []
+        finally:
+            timings["medium_scoring"] = round(
+                (time.perf_counter() - t_medium) * 1000, 1
+            )
 
     # 5. NEW: Differential Resolve processing
     enriched_posts = []
 
     # Process HIGH posts through Resolve (with linked posts)
     if high_posts:
+        t_resolve = time.perf_counter()
         resolve_service = SimpleResolveService()
 
         async def resolve_progress(data: dict):
@@ -451,6 +461,7 @@ async def process_expert_pipeline(
         # HIGH posts get linked context posts
         high_enriched = high_resolve_results.get("enriched_posts", [])
         enriched_posts.extend(high_enriched)
+        timings["resolve"] = round((time.perf_counter() - t_resolve) * 1000, 1)
 
     # Selected MEDIUM posts bypass Resolve (direct inclusion)
     medium_direct = [
@@ -482,6 +493,7 @@ async def process_expert_pipeline(
     )
 
     # 5. Reduce phase
+    t_reduce = time.perf_counter()
     reduce_service = ReduceService()
 
     async def reduce_progress(data: dict):
@@ -495,8 +507,10 @@ async def process_expert_pipeline(
         expert_id=expert_id,
         progress_callback=reduce_progress,
     )
+    timings["reduce"] = round((time.perf_counter() - t_reduce) * 1000, 1)
 
     # 5. NEW: Language Validation Phase
+    t_validate = time.perf_counter()
     language_validation_service = LanguageValidationService(model=config.MODEL_ANALYSIS)
 
     async def validation_progress(data: dict):
@@ -510,6 +524,7 @@ async def process_expert_pipeline(
         expert_id=expert_id,
         progress_callback=validation_progress,
     )
+    timings["validation"] = round((time.perf_counter() - t_validate) * 1000, 1)
 
     # Use validated answer for subsequent phases
     validated_answer = validation_results.get(
@@ -524,6 +539,7 @@ async def process_expert_pipeline(
     print(f"[DEBUG] include_comment_groups={request.include_comment_groups}")  # DEBUG
 
     if request.include_comment_groups:
+        t_comments = time.perf_counter()
         main_sources = reduce_results.get("main_sources", [])
 
         # Use Google Gemini with automatic key rotation
@@ -606,8 +622,30 @@ async def process_expert_pipeline(
             except Exception as e:
                 logger.error(f"Comment synthesis failed for expert {expert_id}: {e}")
 
+        timings["comment_groups"] = round((time.perf_counter() - t_comments) * 1000, 1)
+
     # 7. Build response
     processing_time = int((time.time() - start_time) * 1000)
+
+    # Detailed timing summary
+    retrieval_stats = timings.get("retrieval", {})
+    mode = (
+        retrieval_stats.get("mode", "standard")
+        if isinstance(retrieval_stats, dict)
+        else "standard"
+    )
+    posts_in = len(posts) if posts else 0
+    posts_out = len(enriched_posts) if enriched_posts else 0
+    timings_str = " | ".join(
+        f"{k}={v}ms"
+        for k, v in timings.items()
+        if k != "retrieval" and isinstance(v, (int, float))
+    )
+    logger.info(
+        f"[PIPELINE] {expert_id} | mode={mode} | "
+        f"posts_in={posts_in} → posts_out={posts_out} | "
+        f"{timings_str} | total={processing_time}ms"
+    )
 
     return ExpertResponse(
         expert_id=expert_id,
