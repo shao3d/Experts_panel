@@ -54,14 +54,16 @@ class HybridRetrievalService:
         query: str,
         match_query: str,
         cutoff_date: Optional[datetime] = None,
+        query_embedding: Optional[List[float]] = None,
     ) -> Tuple[List[Post], dict]:
         """Hybrid retrieval: Vector + FTS5 + RRF merge.
 
         Args:
             expert_id: Expert identifier for partition filtering
-            query: Raw user query string (for vector embedding)
+            query: Raw user query string (for vector embedding, used only if query_embedding is None)
             match_query: FTS5 MATCH query string (from AIScoutService)
             cutoff_date: Optional date filter for both vector and FTS5
+            query_embedding: Pre-computed embedding vector (avoids redundant API call across experts)
 
         Returns:
             (posts, stats_dict) — posts in RRF-ranked order, stats for logging
@@ -90,9 +92,12 @@ class HybridRetrievalService:
             }
 
         # 1. Vector Search (KNN with expert_id partition key + optional date pre-filter)
-        query_embedding = await self.embedding_service.embed_query(query)
+        if query_embedding is not None:
+            embedding = query_embedding
+        else:
+            embedding = await self.embedding_service.embed_query(query)
         vector_results = self._vector_search(
-            query_embedding, expert_id, cutoff_date, vector_top_k
+            embedding, expert_id, cutoff_date, vector_top_k
         )
         # Returns: [(post_id, distance), ...] sorted by distance ASC
 
@@ -107,8 +112,7 @@ class HybridRetrievalService:
         # Max penalty 0.7 (linear decay over 1 year), NOT double-penalty —
         # strict decay is applied later in Map Phase.
         all_candidate_ids = list(
-            set(pid for pid, _ in vector_results)
-            | set(pid for pid, _ in fts5_results)
+            set(pid for pid, _ in vector_results) | set(pid for pid, _ in fts5_results)
         )
         post_dates = self._get_post_dates(all_candidate_ids)
 
@@ -220,7 +224,7 @@ class HybridRetrievalService:
         cutoff_date: Optional[datetime],
         top_k: int,
     ) -> List[Tuple[int, float]]:
-        """FTS5 BM25 search reusing sanitize_fts5_query from fts5_retrieval_service."""
+        """FTS5 BM25 search without JOIN — uses expert_id/created_at from FTS5 directly."""
         safe_query = sanitize_fts5_query(match_query)
         if not safe_query:
             logger.warning(
@@ -231,14 +235,13 @@ class HybridRetrievalService:
         sql = """
         SELECT f.rowid as post_id, f.rank as bm25_rank
         FROM posts_fts f
-        JOIN posts p ON p.post_id = f.rowid
         WHERE posts_fts MATCH :match_query
-          AND p.expert_id = :expert_id
+          AND f.expert_id = :expert_id
         """
         params: dict = {"match_query": safe_query, "expert_id": expert_id}
 
         if cutoff_date:
-            sql += " AND p.created_at >= :cutoff_date"
+            sql += " AND f.created_at >= :cutoff_date"
             params["cutoff_date"] = cutoff_date.isoformat()
 
         sql += " ORDER BY f.rank LIMIT :top_k"

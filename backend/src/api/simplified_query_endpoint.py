@@ -37,7 +37,7 @@ from .models import (
     RedditSource,
     ConfidenceLevel,
     get_expert_name,
-    get_channel_username
+    get_channel_username,
 )
 from .. import config
 from ..models.base import SessionLocal
@@ -57,7 +57,6 @@ from ..services.reddit_synthesis_service import RedditSynthesisService
 from ..services.reddit_service import RedditSearchResult, RedditSource as RS
 from ..services.hybrid_retrieval_service import HybridRetrievalService
 from ..services.ai_scout_service import AIScoutService
-from ..services.shadow_testing_service import ShadowTestingService
 from ..utils.error_handler import error_handler
 from ..utils.date_utils import get_cutoff_date
 
@@ -67,7 +66,9 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1", tags=["query"])
 
 
-def get_standard_posts_query(db: Session, expert_id: str, cutoff_date=None, max_posts=None):
+def get_standard_posts_query(
+    db: Session, expert_id: str, cutoff_date=None, max_posts=None
+):
     """Build standard post retrieval query (used by both CB and standard path).
 
     Args:
@@ -82,7 +83,7 @@ def get_standard_posts_query(db: Session, expert_id: str, cutoff_date=None, max_
     query = db.query(Post).filter(
         Post.expert_id == expert_id,
         Post.message_text.isnot(None),
-        func.length(Post.message_text) > 30  # Exclude media-only posts
+        func.length(Post.message_text) > 30,  # Exclude media-only posts
     )
     if cutoff_date:
         query = query.filter(Post.created_at >= cutoff_date)
@@ -110,7 +111,11 @@ class FTS5CircuitBreaker:
         Args:
             threshold: Max fallbacks before opening circuit (None = from config)
         """
-        self.threshold = threshold if threshold is not None else config.FTS5_CIRCUIT_BREAKER_THRESHOLD
+        self.threshold = (
+            threshold
+            if threshold is not None
+            else config.FTS5_CIRCUIT_BREAKER_THRESHOLD
+        )
         self._fallback_count = 0
         self._is_open = False
 
@@ -133,7 +138,7 @@ class FTS5CircuitBreaker:
         return {
             "fallback_count": self._fallback_count,
             "threshold": self.threshold,
-            "is_open": self._is_open
+            "is_open": self._is_open,
         }
 
 
@@ -146,7 +151,7 @@ def sanitize_for_json(obj):
 
     if isinstance(obj, str):
         # Remove invalid escape sequences, keep only valid JSON escapes: \n \t \r \" \/ \\
-        return re.sub(r'\\(?![ntr"\\/])', '', obj)
+        return re.sub(r'\\(?![ntr"\\/])', "", obj)
     elif isinstance(obj, dict):
         return {k: sanitize_for_json(v) for k, v in obj.items()}
     elif isinstance(obj, list):
@@ -164,15 +169,14 @@ def get_db():
         db.close()
 
 
-
-
 async def process_expert_pipeline(
     expert_id: str,
     request: QueryRequest,
     db: Session,
     progress_callback: Optional[Callable] = None,
     scout_query: Optional[str] = None,
-    circuit_breaker: Optional[FTS5CircuitBreaker] = None
+    circuit_breaker: Optional[FTS5CircuitBreaker] = None,
+    query_embedding: Optional[list] = None,
 ) -> ExpertResponse:
     """Process full pipeline for one expert.
 
@@ -183,6 +187,7 @@ async def process_expert_pipeline(
         progress_callback: Optional callback for progress updates
         scout_query: Optional FTS5 MATCH query from AI Scout (for Super-Passport mode)
         circuit_breaker: Optional circuit breaker to disable FTS5 on repeated fallbacks
+        query_embedding: Pre-computed embedding vector (avoids redundant API call across experts)
 
     Returns:
         ExpertResponse with answer from this expert
@@ -193,40 +198,43 @@ async def process_expert_pipeline(
     cutoff_date = None
     if request.use_recent_only:
         cutoff_date = get_cutoff_date(months=3)
-        logger.info(f"[{expert_id}] use_recent_only enabled, cutoff_date: {cutoff_date.isoformat()}")
+        logger.info(
+            f"[{expert_id}] use_recent_only enabled, cutoff_date: {cutoff_date.isoformat()}"
+        )
 
     # 2. Get posts for this expert
     # Use FTS5 pre-filtering if scout_query is provided (Super-Passport mode)
     posts = []
     used_fts5 = False
     circuit_breaker_triggered = False
-    latency_fts5_ms = 0  # Initialize for shadow testing
 
     if scout_query and expert_id != "video_hub":
         # Check circuit breaker first
         if circuit_breaker and circuit_breaker.should_skip_fts5():
-            logger.info(f"[{expert_id}] Circuit breaker OPEN - skipping FTS5, using standard retrieval")
+            logger.info(
+                f"[{expert_id}] Circuit breaker OPEN - skipping FTS5, using standard retrieval"
+            )
             circuit_breaker_triggered = True
         else:
             # Super-Passport mode: Hybrid retrieval (Vector + FTS5 + RRF)
             hybrid_service = HybridRetrievalService(db)
 
-            # Time hybrid retrieval
-            start_fts5 = time.time()
             posts, retrieval_stats = await hybrid_service.search_posts(
                 expert_id=expert_id,
                 query=request.query,
                 match_query=scout_query,
                 cutoff_date=cutoff_date,
+                query_embedding=query_embedding,
             )
-            latency_fts5_ms = (time.time() - start_fts5) * 1000
-            used_fts5 = bool(posts)  # Compatibility with CB/shadow testing logic
+            used_fts5 = bool(posts)
 
             if not posts:
                 # Fallback to standard retrieval (should not happen —
                 # HybridRetrievalService already falls back internally,
                 # but guard here for circuit breaker recording)
-                logger.info(f"[{expert_id}] Hybrid returned no results, using standard retrieval")
+                logger.info(
+                    f"[{expert_id}] Hybrid returned no results, using standard retrieval"
+                )
                 if circuit_breaker:
                     circuit_breaker.record_fallback()
                 posts = get_standard_posts_query(
@@ -235,46 +243,31 @@ async def process_expert_pipeline(
 
     # Handle circuit breaker triggered case - use standard retrieval
     if scout_query and expert_id != "video_hub" and circuit_breaker_triggered:
-        posts = get_standard_posts_query(db, expert_id, cutoff_date, request.max_posts).all()
-        logger.info(f"[{expert_id}] Circuit breaker mode: {len(posts)} posts (standard retrieval)")
+        posts = get_standard_posts_query(
+            db, expert_id, cutoff_date, request.max_posts
+        ).all()
+        logger.info(
+            f"[{expert_id}] Circuit breaker mode: {len(posts)} posts (standard retrieval)"
+        )
 
     # Apply max_posts limit if specified (for FTS5 results)
-    if scout_query and expert_id != "video_hub" and request.max_posts is not None and len(posts) > request.max_posts:
-        posts = posts[:request.max_posts]
+    if (
+        scout_query
+        and expert_id != "video_hub"
+        and request.max_posts is not None
+        and len(posts) > request.max_posts
+    ):
+        posts = posts[: request.max_posts]
 
     if scout_query and expert_id != "video_hub":
-        logger.info(f"[{expert_id}] Super-Passport mode: {len(posts)} posts (FTS5: {used_fts5}, CB: {circuit_breaker_triggered})")
-
-        # SHADOW TESTING: Compare with standard retrieval (only if FTS5 was attempted, not when CB triggered)
-        if request.use_super_passport and not circuit_breaker_triggered:
-            try:
-                from ..services.shadow_testing_service import ShadowTestingService
-                shadow_service = ShadowTestingService(db)
-
-                # Time standard retrieval
-                start_standard = time.time()
-                standard_post_ids = shadow_service.get_standard_post_ids(
-                    expert_id=expert_id,
-                    cutoff_date=cutoff_date,
-                    max_posts=request.max_posts
-                )
-                latency_standard_ms = (time.time() - start_standard) * 1000
-
-                # Compare results (hybrid_post_ids replaces fts5_post_ids semantically)
-                hybrid_post_ids = [p.post_id for p in posts]
-                shadow_service.compare_retrieval(
-                    expert_id=expert_id,
-                    fts5_post_ids=hybrid_post_ids,
-                    standard_post_ids=standard_post_ids,
-                    query=request.query,
-                    latency_fts5_ms=latency_fts5_ms,
-                    latency_standard_ms=latency_standard_ms
-                )
-            except Exception as e:
-                logger.warning(f"[{expert_id}] Shadow testing failed: {e}")
+        logger.info(
+            f"[{expert_id}] Super-Passport mode: {len(posts)} posts (FTS5: {used_fts5}, CB: {circuit_breaker_triggered})"
+        )
     else:
         # Standard mode: load all posts (no scout_query or video_hub)
-        posts = get_standard_posts_query(db, expert_id, cutoff_date, request.max_posts).all()
+        posts = get_standard_posts_query(
+            db, expert_id, cutoff_date, request.max_posts
+        ).all()
 
     if not posts:
         return ExpertResponse(
@@ -287,25 +280,25 @@ async def process_expert_pipeline(
             posts_analyzed=0,
             processing_time_ms=int((time.time() - start_time) * 1000),
             relevant_comment_groups=[],
-            comment_groups_synthesis=None
+            comment_groups_synthesis=None,
         )
 
     # NEW: Specialized Video Hub Pipeline
     if expert_id == "video_hub":
         video_service = VideoHubService()
-        
+
         async def video_progress(data: dict):
             if progress_callback:
-                data['expert_id'] = expert_id
+                data["expert_id"] = expert_id
                 await progress_callback(data)
-        
+
         video_result = await video_service.process(
             query=request.query,
             video_segments=posts,
             expert_id=expert_id,
-            progress_callback=video_progress
+            progress_callback=video_progress,
         )
-        
+
         return ExpertResponse(
             expert_id=expert_id,
             expert_name=get_expert_name(expert_id),
@@ -316,26 +309,26 @@ async def process_expert_pipeline(
             posts_analyzed=video_result["posts_analyzed"],
             processing_time_ms=int((time.time() - start_time) * 1000),
             relevant_comment_groups=[],
-            comment_groups_synthesis=None
+            comment_groups_synthesis=None,
         )
 
     # 2. Map phase
     map_service = MapService(
         model=config.MODEL_MAP,
         chunk_size=config.MAP_CHUNK_SIZE,
-        max_parallel=config.MAP_MAX_PARALLEL
+        max_parallel=config.MAP_MAX_PARALLEL,
     )
 
     async def map_progress(data: dict):
         if progress_callback:
-            data['expert_id'] = expert_id
+            data["expert_id"] = expert_id
             await progress_callback(data)
 
     map_results = await map_service.process(
         posts=posts,
         query=request.query,
         expert_id=expert_id,
-        progress_callback=map_progress
+        progress_callback=map_progress,
     )
 
     relevant_posts = map_results.get("relevant_posts", [])
@@ -353,9 +346,7 @@ async def process_expert_pipeline(
         from ..services.medium_scoring_service import MediumScoringService
 
         # Use Google Gemini with automatic key rotation
-        scoring_service = MediumScoringService(
-            model=config.MODEL_MEDIUM_SCORING
-        )
+        scoring_service = MediumScoringService(model=config.MODEL_MEDIUM_SCORING)
 
         # Enrich medium_posts with full content before passing to the scoring service
         medium_posts_with_content = []
@@ -368,32 +359,42 @@ async def process_expert_pipeline(
                     **post_meta,
                     "content": full_post.message_text or "",
                     "author": full_post.author_name or "Unknown",
-                    "created_at": full_post.created_at.isoformat() if full_post.created_at else ""
+                    "created_at": full_post.created_at.isoformat()
+                    if full_post.created_at
+                    else "",
                 }
                 medium_posts_with_content.append(enriched_post)
 
         # Debug logging to verify enriched data
-        logger.debug(f"[{expert_id}] DEBUG: Enriched {len(medium_posts_with_content)} medium posts with content")
+        logger.debug(
+            f"[{expert_id}] DEBUG: Enriched {len(medium_posts_with_content)} medium posts with content"
+        )
         if medium_posts_with_content:
             first_post = medium_posts_with_content[0]
-            logger.debug(f"[{expert_id}] DEBUG: First enriched medium post: ID={first_post.get('telegram_message_id')}, "
-                        f"content_len={len(first_post.get('content', ''))}, "
-                        f"content_preview='{first_post.get('content', '')[:100]}...'")
+            logger.debug(
+                f"[{expert_id}] DEBUG: First enriched medium post: ID={first_post.get('telegram_message_id')}, "
+                f"content_len={len(first_post.get('content', ''))}, "
+                f"content_preview='{first_post.get('content', '')[:100]}...'"
+            )
 
         async def scoring_progress(data: dict):
             if progress_callback:
-                data['expert_id'] = expert_id
+                data["expert_id"] = expert_id
                 await progress_callback(data)
 
         # Create context from HIGH posts
-        high_context = json.dumps([
-            {
-                "telegram_message_id": p["telegram_message_id"],
-                "content": p.get("content", ""),
-                "reason": p.get("reason", "")
-            }
-            for p in high_posts
-        ], ensure_ascii=False, indent=2)
+        high_context = json.dumps(
+            [
+                {
+                    "telegram_message_id": p["telegram_message_id"],
+                    "content": p.get("content", ""),
+                    "reason": p.get("reason", ""),
+                }
+                for p in high_posts
+            ],
+            ensure_ascii=False,
+            indent=2,
+        )
 
         # Score MEDIUM posts
         try:
@@ -402,22 +403,26 @@ async def process_expert_pipeline(
                 high_posts_context=high_context,
                 query=request.query,
                 expert_id=expert_id,
-                progress_callback=scoring_progress
+                progress_callback=scoring_progress,
             )
 
             # Filter by score >= 0.7, then top-5 by highest score
-            above_threshold = [p for p in scored_medium_posts if p.get("score", 0) >= 0.7]
+            above_threshold = [
+                p for p in scored_medium_posts if p.get("score", 0) >= 0.7
+            ]
             selected_medium_posts = sorted(
-                above_threshold,
-                key=lambda x: x.get("score", 0),
-                reverse=True
+                above_threshold, key=lambda x: x.get("score", 0), reverse=True
             )[:5]  # Max 5 posts
 
             # Debug logging for scoring results
-            logger.info(f"[{expert_id}] Medium reranking: {len(medium_posts_with_content)} → {len(scored_medium_posts)} scored → {len(above_threshold)} posts (score >= 0.7) → {len(selected_medium_posts)} selected (max 5)")
+            logger.info(
+                f"[{expert_id}] Medium reranking: {len(medium_posts_with_content)} → {len(scored_medium_posts)} scored → {len(above_threshold)} posts (score >= 0.7) → {len(selected_medium_posts)} selected (max 5)"
+            )
 
             if scored_medium_posts:
-                logger.debug(f"[{expert_id}] DEBUG: Medium post scores: {[(p.get('telegram_message_id'), p.get('score', 0)) for p in scored_medium_posts[:3]]}")
+                logger.debug(
+                    f"[{expert_id}] DEBUG: Medium post scores: {[(p.get('telegram_message_id'), p.get('score', 0)) for p in scored_medium_posts[:3]]}"
+                )
         except Exception as e:
             logger.error(f"[{expert_id}] Medium scoring failed: {e}")
             # Fallback: use empty list (graceful degradation)
@@ -432,7 +437,7 @@ async def process_expert_pipeline(
 
         async def resolve_progress(data: dict):
             if progress_callback:
-                data['expert_id'] = expert_id
+                data["expert_id"] = expert_id
                 await progress_callback(data)
 
         high_resolve_results = await resolve_service.process(
@@ -440,7 +445,7 @@ async def process_expert_pipeline(
             query=request.query,
             expert_id=expert_id,  # CRITICAL: Pass expert_id
             cutoff_date=cutoff_date,  # Pass cutoff_date for filtering linked posts
-            progress_callback=resolve_progress
+            progress_callback=resolve_progress,
         )
 
         # HIGH posts get linked context posts
@@ -458,7 +463,7 @@ async def process_expert_pipeline(
             "created_at": p.get("created_at", ""),
             "is_original": True,  # Critical: not CONTEXT posts
             "score": p.get("score", 0.0),
-            "score_reason": p.get("score_reason", "")
+            "score_reason": p.get("score_reason", ""),
         }
         for p in selected_medium_posts
     ]
@@ -472,42 +477,44 @@ async def process_expert_pipeline(
     # 2. Stable Sort: Relevance Ascending (HIGH=0, MEDIUM=1).
     # This keeps High posts at the top, but preserves the Date ordering within the High group.
     relevance_priority = {"HIGH": 0, "MEDIUM": 1}
-    enriched_posts.sort(key=lambda x: relevance_priority.get(x.get("relevance", "LOW"), 2))
+    enriched_posts.sort(
+        key=lambda x: relevance_priority.get(x.get("relevance", "LOW"), 2)
+    )
 
     # 5. Reduce phase
     reduce_service = ReduceService()
 
     async def reduce_progress(data: dict):
         if progress_callback:
-            data['expert_id'] = expert_id
+            data["expert_id"] = expert_id
             await progress_callback(data)
 
     reduce_results = await reduce_service.process(
         enriched_posts=enriched_posts,
         query=request.query,
         expert_id=expert_id,
-        progress_callback=reduce_progress
+        progress_callback=reduce_progress,
     )
 
     # 5. NEW: Language Validation Phase
-    language_validation_service = LanguageValidationService(
-        model=config.MODEL_ANALYSIS
-    )
+    language_validation_service = LanguageValidationService(model=config.MODEL_ANALYSIS)
 
     async def validation_progress(data: dict):
         if progress_callback:
-            data['expert_id'] = expert_id
+            data["expert_id"] = expert_id
             await progress_callback(data)
 
     validation_results = await language_validation_service.process(
         answer=reduce_results.get("answer", ""),
         query=request.query,
         expert_id=expert_id,
-        progress_callback=validation_progress
+        progress_callback=validation_progress,
     )
 
     # Use validated answer for subsequent phases
-    validated_answer = validation_results.get("answer", reduce_results.get("answer", ""))
+    validated_answer = validation_results.get(
+        "answer", reduce_results.get("answer", "")
+    )
 
     # 6. Comment Groups (optional)
     comment_groups = []
@@ -520,13 +527,11 @@ async def process_expert_pipeline(
         main_sources = reduce_results.get("main_sources", [])
 
         # Use Google Gemini with automatic key rotation
-        cg_service = CommentGroupMapService(
-            model=config.MODEL_COMMENT_GROUPS
-        )
+        cg_service = CommentGroupMapService(model=config.MODEL_COMMENT_GROUPS)
 
         async def cg_progress(data: dict):
             if progress_callback:
-                data['expert_id'] = expert_id
+                data["expert_id"] = expert_id
                 await progress_callback(data)
 
         print(f"[DEBUG] Calling cg_service.process for expert {expert_id}")  # DEBUG
@@ -536,12 +541,14 @@ async def process_expert_pipeline(
             db=db,
             expert_id=expert_id,  # CRITICAL: Pass expert_id
             exclude_post_ids=main_sources,  # Exclude main_sources from drift search
-            main_source_ids=main_sources,   # NEW: Extract author clarifications from main_sources
+            main_source_ids=main_sources,  # NEW: Extract author clarifications from main_sources
             cutoff_date=cutoff_date,  # Pass cutoff_date for filtering drift groups
-            progress_callback=cg_progress
+            progress_callback=cg_progress,
         )
 
-        print(f"[DEBUG] comment_group_results count: {len(comment_group_results)}")  # DEBUG
+        print(
+            f"[DEBUG] comment_group_results count: {len(comment_group_results)}"
+        )  # DEBUG
 
         # Convert to response format
         seen_parent_ids = set()
@@ -560,25 +567,29 @@ async def process_expert_pipeline(
                     comment_text=c["comment_text"],
                     author_name=c["author_name"],
                     created_at=c["created_at"],
-                    updated_at=c["updated_at"]
+                    updated_at=c["updated_at"],
                 )
                 for c in group.get("comments", [])
             ]
 
-            comment_groups.append(CommentGroupResponse(
-                parent_telegram_message_id=group["parent_telegram_message_id"],
-                relevance=group["relevance"],
-                reason=group["reason"],
-                comments_count=group["comments_count"],
-                anchor_post=AnchorPost(
-                    telegram_message_id=anchor_post_data["telegram_message_id"],
-                    message_text=anchor_post_data["message_text"],
-                    created_at=anchor_post_data["created_at"],
-                    author_name=anchor_post_data["author_name"],
-                    channel_username=get_channel_username(expert_id)  # Use helper function
-                ),
-                comments=comments
-            ))
+            comment_groups.append(
+                CommentGroupResponse(
+                    parent_telegram_message_id=group["parent_telegram_message_id"],
+                    relevance=group["relevance"],
+                    reason=group["reason"],
+                    comments_count=group["comments_count"],
+                    anchor_post=AnchorPost(
+                        telegram_message_id=anchor_post_data["telegram_message_id"],
+                        message_text=anchor_post_data["message_text"],
+                        created_at=anchor_post_data["created_at"],
+                        author_name=anchor_post_data["author_name"],
+                        channel_username=get_channel_username(
+                            expert_id
+                        ),  # Use helper function
+                    ),
+                    comments=comments,
+                )
+            )
 
         # Comment Synthesis (if we have relevant comment groups)
         # IMPORTANT: Use original comment_group_results, not converted Pydantic models
@@ -590,7 +601,7 @@ async def process_expert_pipeline(
                     query=request.query,
                     main_answer=validated_answer,  # Use validated answer
                     comment_groups=comment_group_results,  # Use original results with all fields!
-                    expert_id=expert_id
+                    expert_id=expert_id,
                 )
             except Exception as e:
                 logger.error(f"Comment synthesis failed for expert {expert_id}: {e}")
@@ -608,38 +619,44 @@ async def process_expert_pipeline(
         posts_analyzed=reduce_results.get("posts_analyzed", 0),
         processing_time_ms=processing_time,
         relevant_comment_groups=sanitize_for_json(comment_groups),
-        comment_groups_synthesis=sanitize_for_json(comment_synthesis) if comment_synthesis else None
+        comment_groups_synthesis=sanitize_for_json(comment_synthesis)
+        if comment_synthesis
+        else None,
     )
 
 
 async def process_reddit_pipeline(
-    query: str,
-    progress_callback: Optional[Callable] = None
+    query: str, progress_callback: Optional[Callable] = None
 ) -> Optional[RedditResponse]:
     """Process Reddit community pipeline using direct Reddit API (asyncpraw).
-    
+
     Direct Reddit API integration with OAuth authentication.
-    
+
     Args:
         query: User query (will be translated to English if Russian)
         progress_callback: Optional callback for progress updates
-        
+
     Returns:
         RedditResponse with community insights or None if failed/no results
     """
     import time
+
     start_time = time.time()
-    
+
     # Detect query language and translate if needed
     from ..utils.language_utils import detect_query_language
+
     query_language = detect_query_language(query)
-    
+
     search_query = query
     if query_language == "Russian":
         try:
-            from ..services.google_ai_studio_client import create_google_ai_studio_client
+            from ..services.google_ai_studio_client import (
+                create_google_ai_studio_client,
+            )
+
             client = create_google_ai_studio_client()
-            
+
             prompt = f"""Convert this Russian question into an optimal English search query for Reddit.
 
 Context Analysis:
@@ -660,150 +677,172 @@ Examples:
 Question: {query}
 
 Search query:"""
-            
+
             response = await client.chat_completions_create(
                 model="gemini-3-flash-preview",
                 messages=[{"role": "user", "content": prompt}],
-                temperature=0.1
+                temperature=0.1,
             )
-            
+
             search_query = response.choices[0].message.content.strip()
-            search_query = search_query.strip('"\'')
+            search_query = search_query.strip("\"'")
             # Remove common prefixes if Gemini adds them
             if search_query.lower().startswith("search query:"):
                 search_query = search_query[13:].strip()
 
-            logger.info(f"Gemini formulated Reddit query: '{query[:50]}...' -> '{search_query}'")
+            logger.info(
+                f"Gemini formulated Reddit query: '{query[:50]}...' -> '{search_query}'"
+            )
         except Exception as e:
             logger.warning(f"Failed to formulate Reddit query: {e}")
             search_query = query
-    
+
     try:
         # Report start
         if progress_callback:
-            await progress_callback({
-                "phase": "reddit_pipeline",
-                "status": "starting",
-                "message": "Starting Reddit search...",
-                "source": "reddit"
-            })
-        
+            await progress_callback(
+                {
+                    "phase": "reddit_pipeline",
+                    "status": "starting",
+                    "message": "Starting Reddit search...",
+                    "source": "reddit",
+                }
+            )
+
         # Search Reddit using enhanced proxy service
         if progress_callback:
-            await progress_callback({
-                "phase": "reddit_search",
-                "status": "processing",
-                "message": f"Searching Reddit for: {search_query[:50]}...",
-                "source": "reddit"
-            })
-        
+            await progress_callback(
+                {
+                    "phase": "reddit_search",
+                    "status": "processing",
+                    "message": f"Searching Reddit for: {search_query[:50]}...",
+                    "source": "reddit",
+                }
+            )
+
         # Use enhanced service (via Proxy) instead of direct client
         # This fixes 429/Block issues by routing through a separate IP/service
         reddit_result = await search_reddit_enhanced(
             query=search_query,
             target_posts=25,
-            include_comments=True # Will be populated when proxy supports it
+            include_comments=True,  # Will be populated when proxy supports it
         )
-        
+
         # Check if we found anything relevant
         if not reddit_result or not reddit_result.posts:
             logger.info(f"No Reddit posts found for query: {search_query}")
             if progress_callback:
-                await progress_callback({
+                await progress_callback(
+                    {
+                        "phase": "reddit_search",
+                        "status": "complete",
+                        "message": "No relevant discussions found",
+                        "source": "reddit",
+                        "found_count": 0,
+                    }
+                )
+            return None
+
+        # Map total_found to found_count for compatibility
+        found_count = getattr(reddit_result, "total_found", len(reddit_result.posts))
+
+        logger.info(f"Found {len(reddit_result.posts)} Reddit posts via Proxy")
+
+        if progress_callback:
+            await progress_callback(
+                {
                     "phase": "reddit_search",
                     "status": "complete",
-                    "message": "No relevant discussions found",
+                    "message": f"Found {len(reddit_result.posts)} relevant posts",
                     "source": "reddit",
-                    "found_count": 0
-                })
-            return None
-        
-        # Map total_found to found_count for compatibility
-        found_count = getattr(reddit_result, 'total_found', len(reddit_result.posts))
-        
-        logger.info(f"Found {len(reddit_result.posts)} Reddit posts via Proxy")
-        
-        if progress_callback:
-            await progress_callback({
-                "phase": "reddit_search",
-                "status": "complete",
-                "message": f"Found {len(reddit_result.posts)} relevant posts",
-                "source": "reddit",
-                "found_count": len(reddit_result.posts)
-            })
-        
+                    "found_count": len(reddit_result.posts),
+                }
+            )
+
         # Build sources for synthesis with comments included
         sources = []
         for post in reddit_result.posts:
             # Safely build comments section
             comments_section = ""
-            
+
             # Handle old format (direct client)
-            if hasattr(post, 'comments') and post.comments:
-                valid_comments = [c for c in post.comments if isinstance(c, str) and c.strip()]
+            if hasattr(post, "comments") and post.comments:
+                valid_comments = [
+                    c for c in post.comments if isinstance(c, str) and c.strip()
+                ]
                 if valid_comments:
-                    comments_section = "\n\n--- TOP COMMENTS ---\n" + "\n\n".join(valid_comments)
-            
+                    comments_section = "\n\n--- TOP COMMENTS ---\n" + "\n\n".join(
+                        valid_comments
+                    )
+
             # Handle new format (enhanced proxy service)
-            elif hasattr(post, 'top_comments') and post.top_comments:
+            elif hasattr(post, "top_comments") and post.top_comments:
                 valid_comments = []
                 for c in post.top_comments:
-                    if isinstance(c, dict) and c.get('body'):
-                        author = c.get('author', 'unknown')
-                        body = c.get('body', '').strip()
+                    if isinstance(c, dict) and c.get("body"):
+                        author = c.get("author", "unknown")
+                        body = c.get("body", "").strip()
                         if body:
                             valid_comments.append(f"{author}: {body}")
-                
-                if valid_comments:
-                    comments_section = "\n\n--- TOP COMMENTS ---\n" + "\n\n".join(valid_comments)
 
-            sources.append(RS(
-                title=post.title or "Untitled",
-                url=post.permalink,
-                score=post.score or 0,
-                comments_count=post.num_comments or 0,
-                subreddit=post.subreddit or "unknown",
-                content=(post.selftext or "") + comments_section
-            ))
-        
+                if valid_comments:
+                    comments_section = "\n\n--- TOP COMMENTS ---\n" + "\n\n".join(
+                        valid_comments
+                    )
+
+            sources.append(
+                RS(
+                    title=post.title or "Untitled",
+                    url=post.permalink,
+                    score=post.score or 0,
+                    comments_count=post.num_comments or 0,
+                    subreddit=post.subreddit or "unknown",
+                    content=(post.selftext or "") + comments_section,
+                )
+            )
+
         # Build markdown for display
         markdown = _build_reddit_markdown(reddit_result)
-        
+
         # Synthesize with Gemini
         if progress_callback:
-            await progress_callback({
-                "phase": "reddit_synthesis",
-                "status": "processing",
-                "message": "Analyzing community discussions...",
-                "source": "reddit"
-            })
-        
+            await progress_callback(
+                {
+                    "phase": "reddit_synthesis",
+                    "status": "processing",
+                    "message": "Analyzing community discussions...",
+                    "source": "reddit",
+                }
+            )
+
         synthesis_service = RedditSynthesisService()
-        
+
         # CRITICAL FIX: Pass the original 'reddit_result' (EnhancedSearchResult) to synthesis
         # This preserves the rich 'top_comments' structure with flairs and nesting,
         # allowing _format_comments_recursive to do its job.
         # Passing 'search_result' (RedditSearchResult with Pydantic sources) would flatten comments into string.
         synthesis = await synthesis_service.synthesize(query, reddit_result)
-        
-        # We still need search_result for the legacy 'found_count' logic below if needed, 
+
+        # We still need search_result for the legacy 'found_count' logic below if needed,
         # but for synthesis we must use the rich object.
         search_result = RedditSearchResult(
             markdown=markdown,
             found_count=found_count,
             sources=sources,
             query=search_query,
-            processing_time_ms=reddit_result.processing_time_ms
+            processing_time_ms=reddit_result.processing_time_ms,
         )
-        
+
         if progress_callback:
-            await progress_callback({
-                "phase": "reddit_synthesis",
-                "status": "complete",
-                "message": "Analysis complete",
-                "source": "reddit"
-            })
-        
+            await progress_callback(
+                {
+                    "phase": "reddit_synthesis",
+                    "status": "complete",
+                    "message": "Analysis complete",
+                    "source": "reddit",
+                }
+            )
+
         # Build response
         reddit_response = RedditResponse(
             markdown=markdown,
@@ -816,35 +855,41 @@ Search query:"""
                     score=src.score,
                     comments_count=src.comments_count,
                     subreddit=src.subreddit,
-                    content=src.content[:2500] if hasattr(src, 'content') and src.content else ""
+                    content=src.content[:2500]
+                    if hasattr(src, "content") and src.content
+                    else "",
                 )
                 for src in search_result.sources
             ],
             query=search_query,
-            processing_time_ms=int((time.time() - start_time) * 1000)
+            processing_time_ms=int((time.time() - start_time) * 1000),
         )
-        
+
         if progress_callback:
-            await progress_callback({
-                "phase": "reddit_pipeline",
-                "status": "completed",
-                "message": f"Reddit analysis complete: {reddit_response.found_count} posts",
-                "source": "reddit",
-                "found_count": reddit_response.found_count
-            })
-        
+            await progress_callback(
+                {
+                    "phase": "reddit_pipeline",
+                    "status": "completed",
+                    "message": f"Reddit analysis complete: {reddit_response.found_count} posts",
+                    "source": "reddit",
+                    "found_count": reddit_response.found_count,
+                }
+            )
+
         return reddit_response
-        
+
     except Exception as e:
         logger.error(f"Reddit pipeline error: {e}")
         if progress_callback:
-            await progress_callback({
-                "phase": "reddit_pipeline",
-                "status": "error",
-                "message": "Reddit analysis failed",
-                "source": "reddit",
-                "error": str(e)
-            })
+            await progress_callback(
+                {
+                    "phase": "reddit_pipeline",
+                    "status": "error",
+                    "message": "Reddit analysis failed",
+                    "source": "reddit",
+                    "error": str(e),
+                }
+            )
         return None
 
 
@@ -852,7 +897,7 @@ def _build_reddit_markdown(result) -> str:
     """Build markdown from Reddit search result."""
     if not result.posts:
         return "No relevant Reddit discussions found."
-    
+
     markdown_parts = []
     for i, post in enumerate(result.posts, 1):
         # Build content preview
@@ -862,7 +907,7 @@ def _build_reddit_markdown(result) -> str:
                 content_preview += "..."
         else:
             content_preview = ""
-        
+
         markdown_parts.append(f"""### {i}. {post.title}
 
 **r/{post.subreddit}** | ⬆️ {post.score} | 💬 {post.num_comments} comments
@@ -870,14 +915,12 @@ def _build_reddit_markdown(result) -> str:
 {content_preview}
 
 [Read on Reddit]({post.permalink})""")
-    
+
     return "\n\n---\n\n".join(markdown_parts)
 
 
 async def event_generator_parallel(
-    request: QueryRequest,
-    db: Session,
-    request_id: str
+    request: QueryRequest, db: Session, request_id: str
 ) -> AsyncGenerator[str, None]:
     """Generate SSE events for parallel multi-expert processing.
 
@@ -900,9 +943,9 @@ async def event_generator_parallel(
             phase="initialization",
             status="starting",
             message="Starting multi-expert query processing",
-            data={"request_id": request_id, "query": request.query}
+            data={"request_id": request_id, "query": request.query},
         )
-        sanitized = sanitize_for_json(event.model_dump(mode='json'))
+        sanitized = sanitize_for_json(event.model_dump(mode="json"))
         yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
 
         # 1. Determine which experts to process
@@ -911,13 +954,18 @@ async def event_generator_parallel(
             expert_ids = request.expert_filter
         else:
             # Default (None): ALL experts from database
-            expert_rows = db.query(Post.expert_id).distinct().filter(
-                Post.expert_id.isnot(None)
-            ).all()
+            expert_rows = (
+                db.query(Post.expert_id)
+                .distinct()
+                .filter(Post.expert_id.isnot(None))
+                .all()
+            )
             expert_ids = [row[0] for row in expert_rows if row[0]]
 
         # Check if Reddit search is enabled (default: true)
-        include_reddit = request.include_reddit if request.include_reddit is not None else True
+        include_reddit = (
+            request.include_reddit if request.include_reddit is not None else True
+        )
 
         if not expert_ids and not include_reddit:
             error_event = ProgressEvent(
@@ -925,7 +973,7 @@ async def event_generator_parallel(
                 phase="initialization",
                 status="error",
                 message="No experts selected and Reddit search is disabled",
-                data={"request_id": request_id}
+                data={"request_id": request_id},
             )
             yield f"data: {json.dumps(sanitize_for_json(error_event.model_dump(mode='json')), ensure_ascii=False)}\n\n"
             return
@@ -939,28 +987,45 @@ async def event_generator_parallel(
                 phase="scout",
                 status="processing",
                 message="AI Scout: генерация поискового запроса...",
-                data={"source": "super_passport"}
+                data={"source": "super_passport"},
             )
             yield f"data: {json.dumps(sanitize_for_json(scout_event.model_dump(mode='json')), ensure_ascii=False)}\n\n"
 
             # Generate FTS5 MATCH query
             scout_service = AIScoutService()
-            scout_query, scout_success = await scout_service.generate_match_query(request.query)
+            scout_query, scout_success = await scout_service.generate_match_query(
+                request.query
+            )
 
             scout_complete_event = ProgressEvent(
                 event_type="phase_complete",
                 phase="scout",
                 status="completed" if scout_success else "fallback",
-                message=f"AI Scout: {scout_query[:50]}..." if scout_query else "AI Scout: using fallback",
+                message=f"AI Scout: {scout_query[:50]}..."
+                if scout_query
+                else "AI Scout: using fallback",
                 data={
                     "source": "super_passport",
                     "success": scout_success,
-                    "query_preview": scout_query[:100] if scout_query else None
-                }
+                    "query_preview": scout_query[:100] if scout_query else None,
+                },
             )
             yield f"data: {json.dumps(sanitize_for_json(scout_complete_event.model_dump(mode='json')), ensure_ascii=False)}\n\n"
 
-            logger.info(f"[Super-Passport] Scout query: {scout_query} (success: {scout_success})")
+            logger.info(
+                f"[Super-Passport] Scout query: {scout_query} (success: {scout_success})"
+            )
+
+        # Pre-compute embedding once for all experts (avoids N redundant API calls)
+        query_embedding = None
+        if request.use_super_passport and expert_ids:
+            from ..services.embedding_service import get_embedding_service
+
+            emb_service = get_embedding_service()
+            query_embedding = await emb_service.embed_query(request.query)
+            logger.info(
+                f"[Super-Passport] Query embedding computed (dim={len(query_embedding)})"
+            )
 
         if expert_ids:
             event = ProgressEvent(
@@ -968,18 +1033,18 @@ async def event_generator_parallel(
                 phase="multi_expert",
                 status="starting",
                 message=f"Processing {len(expert_ids)} experts in parallel: {', '.join(expert_ids)}",
-                data={"experts": expert_ids}
+                data={"experts": expert_ids},
             )
             yield f"data: {json.dumps(sanitize_for_json(event.model_dump(mode='json')), ensure_ascii=False)}\n\n"
         else:
-             event = ProgressEvent(
+            event = ProgressEvent(
                 event_type="phase_start",
                 phase="multi_expert",
                 status="skipped",
                 message="No experts selected, proceeding with Reddit search only...",
-                data={"experts": []}
+                data={"experts": []},
             )
-             yield f"data: {json.dumps(sanitize_for_json(event.model_dump(mode='json')), ensure_ascii=False)}\n\n"
+            yield f"data: {json.dumps(sanitize_for_json(event.model_dump(mode='json')), ensure_ascii=False)}\n\n"
 
         # 1.5. Start Reddit pipeline in parallel (if enabled)
         reddit_progress_queue = asyncio.Queue(maxsize=50)
@@ -988,12 +1053,12 @@ async def event_generator_parallel(
 
         async def reddit_progress_callback(data: dict):
             """Callback for Reddit pipeline progress.
-            
+
             Maps Reddit-specific phases to standard pipeline phases (map, resolve, reduce)
             to ensure the frontend progress bar lights up correctly.
             """
-            raw_phase = data.get('phase', 'pipeline')
-            
+            raw_phase = data.get("phase", "pipeline")
+
             # Map Reddit phases to standard ones
             phase_mapping = {
                 "scout": "map",
@@ -1002,17 +1067,17 @@ async def event_generator_parallel(
                 "ranking": "resolve",
                 "reranking": "resolve",
                 "synthesis": "reduce",
-                "reddit_synthesis": "reduce"
+                "reddit_synthesis": "reduce",
             }
-            
+
             mapped_phase = phase_mapping.get(raw_phase, f"reddit_{raw_phase}")
-            
+
             event = ProgressEvent(
                 event_type="progress",
                 phase=mapped_phase,
-                status=data.get('status', 'processing'),
+                status=data.get("status", "processing"),
                 message=f"🌐 [Reddit] {data.get('message', 'Processing...')}",
-                data={"source": "reddit", **data}
+                data={"source": "reddit", **data},
             )
             try:
                 reddit_progress_queue.put_nowait(event)
@@ -1024,8 +1089,7 @@ async def event_generator_parallel(
             nonlocal reddit_complete, reddit_result
             try:
                 reddit_result = await process_reddit_pipeline(
-                    query=request.query,
-                    progress_callback=reddit_progress_callback
+                    query=request.query, progress_callback=reddit_progress_callback
                 )
             except Exception as e:
                 logger.error(f"Reddit pipeline failed: {e}")
@@ -1035,15 +1099,21 @@ async def event_generator_parallel(
                 # Send completion event
                 try:
                     event = ProgressEvent(
-                        event_type="reddit_complete" if reddit_result else "reddit_error",
+                        event_type="reddit_complete"
+                        if reddit_result
+                        else "reddit_error",
                         phase="reddit_pipeline",
                         status="completed" if reddit_result else "error",
-                        message=f"Reddit analysis: {reddit_result.found_count if reddit_result else 0} posts found" if reddit_result else "Reddit analysis failed",
+                        message=f"Reddit analysis: {reddit_result.found_count if reddit_result else 0} posts found"
+                        if reddit_result
+                        else "Reddit analysis failed",
                         data={
                             "source": "reddit",
-                            "found_count": reddit_result.found_count if reddit_result else 0,
-                            "success": reddit_result is not None
-                        }
+                            "found_count": reddit_result.found_count
+                            if reddit_result
+                            else 0,
+                            "success": reddit_result is not None,
+                        },
                     )
                     reddit_progress_queue.put_nowait(event)
                 except asyncio.QueueFull:
@@ -1064,7 +1134,7 @@ async def event_generator_parallel(
         progress_queue = asyncio.Queue(maxsize=100)  # Max 100 buffered events
 
         async def expert_progress_callback(data: dict):
-            expert_id = data.get('expert_id', 'unknown')
+            expert_id = data.get("expert_id", "unknown")
             status = data.get("status", "processing")
 
             # Check if this is an error with error_info
@@ -1075,12 +1145,14 @@ async def event_generator_parallel(
 
                 # Enhance data with error information
                 enhanced_data = data.copy()
-                enhanced_data.update({
-                    "error_type": error_info.get("error_type"),
-                    "user_message": error_info.get("message"),
-                    "suggested_action": error_info.get("suggested_action"),
-                    "user_friendly": error_info.get("user_friendly", True)
-                })
+                enhanced_data.update(
+                    {
+                        "error_type": error_info.get("error_type"),
+                        "user_message": error_info.get("message"),
+                        "suggested_action": error_info.get("suggested_action"),
+                        "user_friendly": error_info.get("user_friendly", True),
+                    }
+                )
             else:
                 message = f"[{expert_id}] {data.get('message', 'Processing...')}"
                 enhanced_data = data
@@ -1088,10 +1160,10 @@ async def event_generator_parallel(
             # Use original phase from service (map/resolve/reduce)
             event = ProgressEvent(
                 event_type="progress",
-                phase=data.get('phase', 'expert_pipeline'),  # Preserve original phase!
+                phase=data.get("phase", "expert_pipeline"),  # Preserve original phase!
                 status=status,
                 message=message,
-                data=enhanced_data
+                data=enhanced_data,
             )
             # SECURITY: Try to add event to queue, drop if full to prevent memory leaks
             try:
@@ -1103,43 +1175,45 @@ async def event_generator_parallel(
         async def stream_progress_events():
             """Stream progress events from queue in real-time with keep-alive."""
             last_activity_time = time.time()
-            keep_alive_interval = 2.5  # Send keep-alive every 2.5 seconds (faster for Reddit)
+            keep_alive_interval = (
+                2.5  # Send keep-alive every 2.5 seconds (faster for Reddit)
+            )
 
             while True:
                 event_yielded = False
-                
+
                 # Check expert progress queue
                 try:
                     event = progress_queue.get_nowait()
-                    sanitized = sanitize_for_json(event.model_dump(mode='json'))
+                    sanitized = sanitize_for_json(event.model_dump(mode="json"))
                     yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
                     last_activity_time = time.time()
                     event_yielded = True
                 except asyncio.QueueEmpty:
                     pass
-                
+
                 # Check Reddit progress queue
                 try:
                     event = reddit_progress_queue.get_nowait()
-                    sanitized = sanitize_for_json(event.model_dump(mode='json'))
+                    sanitized = sanitize_for_json(event.model_dump(mode="json"))
                     yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
                     last_activity_time = time.time()
                     event_yielded = True
                 except asyncio.QueueEmpty:
                     pass
-                
+
                 # If no events, wait a bit
                 if not event_yielded:
                     try:
                         await asyncio.wait_for(asyncio.sleep(0.05), timeout=0.1)
                     except asyncio.TimeoutError:
                         pass
-                    
+
                     # Check if all tasks are done
                     expert_tasks_done = all(task.done() for _, task in tasks)
                     if expert_tasks_done and reddit_complete:
                         break
-                    
+
                     # Send keep-alive while waiting for Reddit (can be slow)
                     if time.time() - last_activity_time > keep_alive_interval:
                         # Add 2KB of padding to force proxy buffer flush
@@ -1156,13 +1230,15 @@ async def event_generator_parallel(
         async def run_expert_with_semaphore(eid: str) -> ExpertResponse:
             """Wrapper to limit concurrent expert processing."""
             # SSE: notify frontend that expert is queued
-            await expert_progress_callback({
-                "event_type": "progress",
-                "phase": "queued",
-                "status": "waiting",
-                "message": f"[{eid}] В очереди...",
-                "expert_id": eid
-            })
+            await expert_progress_callback(
+                {
+                    "event_type": "progress",
+                    "phase": "queued",
+                    "status": "waiting",
+                    "message": f"[{eid}] В очереди...",
+                    "expert_id": eid,
+                }
+            )
 
             async with expert_semaphore:
                 return await process_expert_pipeline(
@@ -1171,7 +1247,8 @@ async def event_generator_parallel(
                     db=db,
                     progress_callback=expert_progress_callback,
                     scout_query=scout_query,  # Pass FTS5 query for Super-Passport mode
-                    circuit_breaker=fts5_circuit_breaker  # Pass circuit breaker for FTS5 fallback tracking
+                    circuit_breaker=fts5_circuit_breaker,  # Pass circuit breaker for FTS5 fallback tracking
+                    query_embedding=query_embedding,  # Pre-computed embedding (shared across experts)
                 )
 
         tasks = []
@@ -1190,15 +1267,15 @@ async def event_generator_parallel(
                     # Try to get progress events from both queues
                     try:
                         event = progress_queue.get_nowait()
-                        sanitized = sanitize_for_json(event.model_dump(mode='json'))
+                        sanitized = sanitize_for_json(event.model_dump(mode="json"))
                         yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
                     except asyncio.QueueEmpty:
                         pass
-                    
+
                     # Check Reddit events
                     try:
                         event = reddit_progress_queue.get_nowait()
-                        sanitized = sanitize_for_json(event.model_dump(mode='json'))
+                        sanitized = sanitize_for_json(event.model_dump(mode="json"))
                         yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
                     except asyncio.QueueEmpty:
                         pass
@@ -1213,7 +1290,7 @@ async def event_generator_parallel(
                 while not progress_queue.empty():
                     try:
                         event = progress_queue.get_nowait()
-                        sanitized = sanitize_for_json(event.model_dump(mode='json'))
+                        sanitized = sanitize_for_json(event.model_dump(mode="json"))
                         yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
                     except asyncio.QueueEmpty:
                         break
@@ -1227,10 +1304,10 @@ async def event_generator_parallel(
                         "expert_id": expert_id,
                         "posts_analyzed": result.posts_analyzed,
                         "sources_found": len(result.main_sources),
-                        "main_sources": result.main_sources  # Include for A/B testing
-                    }
+                        "main_sources": result.main_sources,  # Include for A/B testing
+                    },
                 )
-                sanitized = sanitize_for_json(event.model_dump(mode='json'))
+                sanitized = sanitize_for_json(event.model_dump(mode="json"))
                 yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
 
             except Exception as e:
@@ -1242,14 +1319,13 @@ async def event_generator_parallel(
                     context={
                         "phase": "expert_pipeline",
                         "expert_id": expert_id,
-                        "request_id": request_id
-                    }
+                        "request_id": request_id,
+                    },
                 )
 
                 # Create user-friendly error event
                 error_event = error_handler.create_error_event(
-                    error_info,
-                    event_type="expert_error"
+                    error_info, event_type="expert_error"
                 )
 
                 event = ProgressEvent(
@@ -1257,9 +1333,9 @@ async def event_generator_parallel(
                     phase=error_event["phase"],
                     status="error",
                     message=error_event["message"],
-                    data=error_event["data"]
+                    data=error_event["data"],
                 )
-                sanitized = sanitize_for_json(event.model_dump(mode='json'))
+                sanitized = sanitize_for_json(event.model_dump(mode="json"))
                 yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
 
         # Wait for Reddit pipeline to complete (with timeout)
@@ -1267,32 +1343,36 @@ async def event_generator_parallel(
         reddit_wait_start = time.time()
         reddit_timeout = 120.0  # 120 seconds max wait after experts complete
         last_activity_time_outer = time.time()  # FIX: Define in outer scope
-        
+
         # FIX: Also check if task is done to avoid waiting full timeout if task crashed
-        while (not reddit_complete and 
-               (time.time() - reddit_wait_start) < reddit_timeout and
-               not reddit_task.done()):
+        while (
+            not reddit_complete
+            and (time.time() - reddit_wait_start) < reddit_timeout
+            and not reddit_task.done()
+        ):
             # Send any Reddit progress events while waiting
             try:
                 event = reddit_progress_queue.get_nowait()
-                sanitized = sanitize_for_json(event.model_dump(mode='json'))
+                sanitized = sanitize_for_json(event.model_dump(mode="json"))
                 yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
                 last_activity_time_outer = time.time()
             except asyncio.QueueEmpty:
                 pass
-            
+
             # Send keep-alive while waiting
             if time.time() - last_activity_time_outer > 2.5:
                 padding = " " * 2048
                 yield f": keep-alive {padding}\n\n"
                 last_activity_time_outer = time.time()
-            
+
             await asyncio.sleep(0.1)
-        
+
         # If Reddit still not complete, cancel it (but don't fail the whole request)
         if not reddit_complete and not reddit_task.done():
             reddit_task.cancel()
-            logger.warning("Reddit pipeline timed out, proceeding without Reddit results")
+            logger.warning(
+                "Reddit pipeline timed out, proceeding without Reddit results"
+            )
             try:
                 await reddit_task
             except asyncio.CancelledError:
@@ -1313,7 +1393,7 @@ async def event_generator_parallel(
         while not reddit_progress_queue.empty():
             try:
                 event = reddit_progress_queue.get_nowait()
-                sanitized = sanitize_for_json(event.model_dump(mode='json'))
+                sanitized = sanitize_for_json(event.model_dump(mode="json"))
                 yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
             except asyncio.QueueEmpty:
                 break
@@ -1327,7 +1407,7 @@ async def event_generator_parallel(
             expert_responses=expert_responses,
             reddit_response=reddit_result,  # NEW: Include Reddit results
             total_processing_time_ms=processing_time_ms,
-            request_id=request_id
+            request_id=request_id,
         )
 
         # 7. Send final result
@@ -1337,36 +1417,32 @@ async def event_generator_parallel(
         elif include_reddit and reddit_result is None and reddit_complete:
             # Only show "unavailable" if Reddit was enabled but failed/unavailable
             reddit_message = " | Reddit: unavailable"
-        
+
         event = ProgressEvent(
             event_type="complete",
             phase="final",
             status="success",
             message=f"Query completed: {len(expert_responses)} experts{reddit_message}",
-            data={"response": response.model_dump(mode='json')}
+            data={"response": response.model_dump(mode="json")},
         )
 
-        sanitized_event = sanitize_for_json(event.model_dump(mode='json'))
+        sanitized_event = sanitize_for_json(event.model_dump(mode="json"))
         yield f"data: {json.dumps(sanitized_event, ensure_ascii=False)}\n\n"
 
     except Exception as e:
         import traceback
+
         logger.error(f"Error processing multi-expert query {request_id}: {str(e)}")
         logger.error(f"Traceback: {traceback.format_exc()}")
 
         # Process error through error handler for user-friendly messaging
         error_info = error_handler.process_api_error(
-            e,
-            context={
-                "phase": "global",
-                "request_id": request_id
-            }
+            e, context={"phase": "global", "request_id": request_id}
         )
 
         # Create user-friendly error event
         error_event_data = error_handler.create_error_event(
-            error_info,
-            event_type="error"
+            error_info, event_type="error"
         )
 
         error_event = ProgressEvent(
@@ -1374,16 +1450,14 @@ async def event_generator_parallel(
             phase=error_event_data["phase"],
             status=error_event_data["status"],
             message=error_event_data["message"],
-            data=error_event_data["data"]
+            data=error_event_data["data"],
         )
         yield f"data: {json.dumps(error_event.model_dump(mode='json'), ensure_ascii=False)}\n\n"
 
 
-
 @router.post("/query")
 async def process_simplified_query(
-    request: QueryRequest,
-    db: Session = Depends(get_db)
+    request: QueryRequest, db: Session = Depends(get_db)
 ):
     """Process a query through parallel multi-expert pipeline with SSE streaming.
 
@@ -1407,17 +1481,19 @@ async def process_simplified_query(
         headers={
             "Cache-Control": "no-cache",
             "Connection": "keep-alive",
-            "X-Request-ID": request_id
-        }
+            "X-Request-ID": request_id,
+        },
     )
 
 
 def validate_post_id(post_id: int) -> int:
     """Validate post_id parameter to prevent database issues."""
-    if post_id <= 0 or post_id > 1_000_000_000:  # Increased to 1B to support virtual Video Hub IDs
+    if (
+        post_id <= 0 or post_id > 1_000_000_000
+    ):  # Increased to 1B to support virtual Video Hub IDs
         raise HTTPException(
             status_code=400,
-            detail="Invalid post_id. Must be between 1 and 1,000,000,000"
+            detail="Invalid post_id. Must be between 1 and 1,000,000,000",
         )
     return post_id
 
@@ -1425,10 +1501,11 @@ def validate_post_id(post_id: int) -> int:
 def validate_expert_id(expert_id: str) -> str:
     """Basic validation for expert_id parameter."""
     import re
-    if not expert_id or not re.match(r'^[a-zA-Z0-9_-]+$', expert_id):
+
+    if not expert_id or not re.match(r"^[a-zA-Z0-9_-]+$", expert_id):
         raise HTTPException(
             status_code=400,
-            detail="Invalid expert_id format. Only letters, numbers, underscores and hyphens allowed"
+            detail="Invalid expert_id format. Only letters, numbers, underscores and hyphens allowed",
         )
     return expert_id
 
@@ -1439,7 +1516,7 @@ async def get_post_detail(
     expert_id: Optional[str] = None,
     query: Optional[str] = None,
     translate: Optional[bool] = False,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     # Validate parameters
     post_id = validate_post_id(post_id)
@@ -1464,65 +1541,75 @@ async def get_post_detail(
     post = post_query.first()
 
     if not post:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Post with ID {post_id} not found"
-        )
+        raise HTTPException(status_code=404, detail=f"Post with ID {post_id} not found")
 
     # Convert comments to response format
     comments = []
     if post.comments:
         for comment in post.comments:
-            comments.append(CommentResponse(
-                comment_id=comment.comment_id,
-                author_name=comment.author_name,
-                comment_text=comment.comment_text,
-                created_at=comment.created_at,
-                updated_at=comment.updated_at
-            ))
+            comments.append(
+                CommentResponse(
+                    comment_id=comment.comment_id,
+                    author_name=comment.author_name,
+                    comment_text=comment.comment_text,
+                    created_at=comment.created_at,
+                    updated_at=comment.updated_at,
+                )
+            )
 
     # Determine if translation is needed
     should_translate = False
-    logger.info(f"DEBUG: get_post_detail called with post_id={post_id}, expert_id={expert_id}, query='{query}', translate={translate}")
+    logger.info(
+        f"DEBUG: get_post_detail called with post_id={post_id}, expert_id={expert_id}, query='{query}', translate={translate}"
+    )
 
     if translate:
         should_translate = True
-        logger.info(f"DEBUG: Translation forced by translate=true flag for post {post_id}")
+        logger.info(
+            f"DEBUG: Translation forced by translate=true flag for post {post_id}"
+        )
     elif query:
         # Use translation service to detect if query is in English
-        translation_service = TranslationService(
-            model=config.MODEL_ANALYSIS
-        )
+        translation_service = TranslationService(model=config.MODEL_ANALYSIS)
         should_translate = translation_service.should_translate(query)
-        logger.info(f"DEBUG: Translation check for post {post_id}: query='{query[:50]}...', should_translate={should_translate}")
+        logger.info(
+            f"DEBUG: Translation check for post {post_id}: query='{query[:50]}...', should_translate={should_translate}"
+        )
     else:
         logger.info(f"DEBUG: No translation for post {post_id}: no query provided")
 
     # Translate post content if needed
     message_text = post.message_text or ""
-    logger.info(f"DEBUG: Before translation - should_translate={should_translate}, message_text_length={len(message_text)}")
+    logger.info(
+        f"DEBUG: Before translation - should_translate={should_translate}, message_text_length={len(message_text)}"
+    )
 
     if should_translate and message_text:
-        logger.info(f"DEBUG: Starting translation for post {post_id} with content length {len(message_text)}")
+        logger.info(
+            f"DEBUG: Starting translation for post {post_id} with content length {len(message_text)}"
+        )
         try:
             # Use Google Gemini for translation
-            translation_service = TranslationService(
-                model=config.MODEL_ANALYSIS
-            )
+            translation_service = TranslationService(model=config.MODEL_ANALYSIS)
             translated_text = await translation_service.translate_single_post(
-                message_text,
-                post.author_name or "Unknown"
+                message_text, post.author_name or "Unknown"
             )
             message_text = translated_text
-            logger.info(f"DEBUG: Successfully translated post {post_id} to English for query: {query[:50]}...")
+            logger.info(
+                f"DEBUG: Successfully translated post {post_id} to English for query: {query[:50]}..."
+            )
         except Exception as e:
             logger.error(f"DEBUG: Translation failed for post {post_id}: {e}")
             # Keep original text if translation fails
     else:
-        logger.info(f"DEBUG: Skipping translation for post {post_id} - should_translate={should_translate}, has_content={bool(message_text)}")
+        logger.info(
+            f"DEBUG: Skipping translation for post {post_id} - should_translate={should_translate}, has_content={bool(message_text)}"
+        )
 
     # Get channel username from expert_id using helper function
-    channel_username = get_channel_username(post.expert_id) if post.expert_id else post.channel_name
+    channel_username = (
+        get_channel_username(post.expert_id) if post.expert_id else post.channel_name
+    )
 
     # Create response
     return SimplifiedPostDetailResponse(
@@ -1532,5 +1619,5 @@ async def get_post_detail(
         created_at=post.created_at.isoformat() if post.created_at else "",
         channel_name=channel_username,  # Use username for Telegram links
         comments=comments,
-        relevance_score=None  # Not available for individual post fetch
+        relevance_score=None,  # Not available for individual post fetch
     )
