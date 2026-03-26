@@ -643,7 +643,7 @@ async def process_expert_pipeline(
     )
     logger.info(
         f"[PIPELINE] {expert_id} | mode={mode} | "
-        f"posts_in={posts_in} → posts_out={posts_out} | "
+        f"posts_in={posts_in} -> posts_out={posts_out} | "
         f"{timings_str} | total={processing_time}ms"
     )
 
