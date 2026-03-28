@@ -2,7 +2,7 @@
 
 **Status:** Stable / Production-Ready
 **Role:** Parallel pipeline for deep video transcript analysis using the "Digital Twin" approach.
-**Date:** 2026-02-16
+**Date:** 2026-03-28
 
 ---
 
@@ -74,6 +74,7 @@ The Video Hub runs as a dedicated stream in `event_generator_parallel`.
 -   **Instruction**: "Reconstruct the expert's original reasoning flow and vocabulary. Use [FULL TRANSCRIPT] for details and [SUMMARY] to bridge the gaps."
 -   **Visual Elements (`[НА ЭКРАНЕ]`)**: The model is strictly instructed to extract the *meaning* from visual markers and organically weave it into the narrative (as if the expert is speaking it), rather than mechanically quoting the metadata.
 -   **Citations**: MANDATORY `[post:ID]` format for deep-links. **All** segments provided in the context (both HIGH and MEDIUM) are included in the `main_sources` list, ensuring every cited link is clickable on the frontend.
+-   **Output Token Limit**: `max_tokens=8192` — increased from 4096 to prevent truncation on videos with 50+ segments (where the "DO NOT SUMMARIZE" instruction produces long outputs with many citations).
 
 ### 4. Style-Preserving Validation/Translation
 -   **Model**: `gemini-3-flash-preview` (Config: `MODEL_VIDEO_FLASH`).
@@ -102,6 +103,7 @@ The Video Hub runs as a dedicated stream in `event_generator_parallel`.
 -   **Expert ID**: `video_hub` (Mapped to "Video_Hub" in `expertConfig.ts`).
 -   **Visuals**: Uses 🎥 icon and specialized `PostCard` rendering for YouTube links with `&t=XXXs` parameters.
 -   **Group**: Lives in "Knowledge Hub" expert group.
+-   **Display Order**: Video Hub appears **after all regular experts** but **before Reddit Community Insights** (last in `EXPERT_UI_CONFIG.order`).
 
 ---
 

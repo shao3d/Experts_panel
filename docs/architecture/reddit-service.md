@@ -3,7 +3,7 @@
 **Статус:** Production (Stable)
 **Архитектура:** Sidecar Proxy Pattern
 **Логика:** AI Scout v2 (Intent Plans) + Context-Aware Ranking
-**Дата обновления:** 10.02.2026
+**Дата обновления:** 28.03.2026
 
 ---
 
@@ -14,7 +14,7 @@
 ```mermaid
 graph LR
     User[User Query] --> Backend[FastAPI Backend]
-    Backend -- "1. Translate (RU->EN)" --> Translation[Translation Service]
+    Backend -- "1. Translate (Entity-Preserving)" --> Translation[Translation Service]
     Translation -- "2. Generate Plan" --> Scout[🤖 AI Scout v2 (Gemini 3 Flash)]
     
     Scout -- "Intent Queries + Keywords" --> Proxy[Reddit Proxy Service]
@@ -62,6 +62,24 @@ graph LR
 *   События в прогресс-баре помечаются иконкой 🌐, чтобы четко отличать их от работы с локальными экспертами.
 
 ---
+
+## 🌐 Query Translation (Entity-Preserving)
+
+Russian queries are translated to English for Reddit search using an **entity-preserving** approach (not a simple translation):
+
+1.  **Domain Context:** The translator knows this is an AI Experts Panel — it biases ambiguous queries toward AI ecosystem tools (Claude Code, Codex, RAG), not generic software engineering.
+2.  **Named Entity Preservation:** Product names (Claude Code, Cursor), feature names (Skills, MCP, hooks), model names (Gemini, Llama), and tech terms (RAG, LoRA) pass through **verbatim** — they are not translated or generalized.
+3.  **Reddit-Optimized Output:** Concise 4-8 word queries using Reddit community terminology ("setup" not "configuration").
+
+**Example:** `"Как настроить Skills внутри Claude Code?"` → `"Claude Code skills setup workflow"`
+
+### Language Detection (Russian-First)
+
+Language detection uses a **Russian-first** rule: if the query contains **any Cyrillic word**, the response language is Russian. This handles the common case of Russian-speaking users mixing English tech terms with Russian syntax (e.g., `"Claude Code skills — что лучше для workflow"` → Russian).
+
+## 🛡️ Synthesis Relevance Gate
+
+The synthesis prompt includes a **relevance gate** (`priority="highest"`): before synthesizing, the LLM verifies that found posts actually answer the user's question. If posts are off-topic, the system honestly reports "No relevant Reddit discussions found" instead of confidently synthesizing irrelevant content.
 
 ## 🛡️ Resilience & Safety
 *   **LLM Safety Filters:** Контент Reddit может быть токсичным или спорным, что иногда триггерит фильтры безопасности Gemini (`finish_reason: SAFETY`). Вместо падения и утечки сырых proto-объектов `AsyncGenerateContentResponse` в UI, система перехватывает пустой ответ и вежливо сообщает пользователю: *"Запрос был заблокирован фильтрами безопасности (Safety Settings)."*

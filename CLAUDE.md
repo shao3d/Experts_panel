@@ -236,9 +236,10 @@ To debug the pipeline, monitor the backend log file for messages containing spec
 - ✅ **AI Scout v2:** Upgraded to Entity-Centric OR-only search to fix Semantic Gap (Recall 70%+).
 - ✅ **Stability:** Increased Reddit pipeline timeout to 120s (fixes timeouts on complex queries)
 - ✅ **Bugfix:** Fixed frontend SSE parsing error for keep-alive events
-- ✅ **Reddit Enhancement:** Automatic RU→EN query translation for better search results
+- ✅ **Reddit Enhancement:** Entity-preserving RU→EN query translation with AI domain context, synthesis relevance gate, Russian-first language detection
 - ✅ **UI Polish:** Neutral color scheme for Community Insights (system palette)
-- ✅ **Multi-language:** Reddit synthesis now responds in query language (RU/EN)
+- ✅ **Multi-language:** Reddit synthesis now responds in query language (RU/EN), any Cyrillic word → Russian
+- ✅ **Video Hub:** max_tokens 4096→8192 (fixes truncated responses), display order moved after all experts
 - ✅ **Phase 3 Complete:** Reddit MCP Integration with community insights
 - ✅ Added real-time stats (posts/comments) to expert selection UI
 - ✅ Implemented collapsible expert selection bar for cleaner UX
