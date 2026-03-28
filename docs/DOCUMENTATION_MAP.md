@@ -76,6 +76,11 @@
     *   **О чём:** Реализованный план гибридного поиска (Векторный KNN через sqlite-vec + FTS5 BM25 + RRF). Интегрирован в основную ветку как `HybridRetrievalService`.
     *   **Пример команды:** *"Изучи реализованный план `hybrid_retrieval_plan.md` перед правками слоя Retrieval."*
 
+*   **📄 `docs/roadmap/video-hub-scaling.md`** *(Active Roadmap)*
+    *   **О чём:** Полный аудит Video Hub: сильные стороны (Summary Bridging, Topic Threading), 4 проблемы масштабирования (brute-force загрузка, нет chunking, нет retry, created_at), 5 nice-to-have улучшений. Файловая карта всех 11 файлов сервиса.
+    *   **Триггер:** Реализовывать при ~100-150 сегментах или 10+ видео.
+    *   **Пример команды:** *"Перед доработкой Video Hub — изучи план в `docs/roadmap/video-hub-scaling.md`."*
+
 *   **📄 `docs/concepts/ai-architect-mode.md` (Генератор решений)**
     *   **О чём:** Концепция перехода от RAG-поиска к Agentic-синтезу решений на основе ТЗ клиента. "Газ-Квас-Алмаз" воркфлоу.
     *   **Пример команды:** *"Как мы можем прокрутить эту бизнес-идею через логику из `docs/concepts/ai-architect-mode.md`?"*
