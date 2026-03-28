@@ -1,11 +1,11 @@
 # Pipeline Architecture Guide
 
-**The Single Source of Truth** for the Experts Panel 8-phase pipeline.
+**The Single Source of Truth** for the Experts Panel 10-phase pipeline.
 *Last Verified against Codebase: 2026-03-28*
 
 ## 🏗️ High-Level Overview
 
-The system processes user queries through an **eight-phase pipeline** using a **Gemini-only** strategy. It features parallel expert processing, differential context expansion, a dedicated side-pipeline for Reddit analysis, and a specialized **Video Hub Sidecar** for video transcript analysis.
+The system processes user queries through an **ten-phase pipeline** using a **Gemini-only** strategy. It features parallel expert processing, differential context expansion, a dedicated side-pipeline for Reddit analysis, and a specialized **Video Hub Sidecar** for video transcript analysis.
 
 ### Core Principles
 1.  **Multi-Expert Isolation**: Each expert is processed independently (Map -> Reduce).

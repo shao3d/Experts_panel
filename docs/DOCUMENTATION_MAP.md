@@ -124,6 +124,7 @@
 | Изменил Hybrid Search / FTS5 / Scout | `docs/architecture/super-passport-search.md`, `docs/architecture/pipeline.md` (Phase 1) |
 | Изменил Reddit pipeline | `docs/architecture/reddit-service.md`, `CLAUDE.md` (секция Reddit) |
 | Изменил Video Hub | `docs/architecture/video-hub-service.md`, `docs/guides/video-hub-operator.md` |
+| Изменил Meta-Synthesis | `docs/architecture/pipeline.md` (Phase 10), `backend/CLAUDE.md` (таблица сервисов), `backend/prompts/meta_synthesis_prompt.txt` |
 
 ### Изменения в инфраструктуре
 

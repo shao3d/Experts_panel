@@ -6,7 +6,7 @@
 FastAPI backend service providing multi-expert query processing with Map-Resolve-Reduce pipeline, real-time SSE streaming, and Reddit integration.
 
 ## Narrative Summary
-The backend implements a sophisticated 8-phase query processing system. It uses a **Gemini-only** strategy with a unified client (`google_ai_studio_client.py`) that handles key rotation and rate limits (429 errors).
+The backend implements a sophisticated 10-phase query processing system. It uses a **Gemini-only** strategy with a unified client (`google_ai_studio_client.py`) that handles key rotation and rate limits (429 errors).
 
 ## Key Files & Responsibilities
 
