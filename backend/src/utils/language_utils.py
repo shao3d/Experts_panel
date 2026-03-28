@@ -45,18 +45,15 @@ def detect_query_language(query: str) -> str:
 
     total_words = english_words + cyrillic_words
 
-    # More sensitive detection:
-    # If ANY English words present AND >50% of characters are English → English
-    # OR If majority of words are English → English
-    if total_words > 0:
-        word_ratio = english_words / total_words
-        char_ratio = english_chars / total_chars if total_chars > 0 else 0
+    # Russian-first detection for AI Experts Panel:
+    # Users are Russian-speaking and mix tech terms (English) with Russian syntax.
+    # "Claude Code skills vs plugins — что лучше для workflow" is RUSSIAN.
+    # Key insight: tech terms (Claude, RAG, skills) are not language markers.
+    # Russian connective words (что, как, для, или) ARE language markers.
+    if cyrillic_words > 0:
+        return "Russian"
 
-        # Lower thresholds for English detection
-        if (english_words > 0 and char_ratio >= 0.5) or word_ratio >= 0.5:
-            return "English"
-
-    return "Russian"
+    return "English" if english_words > 0 else "Russian"
 
 
 def get_language_instruction(query: str) -> str:
