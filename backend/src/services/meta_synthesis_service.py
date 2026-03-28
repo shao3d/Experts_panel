@@ -84,7 +84,7 @@ class MetaSynthesisService:
                     {"role": "user", "content": prompt},
                 ],
                 temperature=0.3,
-                max_tokens=4096,
+                max_tokens=8192,  # Supports 30-40 experts (4096 truncates at ~15 experts)
             )
             content = response.choices[0].message.content
             if not content or not content.strip():

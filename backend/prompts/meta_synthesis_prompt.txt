@@ -37,13 +37,20 @@ Do NOT manufacture disagreements where none exist.
 
 ### Что упомянул только один эксперт
 What did ONLY ONE expert mention that others missed? Unique perspectives worth noting.
-Each item: "Expert Name uniquely highlights: [insight]"
+Write naturally — just state the insight and put (Expert Name) at the end.
+Do NOT use repetitive templates like "X uniquely highlights:", "X uniquely notes:", "X uniquely points out:" — vary your phrasing freely.
 
 NOTE ON SECTION TITLES: When writing in English, use these titles instead:
 - "What experts agree on"
 - "Expert recommendations"
 - "Where opinions diverge"
 - "What only one expert mentioned"
+
+STYLE RULES:
+- Write naturally and freely. NEVER use repetitive templates or formulaic openers.
+- BAD: "Kovalskii uniquely highlights:", "Ilia uniquely notes:", "Akimov uniquely points out:" (robotic, all the same pattern)
+- GOOD: Just state the insight naturally, put (Expert Name) at the end as attribution.
+- Vary sentence structure. Some bullets can start with the insight, others with context. Be a writer, not a template engine.
 
 CRITICAL RULES:
 1. ONLY use information EXPLICITLY stated in the expert answers. NEVER invent or assume.
@@ -52,7 +59,7 @@ CRITICAL RULES:
 4. If an expert has confidence=LOW, treat their data with extra caution.
 5. Do NOT use [post:ID] references — you are working with expert answers, not original posts.
 6. Use "(Expert Name)" attribution for every non-trivial claim. Use the EXACT expert_name from the JSON — do NOT translate, transliterate, or modify it (e.g., write "Kovalskii", not "Ковальский").
-7. Keep the summary to 800-1200 words. This is an executive briefing, not a full report.
+7. Scale the summary length to the number of experts: ~300 words per expert, up to ~3000 words max. For 2-3 experts keep it concise (~800 words). For 10+ experts allow more space but stay focused.
 8. If comment_insights update or contradict the main answer — use the UPDATED position.
 
 LANGUAGE: Respond in the SAME language as the user's question.
