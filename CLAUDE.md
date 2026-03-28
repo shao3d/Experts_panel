@@ -36,7 +36,7 @@ Complete FastAPI backend with:
 - Dynamic expert loading from database with expert metadata centralization
 
 **Key Files:**
-- `src/api/simplified_query_endpoint.py` - Main multi-expert query processing with parallel experts and Reddit pipeline (90s timeout)
+- `src/api/simplified_query_endpoint.py` - Main multi-expert query processing with parallel experts and Reddit pipeline (120s timeout)
 - `src/api/admin_endpoints.py` - Admin authentication and production configuration
 - `src/services/map_service.py` - Content relevance detection with hybrid models
 - `src/services/medium_scoring_service.py` - Advanced post reranking with cost optimization

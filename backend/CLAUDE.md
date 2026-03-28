@@ -17,7 +17,7 @@ The backend implements a sophisticated 8-phase query processing system. It uses 
 | `embedding_service.py`| **0. Embed**| `gemini-embedding-001` | Pre-computes query embedding once for all experts. Runs **parallel** with Scout. |
 | `hybrid_retrieval_service.py` | **0. Retrieval** | *None (SQLite)* | Embs&Keys Hybrid Search (Vector KNN + FTS5 + RRF). Freshness from SQL directly (no extra DB query). |
 | `fts5_retrieval_service.py` | **Internal** | *None* | Provides FTS5 query sanitization utils used by Hybrid Service. |
-| `map_service.py` | **1. Map** | `gemini-2.5-flash-lite` | Chunks posts (100), scores relevance (HIGH/MEDIUM/LOW). 3-layer retry system. |
+| `map_service.py` | **1. Map** | `gemini-2.5-flash-lite` | Chunks posts (50), scores relevance (HIGH/MEDIUM/LOW). 3-layer retry system. |
 | `medium_scoring_service.py` | **2. Score** | `gemini-2.0-flash` | Reranks MEDIUM posts. Keeps top 5 with score ≥ 0.7. |
 | `simple_resolve_service.py` | **3. Resolve** | *None (DB)* | Expands HIGH posts context (Depth 1). Bypassed for Medium posts. |
 | `reduce_service.py` | **4. Reduce** | `gemini-3-flash-preview` | Synthesizes final answer. Max 50 posts context. Validates references. |
