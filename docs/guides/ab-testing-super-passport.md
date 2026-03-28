@@ -7,7 +7,7 @@
 | Pipeline | Описание | Параметр API |
 |----------|----------|--------------|
 | **OLD** | MapReduce — все посты через LLM | `use_super_passport: false` |
-| **NEW** | FTS5 + AI Scout — pre-filter через полнотекстовый поиск | `use_super_passport: true` |
+| **NEW** | Embs&Keys Hybrid Retrieval (Vector KNN + FTS5 + AI Scout + RRF) | `use_super_passport: true` |
 
 ## 📦 Требования
 
@@ -21,7 +21,8 @@
 |------|------------|
 | `backend/scripts/ab_test_super_passport.py` | **A/B тест скрипт** |
 | `backend/src/services/ai_scout_service.py` | AI Scout — генерация FTS5 запросов |
-| `backend/src/services/fts5_retrieval_service.py` | FTS5 retrieval + санитайзер |
+| `backend/src/services/hybrid_retrieval_service.py` | Hybrid Retrieval (Vector KNN + FTS5 + RRF) |
+| `backend/src/services/fts5_retrieval_service.py` | FTS5 query sanitization utils |
 | `backend/src/api/simplified_query_endpoint.py` | Main API endpoint |
 | `backend/.env` | API ключи (GOOGLE_AI_STUDIO_API_KEY) |
 

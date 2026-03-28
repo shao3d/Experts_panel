@@ -49,10 +49,10 @@ For a guided setup experience, execute the `quickstart.sh` script located in the
 
 ## 📚 Documentation
 
-- [Pipeline Architecture](docs/pipeline-architecture.md) - **The Source of Truth** for the 8-phase pipeline.
+- [Pipeline Architecture](docs/architecture/pipeline.md) - **The Source of Truth** for the 8-phase pipeline.
 - [Frontend Guide](frontend/CLAUDE.md) - **NEW**: React + Tailwind architecture, Sidebar layout, and State management.
 - [Backend Guide](backend/CLAUDE.md) - Services, Config, and API details.
-- [Reddit Integration](docs/pipeline-architecture.md#reddit-pipeline-parallel) - Details on smart targeting and ranking.
+- [Reddit Integration](docs/architecture/reddit-service.md) - Details on smart targeting and ranking.
 
 ## 🤝 Contributing
 

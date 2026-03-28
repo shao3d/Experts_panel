@@ -10,7 +10,7 @@ To verify the installation, check the health endpoint at `http://localhost:8000/
 
 ## 🏗️ Architecture Overview
 
-The system uses an advanced **eight-phase pipeline** for analysis and a hybrid, cost-optimized multi-model strategy. For a complete and up-to-date guide on the pipeline, data flow, and model strategy, please refer to the **[Pipeline Architecture Guide](docs/pipeline-architecture.md)**.
+The system uses an advanced **eight-phase pipeline** for analysis and a hybrid, cost-optimized multi-model strategy. For a complete and up-to-date guide on the pipeline, data flow, and model strategy, please refer to the **[Pipeline Architecture Guide](docs/architecture/pipeline.md)**.
 
 ### Key Architectural Principles
 - **Multi-Expert Architecture**: Complete data isolation between experts and parallel processing.
