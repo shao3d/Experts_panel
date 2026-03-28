@@ -14,7 +14,7 @@ The system uses an advanced **eight-phase pipeline** for analysis and a hybrid, 
 
 ### Key Architectural Principles
 - **Multi-Expert Architecture**: Complete data isolation between experts and parallel processing.
-- **Embs&Keys Hybrid Search**: Multi-stage retrieval using Vector KNN (sqlite-vec) and FTS5 with Reciprocal Rank Fusion (RRF), eliminating Semantic Gaps with pre-computed embeddings and offline metadata.
+- **Embs&Keys Hybrid Search**: Multi-stage retrieval using Vector KNN (sqlite-vec) and FTS5 with Reciprocal Rank Fusion (RRF), eliminating Semantic Gaps with pre-computed vector embeddings.
 - **Reddit MCP Integration**: Sidecar microservice for community insights with multi-strategy search, smart subreddit targeting, and 120s cold start timeout.
 - **Cost Optimization**: Gemini-only strategy with Tier 1 paid account (high rate limits).
 - **Real-time Progress**: SSE streaming for frontend progress tracking.
@@ -224,7 +224,7 @@ To debug the pipeline, monitor the backend log file for messages containing spec
 - ✅ **Pipeline Perf:** Parallel Scout+Embedding (~600ms saved), RRF without DB round-trip (20x faster), Drift scoring parallel with Reduce (Standard -17s, Hybrid -6s).
 - ✅ **Observability:** StreamHandler for stdout logging — `[PIPELINE]` and `[Hybrid Retrieval]` timings now visible in `flyctl logs`.
 - ✅ **Quality:** Removed artificial comment limits on main source posts (was 10 author / 15 community, now unlimited).
-- ✅ **Search Layer:** Implemented Embs&Keys Hybrid Retrieval (Vector KNN + FTS5 + RRF) and offline Metadata Enrichment.
+- ✅ **Search Layer:** Implemented Embs&Keys Hybrid Retrieval (Vector KNN + FTS5 + RRF) combining semantic and lexical search.
 - ✅ **AI Scout v2:** Upgraded to Entity-Centric OR-only search to fix Semantic Gap (Recall 70%+).
 - ✅ **Stability:** Increased Reddit pipeline timeout to 120s (fixes timeouts on complex queries)
 - ✅ **Bugfix:** Fixed frontend SSE parsing error for keep-alive events
