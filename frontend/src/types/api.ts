@@ -223,6 +223,9 @@ export interface MultiExpertQueryResponse {
   /** Community insights from Reddit (optional) */
   reddit_response?: RedditResponse | null;
 
+  /** Cross-expert synthesis (optional, only when 2+ experts) */
+  meta_synthesis?: string | null;
+
   /** Total processing time across all experts */
   total_processing_time_ms: number;
 
@@ -281,6 +284,9 @@ export interface QueryResponse {
 
   /** Reddit community insights (optional) */
   reddit_response?: RedditResponse | null;
+
+  /** Cross-expert synthesis */
+  meta_synthesis?: string | null;
 }
 
 // ============================================================================

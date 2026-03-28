@@ -27,6 +27,7 @@ The backend implements a sophisticated 8-phase query processing system. It uses 
 | `video_hub_service.py` | **Video Sidecar** | `gemini-3-pro-preview` | **Digital Twin**. 4-phase video analysis (Map -> Resolve -> Synthesis -> Translation). |
 | `reddit_enhanced_service.py` | **8. Reddit** | *None (HTTP Proxy)* | **Sidecar Proxy Client**. Deep Drill (100 comments, Depth 5). Hybrid MCP/Direct API. |
 | `reddit_synthesis_service.py` | **Synthesis** | `gemini-3-flash-preview` | **Staff Engineer Persona**. Finds Hidden Gems & Minority Reports. No Fluff. |
+| `meta_synthesis_service.py` | **Meta-Synthesis** | `gemini-3-flash-preview` | Cross-expert unified analysis. Runs parallel with Reddit after all experts complete (≥2). |
 
 ### Infrastructure
 - `src/api/simplified_query_endpoint.py`: **Main Orchestrator**. Manages parallel expert tasks, SSE streaming, and Reddit Sidecar (120s timeout).
@@ -67,6 +68,7 @@ Defined in `.env`, loaded in `config.py`.
 - `MODEL_COMMENT_GROUPS`: `gemini-2.0-flash`
 - `MODEL_DRIFT_ANALYSIS`: `gemini-3-flash-preview`
 - `MODEL_SCOUT`: `gemini-3.1-flash-lite-preview` (AI Scout / FTS5)
+- `MODEL_META_SYNTHESIS`: `gemini-3-flash-preview` (Cross-expert unified analysis)
 - `Embedding`: `gemini-embedding-001` (Hardcoded in orchestration)
 
 ### Limits

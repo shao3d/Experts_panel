@@ -57,6 +57,7 @@ from ..services.reddit_synthesis_service import RedditSynthesisService
 from ..services.reddit_service import RedditSearchResult, RedditSource as RS
 from ..services.hybrid_retrieval_service import HybridRetrievalService
 from ..services.ai_scout_service import AIScoutService
+from ..services.meta_synthesis_service import MetaSynthesisService
 from ..utils.error_handler import error_handler
 from ..utils.date_utils import get_cutoff_date
 
@@ -1421,6 +1422,35 @@ async def event_generator_parallel(
                 sanitized = sanitize_for_json(event.model_dump(mode="json"))
                 yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
 
+        # 4.5 META-SYNTHESIS: Launch in parallel with Reddit wait (only if 2+ experts)
+        meta_task = None
+        meta_synthesis_result = None
+        if len(expert_responses) >= 2:
+            try:
+                meta_service = MetaSynthesisService()
+                meta_task = asyncio.create_task(
+                    meta_service.synthesize(
+                        query=request.query,
+                        expert_responses=expert_responses,
+                    )
+                )
+                # Send "starting" SSE only AFTER task successfully created
+                logger.info(
+                    f"Launching meta-synthesis for {len(expert_responses)} experts"
+                )
+                event = ProgressEvent(
+                    event_type="progress",
+                    phase="meta_synthesis",
+                    status="starting",
+                    message="🧠 Synthesizing cross-expert analysis...",
+                    data={"experts_count": len(expert_responses)},
+                )
+                sanitized = sanitize_for_json(event.model_dump(mode="json"))
+                yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+            except Exception as e:
+                logger.error(f"Failed to initialize meta-synthesis (non-fatal): {e}")
+                meta_task = None
+
         # Wait for Reddit pipeline to complete (with timeout)
         # Reddit usually takes 10-30s (cold start + search), 120s is safer for complex queries
         reddit_wait_start = time.time()
@@ -1481,14 +1511,96 @@ async def event_generator_parallel(
             except asyncio.QueueEmpty:
                 break
 
+        # 4.6 Await meta-synthesis result (launched in parallel with Reddit earlier)
+        if meta_task:
+            if not meta_task.done():
+                # Meta-synthesis still running after Reddit completed — wait with keep-alive
+                logger.info("Waiting for meta-synthesis to complete...")
+                meta_wait_start = time.time()
+                meta_timeout = 30.0
+                while (
+                    not meta_task.done()
+                    and (time.time() - meta_wait_start) < meta_timeout
+                ):
+                    if time.time() - last_activity_time_outer > 2.5:
+                        padding = " " * 2048
+                        yield f": keep-alive {padding}\n\n"
+                        last_activity_time_outer = time.time()
+                    await asyncio.sleep(0.1)
+
+            # Collect result (always send a closing SSE event to match "starting")
+            if meta_task.done():
+                try:
+                    meta_synthesis_result = meta_task.result()
+                    if meta_synthesis_result:
+                        logger.info(
+                            f"Meta-synthesis completed: {len(meta_synthesis_result)} chars"
+                        )
+                        event = ProgressEvent(
+                            event_type="progress",
+                            phase="meta_synthesis",
+                            status="completed",
+                            message="🧠 Cross-expert analysis complete",
+                            data={},
+                        )
+                    else:
+                        logger.info("Meta-synthesis returned empty result")
+                        event = ProgressEvent(
+                            event_type="progress",
+                            phase="meta_synthesis",
+                            status="completed",
+                            message="🧠 Cross-expert analysis skipped (insufficient data)",
+                            data={},
+                        )
+                    sanitized = sanitize_for_json(
+                        event.model_dump(mode="json")
+                    )
+                    yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+                except (Exception, asyncio.CancelledError) as e:
+                    logger.error(f"Meta-synthesis error (non-fatal): {e}")
+                    meta_synthesis_result = None
+                    event = ProgressEvent(
+                        event_type="progress",
+                        phase="meta_synthesis",
+                        status="error",
+                        message="🧠 Cross-expert analysis unavailable",
+                        data={},
+                    )
+                    sanitized = sanitize_for_json(
+                        event.model_dump(mode="json")
+                    )
+                    yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+            else:
+                # Timeout — cancel and proceed without
+                meta_task.cancel()
+                logger.warning(
+                    "Meta-synthesis timed out (30s), proceeding without"
+                )
+                try:
+                    await meta_task
+                except asyncio.CancelledError:
+                    pass
+                event = ProgressEvent(
+                    event_type="progress",
+                    phase="meta_synthesis",
+                    status="error",
+                    message="🧠 Cross-expert analysis timed out",
+                    data={},
+                )
+                sanitized = sanitize_for_json(
+                    event.model_dump(mode="json")
+                )
+                yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+
         # 5. Calculate total processing time
         processing_time_ms = int((time.time() - start_time) * 1000)
 
-        # 6. Build multi-expert response (including Reddit if available)
+        # 6. Build multi-expert response (including Reddit and Meta-Synthesis if available)
         response = MultiExpertQueryResponse(
             query=request.query,
             expert_responses=expert_responses,
-            reddit_response=reddit_result,  # NEW: Include Reddit results
+            reddit_response=reddit_result,
+            meta_synthesis=meta_synthesis_result,
             total_processing_time_ms=processing_time_ms,
             request_id=request_id,
         )

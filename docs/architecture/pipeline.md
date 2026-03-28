@@ -110,6 +110,19 @@ The system processes user queries through an **eight-phase pipeline** using a **
 - **High-Level Summary**: Uses "Summary Bridging" to solve the Lost Middle problem. Extracts highly relevant video segments as full transcripts, and neighboring segments as summaries. Synthesizes a response from the perspective of the "Expert's Digital Twin" without summarizing, but by reconstructing reasoning.
 - **UX Integration**: Emits UI progress events mapped to standard phases (`map`, `resolve`, `reduce`) with a 🎥 icon for visual distinction.
 
+### 10. Meta-Synthesis Phase (Cross-Expert Analysis)
+**Goal**: Synthesize unified answer from all expert responses, restructuring from "per-expert" to "per-topic" axis.
+- **Condition**: Runs only when ≥2 experts returned answers.
+- **Service**: `MetaSynthesisService` (`backend/src/services/meta_synthesis_service.py`)
+- **Model**: `gemini-3-flash-preview` (Config: `MODEL_META_SYNTHESIS`)
+- **Input**: Array of ExpertResponse objects (answer text + confidence + comment_insights).
+- **Output**: Markdown string with: Direct Answer, Key Recommendations, Disagreements, Unique Insights.
+- **Language**: Matches query language via `prepare_prompt_with_language_instruction`.
+- **Fail-Safe**: Returns None on error — individual expert answers still displayed normally.
+- **Parallelism**: Launched as `asyncio.create_task()` right after expert collection, runs IN PARALLEL with Reddit wait. Awaited after Reddit completes (typically already done by then).
+- **Timeout**: 30s hard limit; if exceeded, cancelled gracefully.
+- **UX Integration**: Displayed as 🧠 "Сводный анализ" / "Cross-Expert Analysis" section ABOVE individual expert accordions.
+
 ---
 
 ## 📊 Model Configuration (Env Vars)
@@ -123,6 +136,7 @@ The system processes user queries through an **eight-phase pipeline** using a **
 | Validation | `MODEL_ANALYSIS` | `gemini-2.0-flash` | Fast translation/check. |
 | Drift (Offline) | `MODEL_DRIFT_ANALYSIS` | `gemini-3-flash-preview` | Deep offline analysis. |
 | AI Scout | `MODEL_SCOUT` | `gemini-3.1-flash-lite-preview` | Entity-centric FTS5 query expansion. |
+| Meta-Synthesis | `MODEL_META_SYNTHESIS` | `gemini-3-flash-preview` | Cross-expert unified analysis (≥2 experts). |
 | Embedding | *Hardcoded* | `gemini-embedding-001` | Pre-computed in Orchestrator for Vector KNN search. |
 
 ## 🛠️ Data Flow & Filtering

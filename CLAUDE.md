@@ -43,6 +43,7 @@ Complete FastAPI backend with:
 - `src/services/reddit_service.py` - Legacy Reddit HTTP client with circuit breaker
 - `src/services/reddit_enhanced_service.py` - **NEW:** Multi-strategy Reddit aggregator (parallel searches, smart subreddits)
 - `src/services/reddit_synthesis_service.py` - Reddit community analysis with Gemini
+- `src/services/meta_synthesis_service.py` - Cross-expert unified analysis (≥2 experts)
 - `src/services/translation_service.py` - Hybrid translation service with Google Gemini
 - `src/services/language_validation_service.py` - Language consistency validation
 - `src/config.py` - Comprehensive hybrid model configuration management
@@ -120,6 +121,7 @@ Model configuration is managed via environment variables as defined in `.env.exa
 - **Medium Scoring** (`MODEL_MEDIUM_SCORING`): `gemini-2.0-flash` - Content scoring
 - **Comment Groups** (`MODEL_COMMENT_GROUPS`): `gemini-2.0-flash` - Comment relevance
 - **Drift Analysis** (`MODEL_DRIFT_ANALYSIS`): `gemini-3-flash-preview` - Advanced topic drift detection
+- **Meta-Synthesis** (`MODEL_META_SYNTHESIS`): `gemini-3-flash-preview` - Cross-expert unified analysis (≥2 experts)
 
 **Note:** The `gemini-3-flash-preview` model (released January 2026) provides significantly improved reasoning capabilities while maintaining high speed and cost efficiency compared to earlier Gemini models.
 

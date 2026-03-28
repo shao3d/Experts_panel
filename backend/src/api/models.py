@@ -544,6 +544,10 @@ class MultiExpertQueryResponse(BaseModel):
         default=None,
         description="Community insights from Reddit (optional)"
     )
+    meta_synthesis: Optional[str] = Field(
+        default=None,
+        description="Cross-expert synthesis: unified analysis across all expert responses (only when 2+ experts)"
+    )
     total_processing_time_ms: int = Field(
         ...,
         description="Total processing time across all experts"

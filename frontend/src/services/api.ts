@@ -216,7 +216,8 @@ export class APIClient {
         processing_time_ms: multiResponse.total_processing_time_ms || 0,
         request_id: multiResponse.request_id || '',
         expert_responses: multiResponse.expert_responses || [],
-        reddit_response: multiResponse.reddit_response
+        reddit_response: multiResponse.reddit_response,
+        meta_synthesis: null
       };
     }
 
@@ -237,7 +238,8 @@ export class APIClient {
       relevant_comment_groups: firstExpert.relevant_comment_groups,
       comment_groups_synthesis: firstExpert.comment_groups_synthesis,
       expert_responses: multiResponse.expert_responses || [],
-      reddit_response: multiResponse.reddit_response
+      reddit_response: multiResponse.reddit_response,
+      meta_synthesis: multiResponse.meta_synthesis || null
     };
   }
 

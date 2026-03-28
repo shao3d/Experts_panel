@@ -24,6 +24,7 @@ The frontend source code is located in `frontend/src/`:
   - **`ExpertAccordion.tsx`**: Specialized view for expert and video insights (🎥 icons, "Video Archive" labels).
   - **`PostCard.tsx`**: Renders Telegram posts and Video segments (YouTube deep-links via `media_metadata`).
   - **`ExpertResponse.tsx`**: Renders the AI answer with source citations.
+  - **`MetaSynthesisSection.tsx`**: Cross-expert unified analysis (🧠 icon, above expert accordions, ≥2 experts).
   - **`CommunityInsightsSection.tsx`**: Reddit analysis display.
   - **`ProgressSection.tsx`**: Real-time progress bars.
 - **`config/`**:
@@ -58,6 +59,7 @@ Key query parameters are managed at the **App level** (`App.tsx`) to synchronize
 - `useRecentOnly`: boolean
 - `includeReddit`: boolean
 - `useSuperPassport`: boolean (Embs&Keys Hybrid Search toggle)
+- `metaSynthesis`: string | null (Cross-expert unified analysis, populated when ≥2 experts respond)
 
 The `Sidebar` updates these states, and `App` passes the current values to the API when `QueryForm` triggers a submit.
 
@@ -74,7 +76,8 @@ The `Sidebar` updates these states, and `App` passes the current values to the A
 2. **User submits** query in `QueryForm`.
 3. **App.tsx** gathers state + query and calls `apiClient.submitQuery()`.
 4. **SSE Stream** updates `progressEvents`.
-5. **Results** populate `expertResponses` and `redditResponse`.
+5. **Results** populate `expertResponses`, `redditResponse`, and `metaSynthesis`.
+6. **Meta-Synthesis** (if ≥2 experts) renders above expert accordions as `MetaSynthesisSection`.
 
 ## 🛠️ Build and Development
 

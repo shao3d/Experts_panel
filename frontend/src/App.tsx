@@ -12,6 +12,7 @@ import { Sidebar } from './components/Sidebar'; // New Desktop Sidebar
 import CommunityInsightsSection from './components/CommunityInsightsSection';
 import { apiClient } from './services/api';
 import { ExpertResponse as ExpertResponseType, ProgressEvent, ExpertInfo, RedditResponse } from './types/api';
+import { MetaSynthesisSection } from './components/MetaSynthesisSection';
 import { transformExpertsForUI, EXPERT_UI_CONFIG } from './config/expertConfig';
 import './App.css';
 import './components/CommunityInsightsSection.css';
@@ -21,6 +22,7 @@ export const App: React.FC = () => {
   const [progressEvents, setProgressEvents] = useState<ProgressEvent[]>([]);
   const [expertResponses, setExpertResponses] = useState<ExpertResponseType[]>([]);
   const [redditResponse, setRedditResponse] = useState<RedditResponse | null>(null);
+  const [metaSynthesis, setMetaSynthesis] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [availableExperts, setAvailableExperts] = useState<ExpertInfo[]>([]);
   const [expandedExperts, setExpandedExperts] = useState<Set<string>>(new Set());
@@ -96,6 +98,7 @@ export const App: React.FC = () => {
     setProgressEvents([]);
     setExpertResponses([]);
     setRedditResponse(null);
+    setMetaSynthesis(null);
     setError(null);
     setCurrentQuery(query);
     setIsExpertSelectorOpen(false); // Close selector on submit
@@ -114,6 +117,11 @@ export const App: React.FC = () => {
       // Set Reddit response if available
       if (response.reddit_response) {
         setRedditResponse(response.reddit_response);
+      }
+
+      // Set Meta-Synthesis if available
+      if (response.meta_synthesis) {
+        setMetaSynthesis(response.meta_synthesis);
       }
 
       // Check if response has expert_responses (multi-expert)
@@ -241,6 +249,14 @@ export const App: React.FC = () => {
                 </div>
               ) : expertResponses.length > 0 || redditResponse ? (
                 <>
+                  {/* Meta-Synthesis: Cross-expert unified analysis */}
+                  {metaSynthesis && (
+                    <MetaSynthesisSection
+                      metaSynthesis={metaSynthesis}
+                      expertCount={expertResponses.length}
+                    />
+                  )}
+
                   {/* Expert Responses */}
                   {[...expertResponses]
                     .sort((a, b) => {

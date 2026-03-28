@@ -42,6 +42,9 @@ MODEL_COMMENT_GROUPS: str = os.getenv("MODEL_COMMENT_GROUPS", "gemini-2.0-flash"
 
 MODEL_DRIFT_ANALYSIS: str = os.getenv("MODEL_DRIFT_ANALYSIS", "gemini-3-flash-preview")
 
+# --- Meta-Synthesis (Cross-Expert Analysis) ---
+MODEL_META_SYNTHESIS: str = os.getenv("MODEL_META_SYNTHESIS", "gemini-3-flash-preview")
+
 # --- Embedding Configuration ---
 MODEL_EMBEDDING: str = os.getenv("MODEL_EMBEDDING", "gemini-embedding-001")
 EMBEDDING_DIMENSIONS: int = int(os.getenv("EMBEDDING_DIMENSIONS", "768"))
@@ -114,6 +117,7 @@ if os.getenv("ENVIRONMENT") != "production":
     print(f"  Анализ:            {MODEL_ANALYSIS}")
     print(f"  AI Scout:          {MODEL_SCOUT}")
     print(f"  Drift Analysis:    {MODEL_DRIFT_ANALYSIS}")
+    print(f"  Meta-Synthesis:    {MODEL_META_SYNTHESIS}")
     print("--------------------------------------")
     print("--- Загруженная конфигурация лимитов ---")
     print(f"  Map Max Parallel:      {MAP_MAX_PARALLEL}")
