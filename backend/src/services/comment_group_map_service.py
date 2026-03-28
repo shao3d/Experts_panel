@@ -453,92 +453,47 @@ class CommentGroupMapService:
                 })
             raise
 
-    async def process(
+    async def score_drift_groups(
         self,
         query: str,
-        db: Session,  # NOTE: Caller MUST manage session lifecycle
+        db: Session,
         expert_id: str,
         exclude_post_ids: Optional[List[int]] = None,
-        main_source_ids: Optional[List[int]] = None,  # NEW: Process author comments from these
         cutoff_date: Optional[datetime] = None,
-        progress_callback: Optional[Callable] = None
+        progress_callback: Optional[Callable] = None,
     ) -> List[Dict[str, Any]]:
-        """Process drift groups to find relevant ones.
-        
-        Args:
-            query: User's query
-            db: Database session (caller manages lifecycle)
-            expert_id: Expert identifier
-            exclude_post_ids: Post IDs to exclude from drift search
-            main_source_ids: Main source post IDs to extract author comments from (NEW!)
-            cutoff_date: Optional cutoff date for filtering drift groups
-            progress_callback: Optional callback for progress updates
-            
+        """Load drift groups and score them with LLM. Does NOT need main_sources.
+
+        This is the expensive operation (DB queries + LLM scoring of chunks).
+        Can run in parallel with Reduce phase.
+
         Returns:
-            List of relevant comment groups, with main_source clarifications first
+            List of HIGH-relevance scored drift groups, sorted by date.
         """
         import time
-        phase_start_time = time.time()
+        t_start = time.time()
 
-        print(f"[DEBUG CGS] process() called for expert_id={expert_id}, main_source_ids={main_source_ids}")  # DEBUG
-
-        # NEW: First load author comments from main_sources (these bypass LLM evaluation)
-        main_source_groups = []
-        main_source_community_groups = []
-        if main_source_ids:
-            main_source_groups = self._load_main_source_author_comments(
-                db, main_source_ids, expert_id
-            )
-            logger.info(f"[{expert_id}] Loaded {len(main_source_groups)} main_source clarification groups")
-            
-            # NEW: Also load community comments from main_sources
-            main_source_community_groups = self._load_main_source_community_comments(
-                db, main_source_ids, expert_id
-            )
-            logger.info(f"[{expert_id}] Loaded {len(main_source_community_groups)} main_source community groups")
-
-        # Load drift groups from database (excluding main_sources as before)
         all_groups = self._load_drift_groups(db, expert_id, exclude_post_ids, cutoff_date=cutoff_date)
 
-        print(f"[DEBUG CGS] all_groups loaded: {len(all_groups)}")  # DEBUG
-
-        # If no drift groups but we have main_source groups, return those
-        if not all_groups and (main_source_groups or main_source_community_groups):
-            combined = main_source_groups + main_source_community_groups
-            logger.info(f"[{expert_id}] No drift groups, but returning {len(combined)} main_source groups")
-            if progress_callback:
-                await progress_callback({
-                    "event_type": "phase_complete",
-                    "phase": "comment_groups",
-                    "status": "completed",
-                    "message": f"Found {len(combined)} main source groups"
-                })
-            return combined
-
         if not all_groups:
-            print(f"[DEBUG CGS] No groups found, returning early")  # DEBUG
-            if progress_callback:
-                await progress_callback({
-                    "event_type": "phase_complete",
-                    "phase": "comment_groups",
-                    "status": "completed",
-                    "message": "No comment groups to analyze"
-                })
+            logger.info(f"[{expert_id}] Drift scoring: no drift groups found")
             return []
 
-        # Split into chunks
         chunks = self._chunk_groups(all_groups)
         total_chunks = len(chunks)
 
-        logger.info(f"[{expert_id}] Comment Groups Phase START: Processing {len(all_groups)} groups in {total_chunks} chunks using {self.primary_model}")
+        logger.info(
+            f"[{expert_id}] Drift Scoring START: {len(all_groups)} groups in "
+            f"{total_chunks} chunks using {self.primary_model}"
+        )
 
         if progress_callback:
             await progress_callback({
                 "event_type": "phase_start",
                 "phase": "comment_groups",
                 "status": "starting",
-                "message": f"Starting comment groups analysis: {len(all_groups)} groups in {total_chunks} chunks",
-                "total_chunks": total_chunks
+                "message": f"Drift scoring: {len(all_groups)} groups in {total_chunks} chunks",
+                "total_chunks": total_chunks,
             })
 
         # Process chunks in parallel
@@ -558,48 +513,112 @@ class CommentGroupMapService:
 
         # Aggregate results
         all_relevant_groups = []
-        chunks_with_errors = []
-
         for i, result in enumerate(chunk_results):
             if isinstance(result, Exception):
-                logger.error(f"Comment groups chunk {i} failed: {result}")
-                chunks_with_errors.append(i)
+                logger.error(f"Drift scoring chunk {i} failed: {result}")
             else:
-                # Validate each group has anchor_post before adding
-                groups = result.get("relevant_groups", [])
-                for group in groups:
-                    if not group.get("anchor_post"):
-                        logger.error(f"Group missing anchor_post in chunk {i}: {group}")
-                        continue
-                    all_relevant_groups.append(group)
+                for group in result.get("relevant_groups", []):
+                    if group.get("anchor_post"):
+                        all_relevant_groups.append(group)
 
         # Filter HIGH relevance only
         relevant_groups = [
-            g for g in all_relevant_groups
-            if g.get("relevance") == "HIGH"
+            g for g in all_relevant_groups if g.get("relevance") == "HIGH"
         ]
 
-        # Sort by relevance THEN by Freshness (Date of anchor post)
-        # Strategy: Python sort is stable.
+        # Sort: date descending, then relevance (stable sort)
+        relevant_groups.sort(
+            key=lambda x: x["anchor_post"].get("created_at", ""), reverse=True
+        )
 
-        # 1. Global Sort: Date Descending (Newest discussions first)
-        relevant_groups.sort(key=lambda x: x["anchor_post"].get("created_at", ""), reverse=True)
+        duration_ms = int((time.time() - t_start) * 1000)
+        logger.info(
+            f"[{expert_id}] Drift Scoring END: {duration_ms}ms, "
+            f"{len(all_groups)} groups -> {len(relevant_groups)} HIGH"
+        )
 
-        # 2. Stable Sort: Relevance Ascending (HIGH=0, MEDIUM=1)
-        relevance_order = {"HIGH": 0, "MEDIUM": 1}
-        relevant_groups.sort(key=lambda x: relevance_order.get(x.get("relevance", "LOW"), 2))
+        return relevant_groups
 
-        # NEW: Combine main_source clarifications (first), then community, then drift groups
-        # Priority: author clarifications > community on main sources > drift groups
-        final_groups = main_source_groups + main_source_community_groups + relevant_groups
+    def merge_with_main_sources(
+        self,
+        scored_drift_groups: List[Dict[str, Any]],
+        db: Session,
+        expert_id: str,
+        main_source_ids: Optional[List[int]] = None,
+    ) -> List[Dict[str, Any]]:
+        """Load main_source comments and merge with pre-scored drift groups.
 
-        # Log phase completion with timing
+        Cheap operation (~5ms): DB queries for author/community comments,
+        then dedup drift groups that overlap with main_sources.
+
+        Returns:
+            Final ordered list: author clarifications + community + drift (deduped).
+        """
+        main_source_groups = []
+        main_source_community_groups = []
+
+        if main_source_ids:
+            main_source_groups = self._load_main_source_author_comments(
+                db, main_source_ids, expert_id
+            )
+            main_source_community_groups = self._load_main_source_community_comments(
+                db, main_source_ids, expert_id
+            )
+
+        # Dedup: remove drift groups whose anchor post is already a main_source
+        deduped_drift = scored_drift_groups
+        if main_source_ids:
+            main_source_set = set(main_source_ids)
+            deduped_drift = [
+                g for g in scored_drift_groups
+                if g.get("anchor_post", {}).get("telegram_message_id") not in main_source_set
+            ]
+
+        logger.info(
+            f"[{expert_id}] Merge: {len(main_source_groups)} author + "
+            f"{len(main_source_community_groups)} community + "
+            f"{len(deduped_drift)} drift (deduped from {len(scored_drift_groups)})"
+        )
+
+        return main_source_groups + main_source_community_groups + deduped_drift
+
+    async def process(
+        self,
+        query: str,
+        db: Session,
+        expert_id: str,
+        exclude_post_ids: Optional[List[int]] = None,
+        main_source_ids: Optional[List[int]] = None,
+        cutoff_date: Optional[datetime] = None,
+        progress_callback: Optional[Callable] = None,
+    ) -> List[Dict[str, Any]]:
+        """Process drift groups to find relevant ones (backward-compatible sequential path).
+
+        Delegates to score_drift_groups() + merge_with_main_sources().
+        """
+        import time
+        phase_start_time = time.time()
+
+        scored = await self.score_drift_groups(
+            query=query,
+            db=db,
+            expert_id=expert_id,
+            exclude_post_ids=exclude_post_ids,
+            cutoff_date=cutoff_date,
+            progress_callback=progress_callback,
+        )
+
+        final_groups = self.merge_with_main_sources(
+            scored_drift_groups=scored,
+            db=db,
+            expert_id=expert_id,
+            main_source_ids=main_source_ids,
+        )
+
         duration_ms = int((time.time() - phase_start_time) * 1000)
         logger.info(
             f"[{expert_id}] Comment Groups Phase END: {duration_ms}ms, "
-            f"found {len(main_source_groups)} author clarifications + "
-            f"{len(main_source_community_groups)} community on main sources + "
-            f"{len(relevant_groups)} drift groups = {len(final_groups)} total"
+            f"{len(final_groups)} total groups"
         )
 
         if progress_callback:
@@ -607,7 +626,7 @@ class CommentGroupMapService:
                 "event_type": "phase_complete",
                 "phase": "comment_groups",
                 "status": "completed",
-                "message": f"Found {len(final_groups)} relevant comment groups ({len(main_source_groups)} author + {len(main_source_community_groups)} community from main sources)"
+                "message": f"Found {len(final_groups)} relevant comment groups",
             })
 
         return final_groups

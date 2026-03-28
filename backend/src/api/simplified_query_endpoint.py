@@ -492,57 +492,28 @@ async def process_expert_pipeline(
         key=lambda x: relevance_priority.get(x.get("relevance", "LOW"), 2)
     )
 
-    # 5. Reduce phase
-    t_reduce = time.perf_counter()
+    # 5+6. Reduce chain + Drift Scoring in PARALLEL
+    # Drift scoring (expensive LLM phase) does NOT depend on Reduce output.
+    # Only main_source author/community comments (cheap DB queries) need main_sources.
+    comment_groups = []
+    comment_group_results = []
+    comment_synthesis = None
+
     reduce_service = ReduceService()
+    language_validation_service = LanguageValidationService(model=config.MODEL_ANALYSIS)
 
     async def reduce_progress(data: dict):
         if progress_callback:
             data["expert_id"] = expert_id
             await progress_callback(data)
 
-    reduce_results = await reduce_service.process(
-        enriched_posts=enriched_posts,
-        query=request.query,
-        expert_id=expert_id,
-        progress_callback=reduce_progress,
-    )
-    timings["reduce"] = round((time.perf_counter() - t_reduce) * 1000, 1)
-
-    # 5. NEW: Language Validation Phase
-    t_validate = time.perf_counter()
-    language_validation_service = LanguageValidationService(model=config.MODEL_ANALYSIS)
-
     async def validation_progress(data: dict):
         if progress_callback:
             data["expert_id"] = expert_id
             await progress_callback(data)
 
-    validation_results = await language_validation_service.process(
-        answer=reduce_results.get("answer", ""),
-        query=request.query,
-        expert_id=expert_id,
-        progress_callback=validation_progress,
-    )
-    timings["validation"] = round((time.perf_counter() - t_validate) * 1000, 1)
-
-    # Use validated answer for subsequent phases
-    validated_answer = validation_results.get(
-        "answer", reduce_results.get("answer", "")
-    )
-
-    # 6. Comment Groups (optional)
-    comment_groups = []
-    comment_group_results = []  # Raw results from service (preserves is_main_source_clarification)
-    comment_synthesis = None
-
-    print(f"[DEBUG] include_comment_groups={request.include_comment_groups}")  # DEBUG
-
     if request.include_comment_groups:
-        t_comments = time.perf_counter()
-        main_sources = reduce_results.get("main_sources", [])
-
-        # Use Google Gemini with automatic key rotation
+        # PARALLEL PATH: Reduce chain + Drift Scoring
         cg_service = CommentGroupMapService(model=config.MODEL_COMMENT_GROUPS)
 
         async def cg_progress(data: dict):
@@ -550,33 +521,76 @@ async def process_expert_pipeline(
                 data["expert_id"] = expert_id
                 await progress_callback(data)
 
-        print(f"[DEBUG] Calling cg_service.process for expert {expert_id}")  # DEBUG
+        async def run_reduce_chain():
+            """Reduce -> Language Validation (sequential chain)."""
+            t_reduce = time.perf_counter()
+            _reduce_results = await reduce_service.process(
+                enriched_posts=enriched_posts,
+                query=request.query,
+                expert_id=expert_id,
+                progress_callback=reduce_progress,
+            )
+            timings["reduce"] = round((time.perf_counter() - t_reduce) * 1000, 1)
 
-        comment_group_results = await cg_service.process(
-            query=request.query,
-            db=db,
-            expert_id=expert_id,  # CRITICAL: Pass expert_id
-            exclude_post_ids=main_sources,  # Exclude main_sources from drift search
-            main_source_ids=main_sources,  # NEW: Extract author clarifications from main_sources
-            cutoff_date=cutoff_date,  # Pass cutoff_date for filtering drift groups
-            progress_callback=cg_progress,
+            t_validate = time.perf_counter()
+            _validation_results = await language_validation_service.process(
+                answer=_reduce_results.get("answer", ""),
+                query=request.query,
+                expert_id=expert_id,
+                progress_callback=validation_progress,
+            )
+            timings["validation"] = round((time.perf_counter() - t_validate) * 1000, 1)
+
+            return _reduce_results, _validation_results
+
+        async def run_drift_scoring():
+            """Drift group loading + LLM scoring (no main_sources needed)."""
+            t_drift = time.perf_counter()
+            try:
+                scored = await cg_service.score_drift_groups(
+                    query=request.query,
+                    db=db,
+                    expert_id=expert_id,
+                    exclude_post_ids=None,
+                    cutoff_date=cutoff_date,
+                    progress_callback=cg_progress,
+                )
+                timings["drift_scoring"] = round((time.perf_counter() - t_drift) * 1000, 1)
+                return scored
+            except Exception as e:
+                logger.error(f"[{expert_id}] Drift scoring failed (non-fatal): {e}")
+                timings["drift_scoring"] = round((time.perf_counter() - t_drift) * 1000, 1)
+                return []
+
+        # PARALLEL EXECUTION: Reduce chain and Drift Scoring
+        (reduce_results, validation_results), scored_drift_groups = await asyncio.gather(
+            run_reduce_chain(),
+            run_drift_scoring(),
         )
 
-        print(
-            f"[DEBUG] comment_group_results count: {len(comment_group_results)}"
-        )  # DEBUG
+        validated_answer = validation_results.get(
+            "answer", reduce_results.get("answer", "")
+        )
+        main_sources = reduce_results.get("main_sources", [])
+
+        # Merge: cheap DB queries for main_source comments + dedup (~5ms)
+        t_merge = time.perf_counter()
+        comment_group_results = cg_service.merge_with_main_sources(
+            scored_drift_groups=scored_drift_groups,
+            db=db,
+            expert_id=expert_id,
+            main_source_ids=main_sources,
+        )
+        timings["comment_merge"] = round((time.perf_counter() - t_merge) * 1000, 1)
 
         # Convert to response format
         seen_parent_ids = set()
         for group in comment_group_results:
-            # Deduplicate groups by parent message ID
             if group["parent_telegram_message_id"] in seen_parent_ids:
                 continue
             seen_parent_ids.add(group["parent_telegram_message_id"])
 
             anchor_post_data = group["anchor_post"]
-
-            # Convert comments
             comments = [
                 CommentResponse(
                     comment_id=c["comment_id"],
@@ -587,7 +601,6 @@ async def process_expert_pipeline(
                 )
                 for c in group.get("comments", [])
             ]
-
             comment_groups.append(
                 CommentGroupResponse(
                     parent_telegram_message_id=group["parent_telegram_message_id"],
@@ -599,30 +612,50 @@ async def process_expert_pipeline(
                         message_text=anchor_post_data["message_text"],
                         created_at=anchor_post_data["created_at"],
                         author_name=anchor_post_data["author_name"],
-                        channel_username=get_channel_username(
-                            expert_id
-                        ),  # Use helper function
+                        channel_username=get_channel_username(expert_id),
                     ),
                     comments=comments,
                 )
             )
 
-        # Comment Synthesis (if we have relevant comment groups)
-        # IMPORTANT: Use original comment_group_results, not converted Pydantic models
-        # This preserves is_main_source_clarification flag for proper synthesis prioritization
+        # Comment Synthesis (needs validated_answer + all comment groups)
+        t_synthesis = time.perf_counter()
         if comment_group_results:
             try:
                 synthesis_service = CommentSynthesisService()
                 comment_synthesis = await synthesis_service.process(
                     query=request.query,
-                    main_answer=validated_answer,  # Use validated answer
-                    comment_groups=comment_group_results,  # Use original results with all fields!
+                    main_answer=validated_answer,
+                    comment_groups=comment_group_results,
                     expert_id=expert_id,
                 )
             except Exception as e:
                 logger.error(f"Comment synthesis failed for expert {expert_id}: {e}")
+        timings["comment_synthesis"] = round((time.perf_counter() - t_synthesis) * 1000, 1)
 
-        timings["comment_groups"] = round((time.perf_counter() - t_comments) * 1000, 1)
+    else:
+        # SEQUENTIAL PATH: no comment groups requested
+        t_reduce = time.perf_counter()
+        reduce_results = await reduce_service.process(
+            enriched_posts=enriched_posts,
+            query=request.query,
+            expert_id=expert_id,
+            progress_callback=reduce_progress,
+        )
+        timings["reduce"] = round((time.perf_counter() - t_reduce) * 1000, 1)
+
+        t_validate = time.perf_counter()
+        validation_results = await language_validation_service.process(
+            answer=reduce_results.get("answer", ""),
+            query=request.query,
+            expert_id=expert_id,
+            progress_callback=validation_progress,
+        )
+        timings["validation"] = round((time.perf_counter() - t_validate) * 1000, 1)
+
+        validated_answer = validation_results.get(
+            "answer", reduce_results.get("answer", "")
+        )
 
     # 7. Build response
     processing_time = int((time.time() - start_time) * 1000)
