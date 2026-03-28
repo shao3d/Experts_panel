@@ -125,7 +125,7 @@ class CommentGroupMapService:
             author_comments = db.query(Comment).filter(
                 Comment.post_id == post.post_id,
                 Comment.author_id == post_author_id  # "2273349814" == "2273349814"
-            ).order_by(Comment.created_at.desc()).limit(10).all()
+            ).order_by(Comment.created_at.desc()).all()
             
             if author_comments:
                 groups.append({
@@ -190,12 +190,12 @@ class CommentGroupMapService:
                 community_comments = db.query(Comment).filter(
                     Comment.post_id == post.post_id,
                     Comment.author_id != post_author_id  # NOT the author
-                ).order_by(Comment.created_at.desc()).limit(15).all()
+                ).order_by(Comment.created_at.desc()).all()
             else:
                 # If no author_id, take all comments
                 community_comments = db.query(Comment).filter(
                     Comment.post_id == post.post_id
-                ).order_by(Comment.created_at.desc()).limit(15).all()
+                ).order_by(Comment.created_at.desc()).all()
             
             if community_comments:
                 groups.append({
