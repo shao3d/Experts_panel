@@ -106,7 +106,10 @@ This "Cycle of Life" script handles (9 steps):
 3.  **Migrations**: Applies pending database migrations (idempotent, marker-file tracked).
 4.  **Vectorization**: Generates embeddings for new posts (`embed_posts.py --continuous`) for Hybrid Search.
 5.  **Drift Analysis**: Analyzes new comments for topic drift using Gemini.
-6.  **Deploy**: Wakes Fly.io machine, creates remote backup, uploads compressed DB, and restarts the app.
+6.  **Check/Wake Machine**: Verifies Fly.io machine status and wakes it if needed.
+7.  **Remote Backup**: Creates backup of remote database on server.
+8.  **Upload Database**: Compresses and uploads the updated database to Fly.io.
+9.  **Restart Application**: Restarts the app to load the new database.
 
 ### Database Operations
 For interactive database management (e.g., initializing, resetting, or listing tables), use the script at `backend/src/models/database`. Database backups and migrations can be performed using standard `sqlite3` CLI commands, pointing to the database file at `backend/data/experts.db`. Migration scripts are located in `backend/migrations/`.
@@ -121,7 +124,10 @@ Model configuration is managed via environment variables as defined in `.env.exa
 - **Medium Scoring** (`MODEL_MEDIUM_SCORING`): `gemini-2.0-flash` - Content scoring
 - **Comment Groups** (`MODEL_COMMENT_GROUPS`): `gemini-2.0-flash` - Comment relevance
 - **Drift Analysis** (`MODEL_DRIFT_ANALYSIS`): `gemini-3-flash-preview` - Advanced topic drift detection
+- **AI Scout** (`MODEL_SCOUT`): `gemini-3.1-flash-lite-preview` - Entity-centric FTS5 query generation
 - **Meta-Synthesis** (`MODEL_META_SYNTHESIS`): `gemini-3-flash-preview` - Cross-expert unified analysis (≥2 experts)
+- **Video Synthesis** (`MODEL_VIDEO_PRO`): `gemini-3-pro-preview` - Video Hub Digital Twin analysis
+- **Video Validation** (`MODEL_VIDEO_FLASH`): `gemini-3-flash-preview` - Video Hub language validation
 
 **Note:** The `gemini-3-flash-preview` model (released January 2026) provides significantly improved reasoning capabilities while maintaining high speed and cost efficiency compared to earlier Gemini models.
 

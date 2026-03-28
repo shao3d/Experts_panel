@@ -69,6 +69,8 @@ Defined in `.env`, loaded in `config.py`.
 - `MODEL_DRIFT_ANALYSIS`: `gemini-3-flash-preview`
 - `MODEL_SCOUT`: `gemini-3.1-flash-lite-preview` (AI Scout / FTS5)
 - `MODEL_META_SYNTHESIS`: `gemini-3-flash-preview` (Cross-expert unified analysis)
+- `MODEL_VIDEO_PRO`: `gemini-3-pro-preview` (Video Hub Digital Twin)
+- `MODEL_VIDEO_FLASH`: `gemini-3-flash-preview` (Video Hub validation)
 - `Embedding`: `gemini-embedding-001` (Hardcoded in orchestration)
 
 ### Limits
