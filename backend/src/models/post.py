@@ -48,10 +48,6 @@ class Post(Base):
     is_forwarded = Column(Integer, default=0)  # Boolean as integer for SQLite
     forward_from_channel = Column(String(255))
 
-    # Metadata enrichment (for Super-Passport search)
-    post_metadata = Column(Text, nullable=True)  # JSON: {"primary_topic": "...", "keywords": "..."}
-    metadata_generated_at = Column(DateTime, nullable=True)  # When metadata was generated
-
     # Relationships
     comments = relationship("Comment", back_populates="post", cascade="all, delete-orphan")
 

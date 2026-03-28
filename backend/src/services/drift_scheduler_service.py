@@ -51,6 +51,13 @@ class DriftSchedulerService:
         # which uses Tenacity with exponential backoff + jitter
         logger.info(f"DriftSchedulerService initialized with model: {self.model_name}")
 
+    def get_pending_count(self) -> int:
+        """Count pending drift analysis groups."""
+        result = self.db.execute(text(
+            "SELECT COUNT(*) FROM comment_group_drift WHERE analyzed_by = 'pending'"
+        ))
+        return result.scalar() or 0
+
     def get_pending_groups(self, limit: int = 10) -> List[Dict[str, Any]]:
         """Fetch pending groups with their posts and comments."""
         query = text("""
@@ -299,7 +306,13 @@ Return ONLY valid JSON:
 
     async def run_full_cycle(self):
         """Run until no pending groups remain."""
-        logger.info("🚀 Starting Drift Scheduler Cycle")
+        total_pending = self.get_pending_count()
+        logger.info(f"🚀 Starting Drift Scheduler Cycle ({total_pending} groups pending)")
+
+        if total_pending == 0:
+            logger.info("✅ No pending groups. Nothing to do.")
+            return
+
         total_processed = 0
 
         while True:
@@ -308,8 +321,11 @@ Return ONLY valid JSON:
             if count == 0:
                 break
 
+            remaining = self.get_pending_count()
+            logger.info(f"📊 Progress: {total_processed}/{total_pending} processed, {remaining} remaining")
+
             # Extra cooldown between batches
             logger.info("Batch cooldown (10s)...")
             await asyncio.sleep(10)
 
-        logger.info(f"🏁 Cycle complete. Total processed: {total_processed}")
+        logger.info(f"🏁 Cycle complete. Total processed: {total_processed}/{total_pending}")

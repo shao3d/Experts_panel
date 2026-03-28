@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generate embeddings for posts using Gemini Embedding API.
 
-Offline script for hybrid retrieval. Follows pattern from enrich_post_metadata.py.
+Offline script for hybrid retrieval.
 
 Usage:
     python backend/scripts/embed_posts.py [--batch-size 50] [--dry-run] [--force]

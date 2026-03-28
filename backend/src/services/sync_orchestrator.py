@@ -1,7 +1,6 @@
 import os
 import sys
 import json
-import asyncio
 import logging
 from pathlib import Path
 from datetime import datetime
@@ -13,7 +12,6 @@ from sqlalchemy.orm import Session
 from src.data.channel_syncer import TelegramChannelSyncer
 from src.models.base import SessionLocal
 from src.models.post import Post
-from src.services.drift_scheduler_service import DriftSchedulerService
 
 # Configure logging for Cron Jobs
 CRON_LOG_FILE = Path("/app/data/logs/cron_jobs.log")
@@ -322,53 +320,3 @@ async def run_cron_pipeline(dry_run: bool = False, depth: int = 10) -> Dict[str,
     finally:
         db.close()
 
-async def run_full_cron_job():
-    """
-    Orchestrates the full Cron Job:
-    1. Phase 1: Multi-Expert Sync (Async)
-    2. Phase 2: Drift Analysis (Blocking, run in executor)
-    """
-    logger.info("⏰ CRON JOB STARTED: Sync + Drift Analysis")
-
-    # --- Step 1: Run Sync ---
-    try:
-        logger.info("Phase 1: Starting Telegram Sync...")
-        # Run sync directly (it's async)
-        # Redirect stderr to logger to capture print outputs from legacy code if needed
-        # But mostly we rely on returned result and internal logging
-        
-        result = await run_cron_pipeline(dry_run=False, depth=10)
-        
-        if result['success']:
-            logger.info(f"✅ Sync Phase completed successfully. Processed {result['experts_processed']} experts.")
-        else:
-            logger.error("❌ Sync Phase reported failure.")
-            logger.error("Skipping drift analysis due to sync failure.")
-            return
-
-    except Exception as e:
-        logger.error(f"❌ Critical error during sync phase: {str(e)}")
-        return
-
-    # --- Step 2: Run Drift Analysis ---
-    try:
-        logger.info("Phase 2: Starting Drift Analysis (Gemini)...")
-        
-        def _run_drift_sync():
-            db = SessionLocal()
-            try:
-                scheduler = DriftSchedulerService(db)
-                scheduler.run_full_cycle()
-            finally:
-                db.close()
-
-        # Run blocking drift analysis in thread pool
-        loop = asyncio.get_running_loop()
-        await loop.run_in_executor(None, _run_drift_sync)
-        
-        logger.info("✅ Drift analysis cycle completed.")
-
-    except Exception as e:
-        logger.error(f"❌ Critical error during drift analysis phase: {str(e)}")
-
-    logger.info("💤 CRON JOB FINISHED")

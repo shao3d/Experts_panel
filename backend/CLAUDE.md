@@ -67,7 +67,6 @@ Defined in `.env`, loaded in `config.py`.
 - `MODEL_COMMENT_GROUPS`: `gemini-2.0-flash`
 - `MODEL_DRIFT_ANALYSIS`: `gemini-3-flash-preview`
 - `MODEL_SCOUT`: `gemini-3.1-flash-lite-preview` (AI Scout / FTS5)
-- `METADATA_MODEL`: `gemini-3.1-flash-lite-preview` (Cron Job Metadata)
 - `Embedding`: `gemini-embedding-001` (Hardcoded in orchestration)
 
 ### Limits

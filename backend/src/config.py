@@ -51,10 +51,6 @@ HYBRID_VECTOR_TOP_K: int = int(os.getenv("HYBRID_VECTOR_TOP_K", "150"))
 HYBRID_FTS5_TOP_K: int = int(os.getenv("HYBRID_FTS5_TOP_K", "100"))
 HYBRID_RRF_K: int = int(os.getenv("HYBRID_RRF_K", "60"))
 
-# --- Metadata Enrichment ---
-METADATA_MODEL: str = os.getenv("METADATA_MODEL", "gemini-3.1-flash-lite-preview")
-METADATA_BATCH_SIZE: int = int(os.getenv("METADATA_BATCH_SIZE", "50"))
-
 # --- Video Hub Models ---
 MODEL_VIDEO_PRO: str = os.getenv("MODEL_VIDEO_PRO", "gemini-3-pro-preview")
 MODEL_VIDEO_FLASH: str = os.getenv("MODEL_VIDEO_FLASH", "gemini-3-flash-preview")

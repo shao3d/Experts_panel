@@ -91,7 +91,7 @@ class FTS5RetrievalService:
     # Minimum FTS5 results before triggering Smart Fallback
     MIN_FTS5_RESULTS = 10
     # Hybrid mode: percentage of posts to add as random sample
-    # DISABLED (0.0) — metadata enrichment provides semantic coverage now
+    # DISABLED (0.0) — AI Scout v3 + Vector KNN provide semantic coverage
     HYBRID_SAMPLE_RATIO = 0.0
     # Hybrid mode: minimum random sample size
     # NOTE: Must be 0 when RATIO is 0.0, otherwise max(MIN, 0) still dosypates!

@@ -1,9 +1,11 @@
 # Scout Next Steps: Metadata Enrichment
 
 **Created:** 2026-03-14
-**Updated:** 2026-03-14
-**Status:** Phase 1-3 Complete, Phase 4 Pending
-**Goal:** Improve Recall to 80%+ via Pre-computed Metadata
+**Updated:** 2026-03-28
+**Status:** Phase 1 Active, Phases 2-4 REMOVED (replaced by Hybrid Retrieval)
+**Goal:** ~~Improve Recall to 80%+ via Pre-computed Metadata~~ Achieved via Vector KNN + FTS5 + RRF
+
+> **Note (2026-03-28):** Phases 2-4 (Metadata Enrichment) were removed. AI Scout v3 with bilingual OR-queries + Vector KNN (sqlite-vec) fully close the Semantic Gap, making LLM-generated metadata redundant. See migration `023_fts5_remove_metadata.sql`. FTS5 now indexes pure `message_text`.
 
 ---
 
@@ -24,7 +26,7 @@
 
 ---
 
-### Phase 2: Metadata Enrichment Cron ✅ COMPLETE
+### Phase 2: Metadata Enrichment Cron ❌ REMOVED (2026-03-28)
 
 | File | Status | Notes |
 |------|--------|-------|
@@ -49,7 +51,7 @@ python scripts/enrich_post_metadata.py --batch-size 50
 
 ---
 
-### Phase 3: FTS5 Rebuild with Metadata ✅ COMPLETE
+### Phase 3: FTS5 Rebuild with Metadata ❌ REMOVED (2026-03-28)
 
 | File | Status | Notes |
 |------|--------|-------|
@@ -75,7 +77,7 @@ SELECT * FROM posts_fts WHERE posts_fts MATCH 'rag vector' LIMIT 5;
 
 ---
 
-### Phase 4: A/B Test & Deploy ⏳ PENDING
+### Phase 4: A/B Test & Deploy ❌ REMOVED (2026-03-28)
 
 **Goal:** Verify Metadata Recall ≥ 70%
 

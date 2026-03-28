@@ -123,7 +123,6 @@ The system processes user queries through an **eight-phase pipeline** using a **
 | Validation | `MODEL_ANALYSIS` | `gemini-2.0-flash` | Fast translation/check. |
 | Drift (Offline) | `MODEL_DRIFT_ANALYSIS` | `gemini-3-flash-preview` | Deep offline analysis. |
 | AI Scout | `MODEL_SCOUT` | `gemini-3.1-flash-lite-preview` | Entity-centric FTS5 query expansion. |
-| Metadata | `METADATA_MODEL` | `gemini-3.1-flash-lite-preview` | Offline post metadata generation. |
 | Embedding | *Hardcoded* | `gemini-embedding-001` | Pre-computed in Orchestrator for Vector KNN search. |
 
 ## 🛠️ Data Flow & Filtering
