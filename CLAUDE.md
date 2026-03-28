@@ -1,5 +1,3 @@
-@sessions/CLAUDE.sessions.md
-
 # Experts Panel - Multi-Expert Query Processing System
 
 Sophisticated 8-phase pipeline system for analyzing expert Telegram channels and synthesizing comprehensive answers using Google Gemini AI.
@@ -217,10 +215,13 @@ To debug the pipeline, monitor the backend log file for messages containing spec
 ---
 
 **Project Status:** Production-ready with active development
-**Last Updated:** 2026-03-26
+**Last Updated:** 2026-03-28
 **Architecture:** Multi-expert, Gemini-only LLM pipeline with unified client and real-time progress tracking
 **Key Features:** Parallel expert processing, unified `google_ai_studio_client`, cost optimization with Gemini 3 Flash, language validation, comment synthesis, enhanced error handling, admin authentication, Reddit community insights
 **Recent Updates:**
+- ✅ **Pipeline Perf:** Parallel Scout+Embedding (~600ms saved), RRF without DB round-trip (20x faster), Drift scoring parallel with Reduce (Standard -17s, Hybrid -6s).
+- ✅ **Observability:** StreamHandler for stdout logging — `[PIPELINE]` and `[Hybrid Retrieval]` timings now visible in `flyctl logs`.
+- ✅ **Quality:** Removed artificial comment limits on main source posts (was 10 author / 15 community, now unlimited).
 - ✅ **Search Layer:** Implemented Embs&Keys Hybrid Retrieval (Vector KNN + FTS5 + RRF) and offline Metadata Enrichment.
 - ✅ **AI Scout v2:** Upgraded to Entity-Centric OR-only search to fix Semantic Gap (Recall 70%+).
 - ✅ **Stability:** Increased Reddit pipeline timeout to 120s (fixes timeouts on complex queries)

@@ -13,17 +13,17 @@ The backend implements a sophisticated 8-phase query processing system. It uses 
 ### Core Pipeline Services
 | Service | Phase | Model (Default) | Responsibility |
 |---------|-------|-----------------|----------------|
-| `ai_scout_service.py` | **0. Scout** | `gemini-3.1-flash-lite-preview` | Generates FTS5 MATCH queries (OR-only Entity Clouds) before Map Phase. |
-| `embedding_service.py`| **0. Pre-Fetch**| `gemini-embedding-001` | Pre-computes query embedding once in Orchestrator for all experts. |
-| `hybrid_retrieval_service.py` | **0. Retrieval** | *None (SQLite)* | Embs&Keys Hybrid Search (Vector KNN + FTS5 + RRF). Fast & high recall. |
+| `ai_scout_service.py` | **0. Scout** | `gemini-3.1-flash-lite-preview` | Generates FTS5 MATCH queries (OR-only Entity Clouds). Runs **parallel** with Embedding. |
+| `embedding_service.py`| **0. Embed**| `gemini-embedding-001` | Pre-computes query embedding once for all experts. Runs **parallel** with Scout. |
+| `hybrid_retrieval_service.py` | **0. Retrieval** | *None (SQLite)* | Embs&Keys Hybrid Search (Vector KNN + FTS5 + RRF). Freshness from SQL directly (no extra DB query). |
 | `fts5_retrieval_service.py` | **Internal** | *None* | Provides FTS5 query sanitization utils used by Hybrid Service. |
 | `map_service.py` | **1. Map** | `gemini-2.5-flash-lite` | Chunks posts (100), scores relevance (HIGH/MEDIUM/LOW). 3-layer retry system. |
 | `medium_scoring_service.py` | **2. Score** | `gemini-2.0-flash` | Reranks MEDIUM posts. Keeps top 5 with score ≥ 0.7. |
 | `simple_resolve_service.py` | **3. Resolve** | *None (DB)* | Expands HIGH posts context (Depth 1). Bypassed for Medium posts. |
 | `reduce_service.py` | **4. Reduce** | `gemini-3-flash-preview` | Synthesizes final answer. Max 50 posts context. Validates references. |
 | `language_validation_service.py` | **5. Validate** | `gemini-2.0-flash` | Ensures response language matches query (RU/EN). |
-| `comment_group_map_service.py` | **6. Comments** | `gemini-2.0-flash` | Finds comment groups. Prioritizes author clarifications on main sources. |
-| `comment_synthesis_service.py` | **7. Synthesis** | `gemini-3-flash-preview` | Extracts insights into 4 sections (Expert/Community). |
+| `comment_group_map_service.py` | **6. Comments** | `gemini-2.0-flash` | Drift scoring runs **parallel** with Reduce. `score_drift_groups()` + `merge_with_main_sources()`. |
+| `comment_synthesis_service.py` | **7. Synthesis** | `gemini-3-flash-preview` | Extracts insights into 4 sections (Expert/Community). Runs after Reduce + Drift complete. |
 | `video_hub_service.py` | **Video Sidecar** | `gemini-3-pro-preview` | **Digital Twin**. 4-phase video analysis (Map -> Resolve -> Synthesis -> Translation). |
 | `reddit_enhanced_service.py` | **8. Reddit** | *None (HTTP Proxy)* | **Sidecar Proxy Client**. Deep Drill (100 comments, Depth 5). Hybrid MCP/Direct API. |
 | `reddit_synthesis_service.py` | **Synthesis** | `gemini-3-flash-preview` | **Staff Engineer Persona**. Finds Hidden Gems & Minority Reports. No Fluff. |

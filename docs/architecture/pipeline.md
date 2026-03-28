@@ -1,7 +1,7 @@
 # Pipeline Architecture Guide
 
 **The Single Source of Truth** for the Experts Panel 8-phase pipeline.
-*Last Verified against Codebase: 2026-02-16*
+*Last Verified against Codebase: 2026-03-28*
 
 ## 🏗️ High-Level Overview
 
@@ -22,8 +22,8 @@ The system processes user queries through an **eight-phase pipeline** using a **
 ### 1. Pre-filter & Map Phase (Relevance Scoring)
 **Goal**: Identify relevant posts from the expert's history.
 - **Pre-filter (Hybrid Retrieval: Vector KNN + FTS5 + AI Scout v3)**: If `use_super_passport` (UI: Embs&Keys Search) is enabled, an AI Scout generates an OR-only Entity-Centric FTS5 query. The system executes both Vector KNN (using `sqlite-vec`) and FTS5 BM25 search (optimized to avoid JOINs via UNINDEXED `expert_id`/`created_at`), fusing results with Reciprocal Rank Fusion (RRF). The scout is **aligned with a strict bilingual taxonomy**.
-- **Query Embedding Optimization**: The embedding vector (`gemini-embedding-001`) is pre-computed **once** in the orchestrator (`simplified_query_endpoint.py`) and passed to all experts, reducing API calls from 17+ down to 1 per request.
-- **Smart Ranking (RRF + Soft Freshness)**: FTS5 and Vector results are re-scored with a linear soft freshness decay before RRF merge. 
+- **Parallel Scout + Embedding**: AI Scout and Embedding run **concurrently** via `asyncio.gather`. The embedding vector (`gemini-embedding-001`) is pre-computed **once** in the orchestrator while Scout generates FTS5 queries in parallel (~600ms saved vs sequential). Both results are then passed to all experts.
+- **Smart Ranking (RRF + Soft Freshness)**: FTS5 and Vector results are re-scored with a linear soft freshness decay before RRF merge. Freshness dates are returned directly from Vector/FTS5 SQL queries (no separate DB round-trip).
 - **Service**: `HybridRetrievalService` (`backend/src/services/hybrid_retrieval_service.py`), `AIScoutService`, `EmbeddingService`
 - **Model**: `gemini-2.5-flash-lite` (Config: `MODEL_MAP`) for mapping.
 - **Input**: Hybrid candidates (or all posts if Embs&Keys Search is off/fallback triggered).
@@ -76,19 +76,21 @@ The system processes user queries through an **eight-phase pipeline** using a **
 - **Model**: `gemini-2.0-flash` (Config: `MODEL_ANALYSIS`)
 - **Logic**: If Query is EN and Response is RU -> Translate to EN (preserving formatting).
 
-### 6. Comment Groups Phase
+### 6. Comment Groups Phase (Drift Scoring runs parallel with Reduce)
 **Goal**: Find relevant discussions in comments.
 - **Service**: `CommentGroupMapService` (`backend/src/services/comment_group_map_service.py`)
 - **Model**: `gemini-2.0-flash` (Config: `MODEL_COMMENT_GROUPS`)
+- **Parallel Optimization**: Drift group LLM scoring (`score_drift_groups()`) runs **concurrently** with Reduce + Language Validation via `asyncio.gather`. Only the cheap main_source comment loading (`merge_with_main_sources()`, ~5ms) waits for Reduce to provide `main_sources`. This saves 8-17 seconds per expert.
 - **Sources (Priority Order)**:
-    1.  **Author Clarifications**: Expert's own comments on Main Source posts (Bypass LLM, `HIGH` relevance).
-    2.  **Community on Main Sources**: Community comments on Main Source posts (Bypass LLM, `HIGH` relevance).
-    3.  **Drift Groups**: Topic-drift discussions from other posts (Filtered by LLM).
+    1.  **Author Clarifications**: Expert's own comments on Main Source posts (Bypass LLM, `HIGH` relevance, **no comment limit**).
+    2.  **Community on Main Sources**: Community comments on Main Source posts (Bypass LLM, `HIGH` relevance, **no comment limit**).
+    3.  **Drift Groups**: Topic-drift discussions from other posts (Filtered by LLM, HIGH only).
 
 ### 7. Comment Synthesis Phase
 **Goal**: Extract unique insights from comments.
 - **Service**: `CommentSynthesisService` (`backend/src/services/comment_synthesis_service.py`)
 - **Model**: `gemini-3-flash-preview` (Config: `MODEL_SYNTHESIS`)
+- **Runs after** both Reduce (needs `validated_answer`) and Drift Scoring (needs `comment_group_results`) complete.
 - **Output Structure (4 Sections)**:
     1.  **Notes from the expert** (Author clarifications)
     2.  **Notes from community** (On main sources)
