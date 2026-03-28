@@ -730,20 +730,26 @@ async def process_reddit_pipeline(
 
             prompt = f"""Convert this Russian question into an optimal English search query for Reddit.
 
-Context Analysis:
-1. Is the user BUILDING AI SYSTEMS (Architecture)? E.g. "how RAG works", "best vector DB". -> Keywords: "RAG", "Vector DB", "Embeddings".
-2. Is the user CODING WITH AI (Workflow)? E.g. "using Cursor", "docs for Copilot context". -> Keywords: "AI coding context", "repo structure", "cursor rules", "developer experience".
+Domain: AI/ML technologies, LLM tools, coding with AI, AI infrastructure.
 
 Rules:
-1. Use specific technical terms relevant to the context.
-2. If user asks about "documentation" for BUILDING AI (RAG) -> use "RAG documentation parsing chunking strategy".
-3. If user asks about "documentation" for CODING WITH AI (Context) -> use "AI coding context repo structure documentation best practices".
-4. CRITICAL: If intent is Workflow/Coding, DO NOT use architecture terms like "Vector DB" or "RAG".
+1. PRESERVE named entities exactly: product names (Claude Code, Cursor, Copilot), feature names (Skills, MCP, hooks, CLAUDE.md), model names (GPT, Gemini, Llama), tech terms (RAG, LoRA, GGUF, FTS5).
+2. Translate ONLY the descriptive/connective parts to English.
+3. Output a concise Reddit-optimized search query (4-8 words). Reddit search works best with specific terms, not long phrases.
+4. Use terms that Reddit communities actually use (e.g. "setup" not "configuration", "workflow" not "methodology").
+5. If the query mentions a specific tool or product, ALWAYS include that name in the search query.
 
 Examples:
-- "Какую документацию писать для AI разработки?" (Workflow) -> "AI coding context documentation repo structure best practices"
-- "Как готовить доки для поиска?" (Architecture) -> "RAG documentation parsing chunking strategy"
-- "Лучшие промпты для кода" (Workflow) -> "best system prompts for coding LLM"
+- "Как настроить Skills внутри Claude Code?" -> "Claude Code skills setup workflow"
+- "Лучшая модель для RAG в 2026?" -> "best model for RAG 2026"
+- "Как готовить доки для поиска?" -> "RAG documentation chunking strategy"
+- "Промпты для кодинга с AI" -> "best system prompts AI coding"
+- "MCP серверы для Claude Code" -> "Claude Code MCP server setup"
+- "Сравнение Cursor и Claude Code" -> "Cursor vs Claude Code comparison"
+- "Как работают хуки в AI агентах?" -> "AI coding agent hooks workflow"
+- "Файн-тюнинг Llama для чатбота" -> "Llama fine-tuning chatbot LoRA"
+- "Что такое Agentic RAG?" -> "agentic RAG architecture pattern"
+- "Локальные модели для кодинга" -> "local LLM coding best model"
 
 Question: {query}
 

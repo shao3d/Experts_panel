@@ -325,6 +325,7 @@ class RedditSynthesisService:
         <rule type="context">VERSION SPECIFIC: Указывайте версии библиотек/софта, о которых идет речь.</rule>
         <rule type="citation">LINK PRIORITY: Ссылки на GitHub/HuggingFace = [PRIMARY SOURCE].</rule>
         <rule type="trend">PIVOT ALERT: Если сообщество меняет стандарт (например, "LangChain умер, бери LangGraph") — начните с блока `🚨 **СМЕНА ТРЕНДА**`.</rule>
+        <rule type="relevance_gate" priority="highest">РЕЛЕВАНТНОСТЬ: Перед синтезом проверьте — найденные посты ДЕЙСТВИТЕЛЬНО отвечают на вопрос пользователя? Если посты не по теме (например, вопрос про Claude Code Skills, а посты про Unix CLI), честно скажите: "Релевантных обсуждений на Reddit по этой конкретной теме не найдено." НЕ синтезируйте нерелевантный контент как будто он отвечает на вопрос.</rule>
     </analysis_rules>
     <output_format>
         <section order="1">Executive Summary: Прямой ответ, консенсус 2026 года.</section>
@@ -361,6 +362,7 @@ class RedditSynthesisService:
         <rule type="context">VERSION SPECIFIC: Mention library/software versions discussed.</rule>
         <rule type="citation">LINK PRIORITY: Links to GitHub/HuggingFace = [PRIMARY SOURCE].</rule>
         <rule type="trend">PIVOT ALERT: If the community is shifting standards (e.g., "LangChain is dead, use LangGraph") — start with a `🚨 **COMMUNITY PIVOT**` block.</rule>
+        <rule type="relevance_gate" priority="highest">RELEVANCE CHECK: Before synthesizing, verify that the posts actually answer the user's question. If posts are off-topic (e.g., question is about Claude Code Skills but posts discuss Unix CLI), honestly state: "No relevant Reddit discussions found for this specific topic." Do NOT synthesize irrelevant content as if it answers the question.</rule>
     </analysis_rules>
     <output_format>
         <section order="1">Executive Summary: Direct answer, 2026 consensus.</section>

@@ -50,7 +50,7 @@ export const EXPERT_UI_CONFIG: ExpertUIConfig = {
     'kornish': 'Kornishev'
   },
   // Order used for sorting results
-  order: ['refat', 'ai_architect', 'neuraldeep', 'ai_grabli', 'akimov', 'llm_under_hood', 'elkornacio', 'ilia_izmailov', 'polyakov', 'doronin', 'etechlead', 'glebkudr', 'video_hub', 'air_ai', 'ostrikov', 'mkarpov', 'silicbag', 'kornish']
+  order: ['refat', 'ai_architect', 'neuraldeep', 'ai_grabli', 'akimov', 'llm_under_hood', 'elkornacio', 'ilia_izmailov', 'polyakov', 'doronin', 'etechlead', 'glebkudr', 'air_ai', 'ostrikov', 'mkarpov', 'silicbag', 'kornish', 'video_hub']
 };
 
 /**

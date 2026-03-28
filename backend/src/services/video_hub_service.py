@@ -226,7 +226,7 @@ Please provide a detailed, high-fidelity retelling of the expert's insights:"""
                 {"role": "user", "content": user_prompt}
             ],
             temperature=0.3,
-            max_tokens=4096
+            max_tokens=8192
         )
         return response.choices[0].message.content
 
