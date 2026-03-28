@@ -26,7 +26,7 @@ The frontend source code is located in `frontend/src/`:
   - **`ExpertResponse.tsx`**: Renders the AI answer with source citations.
   - **`MetaSynthesisSection.tsx`**: Cross-expert unified analysis (🧠 icon, above expert accordions, ≥2 experts).
   - **`CommunityInsightsSection.tsx`**: Reddit analysis display.
-  - **`ProgressSection.tsx`**: Real-time progress bars.
+  - **`ProgressSection.tsx`**: Real-time progress with **Smart Grouping** — dynamically groups backend phases (Search, Analysis, Insights, Video, Synthesis, Reddit) based on `pipeline_state` from SSE events. Legacy fallback for old backends.
 - **`config/`**:
   - **`expertConfig.ts`**: Central configuration for expert groups, including the new **Knowledge Hub** (Video Hub).
 - **`services/`**: API client (`api.ts`) and error handling.
@@ -75,8 +75,9 @@ The `Sidebar` updates these states, and `App` passes the current values to the A
 1. **User interacts** with Sidebar (selects experts/filters).
 2. **User submits** query in `QueryForm`.
 3. **App.tsx** gathers state + query and calls `apiClient.submitQuery()`.
-4. **SSE Stream** updates `progressEvents`.
-5. **Results** populate `expertResponses`, `redditResponse`, and `metaSynthesis`.
+4. **SSE Stream** updates `progressEvents`. Each event carries `pipeline_state` — aggregate phase statuses across all experts.
+5. **ProgressSection** reads latest `pipeline_state`, groups phases into dynamic UI groups (visible/hidden based on query config).
+6. **Results** populate `expertResponses`, `redditResponse`, and `metaSynthesis`.
 6. **Meta-Synthesis** (if ≥2 experts) renders above expert accordions as `MetaSynthesisSection`.
 
 ## 🛠️ Build and Development

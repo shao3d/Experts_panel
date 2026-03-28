@@ -315,6 +315,9 @@ export interface ProgressEvent {
   /** Additional event data */
   data?: Record<string, any>;
 
+  /** Aggregate pipeline state: maps phase names to statuses */
+  pipeline_state?: Record<string, 'pending' | 'active' | 'completed' | 'skipped' | 'error'>;
+
   /** Legacy fields for compatibility */
   current?: number;
   total?: number;

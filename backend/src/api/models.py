@@ -243,6 +243,10 @@ class ProgressEvent(BaseModel):
         default=None,
         description="Additional event data"
     )
+    pipeline_state: Optional[Dict[str, str]] = Field(
+        default=None,
+        description="Aggregate pipeline phase statuses: {phase_name: status}"
+    )
 
 
 class ErrorResponse(BaseModel):

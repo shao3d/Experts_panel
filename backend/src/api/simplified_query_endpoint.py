@@ -60,6 +60,7 @@ from ..services.ai_scout_service import AIScoutService
 from ..services.meta_synthesis_service import MetaSynthesisService
 from ..utils.error_handler import error_handler
 from ..utils.date_utils import get_cutoff_date
+from .pipeline_state_tracker import PipelineStateTracker, VIDEO_PHASE_MAP
 
 logger = logging.getLogger(__name__)
 
@@ -178,6 +179,7 @@ async def process_expert_pipeline(
     scout_query: Optional[str] = None,
     circuit_breaker: Optional[FTS5CircuitBreaker] = None,
     query_embedding: Optional[list] = None,
+    tracker: Optional[PipelineStateTracker] = None,
 ) -> ExpertResponse:
     """Process full pipeline for one expert.
 
@@ -273,6 +275,9 @@ async def process_expert_pipeline(
         ).all()
 
     if not posts:
+        # Mark all phases as skipped so they don't block aggregate state
+        if tracker:
+            tracker.mark_expert_skipped(expert_id)
         return ExpertResponse(
             expert_id=expert_id,
             expert_name=get_expert_name(expert_id),
@@ -347,6 +352,8 @@ async def process_expert_pipeline(
 
     # 4. NEW: Score MEDIUM posts and filter (two-stage: score >= 0.7 → top-5)
     selected_medium_posts = []
+    if not medium_posts and tracker:
+        tracker.skip_phase(expert_id, "medium_scoring")
     if medium_posts:
         t_medium = time.perf_counter()
         from ..services.medium_scoring_service import MediumScoringService
@@ -442,6 +449,8 @@ async def process_expert_pipeline(
     enriched_posts = []
 
     # Process HIGH posts through Resolve (with linked posts)
+    if not high_posts and tracker:
+        tracker.skip_phase(expert_id, "resolve")
     if high_posts:
         t_resolve = time.perf_counter()
         resolve_service = SimpleResolveService()
@@ -621,6 +630,8 @@ async def process_expert_pipeline(
 
         # Comment Synthesis (needs validated_answer + all comment groups)
         t_synthesis = time.perf_counter()
+        if not comment_group_results and tracker:
+            tracker.skip_phase(expert_id, "comment_synthesis")
         if comment_group_results:
             try:
                 synthesis_service = CommentSynthesisService()
@@ -1045,6 +1056,23 @@ async def event_generator_parallel(
             request.include_reddit if request.include_reddit is not None else True
         )
 
+        # Create pipeline state tracker for SSE progress
+        tracker = PipelineStateTracker(
+            expert_ids=expert_ids,
+            include_reddit=include_reddit,
+            include_comment_groups=request.include_comment_groups or False,
+            use_super_passport=bool(
+                request.use_super_passport
+                and any(e != "video_hub" for e in expert_ids)
+            ),
+        )
+
+        def yield_event(event: ProgressEvent) -> str:
+            """Attach current pipeline_state to event and serialize for SSE."""
+            event.pipeline_state = tracker.get_state()
+            sanitized = sanitize_for_json(event.model_dump(mode="json"))
+            return f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+
         if not expert_ids and not include_reddit:
             error_event = ProgressEvent(
                 event_type="error",
@@ -1053,7 +1081,7 @@ async def event_generator_parallel(
                 message="No experts selected and Reddit search is disabled",
                 data={"request_id": request_id},
             )
-            yield f"data: {json.dumps(sanitize_for_json(error_event.model_dump(mode='json')), ensure_ascii=False)}\n\n"
+            yield yield_event(error_event)
             return
 
         # 1.6. Run AI Scout + Embedding in PARALLEL for Super-Passport mode
@@ -1061,6 +1089,7 @@ async def event_generator_parallel(
         query_embedding = None
         if request.use_super_passport and expert_ids:
             # Send SSE event for scout phase
+            tracker.update(None, "scout", "active")
             scout_event = ProgressEvent(
                 event_type="progress",
                 phase="scout",
@@ -1068,7 +1097,7 @@ async def event_generator_parallel(
                 message="AI Scout + Embedding: параллельная подготовка...",
                 data={"source": "super_passport"},
             )
-            yield f"data: {json.dumps(sanitize_for_json(scout_event.model_dump(mode='json')), ensure_ascii=False)}\n\n"
+            yield yield_event(scout_event)
 
             # Launch Scout and Embedding in parallel (they are independent)
             t_parallel = time.perf_counter()
@@ -1090,6 +1119,7 @@ async def event_generator_parallel(
             )
             t_parallel_ms = round((time.perf_counter() - t_parallel) * 1000, 1)
 
+            tracker.update(None, "scout", "completed")
             scout_complete_event = ProgressEvent(
                 event_type="phase_complete",
                 phase="scout",
@@ -1103,7 +1133,7 @@ async def event_generator_parallel(
                     "query_preview": scout_query[:100] if scout_query else None,
                 },
             )
-            yield f"data: {json.dumps(sanitize_for_json(scout_complete_event.model_dump(mode='json')), ensure_ascii=False)}\n\n"
+            yield yield_event(scout_complete_event)
 
             logger.info(
                 f"[Super-Passport] Scout + Embedding parallel: {t_parallel_ms}ms | "
@@ -1119,7 +1149,7 @@ async def event_generator_parallel(
                 message=f"Processing {len(expert_ids)} experts in parallel: {', '.join(expert_ids)}",
                 data={"experts": expert_ids},
             )
-            yield f"data: {json.dumps(sanitize_for_json(event.model_dump(mode='json')), ensure_ascii=False)}\n\n"
+            yield yield_event(event)
         else:
             event = ProgressEvent(
                 event_type="phase_start",
@@ -1128,7 +1158,7 @@ async def event_generator_parallel(
                 message="No experts selected, proceeding with Reddit search only...",
                 data={"experts": []},
             )
-            yield f"data: {json.dumps(sanitize_for_json(event.model_dump(mode='json')), ensure_ascii=False)}\n\n"
+            yield yield_event(event)
 
         # 1.5. Start Reddit pipeline in parallel (if enabled)
         reddit_progress_queue = asyncio.Queue(maxsize=50)
@@ -1136,29 +1166,18 @@ async def event_generator_parallel(
         reddit_result: Optional[RedditResponse] = None
 
         async def reddit_progress_callback(data: dict):
-            """Callback for Reddit pipeline progress.
-
-            Maps Reddit-specific phases to standard pipeline phases (map, resolve, reduce)
-            to ensure the frontend progress bar lights up correctly.
-            """
+            """Callback for Reddit pipeline progress."""
             raw_phase = data.get("phase", "pipeline")
 
-            # Map Reddit phases to standard ones
-            phase_mapping = {
-                "scout": "map",
-                "search": "map",
-                "reddit_search": "map",
-                "ranking": "resolve",
-                "reranking": "resolve",
-                "synthesis": "reduce",
-                "reddit_synthesis": "reduce",
-            }
+            # Update tracker for reddit-specific phases
+            _REDDIT_PHASES = {"reddit_search", "reddit_synthesis"}
+            if raw_phase in _REDDIT_PHASES:
+                tracker.update(None, raw_phase, data.get("status", "processing"))
 
-            mapped_phase = phase_mapping.get(raw_phase, f"reddit_{raw_phase}")
-
+            # Use raw phase name (no more mapping hack)
             event = ProgressEvent(
                 event_type="progress",
-                phase=mapped_phase,
+                phase=raw_phase,
                 status=data.get("status", "processing"),
                 message=f"🌐 [Reddit] {data.get('message', 'Processing...')}",
                 data={"source": "reddit", **data},
@@ -1180,6 +1199,13 @@ async def event_generator_parallel(
                 reddit_result = None
             finally:
                 reddit_complete = True
+                # Update tracker
+                if reddit_result:
+                    tracker.update(None, "reddit_search", "completed")
+                    tracker.update(None, "reddit_synthesis", "completed")
+                else:
+                    tracker.update(None, "reddit_search", "error")
+                    tracker.update(None, "reddit_synthesis", "error")
                 # Send completion event
                 try:
                     event = ProgressEvent(
@@ -1241,10 +1267,20 @@ async def event_generator_parallel(
                 message = f"[{expert_id}] {data.get('message', 'Processing...')}"
                 enhanced_data = data
 
+            # Video Hub phase remap for tracker
+            phase = data.get("phase", "expert_pipeline")
+            if expert_id == "video_hub":
+                tracker_phase = VIDEO_PHASE_MAP.get(phase, phase)
+            else:
+                tracker_phase = phase
+
+            # Update tracker (normalization handled inside tracker.update)
+            tracker.update(expert_id, tracker_phase, status)
+
             # Use original phase from service (map/resolve/reduce)
             event = ProgressEvent(
                 event_type="progress",
-                phase=data.get("phase", "expert_pipeline"),  # Preserve original phase!
+                phase=phase,  # Preserve original phase!
                 status=status,
                 message=message,
                 data=enhanced_data,
@@ -1269,8 +1305,7 @@ async def event_generator_parallel(
                 # Check expert progress queue
                 try:
                     event = progress_queue.get_nowait()
-                    sanitized = sanitize_for_json(event.model_dump(mode="json"))
-                    yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+                    yield yield_event(event)
                     last_activity_time = time.time()
                     event_yielded = True
                 except asyncio.QueueEmpty:
@@ -1279,8 +1314,7 @@ async def event_generator_parallel(
                 # Check Reddit progress queue
                 try:
                     event = reddit_progress_queue.get_nowait()
-                    sanitized = sanitize_for_json(event.model_dump(mode="json"))
-                    yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+                    yield yield_event(event)
                     last_activity_time = time.time()
                     event_yielded = True
                 except asyncio.QueueEmpty:
@@ -1333,6 +1367,7 @@ async def event_generator_parallel(
                     scout_query=scout_query,  # Pass FTS5 query for Super-Passport mode
                     circuit_breaker=fts5_circuit_breaker,  # Pass circuit breaker for FTS5 fallback tracking
                     query_embedding=query_embedding,  # Pre-computed embedding (shared across experts)
+                    tracker=tracker,
                 )
 
         tasks = []
@@ -1351,16 +1386,14 @@ async def event_generator_parallel(
                     # Try to get progress events from both queues
                     try:
                         event = progress_queue.get_nowait()
-                        sanitized = sanitize_for_json(event.model_dump(mode="json"))
-                        yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+                        yield yield_event(event)
                     except asyncio.QueueEmpty:
                         pass
 
                     # Check Reddit events
                     try:
                         event = reddit_progress_queue.get_nowait()
-                        sanitized = sanitize_for_json(event.model_dump(mode="json"))
-                        yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+                        yield yield_event(event)
                     except asyncio.QueueEmpty:
                         pass
 
@@ -1370,12 +1403,20 @@ async def event_generator_parallel(
                 result = await task
                 expert_responses.append(result)
 
+                # Mark remaining pending/active phases as completed for this expert
+                # (Video Hub services only send "processing", never "completed";
+                #  also catches phases that completed without sending callbacks)
+                # NOTE: only pending/active → completed, not skipped → completed
+                if expert_id in tracker._per_expert:
+                    for phase, current in tracker._per_expert[expert_id].items():
+                        if current in ("pending", "active"):
+                            tracker._per_expert[expert_id][phase] = "completed"
+
                 # Send any remaining events for this expert
                 while not progress_queue.empty():
                     try:
                         event = progress_queue.get_nowait()
-                        sanitized = sanitize_for_json(event.model_dump(mode="json"))
-                        yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+                        yield yield_event(event)
                     except asyncio.QueueEmpty:
                         break
 
@@ -1391,11 +1432,11 @@ async def event_generator_parallel(
                         "main_sources": result.main_sources,  # Include for A/B testing
                     },
                 )
-                sanitized = sanitize_for_json(event.model_dump(mode="json"))
-                yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+                yield yield_event(event)
 
             except Exception as e:
                 logger.error(f"Error processing expert {expert_id}: {e}")
+                tracker.mark_expert_error(expert_id)
 
                 # Process error through error handler for user-friendly messaging
                 error_info = error_handler.process_api_error(
@@ -1419,8 +1460,11 @@ async def event_generator_parallel(
                     message=error_event["message"],
                     data=error_event["data"],
                 )
-                sanitized = sanitize_for_json(event.model_dump(mode="json"))
-                yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+                yield yield_event(event)
+
+        # Check if meta-synthesis should be skipped due to insufficient experts
+        if len(expert_ids) >= 2 and len(expert_responses) < 2:
+            tracker.update(None, "meta_synthesis", "skipped")
 
         # 4.5 META-SYNTHESIS: Launch in parallel with Reddit wait (only if 2+ experts)
         meta_task = None
@@ -1438,6 +1482,7 @@ async def event_generator_parallel(
                 logger.info(
                     f"Launching meta-synthesis for {len(expert_responses)} experts"
                 )
+                tracker.update(None, "meta_synthesis", "active")
                 event = ProgressEvent(
                     event_type="progress",
                     phase="meta_synthesis",
@@ -1445,10 +1490,10 @@ async def event_generator_parallel(
                     message="Synthesizing cross-expert analysis...",
                     data={"experts_count": len(expert_responses)},
                 )
-                sanitized = sanitize_for_json(event.model_dump(mode="json"))
-                yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+                yield yield_event(event)
             except Exception as e:
                 logger.error(f"Failed to initialize meta-synthesis (non-fatal): {e}")
+                tracker.update(None, "meta_synthesis", "error")
                 meta_task = None
 
         # Wait for Reddit pipeline to complete (with timeout)
@@ -1466,8 +1511,7 @@ async def event_generator_parallel(
             # Send any Reddit progress events while waiting
             try:
                 event = reddit_progress_queue.get_nowait()
-                sanitized = sanitize_for_json(event.model_dump(mode="json"))
-                yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+                yield yield_event(event)
                 last_activity_time_outer = time.time()
             except asyncio.QueueEmpty:
                 pass
@@ -1486,6 +1530,8 @@ async def event_generator_parallel(
             logger.warning(
                 "Reddit pipeline timed out, proceeding without Reddit results"
             )
+            tracker.update(None, "reddit_search", "error")
+            tracker.update(None, "reddit_synthesis", "error")
             try:
                 await reddit_task
             except asyncio.CancelledError:
@@ -1506,8 +1552,7 @@ async def event_generator_parallel(
         while not reddit_progress_queue.empty():
             try:
                 event = reddit_progress_queue.get_nowait()
-                sanitized = sanitize_for_json(event.model_dump(mode="json"))
-                yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+                yield yield_event(event)
             except asyncio.QueueEmpty:
                 break
 
@@ -1536,6 +1581,7 @@ async def event_generator_parallel(
                         logger.info(
                             f"Meta-synthesis completed: {len(meta_synthesis_result)} chars"
                         )
+                        tracker.update(None, "meta_synthesis", "completed")
                         event = ProgressEvent(
                             event_type="progress",
                             phase="meta_synthesis",
@@ -1545,6 +1591,7 @@ async def event_generator_parallel(
                         )
                     else:
                         logger.info("Meta-synthesis returned empty result")
+                        tracker.update(None, "meta_synthesis", "completed")
                         event = ProgressEvent(
                             event_type="progress",
                             phase="meta_synthesis",
@@ -1552,13 +1599,11 @@ async def event_generator_parallel(
                             message="Cross-expert analysis skipped (insufficient data)",
                             data={},
                         )
-                    sanitized = sanitize_for_json(
-                        event.model_dump(mode="json")
-                    )
-                    yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+                    yield yield_event(event)
                 except (Exception, asyncio.CancelledError) as e:
                     logger.error(f"Meta-synthesis error (non-fatal): {e}")
                     meta_synthesis_result = None
+                    tracker.update(None, "meta_synthesis", "error")
                     event = ProgressEvent(
                         event_type="progress",
                         phase="meta_synthesis",
@@ -1566,10 +1611,7 @@ async def event_generator_parallel(
                         message="Cross-expert analysis unavailable",
                         data={},
                     )
-                    sanitized = sanitize_for_json(
-                        event.model_dump(mode="json")
-                    )
-                    yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+                    yield yield_event(event)
             else:
                 # Timeout — cancel and proceed without
                 meta_task.cancel()
@@ -1580,6 +1622,7 @@ async def event_generator_parallel(
                     await meta_task
                 except asyncio.CancelledError:
                     pass
+                tracker.update(None, "meta_synthesis", "error")
                 event = ProgressEvent(
                     event_type="progress",
                     phase="meta_synthesis",
@@ -1587,10 +1630,7 @@ async def event_generator_parallel(
                     message="Cross-expert analysis timed out",
                     data={},
                 )
-                sanitized = sanitize_for_json(
-                    event.model_dump(mode="json")
-                )
-                yield f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
+                yield yield_event(event)
 
         # 5. Calculate total processing time
         processing_time_ms = int((time.time() - start_time) * 1000)
@@ -1621,8 +1661,7 @@ async def event_generator_parallel(
             data={"response": response.model_dump(mode="json")},
         )
 
-        sanitized_event = sanitize_for_json(event.model_dump(mode="json"))
-        yield f"data: {json.dumps(sanitized_event, ensure_ascii=False)}\n\n"
+        yield yield_event(event)
 
     except Exception as e:
         import traceback
@@ -1647,7 +1686,9 @@ async def event_generator_parallel(
             message=error_event_data["message"],
             data=error_event_data["data"],
         )
-        yield f"data: {json.dumps(error_event.model_dump(mode='json'), ensure_ascii=False)}\n\n"
+        if 'tracker' in locals():
+            error_event.pipeline_state = tracker.get_state()
+        yield f"data: {json.dumps(sanitize_for_json(error_event.model_dump(mode='json')), ensure_ascii=False)}\n\n"
 
 
 @router.post("/query")

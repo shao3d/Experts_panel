@@ -238,6 +238,15 @@
   color: #adb5bd;
 }
 
+.phase-item.error {
+  color: #dc3545;
+}
+
+.phase-item.skipped {
+  color: #adb5bd;
+  text-decoration: line-through;
+}
+
 /* Mobile Header Progress Override */
 .mobile-header .progress-section {
   border: none;

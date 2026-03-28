@@ -30,7 +30,8 @@ The backend implements a sophisticated 10-phase query processing system. It uses
 | `meta_synthesis_service.py` | **Meta-Synthesis** | `gemini-3-flash-preview` | Cross-expert unified analysis. Runs parallel with Reddit after all experts complete (≥2). |
 
 ### Infrastructure
-- `src/api/simplified_query_endpoint.py`: **Main Orchestrator**. Manages parallel expert tasks, SSE streaming, and Reddit Sidecar (120s timeout).
+- `src/api/simplified_query_endpoint.py`: **Main Orchestrator**. Manages parallel expert tasks, SSE streaming with `pipeline_state` tracking, and Reddit Sidecar (120s timeout).
+- `src/api/pipeline_state_tracker.py`: **Pipeline State Tracker**. Tracks aggregate phase statuses across all experts (per-expert + cross-cutting). Monotonic priority: pending→active→error/skipped→completed.
 - `src/config.py`: **Configuration Hub**. Reads all env vars.
 - `src/services/google_ai_studio_client.py`: **Unified LLM Client**. Handles API keys, retries, and rate limits.
 - `src/utils/error_handler.py`: **Error System**. Maps exceptions to user-friendly messages.
