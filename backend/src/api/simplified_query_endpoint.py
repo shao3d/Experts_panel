@@ -1442,7 +1442,7 @@ async def event_generator_parallel(
                     event_type="progress",
                     phase="meta_synthesis",
                     status="starting",
-                    message="🧠 Synthesizing cross-expert analysis...",
+                    message="Synthesizing cross-expert analysis...",
                     data={"experts_count": len(expert_responses)},
                 )
                 sanitized = sanitize_for_json(event.model_dump(mode="json"))
@@ -1540,7 +1540,7 @@ async def event_generator_parallel(
                             event_type="progress",
                             phase="meta_synthesis",
                             status="completed",
-                            message="🧠 Cross-expert analysis complete",
+                            message="Cross-expert analysis complete",
                             data={},
                         )
                     else:
@@ -1549,7 +1549,7 @@ async def event_generator_parallel(
                             event_type="progress",
                             phase="meta_synthesis",
                             status="completed",
-                            message="🧠 Cross-expert analysis skipped (insufficient data)",
+                            message="Cross-expert analysis skipped (insufficient data)",
                             data={},
                         )
                     sanitized = sanitize_for_json(
@@ -1563,7 +1563,7 @@ async def event_generator_parallel(
                         event_type="progress",
                         phase="meta_synthesis",
                         status="error",
-                        message="🧠 Cross-expert analysis unavailable",
+                        message="Cross-expert analysis unavailable",
                         data={},
                     )
                     sanitized = sanitize_for_json(
@@ -1584,7 +1584,7 @@ async def event_generator_parallel(
                     event_type="progress",
                     phase="meta_synthesis",
                     status="error",
-                    message="🧠 Cross-expert analysis timed out",
+                    message="Cross-expert analysis timed out",
                     data={},
                 )
                 sanitized = sanitize_for_json(

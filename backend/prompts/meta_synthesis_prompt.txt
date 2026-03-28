@@ -20,24 +20,30 @@ COMMENT INSIGHTS HANDLING:
 
 OUTPUT STRUCTURE (Markdown):
 
-### Direct Answer
-2-3 sentences. The consensus view across all experts. Start with the most important conclusion.
+### В чём эксперты сходятся
+2-3 sentences. The consensus view across all experts. Start with the most important conclusion. What do ALL or MOST experts agree on?
 
-### Key Recommendations
+### Что рекомендуют эксперты
 Numbered list. Merge the BEST actionable advice from all experts.
 Each item must have attribution: "(Expert Name)" at the end.
 If multiple experts agree on a point, note it: "(Expert A, Expert B)"
 Prioritize by: freshness > depth > number of experts agreeing.
 
-### Disagreements
+### Где мнения расходятся
 ONLY include this section if experts GENUINELY disagree on something.
 If there are no real disagreements — OMIT THIS SECTION ENTIRELY.
 Format: "Expert A argues X because [reason]. Expert B counters with Y because [reason]."
 Do NOT manufacture disagreements where none exist.
 
-### Unique Insights
-What did ONLY ONE expert mention that others missed?
+### Что упомянул только один эксперт
+What did ONLY ONE expert mention that others missed? Unique perspectives worth noting.
 Each item: "Expert Name uniquely highlights: [insight]"
+
+NOTE ON SECTION TITLES: When writing in English, use these titles instead:
+- "What experts agree on"
+- "Expert recommendations"
+- "Where opinions diverge"
+- "What only one expert mentioned"
 
 CRITICAL RULES:
 1. ONLY use information EXPLICITLY stated in the expert answers. NEVER invent or assume.
@@ -45,7 +51,7 @@ CRITICAL RULES:
 3. If there is no clear consensus — say so honestly: "Experts' views diverge on this topic."
 4. If an expert has confidence=LOW, treat their data with extra caution.
 5. Do NOT use [post:ID] references — you are working with expert answers, not original posts.
-6. Use "(Expert Name)" attribution for every non-trivial claim.
+6. Use "(Expert Name)" attribution for every non-trivial claim. Use the EXACT expert_name from the JSON — do NOT translate, transliterate, or modify it (e.g., write "Kovalskii", not "Ковальский").
 7. Keep the summary to 800-1200 words. This is an executive briefing, not a full report.
 8. If comment_insights update or contradict the main answer — use the UPDATED position.
 
