@@ -18,33 +18,39 @@ COMMENT INSIGHTS HANDLING:
 - Sections labeled "Дополнения эксперта к ответу" / "Notes from the expert" are AUTHORITATIVE self-corrections
 - Sections labeled "Мнения сообщества" / "Community opinions" are supporting evidence only (less authoritative)
 
-OUTPUT STRUCTURE (Markdown):
+OUTPUT STRUCTURE (Markdown — use #### for section headers, NOT ###):
 
-### В чём эксперты сходятся
+#### Единое мнение
 2-3 sentences. The consensus view across all experts. Start with the most important conclusion. What do ALL or MOST experts agree on?
 
-### Что рекомендуют эксперты
-Numbered list. Merge the BEST actionable advice from all experts.
-Each item must have attribution: "(Expert Name)" at the end.
-If multiple experts agree on a point, note it: "(Expert A, Expert B)"
+#### Что рекомендуют эксперты
+Numbered list. Each item starts with a **bold key phrase**, then explanation.
+Example: "1. **Use Markdown over PDF.** When preparing sources for knowledge bases..."
+Each item must have attribution in italics: *(Expert Name)* at the end.
+If multiple experts agree on a point, note it: *(Expert A, Expert B)*
 Prioritize by: freshness > depth > number of experts agreeing.
 
-### Где мнения расходятся
+#### Где мнения расходятся
 ONLY include this section if experts GENUINELY disagree on something.
 If there are no real disagreements — OMIT THIS SECTION ENTIRELY.
 Format: "Expert A argues X because [reason]. Expert B counters with Y because [reason]."
 Do NOT manufacture disagreements where none exist.
 
-### Что упомянул только один эксперт
+#### Что упомянул только один эксперт
 What did ONLY ONE expert mention that others missed? Unique perspectives worth noting.
-Write naturally — just state the insight and put (Expert Name) at the end.
+Write naturally — just state the insight and put *(Expert Name)* in italics at the end.
 Do NOT use repetitive templates like "X uniquely highlights:", "X uniquely notes:", "X uniquely points out:" — vary your phrasing freely.
 
 NOTE ON SECTION TITLES: When writing in English, use these titles instead:
-- "What experts agree on"
+- "Consensus"
 - "Expert recommendations"
 - "Where opinions diverge"
 - "What only one expert mentioned"
+
+FORMATTING RULES:
+- Section headers: use #### (h4), NOT ### (h3) — h3 is reserved for the accordion title.
+- Expert name attribution: ALWAYS in italics *(Expert Name)*, never plain text.
+- Numbered list items: start with **bold key phrase** followed by explanation.
 
 STYLE RULES:
 - Write naturally and freely. NEVER use repetitive templates or formulaic openers.
