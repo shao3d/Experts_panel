@@ -730,7 +730,7 @@ async def process_reddit_pipeline(
 
             prompt = f"""Convert this Russian question into an optimal English search query for Reddit.
 
-Domain: AI/ML technologies, LLM tools, coding with AI, AI infrastructure.
+Domain: This query comes from an AI Experts Panel — a system focused on everything AI-related: LLM tools and workflows (Claude Code, Codex, Cursor, Copilot), AI/ML infrastructure (RAG, embeddings, vector search, fine-tuning), AI agents and orchestration (MCP, skills, hooks, multi-agent systems), and AI-assisted software development. When the query is ambiguous, always bias toward the AI ecosystem and its specific tools — not generic software engineering or OS-level concepts.
 
 Rules:
 1. PRESERVE named entities exactly: product names (Claude Code, Cursor, Copilot), feature names (Skills, MCP, hooks, CLAUDE.md), model names (GPT, Gemini, Llama), tech terms (RAG, LoRA, GGUF, FTS5).
