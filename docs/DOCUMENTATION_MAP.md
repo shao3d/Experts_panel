@@ -68,9 +68,9 @@
 ## 💡 4. Будущее (Видения) & Роудмапы: `docs/concepts/` и `docs/roadmap/`
 Сюда AI заглядывает, чтобы понять стратегический вектор развития, текущие планы и "крутить" сложные бизнес-идеи.
 
-*   **📄 `docs/roadmap/scout-next-steps.md`**
-    *   **О чём:** План и реализация оффлайн-обогащения метаданными (Metadata Enrichment) для закрытия семантического разрыва (Semantic Gap) в FTS5.
-    *   **Пример команды:** *"Посмотри в `docs/roadmap/scout-next-steps.md` как реализована генерация метаданных."*
+*   **📄 `docs/roadmap/scout-next-steps.md`** *(❌ Phases 2-4 Removed)*
+    *   **О чём:** Исторический план Metadata Enrichment. Фазы 2-4 удалены в марте 2026 — заменены на Hybrid Retrieval (Vector KNN + FTS5 + RRF). Фаза 1 (UI Toggle) по-прежнему активна.
+    *   **Пример команды:** *"Глянь историю эволюции поиска в `docs/roadmap/scout-next-steps.md`."*
 
 *   **📄 `hybrid_retrieval_plan.md`** *(✅ Implemented)*
     *   **О чём:** Реализованный план гибридного поиска (Векторный KNN через sqlite-vec + FTS5 BM25 + RRF). Интегрирован в основную ветку как `HybridRetrievalService`.
@@ -95,6 +95,54 @@
 *   **`plans/`**: Старые планы фич (v2, v3).
 *   **`reports/`**: Отчеты о тестах Reddit, миграции и оптимизации.
 *   **Правило:** **Никогда** не направляй AI в эту папку как в источник истины. Она только для исторической справки человеку.
+
+---
+
+## 🔄 6. Чеклист обновления документации
+
+При изменении кода — обновляй документацию по этой таблице. **Проверяй только указанные файлы**, не все подряд.
+
+### Изменения в моделях / конфигурации LLM
+
+| Что менял | Обнови |
+|-----------|--------|
+| Модель в `config.py` (MODEL_*) | `CLAUDE.md` (таблица моделей), `backend/CLAUDE.md` (таблица сервисов), `docs/architecture/pipeline.md` (таблица моделей), `.env.example` |
+| Новая env-переменная | `.env.example`, `backend/CLAUDE.md` (секция Configuration) |
+| Удалил env-переменную | Те же + проверь `.gemini/GEMINI.md` |
+
+### Изменения в пайплайне
+
+| Что менял | Обнови |
+|-----------|--------|
+| Добавил/удалил фазу пайплайна | `docs/architecture/pipeline.md`, `CLAUDE.md` (Architecture Overview), `backend/CLAUDE.md` (таблица сервисов) |
+| Изменил логику существующей фазы | `docs/architecture/pipeline.md` (описание фазы) |
+| Изменил Hybrid Search / FTS5 / Scout | `docs/architecture/super-passport-search.md`, `docs/architecture/pipeline.md` (Phase 1) |
+| Изменил Reddit pipeline | `docs/architecture/reddit-service.md`, `CLAUDE.md` (секция Reddit) |
+| Изменил Video Hub | `docs/architecture/video-hub-service.md`, `docs/guides/video-hub-operator.md` |
+
+### Изменения в инфраструктуре
+
+| Что менял | Обнови |
+|-----------|--------|
+| Изменил `update_production_db.sh` | `CLAUDE.md` ("Cycle of Life" секция) |
+| Изменил `add_new_expert.sh` | `docs/guides/add-expert.md` |
+| Изменил `deploy_video.sh` | `docs/guides/video-hub-operator.md` |
+| Добавил/удалил сервис (файл в `services/`) | `backend/CLAUDE.md` (таблица сервисов), `CLAUDE.md` (Key Files) |
+| Новая миграция БД | `backend/CLAUDE.md`, при необходимости `docs/architecture/pipeline.md` |
+
+### Изменения во фронтенде
+
+| Что менял | Обнови |
+|-----------|--------|
+| Новый компонент | `frontend/CLAUDE.md` (Project Structure) |
+| Изменил layout / UX | `frontend/CLAUDE.md` (Core Layout & UX) |
+| Новый стейт в App.tsx | `frontend/CLAUDE.md` (State Management) |
+
+### Удаление кода
+
+| Что менял | Обнови |
+|-----------|--------|
+| Удалил скрипт/сервис/файл | `grep` по всем `.md` файлам на имя удалённого файла. Обнови или удали ссылки. |
 
 ---
 

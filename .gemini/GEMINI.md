@@ -1,6 +1,6 @@
 # Experts Panel: AI Context
 
-**Last Updated:** 2026-02-16
+**Last Updated:** 2026-03-28
 **Status:** Production (Stable)
 **Role:** System Architect & Explainer (MVP Principle)
 
@@ -15,10 +15,12 @@ Use these files as your Source of Truth. Do NOT trust `plan_*.md` files in archi
 
 ### 🏗️ Architecture
 - **Pipeline Logic:** `docs/architecture/pipeline.md` (The Brain)
+- **Hybrid Search:** `docs/architecture/super-passport-search.md` (Vector KNN + FTS5 + RRF)
 - **Reddit Integration:** `docs/architecture/reddit-service.md` (The Sidecar)
 - **Video Hub:** `docs/architecture/video-hub-service.md` (Digital Twin)
 - **Backend Services:** `backend/CLAUDE.md` (Service mapping)
 - **Frontend Components:** `frontend/CLAUDE.md` (UI structure)
+- **Doc Update Rules:** `docs/DOCUMENTATION_MAP.md` (Чеклист обновления)
 
 ### 📘 Guides & Workflows
 - **Add New Expert:** `docs/guides/add-expert.md`
@@ -32,7 +34,9 @@ Use these files as your Source of Truth. Do NOT trust `plan_*.md` files in archi
 | **Map Phase** | `gemini-2.5-flash-lite` | `MODEL_MAP` |
 | **Synthesis** | `gemini-3-flash-preview` | `MODEL_SYNTHESIS` |
 | **Drift** | `gemini-3-flash-preview` | `MODEL_DRIFT_ANALYSIS` |
+| **AI Scout** | `gemini-3.1-flash-lite-preview` | `MODEL_SCOUT` |
 | **Scoring** | `gemini-2.0-flash` | `MODEL_MEDIUM_SCORING` |
+| **Embedding** | `gemini-embedding-001` | Hardcoded |
 | **Video Twin** | `gemini-3-pro-preview` | `MODEL_VIDEO_PRO` |
 | **Video Validation** | `gemini-3-flash-preview` | `MODEL_VIDEO_FLASH` |
 | **Reddit** | Sidecar Proxy | `REDDIT_PROXY_URL` |
