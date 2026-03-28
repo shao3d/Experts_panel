@@ -104,7 +104,7 @@ class HybridRetrievalService:
             embedding, expert_id, cutoff_date, vector_top_k
         )
         t_vec_ms = round((time.perf_counter() - t_vec) * 1000, 1)
-        # Returns: [(post_id, distance), ...] sorted by distance ASC
+        # Returns: [(post_id, distance, created_at), ...] sorted by distance ASC
 
         # 2. FTS5 Search (reuses sanitize_fts5_query from fts5_retrieval_service)
         t_fts = time.perf_counter()
@@ -112,21 +112,25 @@ class HybridRetrievalService:
             match_query, expert_id, cutoff_date, fts5_top_k
         )
         t_fts_ms = round((time.perf_counter() - t_fts) * 1000, 1)
-        # Returns: [(post_id, bm25_rank), ...] sorted by rank
+        # Returns: [(post_id, bm25_rank, created_at), ...] sorted by rank
 
         # 3. Soft Freshness Decay BEFORE RRF
         # DESIGN: Soft Freshness REPLACES HN Gravity from FTS5RetrievalService.
         # Max penalty 0.7 (linear decay over 1 year), NOT double-penalty —
         # strict decay is applied later in Map Phase.
         t_rrf = time.perf_counter()
-        all_candidate_ids = list(
-            set(pid for pid, _ in vector_results) | set(pid for pid, _ in fts5_results)
-        )
-        post_dates = self._get_post_dates(all_candidate_ids)
+
+        # Build dates dict from search results (no extra DB query needed)
+        post_dates = {}
+        for pid, _, created_at in vector_results:
+            post_dates[pid] = created_at
+        for pid, _, created_at in fts5_results:
+            if pid not in post_dates:
+                post_dates[pid] = created_at
 
         # Re-score Vector: score = (1 - distance) * soft_freshness
         rescored_vector = []
-        for pid, dist in vector_results:
+        for pid, dist, _ in vector_results:
             age_days = self._calculate_age_days(post_dates.get(pid))
             soft_freshness = max(0.7, 1.0 - (age_days / 365.0))
             sim = max(0.0, 1.0 - dist)
@@ -135,8 +139,8 @@ class HybridRetrievalService:
 
         # Re-score FTS5: normalize rank → [0,1], apply soft freshness
         rescored_fts5 = []
-        max_rank = max((abs(r) for _, r in fts5_results), default=1) or 1
-        for pid, rank in fts5_results:
+        max_rank = max((abs(r) for _, r, _ in fts5_results), default=1) or 1
+        for pid, rank, _ in fts5_results:
             age_days = self._calculate_age_days(post_dates.get(pid))
             soft_freshness = max(0.7, 1.0 - (age_days / 365.0))
             # FTS5 rank is negative (more negative = better match)
@@ -159,8 +163,8 @@ class HybridRetrievalService:
 
         t_total_ms = round((time.perf_counter() - t_start) * 1000, 1)
 
-        vector_ids = {pid for pid, _ in vector_results}
-        fts5_ids = {pid for pid, _ in fts5_results}
+        vector_ids = {pid for pid, _, _ in vector_results}
+        fts5_ids = {pid for pid, _, _ in fts5_results}
 
         stats = {
             "mode": "hybrid",
@@ -213,14 +217,16 @@ class HybridRetrievalService:
         expert_id: str,
         cutoff_date: Optional[datetime],
         top_k: int,
-    ) -> List[Tuple[int, float]]:
+    ) -> List[Tuple[int, float, Optional[str]]]:
         """KNN via sqlite-vec with expert_id PARTITION KEY pre-filter.
 
         cutoff_date is filtered via metadata column created_at in vec0 (pre-KNN),
         NOT via JOIN with posts (which would be post-KNN and hurt recall).
+
+        Returns: [(post_id, distance, created_at), ...] — created_at as ISO string.
         """
         sql = """
-        SELECT v.post_id, v.distance
+        SELECT v.post_id, v.distance, v.created_at
         FROM vec_posts v
         WHERE v.expert_id = :expert_id
           AND v.embedding MATCH :embedding
@@ -237,7 +243,7 @@ class HybridRetrievalService:
 
         try:
             result = self.db.execute(text(sql), params)
-            return [(row[0], row[1]) for row in result.fetchall()]
+            return [(row[0], row[1], row[2]) for row in result.fetchall()]
         except Exception as e:
             logger.error(f"[Hybrid] Vector search failed for {expert_id}: {e}")
             return []
@@ -248,8 +254,11 @@ class HybridRetrievalService:
         expert_id: str,
         cutoff_date: Optional[datetime],
         top_k: int,
-    ) -> List[Tuple[int, float]]:
-        """FTS5 BM25 search without JOIN — uses expert_id/created_at from FTS5 directly."""
+    ) -> List[Tuple[int, float, Optional[str]]]:
+        """FTS5 BM25 search without JOIN — uses expert_id/created_at from FTS5 directly.
+
+        Returns: [(post_id, bm25_rank, created_at), ...] — created_at as ISO string.
+        """
         safe_query = sanitize_fts5_query(match_query)
         if not safe_query:
             logger.warning(
@@ -258,7 +267,7 @@ class HybridRetrievalService:
             return []
 
         sql = """
-        SELECT f.rowid as post_id, f.rank as bm25_rank
+        SELECT f.rowid as post_id, f.rank as bm25_rank, f.created_at
         FROM posts_fts f
         WHERE posts_fts MATCH :match_query
           AND f.expert_id = :expert_id
@@ -274,7 +283,7 @@ class HybridRetrievalService:
 
         try:
             result = self.db.execute(text(sql), params)
-            return [(row[0], row[1]) for row in result.fetchall()]
+            return [(row[0], row[1], row[2]) for row in result.fetchall()]
         except Exception as e:
             logger.error(f"[Hybrid] FTS5 search failed for {expert_id}: {e}")
             return []
@@ -319,7 +328,8 @@ class HybridRetrievalService:
 
         if isinstance(created_at, str):
             try:
-                clean_str = created_at.split(".")[0]
+                # Handle both ISO formats: "2025-12-21T21:15:07" and "2024-06-11 15:58:34.000000"
+                clean_str = created_at.replace("T", " ").split(".")[0]
                 created_at = datetime.strptime(clean_str, "%Y-%m-%d %H:%M:%S")
             except Exception:
                 return 365

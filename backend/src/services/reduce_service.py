@@ -146,6 +146,13 @@ class ReduceService:
             query
         )
 
+        # DEBUG: Log prompt size for timing analysis
+        prompt_chars = len(prompt)
+        logger.info(
+            f"[{expert_id}] Reduce prompt size: {prompt_chars} chars, "
+            f"~{prompt_chars // 4} tokens (est), posts_json={len(posts_json)} chars"
+        )
+
         # Call LLM API (Google AI Studio)
         response = await self.client.chat_completions_create(
             model=self.model,
@@ -205,6 +212,12 @@ class ReduceService:
                 "completion_tokens": response.usage.completion_tokens,
                 "total_tokens": response.usage.total_tokens
             }
+            logger.info(
+                f"[{expert_id}] Reduce tokens: prompt={response.usage.prompt_tokens}, "
+                f"completion={response.usage.completion_tokens}, "
+                f"total={response.usage.total_tokens}, "
+                f"answer_len={len(result.get('answer', ''))}"
+            )
 
         if progress_callback:
             await progress_callback({

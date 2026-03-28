@@ -30,14 +30,14 @@ from .. import config
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 IS_PRODUCTION = ENVIRONMENT.lower() == "production"
 
-# Configure logging - explicit FileHandler setup to work with uvicorn
+# Configure logging - FileHandler for local + StreamHandler for Fly.io (stdout)
 root_logger = logging.getLogger()
 root_logger.setLevel(config.LOG_LEVEL.upper())
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
 # Create file handler for backend logs
 os.makedirs(os.path.dirname(config.BACKEND_LOG_FILE), exist_ok=True)
 file_handler = logging.FileHandler(config.BACKEND_LOG_FILE, mode='a')
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 file_handler.setFormatter(formatter)
 file_handler.setLevel(config.LOG_LEVEL.upper())
 
@@ -48,6 +48,14 @@ if not any(isinstance(h, logging.FileHandler) and
            h.baseFilename.endswith(config.BACKEND_LOG_FILE)
            for h in root_logger.handlers):
     root_logger.addHandler(file_handler)
+
+# Add StreamHandler for stdout (required for Fly.io: flyctl logs reads stdout/stderr)
+if not any(isinstance(h, logging.StreamHandler) and not isinstance(h, logging.FileHandler)
+           for h in root_logger.handlers):
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(formatter)
+    stream_handler.setLevel(config.LOG_LEVEL.upper())
+    root_logger.addHandler(stream_handler)
 
 logger = logging.getLogger(__name__)
 

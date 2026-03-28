@@ -1016,24 +1016,39 @@ async def event_generator_parallel(
             yield f"data: {json.dumps(sanitize_for_json(error_event.model_dump(mode='json')), ensure_ascii=False)}\n\n"
             return
 
-        # 1.6. Run AI Scout for Super-Passport mode (FTS5 pre-filtering)
+        # 1.6. Run AI Scout + Embedding in PARALLEL for Super-Passport mode
         scout_query = None
+        query_embedding = None
         if request.use_super_passport and expert_ids:
             # Send SSE event for scout phase
             scout_event = ProgressEvent(
                 event_type="progress",
                 phase="scout",
                 status="processing",
-                message="AI Scout: генерация поискового запроса...",
+                message="AI Scout + Embedding: параллельная подготовка...",
                 data={"source": "super_passport"},
             )
             yield f"data: {json.dumps(sanitize_for_json(scout_event.model_dump(mode='json')), ensure_ascii=False)}\n\n"
 
-            # Generate FTS5 MATCH query
+            # Launch Scout and Embedding in parallel (they are independent)
+            t_parallel = time.perf_counter()
             scout_service = AIScoutService()
-            scout_query, scout_success = await scout_service.generate_match_query(
-                request.query
+            from ..services.embedding_service import get_embedding_service
+            emb_service = get_embedding_service()
+
+            async def _safe_embed():
+                """Wrap embedding to prevent gather from losing Scout result on failure."""
+                try:
+                    return await emb_service.embed_query(request.query)
+                except Exception as e:
+                    logger.error(f"[Super-Passport] Embedding failed: {e}")
+                    return None
+
+            (scout_query, scout_success), query_embedding = await asyncio.gather(
+                scout_service.generate_match_query(request.query),
+                _safe_embed(),
             )
+            t_parallel_ms = round((time.perf_counter() - t_parallel) * 1000, 1)
 
             scout_complete_event = ProgressEvent(
                 event_type="phase_complete",
@@ -1051,18 +1066,9 @@ async def event_generator_parallel(
             yield f"data: {json.dumps(sanitize_for_json(scout_complete_event.model_dump(mode='json')), ensure_ascii=False)}\n\n"
 
             logger.info(
-                f"[Super-Passport] Scout query: {scout_query} (success: {scout_success})"
-            )
-
-        # Pre-compute embedding once for all experts (avoids N redundant API calls)
-        query_embedding = None
-        if request.use_super_passport and expert_ids:
-            from ..services.embedding_service import get_embedding_service
-
-            emb_service = get_embedding_service()
-            query_embedding = await emb_service.embed_query(request.query)
-            logger.info(
-                f"[Super-Passport] Query embedding computed (dim={len(query_embedding)})"
+                f"[Super-Passport] Scout + Embedding parallel: {t_parallel_ms}ms | "
+                f"scout={scout_query} (success: {scout_success}) | "
+                f"embedding dim={len(query_embedding)}"
             )
 
         if expert_ids:
