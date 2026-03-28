@@ -175,6 +175,7 @@ To debug the pipeline, monitor the backend log file for messages containing spec
 ### Component Guides
 - **Backend Architecture**: `backend/CLAUDE.md` - Complete API and services reference
 - **Frontend Development**: `frontend/CLAUDE.md` - React components and UI patterns
+- **Documentation Map & Update Checklist**: `docs/DOCUMENTATION_MAP.md` - Index of all docs + checklist: which docs to update when code changes
 
 ### Configuration
 - **Model Configuration**: `backend/src/config.py` - Environment variables and defaults
@@ -184,6 +185,13 @@ To debug the pipeline, monitor the backend log file for messages containing spec
 - **Prompts**: `backend/prompts/` - LLM prompts for each pipeline phase
 - **Migrations**: `backend/migrations/` - Database evolution scripts
 - **Scripts**: `backend/scripts/` - 30+ drift analysis and maintenance utilities
+
+### Documentation Rules
+**IMPORTANT**: When modifying code, consult `docs/DOCUMENTATION_MAP.md` section "Чеклист обновления документации" to determine which docs need updating. Key mappings:
+- **Changed models (MODEL_*)**: Update `CLAUDE.md`, `backend/CLAUDE.md`, `docs/architecture/pipeline.md`, `.env.example`
+- **Added/removed pipeline phase**: Update `docs/architecture/pipeline.md`, `CLAUDE.md`, `backend/CLAUDE.md`
+- **Changed update_production_db.sh**: Update `CLAUDE.md` ("Cycle of Life" section)
+- **Deleted any file**: `grep` all `.md` files for references to deleted file
 
 ---
 
