@@ -228,24 +228,4 @@ To debug the pipeline, monitor the backend log file for messages containing spec
 **Last Updated:** 2026-03-28
 **Architecture:** Multi-expert, Gemini-only LLM pipeline with unified client and real-time progress tracking
 **Key Features:** Parallel expert processing, unified `google_ai_studio_client`, cost optimization with Gemini 3 Flash, language validation, comment synthesis, enhanced error handling, admin authentication, Reddit community insights
-**Recent Updates:**
-- ✅ **Pipeline Perf:** Parallel Scout+Embedding (~600ms saved), RRF without DB round-trip (20x faster), Drift scoring parallel with Reduce (Standard -17s, Hybrid -6s).
-- ✅ **Observability:** StreamHandler for stdout logging — `[PIPELINE]` and `[Hybrid Retrieval]` timings now visible in `flyctl logs`.
-- ✅ **Quality:** Removed artificial comment limits on main source posts (was 10 author / 15 community, now unlimited).
-- ✅ **Search Layer:** Implemented Embs&Keys Hybrid Retrieval (Vector KNN + FTS5 + RRF) combining semantic and lexical search.
-- ✅ **AI Scout v2:** Upgraded to Entity-Centric OR-only search to fix Semantic Gap (Recall 70%+).
-- ✅ **Stability:** Increased Reddit pipeline timeout to 120s (fixes timeouts on complex queries)
-- ✅ **Bugfix:** Fixed frontend SSE parsing error for keep-alive events
-- ✅ **Reddit Enhancement:** Entity-preserving RU→EN query translation with AI domain context, synthesis relevance gate, Russian-first language detection
-- ✅ **UI Polish:** Neutral color scheme for Community Insights (system palette)
-- ✅ **Multi-language:** Reddit synthesis now responds in query language (RU/EN), any Cyrillic word → Russian
-- ✅ **Video Hub:** max_tokens 4096→8192 (fixes truncated responses), display order moved after all experts
-- ✅ **Phase 3 Complete:** Reddit MCP Integration with community insights
-- ✅ Added real-time stats (posts/comments) to expert selection UI
-- ✅ Implemented collapsible expert selection bar for cleaner UX
-- ✅ Added new experts: Ilia, Polyakov, Doronin
-- ✅ Migrated to `gemini-2.5-flash-lite` for Map phase (ultra-fast)
-- ✅ Upgraded to `gemini-3-flash-preview` for Synthesis and Drift Analysis (pro-grade reasoning)
-- ✅ Unified all services to use `google_ai_studio_client.py` for consistent API access
-- ✅ Removed hardcoded model defaults - all configuration via environment variables
-- ✅ Added `MODEL_DRIFT_ANALYSIS` configuration for offline cron jobs
+**Change History:** See `git log` for detailed history of all changes.
