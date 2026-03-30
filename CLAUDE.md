@@ -54,16 +54,19 @@ Complete FastAPI backend with:
 
 React 18 + TypeScript frontend with:
 - Real-time query progress with expert tracking
+- **Pixel Office Engine** - Canvas-based animated office (desktop), CSS mascot (mobile)
 - **Reddit Community Insights** - Community analysis display with markdown rendering
 - Post selection and navigation system
 - Answer display with source references
-- Advanced debug logging system
-- Responsive design with inline styles
+- Responsive design with Tailwind CSS v3
+- **Vitest** test suite (55+ tests)
 
 **Key Components:**
-- `App.tsx` - Main application state management
-- `CommunityInsightsSection.tsx` - Reddit community analysis UI
+- `App.tsx` - Main application state management with React.lazy code splitting
+- `PixelOffice.tsx` - Canvas pixel office with pipeline-driven character animations (desktop, lazy-loaded)
+- `PixelMascot.tsx` - CSS sprite mascot with idle+bounce (mobile)
 - `ProgressSection.tsx` - Smart Grouping progress (dynamic groups from `pipeline_state`)
+- `CommunityInsightsSection.tsx` - Reddit community analysis UI
 - `ExpertResponse.tsx` - Answer rendering with sources
 - `QueryForm.tsx` - User input form with Reddit toggle checkbox
 
@@ -212,6 +215,8 @@ To debug the pipeline, monitor the backend log file for messages containing spec
 - **Prompts**: `backend/prompts/` - LLM prompts for each pipeline phase
 - **Migrations**: `backend/migrations/` - Database evolution scripts
 - **Scripts**: `backend/scripts/` - 30+ drift analysis and maintenance utilities
+- **Asset Pipeline**: `scripts/copy-pixel-assets.sh` - Clones pixel-agents repo, copies sprites/layouts
+- **Tests**: `frontend/vitest.config.ts` - Vitest test suite, run with `npm test` in frontend/
 
 ### Documentation Rules
 **IMPORTANT**: When modifying code, consult `docs/DOCUMENTATION_MAP.md` section "Чеклист обновления документации" to determine which docs need updating. Key mappings:
@@ -252,7 +257,7 @@ To debug the pipeline, monitor the backend log file for messages containing spec
 ---
 
 **Project Status:** Production-ready with active development
-**Last Updated:** 2026-03-28
+**Last Updated:** 2026-03-30
 **Architecture:** Multi-expert, Gemini-only LLM pipeline with unified client and real-time progress tracking
-**Key Features:** Parallel expert processing, unified `google_ai_studio_client`, cost optimization with Gemini 3 Flash, language validation, comment synthesis, enhanced error handling, admin authentication, Reddit community insights
+**Key Features:** Parallel expert processing, unified `google_ai_studio_client`, cost optimization with Gemini 3 Flash, language validation, comment synthesis, enhanced error handling, admin authentication, Reddit community insights, Pixel Office Engine (Canvas-based animated office)
 **Change History:** See `git log` for detailed history of all changes.

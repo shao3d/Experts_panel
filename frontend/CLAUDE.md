@@ -14,6 +14,8 @@ React 18 + TypeScript frontend with a modern Sidebar layout, Tailwind CSS stylin
 - **SSE (Server-Sent Events)** - Real-time progress streaming
 - **React Markdown** - Markdown rendering with GFM support
 - **React Hot Toast** - Notifications
+- **Vitest** - Test framework with jsdom environment (55+ tests)
+- **pixel-agents engine** - Canvas-based pixel art office (ported from [pixel-agents](https://github.com/pablodelucca/pixel-agents))
 
 ## 📁 Project Structure
 The frontend source code is located in `frontend/src/`:
@@ -99,6 +101,10 @@ npm run dev
 
 # Build for Production
 npm run build
+
+# Run Tests
+npm test          # watch mode
+npm run test:run  # single run (CI)
 ```
 
 ## 🐛 Troubleshooting
