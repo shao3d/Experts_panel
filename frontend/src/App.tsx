@@ -263,7 +263,7 @@ export const App: React.FC = () => {
               {/* Pixel Office / Mascot — always visible, scrolls with content */}
               {isDesktop ? (
                 <PixelOfficeErrorBoundary>
-                <Suspense fallback={<div className="bg-gray-100 rounded-lg mb-4 animate-pulse" style={{ height: 200 }} />}>
+                <Suspense fallback={<div className="bg-gray-100 rounded-lg mb-4 animate-pulse" style={{ height: 360 }} />}>
                   <PixelOffice
                     selectedExperts={selectedExperts}
                     progressEvents={progressEvents}

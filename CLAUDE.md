@@ -63,7 +63,7 @@ React 18 + TypeScript frontend with:
 
 **Key Components:**
 - `App.tsx` - Main application state management with React.lazy code splitting
-- `PixelOffice.tsx` - Canvas pixel office with pipeline-driven character animations (desktop, lazy-loaded)
+- `PixelOffice.tsx` - Canvas pixel office with 4-room layout (42×15 grid), pipeline-driven character animations (desktop, lazy-loaded)
 - `PixelMascot.tsx` - CSS sprite mascot with idle+bounce (mobile)
 - `ProgressSection.tsx` - Smart Grouping progress (dynamic groups from `pipeline_state`)
 - `CommunityInsightsSection.tsx` - Reddit community analysis UI
@@ -257,7 +257,7 @@ To debug the pipeline, monitor the backend log file for messages containing spec
 ---
 
 **Project Status:** Production-ready with active development
-**Last Updated:** 2026-03-30
+**Last Updated:** 2026-03-31
 **Architecture:** Multi-expert, Gemini-only LLM pipeline with unified client and real-time progress tracking
-**Key Features:** Parallel expert processing, unified `google_ai_studio_client`, cost optimization with Gemini 3 Flash, language validation, comment synthesis, enhanced error handling, admin authentication, Reddit community insights, Pixel Office Engine (Canvas-based animated office)
+**Key Features:** Parallel expert processing, unified `google_ai_studio_client`, cost optimization with Gemini 3 Flash, language validation, comment synthesis, enhanced error handling, admin authentication, Reddit community insights, Pixel Office Engine (4-room Canvas office with CSS scaling)
 **Change History:** See `git log` for detailed history of all changes.

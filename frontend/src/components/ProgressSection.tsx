@@ -240,8 +240,7 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({ isProcessing, progres
               return (
                 <React.Fragment key={phase.id}>
                   <span className={`phase-item ${phase.status}`}>
-                    {phase.status === 'completed' ? '✓' : phase.icon}
-                    {' '}{phase.label}
+                    {phase.status === 'completed' && '✓ '}{phase.label}
                   </span>
                   {!isLast && <span className="phase-separator">→</span>}
                 </React.Fragment>

@@ -14,7 +14,7 @@ interface PixelOfficeProps {
 
 const MAX_CHARACTERS = 10;
 const ASSET_BASE_PATH = '/pixel-office';
-const CONTAINER_HEIGHT = 300;
+const CONTAINER_HEIGHT = 360;
 
 // Map string expert ID to stable integer ID (needed by engine API)
 function expertToInt(id: string): number {
@@ -67,8 +67,17 @@ const PixelOffice: React.FC<PixelOfficeProps> = ({
     const gridH = office.layout.rows * 16 * zoom;
     canvas.width = gridW;
     canvas.height = gridH;
-    canvas.style.width = (gridW / dpr) + 'px';
-    canvas.style.height = (gridH / dpr) + 'px';
+
+    // Scale canvas to fit container height (handles non-retina displays)
+    let displayW = gridW / dpr;
+    let displayH = gridH / dpr;
+    if (displayH > CONTAINER_HEIGHT) {
+      const scale = CONTAINER_HEIGHT / displayH;
+      displayW = displayW * scale;
+      displayH = CONTAINER_HEIGHT;
+    }
+    canvas.style.width = displayW + 'px';
+    canvas.style.height = displayH + 'px';
 
     const stopLoop = startGameLoop(canvas, {
       update: (dt: number) => office.update(dt),
@@ -132,7 +141,7 @@ const PixelOffice: React.FC<PixelOfficeProps> = ({
 
   return (
     <div
-      className="flex flex-col justify-end items-center bg-gray-100 rounded-lg overflow-hidden mb-4"
+      className="flex flex-col justify-center items-center bg-gray-100 rounded-lg overflow-hidden mb-4"
       style={{ height: CONTAINER_HEIGHT }}
     >
       {isLoaded ? (

@@ -29,7 +29,7 @@ The frontend source code is located in `frontend/src/`:
   - **`MetaSynthesisSection.tsx`**: Cross-expert unified analysis (🧠 icon, above expert accordions, ≥2 experts).
   - **`CommunityInsightsSection.tsx`**: Reddit analysis display.
   - **`ProgressSection.tsx`**: Real-time progress with **Smart Grouping** — dynamically groups backend phases (Search, Analysis, Insights, Video, Synthesis, Reddit) based on `pipeline_state` from SSE events. Legacy fallback for old backends.
-  - **`PixelOffice.tsx`**: Canvas-based animated pixel office (desktop only, ≥768px). Lazy-loaded via `React.lazy()`. Characters sit at desks and animate based on pipeline phases (type during search, read during analysis). Wrapped in `PixelOfficeErrorBoundary` for graceful degradation.
+  - **`PixelOffice.tsx`**: Canvas-based animated pixel office (desktop only, ≥768px). Lazy-loaded via `React.lazy()`. 4-room layout (Kitchen, 2 Work rooms, Library) with 42×15 tile grid. Characters sit at desks and animate based on pipeline phases (type during search, read during analysis). CSS scaling fallback for non-retina displays. Wrapped in `PixelOfficeErrorBoundary` for graceful degradation.
   - **`PixelMascot.tsx`**: CSS-sprite mobile mascot (<768px). Single character with idle+bounce animation. No engine chunk downloaded on mobile.
   - **`PixelCharacter.tsx`**: CSS sprite renderer for mobile mascot. Supports walk/type/read/idle animations.
 - **`pixel-office/`**: Canvas engine files (characters FSM, pathfinding, renderer, sprites, furniture catalog). Ported from [pixel-agents](https://github.com/pablodelucca/pixel-agents) with browser asset loading.
@@ -51,7 +51,7 @@ The application uses a responsive two-pane layout:
   - Collapsible: Shows smart **Initials Avatars** when collapsed (e.g., "AI_Arch" -> "AA").
 - **Main Content**:
   - Top: Query Input and Progress.
-  - **Pixel Office** (Canvas, ~300px): Animated pixel art office with characters at desks. Always visible, scrolls with content. Desktop only — mobile shows PixelMascot instead.
+  - **Pixel Office** (Canvas, ~360px): Animated pixel art office with 4 rooms (Kitchen, Work L, Work R, Library) and characters at desks. Always visible, scrolls with content. Desktop only — mobile shows PixelMascot instead.
   - Center: Scrollable list of results (Accordions).
 
 ### Mobile Experience
