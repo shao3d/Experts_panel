@@ -302,7 +302,7 @@ function flattenManifest(manifest: FurnitureManifest): FlatAsset[] {
       {
         type: 'asset',
         id: manifest.id,
-        file: manifest.file!,
+        file: manifest.file ?? `${manifest.id}.png`,
         width: manifest.width!,
         height: manifest.height!,
         footprintW: manifest.footprintW!,
