@@ -102,13 +102,13 @@ The system processes user queries through an **ten-phase pipeline** using a **Ge
 **Goal**: Provide community reality-check and engineering insights.
 - **Dedicated Architecture Document**: [See `reddit-service.md`](./reddit-service.md) for the full Single Source of Truth (SSOT).
 - **High-Level Summary**: Runs in parallel with the main pipeline. Uses an AI Scout (Gemini 3 Flash) to generate intent-based queries, searches Reddit via a dedicated Node.js Proxy, performs semantic deduplication and AI reranking, and synthesizes a "Staff Engineer" response from deep comment trees.
-- **UX Integration**: Internal Reddit phases (`scout`, `search`, `reranking`, `synthesis`) are dynamically mapped to standard frontend phases (`map`, `resolve`, `reduce`) to animate the global UI progress bar, accented with a 🌐 icon.
+- **UX Integration**: Internal Reddit phases (`scout`, `search`, `reranking`, `synthesis`) are dynamically mapped to standard frontend phases (`map`, `resolve`, `reduce`) to animate the global UI progress bar. Phase names shown without icons; completed phases marked with ✓.
 
 ### 9. Video Hub Sidecar (Digital Twin)
 **Goal**: Analyze long-form video content without losing narrative context.
 - **Dedicated Architecture Document**: [See `video-hub-service.md`](./video-hub-service.md) for the full Single Source of Truth (SSOT).
 - **High-Level Summary**: Uses "Summary Bridging" to solve the Lost Middle problem. Extracts highly relevant video segments as full transcripts, and neighboring segments as summaries. Synthesizes a response from the perspective of the "Expert's Digital Twin" without summarizing, but by reconstructing reasoning.
-- **UX Integration**: Emits UI progress events mapped to standard phases (`map`, `resolve`, `reduce`) with a 🎥 icon for visual distinction.
+- **UX Integration**: Emits UI progress events mapped to standard phases (`map`, `resolve`, `reduce`). Completed phases marked with ✓ in the progress bar.
 
 ### 10. Meta-Synthesis Phase (Cross-Expert Analysis)
 **Goal**: Synthesize unified answer from all expert responses, restructuring from "per-expert" to "per-topic" axis.
