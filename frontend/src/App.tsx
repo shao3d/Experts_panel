@@ -3,10 +3,12 @@
  * Connects all components and manages query state.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { QueryForm } from './components/QueryForm';
 import ExpertAccordion from './components/ExpertAccordion';
 import ProgressSection from './components/ProgressSection';
+import PixelMascot from './components/PixelMascot';
+import { useMediaQuery } from './utils/useMediaQuery';
 import ExpertSelectionBar from './components/ExpertSelectionBar'; // Kept for Mobile
 import { Sidebar } from './components/Sidebar'; // New Desktop Sidebar
 import CommunityInsightsSection from './components/CommunityInsightsSection';
@@ -17,7 +19,22 @@ import { transformExpertsForUI, EXPERT_UI_CONFIG } from './config/expertConfig';
 import './App.css';
 import './components/CommunityInsightsSection.css';
 
+const PixelOffice = React.lazy(() => import('./components/PixelOffice'));
+
+class PixelOfficeErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+  static getDerivedStateFromError() { return { hasError: true }; }
+  render() {
+    if (this.state.hasError) return null;
+    return this.props.children;
+  }
+}
+
 export const App: React.FC = () => {
+  const isDesktop = useMediaQuery('(min-width: 768px)');
   const [isProcessing, setIsProcessing] = useState(false);
   const [progressEvents, setProgressEvents] = useState<ProgressEvent[]>([]);
   const [expertResponses, setExpertResponses] = useState<ExpertResponseType[]>([]);
@@ -242,6 +259,25 @@ export const App: React.FC = () => {
         {/* Scrollable Results Area */}
         <main className="flex-1 overflow-y-auto p-4 md:p-6" id="main-scroll-container">
            <div className="max-w-[1600px] mx-auto w-full pb-24 md:pb-10">
+
+              {/* Pixel Office / Mascot — always visible, scrolls with content */}
+              {isDesktop ? (
+                <PixelOfficeErrorBoundary>
+                <Suspense fallback={<div className="bg-gray-100 rounded-lg mb-4 animate-pulse" style={{ height: 200 }} />}>
+                  <PixelOffice
+                    selectedExperts={selectedExperts}
+                    progressEvents={progressEvents}
+                    isProcessing={isProcessing}
+                  />
+                </Suspense>
+                </PixelOfficeErrorBoundary>
+              ) : (
+                <PixelMascot
+                  progressEvents={progressEvents}
+                  isProcessing={isProcessing}
+                />
+              )}
+
               {error ? (
                 <div className="p-5 bg-red-50 border border-red-200 rounded-lg text-red-700">
                   <h3 className="font-bold mb-2">⚠️ Error</h3>
@@ -285,11 +321,7 @@ export const App: React.FC = () => {
                     isEnabled={includeReddit}
                   />
                 </>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-64 text-gray-500">
-                  <p className="text-lg">{isProcessing ? 'Processing query...' : 'Expert answers and community insights will appear here'}</p>
-                </div>
-              )}
+              ) : null}
            </div>
         </main>
 

@@ -147,6 +147,25 @@ The system supports filtering queries to only use recent data (last 3 months):
 - **OFF (default)**: All data for comprehensive answers, methodology, historical context
 - **ON**: Recent data only for fresh news, current models, faster processing
 
+### Implementing New Features (Code Writer Agent)
+For implementing new features, use the custom **implementer** agent — a Sonnet-based code writer pre-configured with all project patterns, conventions, and anti-overengineering rules.
+
+**How to run:**
+```bash
+# With a plan file
+claude --agent implementer "Реализуй план из ~/.claude/plans/<plan-file>.md"
+
+# With a spec description
+claude --agent implementer "Реализуй: <описание фичи>"
+
+# With a spec file
+claude --agent implementer "Реализуй спецификацию из docs/specs/<spec>.md"
+```
+
+**What it does:** Runs Claude Sonnet with project-specific system prompt (`.claude/agents/implementer.md`) + full `CLAUDE.md` context. The agent knows backend service patterns, frontend component patterns, config management, SSE pipeline, and has strict anti-overengineering rules.
+
+**Agent memory:** Accumulates project knowledge across sessions in `.claude/agent-memory/implementer/`.
+
 ### Testing Pipeline
 To test the pipeline, use the interactive API documentation (available at `/api/docs` when the server is running) to send requests to the `/api/v1/query` endpoint. You can test the entire pipeline or filter for specific experts. Individual posts can also be retrieved via the `/api/v1/posts/{post_id}` endpoint.
 

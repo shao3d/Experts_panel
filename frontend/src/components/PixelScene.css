@@ -1,0 +1,109 @@
+/* PixelScene — Sprite sheet animations for pixel art characters
+ *
+ * Sprite format: 112×96px sheet, 7 frames × 3 rows
+ * Frame: 16×32px (24px sprite + 8px top padding)
+ * Row 0: down, Row 1: up, Row 2: right (left = CSS flip)
+ * Frames: 0-2 walk, 3-4 type, 5-6 read
+ *
+ * Desktop: 4× scale (64×128px)
+ * Mobile:  3× scale (48×96px)
+ */
+
+/* --- Base sprite element --- */
+.pixel-char {
+  width: 64px;
+  height: 128px;
+  background-repeat: no-repeat;
+  background-size: 448px 384px; /* 112×4, 96×4 */
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* --- Sprite animation keyframes --- */
+
+/* Walk: frames 0-2 (columns 0-2) */
+@keyframes pixel-walk {
+  from { background-position-x: 0; }
+  to   { background-position-x: -192px; } /* 3 × 64 */
+}
+
+/* Type: frames 3-4 (columns 3-4) */
+@keyframes pixel-type {
+  from { background-position-x: -192px; }
+  to   { background-position-x: -320px; } /* 2 × 64 from -192 */
+}
+
+/* Read: frames 5-6 (columns 5-6) */
+@keyframes pixel-read {
+  from { background-position-x: -320px; }
+  to   { background-position-x: -448px; } /* 2 × 64 from -320 */
+}
+
+/* Animation classes — `both` fill mode ensures correct initial frame
+   even with negative animation-delay (sprite stagger) */
+.pixel-char.anim-walk { animation: pixel-walk 0.5s steps(3) infinite both; }
+.pixel-char.anim-type { animation: pixel-type 0.6s steps(2) infinite both; }
+.pixel-char.anim-read { animation: pixel-read 0.8s steps(2) infinite both; }
+
+/* Idle: standing pose (walk frame 1) + gentle bounce */
+.pixel-char.anim-idle {
+  background-position-x: -64px; /* Column 1 at 4x scale (standing pose) */
+  animation: pixel-bounce 2s ease-in-out infinite;
+}
+
+@keyframes pixel-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* --- Direction rows (background-position-y) --- */
+.pixel-char[data-row="0"] { background-position-y: 0; }       /* down */
+.pixel-char[data-row="1"] { background-position-y: -128px; }  /* up */
+.pixel-char[data-row="2"] { background-position-y: -256px; }  /* right */
+
+/* Left direction = horizontally flipped right */
+.pixel-char.face-left { transform: scaleX(-1); }
+
+/* --- FadeIn wrapper --- */
+@keyframes pixel-fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* `both` fill mode: element is invisible (opacity:0) during delay period,
+   preventing flash-before-fade artifact with staggered delays */
+.pixel-char-wrapper {
+  animation: pixel-fadeInUp 0.3s ease both;
+}
+
+/* --- Mobile: 3× scale --- */
+@media (max-width: 768px) {
+  .pixel-char.anim-idle {
+    background-position-x: -48px; /* Column 1 at 3x scale */
+  }
+
+  .pixel-char {
+    width: 48px;
+    height: 96px;
+    background-size: 336px 288px; /* 112×3, 96×3 */
+  }
+
+  /* Row Y-offsets at 3x scale (32px × 3 = 96px per row) */
+  .pixel-char[data-row="1"] { background-position-y: -96px; }
+  .pixel-char[data-row="2"] { background-position-y: -192px; }
+
+  @keyframes pixel-walk {
+    from { background-position-x: 0; }
+    to   { background-position-x: -144px; } /* 3 × 48 */
+  }
+
+  @keyframes pixel-type {
+    from { background-position-x: -144px; }
+    to   { background-position-x: -240px; } /* 2 × 48 from -144 */
+  }
+
+  @keyframes pixel-read {
+    from { background-position-x: -240px; }
+    to   { background-position-x: -336px; } /* 2 × 48 from -240 */
+  }
+}
