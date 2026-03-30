@@ -22,7 +22,12 @@ import { OfficeState } from './engine/officeState';
 export async function pngToSpriteData(url: string): Promise<SpriteData> {
   const img = new Image();
   img.src = url;
-  await img.decode();
+  try {
+    await img.decode();
+  } catch (e) {
+    console.error(`[PixelOffice] Failed to decode image: ${url}`, e);
+    throw e;
+  }
 
   const canvas = document.createElement('canvas');
   canvas.width = img.width;
@@ -58,7 +63,7 @@ export async function pngToSpriteData(url: string): Promise<SpriteData> {
 async function decodeCharacterPng(url: string): Promise<{ down: SpriteData[]; up: SpriteData[]; right: SpriteData[] }> {
   const img = new Image();
   img.src = url;
-  await img.decode();
+  try { await img.decode(); } catch (e) { console.error(`[PixelOffice] Failed to decode character: ${url}`, e); throw e; }
 
   const canvas = document.createElement('canvas');
   canvas.width = img.width;
@@ -113,7 +118,7 @@ async function decodeCharacterPng(url: string): Promise<{ down: SpriteData[]; up
 async function decodeWallPng(url: string): Promise<SpriteData[]> {
   const img = new Image();
   img.src = url;
-  await img.decode();
+  try { await img.decode(); } catch (e) { console.error(`[PixelOffice] Failed to decode wall: ${url}`, e); throw e; }
 
   const canvas = document.createElement('canvas');
   canvas.width = img.width;
