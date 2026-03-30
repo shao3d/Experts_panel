@@ -5,12 +5,14 @@ export type AnimState = 'walk' | 'type' | 'read' | 'idle';
 type PhaseStatus = 'pending' | 'active' | 'completed' | 'skipped' | 'error';
 
 const TYPE_PHASES = [
-  'video_map', 'video_resolve', 'video_synthesis', 'video_validation',
-  'meta_synthesis', 'reddit_search', 'reddit_synthesis',
+  'scout', 'map', 'medium_scoring',
+  'video_map', 'reddit_search',
 ];
 const READ_PHASES = [
   'resolve', 'reduce', 'language_validation',
   'comment_groups', 'comment_synthesis',
+  'video_resolve', 'video_synthesis', 'video_validation',
+  'meta_synthesis', 'reddit_synthesis',
 ];
 
 export function getLatestPipelineState(

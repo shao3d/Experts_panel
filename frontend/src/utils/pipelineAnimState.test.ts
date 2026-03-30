@@ -70,25 +70,37 @@ describe('getAnimState', () => {
     })).toBe('walk');
   });
 
-  it('returns type when video_synthesis is active', () => {
-    expect(getAnimState({ video_synthesis: 'active', scout: 'completed' })).toBe('type');
+  it('returns type when scout is active (search phase)', () => {
+    expect(getAnimState({ scout: 'active' })).toBe('type');
   });
 
-  it('returns type when meta_synthesis is active', () => {
-    expect(getAnimState({ meta_synthesis: 'active' })).toBe('type');
+  it('returns type when map is active (scoring phase)', () => {
+    expect(getAnimState({ map: 'active' })).toBe('type');
+  });
+
+  it('returns type when medium_scoring is active', () => {
+    expect(getAnimState({ medium_scoring: 'active' })).toBe('type');
+  });
+
+  it('returns type when video_map is active (search)', () => {
+    expect(getAnimState({ video_map: 'active' })).toBe('type');
   });
 
   it('returns type when reddit_search is active', () => {
     expect(getAnimState({ reddit_search: 'active' })).toBe('type');
   });
 
-  it('returns type when reddit_synthesis is active', () => {
-    expect(getAnimState({ reddit_synthesis: 'active' })).toBe('type');
+  it('returns read when meta_synthesis is active (analysis)', () => {
+    expect(getAnimState({ meta_synthesis: 'active' })).toBe('read');
   });
 
-  it('returns type for all video phases', () => {
-    for (const phase of ['video_map', 'video_resolve', 'video_synthesis', 'video_validation']) {
-      expect(getAnimState({ [phase]: 'active' })).toBe('type');
+  it('returns read when reddit_synthesis is active (analysis)', () => {
+    expect(getAnimState({ reddit_synthesis: 'active' })).toBe('read');
+  });
+
+  it('returns read for video analysis phases', () => {
+    for (const phase of ['video_resolve', 'video_synthesis', 'video_validation']) {
+      expect(getAnimState({ [phase]: 'active' })).toBe('read');
     }
   });
 
@@ -112,23 +124,15 @@ describe('getAnimState', () => {
     expect(getAnimState({ comment_synthesis: 'active' })).toBe('read');
   });
 
-  it('returns type when both type and read phases are active', () => {
+  it('returns type when both type and read phases are active (type wins)', () => {
     expect(getAnimState({
-      video_synthesis: 'active',
+      map: 'active',
       resolve: 'active',
     })).toBe('type');
   });
 
-  it('returns walk when active phase is not in type or read lists (e.g. scout)', () => {
-    expect(getAnimState({ scout: 'active' })).toBe('walk');
-  });
-
-  it('returns walk when active phase is map', () => {
-    expect(getAnimState({ map: 'active' })).toBe('walk');
-  });
-
-  it('returns walk when active phase is medium_scoring', () => {
-    expect(getAnimState({ medium_scoring: 'active' })).toBe('walk');
+  it('returns walk when active phase is unknown', () => {
+    expect(getAnimState({ some_future_phase: 'active' })).toBe('walk');
   });
 
   it('returns walk when phase has error status (not active)', () => {
@@ -142,14 +146,14 @@ describe('getAnimState', () => {
     })).toBe('read');
   });
 
-  it('returns read when unknown + read phases both active (scout + resolve)', () => {
+  it('returns type when scout + resolve both active (type wins)', () => {
     expect(getAnimState({
       scout: 'active',
       resolve: 'active',
-    })).toBe('read');
+    })).toBe('type');
   });
 
-  it('returns type when unknown + type phases both active (map + video_synthesis)', () => {
+  it('returns type when map + video_synthesis both active', () => {
     expect(getAnimState({
       map: 'active',
       video_synthesis: 'active',
