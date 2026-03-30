@@ -2,7 +2,7 @@
 FROM node:20-alpine AS frontend-builder
 WORKDIR /app
 COPY frontend/package.json frontend/package-lock.json ./
-RUN npm ci --omit=optional || npm install --no-optional
+RUN npm install
 
 # Set API URL for frontend build
 ARG VITE_API_URL=https://experts-panel.fly.dev
