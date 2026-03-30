@@ -14,7 +14,7 @@ interface PixelOfficeProps {
 
 const MAX_CHARACTERS = 10;
 const ASSET_BASE_PATH = '/pixel-office';
-const CONTAINER_HEIGHT = 200;
+const CONTAINER_HEIGHT = 300;
 
 // Map string expert ID to stable integer ID (needed by engine API)
 function expertToInt(id: string): number {
@@ -60,7 +60,8 @@ const PixelOffice: React.FC<PixelOfficeProps> = ({
     const canvas = canvasRef.current;
     const office = officeRef.current;
     const dpr = window.devicePixelRatio || 1;
-    const zoom = Math.max(1, Math.floor(dpr));
+    // Minimum 3x zoom for crisp pixel art on all displays
+    const zoom = Math.max(3, Math.floor(dpr) + 1);
 
     const gridW = office.layout.cols * 16 * zoom;
     const gridH = office.layout.rows * 16 * zoom;
@@ -122,6 +123,7 @@ const PixelOffice: React.FC<PixelOfficeProps> = ({
     const animState = getAnimState(pipelineState);
     const toolName = animStateToToolName(animState);
 
+    console.log(`[PixelOffice] Animation sync: animState=${animState} toolName=${toolName} experts=${activeExpertsRef.current.length}`);
     for (const id of activeExpertsRef.current) {
       office.setAgentTool(expertToInt(id), toolName);
     }
