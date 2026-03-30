@@ -123,7 +123,6 @@ const PixelOffice: React.FC<PixelOfficeProps> = ({
     const animState = getAnimState(pipelineState);
     const toolName = animStateToToolName(animState);
 
-    console.log(`[PixelOffice] Animation sync: animState=${animState} toolName=${toolName} experts=${activeExpertsRef.current.length}`);
     for (const id of activeExpertsRef.current) {
       office.setAgentTool(expertToInt(id), toolName);
     }
