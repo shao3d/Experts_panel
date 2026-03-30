@@ -89,7 +89,7 @@ To add a new expert, use the automated script:
 ./scripts/add_new_expert.sh <expert_id> "<Name>" <username> <json_path>
 ```
 This script handles registration, post import, full comment sync, and prepares drift analysis automatically. It will prompt you to run the production update script at the end.
-For a detailed guide, see **[Add New Expert Playbook](docs/add-new-expert-playbook.md)**.
+For a detailed guide, see **[Add New Expert Playbook](docs/guides/add-expert.md)**.
 
 ### Adding New Video (Video Hub)
 To import a video and deploy it to production:
