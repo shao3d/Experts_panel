@@ -181,9 +181,9 @@ const PixelOffice: React.FC<PixelOfficeProps> = ({
       [indices[i], indices[j]] = [indices[j], indices[i]];
     }
 
-    // Random number of characters rotate desks (0 to total-1, skewed toward fewer)
-    // Math.random()² skews toward 0 — most transitions move 0-2, occasionally more
-    const rotateCount = Math.floor(Math.random() * Math.random() * total);
+    // Random number of characters rotate desks (1 to total-1, uniform)
+    // Always at least 1 moves — creates visible life on every phase transition
+    const rotateCount = Math.max(1, Math.floor(Math.random() * total));
 
     // Stagger transitions so characters switch one-by-one (cascade effect)
     indices.forEach((originalIdx, order) => {
