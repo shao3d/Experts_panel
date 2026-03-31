@@ -161,6 +161,7 @@ const PixelOffice: React.FC<PixelOfficeProps> = ({
     // Only redistribute when the mix changes significantly (~20% buckets)
     const key = mixToKey(mix);
     if (key === prevMixKeyRef.current) return;
+    const isFirstMix = prevMixKeyRef.current === '';
     prevMixKeyRef.current = key;
 
     // Cancel any in-flight stagger from previous mix
@@ -197,16 +198,13 @@ const PixelOffice: React.FC<PixelOfficeProps> = ({
 
         if (toolName === 'Edit') {
           if (order < writerRotateCount) {
-            // Rotating writer: move to a different PC desk
             office.rotateAgentSeat(agentId, false);
           } else {
-            // Non-rotating writer: return to PC if stuck in lounge
             office.ensurePCSeat(agentId);
           }
         } else {
-          // Readers: most go to lounge, a few stay at PC
           const readerIndex = order - typeSlots;
-          if (readerIndex >= readersAtPC) {
+          if (isFirstMix || readerIndex >= readersAtPC) {
             office.rotateAgentSeat(agentId, true);
           }
         }
