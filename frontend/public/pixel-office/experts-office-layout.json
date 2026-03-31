@@ -3917,6 +3917,18 @@
       "type": "SMALL_PAINTING_2",
       "col": 36,
       "row": 1
+    },
+    {
+      "uid": "f-kitchen-chair5",
+      "type": "CUSHIONED_CHAIR_FRONT",
+      "col": 4,
+      "row": 4
+    },
+    {
+      "uid": "f-kitchen-chair6",
+      "type": "CUSHIONED_CHAIR_FRONT",
+      "col": 6,
+      "row": 4
     }
   ]
 }

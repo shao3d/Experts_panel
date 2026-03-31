@@ -347,52 +347,92 @@ export class OfficeState {
     return null;
   }
 
-  /** Walk agent to a random different PC seat for visual variety during phase transitions.
-   *  Only considers seats facing electronics (monitors/PCs) — never kitchen or library seats. */
-  rotateAgentSeat(id: number): boolean {
-    const ch = this.characters.get(id);
-    if (!ch || !ch.seatId) return false;
+  /** Check if a seat faces electronics (PC/monitor) */
+  private isSeatFacingPC(seatId: string): boolean {
+    const seat = this.seats.get(seatId);
+    if (!seat) return false;
+    const electronicsTiles = this.getElectronicsTiles();
+    return this.checkSeatFacesElectronics(seat, electronicsTiles);
+  }
 
-    // Build electronics tile set (same logic as findFreeSeat)
-    const electronicsTiles = new Set<string>();
+  /** Build set of tiles occupied by electronics */
+  private getElectronicsTiles(): Set<string> {
+    const tiles = new Set<string>();
     for (const item of this.layout.furniture) {
       const entry = getCatalogEntry(item.type);
       if (!entry || entry.category !== 'electronics') continue;
       for (let dr = 0; dr < entry.footprintH; dr++) {
         for (let dc = 0; dc < entry.footprintW; dc++) {
-          electronicsTiles.add(`${item.col + dc},${item.row + dr}`);
+          tiles.add(`${item.col + dc},${item.row + dr}`);
         }
       }
     }
+    return tiles;
+  }
 
-    // Collect free PC seats (excluding current seat)
-    const freePcSeats: string[] = [];
+  /** Check if a single seat faces electronics tiles */
+  private checkSeatFacesElectronics(seat: Seat, electronicsTiles: Set<string>): boolean {
+    const dCol =
+      seat.facingDir === Direction.RIGHT ? 1 : seat.facingDir === Direction.LEFT ? -1 : 0;
+    const dRow = seat.facingDir === Direction.DOWN ? 1 : seat.facingDir === Direction.UP ? -1 : 0;
+    for (let d = 1; d <= AUTO_ON_FACING_DEPTH; d++) {
+      const tileCol = seat.seatCol + dCol * d;
+      const tileRow = seat.seatRow + dRow * d;
+      if (electronicsTiles.has(`${tileCol},${tileRow}`)) return true;
+      if (dCol !== 0) {
+        if (electronicsTiles.has(`${tileCol},${tileRow - 1}`) ||
+            electronicsTiles.has(`${tileCol},${tileRow + 1}`)) return true;
+      } else {
+        if (electronicsTiles.has(`${tileCol - 1},${tileRow}`) ||
+            electronicsTiles.has(`${tileCol + 1},${tileRow}`)) return true;
+      }
+    }
+    return false;
+  }
+
+  /** Build set of seat UIDs on sofa furniture (excluded from lounge rotation) */
+  private getSofaSeatUids(): Set<string> {
+    const uids = new Set<string>();
+    for (const item of this.layout.furniture) {
+      if (item.type.startsWith('SOFA')) uids.add(item.uid);
+    }
+    return uids;
+  }
+
+  /** Walk agent to a random different seat. When preferNonPC=true, prefers lounge seats
+   *  (kitchen chairs, library chairs — excludes sofas). Otherwise prefers PC seats. */
+  rotateAgentSeat(id: number, preferNonPC = false): boolean {
+    const ch = this.characters.get(id);
+    if (!ch || !ch.seatId) return false;
+
+    const electronicsTiles = this.getElectronicsTiles();
+    const sofaUids = this.getSofaSeatUids();
+
+    const pcSeats: string[] = [];
+    const loungeSeats: string[] = [];
     for (const [uid, seat] of this.seats) {
       if (seat.assigned || uid === ch.seatId) continue;
-      // Check if seat faces electronics
-      const dCol =
-        seat.facingDir === Direction.RIGHT ? 1 : seat.facingDir === Direction.LEFT ? -1 : 0;
-      const dRow = seat.facingDir === Direction.DOWN ? 1 : seat.facingDir === Direction.UP ? -1 : 0;
-      let facesPC = false;
-      for (let d = 1; d <= AUTO_ON_FACING_DEPTH && !facesPC; d++) {
-        const tileCol = seat.seatCol + dCol * d;
-        const tileRow = seat.seatRow + dRow * d;
-        if (electronicsTiles.has(`${tileCol},${tileRow}`)) { facesPC = true; break; }
-        if (dCol !== 0) {
-          if (electronicsTiles.has(`${tileCol},${tileRow - 1}`) ||
-              electronicsTiles.has(`${tileCol},${tileRow + 1}`)) { facesPC = true; break; }
-        } else {
-          if (electronicsTiles.has(`${tileCol - 1},${tileRow}`) ||
-              electronicsTiles.has(`${tileCol + 1},${tileRow}`)) { facesPC = true; break; }
-        }
-      }
-      if (facesPC) freePcSeats.push(uid);
+      if (sofaUids.has(uid)) continue;
+      const facesPC = this.checkSeatFacesElectronics(seat, electronicsTiles);
+      (facesPC ? pcSeats : loungeSeats).push(uid);
     }
 
-    if (freePcSeats.length === 0) return false;
-    const newSeatId = freePcSeats[Math.floor(Math.random() * freePcSeats.length)];
+    const candidates = preferNonPC
+      ? (loungeSeats.length > 0 ? loungeSeats : pcSeats)
+      : (pcSeats.length > 0 ? pcSeats : []);
+
+    if (candidates.length === 0) return false;
+    const newSeatId = candidates[Math.floor(Math.random() * candidates.length)];
     this.reassignSeat(id, newSeatId);
     return true;
+  }
+
+  /** Ensure agent is at a PC seat. Only moves if currently at a non-PC (lounge) seat. */
+  ensurePCSeat(id: number): boolean {
+    const ch = this.characters.get(id);
+    if (!ch || !ch.seatId) return false;
+    if (this.isSeatFacingPC(ch.seatId)) return false; // already at PC
+    return this.rotateAgentSeat(id, false);
   }
 
   /** Reassign an agent from their current seat to a new seat */

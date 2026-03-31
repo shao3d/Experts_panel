@@ -193,10 +193,20 @@ const PixelOffice: React.FC<PixelOfficeProps> = ({
 
       const timer = window.setTimeout(() => {
         const agentId = expertToInt(experts[originalIdx]);
-        // First N characters in shuffled order rotate to a different desk
-        if (order < rotateCount) {
-          office.rotateAgentSeat(agentId);
+
+        if (toolName === 'Edit') {
+          if (order < rotateCount) {
+            // Rotating writer: move to a different PC desk
+            office.rotateAgentSeat(agentId, false);
+          } else {
+            // Non-rotating writer: return to PC if stuck in lounge
+            office.ensurePCSeat(agentId);
+          }
+        } else if (order < rotateCount) {
+          // Rotating reader: head to a lounge seat (kitchen/library)
+          office.rotateAgentSeat(agentId, true);
         }
+
         office.setAgentTool(agentId, toolName);
       }, delay);
       staggerTimersRef.current.push(timer);
