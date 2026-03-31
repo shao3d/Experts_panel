@@ -181,9 +181,10 @@ const PixelOffice: React.FC<PixelOfficeProps> = ({
       [indices[i], indices[j]] = [indices[j], indices[i]];
     }
 
-    // Random number of characters rotate desks (1 to total-1, uniform)
-    // Always at least 1 moves — creates visible life on every phase transition
-    const rotateCount = Math.max(1, Math.floor(Math.random() * total));
+    // Writers: at least half rotate between PC desks for visible movement
+    const writerRotateCount = Math.max(Math.ceil(total / 2), Math.floor(Math.random() * total));
+    // Readers: all but 1-2 go to lounge (kitchen/library)
+    const readersAtPC = 1 + Math.floor(Math.random() * 2); // 1 or 2 stay at PC
 
     // Stagger transitions so characters switch one-by-one (cascade effect)
     indices.forEach((originalIdx, order) => {
@@ -195,16 +196,19 @@ const PixelOffice: React.FC<PixelOfficeProps> = ({
         const agentId = expertToInt(experts[originalIdx]);
 
         if (toolName === 'Edit') {
-          if (order < rotateCount) {
+          if (order < writerRotateCount) {
             // Rotating writer: move to a different PC desk
             office.rotateAgentSeat(agentId, false);
           } else {
             // Non-rotating writer: return to PC if stuck in lounge
             office.ensurePCSeat(agentId);
           }
-        } else if (order < rotateCount) {
-          // Rotating reader: head to a lounge seat (kitchen/library)
-          office.rotateAgentSeat(agentId, true);
+        } else {
+          // Readers: most go to lounge, a few stay at PC
+          const readerIndex = order - typeSlots;
+          if (readerIndex >= readersAtPC) {
+            office.rotateAgentSeat(agentId, true);
+          }
         }
 
         office.setAgentTool(agentId, toolName);
