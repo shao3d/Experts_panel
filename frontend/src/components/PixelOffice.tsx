@@ -137,6 +137,8 @@ const PixelOffice: React.FC<PixelOfficeProps> = ({
     const office = officeRef.current;
     if (!office || !isProcessing) {
       prevMixKeyRef.current = '';
+      staggerTimersRef.current.forEach(t => clearTimeout(t));
+      staggerTimersRef.current = [];
       return;
     }
 
