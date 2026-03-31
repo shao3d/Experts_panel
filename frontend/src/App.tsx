@@ -7,7 +7,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { QueryForm } from './components/QueryForm';
 import ExpertAccordion from './components/ExpertAccordion';
 import ProgressSection from './components/ProgressSection';
-import PixelMascot from './components/PixelMascot';
+// PixelMascot removed — no pixel office on mobile
 import { useMediaQuery } from './utils/useMediaQuery';
 import ExpertSelectionBar from './components/ExpertSelectionBar'; // Kept for Mobile
 import { Sidebar } from './components/Sidebar'; // New Desktop Sidebar
@@ -260,10 +260,10 @@ export const App: React.FC = () => {
         <main className="flex-1 overflow-y-auto p-4 md:p-6" id="main-scroll-container">
            <div className="max-w-[1600px] mx-auto w-full pb-24 md:pb-10">
 
-              {/* Pixel Office / Mascot — always visible, scrolls with content */}
-              {isDesktop ? (
+              {/* Pixel Office — desktop only, hidden on mobile */}
+              {isDesktop && (
                 <PixelOfficeErrorBoundary>
-                <Suspense fallback={<div className="bg-gray-100 rounded-lg mb-4 animate-pulse" style={{ height: 360 }} />}>
+                <Suspense fallback={<div className="rounded-lg mb-4 animate-pulse" style={{ height: 360 }} />}>
                   <PixelOffice
                     selectedExperts={selectedExperts}
                     progressEvents={progressEvents}
@@ -271,11 +271,6 @@ export const App: React.FC = () => {
                   />
                 </Suspense>
                 </PixelOfficeErrorBoundary>
-              ) : (
-                <PixelMascot
-                  progressEvents={progressEvents}
-                  isProcessing={isProcessing}
-                />
               )}
 
               {error ? (
