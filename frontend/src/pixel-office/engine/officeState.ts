@@ -412,7 +412,12 @@ export class OfficeState {
     const loungeSeats: string[] = [];
     for (const [uid, seat] of this.seats) {
       if (seat.assigned || uid === ch.seatId) continue;
-      if (sofaUids.has(uid)) continue;
+      // Exclude sofa seats (multi-tile: uid or uid:N)
+      let isSofa = false;
+      for (const sofaUid of sofaUids) {
+        if (uid === sofaUid || uid.startsWith(sofaUid + ':')) { isSofa = true; break; }
+      }
+      if (isSofa) continue;
       const facesPC = this.checkSeatFacesElectronics(seat, electronicsTiles);
       (facesPC ? pcSeats : loungeSeats).push(uid);
     }
