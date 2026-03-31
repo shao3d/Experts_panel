@@ -29,12 +29,12 @@ The frontend source code is located in `frontend/src/`:
   - **`MetaSynthesisSection.tsx`**: Cross-expert unified analysis (above expert accordions, ≥2 experts). Bilingual title: "Сводный анализ" / "Cross-Expert Analysis".
   - **`CommunityInsightsSection.tsx`**: Reddit analysis display.
   - **`ProgressSection.tsx`**: Real-time progress with **Smart Grouping** — dynamically groups backend phases (Search, Analysis, Insights, Video, Synthesis, Reddit) based on `pipeline_state` from SSE events. Phase names shown without icons; completed phases marked with ✓. Legacy fallback for old backends.
-  - **`PixelOffice.tsx`**: Canvas-based animated pixel office (desktop only, ≥768px). Lazy-loaded via `React.lazy()`. 4-room layout (Kitchen, 2 Work rooms, Library) with 42×15 tile grid. Characters sit at desks and animate based on pipeline phases (type during search, read during analysis). CSS scaling fallback for non-retina displays. Wrapped in `PixelOfficeErrorBoundary` for graceful degradation.
+  - **`PixelOffice.tsx`**: Canvas-based animated pixel office (desktop only, ≥768px). Lazy-loaded via `React.lazy()`. 4-room layout (Kitchen, 2 Work rooms, Library) with 42×15 tile grid, warm wood-tone floor palette. Characters animate based on pipeline phase mix: **read** during search/analysis, **type** during synthesis. Animations distributed proportionally across characters with staggered transitions; random desk rotation on phase changes via `rotateAgentSeat()` (PC-seats only). CSS scaling fallback for non-retina displays. Wrapped in `PixelOfficeErrorBoundary` for graceful degradation.
   - **`PixelMascot.tsx`**: CSS-sprite mobile mascot (<768px). Single character with idle+bounce animation. No engine chunk downloaded on mobile.
   - **`PixelCharacter.tsx`**: CSS sprite renderer for mobile mascot. Supports walk/type/read/idle animations.
 - **`pixel-office/`**: Canvas engine files (characters FSM, pathfinding, renderer, sprites, furniture catalog). Ported from [pixel-agents](https://github.com/pablodelucca/pixel-agents) with browser asset loading.
 - **`utils/`**:
-  - **`pipelineAnimState.ts`**: Maps pipeline phases to character animations (type/read/walk).
+  - **`pipelineAnimState.ts`**: Maps pipeline phases to character animations. `getAnimMix()` returns proportional type/read weights from active phases; `mixToKey()` buckets by ~20% to avoid excessive re-triggers. Search/analysis phases → read; synthesis phases → type.
   - **`useMediaQuery.ts`**: JS-based media query hook (used instead of CSS to prevent engine chunk loading on mobile).
 - **`config/`**:
   - **`expertConfig.ts`**: Central configuration for expert groups, including the new **Knowledge Hub** (Video Hub).

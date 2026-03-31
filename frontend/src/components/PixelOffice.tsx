@@ -94,6 +94,11 @@ const PixelOffice: React.FC<PixelOfficeProps> = ({
           zoom,
           0,
           0,
+          undefined,  // selection
+          undefined,  // editor
+          office.layout.tileColors ?? undefined,
+          office.layout.cols,
+          office.layout.rows,
         );
       },
     });
