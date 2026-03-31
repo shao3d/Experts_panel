@@ -219,7 +219,7 @@ const PixelOffice: React.FC<PixelOfficeProps> = ({
 
   return (
     <div
-      className="flex flex-col justify-center items-center bg-gray-100 rounded-lg overflow-hidden mb-4"
+      className="flex flex-col justify-center items-center overflow-hidden mb-4"
       style={{ height: CONTAINER_HEIGHT }}
     >
       {isLoaded ? (
