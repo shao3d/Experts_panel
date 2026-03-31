@@ -347,6 +347,54 @@ export class OfficeState {
     return null;
   }
 
+  /** Walk agent to a random different PC seat for visual variety during phase transitions.
+   *  Only considers seats facing electronics (monitors/PCs) — never kitchen or library seats. */
+  rotateAgentSeat(id: number): boolean {
+    const ch = this.characters.get(id);
+    if (!ch || !ch.seatId) return false;
+
+    // Build electronics tile set (same logic as findFreeSeat)
+    const electronicsTiles = new Set<string>();
+    for (const item of this.layout.furniture) {
+      const entry = getCatalogEntry(item.type);
+      if (!entry || entry.category !== 'electronics') continue;
+      for (let dr = 0; dr < entry.footprintH; dr++) {
+        for (let dc = 0; dc < entry.footprintW; dc++) {
+          electronicsTiles.add(`${item.col + dc},${item.row + dr}`);
+        }
+      }
+    }
+
+    // Collect free PC seats (excluding current seat)
+    const freePcSeats: string[] = [];
+    for (const [uid, seat] of this.seats) {
+      if (seat.assigned || uid === ch.seatId) continue;
+      // Check if seat faces electronics
+      const dCol =
+        seat.facingDir === Direction.RIGHT ? 1 : seat.facingDir === Direction.LEFT ? -1 : 0;
+      const dRow = seat.facingDir === Direction.DOWN ? 1 : seat.facingDir === Direction.UP ? -1 : 0;
+      let facesPC = false;
+      for (let d = 1; d <= AUTO_ON_FACING_DEPTH && !facesPC; d++) {
+        const tileCol = seat.seatCol + dCol * d;
+        const tileRow = seat.seatRow + dRow * d;
+        if (electronicsTiles.has(`${tileCol},${tileRow}`)) { facesPC = true; break; }
+        if (dCol !== 0) {
+          if (electronicsTiles.has(`${tileCol},${tileRow - 1}`) ||
+              electronicsTiles.has(`${tileCol},${tileRow + 1}`)) { facesPC = true; break; }
+        } else {
+          if (electronicsTiles.has(`${tileCol - 1},${tileRow}`) ||
+              electronicsTiles.has(`${tileCol + 1},${tileRow}`)) { facesPC = true; break; }
+        }
+      }
+      if (facesPC) freePcSeats.push(uid);
+    }
+
+    if (freePcSeats.length === 0) return false;
+    const newSeatId = freePcSeats[Math.floor(Math.random() * freePcSeats.length)];
+    this.reassignSeat(id, newSeatId);
+    return true;
+  }
+
   /** Reassign an agent from their current seat to a new seat */
   reassignSeat(agentId: number, seatId: string): void {
     const ch = this.characters.get(agentId);

@@ -122,6 +122,11 @@ const PixelOffice: React.FC<PixelOfficeProps> = ({
 
     for (const id of desired) {
       office.setAgentActive(expertToInt(id), isProcessing);
+      // First phases are always search (read) — set default tool so characters
+      // don't show typing sprite while waiting for first pipeline_state SSE event
+      if (isProcessing) {
+        office.setAgentTool(expertToInt(id), 'Read');
+      }
     }
   }, [selectedExperts, isLoaded, isProcessing]);
 
@@ -171,13 +176,23 @@ const PixelOffice: React.FC<PixelOfficeProps> = ({
       [indices[i], indices[j]] = [indices[j], indices[i]];
     }
 
+    // Random number of characters rotate desks (0 to total-1, skewed toward fewer)
+    // Math.random()² skews toward 0 — most transitions move 0-2, occasionally more
+    const rotateCount = Math.floor(Math.random() * Math.random() * total);
+
     // Stagger transitions so characters switch one-by-one (cascade effect)
     indices.forEach((originalIdx, order) => {
       const toolName = order < typeSlots ? 'Edit' : 'Read';
-      const delay = order * 350 + Math.random() * 400;
+      // Wider stagger range for more organic feel: 500-1200ms between characters
+      const delay = order * 500 + Math.random() * 700;
 
       const timer = window.setTimeout(() => {
-        office.setAgentTool(expertToInt(experts[originalIdx]), toolName);
+        const agentId = expertToInt(experts[originalIdx]);
+        // First N characters in shuffled order rotate to a different desk
+        if (order < rotateCount) {
+          office.rotateAgentSeat(agentId);
+        }
+        office.setAgentTool(agentId, toolName);
       }, delay);
       staggerTimersRef.current.push(timer);
     });
