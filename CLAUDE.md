@@ -63,7 +63,7 @@ React 18 + TypeScript frontend with:
 
 **Key Components:**
 - `App.tsx` - Main application state management with React.lazy code splitting
-- `PixelOffice.tsx` - Canvas pixel office with 4-room layout (42×15 grid), pipeline-driven character animations (desktop, lazy-loaded)
+- `PixelOffice.tsx` - Canvas pixel office with 4-room layout (42×15 grid), context-aware animations: read→lounge seats, type→PC desks, proportional mix with stagger (desktop, lazy-loaded)
 - `PixelMascot.tsx` - CSS sprite mascot with idle+bounce (mobile)
 - `ProgressSection.tsx` - Smart Grouping progress (dynamic groups from `pipeline_state`)
 - `CommunityInsightsSection.tsx` - Reddit community analysis UI
