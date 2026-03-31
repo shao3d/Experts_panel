@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import type { ProgressEvent } from '../types/api';
-import { getLatestPipelineState, getAnimState, animStateToToolName } from '../utils/pipelineAnimState';
+import { getLatestPipelineState, getAnimMix, mixToKey } from '../utils/pipelineAnimState';
 import { initializeOffice } from '../pixel-office/browserAssetLoader';
 import { startGameLoop } from '../pixel-office/engine/gameLoop';
 import { renderFrame } from '../pixel-office/engine/renderer';
@@ -32,6 +32,8 @@ const PixelOffice: React.FC<PixelOfficeProps> = ({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const officeRef = useRef<OfficeState | null>(null);
   const activeExpertsRef = useRef<string[]>([]);
+  const prevMixKeyRef = useRef('');
+  const staggerTimersRef = useRef<number[]>([]);
   const [loadError, setLoadError] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -123,18 +125,60 @@ const PixelOffice: React.FC<PixelOfficeProps> = ({
     }
   }, [selectedExperts, isLoaded, isProcessing]);
 
-  // === Effect 4b: Sync tool type on pipeline events ===
+  // === Effect 4b: Cleanup stagger timers on unmount ===
+  useEffect(() => {
+    return () => {
+      staggerTimersRef.current.forEach(t => clearTimeout(t));
+    };
+  }, []);
+
+  // === Effect 4c: Distribute animations proportionally with stagger ===
   useEffect(() => {
     const office = officeRef.current;
-    if (!office || !isProcessing) return;
+    if (!office || !isProcessing) {
+      prevMixKeyRef.current = '';
+      return;
+    }
 
     const pipelineState = getLatestPipelineState(progressEvents);
-    const animState = getAnimState(pipelineState);
-    const toolName = animStateToToolName(animState);
+    const mix = getAnimMix(pipelineState);
 
-    for (const id of activeExpertsRef.current) {
-      office.setAgentTool(expertToInt(id), toolName);
+    // No active phases (brief gap between transitions) — keep previous animations
+    if (mix.typeWeight === 0 && mix.readWeight === 0) return;
+
+    // Only redistribute when the mix changes significantly (~20% buckets)
+    const key = mixToKey(mix);
+    if (key === prevMixKeyRef.current) return;
+    prevMixKeyRef.current = key;
+
+    // Cancel any in-flight stagger from previous mix
+    staggerTimersRef.current.forEach(t => clearTimeout(t));
+    staggerTimersRef.current = [];
+
+    const experts = activeExpertsRef.current;
+    const total = experts.length;
+    if (total === 0) return;
+
+    // How many characters should be typing (writing) vs reading
+    const typeSlots = Math.round(mix.typeWeight * total);
+
+    // Fisher-Yates shuffle: randomize WHO types vs reads
+    const indices = Array.from({ length: total }, (_, i) => i);
+    for (let i = indices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [indices[i], indices[j]] = [indices[j], indices[i]];
     }
+
+    // Stagger transitions so characters switch one-by-one (cascade effect)
+    indices.forEach((originalIdx, order) => {
+      const toolName = order < typeSlots ? 'Edit' : 'Read';
+      const delay = order * 350 + Math.random() * 400;
+
+      const timer = window.setTimeout(() => {
+        office.setAgentTool(expertToInt(experts[originalIdx]), toolName);
+      }, delay);
+      staggerTimersRef.current.push(timer);
+    });
   }, [progressEvents, isProcessing]);
 
   if (loadError) return null;

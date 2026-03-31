@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { ProgressEvent } from '../types/api';
-import { getLatestPipelineState, getAnimState, type AnimState } from '../utils/pipelineAnimState';
+import { getLatestPipelineState, getAnimMix, type AnimState } from '../utils/pipelineAnimState';
 import PixelCharacter from './PixelCharacter';
 
 interface PixelMascotProps {
@@ -14,8 +14,11 @@ const PixelMascot: React.FC<PixelMascotProps> = ({ progressEvents, isProcessing 
   let animState: AnimState = 'idle';
   if (isProcessing) {
     const pipelineState = getLatestPipelineState(progressEvents);
-    const raw = getAnimState(pipelineState);
-    animState = raw === 'walk' ? 'idle' : raw;
+    const mix = getAnimMix(pipelineState);
+    // Single mascot: pick dominant animation
+    if (mix.typeWeight > 0 || mix.readWeight > 0) {
+      animState = mix.typeWeight >= mix.readWeight ? 'type' : 'read';
+    }
   }
 
   return (

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getLatestPipelineState, getAnimState, animStateToToolName } from './pipelineAnimState';
+import { getLatestPipelineState, getAnimMix, mixToKey } from './pipelineAnimState';
 import type { ProgressEvent } from '../types/api';
 
 // === getLatestPipelineState ===
@@ -47,136 +47,145 @@ describe('getLatestPipelineState', () => {
   });
 });
 
-// === getAnimState ===
+// === getAnimMix ===
 
-describe('getAnimState', () => {
-  it('returns walk when state is null (no pipeline data yet)', () => {
-    expect(getAnimState(null)).toBe('walk');
+describe('getAnimMix', () => {
+  it('returns zero weights when state is null', () => {
+    expect(getAnimMix(null)).toEqual({ typeWeight: 0, readWeight: 0 });
   });
 
-  it('returns walk when no phases are active (all pending)', () => {
-    expect(getAnimState({ scout: 'pending', map: 'pending' })).toBe('walk');
+  it('returns zero weights when no phases are active', () => {
+    expect(getAnimMix({ scout: 'pending', map: 'pending' }))
+      .toEqual({ typeWeight: 0, readWeight: 0 });
   });
 
-  it('returns walk when all phases completed', () => {
-    expect(getAnimState({
-      scout: 'completed', map: 'completed', resolve: 'completed',
-    })).toBe('walk');
+  it('returns zero weights when all phases completed', () => {
+    expect(getAnimMix({ scout: 'completed', reduce: 'completed' }))
+      .toEqual({ typeWeight: 0, readWeight: 0 });
   });
 
-  it('returns walk when all phases skipped', () => {
-    expect(getAnimState({
-      reddit_search: 'skipped', reddit_synthesis: 'skipped',
-    })).toBe('walk');
+  // READ phases (searching, analyzing, validating)
+  it('returns 100% read for scout (analyzing query)', () => {
+    const mix = getAnimMix({ scout: 'active' });
+    expect(mix.readWeight).toBe(1);
+    expect(mix.typeWeight).toBe(0);
   });
 
-  it('returns type when scout is active (search phase)', () => {
-    expect(getAnimState({ scout: 'active' })).toBe('type');
+  it('returns 100% read for map (reading posts)', () => {
+    const mix = getAnimMix({ map: 'active' });
+    expect(mix.readWeight).toBe(1);
+    expect(mix.typeWeight).toBe(0);
   });
 
-  it('returns type when map is active (scoring phase)', () => {
-    expect(getAnimState({ map: 'active' })).toBe('type');
+  it('returns 100% read for medium_scoring', () => {
+    const mix = getAnimMix({ medium_scoring: 'active' });
+    expect(mix.readWeight).toBe(1);
   });
 
-  it('returns type when medium_scoring is active', () => {
-    expect(getAnimState({ medium_scoring: 'active' })).toBe('type');
+  it('returns 100% read for resolve (loading context)', () => {
+    const mix = getAnimMix({ resolve: 'active' });
+    expect(mix.readWeight).toBe(1);
   });
 
-  it('returns type when video_map is active (search)', () => {
-    expect(getAnimState({ video_map: 'active' })).toBe('type');
+  it('returns 100% read for video_map (watching video)', () => {
+    const mix = getAnimMix({ video_map: 'active' });
+    expect(mix.readWeight).toBe(1);
   });
 
-  it('returns type when reddit_search is active', () => {
-    expect(getAnimState({ reddit_search: 'active' })).toBe('type');
+  it('returns 100% read for reddit_search', () => {
+    const mix = getAnimMix({ reddit_search: 'active' });
+    expect(mix.readWeight).toBe(1);
   });
 
-  it('returns read when meta_synthesis is active (analysis)', () => {
-    expect(getAnimState({ meta_synthesis: 'active' })).toBe('read');
+  it('returns 100% read for language_validation (proofreading)', () => {
+    const mix = getAnimMix({ language_validation: 'active' });
+    expect(mix.readWeight).toBe(1);
   });
 
-  it('returns read when reddit_synthesis is active (analysis)', () => {
-    expect(getAnimState({ reddit_synthesis: 'active' })).toBe('read');
+  it('returns 100% read for comment_groups (reading discussions)', () => {
+    const mix = getAnimMix({ comment_groups: 'active' });
+    expect(mix.readWeight).toBe(1);
   });
 
-  it('returns read for video analysis phases', () => {
-    for (const phase of ['video_resolve', 'video_synthesis', 'video_validation']) {
-      expect(getAnimState({ [phase]: 'active' })).toBe('read');
-    }
+  // TYPE phases (writing, synthesis)
+  it('returns 100% type for reduce (writing answer)', () => {
+    const mix = getAnimMix({ reduce: 'active' });
+    expect(mix.typeWeight).toBe(1);
+    expect(mix.readWeight).toBe(0);
   });
 
-  it('returns read when resolve is active', () => {
-    expect(getAnimState({ resolve: 'active' })).toBe('read');
+  it('returns 100% type for comment_synthesis (writing insights)', () => {
+    const mix = getAnimMix({ comment_synthesis: 'active' });
+    expect(mix.typeWeight).toBe(1);
   });
 
-  it('returns read when reduce is active', () => {
-    expect(getAnimState({ reduce: 'active' })).toBe('read');
+  it('returns 100% type for meta_synthesis (writing analysis)', () => {
+    const mix = getAnimMix({ meta_synthesis: 'active' });
+    expect(mix.typeWeight).toBe(1);
   });
 
-  it('returns read when language_validation is active', () => {
-    expect(getAnimState({ language_validation: 'active' })).toBe('read');
+  it('returns 100% type for video_synthesis', () => {
+    const mix = getAnimMix({ video_synthesis: 'active' });
+    expect(mix.typeWeight).toBe(1);
   });
 
-  it('returns read when comment_groups is active', () => {
-    expect(getAnimState({ comment_groups: 'active' })).toBe('read');
+  it('returns 100% type for reddit_synthesis', () => {
+    const mix = getAnimMix({ reddit_synthesis: 'active' });
+    expect(mix.typeWeight).toBe(1);
   });
 
-  it('returns read when comment_synthesis is active', () => {
-    expect(getAnimState({ comment_synthesis: 'active' })).toBe('read');
+  // Mixed phases (parallel pipeline)
+  it('returns 50/50 when one type and one read phase active', () => {
+    const mix = getAnimMix({ reduce: 'active', map: 'active' });
+    expect(mix.typeWeight).toBe(0.5);
+    expect(mix.readWeight).toBe(0.5);
   });
 
-  it('returns type when both type and read phases are active (type wins)', () => {
-    expect(getAnimState({
+  it('returns proportional weights for multiple mixed phases', () => {
+    // 1 type (reduce) + 2 read (map, scout) = 33% type, 67% read
+    const mix = getAnimMix({
+      reduce: 'active',
       map: 'active',
-      resolve: 'active',
-    })).toBe('type');
-  });
-
-  it('returns walk when active phase is unknown', () => {
-    expect(getAnimState({ some_future_phase: 'active' })).toBe('walk');
-  });
-
-  it('returns walk when phase has error status (not active)', () => {
-    expect(getAnimState({ video_synthesis: 'error' })).toBe('walk');
-  });
-
-  it('returns read when multiple read phases active simultaneously', () => {
-    expect(getAnimState({
-      resolve: 'active',
-      comment_groups: 'active',
-    })).toBe('read');
-  });
-
-  it('returns type when scout + resolve both active (type wins)', () => {
-    expect(getAnimState({
       scout: 'active',
-      resolve: 'active',
-    })).toBe('type');
+    });
+    expect(mix.typeWeight).toBeCloseTo(1 / 3);
+    expect(mix.readWeight).toBeCloseTo(2 / 3);
   });
 
-  it('returns type when map + video_synthesis both active', () => {
-    expect(getAnimState({
-      map: 'active',
-      video_synthesis: 'active',
-    })).toBe('type');
+  it('ignores non-active phases in weight calculation', () => {
+    const mix = getAnimMix({
+      scout: 'completed',
+      map: 'completed',
+      reduce: 'active',
+    });
+    expect(mix.typeWeight).toBe(1);
+    expect(mix.readWeight).toBe(0);
+  });
+
+  it('returns zero weights for unknown active phases', () => {
+    expect(getAnimMix({ some_future_phase: 'active' }))
+      .toEqual({ typeWeight: 0, readWeight: 0 });
   });
 });
 
-// === animStateToToolName ===
+// === mixToKey ===
 
-describe('animStateToToolName', () => {
-  it('maps read → Read (engine READING_TOOLS set)', () => {
-    expect(animStateToToolName('read')).toBe('Read');
+describe('mixToKey', () => {
+  it('buckets into 20% increments', () => {
+    expect(mixToKey({ typeWeight: 0, readWeight: 1 })).toBe('0-5');
+    expect(mixToKey({ typeWeight: 1, readWeight: 0 })).toBe('5-0');
+    expect(mixToKey({ typeWeight: 0.5, readWeight: 0.5 })).toBe('3-3');
   });
 
-  it('maps type → Edit', () => {
-    expect(animStateToToolName('type')).toBe('Edit');
+  it('returns same key for similar mixes (within bucket)', () => {
+    const key1 = mixToKey({ typeWeight: 0.32, readWeight: 0.68 });
+    const key2 = mixToKey({ typeWeight: 0.35, readWeight: 0.65 });
+    expect(key1).toBe(key2);
   });
 
-  it('maps walk → Edit (default)', () => {
-    expect(animStateToToolName('walk')).toBe('Edit');
-  });
-
-  it('maps idle → Edit (default)', () => {
-    expect(animStateToToolName('idle')).toBe('Edit');
+  it('returns different keys for significantly different mixes', () => {
+    const key1 = mixToKey({ typeWeight: 0.2, readWeight: 0.8 });
+    const key2 = mixToKey({ typeWeight: 0.8, readWeight: 0.2 });
+    expect(key1).not.toBe(key2);
   });
 });
