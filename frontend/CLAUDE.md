@@ -26,7 +26,7 @@ The frontend source code is located in `frontend/src/`:
   - **`ExpertAccordion.tsx`**: Specialized view for expert and video insights (🎥 icons, "Video Archive" labels).
   - **`PostCard.tsx`**: Renders Telegram posts and Video segments (YouTube deep-links via `media_metadata`).
   - **`ExpertResponse.tsx`**: Renders the AI answer with source citations.
-  - **`MetaSynthesisSection.tsx`**: Cross-expert unified analysis (🧠 icon, above expert accordions, ≥2 experts).
+  - **`MetaSynthesisSection.tsx`**: Cross-expert unified analysis (above expert accordions, ≥2 experts). Bilingual title: "Сводный анализ" / "Cross-Expert Analysis".
   - **`CommunityInsightsSection.tsx`**: Reddit analysis display.
   - **`ProgressSection.tsx`**: Real-time progress with **Smart Grouping** — dynamically groups backend phases (Search, Analysis, Insights, Video, Synthesis, Reddit) based on `pipeline_state` from SSE events. Phase names shown without icons; completed phases marked with ✓. Legacy fallback for old backends.
   - **`PixelOffice.tsx`**: Canvas-based animated pixel office (desktop only, ≥768px). Lazy-loaded via `React.lazy()`. 4-room layout (Kitchen, 2 Work rooms, Library) with 42×15 tile grid. Characters sit at desks and animate based on pipeline phases (type during search, read during analysis). CSS scaling fallback for non-retina displays. Wrapped in `PixelOfficeErrorBoundary` for graceful degradation.

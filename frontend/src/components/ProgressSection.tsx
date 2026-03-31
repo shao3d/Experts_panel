@@ -15,17 +15,17 @@ type PhaseStatus = 'pending' | 'active' | 'completed' | 'skipped' | 'error';
 
 // Smart Grouping: maps backend phases to UI groups
 const PIPELINE_GROUPS = [
-  { id: 'search', label: 'Search', icon: '🔍',
+  { id: 'search', label: 'Search',
     phases: ['scout', 'map', 'medium_scoring'] },
-  { id: 'analysis', label: 'Analysis', icon: '🔗',
+  { id: 'analysis', label: 'Analysis',
     phases: ['resolve', 'reduce', 'language_validation'] },
-  { id: 'insights', label: 'Insights', icon: '💬',
+  { id: 'insights', label: 'Insights',
     phases: ['comment_groups', 'comment_synthesis'] },
-  { id: 'video', label: 'Video', icon: '🎥',
+  { id: 'video', label: 'Video',
     phases: ['video_map', 'video_resolve', 'video_synthesis', 'video_validation'] },
-  { id: 'meta', label: 'Synthesis', icon: '🧠',
+  { id: 'meta', label: 'Synthesis',
     phases: ['meta_synthesis'] },
-  { id: 'reddit', label: 'Reddit', icon: '🌐',
+  { id: 'reddit', label: 'Reddit',
     phases: ['reddit_search', 'reddit_synthesis'] },
 ];
 
@@ -121,11 +121,11 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({ isProcessing, progres
   // --- Legacy logic (for backends without pipeline_state) ---
 
   const legacyPhases = [
-    { name: 'map', label: 'Map', icon: '🔍' },
-    { name: 'resolve', label: 'Resolve', icon: '🔗' },
-    { name: 'reduce', label: 'Reduce', icon: '⚡' },
-    { name: 'comment_groups', label: 'Comments', icon: '💬' },
-    { name: 'final_results', label: 'Final', icon: '🎯' }
+    { name: 'map', label: 'Map' },
+    { name: 'resolve', label: 'Resolve' },
+    { name: 'reduce', label: 'Reduce' },
+    { name: 'comment_groups', label: 'Comments' },
+    { name: 'final_results', label: 'Final' }
   ];
 
   const getLegacyPhaseStatus = (phaseName: string): PhaseStatus => {

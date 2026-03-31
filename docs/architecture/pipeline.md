@@ -121,7 +121,7 @@ The system processes user queries through an **ten-phase pipeline** using a **Ge
 - **Fail-Safe**: Returns None on error — individual expert answers still displayed normally.
 - **Parallelism**: Launched as `asyncio.create_task()` right after expert collection, runs IN PARALLEL with Reddit wait. Awaited after Reddit completes (typically already done by then).
 - **Timeout**: 30s hard limit; if exceeded, cancelled gracefully.
-- **UX Integration**: Displayed as 🧠 "Сводный анализ" / "Cross-Expert Analysis" section ABOVE individual expert accordions.
+- **UX Integration**: Displayed as "Сводный анализ" / "Cross-Expert Analysis" collapsible section ABOVE individual expert accordions.
 
 ---
 
