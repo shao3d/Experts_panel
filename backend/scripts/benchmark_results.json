@@ -1,0 +1,16 @@
+{
+  "hybrid": {
+    "wall_time_ms": 62694.8,
+    "expert_timings": {},
+    "event_count": 0,
+    "error": null,
+    "events": []
+  },
+  "standard": {
+    "wall_time_ms": 45028.7,
+    "expert_timings": {},
+    "event_count": 0,
+    "error": null,
+    "events": []
+  }
+}

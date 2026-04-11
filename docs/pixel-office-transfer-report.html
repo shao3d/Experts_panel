@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pixel Office Engine — Transfer Report</title>
+<style>
+  :root {
+    --apple-blue: #0071e3;
+    --apple-blue-hover: #0077ED;
+    --gray-50: #fafafa;
+    --gray-100: #f5f5f7;
+    --gray-200: #e8e8ed;
+    --gray-400: #a1a1a6;
+    --gray-500: #86868b;
+    --gray-600: #6e6e73;
+    --gray-800: #1d1d1f;
+    --gray-900: #111;
+    --radius: 14px;
+    --transition: 0.35s cubic-bezier(.4,0,.2,1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
+                 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background: #fff;
+    color: var(--gray-800);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.5;
+  }
+
+  /* ─── Header ─── */
+  .header {
+    text-align: center;
+    padding: 60px 24px 20px;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .header .eyebrow {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--apple-blue);
+    margin-bottom: 12px;
+  }
+  .header h1 {
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.12;
+    color: var(--gray-900);
+    margin-bottom: 14px;
+  }
+  .header .subtitle {
+    font-size: 18px;
+    color: var(--gray-600);
+    max-width: 520px;
+    margin: 0 auto;
+    line-height: 1.5;
+  }
+  .header .meta {
+    margin-top: 20px;
+    font-size: 13px;
+    color: var(--gray-400);
+  }
+
+  /* ─── Tab Navigation ─── */
+  .tab-bar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255,255,255,0.82);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 1px solid var(--gray-200);
+  }
+  .tab-bar-inner {
+    display: flex;
+    gap: 4px;
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 0 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .tab-bar-inner::-webkit-scrollbar { display: none; }
+
+  .tab-btn {
+    flex-shrink: 0;
+    padding: 14px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-500);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--gray-800); }
+  .tab-btn.active {
+    color: var(--gray-900);
+    border-bottom-color: var(--gray-900);
+    font-weight: 600;
+  }
+
+  /* ─── Tab Content ─── */
+  .tab-panels {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+  .tab-panel {
+    display: none;
+    animation: fadeIn 0.4s ease;
+  }
+  .tab-panel.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── Section Styles ─── */
+  .section {
+    padding: 48px 0 56px;
+  }
+  .section h2 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+    color: var(--gray-900);
+  }
+  .section .lead {
+    font-size: 17px;
+    color: var(--gray-600);
+    margin-bottom: 32px;
+    max-width: 560px;
+  }
+  .section p {
+    font-size: 15px;
+    color: var(--gray-800);
+    margin-bottom: 16px;
+    line-height: 1.65;
+  }
+
+  /* ─── Hero Numbers ─── */
+  .hero-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin: 32px 0;
+  }
+  .hero-card {
+    background: var(--gray-100);
+    border-radius: var(--radius);
+    padding: 24px;
+    text-align: center;
+  }
+  .hero-card .num {
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--gray-900);
+    line-height: 1.1;
+  }
+  .hero-card .label {
+    font-size: 13px;
+    color: var(--gray-500);
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+
+  /* ─── Value Cards ─── */
+  .value-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 28px;
+  }
+  .value-card {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 28px 28px 24px;
+    transition: box-shadow var(--transition), transform var(--transition);
+  }
+  .value-card:hover {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    transform: translateY(-2px);
+  }
+  .value-card .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+  }
+  .badge-speed { background: #e0f2fe; color: #0369a1; }
+  .badge-scale { background: #f0fdf4; color: #15803d; }
+  .badge-wow   { background: #fef3c7; color: #b45309; }
+
+  .value-card h3 {
+    font-size: 19px;
+    font-weight: 650;
+    margin-bottom: 8px;
+    color: var(--gray-900);
+  }
+  .value-card p {
+    font-size: 15px;
+    color: var(--gray-600);
+    line-height: 1.6;
+    margin-bottom: 0;
+  }
+
+  /* ─── Context Callout ─── */
+  .context-callout {
+    background: linear-gradient(135deg, #f0f5ff 0%, #f5f3ff 100%);
+    border-radius: var(--radius);
+    padding: 24px 28px;
+    margin-bottom: 32px;
+  }
+  .context-callout .badge {
+    margin-bottom: 10px;
+  }
+  .context-callout .callout-body {
+    font-size: 15px;
+    color: var(--gray-800);
+    line-height: 1.6;
+  }
+  .context-callout strong {
+    font-weight: 600;
+    color: var(--gray-900);
+  }
+
+  /* ─── Feature List ─── */
+  .feature-list {
+    list-style: none;
+    margin: 24px 0;
+  }
+  .feature-list li {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--gray-200);
+    font-size: 15px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    color: var(--gray-800);
+  }
+  .feature-list li:last-child { border-bottom: none; }
+  .feature-list .icon {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    background: var(--gray-100);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+  .feature-list strong {
+    font-weight: 600;
+    color: var(--gray-900);
+  }
+
+  /* ─── Layers (Recipe) ─── */
+  .layers {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 28px 0;
+  }
+  .layer {
+    display: flex;
+    gap: 20px;
+    padding: 24px 0;
+    border-bottom: 1px solid var(--gray-200);
+    align-items: flex-start;
+  }
+  .layer:last-child { border-bottom: none; }
+  .layer-num {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--gray-900);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .layer-body h3 {
+    font-size: 17px;
+    font-weight: 650;
+    color: var(--gray-900);
+    margin-bottom: 4px;
+  }
+  .layer-body p {
+    font-size: 14px;
+    color: var(--gray-600);
+    margin-bottom: 0;
+    line-height: 1.55;
+  }
+  .layer-tag {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 5px;
+    background: var(--gray-100);
+    color: var(--gray-600);
+    margin-top: 8px;
+  }
+
+  /* ─── Pitfall Grid ─── */
+  .pitfall-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 14px;
+    margin: 28px 0;
+  }
+  .pitfall {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .pitfall .pit-id {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--apple-blue);
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+  .pitfall h4 {
+    font-size: 14px;
+    font-weight: 650;
+    color: var(--gray-900);
+    margin-bottom: 4px;
+  }
+  .pitfall p {
+    font-size: 13px;
+    color: var(--gray-500);
+    line-height: 1.45;
+    margin-bottom: 0;
+  }
+
+  /* ─── Timeline ─── */
+  .timeline {
+    position: relative;
+    margin: 28px 0;
+    padding-left: 28px;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: var(--gray-200);
+    border-radius: 1px;
+  }
+  .tl-item {
+    position: relative;
+    padding: 0 0 28px 0;
+  }
+  .tl-item:last-child { padding-bottom: 0; }
+  .tl-item::before {
+    content: '';
+    position: absolute;
+    left: -24px;
+    top: 7px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--gray-400);
+    border: 2px solid #fff;
+  }
+  .tl-item.highlight::before {
+    background: var(--apple-blue);
+    box-shadow: 0 0 0 3px rgba(0,113,227,0.15);
+  }
+  .tl-date {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray-400);
+    letter-spacing: 0.02em;
+    margin-bottom: 2px;
+  }
+  .tl-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: 2px;
+  }
+  .tl-desc {
+    font-size: 13px;
+    color: var(--gray-500);
+    line-height: 1.5;
+  }
+
+  /* ─── CTA ─── */
+  .cta-box {
+    background: var(--gray-900);
+    color: #fff;
+    border-radius: var(--radius);
+    padding: 36px 32px;
+    margin: 32px 0 0;
+    text-align: center;
+  }
+  .cta-box h3 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .cta-box p {
+    font-size: 15px;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 0;
+    line-height: 1.6;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* ─── Checklist ─── */
+  .checklist {
+    list-style: none;
+    margin: 24px 0;
+  }
+  .checklist li {
+    padding: 10px 0;
+    font-size: 15px;
+    color: var(--gray-800);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .checklist .check {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #d1fae5;
+    color: #059669;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .checklist .todo {
+    background: var(--gray-100);
+    color: var(--gray-400);
+  }
+
+  /* ─── Demo Button ─── */
+  .demo-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: var(--apple-blue);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    border: none;
+    border-radius: 980px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s;
+    margin-top: 8px;
+  }
+  .demo-btn:hover { background: var(--apple-blue-hover); }
+  .demo-btn svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+  }
+
+  /* ─── Anti-Drone Diagram ─── */
+  .flow-diagram {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+    margin: 28px 0;
+  }
+  .flow-step {
+    background: var(--gray-100);
+    border-radius: 10px;
+    padding: 14px 18px;
+    text-align: center;
+    min-width: 130px;
+  }
+  .flow-step .step-title {
+    font-size: 13px;
+    font-weight: 650;
+    color: var(--gray-900);
+    margin-bottom: 2px;
+  }
+  .flow-step .step-desc {
+    font-size: 12px;
+    color: var(--gray-500);
+  }
+  .flow-arrow {
+    font-size: 18px;
+    color: var(--gray-400);
+  }
+
+  /* ─── Footer ─── */
+  .footer {
+    text-align: center;
+    padding: 40px 24px 48px;
+    font-size: 12px;
+    color: var(--gray-400);
+    border-top: 1px solid var(--gray-200);
+    margin-top: 20px;
+  }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 600px) {
+    .header { padding: 40px 16px 16px; }
+    .section { padding: 32px 0 40px; }
+    .tab-btn { padding: 12px 12px; font-size: 12px; }
+    .hero-grid { grid-template-columns: repeat(2, 1fr); }
+    .pitfall-grid { grid-template-columns: 1fr; }
+    .flow-diagram { flex-direction: column; }
+    .flow-arrow { transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ─── Header ─── -->
+<div class="header">
+  <div class="eyebrow">Transfer Report</div>
+  <h1>Pixel Office Engine</h1>
+  <p class="subtitle">Как мы портировали Canvas-движок pixel-agents в продакшн React-приложение — и получили переиспользуемый рецепт для SODA.</p>
+  <p class="meta">Андрей Сазонов &middot; Команда SODA &middot; 28–31 марта 2026</p>
+</div>
+
+<!-- ─── Tab Bar ─── -->
+<nav class="tab-bar">
+  <div class="tab-bar-inner">
+    <button class="tab-btn active" data-tab="result">Результат</button>
+    <button class="tab-btn" data-tab="value">Ценность</button>
+    <button class="tab-btn" data-tab="engine">Движок</button>
+    <button class="tab-btn" data-tab="alive">Живой офис</button>
+    <button class="tab-btn" data-tab="recipe">Рецепт переноса</button>
+    <button class="tab-btn" data-tab="pitfalls">Грабли</button>
+    <button class="tab-btn" data-tab="timeline">Хронология</button>
+  </div>
+</nav>
+
+<!-- ─── Tab Panels ─── -->
+<div class="tab-panels">
+
+  <!-- ── 1. Результат ── -->
+  <div class="tab-panel active" id="result">
+    <div class="section">
+      <h2>4 дня — от репо до продакшна</h2>
+      <p class="lead">Взяли open-source движок, портировали в браузер, подключили к AI-пайплайну, довели до продакшна. Получили готовый рецепт трансфера.</p>
+
+      <div class="hero-grid">
+        <div class="hero-card">
+          <div class="num">4 477</div>
+          <div class="label">строк движка<br>скопировано и адаптировано</div>
+        </div>
+        <div class="hero-card">
+          <div class="num">~310</div>
+          <div class="label">строк интеграции<br>написано с нуля</div>
+        </div>
+        <div class="hero-card">
+          <div class="num">0</div>
+          <div class="label">npm-зависимостей<br>чистый Canvas 2D</div>
+        </div>
+        <div class="hero-card">
+          <div class="num">55+</div>
+          <div class="label">тестов<br>покрывают движок</div>
+        </div>
+      </div>
+
+      <p>Главный артефакт — не сам офис на экране, а <strong>Porting Guide</strong> (563 строки): подробный гайд по архитектуре движка + чеклист из 11 пунктов + 9 задокументированных подводных камней. По нему можно повторить перенос на другой React-фронтенд за рабочий день.</p>
+
+      <p style="font-size: 13px; color: var(--gray-500); margin-bottom: 12px;">Pixel Office работает только на десктопе (от 768px). На мобильных устройствах офис не отображается.</p>
+
+      <a class="demo-btn" href="https://expa.beyondhorizon.dev/" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16"><path d="M9 2H4.5A1.5 1.5 0 003 3.5v9A1.5 1.5 0 004.5 14h7a1.5 1.5 0 001.5-1.5V7m-4-5h4m0 0v4m0-4L7.5 8.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Открыть продакшн
+      </a>
+    </div>
+  </div>
+
+  <!-- ── 2. Ценность ── -->
+  <div class="tab-panel" id="value">
+    <div class="section">
+      <h2>Три уровня ценности для SODA</h2>
+      <p class="lead">Что мы получили и зачем это SODA.</p>
+
+      <div class="context-callout">
+        <div class="callout-body">
+          <div style="margin-bottom:12px;"><span class="badge" style="background:#f0e8ff; color:#7c3aed;">Предыстория</span></div>
+          В SODA может быть запоминающийся персонаж(и) или маскот(ы), который «живёт» на экране пользователя и визуально отражает работу AI-консультанта или другие манипуляции пользователя на экране. pixel-agents — готовая база для этого: персонажи с поведением, анимациями и навигацией. Мы проверили движок на реальном продакшне и задокументировали перенос.
+        </div>
+      </div>
+
+      <div class="value-cards">
+        <div class="value-card">
+          <span class="badge badge-speed">Скорость</span>
+          <h3>Pixel-офис в SODA — за один день</h3>
+          <p>Движок вычищен, адаптирован под браузер, покрыт тестами. Не нужно разбираться с оригинальным репо. Копируем 17 файлов, пишем ~310 строк обвязки, подключаем к своему пайплайну.</p>
+        </div>
+
+        <div class="value-card">
+          <span class="badge badge-scale">Масштаб</span>
+          <h3>Рецепт трансфера — для любого фронтенда</h3>
+          <p>Задокументирован каждый шаг: что копировать, что писать с нуля, в каком порядке инициализировать, какие параметры менять. Porting Guide — 563 строки + чеклист из 11 пунктов. Разработчик повторит по нему, не изобретая заново.</p>
+        </div>
+
+        <div class="value-card">
+          <span class="badge badge-wow">Wow-фактор</span>
+          <h3>Персонажи реагируют на AI в реалтайме</h3>
+          <p>Когда AI ищет информацию — персонажи читают. Когда синтезирует ответ — печатают. При смене фазы — встают, идут к другому столу. Пользователь видит конкретную работу, а не абстрактный progress bar.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 3. Движок ── -->
+  <div class="tab-panel" id="engine">
+    <div class="section">
+      <h2>Что умеет движок</h2>
+      <p class="lead">Оригинал — VS Code extension (<a href="https://github.com/pablodelucca/pixel-agents" target="_blank" style="color:var(--apple-blue)">pixel-agents</a>, MIT лицензия). Мы вытащили движок из редактора, адаптировали под браузер и подключили к React. Ноль npm-зависимостей, ~100 KB ассетов.</p>
+
+      <ul class="feature-list">
+        <li>
+          <span class="icon">🏢</span>
+          <div><strong>Тайловый офис.</strong> Сетка произвольного размера. Стены, полы с 9 паттернами, мебель — всё из PNG-спрайтов.</div>
+        </li>
+        <li>
+          <span class="icon">🧑‍💻</span>
+          <div><strong>Персонажи с поведением.</strong> Конечный автомат: печатают, читают, ходят, отдыхают. Навигация по офису с обходом препятствий. 6 уникальных палитр + автоматический hue shift для 7-го и далее. До 10 одновременно.</div>
+        </li>
+        <li>
+          <span class="icon">🎨</span>
+          <div><strong>Динамическая раскраска.</strong> Полы и мебель красятся в runtime через HSL — один набор серых спрайтов, разные цветовые схемы без дополнительных ассетов.</div>
+        </li>
+        <li>
+          <span class="icon">🪑</span>
+          <div><strong>30+ предметов мебели.</strong> Столы, стулья, ПК (с анимацией экранов), диваны, растения, картины, книжные шкафы. Ротация и зеркалирование автоматические.</div>
+        </li>
+        <li>
+          <span class="icon">📐</span>
+          <div><strong>Z-сортировка.</strong> Персонажи корректно проходят за и перед мебелью — как в изометрических играх.</div>
+        </li>
+        <li>
+          <span class="icon">✨</span>
+          <div><strong>Matrix-эффект.</strong> При появлении и исчезновении персонажей — эффект цифрового дождя (0.3 сек). Визуально отмечает начало и конец работы агента.</div>
+        </li>
+        <li>
+          <span class="icon">📱</span>
+          <div><strong>Только десктоп.</strong> На мобильных движок не загружается вообще — code splitting через React.lazy. Ноль лишнего трафика.</div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── 4. Живой офис ── -->
+  <div class="tab-panel" id="alive">
+    <div class="section">
+      <h2>Anti-Drone System</h2>
+      <p class="lead">Как превратить строй роботов в живой офис, где каждый персонаж ведёт себя индивидуально.</p>
+
+      <p>Главная проблема: AI-пайплайн переключает фазы — и все персонажи синхронно дёргаются. Выглядит как марш роботов. Решение — три уровня «оживления»:</p>
+
+      <div class="flow-diagram">
+        <div class="flow-step">
+          <div class="step-title">Фаза пайплайна</div>
+          <div class="step-desc">Поиск, анализ,<br>синтез...</div>
+        </div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">
+          <div class="step-title">Пропорции</div>
+          <div class="step-desc">40% печатают,<br>60% читают</div>
+        </div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">
+          <div class="step-title">Рандом</div>
+          <div class="step-desc">Кто именно —<br>случайный выбор</div>
+        </div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-step">
+          <div class="step-title">Каскад</div>
+          <div class="step-desc">Переключаются<br>один за другим</div>
+        </div>
+      </div>
+
+      <ul class="feature-list">
+        <li>
+          <span class="icon">⚖️</span>
+          <div><strong>Пропорциональное распределение.</strong> Если 2 фазы «синтез» и 3 фазы «поиск» активны — 40% персонажей печатают, 60% читают. Не «все делают одно».</div>
+        </li>
+        <li>
+          <span class="icon">🎲</span>
+          <div><strong>Fisher-Yates перемешивание.</strong> Кто именно печатает, а кто читает — определяется случайно при каждой смене фазы. Нет «главного» персонажа.</div>
+        </li>
+        <li>
+          <span class="icon">🌊</span>
+          <div><strong>Каскадный стаггер.</strong> Персонажи переключаются не одновременно, а волной — с задержкой 0.5–1.2 секунды между каждым. Визуально — плавная волна, а не синхронный рывок.</div>
+        </li>
+        <li>
+          <span class="icon">🪑</span>
+          <div><strong>Ротация мест.</strong> «Читатели» уходят в лаунж-зоны (кухня, библиотека). «Писатели» садятся за ПК. При смене фазы — видимое перемещение по офису.</div>
+        </li>
+        <li>
+          <span class="icon">🎚️</span>
+          <div><strong>20%-порог.</strong> Мелкие колебания пайплайна (38% → 42%) не перетриггеривают пересортировку. Только значимые изменения вызывают движение.</div>
+        </li>
+      </ul>
+
+      <p>Весь Anti-Drone реализован <strong>в React-обвязке</strong>, а не в движке. Это значит: движок можно использовать как есть, а «оживление» адаптировать под логику конкретного проекта.</p>
+    </div>
+  </div>
+
+  <!-- ── 5. Рецепт переноса ── -->
+  <div class="tab-panel" id="recipe">
+    <div class="section">
+      <h2>Три слоя переноса</h2>
+      <p class="lead">Движок копируем. Ассеты качаем скриптом. Интеграцию пишем под свой проект.</p>
+
+      <div class="layers">
+        <div class="layer">
+          <div class="layer-num">1</div>
+          <div class="layer-body">
+            <h3>Движок — копируем без изменений</h3>
+            <p>17 файлов TypeScript, 4 477 строк. Рендерер, персонажи, мебель, тайлы, загрузчик ассетов. Просто скопировать в новый проект.</p>
+            <span class="layer-tag">Время: 5 минут</span>
+          </div>
+        </div>
+
+        <div class="layer">
+          <div class="layer-num">2</div>
+          <div class="layer-body">
+            <h3>Ассеты — скрипт автоматизирует</h3>
+            <p>~100 PNG-файлов: персонажи, полы, стены, мебель. Готовый bash-скрипт клонирует pixel-agents и раскладывает всё по папкам. Один запуск.</p>
+            <span class="layer-tag">Время: 1 минута</span>
+          </div>
+        </div>
+
+        <div class="layer">
+          <div class="layer-num">3</div>
+          <div class="layer-body">
+            <h3>Интеграция — пишем под SODA</h3>
+            <p>~310 строк: React-обвязка, маппинг фаз на анимации, media query для мобильных. API движка — всего 6 методов (добавить/убрать персонажа, активировать, задать действие, пересадить). Здесь адаптируем маппинг фаз под логику SODA.</p>
+            <span class="layer-tag">Время: 4–6 часов</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="cta-box">
+        <h3>Итого: 1 рабочий день</h3>
+        <p>От пустого проекта до работающего пиксельного офиса с персонажами, которые реагируют на AI-пайплайн. Все грабли уже задокументированы.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 6. Грабли ── -->
+  <div class="tab-panel" id="pitfalls">
+    <div class="section">
+      <h2>9 подводных камней</h2>
+      <p class="lead">Каждый стоил бы часы отладки. Теперь они задокументированы — и не повторятся.</p>
+
+      <div class="pitfall-grid">
+        <div class="pitfall">
+          <div class="pit-id">P1</div>
+          <h4>Zoom минимум 3x</h4>
+          <p>При меньшем зуме пиксели размываются. Canvas рисует крупно, CSS масштабирует вниз.</p>
+        </div>
+        <div class="pitfall">
+          <div class="pit-id">P2</div>
+          <h4>Прозрачность ≤ 2</h4>
+          <p>Порог альфа-канала — не ноль, а 2. Иначе артефакты по краям всех спрайтов.</p>
+        </div>
+        <div class="pitfall">
+          <div class="pit-id">P3</div>
+          <h4>Порядок инициализации</h4>
+          <p>Полы → стены → мебельный каталог → персонажи → офис. Нарушишь — стулья пропадут.</p>
+        </div>
+        <div class="pitfall">
+          <div class="pit-id">P4</div>
+          <h4>ID — только числа</h4>
+          <p>Движок принимает number, не string. Строковые ID хешируются в числа.</p>
+        </div>
+        <div class="pitfall">
+          <div class="pit-id">P5</div>
+          <h4>Два файла констант</h4>
+          <p>Оригинал хранит константы в двух местах. Мы объединили в один — при копировании из оригинала нужно повторить.</p>
+        </div>
+        <div class="pitfall">
+          <div class="pit-id">P6</div>
+          <h4>React 18 vs 19</h4>
+          <p>Оригинал на React 19. useRef в React 18 требует null. Мелочь, но ломает TypeScript.</p>
+        </div>
+        <div class="pitfall">
+          <div class="pit-id">P7</div>
+          <h4>Sitting offset ≠ z-sort</h4>
+          <p>Смещение сидящего персонажа — только визуальное. Если применить к z-сортировке — провалится сквозь стол.</p>
+        </div>
+        <div class="pitfall">
+          <div class="pit-id">P8</div>
+          <h4>OfficeState — не рефакторить</h4>
+          <p>852 строки god-object. Выглядит страшно, но работает. Менять только входы и выходы.</p>
+        </div>
+        <div class="pitfall">
+          <div class="pit-id">P9</div>
+          <h4>Загрузка ассетов — 60% работы</h4>
+          <p>Движок скопировать легко. Основное время — browserAssetLoader, загрузка PNG в браузере.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 7. Хронология ── -->
+  <div class="tab-panel" id="timeline">
+    <div class="section">
+      <h2>4 дня: от ресёрча до продакшна</h2>
+      <p class="lead">Хронология работы — что было сделано и когда.</p>
+
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-date">28 марта</div>
+          <div class="tl-title">Ресёрч и планирование</div>
+          <div class="tl-desc">Изучение pixel-agents: архитектура, спрайты, движок. Определение стратегии переноса. Что копировать, что писать с нуля, что выбросить (WYSIWYG-редактор).</div>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-date">29 марта</div>
+          <div class="tl-title">Прототип и браузерный загрузчик</div>
+          <div class="tl-desc">Ключевая проблема: оригинал работал внутри VS Code и имел прямой доступ к файлам. В браузере этого нет. Написан browserAssetLoader (415 строк) — загружает и декодирует все PNG-спрайты через Canvas API. Скрипт копирования ассетов.</div>
+        </div>
+
+        <div class="tl-item highlight">
+          <div class="tl-date">30 марта</div>
+          <div class="tl-title">Первый запуск + интеграция с пайплайном</div>
+          <div class="tl-desc">Движок заработал в Canvas. React-обвязка. Подключение к SSE-стриму. Персонажи начали реагировать на фазы AI. Маскот для мобильных. 55 тестов написаны и пройдены.</div>
+        </div>
+
+        <div class="tl-item highlight">
+          <div class="tl-date">31 марта</div>
+          <div class="tl-title">Продакшн-полировка</div>
+          <div class="tl-desc">Расширение до 4 комнат (42×15). Anti-Drone System: пропорциональное распределение + каскадный стаггер + ротация мест. Тёплая цветовая палитра. Документация Porting Guide. Деплой в прод.</div>
+        </div>
+      </div>
+
+      <p style="margin-top: 24px; font-size: 14px; color: var(--gray-500);">12 коммитов за 2 дня активной разработки (30–31 марта). Ресёрч и прототипирование — ещё 2 дня (28–29 марта).</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- ─── Footer ─── -->
+<div class="footer">
+  Pixel Office Engine Transfer Report &middot; Команда SODA &middot; Март 2026<br>
+  Движок: <a href="https://github.com/pablodelucca/pixel-agents" target="_blank" rel="noopener" style="color:var(--gray-400);">pixel-agents</a> (MIT) &middot;
+  Продакшн: <a href="https://expa.beyondhorizon.dev/" target="_blank" rel="noopener" style="color:var(--gray-400);">expa.beyondhorizon.dev</a>
+</div>
+
+<script>
+  // ─── Tab Switching ───
+  const btns = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.tab-panel');
+
+  btns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.tab;
+
+      btns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      panels.forEach(p => {
+        p.classList.remove('active');
+        if (p.id === target) p.classList.add('active');
+      });
+    });
+  });
+
+  // ─── Hash Navigation ───
+  function activateFromHash() {
+    const hash = location.hash.replace('#', '');
+    if (!hash) return;
+    const btn = document.querySelector(`.tab-btn[data-tab="${hash}"]`);
+    if (btn) btn.click();
+  }
+  window.addEventListener('hashchange', activateFromHash);
+  activateFromHash();
+
+  // ─── Keyboard Navigation ───
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    const active = document.querySelector('.tab-btn.active');
+    const all = Array.from(btns);
+    const idx = all.indexOf(active);
+
+    if (e.key === 'ArrowRight' && idx < all.length - 1) {
+      all[idx + 1].click();
+      all[idx + 1].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+    if (e.key === 'ArrowLeft' && idx > 0) {
+      all[idx - 1].click();
+      all[idx - 1].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+  });
+</script>
+
+</body>
+</html>

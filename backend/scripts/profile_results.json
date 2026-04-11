@@ -1,0 +1,155 @@
+{
+  "sqlite_vec_available": true,
+  "vec_posts_count": 5808,
+  "experts_embedding_counts": {
+    "ai_architect": 202,
+    "ai_grabli": 333,
+    "air_ai": 147,
+    "akimov": 690,
+    "doronin": 646,
+    "elkornacio": 433,
+    "etechlead": 179,
+    "glebkudr": 400,
+    "ilia_izmailov": 149,
+    "kornish": 451,
+    "llm_under_hood": 278,
+    "mkarpov": 166,
+    "neuraldeep": 433,
+    "ostrikov": 38,
+    "polyakov": 215,
+    "refat": 219,
+    "silicbag": 776,
+    "video_hub": 53
+  },
+  "total_posts": 6216,
+  "expert_ids": [
+    "ai_architect",
+    "ai_grabli",
+    "air_ai",
+    "akimov",
+    "doronin",
+    "elkornacio",
+    "etechlead",
+    "glebkudr",
+    "ilia_izmailov",
+    "kornish",
+    "llm_under_hood",
+    "mkarpov",
+    "neuraldeep",
+    "ostrikov",
+    "polyakov",
+    "refat",
+    "silicbag",
+    "video_hub"
+  ],
+  "has_embeddings_ms": {
+    "runs": [
+      122.42,
+      117.21,
+      101.86,
+      135.21,
+      182.38
+    ],
+    "avg": 131.82
+  },
+  "embed_query_ms": {
+    "runs": [
+      939.57,
+      496.35,
+      736.83
+    ],
+    "avg": 724.25
+  },
+  "vector_search_ms": {
+    "runs": [
+      95.96,
+      4.12,
+      46.96,
+      11.49,
+      5.37
+    ],
+    "avg": 32.78,
+    "results": 150
+  },
+  "fts5_search_ms": {
+    "runs": [
+      681.01,
+      45.86,
+      50.95,
+      66.16,
+      55.02
+    ],
+    "avg": 179.8,
+    "results": 100
+  },
+  "get_post_dates_ms": {
+    "runs": [
+      44.65,
+      1.55,
+      0.96,
+      1.34,
+      1.86
+    ],
+    "avg": 10.07
+  },
+  "post_load_orm_ms": {
+    "runs": [
+      74.66,
+      12.82,
+      29.64
+    ],
+    "avg": 39.04,
+    "count": 200
+  },
+  "full_search_posts_ms": {
+    "runs": [
+      981.27,
+      1220.29,
+      898.95
+    ],
+    "avg": 1033.5
+  },
+  "concurrent_tests": {
+    "sequential_ms": {
+      "per_expert": [
+        1502.28,
+        1057.66,
+        2020.64,
+        1079.41,
+        869.39
+      ],
+      "total": 6531.68
+    },
+    "concurrent_shared_session_ms": {
+      "per_expert": [
+        1812.0,
+        2345.87,
+        2343.75,
+        2422.41,
+        2486.77
+      ],
+      "total": 3178.96
+    },
+    "concurrent_separate_sessions_ms": {
+      "per_expert": [
+        969.33,
+        1139.64,
+        1165.8,
+        1005.81,
+        1054.28
+      ],
+      "total": 1642.12
+    },
+    "concurrent_cached_embedding_ms": {
+      "total": 1269.13
+    }
+  },
+  "event_loop_block_ms": {
+    "canary_delays": [
+      0.37,
+      0.07,
+      0.22
+    ],
+    "avg": 0.22
+  }
+}
