@@ -382,10 +382,6 @@ export class APIClient {
               finalResponse = this.normalizeResponse(rawResponse);
             }
 
-            // Check for errors
-            if (event.event_type === 'error') {
-              throw new Error(event.message || 'Query processing failed');
-            }
           } catch (parseError) {
             console.error('Failed to parse SSE event:', trimmedLine, parseError);
             // Continue processing other events
@@ -396,6 +392,14 @@ export class APIClient {
       console.log('[SSE] Stream ended. Final response:', finalResponse);
 
       if (!finalResponse) {
+        const backendMessage =
+          lastErrorEvent?.data?.user_message ||
+          lastErrorEvent?.message;
+
+        if (backendMessage) {
+          throw new Error(backendMessage);
+        }
+
         throw new Error('Query completed but no result received');
       }
 

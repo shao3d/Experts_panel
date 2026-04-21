@@ -768,7 +768,7 @@ Question: {query}
 Search query:"""
 
             response = await client.chat_completions_create(
-                model="gemini-3-flash-preview",
+                model=config.MODEL_SCOUT,
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.1,
             )
@@ -1135,10 +1135,11 @@ async def event_generator_parallel(
             )
             yield yield_event(scout_complete_event)
 
+            embedding_dim = len(query_embedding) if query_embedding is not None else "unavailable"
             logger.info(
                 f"[Super-Passport] Scout + Embedding parallel: {t_parallel_ms}ms | "
                 f"scout={scout_query} (success: {scout_success}) | "
-                f"embedding dim={len(query_embedding)}"
+                f"embedding dim={embedding_dim}"
             )
 
         if expert_ids:

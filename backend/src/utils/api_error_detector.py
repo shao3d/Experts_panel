@@ -32,8 +32,11 @@ class APIErrorDetector:
         ErrorType.PAYMENT_REQUIRED: [
             r'402\s+Payment\s+Required',
             r'Insufficient\s+credits',
+            r'prepayment\s+credits?\s+are\s+depleted',
+            r'credits?\s+are\s+depleted',
             r'payment.*required',
             r'billing.*issue',
+            r'manage\s+your\s+project\s+and\s+billing',
             r'quota.*exceeded',
             r'account.*suspended'
         ],

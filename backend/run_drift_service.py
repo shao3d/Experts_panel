@@ -20,8 +20,15 @@ def main():
     print("🚀 Starting Drift Analysis Service...")
     
     # Ensure we have API keys
-    if not os.getenv("GOOGLE_AI_STUDIO_API_KEY"):
-        print("⚠️  Warning: GOOGLE_AI_STUDIO_API_KEY not set. Analysis might fail if not using fallback.")
+    if not (
+        os.getenv("VERTEX_AI_SERVICE_ACCOUNT_JSON")
+        or os.getenv("VERTEX_AI_SERVICE_ACCOUNT_JSON_PATH")
+        or os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+    ):
+        print(
+            "⚠️  Warning: Vertex AI credentials not set. "
+            "Analysis might fail if the service account JSON is unavailable."
+        )
     
     db = SessionLocal()
     try:

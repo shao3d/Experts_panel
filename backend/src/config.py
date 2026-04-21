@@ -16,13 +16,18 @@ def _mask_value(value: str) -> str:
     return f"{value[:5]}...{value[-4:]}"
 
 
-# --- API Ключи ---
+# --- API / Auth Configuration ---
 GOOGLE_AI_STUDIO_API_KEYS_STR = os.getenv("GOOGLE_AI_STUDIO_API_KEY")
 GOOGLE_AI_STUDIO_API_KEYS = [
     key.strip()
     for key in (GOOGLE_AI_STUDIO_API_KEYS_STR or "").split(",")
     if key.strip()
 ]
+VERTEX_AI_SERVICE_ACCOUNT_JSON = os.getenv("VERTEX_AI_SERVICE_ACCOUNT_JSON")
+VERTEX_AI_SERVICE_ACCOUNT_JSON_PATH = os.getenv("VERTEX_AI_SERVICE_ACCOUNT_JSON_PATH")
+GOOGLE_APPLICATION_CREDENTIALS_PATH = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+VERTEX_AI_PROJECT_ID = os.getenv("VERTEX_AI_PROJECT_ID")
+VERTEX_AI_LOCATION = os.getenv("VERTEX_AI_LOCATION", "us-central1")
 
 # --- Model Configuration ---
 # Only Google Gemini models are supported.
@@ -32,13 +37,13 @@ MODEL_MAP: str = os.getenv("MODEL_MAP", "gemini-2.5-flash-lite")
 
 MODEL_SYNTHESIS: str = os.getenv("MODEL_SYNTHESIS", "gemini-3-flash-preview")
 
-MODEL_ANALYSIS: str = os.getenv("MODEL_ANALYSIS", "gemini-2.0-flash")
+MODEL_ANALYSIS: str = os.getenv("MODEL_ANALYSIS", "gemini-2.5-flash")
 
 MODEL_SCOUT: str = os.getenv("MODEL_SCOUT", "gemini-3.1-flash-lite-preview")
 
-MODEL_MEDIUM_SCORING: str = os.getenv("MODEL_MEDIUM_SCORING", "gemini-2.0-flash")
+MODEL_MEDIUM_SCORING: str = os.getenv("MODEL_MEDIUM_SCORING", "gemini-2.5-flash")
 
-MODEL_COMMENT_GROUPS: str = os.getenv("MODEL_COMMENT_GROUPS", "gemini-2.0-flash")
+MODEL_COMMENT_GROUPS: str = os.getenv("MODEL_COMMENT_GROUPS", "gemini-2.5-flash")
 
 MODEL_DRIFT_ANALYSIS: str = os.getenv("MODEL_DRIFT_ANALYSIS", "gemini-3-flash-preview")
 
@@ -55,7 +60,7 @@ HYBRID_FTS5_TOP_K: int = int(os.getenv("HYBRID_FTS5_TOP_K", "100"))
 HYBRID_RRF_K: int = int(os.getenv("HYBRID_RRF_K", "60"))
 
 # --- Video Hub Models ---
-MODEL_VIDEO_PRO: str = os.getenv("MODEL_VIDEO_PRO", "gemini-3-pro-preview")
+MODEL_VIDEO_PRO: str = os.getenv("MODEL_VIDEO_PRO", "gemini-3.1-pro-preview")
 MODEL_VIDEO_FLASH: str = os.getenv("MODEL_VIDEO_FLASH", "gemini-3-flash-preview")
 
 # --- Medium Scoring Configuration ---
@@ -104,12 +109,18 @@ else:
 # Логирование для проверки при запуске
 if os.getenv("ENVIRONMENT") != "production":
     print("--- Загруженная конфигурация API ---")
-    if GOOGLE_AI_STUDIO_API_KEYS:
+    if VERTEX_AI_SERVICE_ACCOUNT_JSON or VERTEX_AI_SERVICE_ACCOUNT_JSON_PATH or GOOGLE_APPLICATION_CREDENTIALS_PATH:
         print(
-            f"  Google AI Studio Keys: Configured ({len(GOOGLE_AI_STUDIO_API_KEYS)} keys)"
+            "  Vertex AI Auth: Configured "
+            f"(project={VERTEX_AI_PROJECT_ID or 'auto'}, "
+            f"location={VERTEX_AI_LOCATION})"
+        )
+    elif GOOGLE_AI_STUDIO_API_KEYS:
+        print(
+            f"  Google AI Studio Keys: Legacy configured ({len(GOOGLE_AI_STUDIO_API_KEYS)} keys)"
         )
     else:
-        print("  Google AI Studio Keys: Not configured")
+        print("  Vertex AI Auth: Not configured")
 
     print("\n--- Загруженная конфигурация моделей ---")
     print(f"  Map фаза:          {MODEL_MAP}")

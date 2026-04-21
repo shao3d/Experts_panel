@@ -30,8 +30,8 @@ MAX_RETRIES = 3
 RETRY_BACKOFF_BASE = 2.0
 
 # Model for Subreddit Scouting
-# Using Gemini 3 Flash Preview as requested for high intelligence
-MODEL_SCOUT = "gemini-3-flash-preview"
+# Use the shared config model so Vertex-compatible defaults apply everywhere.
+MODEL_SCOUT = config.MODEL_SCOUT
 
 # Tech-related subreddits for targeted searches
 TECH_SUBREDDITS = [
@@ -966,6 +966,5 @@ async def search_reddit_enhanced(
         include_comments=include_comments,
         subreddits=subreddits
     )
-
 
 

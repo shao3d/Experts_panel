@@ -1,4 +1,4 @@
-# Retry Strategy (Google AI Studio)
+# Retry Strategy (Vertex AI)
 
 **Статус:** Implemented ✅
 **Дата:** 2026-02-26
@@ -14,6 +14,7 @@
 - Кастомный предикат `_should_retry`: ретраит **только** rate limit (429) и timeout. Auth/BadRequest ошибки проваливаются мгновенно.
 - Prompt preparation (JSON instruction concat) вынесен **перед** retry-циклом — фикс бага конкатенации.
 - Все ошибки оборачиваются в `GoogleAIStudioError` для единого контракта.
+- Для `Gemini 3*` клиент дополнительно маршрутизирует запросы на Vertex `global` endpoint.
 - **Суммарно:** ~15 секунд на обработку TPM-спайков.
 
 ### Layer 2 — Service-Level Retry (Tenacity Decorator)
@@ -40,3 +41,9 @@
 | Auth/Bad Request | Мгновенный провал, без ретраев |
 | JSON parse ошибки | Layer 2: tenacity decorator |
 | Prompt concatenation баг | Исправлен: подготовка промпта вне retry-цикла |
+
+## Vertex Runtime Notes
+
+- Auth идёт через service account / ADC, а не через AI Studio API key.
+- `Gemini 3*` на этом проекте используют `global` endpoint.
+- `gemini-2.0-flash` для текущего GCP project недоступен, поэтому production-фазы analysis / medium scoring / comment groups работают на `gemini-2.5-flash`.

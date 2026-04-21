@@ -2,7 +2,7 @@
 
 **Status:** Stable / Production-Ready
 **Role:** Parallel pipeline for deep video transcript analysis using the "Digital Twin" approach.
-**Date:** 2026-03-28
+**Date:** 2026-04-12
 
 ---
 
@@ -24,7 +24,7 @@ The Video Hub operates as an **isolated sidecar**, running in parallel with the 
 
 ## 🛠️ Phase 1: Data Preparation (Smart Segmenting)
 
-Transcripts undergo pre-processing via **Gemini 3.0 Pro (Structured Output)** before ingestion into the `posts` table.
+Transcripts undergo pre-processing via **Gemini 3.1 Pro Preview (Structured Output)** before ingestion into the `posts` table.
 
 ### Data Schema (The "Fullness" Contract):
 ```json
@@ -69,7 +69,7 @@ The Video Hub runs as a dedicated stream in `event_generator_parallel`.
 -   **Goal**: To reconstruct the full arc of the expert's thought, even if scattered.
 
 ### 3. Video Synthesis (The Digital Twin)
--   **Model**: `gemini-3-pro-preview` (Config: `MODEL_VIDEO_PRO`).
+-   **Model**: `gemini-3.1-pro-preview` (Config: `MODEL_VIDEO_PRO`).
 -   **Persona**: "Expert's Digital Twin".
 -   **Instruction**: "Reconstruct the expert's original reasoning flow and vocabulary. Use [FULL TRANSCRIPT] for details and [SUMMARY] to bridge the gaps."
 -   **Visual Elements (`[НА ЭКРАНЕ]`)**: The model is strictly instructed to extract the *meaning* from visual markers and organically weave it into the narrative (as if the expert is speaking it), rather than mechanically quoting the metadata.
@@ -92,12 +92,14 @@ The Video Hub runs as a dedicated stream in `event_generator_parallel`.
 ## 🖥️ Phase 3: SSE & UI Integration
 
 ### Streaming (SSE):
--   **Phase Mapping**: To animate the main frontend progress bar, specific video phases are dynamically mapped to standard ones:
-    -   `video_map` -> `map`
-    -   `video_resolve` -> `resolve`
-    -   `video_synthesis` -> `reduce`
-    -   `video_validation` -> `language_validation`
--   Messages include a 🎥 emoji (e.g., "🎥 Synthesizing digital twin response...") to distinguish video operations.
+-   **Service Events**: `VideoHubService` emits the generic service phases `map`, `resolve`, `reduce`, `language_validation`.
+-   **Tracker Remap**: `PipelineStateTracker` remaps those events into dedicated aggregate states:
+    -   `map` -> `video_map`
+    -   `resolve` -> `video_resolve`
+    -   `reduce` -> `video_synthesis`
+    -   `language_validation` -> `video_validation`
+-   **Frontend Rendering**: `ProgressSection` renders these remapped states as a separate **Video** group in the global progress bar.
+-   **Human Messages**: SSE text keeps the `🎥` prefix (e.g., "🎥 Synthesizing digital twin response...") to distinguish video operations.
 
 ### UI Integration:
 -   **Expert ID**: `video_hub` (Mapped to "Video_Hub" in `expertConfig.ts`).
@@ -112,5 +114,5 @@ The Video Hub runs as a dedicated stream in `event_generator_parallel`.
 | Phase | Variable | Working Model (Feb 2026) |
 |-------|----------|-------------------|
 | Video Map | `MODEL_MAP` | `gemini-2.5-flash-lite` |
-| Video Synthesis | `MODEL_VIDEO_PRO` | `gemini-3-pro-preview` |
+| Video Synthesis | `MODEL_VIDEO_PRO` | `gemini-3.1-pro-preview` |
 | Video Validation | `MODEL_VIDEO_FLASH` | `gemini-3-flash-preview` |

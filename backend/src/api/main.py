@@ -248,15 +248,20 @@ async def health_check() -> Dict[str, Any]:
         logger.error(f"Database health check failed: {e}")
         db_status = "unhealthy"
 
-    # Check API key (Google AI Studio)
-    api_key_configured = bool(config.GOOGLE_AI_STUDIO_API_KEYS)
+    # Check Vertex AI auth configuration
+    api_key_configured = bool(
+        config.VERTEX_AI_SERVICE_ACCOUNT_JSON
+        or config.VERTEX_AI_SERVICE_ACCOUNT_JSON_PATH
+        or config.GOOGLE_APPLICATION_CREDENTIALS_PATH
+        or config.VERTEX_AI_PROJECT_ID
+    )
 
     return {
         "status": "healthy" if db_status == "healthy" and api_key_configured else "degraded",
         "version": "1.0.0",
         "database": db_status,
         "api_key_configured": api_key_configured,
-        "google_ai_keys_count": len(config.GOOGLE_AI_STUDIO_API_KEYS),
+        "google_ai_keys_count": 1 if api_key_configured else 0,
         "timestamp": time.time()
     }
 

@@ -1,104 +1,126 @@
-"""Embedding service for hybrid vector search.
+"""Embedding service backed by Vertex AI text embeddings."""
 
-Uses Gemini Embedding API for text-to-vector conversion.
-Follows singleton pattern like GoogleAIClient.
-"""
-
-import logging
 import asyncio
+import logging
 from typing import List
 
-import google.generativeai as genai
+import requests
 
 from .. import config
+from .vertex_ai_auth import get_vertex_ai_auth_manager
 
 logger = logging.getLogger(__name__)
 
+_DEFAULT_TIMEOUT_SECONDS = 60
+_BATCH_CONCURRENCY = 8
+
 
 class EmbeddingService:
-    """Service for generating text embeddings via Gemini API."""
+    """Service for generating text embeddings via Vertex AI."""
 
     def __init__(self):
-        self.model = config.MODEL_EMBEDDING  # "gemini-embedding-exp-03-07"
-        self.dimensions = config.EMBEDDING_DIMENSIONS  # 768 (MRL)
+        self.model = config.MODEL_EMBEDDING
+        self.dimensions = config.EMBEDDING_DIMENSIONS
+        self._auth_manager = get_vertex_ai_auth_manager()
+
+        if not self._auth_manager.is_configured():
+            logger.error("❌ EmbeddingService: Vertex AI auth is not configured")
+
         logger.info(
-            f"✅ EmbeddingService initialized: {self.model} @ {self.dimensions}d"
+            "✅ EmbeddingService initialized: %s @ %sd via Vertex AI",
+            self.model,
+            self.dimensions,
         )
+
+    def _build_predict_url(self) -> str:
+        project_id = self._auth_manager.project_id
+        location = self._auth_manager.location
+        return (
+            f"https://{location}-aiplatform.googleapis.com/v1/"
+            f"projects/{project_id}/locations/{location}/publishers/google/models/{self.model}:predict"
+        )
+
+    def _predict_embedding(
+        self, url: str, token: str, text: str, task_type: str
+    ) -> List[float]:
+        response = requests.post(
+            url,
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "instances": [{"content": text}],
+                "parameters": {
+                    "autoTruncate": True,
+                    "taskType": task_type,
+                    "outputDimensionality": self.dimensions,
+                },
+            },
+            timeout=_DEFAULT_TIMEOUT_SECONDS,
+        )
+
+        if response.ok:
+            payload = response.json()
+            return payload["predictions"][0]["embeddings"]["values"]
+
+        try:
+            error_message = response.json().get("error", {}).get("message", response.text)
+        except ValueError:
+            error_message = response.text
+
+        raise RuntimeError(f"Error code: {response.status_code} - {error_message}")
 
     async def embed_text(
         self, text: str, task_type: str = "RETRIEVAL_DOCUMENT"
     ) -> List[float]:
-        """Embed single text. genai.embed_content is sync → wrap in to_thread.
+        """Embed one text using Vertex AI predict endpoint."""
 
-        Args:
-            text: Text to embed
-            task_type: RETRIEVAL_DOCUMENT for posts, RETRIEVAL_QUERY for queries
+        if task_type not in {"RETRIEVAL_DOCUMENT", "RETRIEVAL_QUERY"}:
+            logger.warning("Unsupported task_type=%s, passing through to Vertex", task_type)
 
-        Returns:
-            List of float values (768 dimensions)
-        """
         try:
-            result = await asyncio.to_thread(
-                genai.embed_content,
-                model=f"models/{self.model}",
-                content=text,
-                task_type=task_type,
-                output_dimensionality=self.dimensions,
+            token = await self._auth_manager.get_access_token()
+            url = self._build_predict_url()
+            return await asyncio.to_thread(
+                self._predict_embedding,
+                url,
+                token,
+                text,
+                task_type,
             )
-            return result["embedding"]
-        except Exception as e:
-            logger.error(f"❌ Embedding failed for text: {e}")
+        except Exception as exc:
+            logger.error("❌ Embedding failed for text: %s", exc)
             raise
 
     async def embed_query(self, query: str) -> List[float]:
-        """Embed user query with RETRIEVAL_QUERY task_type.
-
-        Args:
-            query: User query string
-
-        Returns:
-            List of float values (768 dimensions)
-        """
         return await self.embed_text(query, task_type="RETRIEVAL_QUERY")
 
     async def embed_batch(
         self, texts: List[str], task_type: str = "RETRIEVAL_DOCUMENT"
     ) -> List[List[float]]:
-        """Embed batch via native genai.embed_content(content=list[str]).
+        """Embed multiple texts.
 
-        1 API call per batch instead of N. For 1300 posts:
-        ~26 calls (batch 50) vs ~1300 calls (sequential).
-
-        Args:
-            texts: List of texts to embed
-            task_type: RETRIEVAL_DOCUMENT for posts
-
-        Returns:
-            List of embeddings, each is List[float] (768 dimensions)
+        Vertex's gemini-embedding-001 accepts one input text per request, so
+        batching here means bounded concurrency rather than one network call.
         """
+
         if not texts:
             return []
 
-        try:
-            result = await asyncio.to_thread(
-                genai.embed_content,
-                model=f"models/{self.model}",
-                content=texts,  # list[str] → native batch
-                task_type=task_type,
-                output_dimensionality=self.dimensions,
-            )
-            return result["embedding"]  # list[list[float]]
-        except Exception as e:
-            logger.error(f"❌ Batch embedding failed: {e}")
-            raise
+        semaphore = asyncio.Semaphore(_BATCH_CONCURRENCY)
+
+        async def _embed_one(text: str) -> List[float]:
+            async with semaphore:
+                return await self.embed_text(text, task_type=task_type)
+
+        return await asyncio.gather(*(_embed_one(text) for text in texts))
 
 
-# Singleton instance
 _embedding_instance = None
 
 
 def get_embedding_service() -> EmbeddingService:
-    """Get or create singleton EmbeddingService instance."""
     global _embedding_instance
     if _embedding_instance is None:
         _embedding_instance = EmbeddingService()

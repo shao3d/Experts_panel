@@ -1,19 +1,20 @@
 # Pipeline Architecture Guide
 
 **The Single Source of Truth** for the Experts Panel 10-phase pipeline.
-*Last Verified against Codebase: 2026-03-28*
+*Last Verified against Codebase: 2026-04-21*
 
 ## 🏗️ High-Level Overview
 
-The system processes user queries through an **ten-phase pipeline** using a **Gemini-only** strategy. It features parallel expert processing, differential context expansion, a dedicated side-pipeline for Reddit analysis, and a specialized **Video Hub Sidecar** for video transcript analysis.
+The system processes user queries through an **ten-phase pipeline** using a **Gemini-only** strategy on **Vertex AI**. It features parallel expert processing, differential context expansion, a dedicated side-pipeline for Reddit analysis, and a specialized **Video Hub Sidecar** for video transcript analysis.
 
 ### Core Principles
 1.  **Multi-Expert Isolation**: Each expert is processed independently (Map -> Reduce).
 2.  **Differential Processing**: HIGH relevance posts get deeper context (Resolve) than MEDIUM posts.
 3.  **Cost Optimization**: Uses `Gemini 2.5 Flash Lite` for heavy lifting (Map) and `Gemini 3 Flash Preview` for intelligence (Reduce).
-4.  **Date Filtering**: Optional "Recent Only" mode (last 3 months).
-5.  **Reddit-Only Mode**: Ability to bypass expert analysis entirely for broad community searches.
-6.  **Parallel Multi-Stream**: Telegram Experts, Reddit Community, and Video Hub Insights run in parallel for maximum recall.
+4.  **Vertex Routing**: All `Gemini 3*` models are sent through the Vertex `global` endpoint; `Gemini 2.5*` and embeddings stay on the configured regional endpoint.
+5.  **Date Filtering**: Optional "Recent Only" mode (last 3 months).
+6.  **Reddit-Only Mode**: Ability to bypass expert analysis entirely for broad community searches.
+7.  **Parallel Multi-Stream**: Telegram Experts, Reddit Community, and Video Hub Insights run in parallel for maximum recall.
 
 ---
 
@@ -38,7 +39,7 @@ The system processes user queries through an **ten-phase pipeline** using a **Ge
 ### 2. Medium Scoring Phase (Hybrid Reranking)
 **Goal**: Rescue valuable content from "MEDIUM" purgatory without overwhelming the context window.
 - **Service**: `MediumScoringService` (`backend/src/services/medium_scoring_service.py`)
-- **Model**: `gemini-2.0-flash` (Config: `MODEL_MEDIUM_SCORING`)
+- **Model**: `gemini-2.5-flash` (Config: `MODEL_MEDIUM_SCORING`)
 - **Input**: All `MEDIUM` posts from Map phase (capped at **50** for memory safety).
 - **Process**:
     1.  LLM scores each post `0.0` to `1.0` based on query.
@@ -73,13 +74,13 @@ The system processes user queries through an **ten-phase pipeline** using a **Ge
 ### 5. Language Validation Phase
 **Goal**: Ensure response language matches query language.
 - **Service**: `LanguageValidationService` (`backend/src/services/language_validation_service.py`)
-- **Model**: `gemini-2.0-flash` (Config: `MODEL_ANALYSIS`)
+- **Model**: `gemini-2.5-flash` (Config: `MODEL_ANALYSIS`)
 - **Logic**: If Query is EN and Response is RU -> Translate to EN (preserving formatting).
 
 ### 6. Comment Groups Phase (Drift Scoring runs parallel with Reduce)
 **Goal**: Find relevant discussions in comments.
 - **Service**: `CommentGroupMapService` (`backend/src/services/comment_group_map_service.py`)
-- **Model**: `gemini-2.0-flash` (Config: `MODEL_COMMENT_GROUPS`)
+- **Model**: `gemini-2.5-flash` (Config: `MODEL_COMMENT_GROUPS`)
 - **Parallel Optimization**: Drift group LLM scoring (`score_drift_groups()`) runs **concurrently** with Reduce + Language Validation via `asyncio.gather`. Only the cheap main_source comment loading (`merge_with_main_sources()`, ~5ms) waits for Reduce to provide `main_sources`. This saves 8-17 seconds per expert.
 - **Sources (Priority Order)**:
     1.  **Author Clarifications**: Expert's own comments on Main Source posts (Bypass LLM, `HIGH` relevance, **no comment limit**).
@@ -102,13 +103,13 @@ The system processes user queries through an **ten-phase pipeline** using a **Ge
 **Goal**: Provide community reality-check and engineering insights.
 - **Dedicated Architecture Document**: [See `reddit-service.md`](./reddit-service.md) for the full Single Source of Truth (SSOT).
 - **High-Level Summary**: Runs in parallel with the main pipeline. Uses an AI Scout (Gemini 3 Flash) to generate intent-based queries, searches Reddit via a dedicated Node.js Proxy, performs semantic deduplication and AI reranking, and synthesizes a "Staff Engineer" response from deep comment trees.
-- **UX Integration**: Internal Reddit phases (`scout`, `search`, `reranking`, `synthesis`) are dynamically mapped to standard frontend phases (`map`, `resolve`, `reduce`) to animate the global UI progress bar. Phase names shown without icons; completed phases marked with ✓.
+- **UX Integration**: The backend emits dedicated Reddit phases (`reddit_search`, `reddit_synthesis`) into `pipeline_state`. The frontend groups them into a separate **Reddit** progress group; phase labels stay icon-free, while SSE message text is prefixed with `🌐 [Reddit] ...`.
 
 ### 9. Video Hub Sidecar (Digital Twin)
 **Goal**: Analyze long-form video content without losing narrative context.
 - **Dedicated Architecture Document**: [See `video-hub-service.md`](./video-hub-service.md) for the full Single Source of Truth (SSOT).
 - **High-Level Summary**: Uses "Summary Bridging" to solve the Lost Middle problem. Extracts highly relevant video segments as full transcripts, and neighboring segments as summaries. Synthesizes a response from the perspective of the "Expert's Digital Twin" without summarizing, but by reconstructing reasoning.
-- **UX Integration**: Emits UI progress events mapped to standard phases (`map`, `resolve`, `reduce`). Completed phases marked with ✓ in the progress bar.
+- **UX Integration**: `VideoHubService` emits generic service phases (`map`, `resolve`, `reduce`, `language_validation`), and `PipelineStateTracker` remaps them into aggregate `video_map`, `video_resolve`, `video_synthesis`, and `video_validation` states. The frontend renders them as a dedicated **Video** progress group; SSE message text keeps the `🎥` prefix.
 
 ### 10. Meta-Synthesis Phase (Cross-Expert Analysis)
 **Goal**: Synthesize unified answer from all expert responses, restructuring from "per-expert" to "per-topic" axis.
@@ -131,13 +132,19 @@ The system processes user queries through an **ten-phase pipeline** using a **Ge
 |-------|----------|---------------|-----------|
 | Map | `MODEL_MAP` | `gemini-2.5-flash-lite` | Best instruction following for classification. |
 | Reduce | `MODEL_SYNTHESIS` | `gemini-3-flash-preview` | Best reasoning for synthesis. |
-| Scoring | `MODEL_MEDIUM_SCORING` | `gemini-2.0-flash` | Fast, accurate scoring. |
-| Comments | `MODEL_COMMENT_GROUPS` | `gemini-2.0-flash` | Fast group analysis. |
-| Validation | `MODEL_ANALYSIS` | `gemini-2.0-flash` | Fast translation/check. |
+| Scoring | `MODEL_MEDIUM_SCORING` | `gemini-2.5-flash` | Project-compatible replacement for historical `2.0-flash`. |
+| Comments | `MODEL_COMMENT_GROUPS` | `gemini-2.5-flash` | Project-compatible replacement for historical `2.0-flash`. |
+| Validation | `MODEL_ANALYSIS` | `gemini-2.5-flash` | Project-compatible replacement for historical `2.0-flash`. |
 | Drift (Offline) | `MODEL_DRIFT_ANALYSIS` | `gemini-3-flash-preview` | Deep offline analysis. |
 | AI Scout | `MODEL_SCOUT` | `gemini-3.1-flash-lite-preview` | Entity-centric FTS5 query expansion. |
 | Meta-Synthesis | `MODEL_META_SYNTHESIS` | `gemini-3-flash-preview` | Cross-expert unified analysis (≥2 experts). |
-| Embedding | *Hardcoded* | `gemini-embedding-001` | Pre-computed in Orchestrator for Vector KNN search. |
+| Embedding | `MODEL_EMBEDDING` | `gemini-embedding-001` | Pre-computed in Orchestrator for Vector KNN search. |
+
+### Vertex Compatibility Notes
+- Historical target models were preserved as much as possible during the Vertex migration.
+- `gemini-3-flash-preview` and `gemini-3.1-flash-lite-preview` are active in production and require the Vertex `global` endpoint.
+- `gemini-2.0-flash` is not exposed to the current GCP project, so `gemini-2.5-flash` is used in the three phases that previously depended on `2.0-flash`.
+- `gemini-3-pro-preview` is replaced by `gemini-3.1-pro-preview` for Video Hub synthesis.
 
 ## 🛠️ Data Flow & Filtering
 

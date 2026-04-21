@@ -1,6 +1,6 @@
-"""Monitored Google Gemini LLM client.
+"""Monitored Gemini LLM client.
 
-This module provides a monitored interface for Google AI Studio.
+This module provides a monitored interface for Vertex AI.
 """
 
 import os
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class MonitoredLLMClient:
-    """LLM client that uses Google AI Studio with monitoring."""
+    """LLM client that uses Vertex AI with monitoring."""
 
     def __init__(
         self
@@ -29,9 +29,9 @@ class MonitoredLLMClient:
 
         try:
             self.google_client = create_google_ai_studio_client()
-            logger.info("LLM client initialized with Google AI Studio")
+            logger.info("LLM client initialized with Vertex AI")
         except Exception as e:
-            logger.warning(f"Failed to initialize Google AI Studio client: {e}")
+            logger.warning(f"Failed to initialize Vertex AI client: {e}")
             self.google_available = False
 
     async def chat_completions_create(
@@ -43,7 +43,7 @@ class MonitoredLLMClient:
         service_name: str = "unknown",
         **kwargs
     ) -> Any:
-        """Create chat completion using Google AI Studio.
+        """Create chat completion using Vertex AI.
 
         Args:
             model: Model name (e.g., "gemini-2.0-flash")
@@ -58,7 +58,7 @@ class MonitoredLLMClient:
         """
         
         if not self.google_client:
-            raise RuntimeError(f"[{service_name}] Google AI Studio client not initialized")
+            raise RuntimeError(f"[{service_name}] Vertex AI client not initialized")
 
         start_time = time.time()
         try:
@@ -75,7 +75,7 @@ class MonitoredLLMClient:
 
             log_api_call_with_timing(
                 service_name=service_name,
-                provider="google_ai_studio",
+                provider="vertex_ai",
                 model=model,
                 start_time=start_time,
                 success=True,
@@ -87,13 +87,13 @@ class MonitoredLLMClient:
         except Exception as e:
             log_api_call_with_timing(
                 service_name=service_name,
-                provider="google_ai_studio",
+                provider="vertex_ai",
                 model=model,
                 start_time=start_time,
                 success=False,
                 error=e
             )
-            logger.error(f"[{service_name}] Google AI Studio API call failed: {e}")
+            logger.error(f"[{service_name}] Vertex AI API call failed: {e}")
             raise
 
     def get_status(self) -> Dict[str, Any]:
@@ -103,7 +103,7 @@ class MonitoredLLMClient:
             Dictionary with client status
         """
         return {
-            "google_ai_studio_available": self.google_available
+            "vertex_ai_available": self.google_available
         }
 
 

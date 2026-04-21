@@ -8,22 +8,28 @@
 
 **Intelligent system for analyzing expert Telegram channels and Reddit communities using Google Gemini AI**
 
-Experts Panel is a powerful tool for semantic search and analysis of content from expert Telegram channels and Reddit communities. The system uses an advanced **10-phase Map-Resolve-Reduce pipeline architecture** with Google Gemini AI (2.5 Flash Lite & 3 Flash Preview) to provide accurate and contextually relevant answers.
+Experts Panel is a powerful tool for semantic search and analysis of content from expert Telegram channels and Reddit communities. The system uses an advanced **10-phase Map-Resolve-Reduce pipeline architecture** with Google Gemini on **Vertex AI** to provide accurate and contextually relevant answers.
 
 ## 🏗️ System Architecture
 
-The system uses an advanced **ten-phase pipeline** to provide accurate and contextually relevant answers. The architecture includes cost-optimized Gemini-only strategy, differential processing for posts based on relevance, and parallel pipelines for content and comment analysis.
+The system uses an advanced **ten-phase pipeline** to provide accurate and contextually relevant answers. The architecture includes a Gemini-only strategy on **Vertex AI**, differential processing for posts based on relevance, and parallel pipelines for content and comment analysis.
 
 ### Models Strategy (Gemini Only)
 - **Map Phase**: Gemini 2.5 Flash Lite (Speed & Instruction Following)
 - **Synthesis/Reduce**: Gemini 3 Flash Preview (Reasoning)
-- **Validation/Analysis**: Gemini 2.0 Flash (Speed)
+- **AI Scout**: Gemini 3.1 Flash Lite Preview
+- **Validation/Analysis**: Gemini 2.5 Flash
+
+### Runtime Notes
+- **LLM Runtime**: Vertex AI with service-account authentication (`VERTEX_AI_SERVICE_ACCOUNT_JSON` or `VERTEX_AI_SERVICE_ACCOUNT_JSON_PATH`)
+- **Gemini 3 Routing**: All `Gemini 3*` models are routed via the **Vertex global endpoint**
+- **Project-specific fallback**: This Vertex project does **not** expose `gemini-2.0-flash`, so analysis / medium scoring / comment groups run on `gemini-2.5-flash`
 
 ## ✨ Key Features
 
 - **🎨 Modern UI**: Clean, responsive interface built with React, Tailwind CSS, and a collapsible Sidebar.
 - **🧠 10-phase Map-Resolve-Reduce Architecture**: Advanced pipeline with differential HIGH/MEDIUM posts processing.
-- **🎯 Cost-Optimized Gemini Strategy**: Google AI Studio with Tier 1 account (high rate limits).
+- **🎯 Cost-Optimized Gemini Strategy**: Vertex AI with service-account auth and Fly secrets.
 - **🔍 Smart Semantic Search**: Finds relevant posts by meaning using Hybrid Retrieval (Vector KNN + FTS5 + RRF).
 - **📊 Medium Posts Reranking**: Gemini-based scoring system with threshold ≥0.7.
 - **💬 Comment Groups & Synthesis**: Gemini pipeline for comment drift analysis.
@@ -39,7 +45,8 @@ The system uses an advanced **ten-phase pipeline** to provide accurate and conte
 
 - Python 3.11+
 - Node.js 18+
-- Google AI Studio API key(s)
+- Google Cloud project with Vertex AI enabled
+- Vertex AI service-account JSON or ADC-compatible credentials
 
 For a guided setup experience, execute the `quickstart.sh` script located in the project root.
 

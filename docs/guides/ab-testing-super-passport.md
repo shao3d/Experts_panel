@@ -13,7 +13,7 @@
 
 - Python 3.9+
 - aiohttp: `pip install aiohttp`
-- Работающий бэкенд с настроенными API ключами в `.env`
+- Работающий бэкенд с настроенным Vertex AI auth в `.env`
 
 ## 📁 Участвующие файлы
 
@@ -24,7 +24,7 @@
 | `backend/src/services/hybrid_retrieval_service.py` | Hybrid Retrieval (Vector KNN + FTS5 + RRF) |
 | `backend/src/services/fts5_retrieval_service.py` | FTS5 query sanitization utils |
 | `backend/src/api/simplified_query_endpoint.py` | Main API endpoint |
-| `backend/.env` | API ключи (GOOGLE_AI_STUDIO_API_KEY) |
+| `backend/.env` | Vertex auth + модельные env vars |
 
 ## 🚀 Быстрый старт
 
