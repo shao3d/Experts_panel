@@ -28,6 +28,12 @@
    - `TELEGRAM_API_HASH`
    - `TELEGRAM_SESSION_NAME`
 
+3. **Vertex AI runtime** (в `backend/.env`) для эмбеддингов и дрифта:
+   - `VERTEX_AI_PROJECT_ID`
+   - `VERTEX_AI_LOCATION`
+   - `VERTEX_AI_SERVICE_ACCOUNT_JSON_PATH` локально
+     или `VERTEX_AI_SERVICE_ACCOUNT_JSON` в managed runtime
+
 ---
 
 ## 🚀 Полная инструкция
@@ -87,12 +93,14 @@ order: [..., '<expert_id>']
 **Вариант А: Автоматический (при деплое)**
 Если вы планируете сразу деплоить (`Step 5`), скрипт `./scripts/update_production_db.sh` **сам запустит** анализ дрифта для всех pending групп.
 *   **Плюс:** Полная автоматизация.
-*   **Минус:** Расходует API квоту (Gemini Flash Preview).
+*   **Минус:** Расходует Vertex AI квоту.
 
 **Вариант Б: Ручной (бесплатный/Dev)**
 Если хотите сэкономить квоту или проверить результат локально перед деплоем:
 1.  Запустите Gemini CLI с промптом из `prompts/gemini_cli_drift_prompt.md`.
 2.  Или используйте скрипт: `python3 backend/run_drift_service.py`
+
+> **Важно:** `backend/run_drift_service.py` теперь сам подхватывает `backend/.env` и ожидает Vertex credentials из этого файла.
 
 ### Step 5: Деплой
 
@@ -105,6 +113,8 @@ git add .
 git commit -m "feat: add new expert <expert_id>"
 git push
 ```
+
+`update_production_db.sh` сам грузит `backend/.env`, запускает `embed_posts.py --continuous` и `run_drift_service.py`, так что и embeddings, и drift идут через Vertex AI.
 
 ---
 
@@ -124,4 +134,3 @@ TELEGRAM_CHANNEL=username python3 backend/sync_channel.py --expert-id expert_id 
 ```bash
 sqlite3 backend/data/experts.db "SELECT COUNT(*) FROM comment_group_drift WHERE analyzed_by = 'pending';"
 ```
-

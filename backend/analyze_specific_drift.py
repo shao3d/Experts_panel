@@ -1,10 +1,14 @@
+import asyncio
 import sys
 import os
 from pathlib import Path
 from sqlalchemy import text
+from dotenv import load_dotenv
 
 # Add backend root to path
-sys.path.append(str(Path(__file__).parent))
+BACKEND_DIR = Path(__file__).parent
+sys.path.append(str(BACKEND_DIR))
+load_dotenv(BACKEND_DIR / ".env")
 
 from src.models.base import SessionLocal
 from src.services.drift_scheduler_service import DriftSchedulerService
@@ -49,7 +53,9 @@ def analyze_single_post(post_id):
 
         # 2. Run Analysis
         print("   🤖 Sending to Gemini...")
-        result = service.analyze_drift(row.post_text, comments_list)
+        result = asyncio.run(
+            service.analyze_drift_async(row.post_text, comments_list)
+        )
         
         # 3. Show Result
         print("\n✅ Analysis Result:")

@@ -30,7 +30,7 @@ Complete FastAPI backend with:
 - **Reddit MCP Integration**: Parallel pipeline for community insights with circuit breaker
 - 11+ specialized services for different phases with Gemini integration
 - Real-time SSE streaming for progress tracking with enhanced error handling
-- Google AI Studio LLM integration (single-key with auto-retry)
+- Vertex AI LLM integration via the unified compatibility client (`google_ai_studio_client.py`)
 - SQLite database with 10+ migration scripts (18MB active database)
 - Production-ready Fly.io deployment with admin authentication
 - Dynamic expert loading from database with expert metadata centralization
@@ -67,7 +67,7 @@ React 18 + TypeScript frontend with:
 - `ProgressSection.tsx` - Smart Grouping progress (dynamic groups from `pipeline_state`)
 - `CommunityInsightsSection.tsx` - Reddit community analysis UI
 - `ExpertResponse.tsx` - Answer rendering with sources
-- `QueryForm.tsx` - User input form with Reddit toggle checkbox
+- `QueryForm.tsx` - User input form; search toggles live in the Sidebar on desktop and in the mobile expert drawer
 
 ### Database & Data Management
 **Location:** `backend/data/experts.db` (18MB active database)
@@ -95,6 +95,7 @@ To import a video and deploy it to production:
 ```bash
 ./scripts/deploy_video.sh <json_path>
 ```
+This script imports JSON into SQLite and deploys the database artifact. It does **not** call Gemini directly; query-time Video Hub analysis later runs through the backend Vertex AI runtime.
 See **[Video Hub Playbook](docs/guides/video-hub-operator.md)** for prompts, JSON format, and merge workflows.
 
 ### Updating Production & Data
@@ -106,12 +107,14 @@ This "Cycle of Life" script handles (9 steps):
 1.  **Backup**: Creates a local backup of `experts.db`.
 2.  **Sync**: Incrementally fetches new posts and comments for **all** experts.
 3.  **Migrations**: Applies pending database migrations (idempotent, marker-file tracked).
-4.  **Vectorization**: Generates embeddings for new posts (`embed_posts.py --continuous`) for Hybrid Search.
-5.  **Drift Analysis**: Analyzes new comments for topic drift using Gemini.
+4.  **Vectorization**: Generates embeddings for new posts (`embed_posts.py --continuous`) for Hybrid Search via **Vertex AI**.
+5.  **Drift Analysis**: Analyzes new comments for topic drift via **Vertex AI**.
 6.  **Check/Wake Machine**: Verifies Fly.io machine status and wakes it if needed.
 7.  **Remote Backup**: Creates backup of remote database on server.
 8.  **Upload Database**: Compresses and uploads the updated database to Fly.io.
 9.  **Restart Application**: Restarts the app to load the new database.
+
+The script loads `backend/.env` before running the Python steps, so standalone embeddings and drift use the same Vertex credentials as the backend.
 
 ### Database Operations
 For interactive database management (e.g., initializing, resetting, or listing tables), use the script at `backend/src/models/database`. Database backups and migrations can be performed using standard `sqlite3` CLI commands, pointing to the database file at `backend/data/experts.db`. Migration scripts are located in `backend/migrations/`.
@@ -122,16 +125,17 @@ Model configuration is managed via environment variables as defined in `.env.exa
 **Current Production Models:**
 - **Map Phase** (`MODEL_MAP`): `gemini-2.5-flash-lite` - Ultra-fast relevance detection
 - **Synthesis Phases** (`MODEL_SYNTHESIS`): `gemini-3-flash-preview` - Pro-grade reasoning for quality synthesis
-- **Analysis Tasks** (`MODEL_ANALYSIS`): `gemini-2.0-flash` - Fast, reliable for translation/validation
-- **Medium Scoring** (`MODEL_MEDIUM_SCORING`): `gemini-2.0-flash` - Content scoring
-- **Comment Groups** (`MODEL_COMMENT_GROUPS`): `gemini-2.0-flash` - Comment relevance
+- **Analysis Tasks** (`MODEL_ANALYSIS`): `gemini-2.5-flash` - Current project-compatible replacement for historical `gemini-2.0-flash`
+- **Medium Scoring** (`MODEL_MEDIUM_SCORING`): `gemini-2.5-flash` - Content scoring
+- **Comment Groups** (`MODEL_COMMENT_GROUPS`): `gemini-2.5-flash` - Comment relevance
 - **Drift Analysis** (`MODEL_DRIFT_ANALYSIS`): `gemini-3-flash-preview` - Advanced topic drift detection
 - **AI Scout** (`MODEL_SCOUT`): `gemini-3.1-flash-lite-preview` - Entity-centric FTS5 query generation
 - **Meta-Synthesis** (`MODEL_META_SYNTHESIS`): `gemini-3-flash-preview` - Cross-expert unified analysis (≥2 experts)
-- **Video Synthesis** (`MODEL_VIDEO_PRO`): `gemini-3-pro-preview` - Video Hub Digital Twin analysis
+- **Video Synthesis** (`MODEL_VIDEO_PRO`): `gemini-3.1-pro-preview` - Video Hub Digital Twin analysis
 - **Video Validation** (`MODEL_VIDEO_FLASH`): `gemini-3-flash-preview` - Video Hub language validation
+- **Embedding** (`MODEL_EMBEDDING`): `gemini-embedding-001` - Query/post embeddings for Hybrid Retrieval
 
-**Note:** The `gemini-3-flash-preview` model (released January 2026) provides significantly improved reasoning capabilities while maintaining high speed and cost efficiency compared to earlier Gemini models.
+**Note:** This GCP project does not expose `gemini-2.0-flash`, so the three phases that historically used `2.0-flash` now run on `gemini-2.5-flash`.
 
 ### Date Filtering (use_recent_only)
 The system supports filtering queries to only use recent data (last 3 months):
@@ -188,7 +192,7 @@ Logs are the primary source for debugging. The log file locations are configured
 
 ### Common Problems
 - **Port conflicts**: The backend defaults to port 8000 and the frontend to 3000.
-- **Environment variables**: Ensure `.env` exists and contains the required API keys.
+- **Environment variables**: Ensure `backend/.env` exists and contains the required Vertex AI credentials.
 - **Database location**: The active database is at `backend/data/experts.db`.
 - **Model configuration**: The model strategy is defined by environment variables in `.env.example` and implemented in `backend/src/config.py`.
 - **Production deployment**: For Fly.io deployments, ensure all required secrets are set correctly using `fly secrets list`.
@@ -256,7 +260,7 @@ To debug the pipeline, monitor the backend log file for messages containing spec
 ---
 
 **Project Status:** Production-ready with active development
-**Last Updated:** 2026-03-31
+**Last Updated:** 2026-04-21
 **Architecture:** Multi-expert, Gemini-only LLM pipeline with unified client and real-time progress tracking
 **Key Features:** Parallel expert processing, unified `google_ai_studio_client`, cost optimization with Gemini 3 Flash, language validation, comment synthesis, enhanced error handling, admin authentication, Reddit community insights, Pixel Office Engine (4-room Canvas office with CSS scaling)
 **Change History:** See `git log` for detailed history of all changes.

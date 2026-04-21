@@ -29,7 +29,7 @@ The system uses an advanced **ten-phase pipeline** to provide accurate and conte
 
 - **🎨 Modern UI**: Clean, responsive interface built with React, Tailwind CSS, and a collapsible Sidebar.
 - **🧠 10-phase Map-Resolve-Reduce Architecture**: Advanced pipeline with differential HIGH/MEDIUM posts processing.
-- **🎯 Cost-Optimized Gemini Strategy**: Vertex AI with service-account auth and Fly secrets.
+- **🎯 Cost-Optimized Gemini Strategy**: Vertex AI with service-account auth.
 - **🔍 Smart Semantic Search**: Finds relevant posts by meaning using Hybrid Retrieval (Vector KNN + FTS5 + RRF).
 - **📊 Medium Posts Reranking**: Gemini-based scoring system with threshold ≥0.7.
 - **💬 Comment Groups & Synthesis**: Gemini pipeline for comment drift analysis.
@@ -53,6 +53,25 @@ For a guided setup experience, execute the `quickstart.sh` script located in the
 ```bash
 ./quickstart.sh
 ```
+
+For manual setup, copy `.env.example` to `backend/.env` and configure Vertex AI auth there:
+
+```bash
+cd backend
+cp ../.env.example .env
+```
+
+Minimum required runtime variables:
+- `VERTEX_AI_PROJECT_ID`
+- `VERTEX_AI_LOCATION`
+- `VERTEX_AI_SERVICE_ACCOUNT_JSON_PATH` for local development
+  or `VERTEX_AI_SERVICE_ACCOUNT_JSON` for managed environments
+
+## 🧰 Maintenance Scripts
+
+- `./scripts/update_production_db.sh`: loads `backend/.env`, runs sync, `backend/scripts/embed_posts.py --continuous`, and `backend/run_drift_service.py`. The embedding and drift steps use **Vertex AI**.
+- `./scripts/deploy_video.sh <json_path>`: imports prepared video JSON into SQLite and deploys the database artifact. The script itself does **not** call Gemini directly.
+- `python3 stress_test_gemini.py` and `python3 test_model.py`: standalone smoke tests that reuse the project's **Vertex AI** runtime from `backend/.env`.
 
 ## 📚 Documentation
 

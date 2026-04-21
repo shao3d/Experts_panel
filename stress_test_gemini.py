@@ -1,27 +1,42 @@
 import asyncio
 import os
+import sys
 import time
-import google.generativeai as genai
+from pathlib import Path
+
 from dotenv import load_dotenv
 
-# Load env vars from backend/.env
-load_dotenv("backend/.env")
+# Load backend env and reuse the project's Vertex runtime.
+BACKEND_DIR = Path(__file__).parent / "backend"
+load_dotenv(BACKEND_DIR / ".env")
+sys.path.insert(0, str(BACKEND_DIR))
 
-api_key = os.getenv("GOOGLE_AI_STUDIO_API_KEY")
-if not api_key:
-    print("❌ No API key found in backend/.env")
+from src import config
+from src.services.google_ai_studio_client import create_google_ai_studio_client
+
+if not (
+    os.getenv("VERTEX_AI_SERVICE_ACCOUNT_JSON")
+    or os.getenv("VERTEX_AI_SERVICE_ACCOUNT_JSON_PATH")
+    or os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+):
+    print("❌ No Vertex AI credentials found in backend/.env")
     exit(1)
 
-genai.configure(api_key=api_key)
-model_name = "gemini-2.0-flash" # Use fast model for stress test
+model_name = os.getenv("STRESS_TEST_MODEL", config.MODEL_ANALYSIS)
+client = create_google_ai_studio_client()
 
 async def make_request(i):
     start = time.time()
     try:
-        model = genai.GenerativeModel(model_name)
-        response = await model.generate_content_async(f"Say 'ok {i}'")
+        response = await client.chat_completions_create(
+            model=model_name,
+            messages=[{"role": "user", "content": f"Say 'ok {i}'."}],
+            temperature=0.0,
+            max_tokens=16,
+        )
         duration = time.time() - start
-        return f"✅ Req {i}: Success ({duration:.2f}s)"
+        content = response.choices[0].message.content.strip()
+        return f"✅ Req {i}: Success ({duration:.2f}s) - {content}"
     except Exception as e:
         duration = time.time() - start
         return f"❌ Req {i}: Failed ({duration:.2f}s) - {str(e)[:100]}"

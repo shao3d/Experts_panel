@@ -11,7 +11,8 @@ Usage (run from project root):
     python backend/scripts/deep_compare_pipelines.py --query "..." --experts doronin akimov
 
 Requirements:
-    - .env file in backend/ with GOOGLE_AI_STUDIO_API_KEY
+    - .env file in backend/ with Vertex AI credentials
+    - Either VERTEX_AI_SERVICE_ACCOUNT_JSON or VERTEX_AI_SERVICE_ACCOUNT_JSON_PATH
 """
 
 import asyncio

@@ -9,6 +9,8 @@ Use the automated deployment script to import JSON and update production safely:
 ./scripts/deploy_video.sh path/to/video.json
 ```
 
+> **Важно:** `deploy_video.sh` сам по себе **не вызывает Gemini / Vertex AI**. Он импортирует готовый JSON в SQLite и выкатывает обновлённую БД. Сам Video Hub отвечает через Vertex AI уже позже, во время реального query runtime.
+
 ## 📋 Prerequisite: JSON Format
 Ensure your JSON file follows the **Segmented Topic Structure**:
 - `topic_id`: Must change every 10-15 mins or at logical chapters.
@@ -45,6 +47,17 @@ Ensure your JSON file follows the **Segmented Topic Structure**:
     *   Unzips new DB over old one.
     *   Fixes permissions (`chown appuser:appuser`).
     *   Restarts the app.
+
+## 🔎 Important Runtime Note
+
+- `deploy_video.sh` does **not** generate embeddings for fresh video segments.
+- If you need new video segments to participate in Hybrid Search immediately, run:
+
+```bash
+python3 backend/scripts/embed_posts.py --continuous
+```
+
+- This embedding step uses the same Vertex AI credentials from `backend/.env`.
 
 ## 🐛 Troubleshooting
 

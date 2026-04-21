@@ -11,9 +11,11 @@ Transform raw video content (YouTube/MP4) into a structured Knowledge Graph (Seg
 
 ---
 
-## 🧠 Phase 1: Segmentation (AI Studio)
+## 🧠 Phase 1: Segmentation (External Gemini Tool)
 
-Use **Google AI Studio** with the prompt below to generate JSON.
+Use **Google AI Studio** or another Gemini UI to generate the source JSON.
+
+> **Важно:** Это внешний ручной этап. Он не связан с backend runtime. Сам backend и query-time Video Hub в этом проекте работают через **Vertex AI**.
 
 ### 📝 The Golden Prompt (System Instructions)
 *Copy this into AI Studio System Instructions:*
@@ -114,3 +116,6 @@ Use **Google AI Studio** with the prompt below to generate JSON.
 ## 🛠️ Maintenance
 - **Script Location:** `scripts/deploy_video.sh`
 - **Database:** `backend/data/experts.db` (Local & Prod synced via script)
+- **Runtime Auth:** Query-time Video Hub uses Vertex AI credentials from `backend/.env` / managed secrets.
+- **Important:** `deploy_video.sh` does **not** call Gemini directly and does **not** generate embeddings for new segments.
+- **If immediate Hybrid Search is required:** run `python3 backend/scripts/embed_posts.py --continuous` after import.

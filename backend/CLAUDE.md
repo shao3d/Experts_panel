@@ -103,3 +103,6 @@ Defined in `.env`, loaded in `config.py`.
 - **Run**: `./quickstart.sh`
 - **Logs**: `backend/data/backend.log`
 - **Import Video**: `python3 backend/scripts/import_video_json.py <path_to_json>`
+- **Embed Fresh Posts**: `python3 backend/scripts/embed_posts.py --continuous`
+- **Run Drift Batch**: `python3 backend/run_drift_service.py` (auto-loads `backend/.env`)
+- **Analyze One Drift Group**: `python3 backend/analyze_specific_drift.py <post_id>` (auto-loads `backend/.env`)

@@ -29,9 +29,12 @@
 ## 🚀 Быстрый старт
 
 ```bash
-# 1. Запустить бэкенд с API ключами (из корня проекта!)
+# 1. Запустить бэкенд с Vertex auth (из корня проекта!)
 cd /path/to/Experts_panel/backend
-export $(grep -v '^#' .env | xargs) && python3 -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000
+set -a
+source .env
+set +a
+python3 -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000
 
 # 2. В другом терминале запустить A/B тест (из директории backend!)
 cd /path/to/Experts_panel/backend
@@ -186,10 +189,13 @@ curl http://localhost:8000/health
 # Должен вернуть api_key_configured: true
 ```
 
-### API keys not configured
+### Vertex auth not configured
 ```bash
 # Перезапустить с env vars
-export $(grep -v '^#' .env | xargs) && python3 -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000
+set -a
+source .env
+set +a
+python3 -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000
 ```
 
 ### Timeout

@@ -7,7 +7,8 @@ Thank you for your interest in contributing to Experts Panel! This document prov
 ### Prerequisites
 - Python 3.11+
 - Node.js 18+
-- Google AI Studio API key — get from https://aistudio.google.com/app/apikey
+- Google Cloud project with `Vertex AI API` enabled
+- Vertex AI service-account JSON or ADC-compatible credentials
 - Git
 
 ### Development Setup
@@ -20,7 +21,10 @@ cd Experts_panel
 cd backend
 pip install -r requirements.txt
 cp .env.example .env
-# Add your GOOGLE_AI_STUDIO_API_KEY to .env
+# Configure Vertex auth in .env:
+# VERTEX_AI_PROJECT_ID=...
+# VERTEX_AI_LOCATION=us-central1
+# VERTEX_AI_SERVICE_ACCOUNT_JSON_PATH=/absolute/path/to/service-account.json
 
 # Frontend setup
 cd ../frontend

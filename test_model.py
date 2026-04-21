@@ -1,28 +1,36 @@
 import asyncio
 import os
+import sys
+from pathlib import Path
+
 from dotenv import load_dotenv
 
-# Пробуем загрузить основной .env
-load_dotenv(dotenv_path=".env")
+# Reuse the backend Vertex runtime instead of the legacy Gemini API key path.
+BACKEND_DIR = Path(__file__).parent / "backend"
+load_dotenv(BACKEND_DIR / ".env")
+sys.path.insert(0, str(BACKEND_DIR))
 
-from openai import AsyncOpenAI
+from src import config
+from src.services.google_ai_studio_client import create_google_ai_studio_client
 
 async def test_model():
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        print("FAILED: No GEMINI_API_KEY found anywhere")
+    if not (
+        os.getenv("VERTEX_AI_SERVICE_ACCOUNT_JSON")
+        or os.getenv("VERTEX_AI_SERVICE_ACCOUNT_JSON_PATH")
+        or os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+    ):
+        print("FAILED: No Vertex AI credentials found in backend/.env")
         return
 
-    client = AsyncOpenAI(
-        api_key=api_key,
-        base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
-    )
+    client = create_google_ai_studio_client()
+    model = os.getenv("TEST_MODEL", config.MODEL_SCOUT)
     
     try:
-        response = await client.chat.completions.create(
-            model='gemini-3.1-flash-lite-preview',
+        response = await client.chat_completions_create(
+            model=model,
             messages=[{"role": "user", "content": "Return the word 'pong'."}],
-            max_tokens=10
+            temperature=0.0,
+            max_tokens=10,
         )
         print(f"SUCCESS: {response.choices[0].message.content}")
     except Exception as e:

@@ -8,8 +8,14 @@ import sys
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 # Add backend root to path so we can import src as a package
-sys.path.append(str(Path(__file__).parent))
+BACKEND_DIR = Path(__file__).parent
+sys.path.append(str(BACKEND_DIR))
+
+# Keep standalone execution aligned with the main backend runtime.
+load_dotenv(BACKEND_DIR / ".env")
 
 from src.services.drift_scheduler_service import DriftSchedulerService
 from src.models.base import SessionLocal

@@ -51,7 +51,7 @@
     *   **Пример команды:** *"Добавь нового эксперта строго по гайду `docs/guides/add-expert.md`."*
 
 *   **📄 `video-hub-operator.md`**
-    *   **О чём:** Полный плейбук оператора Video Hub. Промпты, сценарии склейки (Short/Long) и деплой.
+    *   **О чём:** Полный плейбук оператора Video Hub. Внешняя сегментация, сценарии склейки (Short/Long), импорт JSON, примечания про Vertex runtime и embeddings.
     *   **Пример команды:** *"Действуй по плейбуку `docs/guides/video-hub-operator.md` для добавления видео."*
 
 *   **📄 `drift-analysis.md`**
@@ -133,6 +133,8 @@
 | Изменил `update_production_db.sh` | `CLAUDE.md` ("Cycle of Life" секция) |
 | Изменил `add_new_expert.sh` | `docs/guides/add-expert.md` |
 | Изменил `deploy_video.sh` | `docs/guides/video-hub-operator.md` |
+| Изменил `run_drift_service.py` или `analyze_specific_drift.py` | `docs/guides/add-expert.md`, `docs/guides/drift-analysis.md`, при необходимости `backend/CLAUDE.md` |
+| Изменил `embed_posts.py` | `CLAUDE.md` ("Cycle of Life"), `docs/guides/add-video.md`, при необходимости `backend/CLAUDE.md` |
 | Добавил/удалил сервис (файл в `services/`) | `backend/CLAUDE.md` (таблица сервисов), `CLAUDE.md` (Key Files) |
 | Новая миграция БД | `backend/CLAUDE.md`, при необходимости `docs/architecture/pipeline.md` |
 
