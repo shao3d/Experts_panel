@@ -6,7 +6,7 @@ This module provides logging and monitoring for LLM operations.
 import logging
 import time
 from typing import Dict, Any, Optional
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class LLMApiCall:
     """Record of an LLM API call for monitoring."""
     service_name: str
-    provider: str  # "google_ai_studio"
+    provider: str  # "vertex_ai"
     model: str
     success: bool
     error_type: Optional[str] = None
@@ -56,7 +56,7 @@ class LLMMonitor:
 
         Args:
             service_name: Service name (e.g., "reduce", "comment_synthesis")
-            provider: API provider ("google_ai_studio")
+            provider: API provider ("vertex_ai")
             model: Model name used
             success: Whether the call was successful
             response_time_ms: Response time in milliseconds
@@ -124,28 +124,31 @@ class LLMMonitor:
             return {
                 "total_calls": 0,
                 "success_rate": 0.0,
-                "google_ai_studio_usage": 0.0
+                "vertex_ai_usage": 0.0,
             }
 
-        # Calculate provider usage (should be 100% google now)
-        google_calls = len(self.api_calls)
+        # Current runtime is Vertex-backed only.
+        vertex_calls = len(self.api_calls)
         
         # Calculate success rate
-        google_success = sum(1 for call in self.api_calls if call.success)
+        vertex_success = sum(1 for call in self.api_calls if call.success)
         
         # Calculate average response times
-        google_times = [call.response_time_ms for call in self.api_calls if call.response_time_ms]
+        vertex_times = [call.response_time_ms for call in self.api_calls if call.response_time_ms]
+
+        vertex_stats = {
+            "calls": vertex_calls,
+            "success_rate": vertex_success / vertex_calls if vertex_calls > 0 else 0.0,
+            "avg_response_time_ms": sum(vertex_times) / len(vertex_times) if vertex_times else None,
+        }
 
         return {
             "total_calls": total_calls,
             "success_count": self.success_count,
             "error_count": self.error_count,
             "success_rate": self.success_count / total_calls if total_calls > 0 else 0.0,
-            "google_ai_studio": {
-                "calls": google_calls,
-                "success_rate": google_success / google_calls if google_calls > 0 else 0.0,
-                "avg_response_time_ms": sum(google_times) / len(google_times) if google_times else None
-            }
+            "vertex_ai_usage": vertex_calls / total_calls if total_calls > 0 else 0.0,
+            "vertex_ai": vertex_stats,
         }
 
     def log_summary(self):
@@ -159,15 +162,16 @@ class LLMMonitor:
         logger.info(f"🔍 LLM Monitor Summary ({stats['total_calls']} calls)")
         logger.info(f"   Success Rate: {stats['success_rate']:.1%}")
 
-        google_stats = stats["google_ai_studio"]
-        if google_stats["calls"] > 0:
-            logger.info(f"   Google AI Studio: {google_stats['calls']} calls "
-                       f"({google_stats['success_rate']:.1%} success)")
+        vertex_stats = stats["vertex_ai"]
+        if vertex_stats["calls"] > 0:
+            logger.info(
+                f"   Vertex AI: {vertex_stats['calls']} calls "
+                f"({vertex_stats['success_rate']:.1%} success)"
+            )
 
     def reset(self):
         """Reset all monitoring data."""
         self.api_calls.clear()
-        self.fallback_count = 0
         self.success_count = 0
         self.error_count = 0
         logger.info("🔍 LLM Monitor: Reset all statistics")
@@ -202,7 +206,7 @@ def log_api_call_with_timing(
 
     Args:
         service_name: Service name (e.g., "reduce", "comment_synthesis")
-        provider: API provider ("google_ai_studio")
+        provider: API provider ("vertex_ai")
         model: Model name used
         start_time: Start time from time.time()
         success: Whether the call was successful

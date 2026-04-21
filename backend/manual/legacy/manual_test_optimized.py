@@ -3,24 +3,20 @@
 
 import asyncio
 import sys
-import os
+from pathlib import Path
 
-sys.path.insert(0, 'src')
+BACKEND_DIR = Path(__file__).resolve().parent
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
 
-import importlib.util
-spec = importlib.util.spec_from_file_location("reddit_client", "src/services/reddit_client.py")
-reddit_module = importlib.util.module_from_spec(spec)
+from src.cli.bootstrap import bootstrap_cli
 
-class MockModule:
-    pass
-sys.modules['..config'] = MockModule()
-sys.modules['..utils.language_utils'] = MockModule()
+BACKEND_DIR, logger = bootstrap_cli(
+    __file__,
+    logger_name="test_optimized",
+)
 
-spec.loader.exec_module(reddit_module)
-
-search_reddit = reddit_module.search_reddit
-expand_query = reddit_module.expand_query
-get_target_subreddits = reddit_module.get_target_subreddits
+from src.services.reddit_client import expand_query, get_target_subreddits, search_reddit
 
 
 def test_query_expansion():

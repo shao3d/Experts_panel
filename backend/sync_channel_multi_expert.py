@@ -11,8 +11,16 @@ import json
 import os
 from pathlib import Path
 
-# Add backend root to path so we can import src as a package
-sys.path.append(str(Path(__file__).parent))
+BACKEND_DIR = Path(__file__).resolve().parent
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
+from src.cli.bootstrap import bootstrap_cli, run_async
+
+BACKEND_DIR, logger = bootstrap_cli(
+    __file__,
+    logger_name="cli.sync_channel_multi_expert",
+)
 
 from src.services.sync_orchestrator import run_cron_pipeline
 
@@ -50,4 +58,4 @@ async def main():
         sys.exit(1)
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    run_async(main())

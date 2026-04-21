@@ -2,7 +2,6 @@
 
 import asyncio
 import json
-import os
 from typing import List, Dict, Any, Optional, Callable
 from datetime import datetime
 import re
@@ -17,7 +16,7 @@ import httpx
 from ..models.post import Post
 from ..models.comment import Comment
 from ..models.database import comment_group_drift
-from .google_ai_studio_client import create_google_ai_studio_client, GoogleAIStudioError
+from .vertex_llm_client import get_vertex_llm_client, VertexLLMError
 from ..api.models import get_channel_username
 from ..utils.language_utils import prepare_prompt_with_language_instruction
 
@@ -25,10 +24,10 @@ logger = logging.getLogger(__name__)
 
 
 class CommentGroupMapService:
-    """Service for finding relevant GROUPS of comments using Google Gemini.
+    """Service for finding relevant GROUPS of comments using Gemini on Vertex AI.
 
     Analyzes groups of Telegram comments to find discussions relevant to the query.
-    Strategy: Use Google Gemini (Free) with key rotation.
+    Strategy: use the shared Vertex-backed Gemini client.
     """
 
     DEFAULT_CHUNK_SIZE = 20  # Groups per chunk
@@ -47,14 +46,14 @@ class CommentGroupMapService:
             chunk_size: Number of comment groups per chunk
             max_parallel: Maximum parallel API calls
         """
-        # Initialize Google Client
-        self.google_client = None
+        # Initialize Vertex LLM client
+        self.llm_client = None
         try:
-            self.google_client = create_google_ai_studio_client()
-            if self.google_client:
-                logger.info("CommentGroupMapService: Google AI Studio client initialized.")
+            self.llm_client = get_vertex_llm_client()
+            if self.llm_client:
+                logger.info("CommentGroupMapService: Vertex LLM client initialized.")
         except Exception as e:
-            logger.warning(f"CommentGroupMapService: Could not initialize Google AI Studio client: {e}")
+            logger.warning(f"CommentGroupMapService: Could not initialize Vertex LLM client: {e}")
 
         self.chunk_size = chunk_size
         self.primary_model = model
@@ -236,8 +235,6 @@ class CommentGroupMapService:
         cutoff_date: Optional[datetime] = None
     ) -> List[Dict[str, Any]]:
         """Load comment groups with drift from database."""
-        print(f"[DEBUG CGS] _load_drift_groups called for expert_id={expert_id}, exclude_post_ids={exclude_post_ids}")  # DEBUG
-        
         # Query drift groups with anchor posts
         query = db.query(
             comment_group_drift.c.post_id,
@@ -263,8 +260,6 @@ class CommentGroupMapService:
                 query = query.filter(Post.telegram_message_id.notin_(validated_ids))
 
         results = query.all()
-        print(f"[DEBUG CGS] DB query returned {len(results)} results")  # DEBUG
-
         groups = []
         for post_id, drift_topics_json, telegram_msg_id, message_text, created_at, author_name in results:
             if drift_topics_json:
@@ -344,19 +339,19 @@ class CommentGroupMapService:
         return json.dumps(formatted_groups, ensure_ascii=False, indent=2)
 
     async def _call_llm(self, model_name: str, messages: List[Dict[str, str]]):
-        """Call Google AI Studio client."""
-        if self.google_client:
-            return await self.google_client.chat_completions_create(
+        """Call the shared Vertex LLM client."""
+        if self.llm_client:
+            return await self.llm_client.chat_completions_create(
                 model=model_name,
                 messages=messages,
                 temperature=0.2,
                 response_format={"type": "json_object"}
             )
-        raise ValueError("Google Client not initialized")
+        raise ValueError("Vertex LLM client not initialized")
 
-    def _validate_google_client_availability(self) -> bool:
-        """Check if Google AI Studio client is properly initialized."""
-        return self.google_client is not None
+    def _validate_llm_client_availability(self) -> bool:
+        """Check if the shared Vertex LLM client is properly initialized."""
+        return self.llm_client is not None
 
     @retry(
         stop=stop_after_attempt(3),
@@ -401,7 +396,7 @@ class CommentGroupMapService:
 
             response = None
 
-            # Direct call to Google model
+            # Direct call to the shared Vertex model
             response = await self._call_llm(self.primary_model, messages)
             logger.info(f"CommentGroups: Successfully used model {self.primary_model}")
 

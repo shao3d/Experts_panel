@@ -20,7 +20,7 @@ from ..utils.language_utils import (
     prepare_system_message_with_language,
 )
 from .. import config
-from .google_ai_studio_client import create_google_ai_studio_client
+from .vertex_llm_client import get_vertex_llm_client
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ class MetaSynthesisService:
 
     def __init__(self, model: Optional[str] = None):
         self.model = model or config.MODEL_META_SYNTHESIS
-        self._client = create_google_ai_studio_client()
+        self._client = get_vertex_llm_client()
         self._prompt_template = self._load_prompt_template()
         logger.info(f"MetaSynthesisService initialized, model={self.model}")
 

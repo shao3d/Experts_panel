@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Test with translated query."""
+"""Legacy manual script for translated query experiments."""
 
 import asyncio
 import sys

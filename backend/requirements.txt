@@ -8,10 +8,10 @@ python-multipart==0.0.12
 tenacity==8.5.0
 starlette==0.38.0
 
-# OpenAI Integration
+# OpenAI-compatible client surface
 openai==1.51.0
 
-# Google AI Studio Integration
+# Vertex AI authentication helpers
 google-generativeai==0.8.3
 google-auth>=2.41.1
 

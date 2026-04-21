@@ -8,7 +8,7 @@ import json
 import logging
 import re
 from typing import Optional, Tuple
-from .google_ai_studio_client import create_google_ai_studio_client, GoogleAIStudioError
+from .vertex_llm_client import get_vertex_llm_client
 from ..config import MODEL_SCOUT
 
 logger = logging.getLogger(__name__)
@@ -72,7 +72,7 @@ class AIScoutService:
         Args:
             model: Model to use (default: MODEL_SCOUT)
         """
-        self.client = create_google_ai_studio_client()
+        self.client = get_vertex_llm_client()
         self.model = model or MODEL_SCOUT
         logger.info(f"AIScoutService initialized with model: {self.model}")
 

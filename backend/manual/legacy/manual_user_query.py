@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Test user's specific query."""
+"""Legacy manual script for a one-off user query experiment."""
 
 import asyncio
 import sys

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Test Reddit API with different queries."""
+"""Legacy manual script for Reddit API query variants."""
 
 import asyncio
 import sys

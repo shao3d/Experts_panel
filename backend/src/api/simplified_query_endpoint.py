@@ -358,7 +358,7 @@ async def process_expert_pipeline(
         t_medium = time.perf_counter()
         from ..services.medium_scoring_service import MediumScoringService
 
-        # Use Google Gemini with automatic key rotation
+        # Use Gemini via the shared Vertex client
         scoring_service = MediumScoringService(model=config.MODEL_MEDIUM_SCORING)
 
         # Enrich medium_posts with full content before passing to the scoring service
@@ -734,11 +734,9 @@ async def process_reddit_pipeline(
     search_query = query
     if query_language == "Russian":
         try:
-            from ..services.google_ai_studio_client import (
-                create_google_ai_studio_client,
-            )
+            from ..services.vertex_llm_client import get_vertex_llm_client
 
-            client = create_google_ai_studio_client()
+            client = get_vertex_llm_client()
 
             prompt = f"""Convert this Russian question into an optimal English search query for Reddit.
 
@@ -1826,7 +1824,7 @@ async def get_post_detail(
             f"DEBUG: Starting translation for post {post_id} with content length {len(message_text)}"
         )
         try:
-            # Use Google Gemini for translation
+            # Use Gemini via Vertex AI for translation
             translation_service = TranslationService(model=config.MODEL_ANALYSIS)
             translated_text = await translation_service.translate_single_post(
                 message_text, post.author_name or "Unknown"

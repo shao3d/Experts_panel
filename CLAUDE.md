@@ -1,6 +1,6 @@
 # Experts Panel - Multi-Expert Query Processing System
 
-Sophisticated 10-phase pipeline system for analyzing expert Telegram channels and synthesizing comprehensive answers using Google Gemini AI.
+Sophisticated 10-phase pipeline system for analyzing expert Telegram channels and synthesizing comprehensive answers using Gemini on Vertex AI.
 
 ## 🚀 Quick Start (5 minutes)
 
@@ -30,7 +30,7 @@ Complete FastAPI backend with:
 - **Reddit MCP Integration**: Parallel pipeline for community insights with circuit breaker
 - 11+ specialized services for different phases with Gemini integration
 - Real-time SSE streaming for progress tracking with enhanced error handling
-- Vertex AI LLM integration via the unified compatibility client (`google_ai_studio_client.py`)
+- Vertex AI LLM integration via the canonical client (`vertex_llm_client.py`) with a legacy compatibility shim
 - SQLite database with 10+ migration scripts (18MB active database)
 - Production-ready Fly.io deployment with admin authentication
 - Dynamic expert loading from database with expert metadata centralization
@@ -44,7 +44,7 @@ Complete FastAPI backend with:
 - `src/services/reddit_enhanced_service.py` - **NEW:** Multi-strategy Reddit aggregator (parallel searches, smart subreddits)
 - `src/services/reddit_synthesis_service.py` - Reddit community analysis with Gemini
 - `src/services/meta_synthesis_service.py` - Cross-expert unified analysis (≥2 experts)
-- `src/services/translation_service.py` - Hybrid translation service with Google Gemini
+- `src/services/translation_service.py` - Translation service powered by Gemini on Vertex AI
 - `src/services/language_validation_service.py` - Language consistency validation
 - `src/config.py` - Comprehensive hybrid model configuration management
 - `src/utils/error_handler.py` - User-friendly error processing system
@@ -262,5 +262,5 @@ To debug the pipeline, monitor the backend log file for messages containing spec
 **Project Status:** Production-ready with active development
 **Last Updated:** 2026-04-21
 **Architecture:** Multi-expert, Gemini-only LLM pipeline with unified client and real-time progress tracking
-**Key Features:** Parallel expert processing, unified `google_ai_studio_client`, cost optimization with Gemini 3 Flash, language validation, comment synthesis, enhanced error handling, admin authentication, Reddit community insights, Pixel Office Engine (4-room Canvas office with CSS scaling)
+**Key Features:** Parallel expert processing, unified `vertex_llm_client`, cost optimization with Gemini 3 Flash, language validation, comment synthesis, enhanced error handling, admin authentication, Reddit community insights, Pixel Office Engine (4-room Canvas office with CSS scaling)
 **Change History:** See `git log` for detailed history of all changes.

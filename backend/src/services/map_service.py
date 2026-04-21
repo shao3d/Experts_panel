@@ -2,7 +2,6 @@
 
 import asyncio
 import json
-import os
 import time
 from typing import List, Dict, Any, Optional, Callable
 from datetime import datetime
@@ -15,7 +14,7 @@ import httpx
 from json_repair import repair_json
 
 from ..models.post import Post
-from .google_ai_studio_client import create_google_ai_studio_client, GoogleAIStudioError
+from .vertex_llm_client import get_vertex_llm_client, VertexLLMError
 from ..utils.language_utils import prepare_prompt_with_language_instruction, prepare_system_message_with_language
 from ..utils.error_handler import error_handler
 from ..config import MAP_MAX_PARALLEL
@@ -47,14 +46,14 @@ class MapService:
             chunk_size: Number of posts per chunk
             max_parallel: Maximum parallel API calls (None = all chunks in parallel)
         """
-        # Initialize Google client
-        self.google_client = None
+        # Initialize Vertex LLM client
+        self.llm_client = None
         try:
-            self.google_client = create_google_ai_studio_client()
-            if self.google_client:
-                logger.info("MapService: Google AI Studio client initialized.")
+            self.llm_client = get_vertex_llm_client()
+            if self.llm_client:
+                logger.info("MapService: Vertex LLM client initialized.")
         except Exception as e:
-            logger.warning(f"MapService: Could not initialize Google AI Studio client: {e}")
+            logger.warning(f"MapService: Could not initialize Vertex LLM client: {e}")
 
         self.chunk_size = chunk_size
         self.primary_model = model
@@ -66,7 +65,8 @@ class MapService:
         self.lock = asyncio.Lock()
 
         # Rate limiting metrics
-        # Note: rate_limit_hits counter removed — rate limiting is now handled\n        # entirely by tenacity in google_ai_studio_client.py
+        # Note: rate_limit_hits counter removed — retries now live entirely
+        # in vertex_llm_client.py.
         self.total_requests = 0
 
     def _reset_rate_limit_state(self):
@@ -160,17 +160,17 @@ class MapService:
         return json.dumps(formatted_posts, ensure_ascii=False, indent=2)
 
     async def _call_llm(self, model_name: str, prompt: str, system_message: str):
-        """Calls the Google AI Studio client."""
-        if self.google_client:
-            logger.info(f"Using Google AI Studio client for model: {model_name}")
-            return await self.google_client.chat_completions_create(
+        """Call the shared Vertex LLM client."""
+        if self.llm_client:
+            logger.info(f"Using Vertex LLM client for model: {model_name}")
+            return await self.llm_client.chat_completions_create(
                 model=model_name,
                 messages=[{"role": "system", "content": system_message}, {"role": "user", "content": prompt}],
                 temperature=0.3,
                 response_format={"type": "json_object"},
                 max_tokens=4096
             )
-        raise ValueError("Google Client not initialized")
+        raise ValueError("Vertex LLM client not initialized")
 
     @retry(
         stop=stop_after_attempt(3),
@@ -253,7 +253,7 @@ class MapService:
                 response = await self._call_llm(self.primary_model, prompt, enhanced_system)
                 logger.info(f"Chunk {chunk_index}: Model '{self.primary_model}' successful.")
 
-            except (GoogleAIStudioError, httpx.HTTPStatusError) as e:
+            except (VertexLLMError, httpx.HTTPStatusError) as e:
                 # Client handles rate limit retries internally via Tenacity.
                 # If we get here, client exhausted all attempts. Just propagate.
                 logger.error(f"Chunk {chunk_index}: API error after client retries: {e}")

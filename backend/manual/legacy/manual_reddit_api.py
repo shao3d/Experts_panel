@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Test actual Reddit API search."""
+"""Legacy manual script for direct Reddit API search."""
 
 import asyncio
 import sys

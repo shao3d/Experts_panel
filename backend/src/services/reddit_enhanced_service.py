@@ -20,7 +20,7 @@ import httpx
 
 from .. import config
 from .reddit_service import RedditServiceError, CircuitBreaker
-from .google_ai_studio_client import create_google_ai_studio_client
+from .vertex_llm_client import get_vertex_llm_client
 
 logger = logging.getLogger(__name__)
 
@@ -212,7 +212,7 @@ class RedditEnhancedService:
         self.max_retries = max_retries
         self._circuit_breaker = CircuitBreaker()
         self._client: Optional[httpx.AsyncClient] = None
-        self._llm_client = create_google_ai_studio_client()
+        self._llm_client = get_vertex_llm_client()
     
     async def _get_client(self) -> httpx.AsyncClient:
         """Get or create HTTP client."""

@@ -2,7 +2,7 @@
 
 Verifies:
 1. _should_retry predicate logic (via _is_rate_limit_error)
-2. Exception wrapping contract (GoogleAIStudioError)
+2. Exception wrapping contract (VertexLLMError)
 3. Prompt concatenation happens exactly once
 4. Tenacity import works
 
@@ -10,15 +10,11 @@ These tests use direct function testing without importing the full
 service package (which requires DB models and other dependencies).
 """
 
-import sys
-import os
-
-
 # === Test 1: _is_rate_limit_error predicate logic ===
 def test_should_retry_predicate():
     """Test that rate limit detection correctly classifies errors."""
 
-    # Replicate the exact pattern list from google_ai_studio_client.py
+    # Replicate the exact pattern list from vertex_llm_client.py
     RATE_LIMIT_PATTERNS = [
         "resource has been exhausted",
         "rate limit exceeded",
@@ -67,25 +63,25 @@ def test_should_retry_predicate():
     print("✅ test_should_retry_predicate PASSED")
 
 
-# === Test 2: GoogleAIStudioError contract ===
+# === Test 2: VertexLLMError contract ===
 def test_exception_wrapping_contract():
-    """Test that GoogleAIStudioError preserves is_rate_limit flag."""
+    """Test that VertexLLMError preserves is_rate_limit flag."""
 
-    # Replicate the exact class from google_ai_studio_client.py
-    class GoogleAIStudioError(Exception):
+    # Replicate the exact class from vertex_llm_client.py
+    class VertexLLMError(Exception):
         def __init__(self, message: str, error_type: str = "unknown", is_rate_limit: bool = False):
             super().__init__(message)
             self.error_type = error_type
             self.is_rate_limit = is_rate_limit
 
     # Rate limit error
-    err = GoogleAIStudioError("Rate limit", error_type="rate_limit", is_rate_limit=True)
+    err = VertexLLMError("Rate limit", error_type="rate_limit", is_rate_limit=True)
     assert err.is_rate_limit == True
     assert err.error_type == "rate_limit"
     assert str(err) == "Rate limit"
 
     # Auth error
-    err2 = GoogleAIStudioError("Bad key", error_type="authentication", is_rate_limit=False)
+    err2 = VertexLLMError("Bad credentials", error_type="authentication", is_rate_limit=False)
     assert err2.is_rate_limit == False
     assert err2.error_type == "authentication"
 

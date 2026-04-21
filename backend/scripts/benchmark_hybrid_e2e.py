@@ -22,8 +22,20 @@ import argparse
 import json
 import sys
 import time
+from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Optional
+
+BACKEND_DIR = Path(__file__).resolve().parents[1]
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
+from src.cli.bootstrap import bootstrap_cli
+
+BACKEND_DIR, logger = bootstrap_cli(
+    __file__,
+    logger_name="cli.benchmark_hybrid_e2e",
+)
 
 try:
     import httpx

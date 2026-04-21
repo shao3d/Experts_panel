@@ -81,6 +81,11 @@
     *   **Триггер:** Реализовывать при ~100-150 сегментах или 10+ видео.
     *   **Пример команды:** *"Перед доработкой Video Hub — изучи план в `docs/roadmap/video-hub-scaling.md`."*
 
+*   **📄 `docs/roadmap/backend-runtime-cleanup.md`** *(✅ Completed Initiative / Audit Trail)*
+    *   **О чём:** Завершённый cleanup после миграции на Vertex AI: canonical runtime client, честные `/health` и `/health/live`, единый стандарт для standalone CLI scripts, архивирование stale manual/debug entrypoints.
+    *   **Триггер:** Когда нужно понять, почему backend runtime/health/CLI сейчас устроены именно так, или повторить похожую cleanup-инициативу без возвращения legacy-хаоса.
+    *   **Пример команды:** *"Перед правками runtime-слоя и health-check посмотри итог в `docs/roadmap/backend-runtime-cleanup.md`."*
+
 *   **📄 `docs/concepts/ai-architect-mode.md` (Генератор решений)**
     *   **О чём:** Концепция перехода от RAG-поиска к Agentic-синтезу решений на основе ТЗ клиента. "Газ-Квас-Алмаз" воркфлоу.
     *   **Пример команды:** *"Как мы можем прокрутить эту бизнес-идею через логику из `docs/concepts/ai-architect-mode.md`?"*

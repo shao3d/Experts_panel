@@ -1,15 +1,19 @@
 """Main FastAPI application with CORS and middleware configuration."""
 
 import logging
+import os
 import time
 import uuid
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Dict, Any, List
-import os
-from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv()
+BACKEND_DIR = Path(__file__).resolve().parents[2]
+
+from ..cli.bootstrap import load_backend_env
+
+# Load environment variables from backend/.env regardless of current working directory.
+load_backend_env(BACKEND_DIR / ".env")
 
 from fastapi import FastAPI, Request, HTTPException, status, Depends
 from pydantic import BaseModel
@@ -24,6 +28,7 @@ from .import_endpoints import router as import_router
 from .comment_endpoints import router as comment_router
 from .simplified_query_endpoint import router as query_router
 from .log_endpoints import router as log_router
+from .dependencies import verify_admin_secret
 from ..models.base import engine, Base
 from .. import config
 
@@ -77,6 +82,7 @@ async def lifespan(app: FastAPI):
     """Application lifespan events."""
     # Startup
     logger.info("Starting up Experts Panel API...")
+    config.log_runtime_configuration(logger)
 
     # Create database tables if they don't exist
     try:
@@ -85,6 +91,14 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error(f"Database initialization error: {e}")
         # Don't prevent startup, but log the error
+
+    try:
+        from ..services.health_probe_service import get_health_probe_service
+
+        await get_health_probe_service().warm_cache()
+        logger.info("Health diagnostics cache initialized")
+    except Exception as exc:
+        logger.error("Health diagnostics warmup failed: %s", exc, exc_info=True)
     
     yield
 
@@ -233,37 +247,107 @@ class ExpertInfo(BaseModel):
     stats: ExpertStats
 
 
+def _check_database_health() -> Dict[str, Any]:
+    """Run a minimal database query and return a structured status block."""
+    db = None
+    try:
+        from ..models.base import SessionLocal
+
+        db = SessionLocal()
+        db.execute(text("SELECT 1"))
+        return {"status": "healthy", "message": None}
+    except Exception as exc:
+        logger.error(f"Database health check failed: {exc}")
+        return {"status": "unhealthy", "message": str(exc)}
+    finally:
+        if db is not None:
+            db.close()
+
+
+def _derive_overall_health_status(
+    database_status: str,
+    auth_configured: bool,
+    diagnostics: Dict[str, Any],
+) -> str:
+    """Collapse DB/auth/probe state into a single health status."""
+    if database_status != "healthy":
+        return "unhealthy"
+
+    if not auth_configured:
+        return "unhealthy"
+
+    generation_probe = diagnostics["generation_probe"]
+    embedding_probe = diagnostics["embedding_probe"]
+    availability_entries = diagnostics["model_availability"].values()
+    availability_statuses = {entry.get("status") for entry in availability_entries}
+
+    if generation_probe["status"] == "ok" and embedding_probe["status"] == "ok":
+        if availability_statuses <= {"available"}:
+            return "healthy"
+        return "degraded"
+
+    if generation_probe["status"] == "failed" and embedding_probe["status"] == "failed":
+        return "unhealthy"
+
+    return "degraded"
+
+
+def _build_health_response(
+    diagnostics: Dict[str, Any],
+    database_details: Dict[str, Any],
+    probe_mode: str,
+) -> Dict[str, Any]:
+    """Build a backward-compatible health payload with richer diagnostics."""
+    vertex_auth = diagnostics["vertex_auth"]
+    auth_configured = vertex_auth["configured"]
+    database_status = database_details["status"]
+
+    return {
+        "status": _derive_overall_health_status(
+            database_status=database_status,
+            auth_configured=auth_configured,
+            diagnostics=diagnostics,
+        ),
+        "version": "1.0.0",
+        "database": database_status,
+        "auth_configured": auth_configured,
+        "vertex_auth_configured": auth_configured,
+        "timestamp": time.time(),
+        "diagnostics": {
+            "mode": probe_mode,
+            "database": database_details,
+            **diagnostics,
+        },
+    }
+
+
 # Health check endpoint
 @app.get("/health", tags=["health"])
 async def health_check() -> Dict[str, Any]:
-    """Health check endpoint."""
-    try:
-        # Check database connection
-        from ..models.base import SessionLocal
-        db = SessionLocal()
-        db.execute(text("SELECT 1"))
-        db.close()
-        db_status = "healthy"
-    except Exception as e:
-        logger.error(f"Database health check failed: {e}")
-        db_status = "unhealthy"
+    """Cheap health check with cached probe diagnostics."""
+    from ..services.health_probe_service import get_health_probe_service
 
-    # Check Vertex AI auth configuration
-    api_key_configured = bool(
-        config.VERTEX_AI_SERVICE_ACCOUNT_JSON
-        or config.VERTEX_AI_SERVICE_ACCOUNT_JSON_PATH
-        or config.GOOGLE_APPLICATION_CREDENTIALS_PATH
-        or config.VERTEX_AI_PROJECT_ID
+    database_details = _check_database_health()
+    diagnostics = await get_health_probe_service().get_cached_summary()
+    return _build_health_response(
+        diagnostics=diagnostics,
+        database_details=database_details,
+        probe_mode="cached",
     )
 
-    return {
-        "status": "healthy" if db_status == "healthy" and api_key_configured else "degraded",
-        "version": "1.0.0",
-        "database": db_status,
-        "api_key_configured": api_key_configured,
-        "google_ai_keys_count": 1 if api_key_configured else 0,
-        "timestamp": time.time()
-    }
+
+@app.get("/health/live", tags=["health"], dependencies=[Depends(verify_admin_secret)])
+async def health_live_check() -> Dict[str, Any]:
+    """Live health check with fresh Vertex generation and embedding probes."""
+    from ..services.health_probe_service import get_health_probe_service
+
+    database_details = _check_database_health()
+    diagnostics = await get_health_probe_service().refresh_summary(force=True)
+    return _build_health_response(
+        diagnostics=diagnostics,
+        database_details=database_details,
+        probe_mode="live",
+    )
 
 
 # Experts endpoint
@@ -321,7 +405,7 @@ async def api_info() -> Dict[str, Any]:
             "Server-Sent Events streaming",
             "Expert comments integration",
             "Link-based context enrichment",
-            "GPT-4o-mini powered synthesis"
+            "Gemini on Vertex AI synthesis"
         ],
         "endpoints": {
             "query": "/api/query",

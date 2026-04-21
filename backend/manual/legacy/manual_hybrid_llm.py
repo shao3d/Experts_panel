@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Test script for hybrid LLM functionality.
+"""Legacy manual script for the removed hybrid LLM functionality.
 
 This script tests the Google AI Studio + OpenRouter hybrid functionality
 by simulating API calls and verifying fallback behavior.

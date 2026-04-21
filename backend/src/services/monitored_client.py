@@ -3,14 +3,11 @@
 This module provides a monitored interface for Vertex AI.
 """
 
-import os
 import logging
 import time
 from typing import Dict, Any, Optional, List
 
-from .google_ai_studio_client import (
-    GoogleAIClient, GoogleAIStudioError, create_google_ai_studio_client
-)
+from .vertex_llm_client import get_vertex_llm_client
 from .llm_monitor import log_api_call_with_timing
 
 logger = logging.getLogger(__name__)
@@ -23,16 +20,16 @@ class MonitoredLLMClient:
         self
     ):
         """Initialize LLM client."""
-        self.google_available = True
+        self.vertex_available = True
 
-        self.google_client = None
+        self.llm_client = None
 
         try:
-            self.google_client = create_google_ai_studio_client()
+            self.llm_client = get_vertex_llm_client()
             logger.info("LLM client initialized with Vertex AI")
         except Exception as e:
             logger.warning(f"Failed to initialize Vertex AI client: {e}")
-            self.google_available = False
+            self.vertex_available = False
 
     async def chat_completions_create(
         self,
@@ -57,21 +54,18 @@ class MonitoredLLMClient:
             Chat completion response
         """
         
-        if not self.google_client:
+        if not self.llm_client:
             raise RuntimeError(f"[{service_name}] Vertex AI client not initialized")
 
         start_time = time.time()
         try:
-            # logger.info(f"[{service_name}] Calling Google AI Studio API with model: {model}")
-
-            response = await self.google_client.chat_completions_create(
+            response = await self.llm_client.chat_completions_create(
                 model=model,
                 messages=messages,
                 temperature=temperature,
                 response_format=response_format,
                 **kwargs
             )
-            # logger.info(f"[{service_name}] Google AI Studio API call successful")
 
             log_api_call_with_timing(
                 service_name=service_name,
@@ -103,7 +97,7 @@ class MonitoredLLMClient:
             Dictionary with client status
         """
         return {
-            "vertex_ai_available": self.google_available
+            "vertex_ai_available": self.vertex_available
         }
 
 

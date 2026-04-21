@@ -186,7 +186,7 @@ Recall = 2/5 = 40%
 # Проверить health
 curl http://localhost:8000/health
 
-# Должен вернуть api_key_configured: true
+# Должен вернуть auth_configured: true
 ```
 
 ### Vertex auth not configured

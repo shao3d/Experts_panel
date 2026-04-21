@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Round 2: Extended Reddit search testing with complex queries."""
+"""Legacy manual script for round-2 Reddit search experiments."""
 
 import asyncio
 import sys

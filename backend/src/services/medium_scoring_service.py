@@ -1,8 +1,7 @@
-"""Medium posts scoring service using Google Gemini with key rotation."""
+"""Medium posts scoring service using Gemini on Vertex AI."""
 
 import json
 import logging
-import os
 import re
 from typing import List, Dict, Any, Optional, Callable
 from pathlib import Path
@@ -11,7 +10,7 @@ from string import Template
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 import httpx
 
-from .google_ai_studio_client import create_google_ai_studio_client, GoogleAIStudioError
+from .vertex_llm_client import get_vertex_llm_client
 from ..utils.language_utils import prepare_prompt_with_language_instruction, prepare_system_message_with_language
 from .. import config
 
@@ -19,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class MediumScoringService:
-    """Service for scoring MEDIUM relevance posts using Google Gemini.
+    """Service for scoring MEDIUM relevance posts using Gemini on Vertex AI.
 
     LLM scores all MEDIUM posts 0.0-1.0,
     code selects posts with score >= 0.7 (max 5 posts by highest score).
@@ -37,14 +36,14 @@ class MediumScoringService:
         Args:
             model: Model to use (Gemini)
         """
-        # Initialize Google Client
-        self.google_client = None
+        # Initialize Vertex LLM client
+        self.llm_client = None
         try:
-            self.google_client = create_google_ai_studio_client()
-            if self.google_client:
-                logger.info("MediumScoringService: Google AI Studio client initialized.")
+            self.llm_client = get_vertex_llm_client()
+            if self.llm_client:
+                logger.info("MediumScoringService: Vertex LLM client initialized.")
         except Exception as e:
-            logger.warning(f"MediumScoringService: Could not initialize Google AI Studio client: {e}")
+            logger.warning(f"MediumScoringService: Could not initialize Vertex LLM client: {e}")
 
         # Configure model
         self.primary_model = model
@@ -162,18 +161,18 @@ class MediumScoringService:
             raise
 
     async def _call_llm(self, model_name: str, messages: List[Dict[str, str]], expert_id: str):
-        """Call Google AI Studio."""
-        if self.google_client:
-            logger.info(f"[{expert_id}] Calling Google AI Studio ({model_name})...")
-            # Google client handles key rotation automatically
-            return await self.google_client.chat_completions_create(
+        """Call the shared Vertex LLM client."""
+        if self.llm_client:
+            logger.info(f"[{expert_id}] Calling Vertex LLM client ({model_name})...")
+            # The shared client handles auth and retry automatically.
+            return await self.llm_client.chat_completions_create(
                 model=model_name,
                 messages=messages,
                 temperature=0.3,
                 max_tokens=2048,
                 # Note: We DON'T force json_object here because the prompt expects Markdown text output
             )
-        raise ValueError("Google Client not initialized")
+        raise ValueError("Vertex LLM client not initialized")
 
     @retry(
         stop=stop_after_attempt(3),
@@ -189,7 +188,7 @@ class MediumScoringService:
         expert_id: str,
         progress_callback: Optional[Callable] = None
     ) -> Dict[str, Any]:
-        """Score MEDIUM posts using Google Gemini."""
+        """Score MEDIUM posts using Gemini on Vertex AI."""
 
         if progress_callback:
             await progress_callback({

@@ -1,6 +1,11 @@
 """
 Refill drift_topics for all comment groups using Claude Sonnet 4.5.
 
+Provider-specific status:
+- This is a manual maintenance tool.
+- It is NOT part of the current Vertex AI runtime.
+- It calls OpenRouter directly and should be treated as a separate provider path.
+
 Usage:
     python backend/refill_drift_topics.py --test  # Test on 10 groups
     python backend/refill_drift_topics.py --all   # Process all 63 groups
@@ -10,6 +15,7 @@ import os
 import json
 import time
 import argparse
+import sys
 from pathlib import Path
 from string import Template
 from typing import Dict, List, Any, Optional
@@ -18,9 +24,22 @@ import requests
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
-# Configuration
-DATABASE_PATH = Path(__file__).parent / "data" / "experts.db"
-PROMPT_PATH = Path(__file__).parent / "prompts" / "extract_drift_topics.txt"
+BACKEND_DIR = Path(__file__).resolve().parents[2]
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
+from src.cli.bootstrap import (
+    bootstrap_cli,
+    get_sqlite_db_path,
+)
+
+BACKEND_DIR, logger = bootstrap_cli(
+    __file__,
+    logger_name="cli.refill_drift_topics",
+)
+
+DATABASE_PATH = get_sqlite_db_path(BACKEND_DIR)
+PROMPT_PATH = BACKEND_DIR / "prompts" / "extract_drift_topics.txt"
 MODEL = "anthropic/claude-sonnet-4.5"
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
 

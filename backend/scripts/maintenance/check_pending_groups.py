@@ -4,18 +4,28 @@ Check for pending comment groups in the database
 """
 
 import sqlite3
-from datetime import datetime
+import sys
 from pathlib import Path
 
+BACKEND_DIR = Path(__file__).resolve().parents[2]
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
+from src.cli.bootstrap import bootstrap_cli, get_sqlite_db_path
+
+BACKEND_DIR, logger = bootstrap_cli(
+    __file__,
+    logger_name="maintenance.check_pending_groups",
+)
+DB_PATH = get_sqlite_db_path(BACKEND_DIR)
+
+
 def main():
-    # Database path (relative to this script)
-    # script is in backend/scripts/maintenance
-    # db is in backend/data
-    db_path = Path(__file__).resolve().parents[2] / 'data' / 'experts.db'
+    conn = None
 
     try:
         # Connect to database
-        conn = sqlite3.connect(str(db_path))
+        conn = sqlite3.connect(str(DB_PATH))
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
 
@@ -103,7 +113,8 @@ def main():
         return None, None
 
     finally:
-        conn.close()
+        if conn is not None:
+            conn.close()
 
 if __name__ == "__main__":
     main()

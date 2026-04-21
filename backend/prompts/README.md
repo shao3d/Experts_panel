@@ -5,7 +5,7 @@ These prompts power the three-phase query processing pipeline for analyzing Tele
 
 ## Versions
 
-### Current (Optimized for GPT-4o-mini)
+### Current (Optimized for Gemini on Vertex AI)
 - `map_prompt.txt` - Identifies relevant posts from chunks
 - `resolve_prompt.txt` - Evaluates importance of linked posts (uses DB links)
 - `reduce_prompt.txt` - Synthesizes final comprehensive answer
@@ -23,7 +23,7 @@ These prompts power the three-phase query processing pipeline for analyzing Tele
 
 ### Resolve Phase
 - **Major change**: Now uses Links from database instead of parsing text
-- GPT only evaluates importance, doesn't extract URLs
+- Gemini only evaluates importance, doesn't extract URLs
 - Simplified output to just list of IDs
 - Works with our LinkType enum (REPLY/FORWARD/MENTION)
 
@@ -36,10 +36,10 @@ These prompts power the three-phase query processing pipeline for analyzing Tele
 ## Usage with JSON Mode (example)
 
 ```python
-# Enable JSON strict mode for reliability
-response = openai.chat.completions.create(
-    model="gpt-4o-mini",  # or any other supported model
-    response_format={"type": "json_object", "strict": True},
+# Request JSON output from the shared Vertex-backed Gemini client
+response = await get_vertex_llm_client().chat_completions_create(
+    model="gemini-3-flash-preview",
+    response_format={"type": "json_object"},
     messages=[...]
 )
 ```

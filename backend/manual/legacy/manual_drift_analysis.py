@@ -10,11 +10,20 @@ and updates the database with structured drift topics.
 import sqlite3
 import json
 import sys
-from datetime import datetime
-from typing import List, Dict, Any, Optional, Tuple
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
-# Database path
-DB_PATH = "data/experts.db"
+BACKEND_DIR = Path(__file__).resolve().parent
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
+from src.cli.bootstrap import bootstrap_cli, get_sqlite_db_path
+
+BACKEND_DIR, logger = bootstrap_cli(
+    __file__,
+    logger_name="drift_analysis",
+)
+DB_PATH = get_sqlite_db_path(BACKEND_DIR)
 
 def get_database_connection():
     """Get a connection to the SQLite database."""

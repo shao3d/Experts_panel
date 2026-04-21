@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""
-Очистка orphaned записей из БД.
-
-Удаляет комментарии, drift-записи и ссылки, ссылающиеся на несуществующие посты.
-Это следствие предыдущих "грязных" удалений постов без CASCADE.
-"""
+"""Очистка orphaned записей из БД."""
 
 import os
 import sys
@@ -14,8 +9,18 @@ from pathlib import Path
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
-DB_PATH = Path(__file__).parent.parent / "data" / "experts.db"
-BACKUP_DIR = Path(__file__).parent.parent / "data" / "backups"
+BACKEND_DIR = Path(__file__).resolve().parents[1]
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
+from src.cli.bootstrap import bootstrap_cli, get_sqlite_db_path
+
+BACKEND_DIR, logger = bootstrap_cli(
+    __file__,
+    logger_name="scripts.cleanup_orphaned",
+)
+DB_PATH = get_sqlite_db_path(BACKEND_DIR)
+BACKUP_DIR = BACKEND_DIR / "data" / "backups"
 
 
 def create_backup():

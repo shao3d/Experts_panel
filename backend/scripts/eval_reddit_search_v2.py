@@ -6,17 +6,25 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import sys
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
-from dotenv import load_dotenv
-
 BACKEND_DIR = Path(__file__).resolve().parents[1]
-load_dotenv(BACKEND_DIR / ".env")
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
 
-import sys
+from src.cli.bootstrap import (
+    bootstrap_cli,
+    require_vertex_runtime,
+    set_default_sqlite_database_url,
+)
 
-sys.path.insert(0, str(BACKEND_DIR))
+BACKEND_DIR, logger = bootstrap_cli(
+    __file__,
+    logger_name="cli.eval_reddit_search_v2",
+)
+set_default_sqlite_database_url(BACKEND_DIR)
 
 from src.services.reddit_enhanced_service import RedditEnhancedService
 
@@ -90,6 +98,7 @@ async def main() -> None:
         help="Optional path to write full JSON results",
     )
     args = parser.parse_args()
+    require_vertex_runtime()
 
     query_set = (
         [("AdHoc", args.query.strip())]

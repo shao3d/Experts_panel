@@ -1,272 +1,251 @@
 #!/usr/bin/env python3
-"""
-Скрипт для синхронизации данных из SQLite в PostgreSQL для Railway деплоя
-"""
+"""Synchronize data from the local SQLite database into PostgreSQL."""
 
+from __future__ import annotations
+
+import argparse
+import json
 import os
 import sqlite3
-import psycopg2
-from psycopg2.extras import execute_values
-from datetime import datetime
-import json
-from typing import List, Dict, Any
 import sys
+from pathlib import Path
+from typing import Dict
 
-def get_sqlite_connection(db_path: str) -> sqlite3.Connection:
-    """Подключение к SQLite базе данных"""
-    return sqlite3.connect(db_path)
+import psycopg2
+
+BACKEND_DIR = Path(__file__).resolve().parent
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
+from src.cli.bootstrap import (
+    bootstrap_cli,
+    get_postgres_database_url,
+    get_sqlite_db_path,
+)
+
+BACKEND_DIR, logger = bootstrap_cli(
+    __file__,
+    logger_name="cli.sync_to_postgres",
+)
+
+
+def get_sqlite_connection(db_path: str | Path) -> sqlite3.Connection:
+    """Connect to the source SQLite database."""
+    return sqlite3.connect(str(db_path))
+
 
 def get_postgres_connection(db_url: str) -> psycopg2.extensions.connection:
-    """Подключение к PostgreSQL базе данных"""
+    """Connect to PostgreSQL."""
     return psycopg2.connect(db_url)
 
-def copy_table_data(sqlite_conn: sqlite3.Connection, pg_conn: psycopg2.extensions.connection,
-                   table_name: str, column_mapping: Dict[str, str] = None):
-    """Копирование данных из таблицы SQLite в PostgreSQL"""
 
+def copy_table_data(
+    sqlite_conn: sqlite3.Connection,
+    pg_conn: psycopg2.extensions.connection,
+    table_name: str,
+    column_mapping: Dict[str, str] | None = None,
+) -> None:
+    """Copy data from a SQLite table into PostgreSQL."""
     cursor = pg_conn.cursor()
 
     try:
-        # Очистка таблицы перед копированием
         cursor.execute(f"TRUNCATE TABLE {table_name} CASCADE")
         pg_conn.commit()
 
-        # Получение данных из SQLite
         sqlite_cursor = sqlite_conn.cursor()
         sqlite_cursor.execute(f"SELECT * FROM {table_name}")
         rows = sqlite_cursor.fetchall()
 
         if not rows:
-            print(f"  ✅ Таблица {table_name} пуста, пропускаем")
+            logger.info("Table %s is empty; skipping", table_name)
             return
 
-        # Получение имен колонок
         columns = [description[0] for description in sqlite_cursor.description]
-
-        # Применение маппинга колонок если необходимо
         if column_mapping:
             columns = [column_mapping.get(col, col) for col in columns]
 
-        # Подготовка SQL запроса
-        placeholders = ', '.join(['%s'] * len(columns))
+        placeholders = ", ".join(["%s"] * len(columns))
         sql = f"INSERT INTO {table_name} ({', '.join(columns)}) VALUES ({placeholders})"
-
-        # Копирование данных
         cursor.executemany(sql, rows)
         pg_conn.commit()
 
-        print(f"  ✅ Скопировано {len(rows)} записей в таблицу {table_name}")
+        logger.info("Copied %s rows into %s", len(rows), table_name)
 
-    except Exception as e:
-        print(f"  ❌ Ошибка при копировании таблицы {table_name}: {e}")
+    except Exception:
         pg_conn.rollback()
+        logger.exception("Failed to copy table %s", table_name)
         raise
+    finally:
+        cursor.close()
 
-def copy_posts(sqlite_conn: sqlite3.Connection, pg_conn: psycopg2.extensions.connection):
-    """Копирование таблицы posts"""
 
+def copy_posts(
+    sqlite_conn: sqlite3.Connection,
+    pg_conn: psycopg2.extensions.connection,
+) -> None:
+    """Copy the `posts` table with its explicit column order."""
     cursor = pg_conn.cursor()
 
     try:
-        # Очистка таблицы
         cursor.execute("TRUNCATE TABLE posts CASCADE")
         pg_conn.commit()
 
-        # Получение данных из SQLite с правильными именами полей
         sqlite_cursor = sqlite_conn.cursor()
-        sqlite_cursor.execute("""
+        sqlite_cursor.execute(
+            """
             SELECT post_id, telegram_message_id, message_text, author_name, created_at,
                    channel_id, channel_username, expert_id, channel_name, author_id,
                    edited_at, view_count, forward_count, reply_count, media_metadata,
                    is_forwarded, forward_from_channel
             FROM posts
-        """)
+            """
+        )
         rows = sqlite_cursor.fetchall()
 
         if not rows:
-            print("  ✅ Таблица posts пуста, пропускаем")
+            logger.info("Table posts is empty; skipping")
             return
 
-        # Подготовка данных с правильными полями
-        processed_rows = []
-        for row in rows:
-            (post_id, telegram_message_id, message_text, author_name, created_at,
-             channel_id, channel_username, expert_id, channel_name, author_id,
-             edited_at, view_count, forward_count, reply_count, media_metadata,
-             is_forwarded, forward_from_channel) = row
-
-            processed_rows.append((
-                post_id,
-                telegram_message_id,
-                message_text,
-                author_name,
-                created_at,
-                channel_id,
-                channel_username,
-                expert_id,
-                channel_name,
-                author_id,
-                edited_at,
-                view_count,
-                forward_count,
-                reply_count,
-                media_metadata,
-                is_forwarded,
-                forward_from_channel
-            ))
-
-        # Копирование данных с правильными именами полей
         sql = """
-            INSERT INTO posts (post_id, telegram_message_id, message_text, author_name, created_at,
-                             channel_id, channel_username, expert_id, channel_name, author_id,
-                             edited_at, view_count, forward_count, reply_count, media_metadata,
-                             is_forwarded, forward_from_channel)
+            INSERT INTO posts (
+                post_id, telegram_message_id, message_text, author_name, created_at,
+                channel_id, channel_username, expert_id, channel_name, author_id,
+                edited_at, view_count, forward_count, reply_count, media_metadata,
+                is_forwarded, forward_from_channel
+            )
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
-        cursor.executemany(sql, processed_rows)
+        cursor.executemany(sql, rows)
         pg_conn.commit()
 
-        print(f"  ✅ Скопировано {len(processed_rows)} записей в таблицу posts")
+        logger.info("Copied %s rows into posts", len(rows))
 
-    except Exception as e:
-        print(f"  ❌ Ошибка при копировании таблицы posts: {e}")
+    except Exception:
         pg_conn.rollback()
+        logger.exception("Failed to copy table posts")
         raise
+    finally:
+        cursor.close()
 
-def copy_comment_group_drift(sqlite_conn: sqlite3.Connection, pg_conn: psycopg2.extensions.connection):
-    """Копирование таблицы comment_group_drift с обработкой JSON полей"""
 
+def copy_comment_group_drift(
+    sqlite_conn: sqlite3.Connection,
+    pg_conn: psycopg2.extensions.connection,
+) -> None:
+    """Copy `comment_group_drift` while normalizing JSON payloads."""
     cursor = pg_conn.cursor()
 
     try:
-        # Очистка таблицы
         cursor.execute("TRUNCATE TABLE comment_group_drift")
         pg_conn.commit()
 
-        # Получение данных из SQLite
         sqlite_cursor = sqlite_conn.cursor()
-        sqlite_cursor.execute("""
+        sqlite_cursor.execute(
+            """
             SELECT post_id, has_drift, drift_topics, analyzed_at, analyzed_by, expert_id
             FROM comment_group_drift
-        """)
+            """
+        )
         rows = sqlite_cursor.fetchall()
 
         if not rows:
-            print("  ✅ Таблица comment_group_drift пуста, пропускаем")
+            logger.info("Table comment_group_drift is empty; skipping")
             return
 
-        # Подготовка данных с обработкой JSON
         processed_rows = []
         for row in rows:
             post_id, has_drift, drift_topics_json, analyzed_at, analyzed_by, expert_id = row
-
-            # Десериализация JSON из SQLite
             drift_topics = json.loads(drift_topics_json) if drift_topics_json else None
+            processed_rows.append(
+                (
+                    post_id,
+                    has_drift,
+                    json.dumps(drift_topics) if drift_topics else None,
+                    analyzed_at,
+                    analyzed_by,
+                    expert_id,
+                )
+            )
 
-            processed_rows.append((
-                post_id,
-                has_drift,
-                json.dumps(drift_topics) if drift_topics else None,
-                analyzed_at,
-                analyzed_by,
-                expert_id
-            ))
-
-        # Копирование данных
-        sql = """
-            INSERT INTO comment_group_drift (post_id, has_drift, drift_topics, analyzed_at, analyzed_by, expert_id)
+        cursor.executemany(
+            """
+            INSERT INTO comment_group_drift (
+                post_id, has_drift, drift_topics, analyzed_at, analyzed_by, expert_id
+            )
             VALUES (%s, %s, %s, %s, %s, %s)
-        """
-        cursor.executemany(sql, processed_rows)
+            """,
+            processed_rows,
+        )
         pg_conn.commit()
 
-        print(f"  ✅ Скопировано {len(processed_rows)} записей в таблицу comment_group_drift")
+        logger.info("Copied %s rows into comment_group_drift", len(processed_rows))
 
-    except Exception as e:
-        print(f"  ❌ Ошибка при копировании таблицы comment_group_drift: {e}")
+    except Exception:
         pg_conn.rollback()
+        logger.exception("Failed to copy table comment_group_drift")
         raise
+    finally:
+        cursor.close()
 
-def sync_database():
-    """Основная функция синхронизации базы данных"""
 
-    # Проверка переменных окружения
-    sqlite_path = os.getenv("SQLITE_DB_PATH", "data/experts.db")
-    database_url = os.getenv("DATABASE_URL")
+def sync_database(sqlite_path: Path, database_url: str) -> None:
+    """Sync the local SQLite DB into PostgreSQL in dependency-safe order."""
+    if not sqlite_path.exists():
+        raise FileNotFoundError(f"SQLite database not found: {sqlite_path}")
 
-    if not database_url:
-        print("❌ Ошибка: переменная окружения DATABASE_URL не установлена")
-        print("Пожалуйста, установите DATABASE_URL для PostgreSQL подключения")
-        sys.exit(1)
+    logger.info("Starting SQLite -> PostgreSQL sync")
+    logger.info("SQLite source: %s", sqlite_path)
 
-    if not os.path.exists(sqlite_path):
-        print(f"❌ Ошибка: файл SQLite базы данных не найден: {sqlite_path}")
-        sys.exit(1)
-
-    print(f"🔄 Начинаю синхронизацию SQLite → PostgreSQL")
-    print(f"   Источник: {sqlite_path}")
-    print(f"   Назначение: {database_url.split('@')[1] if '@' in database_url else 'PostgreSQL'}")
-    print()
+    sqlite_conn = get_sqlite_connection(sqlite_path)
+    pg_conn = get_postgres_connection(database_url)
 
     try:
-        # Подключение к базам данных
-        sqlite_conn = get_sqlite_connection(sqlite_path)
-        pg_conn = get_postgres_connection(database_url)
-
-        print("✅ Подключения к базам данных установлены")
-        print()
-
-        # Копирование таблиц в правильном порядке (учитывая зависимости)
         tables_to_copy = [
             ("posts", copy_posts),
-            ("links", None),  # Простая таблица
-            ("comments", None),  # Простая таблица
-            ("sync_state", None),  # Простая таблица
-            ("comment_group_drift", copy_comment_group_drift),  # Специальная обработка JSON
+            ("links", None),
+            ("comments", None),
+            ("sync_state", None),
+            ("comment_group_drift", copy_comment_group_drift),
         ]
 
         for table_name, copy_function in tables_to_copy:
-            print(f"📋 Копирование таблицы: {table_name}")
-
+            logger.info("Syncing table %s", table_name)
             if copy_function:
                 copy_function(sqlite_conn, pg_conn)
             else:
                 copy_table_data(sqlite_conn, pg_conn, table_name)
 
-            print()
-
-        # Закрытие соединений
+    finally:
         sqlite_conn.close()
         pg_conn.close()
 
-        print("🎉 Синхронизация успешно завершена!")
-        print("   Теперь можно перезапустить деплой на Railway")
+    logger.info("SQLite -> PostgreSQL sync completed successfully")
 
-    except Exception as e:
-        print(f"❌ Ошибка при синхронизации: {e}")
-        sys.exit(1)
 
-def main():
-    """Точка входа в скрипт"""
-    print("=" * 60)
-    print("🔄 СИНХРОНИЗАЦИЯ SQLITE → POSTGRESQL")
-    print("=" * 60)
-    print()
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--sqlite-path",
+        help="Explicit SQLite DB path. Otherwise SQLITE_DB_PATH or backend/data/experts.db is used.",
+    )
+    parser.add_argument(
+        "--postgres-url",
+        help="Explicit PostgreSQL URL. Otherwise POSTGRES_DATABASE_URL or DATABASE_URL is used.",
+    )
+    args = parser.parse_args()
 
-    # Проверка аргументов командной строки
-    if len(sys.argv) > 1 and sys.argv[1] in ["-h", "--help"]:
-        print("Использование:")
-        print("  python sync_to_postgres.py")
-        print()
-        print("Переменные окружения:")
-        print("  SQLITE_DB_PATH    - путь к SQLite файлу (по умолчанию: data/experts.db)")
-        print("  DATABASE_URL      - URL подключения к PostgreSQL (обязательная)")
-        print()
-        print("Пример:")
-        print("  DATABASE_URL=postgresql://user:pass@host:port/dbname python sync_to_postgres.py")
-        return
+    try:
+        sqlite_path = (
+            Path(args.sqlite_path).expanduser().resolve()
+            if args.sqlite_path
+            else Path(os.getenv("SQLITE_DB_PATH", get_sqlite_db_path(BACKEND_DIR))).expanduser().resolve()
+        )
+        database_url = args.postgres_url or get_postgres_database_url()
+        sync_database(sqlite_path, database_url)
+    except Exception:
+        logger.exception("SQLite -> PostgreSQL sync failed")
+        raise SystemExit(1) from None
 
-    sync_database()
 
 if __name__ == "__main__":
     main()

@@ -19,17 +19,28 @@ Next steps after running this script:
     - Verify in UI: open http://localhost:3000
 """
 
+from __future__ import annotations
+
+import argparse
 import sys
 from pathlib import Path
 
-# Add src to path for imports
-sys.path.append(str(Path(__file__).parent.parent / 'src'))
+BACKEND_DIR = Path(__file__).resolve().parents[1]
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
 
-from models.base import SessionLocal
-from models.expert import Expert
-from data.json_parser import TelegramJsonParser
+from src.cli.bootstrap import bootstrap_cli, set_default_sqlite_database_url
+from src.models.base import SessionLocal
+from src.models.expert import Expert
+from src.data.json_parser import TelegramJsonParser
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
+
+BACKEND_DIR, logger = bootstrap_cli(
+    __file__,
+    logger_name="cli.add_expert",
+)
+DB_PATH = set_default_sqlite_database_url(BACKEND_DIR)
 
 
 def _rollback_expert_metadata(db, expert_id: str):
@@ -243,25 +254,21 @@ def add_expert(expert_id: str, display_name: str, channel_username: str, json_fi
 
 def main():
     """Main entry point."""
-    if len(sys.argv) != 5:
-        print("Usage: python tools/add_expert.py <expert_id> <display_name> <channel_username> <json_file>")
-        print()
-        print("Example:")
-        print('  python tools/add_expert.py neuraldeep "Neuraldeep" neuraldeep exports/neuraldeep.json')
-        print()
-        print("Arguments:")
-        print("  expert_id         - Unique identifier (e.g., 'neuraldeep')")
-        print("  display_name      - Human-readable name (e.g., 'Neuraldeep')")
-        print("  channel_username  - Telegram channel username (e.g., 'neuraldeep')")
-        print("  json_file         - Path to Telegram JSON export")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("expert_id", help="Unique expert identifier, e.g. neuraldeep")
+    parser.add_argument("display_name", help="Human-readable expert name")
+    parser.add_argument("channel_username", help="Telegram channel username")
+    parser.add_argument("json_file", help="Path to Telegram JSON export file")
+    args = parser.parse_args()
 
-    expert_id = sys.argv[1]
-    display_name = sys.argv[2]
-    channel_username = sys.argv[3]
-    json_file = sys.argv[4]
+    logger.info("Running add_expert tool against %s", DB_PATH)
 
-    add_expert(expert_id, display_name, channel_username, json_file)
+    add_expert(
+        args.expert_id,
+        args.display_name,
+        args.channel_username,
+        args.json_file,
+    )
 
 
 if __name__ == '__main__':

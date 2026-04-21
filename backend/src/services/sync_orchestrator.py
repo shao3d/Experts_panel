@@ -13,26 +13,7 @@ from src.data.channel_syncer import TelegramChannelSyncer
 from src.models.base import SessionLocal
 from src.models.post import Post
 
-# Configure logging for Cron Jobs
-CRON_LOG_FILE = Path("/app/data/logs/cron_jobs.log")
-# Fallback for local dev
-if not CRON_LOG_FILE.parent.exists():
-    if os.path.exists("backend/data"):
-        CRON_LOG_FILE = Path("backend/data/logs/cron_jobs.log")
-    else:
-        CRON_LOG_FILE = Path("data/logs/cron_jobs.log")
-
-CRON_LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[
-        logging.FileHandler(str(CRON_LOG_FILE)),
-        logging.StreamHandler()
-    ]
-)
-logger = logging.getLogger("cron_orchestrator")
+logger = logging.getLogger(__name__)
 
 def get_all_experts(db: Session) -> List[Dict[str, Any]]:
     """
@@ -319,4 +300,3 @@ async def run_cron_pipeline(dry_run: bool = False, depth: int = 10) -> Dict[str,
         }
     finally:
         db.close()
-

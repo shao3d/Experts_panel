@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Test Reddit search locally."""
+"""Legacy manual script for local Reddit search experiments."""
 
 import asyncio
 import sys

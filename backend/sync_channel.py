@@ -18,13 +18,21 @@ import json
 import sys
 import os
 from pathlib import Path
-from dotenv import load_dotenv
 
-# Add src to path
-sys.path.append(str(Path(__file__).parent / 'src'))
+BACKEND_DIR = Path(__file__).resolve().parent
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
 
-from data.channel_syncer import TelegramChannelSyncer
-from models.base import SessionLocal
+from src.cli.bootstrap import bootstrap_cli, run_async, set_default_sqlite_database_url
+
+BACKEND_DIR, logger = bootstrap_cli(
+    __file__,
+    logger_name="cli.sync_channel",
+)
+set_default_sqlite_database_url(BACKEND_DIR)
+
+from src.data.channel_syncer import TelegramChannelSyncer
+from src.models.base import SessionLocal
 from sqlalchemy import text
 
 
@@ -207,9 +215,6 @@ Examples:
 
     args = parser.parse_args()
 
-    # Load environment variables
-    load_dotenv()
-
     # Run preflight checks
     run_preflight_checks()
 
@@ -278,4 +283,4 @@ Examples:
 
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    run_async(main())

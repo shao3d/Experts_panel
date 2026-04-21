@@ -165,5 +165,5 @@ If no experts are selected but "Search Reddit" is enabled:
 4.  **UI Handling**: Frontend displays "Community Insights" section while hiding empty expert placeholders.
 
 ### Resilience & Error Handling
-- **Rate Limits**: The unified `google_ai_studio_client` handles `429 Too Many Requests` using exponential backoff and jitter (Tenacity).
+- **Rate Limits**: The unified `vertex_llm_client` handles `429 Too Many Requests` using exponential backoff and jitter (Tenacity).
 - **Safety Filters (HARM_CATEGORY)**: If a model generation is blocked by safety filters (e.g., `finish_reason: SAFETY` on Reddit content), the system intercepts the empty response body to prevent leaking internal protobuf structures (`AsyncGenerateContentResponse`) to the UI. Instead, it gracefully degrades and returns a user-friendly error string explaining that safety filters were triggered.

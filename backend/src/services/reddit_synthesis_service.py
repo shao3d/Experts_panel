@@ -1,7 +1,8 @@
 """Reddit Synthesis Service - Gemini-powered analysis of Reddit content.
 
-This module provides synthesis of Reddit search results using Google Gemini AI
-to extract insights, sentiment, and actionable information from community discussions.
+This module provides synthesis of Reddit search results using Gemini via
+Vertex AI to extract insights, sentiment, and actionable information from
+community discussions.
 """
 
 import logging
@@ -11,11 +12,11 @@ from typing import Optional, List, Dict, Any
 from .. import config
 from ..utils.language_utils import detect_query_language
 from .reddit_service import RedditSearchResult, RedditSource
-from .google_ai_studio_client import create_google_ai_studio_client, GoogleAIStudioError
+from .vertex_llm_client import get_vertex_llm_client, VertexLLMError
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_SYNTHESIS_MODEL = "gemini-2.0-flash"
+DEFAULT_SYNTHESIS_MODEL = "gemini-3-flash-preview"
 
 
 class RedditSynthesisService:
@@ -31,12 +32,12 @@ class RedditSynthesisService:
         """Initialize synthesis service.
         
         Args:
-            model: Gemini model to use (default: gemini-2.0-flash)
+            model: Gemini model to use (default: gemini-3-flash-preview)
         """
         # FIX: Use MODEL_SYNTHESIS (gemini-3-flash-preview) for high-quality Reddit analysis
         # This matches the main synthesis model for expert responses
         self.model = model or config.MODEL_SYNTHESIS or DEFAULT_SYNTHESIS_MODEL
-        self._client = create_google_ai_studio_client()
+        self._client = get_vertex_llm_client()
     
     async def synthesize(
         self,
@@ -99,7 +100,7 @@ class RedditSynthesisService:
             
             return synthesis
             
-        except GoogleAIStudioError as e:
+        except VertexLLMError as e:
             logger.error(f"Gemini synthesis failed: {e}")
             # Fallback: return raw markdown if synthesis fails
             return self._create_fallback_response(reddit_result, query_language)

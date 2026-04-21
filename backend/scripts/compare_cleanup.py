@@ -1,7 +1,32 @@
+import argparse
 import sqlite3
+import sys
 from pathlib import Path
 
-def get_expert_counts(db_path):
+BACKEND_DIR = Path(__file__).resolve().parents[1]
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
+from src.cli.bootstrap import bootstrap_cli, get_sqlite_db_path
+
+BACKEND_DIR, logger = bootstrap_cli(
+    __file__,
+    logger_name="scripts.compare_cleanup",
+)
+DEFAULT_CURRENT_DB_PATH = get_sqlite_db_path(BACKEND_DIR)
+DEFAULT_BACKUP_DB_PATH = BACKEND_DIR / "data" / "backups" / "experts.db.20251128_235102.bak"
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Compare post counts per expert between current and backup SQLite databases.",
+    )
+    parser.add_argument("--current-db", default=str(DEFAULT_CURRENT_DB_PATH), help="Path to current SQLite DB")
+    parser.add_argument("--backup-db", default=str(DEFAULT_BACKUP_DB_PATH), help="Path to backup SQLite DB")
+    return parser.parse_args()
+
+
+def get_expert_counts(db_path: Path):
     counts = {}
     try:
         with sqlite3.connect(db_path) as conn:
@@ -13,15 +38,12 @@ def get_expert_counts(db_path):
         print(f"Error reading {db_path}: {e}")
     return counts
 
-def compare_dbs():
-    # Paths
-    current_db_path = Path("backend/data/experts.db")
-    # Using the known backup file
-    backup_db_path = Path("backend/data/backups/experts.db.20251128_235102.bak")
+
+def compare_dbs(current_db_path: Path, backup_db_path: Path) -> int:
 
     if not backup_db_path.exists():
         print(f"Backup file not found at {backup_db_path}")
-        return
+        return 1
 
     print(f"Comparing:\n  OLD: {backup_db_path.name}\n  NEW: {current_db_path.name}")
 
@@ -61,6 +83,10 @@ def compare_dbs():
 
     print("-" * 46)
     print(f"{ 'TOTAL':<20} | {total_old:<6} | {total_new:<6} | -{total_removed:<6}")
+    return 0
 
 if __name__ == "__main__":
-    compare_dbs()
+    args = parse_args()
+    raise SystemExit(
+        compare_dbs(Path(args.current_db).resolve(), Path(args.backup_db).resolve())
+    )

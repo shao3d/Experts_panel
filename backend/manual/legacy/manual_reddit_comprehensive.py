@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Comprehensive Reddit search testing with analysis."""
+"""Legacy manual script for comprehensive Reddit search analysis."""
 
 import asyncio
 import sys

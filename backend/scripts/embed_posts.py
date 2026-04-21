@@ -17,23 +17,25 @@ import asyncio
 import json
 import logging
 import sys
+import argparse
 from pathlib import Path
 from datetime import datetime, timezone
 
-# ─── Path setup ───
 BACKEND_DIR = Path(__file__).parent.parent
-ENV_PATH = BACKEND_DIR / ".env"
-DB_PATH = BACKEND_DIR / "data" / "experts.db"
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
 
-from dotenv import load_dotenv
+from src.cli.bootstrap import (
+    bootstrap_cli,
+    require_vertex_runtime,
+    set_default_sqlite_database_url,
+)
 
-load_dotenv(ENV_PATH)
-
-import os
-
-os.environ["DATABASE_URL"] = f"sqlite:///{DB_PATH}"
-
-sys.path.insert(0, str(BACKEND_DIR))
+BACKEND_DIR, logger = bootstrap_cli(
+    __file__,
+    logger_name="cli.embed_posts",
+)
+DB_PATH = set_default_sqlite_database_url(BACKEND_DIR, force=True)
 
 from sqlalchemy import func, text
 from sqlalchemy.orm import Session
@@ -49,14 +51,6 @@ from src.models.base import SessionLocal
 from src.models.post import Post
 from src.services.embedding_service import get_embedding_service
 from src.config import EMBEDDING_DIMENSIONS
-
-# ─── Logging ───
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    datefmt="%H:%M:%S",
-)
-logger = logging.getLogger(__name__)
 
 
 def get_pending_posts(db: Session, batch_size: int, force: bool = False) -> list[Post]:
@@ -264,8 +258,6 @@ async def run_continuous(
 
 
 def main():
-    import argparse
-
     parser = argparse.ArgumentParser(description="Generate embeddings for posts")
     parser.add_argument(
         "--batch-size", type=int, default=50, help="Posts per batch (default: 50)"
@@ -279,6 +271,8 @@ def main():
         "--delay", type=float, default=0.5, help="Delay between batches (default: 0.5s)"
     )
     args = parser.parse_args()
+    require_vertex_runtime()
+    logger.info("Embedding script started (db=%s, batch_size=%s)", DB_PATH, args.batch_size)
 
     if args.continuous:
         asyncio.run(

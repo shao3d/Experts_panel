@@ -1,6 +1,11 @@
 """
 Analyze comment groups for topic drift.
 
+Provider-specific status:
+- This is a manual maintenance tool.
+- It is NOT part of the current Vertex AI runtime.
+- It uses OpenRouter / Claude Sonnet and expects separate credentials.
+
 This script:
 1. Loads all comment groups from database
 2. For each group, analyzes if comments drift from post topic
@@ -20,19 +25,27 @@ from datetime import datetime
 from typing import List, Dict, Any, Optional
 import argparse
 
-from dotenv import load_dotenv
 from sqlalchemy.orm import Session
 from openai import AsyncOpenAI
 
-# Add parent to path
-sys.path.insert(0, str(Path(__file__).parent))
+BACKEND_DIR = Path(__file__).resolve().parent
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
+from src.cli.bootstrap import (
+    bootstrap_cli,
+    set_default_sqlite_database_url,
+)
+
+BACKEND_DIR, logger = bootstrap_cli(
+    __file__,
+    logger_name="cli.analyze_drift_openrouter",
+)
+set_default_sqlite_database_url(BACKEND_DIR)
 
 from src.models.base import SessionLocal
 from src.models.post import Post
 from src.models.comment import Comment
-
-# Load environment
-load_dotenv()
 
 
 class DriftAnalyzer:

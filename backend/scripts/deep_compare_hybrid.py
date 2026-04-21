@@ -47,23 +47,26 @@ Deep Compare: OLD vs HYBRID — полное сравнение ФИНАЛЬНЫ
 
 import asyncio
 import json
-import logging
 import sys
 import time
 from pathlib import Path
 from datetime import datetime
 
-# ─── Path setup ───
 BACKEND_DIR = Path(__file__).parent.parent
-ENV_PATH = BACKEND_DIR / ".env"
-DB_PATH = BACKEND_DIR / "data" / "experts.db"
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
 
-from dotenv import load_dotenv
-load_dotenv(ENV_PATH)
+from src.cli.bootstrap import (
+    bootstrap_cli,
+    require_vertex_runtime,
+    set_default_sqlite_database_url,
+)
 
-import os
-os.environ["DATABASE_URL"] = f"sqlite:///{DB_PATH}"
-sys.path.insert(0, str(BACKEND_DIR))
+BACKEND_DIR, logger = bootstrap_cli(
+    __file__,
+    logger_name="cli.deep_compare_hybrid",
+)
+DB_PATH = set_default_sqlite_database_url(BACKEND_DIR, force=True)
 
 from sqlalchemy import func
 from src.models.base import SessionLocal
@@ -74,15 +77,6 @@ from src.services.reduce_service import ReduceService
 from src.services.hybrid_retrieval_service import HybridRetrievalService
 from src.services.ai_scout_service import AIScoutService
 from src.config import MODEL_MAP, MAP_CHUNK_SIZE, MAP_MAX_PARALLEL
-
-# ─── Logging ───
-logging.basicConfig(
-    level=logging.WARNING,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    datefmt="%H:%M:%S",
-)
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 # ANSI colors
 G = '\033[92m'
@@ -376,6 +370,7 @@ def main():
     )
     args = parser.parse_args()
     queries = [args.query] if args.query else DEFAULT_QUERIES
+    require_vertex_runtime()
     asyncio.run(run_comparison(queries, args.experts))
 
 

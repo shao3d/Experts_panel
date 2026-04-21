@@ -8,12 +8,12 @@
 ## Архитектура: 3-Layer Protection
 
 ### Layer 1 — Client-Level Retry (Tenacity)
-**Где:** `google_ai_studio_client.py` → `chat_completions_create()`
+**Где:** `vertex_llm_client.py` → `chat_completions_create()`
 
 - `AsyncRetrying` с `wait_random_exponential(multiplier=1.5, max=15)`, **5 попыток**.
 - Кастомный предикат `_should_retry`: ретраит **только** rate limit (429) и timeout. Auth/BadRequest ошибки проваливаются мгновенно.
 - Prompt preparation (JSON instruction concat) вынесен **перед** retry-циклом — фикс бага конкатенации.
-- Все ошибки оборачиваются в `GoogleAIStudioError` для единого контракта.
+- Все ошибки оборачиваются в `VertexLLMError` для единого контракта.
 - Для `Gemini 3*` клиент дополнительно маршрутизирует запросы на Vertex `global` endpoint.
 - **Суммарно:** ~15 секунд на обработку TPM-спайков.
 
@@ -21,7 +21,7 @@
 **Где:** `map_service.py` → `_process_chunk()`, `comment_group_map_service.py`, etc.
 
 - `@retry(stop=stop_after_attempt(3), wait=wait_exponential(...))` — ретраит JSONDecodeError, ValueError, httpx ошибки.
-- **НЕ** ретраит `GoogleAIStudioError` (не в `retry_if_exception_type`).
+- **НЕ** ретраит `VertexLLMError` (не в `retry_if_exception_type`).
 
 ### Layer 3 — Global Chunk Retry (Pipeline)
 **Где:** `map_service.py` → `process()` (lines 425-460)

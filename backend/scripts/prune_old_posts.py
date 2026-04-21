@@ -19,9 +19,20 @@ from pathlib import Path
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
+BACKEND_DIR = Path(__file__).resolve().parents[1]
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
+from src.cli.bootstrap import bootstrap_cli, get_sqlite_db_path
+
+BACKEND_DIR, logger = bootstrap_cli(
+    __file__,
+    logger_name="scripts.prune_old_posts",
+)
+
 # Настройки
-DB_PATH = Path(__file__).parent.parent / "data" / "experts.db"
-BACKUP_DIR = Path(__file__).parent.parent / "data" / "backups"
+DB_PATH = get_sqlite_db_path(BACKEND_DIR)
+BACKUP_DIR = BACKEND_DIR / "data" / "backups"
 
 # Эксперты и дата для удаления
 EXPERTS_TO_PRUNE = ['polyakov', 'ai_grabli']

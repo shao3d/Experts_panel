@@ -2,38 +2,44 @@
 """Check available FastAPI routes."""
 
 import sys
-import os
 from pathlib import Path
 
-# Set up environment
-os.environ['BACKEND_LOG_FILE'] = 'logs/backend.log'
-os.environ['FRONTEND_LOG_FILE'] = 'logs/frontend.log'
+BACKEND_DIR = Path(__file__).resolve().parents[2]
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
 
-# Create logs directory
-logs_dir = Path(__file__).parent / 'logs'
-logs_dir.mkdir(exist_ok=True)
+from src.cli.bootstrap import bootstrap_cli
 
-# Import app
-sys.path.insert(0, str(Path(__file__).parent))
+BACKEND_DIR, logger = bootstrap_cli(
+    __file__,
+    logger_name="maintenance.check_routes",
+)
 from src.api.main import app
 
-print("Available routes:")
-print("=" * 60)
 
-for route in app.routes:
-    if hasattr(route, 'path') and hasattr(route, 'methods'):
-        methods = ','.join(route.methods) if route.methods else 'N/A'
-        print(f"{methods:10s} {route.path}")
+def main() -> int:
+    print("Available routes:")
+    print("=" * 60)
 
-print("=" * 60)
+    for route in app.routes:
+        if hasattr(route, "path") and hasattr(route, "methods"):
+            methods = ",".join(route.methods) if route.methods else "N/A"
+            print(f"{methods:10s} {route.path}")
 
-# Check if experts endpoint exists
-experts_route = any(
-    hasattr(route, 'path') and route.path == '/api/v1/experts'
-    for route in app.routes
-)
+    print("=" * 60)
 
-if experts_route:
-    print("✅ /api/v1/experts endpoint found!")
-else:
+    experts_route = any(
+        hasattr(route, "path") and route.path == "/api/v1/experts"
+        for route in app.routes
+    )
+
+    if experts_route:
+        print("✅ /api/v1/experts endpoint found!")
+        return 0
+
     print("❌ /api/v1/experts endpoint NOT found!")
+    return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

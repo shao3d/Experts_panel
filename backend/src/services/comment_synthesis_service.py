@@ -26,9 +26,9 @@ class CommentSynthesisService:
     def __init__(self):
         """Initialize CommentSynthesisService.
         """
-        # Use monitored client (Google Gemini)
+        # Use monitored Vertex LLM client
         self.client = create_monitored_client()
-        logger.info("CommentSynthesisService initialized with monitored Google AI Studio client")
+        logger.info("CommentSynthesisService initialized with monitored Vertex LLM client")
 
         self.model = config.MODEL_SYNTHESIS
         self._prompt_template = self._load_prompt_template()
@@ -189,7 +189,7 @@ class CommentSynthesisService:
             query
         )
 
-        # Call LLM API (Google AI Studio)
+        # Call LLM API through the monitored Vertex client
         response = await self.client.chat_completions_create(
             model=self.model,
             messages=[

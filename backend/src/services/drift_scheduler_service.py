@@ -2,52 +2,30 @@ import asyncio
 import json
 import time
 import logging
-import os
 from datetime import datetime
-from pathlib import Path
 from typing import List, Dict, Any, Optional
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from src.config import MODEL_DRIFT_ANALYSIS, BACKEND_LOG_FILE
-from .google_ai_studio_client import create_google_ai_studio_client, GoogleAIStudioError
+from src.config import MODEL_DRIFT_ANALYSIS
+from .vertex_llm_client import get_vertex_llm_client, VertexLLMError
 
-# Configure logging specific for Cron Jobs
-CRON_LOG_FILE = Path("/app/data/logs/cron_jobs.log")
-# Ensure directory exists (fallback to local path for dev)
-if not CRON_LOG_FILE.parent.exists():
-    if os.path.exists("backend/data"):
-        CRON_LOG_FILE = Path("backend/data/logs/cron_jobs.log")
-    else:
-        # Fallback relative to current script
-        CRON_LOG_FILE = Path(__file__).parent.parent.parent / "data" / "logs" / "cron_jobs.log"
-
-CRON_LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[
-        logging.FileHandler(str(CRON_LOG_FILE)),
-        logging.StreamHandler()
-    ]
-)
-logger = logging.getLogger("drift_scheduler")
+logger = logging.getLogger(__name__)
 
 class DriftSchedulerService:
     """
-    Service for processing 'pending' comment groups using Google Gemini.
+    Service for processing 'pending' comment groups using Gemini on Vertex AI.
     Designed for Cron Job execution with strict rate limiting.
 
-    Uses the unified google_ai_studio_client for consistent API access
-    with automatic retry logic and OpenAI-compatible response format.
+    Uses the unified Vertex LLM client for consistent API access with
+    automatic retry logic and OpenAI-compatible response format.
     """
 
     def __init__(self, db: Session):
         self.db = db
-        self.client = create_google_ai_studio_client()
+        self.client = get_vertex_llm_client()
         self.model_name = MODEL_DRIFT_ANALYSIS
-        # Rate limiting is handled by the google_ai_studio_client
+        # Rate limiting is handled by the shared Vertex client
         # which uses Tenacity with exponential backoff + jitter
         logger.info(f"DriftSchedulerService initialized with model: {self.model_name}")
 
@@ -98,10 +76,10 @@ class DriftSchedulerService:
 
     async def analyze_drift_async(self, post_text: str, comments: List[Dict[str, str]]) -> Dict[str, Any]:
         """
-        Analyze drift using Gemini through the unified client.
+        Analyze drift using Gemini through the unified Vertex client.
         Returns parsed JSON result.
 
-        This is an async method that uses the unified Google AI Studio client
+        This is an async method that uses the unified Vertex LLM client
         which handles retry logic and OpenAI-compatible response format.
         """
         comments_text = "\n".join([f"- {c['author']}: {c['text']}" for c in comments])
@@ -209,13 +187,13 @@ Return ONLY valid JSON:
 
             return parsed
 
-        except GoogleAIStudioError as e:
+        except VertexLLMError as e:
             # The unified client handles rate limit retries automatically
             # If we still get an error here, log and re-raise
             if e.is_rate_limit:
                 logger.error(f"Rate limit error after retries: {str(e)}")
             else:
-                logger.error(f"Google AI Studio error: {str(e)}")
+                logger.error(f"Vertex LLM error: {str(e)}")
             raise
 
 

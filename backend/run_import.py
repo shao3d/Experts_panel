@@ -4,9 +4,17 @@ import os
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent / 'src'))
+BACKEND_DIR = Path(__file__).resolve().parent
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
 
-from data.telegram_comments_fetcher import SafeTelegramCommentsFetcher
+from src.cli.bootstrap import bootstrap_cli, run_async
+from src.data.telegram_comments_fetcher import SafeTelegramCommentsFetcher
+
+BACKEND_DIR, logger = bootstrap_cli(
+    __file__,
+    logger_name="cli.run_import",
+)
 
 async def run():
     api_id = os.getenv('TELEGRAM_API_ID')
@@ -28,4 +36,4 @@ async def run():
     print("\n✅ Done!")
 
 if __name__ == '__main__':
-    asyncio.run(run())
+    run_async(run())

@@ -33,9 +33,9 @@ class ReduceService:
         Args:
             use_personal_style: Use Refat's personal writing style (default True)
         """
-        # Use monitored client (Google Gemini)
+        # Use monitored Vertex LLM client
         self.client = create_monitored_client()
-        logger.info("ReduceService initialized with monitored Google AI Studio client")
+        logger.info("ReduceService initialized with monitored Vertex LLM client")
 
         self.model = config.MODEL_SYNTHESIS
         self.use_personal_style = use_personal_style
@@ -153,7 +153,7 @@ class ReduceService:
             f"~{prompt_chars // 4} tokens (est), posts_json={len(posts_json)} chars"
         )
 
-        # Call LLM API (Google AI Studio)
+        # Call LLM API through the monitored Vertex client
         response = await self.client.chat_completions_create(
             model=self.model,
             messages=[

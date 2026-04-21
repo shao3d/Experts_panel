@@ -104,8 +104,18 @@ class VertexAIAuthManager:
         return self._project_id
 
     @property
+    def configured_project_id(self) -> Optional[str]:
+        """Return the configured project id without raising when auth is missing."""
+        return self._project_id
+
+    @property
     def location(self) -> str:
         return self._location
+
+    @property
+    def source(self) -> Optional[str]:
+        """Return the credential source used for diagnostics."""
+        return self._source
 
     def is_configured(self) -> bool:
         return bool(self._credentials and self._project_id)

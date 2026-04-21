@@ -3,17 +3,36 @@
 Single drift analysis: Analyze a specific post for topic drift
 """
 
+import argparse
 import json
 import sqlite3
 import sys
-from datetime import datetime
-from typing import Dict, List, Tuple, Any
+from pathlib import Path
+from typing import Any, Dict, List
+
+BACKEND_DIR = Path(__file__).resolve().parent
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
+from src.cli.bootstrap import bootstrap_cli, get_sqlite_db_path
+
+BACKEND_DIR, logger = bootstrap_cli(
+    __file__,
+    logger_name="run_single_drift_analysis",
+)
+DB_PATH = get_sqlite_db_path(BACKEND_DIR)
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Analyze a specific post for topic drift and update comment_group_drift.",
+    )
+    parser.add_argument("post_id", type=int, help="Target post_id")
+    return parser.parse_args()
 
 def get_database_connection():
     """Get database connection"""
-    # Use absolute path for database reliability
-    db_path = '/Users/andreysazonov/Documents/Projects/Experts_panel/backend/data/experts.db'
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -228,11 +247,8 @@ def update_drift_record(conn, post_id: int, analysis_result: Dict[str, Any]):
 
 def main():
     """Main drift analysis workflow for single post"""
-    if len(sys.argv) != 2:
-        print("Usage: python run_single_drift_analysis.py <post_id>")
-        sys.exit(1)
-
-    post_id = int(sys.argv[1])
+    args = parse_args()
+    post_id = args.post_id
 
     print(f"🎯 Single Drift Analysis Agent: Analyzing post {post_id}")
     print("=" * 50)

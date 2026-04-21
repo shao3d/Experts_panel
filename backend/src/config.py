@@ -1,11 +1,8 @@
-# backend/src/config.py
+"""Centralized runtime configuration for the backend."""
 
+import logging
 import os
-
-"""
-Централизованный модуль для управления конфигурацией приложения.
-Все переменные окружения считываются здесь, чтобы обеспечить единый источник истины.
-"""
+from pathlib import Path
 
 
 # --- Вспомогательные функции ---
@@ -16,11 +13,31 @@ def _mask_value(value: str) -> str:
     return f"{value[:5]}...{value[-4:]}"
 
 
+_BACKEND_DIR = Path(__file__).resolve().parents[1]
+_DEFAULT_SQLITE_DB_PATH = (_BACKEND_DIR / "data" / "experts.db").resolve()
+
+
+def _normalize_database_url(database_url: str) -> str:
+    """Resolve relative SQLite URLs against the backend root."""
+    if not database_url:
+        return f"sqlite:///{_DEFAULT_SQLITE_DB_PATH}"
+
+    if not database_url.startswith("sqlite:///"):
+        return database_url
+
+    sqlite_path = Path(database_url.replace("sqlite:///", "", 1)).expanduser()
+    if not sqlite_path.is_absolute():
+        sqlite_path = (_BACKEND_DIR / sqlite_path).resolve()
+    else:
+        sqlite_path = sqlite_path.resolve()
+    return f"sqlite:///{sqlite_path}"
+
+
 # --- API / Auth Configuration ---
-GOOGLE_AI_STUDIO_API_KEYS_STR = os.getenv("GOOGLE_AI_STUDIO_API_KEY")
-GOOGLE_AI_STUDIO_API_KEYS = [
+LEGACY_GOOGLE_AI_STUDIO_API_KEYS_STR = os.getenv("GOOGLE_AI_STUDIO_API_KEY")
+LEGACY_GOOGLE_AI_STUDIO_API_KEYS = [
     key.strip()
-    for key in (GOOGLE_AI_STUDIO_API_KEYS_STR or "").split(",")
+    for key in (LEGACY_GOOGLE_AI_STUDIO_API_KEYS_STR or "").split(",")
     if key.strip()
 ]
 VERTEX_AI_SERVICE_ACCOUNT_JSON = os.getenv("VERTEX_AI_SERVICE_ACCOUNT_JSON")
@@ -30,7 +47,7 @@ VERTEX_AI_PROJECT_ID = os.getenv("VERTEX_AI_PROJECT_ID")
 VERTEX_AI_LOCATION = os.getenv("VERTEX_AI_LOCATION", "us-central1")
 
 # --- Model Configuration ---
-# Only Google Gemini models are supported.
+# Only Gemini models on Vertex AI are supported.
 # Defined in .env or defaulting to stable versions here.
 
 MODEL_MAP: str = os.getenv("MODEL_MAP", "gemini-2.5-flash-lite")
@@ -112,7 +129,11 @@ FTS5_CIRCUIT_BREAKER_THRESHOLD: int = int(
 )
 
 # --- Прочие настройки ---
-DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///data/experts.db")
+DATABASE_URL: str = _normalize_database_url(
+    os.getenv("DATABASE_URL", f"sqlite:///{_DEFAULT_SQLITE_DB_PATH}")
+)
+# Keep process env aligned with the normalized runtime config for downstream imports.
+os.environ["DATABASE_URL"] = DATABASE_URL
 
 # --- Конфигурация логирования ---
 LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
@@ -124,39 +145,47 @@ else:
     BACKEND_LOG_FILE: str = os.getenv("BACKEND_LOG_FILE", "data/backend.log")
     FRONTEND_LOG_FILE: str = os.getenv("FRONTEND_LOG_FILE", "data/frontend.log")
 
-# Логирование для проверки при запуске
-if os.getenv("ENVIRONMENT") != "production":
-    print("--- Загруженная конфигурация API ---")
+def get_runtime_config_log_lines() -> list[str]:
+    """Return human-readable runtime configuration lines for explicit startup logging."""
+
+    lines = ["--- Backend runtime configuration ---"]
+
     if VERTEX_AI_SERVICE_ACCOUNT_JSON or VERTEX_AI_SERVICE_ACCOUNT_JSON_PATH or GOOGLE_APPLICATION_CREDENTIALS_PATH:
-        print(
+        lines.append(
             "  Vertex AI Auth: Configured "
-            f"(project={VERTEX_AI_PROJECT_ID or 'auto'}, "
-            f"location={VERTEX_AI_LOCATION})"
+            f"(project={VERTEX_AI_PROJECT_ID or 'auto'}, location={VERTEX_AI_LOCATION})"
         )
-    elif GOOGLE_AI_STUDIO_API_KEYS:
-        print(
-            f"  Google AI Studio Keys: Legacy configured ({len(GOOGLE_AI_STUDIO_API_KEYS)} keys)"
+    elif LEGACY_GOOGLE_AI_STUDIO_API_KEYS:
+        lines.append(
+            "  Legacy API keys: configured as migration fallback "
+            f"({len(LEGACY_GOOGLE_AI_STUDIO_API_KEYS)} keys)"
         )
     else:
-        print("  Vertex AI Auth: Not configured")
+        lines.append("  Vertex AI Auth: Not configured")
 
-    print("\n--- Загруженная конфигурация моделей ---")
-    print(f"  Map фаза:          {MODEL_MAP}")
-    print(f"  Синтез:            {MODEL_SYNTHESIS}")
-    print(f"  Анализ:            {MODEL_ANALYSIS}")
-    print(f"  AI Scout:          {MODEL_SCOUT}")
-    print(f"  Drift Analysis:    {MODEL_DRIFT_ANALYSIS}")
-    print(f"  Meta-Synthesis:    {MODEL_META_SYNTHESIS}")
-    print("--------------------------------------")
-    print("--- Загруженная конфигурация лимитов ---")
-    print(f"  Map Max Parallel:      {MAP_MAX_PARALLEL}")
-    print(f"  Max Concurrent Experts: {MAX_CONCURRENT_EXPERTS}")
-    print("----------------------------------------")
-    print("--- Загруженная конфигурация логирования ---")
-    print(f"  Log Level:         {LOG_LEVEL}")
-    print(f"  Backend Log File:  {BACKEND_LOG_FILE}")
-    print(f"  Frontend Log File: {FRONTEND_LOG_FILE}")
-    print("------------------------------------------")
-else:
-    # В production не выводим чувствительные данные
-    print("--- Production mode: API configuration loaded ---")
+    lines.extend(
+        [
+            "--- Loaded model configuration ---",
+            f"  Map фаза:          {MODEL_MAP}",
+            f"  Синтез:            {MODEL_SYNTHESIS}",
+            f"  Анализ:            {MODEL_ANALYSIS}",
+            f"  AI Scout:          {MODEL_SCOUT}",
+            f"  Drift Analysis:    {MODEL_DRIFT_ANALYSIS}",
+            f"  Meta-Synthesis:    {MODEL_META_SYNTHESIS}",
+            "--- Loaded limits configuration ---",
+            f"  Map Max Parallel:      {MAP_MAX_PARALLEL}",
+            f"  Max Concurrent Experts: {MAX_CONCURRENT_EXPERTS}",
+            "--- Loaded logging configuration ---",
+            f"  Log Level:         {LOG_LEVEL}",
+            f"  Backend Log File:  {BACKEND_LOG_FILE}",
+            f"  Frontend Log File: {FRONTEND_LOG_FILE}",
+        ]
+    )
+    return lines
+
+
+def log_runtime_configuration(logger: logging.Logger) -> None:
+    """Emit runtime configuration through the active logger instead of import-time prints."""
+
+    for line in get_runtime_config_log_lines():
+        logger.info(line)

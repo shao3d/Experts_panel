@@ -25,6 +25,17 @@ from typing import Dict, List, Any, Optional, Tuple
 from pathlib import Path
 import argparse
 
+BACKEND_DIR = Path(__file__).resolve().parents[1]
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
+from src.cli.bootstrap import bootstrap_cli
+
+BACKEND_DIR, logger = bootstrap_cli(
+    __file__,
+    logger_name="cli.ab_test_super_passport",
+)
+
 try:
     import aiohttp
 except ImportError:

@@ -19,18 +19,28 @@ Usage:
 
 import asyncio
 import json
-import os
 import sys
 import time
 import struct
 import warnings
 from datetime import datetime
+from pathlib import Path
 
-# Setup path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+BACKEND_DIR = Path(__file__).resolve().parents[1]
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
 
-# Suppress config prints
-os.environ.setdefault("ENVIRONMENT", "production")
+from src.cli.bootstrap import (
+    bootstrap_cli,
+    require_vertex_runtime,
+    set_default_sqlite_database_url,
+)
+
+BACKEND_DIR, logger = bootstrap_cli(
+    __file__,
+    logger_name="cli.profile_hybrid_retrieval",
+)
+DB_PATH = set_default_sqlite_database_url(BACKEND_DIR, force=True)
 
 from src.models.base import SessionLocal, engine
 from src.models.post import Post
@@ -56,6 +66,7 @@ def timed(label):
 
 
 async def main():
+    require_vertex_runtime()
     results = {}
 
     print("=" * 70)

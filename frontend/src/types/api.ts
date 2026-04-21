@@ -71,7 +71,7 @@ export interface QueryRequest {
   /** Include Reddit community insights in response (default: true) */
   include_reddit?: boolean;
 
-  /** Use Super-Passport fast search mode (default: true) */
+  /** Backend default comes from USE_SUPER_PASSPORT_DEFAULT (false by default); current UI initializes this to true in App.tsx */
   use_super_passport?: boolean;
 }
 
@@ -394,10 +394,67 @@ export interface APIError {
 /**
  * Health check response
  */
+export interface HealthDatabaseDiagnostics {
+  status: 'healthy' | 'unhealthy';
+  message?: string | null;
+}
+
+export interface HealthVertexAuthDiagnostics {
+  configured: boolean;
+  project_id?: string | null;
+  location?: string | null;
+  auth_source?: string | null;
+}
+
+export interface HealthCacheDiagnostics {
+  checked_at?: number | null;
+  expires_at?: number | null;
+  ttl_seconds: number;
+  stale: boolean;
+  refresh_in_progress: boolean;
+}
+
+export interface HealthProbeDiagnostics {
+  ok: boolean;
+  status: 'ok' | 'failed' | 'unknown';
+  model: string;
+  route_type: 'global' | 'regional';
+  latency_ms?: number | null;
+  error_type?: string | null;
+  message?: string | null;
+  status_code?: number | null;
+  dimensions?: number | null;
+  expected_dimensions?: number | null;
+}
+
+export interface HealthModelAvailabilityEntry {
+  status: 'available' | 'unavailable' | 'unknown';
+  kind: 'generation' | 'embedding';
+  route_type: 'global' | 'regional';
+  latency_ms?: number | null;
+  error_type?: string | null;
+  message?: string | null;
+  status_code?: number | null;
+  dimensions?: number | null;
+  expected_dimensions?: number | null;
+}
+
+export interface HealthDiagnostics {
+  mode: 'cached' | 'live';
+  database: HealthDatabaseDiagnostics;
+  cache: HealthCacheDiagnostics;
+  vertex_auth: HealthVertexAuthDiagnostics;
+  generation_probe: HealthProbeDiagnostics;
+  embedding_probe: HealthProbeDiagnostics;
+  model_availability: Record<string, HealthModelAvailabilityEntry>;
+}
+
 export interface HealthResponse {
-  status: 'healthy' | 'degraded';
+  status: 'healthy' | 'degraded' | 'unhealthy';
   version: string;
   database: 'healthy' | 'unhealthy';
-  openai_configured: boolean;
+  auth_configured: boolean;
+  vertex_auth_configured: boolean;
   timestamp: number;
+  diagnostics?: HealthDiagnostics;
 }

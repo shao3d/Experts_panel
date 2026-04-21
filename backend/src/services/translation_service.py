@@ -10,14 +10,14 @@ from collections import OrderedDict
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 import httpx
 
-from .google_ai_studio_client import create_google_ai_studio_client, GoogleAIStudioError
+from .vertex_llm_client import get_vertex_llm_client
 from ..utils.language_utils import detect_query_language
 
 logger = logging.getLogger(__name__)
 
 
 class TranslationService:
-    """Service for translating posts to English using Google AI Studio."""
+    """Service for translating posts to English using Gemini on Vertex AI."""
 
     def __init__(
         self,
@@ -26,19 +26,19 @@ class TranslationService:
         """Initialize TranslationService.
 
         Args:
-            model: Model to use (default Gemini via Google). Defaults to MODEL_ANALYSIS from config.
+            model: Model to use (default Gemini via Vertex AI). Defaults to MODEL_ANALYSIS from config.
         """
         if model is None:
             from .. import config
             model = config.MODEL_ANALYSIS
-        # Initialize Google Client
-        self.google_client = None
+        # Initialize Vertex LLM client
+        self.llm_client = None
         try:
-            self.google_client = create_google_ai_studio_client()
-            if self.google_client:
-                logger.info("TranslationService: Google AI Studio client initialized.")
+            self.llm_client = get_vertex_llm_client()
+            if self.llm_client:
+                logger.info("TranslationService: Vertex LLM client initialized.")
         except Exception as e:
-            logger.warning(f"TranslationService: Could not initialize Google AI Studio client: {e}")
+            logger.warning(f"TranslationService: Could not initialize Vertex LLM client: {e}")
 
         self.primary_model = model
 
@@ -77,15 +77,15 @@ class TranslationService:
             self._cache.popitem(last=False)
 
     async def _call_llm(self, model_name: str, messages: List[Dict[str, str]]):
-        """Call Google AI Studio."""
-        if self.google_client:
-            # Google client handles key rotation automatically
-            return await self.google_client.chat_completions_create(
+        """Call the shared Vertex LLM client."""
+        if self.llm_client:
+            # The shared client handles auth and retry automatically.
+            return await self.llm_client.chat_completions_create(
                 model=model_name,
                 messages=messages,
                 temperature=0.2
             )
-        raise ValueError("Google Client not initialized")
+        raise ValueError("Vertex LLM client not initialized")
 
     @retry(
         stop=stop_after_attempt(3),
@@ -118,7 +118,7 @@ class TranslationService:
 
             response = None
 
-            # Direct call to Google model
+            # Direct call to the shared Vertex model
             response = await self._call_llm(self.primary_model, messages)
 
             # Get translated text

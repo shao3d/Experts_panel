@@ -1,11 +1,25 @@
 #!/usr/bin/env python3
 """Script to fix double nested drift topics structure"""
 
-import sqlite3
 import json
+import sqlite3
+import sys
+from pathlib import Path
+
+BACKEND_DIR = Path(__file__).resolve().parents[2]
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
+from src.cli.bootstrap import bootstrap_cli, get_sqlite_db_path
+
+BACKEND_DIR, logger = bootstrap_cli(
+    __file__,
+    logger_name="maintenance.fix_double_nested_drift",
+)
+DB_PATH = get_sqlite_db_path(BACKEND_DIR)
 
 def fix_double_nested():
-    conn = sqlite3.connect('data/experts.db')
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     # Get all drift-on-synced records

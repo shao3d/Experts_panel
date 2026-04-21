@@ -1,15 +1,19 @@
 """Database base configuration for SQLAlchemy models."""
 
-import os
 from sqlalchemy import create_engine, event
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import sqlite_vec
 
+try:
+    from .. import config
+except ImportError:  # Compatibility for legacy top-level imports like `from models import ...`
+    import config  # type: ignore
+
 # Database URL configuration
 # Production: PostgreSQL via DATABASE_URL environment variable
 # Local: SQLite fallback for development
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///data/experts.db")
+DATABASE_URL = config.DATABASE_URL
 
 # Engine configuration based on database type
 if DATABASE_URL.startswith("postgresql://"):

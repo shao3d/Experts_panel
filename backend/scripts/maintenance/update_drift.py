@@ -3,14 +3,38 @@
 Script to update drift analysis for post_id=684, expert_id=refat
 """
 
+import argparse
 import json
 import sqlite3
-from datetime import datetime
+import sys
+from pathlib import Path
 
-def update_drift_analysis():
-    # Database connection
-    db_path = "/Users/andreysazonov/Documents/Projects/Experts_panel/backend/data/experts.db"
+BACKEND_DIR = Path(__file__).resolve().parents[2]
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
 
+from src.cli.bootstrap import bootstrap_cli, get_sqlite_db_path
+
+BACKEND_DIR, logger = bootstrap_cli(
+    __file__,
+    logger_name="maintenance.update_drift",
+)
+DEFAULT_DB_PATH = get_sqlite_db_path(BACKEND_DIR)
+DEFAULT_POST_ID = 684
+DEFAULT_EXPERT_ID = "refat"
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Apply a manual drift-analysis payload to a specific record.",
+    )
+    parser.add_argument("--db-path", default=str(DEFAULT_DB_PATH), help="Path to SQLite database")
+    parser.add_argument("--post-id", type=int, default=DEFAULT_POST_ID, help="Target post_id")
+    parser.add_argument("--expert-id", default=DEFAULT_EXPERT_ID, help="Target expert_id")
+    return parser.parse_args()
+
+
+def update_drift_analysis(db_path: Path, post_id: int, expert_id: str) -> bool:
     # Drift analysis data
     drift_data = {
         "has_drift": True,
@@ -60,22 +84,22 @@ def update_drift_analysis():
         WHERE post_id = ? AND expert_id = ?
         """
 
-        cursor.execute(update_query, (1, drift_json, 684, 'refat'))
+        cursor.execute(update_query, (1, drift_json, post_id, expert_id))
         conn.commit()
 
         # Verify the update
         cursor.execute("SELECT changes()")
         rows_affected = cursor.fetchone()[0]
 
-        print(f"✅ Successfully updated drift analysis for post_id=684, expert_id=refat")
+        print(f"Successfully updated drift analysis for post_id={post_id}, expert_id={expert_id}")
         print(f"📊 Rows affected: {rows_affected}")
 
         # Show the updated record
         cursor.execute("""
         SELECT post_id, expert_id, has_drift, analyzed_by, analyzed_at
         FROM comment_group_drift
-        WHERE post_id = 684 AND expert_id = 'refat'
-        """)
+        WHERE post_id = ? AND expert_id = ?
+        """, (post_id, expert_id))
 
         result = cursor.fetchone()
         if result:
@@ -91,5 +115,9 @@ def update_drift_analysis():
     finally:
         conn.close()
 
+
 if __name__ == "__main__":
-    update_drift_analysis()
+    args = parse_args()
+    raise SystemExit(
+        0 if update_drift_analysis(Path(args.db_path).resolve(), args.post_id, args.expert_id) else 1
+    )

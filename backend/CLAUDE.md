@@ -6,7 +6,7 @@
 FastAPI backend service providing multi-expert query processing with Map-Resolve-Reduce pipeline, real-time SSE streaming, and Reddit integration.
 
 ## Narrative Summary
-The backend implements a sophisticated 10-phase query processing system. It uses a **Gemini-only** strategy on **Vertex AI** with a unified client (`google_ai_studio_client.py`) that preserves the historical interface while authenticating with a service account and retrying rate limit / timeout failures automatically. `Gemini 3*` models are routed through the Vertex `global` endpoint.
+The backend implements a sophisticated 10-phase query processing system. It uses a **Gemini-only** strategy on **Vertex AI** with a canonical client (`vertex_llm_client.py`) plus a legacy compatibility shim (`google_ai_studio_client.py`). `Gemini 3*` models are routed through the Vertex `global` endpoint.
 
 ## Key Files & Responsibilities
 
@@ -33,14 +33,16 @@ The backend implements a sophisticated 10-phase query processing system. It uses
 - `src/api/simplified_query_endpoint.py`: **Main Orchestrator**. Manages parallel expert tasks, SSE streaming with `pipeline_state` tracking, and Reddit Sidecar (120s timeout).
 - `src/api/pipeline_state_tracker.py`: **Pipeline State Tracker**. Tracks aggregate phase statuses across all experts (per-expert + cross-cutting). Monotonic priority: pending→active→error/skipped→completed.
 - `src/config.py`: **Configuration Hub**. Reads all env vars.
-- `src/services/google_ai_studio_client.py`: **Unified LLM Client**. Handles Vertex routing, retries, and rate limits.
+- `src/services/vertex_llm_client.py`: **Canonical Vertex LLM Client**. Handles Vertex routing, retries, and rate limits.
+- `src/services/google_ai_studio_client.py`: Compatibility shim for legacy imports.
 - `src/services/vertex_ai_auth.py`: **Vertex Auth Layer**. Loads service-account JSON or ADC and refreshes OAuth access tokens.
 - `src/utils/error_handler.py`: **Error System**. Maps exceptions to user-friendly messages.
 
 ## API Endpoints
 - `POST /api/v1/query`: Main streaming endpoint.
 - `GET /api/v1/experts`: List experts.
-- `GET /health`: Health check.
+- `GET /health`: Cheap cached health diagnostics.
+- `GET /health/live`: Forced live diagnostics (admin-protected via `X-Admin-Secret`).
 
 ## Reddit Integration
 - **Active Client**: `src/services/reddit_enhanced_service.py` (Proxy Client).
@@ -82,6 +84,7 @@ Defined in `.env`, loaded in `config.py`.
 - `VERTEX_AI_PROJECT_ID` and `VERTEX_AI_LOCATION` are required for deterministic production config
 - `Gemini 3*` models must use Vertex `global` endpoint; the unified client handles this automatically
 - This GCP project does not expose `gemini-2.0-flash`, so the closest production replacement is `gemini-2.5-flash`
+- Backend/API startup and operational CLI scripts explicitly load `backend/.env`; do not rely on the current working directory.
 
 ### Env Vars / Tunables
 - `MAP_MAX_PARALLEL`: 25 (Tier 1) / 8 (Free)

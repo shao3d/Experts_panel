@@ -17,23 +17,26 @@ Requirements:
 
 import asyncio
 import json
-import logging
 import sys
 import time
 from pathlib import Path
 from datetime import datetime
 
-# ─── Path setup ───
 BACKEND_DIR = Path(__file__).parent.parent
-ENV_PATH = BACKEND_DIR / ".env"
-DB_PATH = BACKEND_DIR / "data" / "experts.db"
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
 
-from dotenv import load_dotenv
-load_dotenv(ENV_PATH)
+from src.cli.bootstrap import (
+    bootstrap_cli,
+    require_vertex_runtime,
+    set_default_sqlite_database_url,
+)
 
-import os
-os.environ["DATABASE_URL"] = f"sqlite:///{DB_PATH}"
-sys.path.insert(0, str(BACKEND_DIR))
+BACKEND_DIR, logger = bootstrap_cli(
+    __file__,
+    logger_name="cli.deep_compare_pipelines",
+)
+DB_PATH = set_default_sqlite_database_url(BACKEND_DIR, force=True)
 
 from sqlalchemy import func
 from src.models.base import SessionLocal
@@ -42,15 +45,6 @@ from src.services.map_service import MapService
 from src.services.fts5_retrieval_service import FTS5RetrievalService
 from src.services.ai_scout_service import AIScoutService
 from src.config import MODEL_MAP, MAP_CHUNK_SIZE, MAP_MAX_PARALLEL, MAX_FTS_RESULTS
-
-# ─── Logging ───
-logging.basicConfig(
-    level=logging.WARNING,  # Suppress noisy service logs
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    datefmt="%H:%M:%S"
-)
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 # ANSI colors
 G = '\033[92m'  # Green
@@ -291,6 +285,7 @@ def main():
     parser.add_argument("--experts", nargs="+", default=["doronin", "akimov"],
                         help="Expert IDs (default: doronin akimov)")
     args = parser.parse_args()
+    require_vertex_runtime()
 
     asyncio.run(run_comparison(args.query, args.experts))
 

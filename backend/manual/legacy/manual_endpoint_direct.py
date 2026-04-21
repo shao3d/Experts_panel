@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Direct test of experts endpoint without starting server."""
+"""Legacy manual script for direct endpoint checks without starting a server."""
 
 import sys
 import os

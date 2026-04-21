@@ -11,14 +11,14 @@ from typing import List, Dict, Any, Optional, Callable
 from datetime import datetime
 
 from .. import config
-from .google_ai_studio_client import create_google_ai_studio_client
+from .vertex_llm_client import get_vertex_llm_client
 from .language_validation_service import LanguageValidationService
 
 logger = logging.getLogger(__name__)
 
 class VideoHubService:
     def __init__(self):
-        self.llm_client = create_google_ai_studio_client()
+        self.llm_client = get_vertex_llm_client()
         self.map_model = config.MODEL_MAP
         self.synthesis_model = config.MODEL_VIDEO_PRO # gemini-3.0-pro
         self.flash_model = config.MODEL_VIDEO_FLASH   # gemini-3.0-flash
