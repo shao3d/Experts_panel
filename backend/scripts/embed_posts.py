@@ -253,7 +253,12 @@ async def run_continuous(
     logger.info(f"\n{'=' * 50}")
     logger.info(f"📊 Total batches: {batch_num}")
     logger.info(f"✅ Total embedded: {total_embedded}")
-    logger.info(f"❌ Total errors: {total_errors}")
+    logger.info(f"❌ Total attempt errors: {total_errors}")
+    if total_errors > 0:
+        logger.info(
+            "ℹ️  These were transient batch failures during processing. "
+            "Posts that stayed pending were retried in later passes."
+        )
 
     return total_embedded, total_errors
 
