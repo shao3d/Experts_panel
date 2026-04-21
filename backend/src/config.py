@@ -54,6 +54,24 @@ MODEL_META_SYNTHESIS: str = os.getenv("MODEL_META_SYNTHESIS", "gemini-3-flash-pr
 MODEL_EMBEDDING: str = os.getenv("MODEL_EMBEDDING", "gemini-embedding-001")
 EMBEDDING_DIMENSIONS: int = int(os.getenv("EMBEDDING_DIMENSIONS", "768"))
 
+# --- Reddit Search Configuration ---
+REDDIT_SEARCH_V2_ENABLED: bool = (
+    os.getenv("REDDIT_SEARCH_V2_ENABLED", "true").lower() == "true"
+)
+REDDIT_SEARCH_DEBUG: bool = (
+    os.getenv("REDDIT_SEARCH_DEBUG", "false").lower() == "true"
+)
+REDDIT_RERANK_CANDIDATES: int = int(os.getenv("REDDIT_RERANK_CANDIDATES", "18"))
+REDDIT_PRE_RERANK_ENRICH_LIMIT: int = int(
+    os.getenv("REDDIT_PRE_RERANK_ENRICH_LIMIT", "12")
+)
+REDDIT_MIN_CONFIDENCE: float = float(
+    os.getenv("REDDIT_MIN_CONFIDENCE", "0.52")
+)
+REDDIT_SOFT_CONFIDENCE: float = float(
+    os.getenv("REDDIT_SOFT_CONFIDENCE", "0.44")
+)
+
 # --- Hybrid Retrieval ---
 HYBRID_VECTOR_TOP_K: int = int(os.getenv("HYBRID_VECTOR_TOP_K", "150"))
 HYBRID_FTS5_TOP_K: int = int(os.getenv("HYBRID_FTS5_TOP_K", "100"))

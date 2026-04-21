@@ -25,7 +25,7 @@ The backend implements a sophisticated 10-phase query processing system. It uses
 | `comment_group_map_service.py` | **6. Comments** | `gemini-2.5-flash` | Drift scoring runs **parallel** with Reduce. `score_drift_groups()` + `merge_with_main_sources()`. |
 | `comment_synthesis_service.py` | **7. Synthesis** | `gemini-3-flash-preview` | Extracts insights into 4 sections (Expert/Community). Runs after Reduce + Drift complete. |
 | `video_hub_service.py` | **Video Sidecar** | `gemini-3.1-pro-preview` | **Digital Twin**. 4-phase video analysis (Map -> Resolve -> Synthesis -> Validation). |
-| `reddit_enhanced_service.py` | **8. Reddit** | `gemini-3-flash-preview` + HTTP Proxy | **Sidecar Orchestrator**. Gemini Scout plans subreddit/query strategy; proxy handles `/search` + `/details`; deep drill fetches 100 comments at depth 5. |
+| `reddit_enhanced_service.py` | **8. Reddit** | `gemini-3-flash-preview` + HTTP Proxy | **Sidecar Orchestrator**. Reddit Search V2 runs precision-first candidate generation, early comment enrichment, and answerability-first reranking. |
 | `reddit_synthesis_service.py` | **Synthesis** | `gemini-3-flash-preview` | **Staff Engineer Persona**. Finds Hidden Gems & Minority Reports. No Fluff. |
 | `meta_synthesis_service.py` | **Meta-Synthesis** | `gemini-3-flash-preview` | Cross-expert unified analysis. Runs parallel with Reddit after all experts complete (≥2). |
 
@@ -47,16 +47,18 @@ The backend implements a sophisticated 10-phase query processing system. It uses
 - **Architecture**: Hybrid Sidecar.
     - **Search**: via Proxy `POST /search` (the proxy uses Reddit MCP `search_reddit` under the hood).
     - **Details**: via Proxy `POST /details` (deep fetch of 100 comments / depth 5).
-- **New Features (Round 5 - Deep Drill & AI Brain)**:
-    - **AI Reranking**: Filters viral noise using Gemini 3 relevance check (80% AI + 20% Engagement).
-    - **Smart Deduplication**: Normalized URL/Title check to remove cross-posts.
-    - **Temporal Awareness**: Scout detects "Fast-moving" vs "Evergreen" intent (`time="month"` vs `"all"`).
-    - **Deep Trees**: Fetches 100 comments/post (Depth 5).
-    - **Staff Engineer Persona**: Synthesis focused on "Hidden Gems".
-    - **Timeless Classics**: Strategy for guides.
+- **Search V2 (Precision-First)**:
+    - **Soft Subreddit Hints**: Scout still proposes target communities, but backend no longer hard-locks retrieval to them by default.
+    - **Tiny Targeted Channel**: For narrow `how_to` / `troubleshooting` / `comparison` intents, backend may add a very small targeted retrieval on the strongest subreddit hints, while keeping global search active.
+    - **Smaller Candidate Set**: Backend favors literal query + scout query + freshness/quality channels instead of many additive search hacks.
+    - **Early Enrichment**: Top candidates fetch comments before final rerank so answer-bearing comments can influence ranking.
+    - **Answerability Rerank**: Gemini scores "does this answer the question?" rather than mere topical similarity.
+    - **Stronger Comparison Gate**: `comparison` queries prefer direct title/body matches and explicit comparison markers instead of comment-only overlaps.
+    - **Confidence Thresholds**: Low-confidence Reddit results are dropped instead of filling the UI with adjacent noise.
+    - **Debug Trace**: Optional structured trace via `REDDIT_SEARCH_DEBUG=true`.
 - **Logic**: 
-    - **Strict Mode**: If topic found -> Search **ONLY** target subreddits.
-    - **Auto-detection**: Service automatically detects topic.
+    - **Scout as Hint, not Gate**: topic detection shapes retrieval, but global search always remains available.
+    - **Precision > Recall**: Returning fewer high-confidence threads is preferred over broad but noisy recall.
 - **Legacy**: `reddit_client.py` (Direct `asyncpraw`) - deprecated/fallback only.
 
 ## Configuration (Environment Variables)
@@ -94,6 +96,12 @@ Defined in `.env`, loaded in `config.py`.
 - `MAX_FTS_RESULTS`: 300
 - `USE_SUPER_PASSPORT_DEFAULT`: false
 - `FTS5_CIRCUIT_BREAKER_THRESHOLD`: 3
+- `REDDIT_SEARCH_V2_ENABLED`: true
+- `REDDIT_SEARCH_DEBUG`: false
+- `REDDIT_RERANK_CANDIDATES`: 18
+- `REDDIT_PRE_RERANK_ENRICH_LIMIT`: 12
+- `REDDIT_MIN_CONFIDENCE`: 0.52
+- `REDDIT_SOFT_CONFIDENCE`: 0.44
 
 ### Hardcoded Runtime Limits
 - `Reddit wait after experts`: 120s hard limit in `simplified_query_endpoint.py`
@@ -106,3 +114,4 @@ Defined in `.env`, loaded in `config.py`.
 - **Embed Fresh Posts**: `python3 backend/scripts/embed_posts.py --continuous`
 - **Run Drift Batch**: `python3 backend/run_drift_service.py` (auto-loads `backend/.env`)
 - **Analyze One Drift Group**: `python3 backend/analyze_specific_drift.py <post_id>` (auto-loads `backend/.env`)
+- **Eval Reddit Search V2**: `python3 backend/scripts/eval_reddit_search_v2.py`

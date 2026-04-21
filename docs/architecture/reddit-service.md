@@ -1,146 +1,317 @@
-# Reddit Integration (Enhanced)
+# Reddit Integration (Search V2)
 
-**Статус:** Production (Stable)
-**Архитектура:** Sidecar Proxy Pattern
-**Логика:** AI Scout v2 (Intent Plans) + Context-Aware Ranking
-**Дата обновления:** 28.03.2026
+**Статус:** Production (Precision-First V2)  
+**Архитектура:** Sidecar Proxy Pattern  
+**Логика:** AI Scout v2 + Precision-First Retrieval + Answerability Rerank  
+**Дата обновления:** 21.04.2026
 
 ---
 
-## 🏗️ Архитектура (Sidecar Proxy)
+## Коротко
 
-Система использует интеллектуальный микросервис-прокси для глубокого анализа Reddit с сохранением технического контекста.
+Reddit больше не работает в режиме "найти как можно больше и потом надеяться, что LLM всё разрулит".  
+Текущая версия Reddit Search V2 предпочитает:
+
+1. собрать небольшой, но более чистый candidate pool;
+2. не запирать поиск в выбранных LLM сабреддитах;
+3. подтянуть комментарии раньше;
+4. ранжировать по answerability, а не по шумной популярности;
+5. лучше вернуть меньше постов, чем подсунуть пользователю тематически похожий, но нерелевантный мусор.
+
+---
+
+## Архитектура
 
 ```mermaid
 graph LR
     User[User Query] --> Backend[FastAPI Backend]
-    Backend -- "1. Translate (Entity-Preserving)" --> Translation[Translation Service]
-    Translation -- "2. Generate Plan" --> Scout[🤖 AI Scout v2 (Gemini 3 Flash)]
-    
-    Scout -- "Intent Queries + Keywords" --> Proxy[Reddit Proxy Service]
-    
-    Proxy -- "MCP Tool (Depth 3)" --> Reddit[Reddit API]
+    Backend -- "1. Formulate Reddit EN query" --> QueryForm[Inline Gemini Prompt]
+    QueryForm -- "2. Search plan" --> Scout[AI Scout v2]
+
+    Scout -- "queries + subreddit hints + keywords" --> Retrieval[Precision-First Retrieval]
+    Retrieval -- "POST /search" --> Proxy[Reddit Proxy Service]
+    Proxy -- "search_reddit via MCP" --> Reddit[Reddit API]
     Reddit --> Proxy
-    Proxy -- "Sanitized JSON" --> Backend
-    Backend -- "3. Semantic Ranking" --> Ranker[Context-Aware Ranker]
-    Ranker -- "Top 15 Posts" --> Gemini[Synthesis Model]
-```
+    Proxy --> Retrieval
 
-### Компоненты
-
-1.  **Backend (`RedditEnhancedService`)**:
-    *   **🤖 AI Scout v2:** Вместо простого подбора сабреддитов, Gemini 3 создает **План Поиска** (Search Plan):
-        *   `Subreddits`: Целевые сообщества (например, `LocalLLaMA`).
-        *   `Intent Queries`: 3-5 конкретных поисковых фраз (например, `"Claude Code" config.json setup`).
-        *   `Keywords`: Ключевые слова для ранжирования (например, `Skills`, `CLI`).
-    *   **Context-Aware Ranking:**
-        *   **No Time Decay:** Технические гайды (флаг `is_technical_guide`) не теряют рейтинг со временем.
-        *   **Semantic Boost:** Посты, содержащие ключевые слова в заголовке, получают множитель Score до **x3.0**.
-    *   **Deep Fetch:** Для топ-постов выполняется отдельный запрос к `/details` эндпоинту прокси. Загружается полный текст поста и глубокое дерево комментариев (**Depth 5, Limit 100**) для "Staff Engineer" синтеза.
-    *   **🛡️ Authority Signals:**
-        *   **Flair Detection:** Система видит плашки пользователей (`Maintainer`, `Dev`) и повышает доверие к ним.
-        *   **OP Verification:** Если автор поста (OP) подтверждает решение ("Thanks, it worked!"), это решение получает статус `[✅ OP VERIFIED SOLUTION]`.
-        *   **Score Skepticism:** LLM инструктирована скептически относиться к высокому рейтингу без технического обоснования (фильтр шуток).
-
-2.  **Proxy (`services/reddit-proxy`)**:
-    *   Node.js + Fastify микросервис.
-    *   **Endpoints:**
-        *   `POST /search` - Поиск по сабреддитам.
-        *   `POST /details` - Точечная загрузка поста с комментариями. Внутренняя реализация без зависимости от MCP для гарантии формата данных.
-    *   **Code Preservation:** Специальный алгоритм санитизации, который **не трогает** блоки кода (` ``` `), сохраняя отступы в Python/YAML конфигах.
-    *   **Data Integrity:** Рекурсивная санитизация всего дерева комментариев (удаление Zalgo, нормализация).
-
-3.  **Synthesis (`RedditSynthesisService`)**:
-    *   **Fact-Maxing:** Промпт жестко фильтрует эмоции ("Amazing!") и ищет цифры/бенчмарки.
-    *   **Inverted Pyramid:** Ответ строится по схеме "Решение -> Детали -> Споры".
-
----
-
-## 🎨 UX & Прогресс (Frontend Integration)
-Чтобы пользователь не видел "зависшую" систему, пока Reddit ищет и анализирует 100 комментариев:
-*   Внутренние фазы Reddit (`scout`, `search`, `reranking`, `synthesis`) мапятся на стандартные фазы пайплайна фронтенда (`map`, `resolve`, `reduce`).
-*   События в прогресс-баре помечаются иконкой 🌐, чтобы четко отличать их от работы с локальными экспертами.
-
----
-
-## 🌐 Query Translation (Entity-Preserving)
-
-Russian queries are translated to English for Reddit search using an **entity-preserving** approach (not a simple translation):
-
-1.  **Domain Context:** The translator knows this is an AI Experts Panel — it biases ambiguous queries toward AI ecosystem tools (Claude Code, Codex, RAG), not generic software engineering.
-2.  **Named Entity Preservation:** Product names (Claude Code, Cursor), feature names (Skills, MCP, hooks), model names (Gemini, Llama), and tech terms (RAG, LoRA) pass through **verbatim** — they are not translated or generalized.
-3.  **Reddit-Optimized Output:** Concise 4-8 word queries using Reddit community terminology ("setup" not "configuration").
-
-**Example:** `"Как настроить Skills внутри Claude Code?"` → `"Claude Code skills setup workflow"`
-
-### Language Detection (Russian-First)
-
-Language detection uses a **Russian-first** rule: if the query contains **any Cyrillic word**, the response language is Russian. This handles the common case of Russian-speaking users mixing English tech terms with Russian syntax (e.g., `"Claude Code skills — что лучше для workflow"` → Russian).
-
-## 🛡️ Synthesis Relevance Gate
-
-The synthesis prompt includes a **relevance gate** (`priority="highest"`): before synthesizing, the LLM verifies that found posts actually answer the user's question. If posts are off-topic, the system honestly reports "No relevant Reddit discussions found" instead of confidently synthesizing irrelevant content.
-
-## 🛡️ Resilience & Safety
-*   **LLM Safety Filters:** Контент Reddit может быть токсичным или спорным, что иногда триггерит фильтры безопасности Gemini (`finish_reason: SAFETY`). Вместо падения и утечки сырых proto-объектов `AsyncGenerateContentResponse` в UI, система перехватывает пустой ответ и вежливо сообщает пользователю: *"Запрос был заблокирован фильтрами безопасности (Safety Settings)."*
-
----
-
-## 🧠 Логика "AI Scout v2" (Intent Planning)
-
-Вместо regex-расширения запроса (`OR`), мы используем LLM для генерации человеческих поисковых фраз.
-
-### Пример работы:
-**Запрос:** "как настроить скиллы в Claude Code?"
-
-**Scout v2 Plan:**
-1.  **Subreddits:** `ClaudeAI`, `Anthropic`, `coding`
-2.  **Intent Queries:**
-    *   `"Claude Code" skills workflow guide`
-    *   `"Claude Code" MCP config.json`
-    *   `"Claude Code" custom tools setup`
-3.  **Keywords:** `["Skills", "Config", "MCP"]`
-
-**Результат:**
-Система находит конкретные гайды и конфиги, а не просто новости про Claude.
-
----
-
-## 📊 Semantic Ranking Strategy
-
-Как мы выбираем лучшее из найденного?
-
-1.  **Base Score:** `(Upvotes + Comments * 2)`
-2.  **Technical Guide Detection:** Если пост найден стратегией `ai_intent` или содержит маркеры "Guide/Tutorial" -> помечается как `is_technical_guide`.
-3.  **Keyword Boost:** Если в заголовке есть слова из `Keywords` (Scout) -> Score умножается на **1.5 - 3.0**.
-4.  **Time Decay (Умный):**
-    *   Для **Новостей**: Применяется классическая "Гравитация" (Hacker News), штрафующая за возраст.
-    *   Для **Гайдов**: Decay **ОТКЛЮЧЕН**. Старый, но полезный гайд с 2000 лайков будет выше свежей новости с 500 лайками.
-
----
-
-## 🛠️ Технические детали
-
-### Файлы
-- **Backend Service:** `backend/src/services/reddit_enhanced_service.py` (Scout Logic & Ranking)
-- **Proxy Service:** `services/reddit-proxy/src/index.ts` (Sanitization Logic)
-
-### Proxy API
-```http
-POST https://experts-reddit-proxy.fly.dev/search
-Content-Type: application/json
-
-{
-  "query": "Claude Code skills guide",
-  "subreddits": ["ClaudeAI"], 
-  "limit": 25,
-  "sort": "relevance"
-}
+    Retrieval -- "top candidates" --> Enrich[Early /details enrichment]
+    Enrich -- "post body + comments" --> Ranker[Answerability Rerank]
+    Ranker -- "high-confidence posts only" --> Gemini[Reddit Synthesis]
 ```
 
 ---
 
-## 🚀 Deployment
+## Основная идея V2
 
-- **Backend:** Деплоится автоматически при изменениях в `backend/`.
-- **Proxy:** Деплоится автоматически при изменениях в `services/reddit-proxy/`.
+### 1. Scout больше не является жёстким gatekeeper
+
+Scout всё ещё полезен, но его роль изменилась:
+
+- он предлагает `subreddits`
+- строит 2-3 `queries`
+- подсказывает `keywords`
+- определяет intent (`how_to`, `comparison`, `troubleshooting`, `news`, `discussion`)
+
+Но backend **не считает эти сабреддиты обязательной истиной**.  
+Если Reddit retrieval зациклить только в них, система слишком легко начинает пропускать реальные полезные треды.
+
+### 2. Retrieval стал проще
+
+V2 использует небольшой набор базовых стратегий:
+
+- `literal_global_relevance`
+- `expanded_global_relevance`
+- `scout_global_relevance`
+- `quality_global_top`
+- `fresh_global_new` для troubleshooting/news
+- маленький targeted-channel по 1-2 лучшим subreddit hints для узких `how_to`, `troubleshooting`, `comparison` intents
+
+Это важно:
+
+- V2 **не** возвращается к старому strict mode;
+- но и не игнорирует хорошие community hints полностью;
+- если Scout хорошо попал в `ollama`, `nginx`, `ClaudeAI`, `mcp`, backend может добавить маленький targeted retrieval без блокировки global search.
+
+Для comparison intent добавляются отдельные comparison-oriented запросы, но без прежнего "монструозного" набора search hacks.
+
+### 3. Ранний deep fetch
+
+Раньше комментарии слишком поздно попадали в ranking.  
+Теперь top-кандидаты проходят раннее enrichment через `POST /details`, чтобы финальный rerank видел:
+
+- тело поста
+- практические комментарии
+- сигналы типа "это реально решило проблему"
+
+### 4. Answerability-first rerank
+
+Gemini оценивает не просто "тематически похоже", а:
+
+- отвечает ли тред на вопрос пользователя
+- есть ли config / setup / fix / benchmark / trade-off
+- есть ли полезные комментарии практиков
+- не является ли это новостью, self-promo или showcase-шумихой
+
+### 5. Confidence thresholds
+
+V2 умеет **не возвращать** слабые Reddit-результаты.
+
+Если найденные посты:
+
+- слишком adjacent
+- не держат anchor terms
+- не дают high-confidence answerability
+
+то они отбрасываются. Это сознательный tradeoff в пользу precision.
+
+---
+
+## Компоненты
+
+### Backend (`backend/src/services/reddit_enhanced_service.py`)
+
+Отвечает за:
+
+- query formulation и scout plan
+- candidate generation
+- дедупликацию
+- раннее enrichment постов
+- heuristic scoring
+- AI rerank
+- confidence filtering
+
+Ключевые принципы:
+
+- `precision > recall`
+- `subreddits as hints, not gates`
+- `comments matter before final rerank`
+- `abstain > noisy fill`
+
+### Proxy (`services/reddit-proxy`)
+
+Sidecar на Node.js / Fastify.
+
+Endpoints:
+
+- `POST /search`
+- `POST /details`
+
+Что делает:
+
+- ходит в Reddit через MCP
+- нормализует JSON
+- чистит контент
+- сохраняет кодовые блоки и структуру текста
+
+### Synthesis (`backend/src/services/reddit_synthesis_service.py`)
+
+Берёт уже очищенный shortlist и делает Staff-Engineer synthesis:
+
+- hidden gems
+- minority reports
+- practical takeaways
+- no fluff
+
+---
+
+## Query Flow
+
+### Шаг 1. Формулировка Reddit-запроса
+
+Русский пользовательский запрос сначала превращается в короткий английский Reddit-friendly query.
+
+Важно:
+
+- named entities сохраняются
+- тех. термины не "переводятся красиво", а остаются в рабочем виде
+- формулировка делается под community-search, а не под SEO/web search
+
+Пример:
+
+`Как настроить MCP в Claude Code?`  
+→ `Claude Code MCP server setup`
+
+### Шаг 2. Scout Plan
+
+Scout возвращает:
+
+- `subreddits`
+- `queries`
+- `keywords`
+- `intent`
+- `time_filter`
+
+V2 дополнительно санитизирует scout queries, чтобы LLM не тащил веб-поисковые артефакты вроде `site:reddit.com`, `r/...`, кавычек и boolean-шума.
+
+### Шаг 3. Candidate Generation
+
+Backend не полагается на одну "умную" query.  
+Он строит компактный пул из нескольких search channels и потом объединяет результаты.
+
+### Шаг 4. Heuristic Score
+
+До LLM rerank у каждого поста считается precision-first score.
+
+Сигналы:
+
+- lexical overlap по `title/body/comments`
+- target keywords
+- answerability markers
+- technical guide markers
+- quality signal по `score/comments`
+- penalties за promo/showcase/noise
+
+Для comparison intent дополнительно учитываются:
+
+- прямые anchor matches в `title/body`
+- direct comparison markers (`vs`, `comparison`, `benchmark`, `migrated`, `overhead`)
+- штрафы за случаи, когда якоря встречаются только в комментариях
+
+Для `how_to` / `troubleshooting` V2 также аккуратно отсекает слишком общие anchor terms, чтобы слова вроде `reverse`, `proxy`, `setup`, `fix` не работали как ложные "жёсткие сущности".
+
+### Шаг 5. Early Enrichment
+
+Лучшие кандидаты получают `full_content` и top comments ещё до финального AI rerank.
+
+### Шаг 6. AI Rerank
+
+Gemini rerank получает:
+
+- title
+- preview/body
+- top comment snippets
+- strategy provenance
+- anchor / comparison metadata
+
+И ранжирует по answerability.
+
+### Шаг 7. Confidence Filter
+
+После rerank включается финальный фильтр:
+
+- строгий threshold
+- мягкий fallback threshold
+- для comparison intent более жёсткий anchor/control gate
+
+---
+
+## Что улучшает V2
+
+По сравнению со старой схемой:
+
+- меньше зависимость от случайно выбранных сабреддитов
+- меньше шумных "почти по теме" постов
+- меньше popularity bias
+- лучше качество на `how_to`, `best practices`, `comparison`
+- возможность нормально дебажить retrieval через trace
+
+---
+
+## Debug / Evaluation
+
+### Feature Flags
+
+В `backend/src/config.py`:
+
+- `REDDIT_SEARCH_V2_ENABLED`
+- `REDDIT_SEARCH_DEBUG`
+- `REDDIT_RERANK_CANDIDATES`
+- `REDDIT_PRE_RERANK_ENRICH_LIMIT`
+- `REDDIT_MIN_CONFIDENCE`
+- `REDDIT_SOFT_CONFIDENCE`
+
+Практический смысл:
+
+- V2 можно дебажить и калибровать без ручного перебора каждого запроса;
+- harness позволяет быстро увидеть, не стало ли "больше стратегий" ценой латентности;
+- в одной из live-проверок дополнительный scout channel дал почти нулевой выигрыш, но разогнал latency до ~216s, поэтому он сознательно **не** был оставлен в runtime.
+
+### Eval Harness
+
+Для локального сравнения и regression-check используется:
+
+```bash
+python3 backend/scripts/eval_reddit_search_v2.py
+```
+
+Для одного запроса:
+
+```bash
+python3 backend/scripts/eval_reddit_search_v2.py --query "Claude Code MCP server setup"
+```
+
+Harness пишет:
+
+- strategies used
+- total candidates
+- returned high-confidence posts
+- debug trace
+- top results с heuristic / ai / final score
+
+---
+
+## Ограничения
+
+1. Reddit search сам по себе не является качественным эталоном.  
+   Поэтому V2 оптимизируется не "под Reddit native search", а под релевантные Reddit-discussions.
+
+2. Comparison intent остаётся самым сложным типом запроса.  
+   Там легче всего поймать соседние benchmark/news посты.
+
+3. Scout остаётся LLM-шагом.  
+   V2 уменьшает его вред при промахах, но не убирает его полностью.
+
+4. Узкие infra/how-to кейсы могут честно возвращать маленький shortlist.  
+   Это лучше, чем заполнять выдачу смежными self-hosted / homelab тредами без прямого ответа.
+
+---
+
+## Файлы
+
+- `backend/src/services/reddit_enhanced_service.py`
+- `backend/src/services/reddit_synthesis_service.py`
+- `services/reddit-proxy/src/index.ts`
+- `backend/scripts/eval_reddit_search_v2.py`
+- `backend/src/config.py`
+
+Итог: Reddit Search V2 — это не "ещё больше AI-магии", а более строгий retrieval-пайплайн, где Scout только помогает, комментарии участвуют раньше, а нерелевантная выдача чаще отбрасывается вместо того, чтобы красиво синтезироваться.
