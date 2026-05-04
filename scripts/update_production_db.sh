@@ -13,6 +13,7 @@ DB_PATH="backend/data/experts.db"
 BACKUP_DIR="backend/data/backups"
 REMOTE_DB_PATH="/app/data/experts.db"
 REMOTE_BACKUP_PATH="/app/data/experts.db.backup"
+REMOTE_TMP_PATH="/app/data/experts.db.tmp"
 APP_NAME="experts-panel"
 
 # Ensure we are in project root
@@ -20,6 +21,9 @@ if [ ! -f "fly.toml" ]; then
     echo "❌ Error: Please run this script from the project root directory."
     exit 1
 fi
+
+PROJECT_ROOT="$(pwd)"
+ABS_DB_PATH="$PROJECT_ROOT/$DB_PATH"
 
 # Create backup directory if not exists
 mkdir -p "$BACKUP_DIR"
@@ -41,7 +45,7 @@ fi
 # Set PYTHONPATH to include backend directory for imports
 export PYTHONPATH=$PYTHONPATH:$(pwd)/backend
 # Override DATABASE_URL to ensure we use the correct DB regardless of what's in .env
-export DATABASE_URL="sqlite:///backend/data/experts.db"
+export DATABASE_URL="sqlite:///$ABS_DB_PATH"
 
 echo "========================================================"
 echo "🚀 STARTING PRODUCTION DB UPDATE SEQUENCE (9 steps)"
@@ -137,40 +141,56 @@ else
     echo "   ⚠️ Failed to create remote backup (maybe file doesn't exist yet). Continuing."
 fi
 
-# 8. Upload New DB (Compressed)
-echo "🚀 [8/9] Uploading fresh database (Compressed)..."
+# 8. Upload New DB (Staged)
+echo "🚀 [8/9] Uploading fresh database (Staged)..."
 # Disable update check to prevent hanging on old machines
 export FLY_NO_UPDATE_CHECK=1
 
-# Delete current remote DB
-fly ssh console -C "rm -f $REMOTE_DB_PATH" || true
+# Clean up leftovers from previous failed uploads before checking space.
+fly ssh console -C "rm -f $REMOTE_TMP_PATH $REMOTE_DB_PATH.gz" || true
 
-# Compress locally
-echo "   📦 Compressing database..."
-gzip -c "$DB_PATH" > "$DB_PATH.gz"
+LOCAL_DB_BYTES=$(wc -c < "$DB_PATH" | tr -d ' ')
+LOCAL_DB_KB=$(( (LOCAL_DB_BYTES + 1023) / 1024 ))
+MIN_FREE_KB=$(( LOCAL_DB_KB + 51200 ))
+REMOTE_FREE_KB=$(fly ssh console -C "df -Pk /app/data" | awk 'END {print $4}')
 
-# Upload compressed file
-echo "   📤 Uploading compressed file..."
-if fly sftp put "$DB_PATH.gz" "$REMOTE_DB_PATH.gz"; then
+if ! [[ "$REMOTE_FREE_KB" =~ ^[0-9]+$ ]]; then
+    echo "   ❌ Could not determine free space on /app/data."
+    exit 1
+fi
+
+echo "   🧮 Remote free before upload: $(( REMOTE_FREE_KB / 1024 )) MiB; DB size: $(( LOCAL_DB_KB / 1024 )) MiB"
+if [ "$REMOTE_FREE_KB" -lt "$MIN_FREE_KB" ]; then
+    echo "   ❌ Not enough free space on /app/data for a staged upload."
+    echo "      Need at least $(( MIN_FREE_KB / 1024 )) MiB free, found $(( REMOTE_FREE_KB / 1024 )) MiB."
+    echo "      Clean old backups/logs or increase the Fly volume before retrying."
+    exit 1
+fi
+
+echo "   📤 Uploading database to temporary path..."
+if fly sftp put "$DB_PATH" "$REMOTE_TMP_PATH"; then
     echo "   ✅ Upload successful."
 else
     echo "   ❌ Upload failed! Cleaning up..."
-    rm -f "$DB_PATH.gz"
+    fly ssh console -C "rm -f $REMOTE_TMP_PATH" || true
     exit 1
 fi
 
-# Decompress remotely
-echo "   📦 Decompressing on server..."
-if fly ssh console -C "gunzip -f $REMOTE_DB_PATH.gz"; then
-    echo "   ✅ Decompression successful."
+REMOTE_TMP_BYTES=$(fly ssh console -C "stat -c %s $REMOTE_TMP_PATH" | awk 'END {print $1}')
+if [ "$REMOTE_TMP_BYTES" != "$LOCAL_DB_BYTES" ]; then
+    echo "   ❌ Uploaded file size mismatch. Expected $LOCAL_DB_BYTES bytes, got $REMOTE_TMP_BYTES bytes."
+    fly ssh console -C "rm -f $REMOTE_TMP_PATH" || true
+    exit 1
+fi
+
+echo "   🔁 Replacing production database..."
+REMOTE_REPLACE_CMD="rm -f $REMOTE_DB_PATH-wal $REMOTE_DB_PATH-shm && mv -f $REMOTE_TMP_PATH $REMOTE_DB_PATH && chown appuser:appuser $REMOTE_DB_PATH"
+if fly ssh console -C "sh -lc '$REMOTE_REPLACE_CMD'"; then
+    echo "   ✅ Production database replaced."
 else
-    echo "   ❌ Decompression failed!"
-    rm -f "$DB_PATH.gz"
+    echo "   ❌ Database replacement failed! Existing DB should still be available if mv did not run."
     exit 1
 fi
-
-# Clean up local compressed file
-rm -f "$DB_PATH.gz"
 
 # 9. Restart Application
 echo "🔄 [9/9] Restarting application to load new DB..."
