@@ -15,7 +15,7 @@ The system uses an advanced **ten-phase pipeline** for analysis and a hybrid, co
 ### Key Architectural Principles
 - **Multi-Expert Architecture**: Complete data isolation between experts and parallel processing.
 - **Embs&Keys Hybrid Search**: Multi-stage retrieval using Vector KNN (sqlite-vec) and FTS5 with Reciprocal Rank Fusion (RRF), eliminating Semantic Gaps with pre-computed vector embeddings.
-- **Reddit MCP Integration**: Sidecar microservice for community insights with multi-strategy search, smart subreddit targeting, and 120s cold start timeout.
+- **Reddit Proxy Integration**: Sidecar microservice for community insights with multi-strategy search, smart subreddit targeting, and 120s cold start timeout.
 - **Cost Optimization**: Gemini-only strategy with Tier 1 paid account (high rate limits).
 - **Real-time Progress**: SSE streaming with `pipeline_state` — aggregate phase tracking with Smart Grouping (Search, Analysis, Insights, Video, Synthesis, Reddit).
 - **Search Toggles**: Optional `use_recent_only` (last 3 months), `include_reddit` (Reddit search), and `use_super_passport` (Embs&Keys Hybrid search) parameters.
@@ -27,7 +27,7 @@ The system uses an advanced **ten-phase pipeline** for analysis and a hybrid, co
 
 Complete FastAPI backend with:
 - Multi-expert query processing pipeline with parallel processing
-- **Reddit MCP Integration**: Parallel pipeline for community insights with circuit breaker
+- **Reddit Proxy Integration**: Parallel pipeline for community insights with circuit breaker
 - 11+ specialized services for different phases with Gemini integration
 - Real-time SSE streaming for progress tracking with enhanced error handling
 - Vertex AI LLM integration via the canonical client (`vertex_llm_client.py`) with a legacy compatibility shim
@@ -249,7 +249,7 @@ To debug the pipeline, monitor the backend log file for messages containing spec
 - ✅ User-toggleable (Искать на Reddit checkbox, default: enabled)
 
 **Components:**
-- `RedditService` - HTTP client with retry logic, 15s timeout, 3 attempts
+- `RedditEnhancedService` - active precision-first proxy client with early enrichment and answerability rerank
 - `RedditSynthesisService` - Gemini-powered community analysis with language detection
 - `TranslationService` - Query translation for non-English searches
 - `CommunityInsightsSection` - React component with neutral styling

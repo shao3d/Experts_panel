@@ -711,9 +711,10 @@ async def process_expert_pipeline(
 async def process_reddit_pipeline(
     query: str, progress_callback: Optional[Callable] = None
 ) -> Optional[RedditResponse]:
-    """Process Reddit community pipeline using direct Reddit API (asyncpraw).
+    """Process Reddit community pipeline through the enhanced Reddit proxy.
 
-    Direct Reddit API integration with OAuth authentication.
+    The active path uses `reddit_enhanced_service.py` and the Fly.io Reddit
+    proxy, not the legacy direct `asyncpraw` client.
 
     Args:
         query: User query (will be translated to English if Russian)

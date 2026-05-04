@@ -88,9 +88,9 @@
 - `backend/src/config.py` держит legacy env `GOOGLE_AI_STUDIO_API_KEY` и legacy printout
 - `backend/src/api/main.py:/health` возвращает поля `api_key_configured` и `google_ai_keys_count`, хотя теперь auth — это service account / ADC
 
-Отдельные stale defaults тоже ещё висят:
+Отдельные stale defaults на момент первичного аудита:
 
-- `backend/src/services/reddit_synthesis_service.py` содержит `DEFAULT_SYNTHESIS_MODEL = "gemini-2.0-flash"`
+- `backend/src/services/reddit_synthesis_service.py` содержал `DEFAULT_SYNTHESIS_MODEL = "gemini-2.0-flash"`; закрыто, текущий default — `gemini-3-flash-preview`
 - `backend/tests/test_hybrid_llm.py` тестирует старый hybrid/OpenRouter + AI Studio сценарий и ссылается на отсутствующие модули
 
 ### 2. Health / Diagnostics
