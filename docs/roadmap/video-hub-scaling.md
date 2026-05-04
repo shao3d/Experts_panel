@@ -226,9 +226,9 @@ Content here...
 f"<date>TODAY is {datetime.now().strftime('%Y-%m-%d')}.</date>"
 ```
 
-### N3. Модель `gemini-3-pro-preview` для синтеза
+### N3. Модель `gemini-3.1-pro-preview` для синтеза
 
-Video Hub использует Pro (самую дорогую модель) для синтеза. Основной пайплайн использует `gemini-3-flash-preview`. Стоит протестировать Flash для видео — возможно, разница в качестве минимальна при существенной экономии.
+Video Hub использует текущую Pro-модель `gemini-3.1-pro-preview` для синтеза. Основной пайплайн использует `gemini-3-flash-preview`. Стоит протестировать Flash для видео — возможно, разница в качестве минимальна при существенной экономии.
 
 **Конфигурация:** `MODEL_VIDEO_PRO` в `.env` — можно просто переключить без изменения кода.
 
@@ -271,7 +271,7 @@ Video Hub использует Pro (самую дорогую модель) дл
 | `src/services/video_hub_service.py` | 4-фазный pipeline (Map, Resolve, Synthesis, Validation) |
 | `src/api/simplified_query_endpoint.py` | Оркестратор (строки 212-315 — video_hub ветка) |
 | `src/services/sync_orchestrator.py` | Исключает video_hub из Telegram-синхронизации (строка 45) |
-| `src/config.py` | `MODEL_VIDEO_PRO`, `MODEL_VIDEO_FLASH` (строки 54-56) |
+| `backend/src/config.py` | `MODEL_VIDEO_PRO`, `MODEL_VIDEO_FLASH` в секции Video Hub Models |
 | `scripts/import_video_json.py` | JSON -> SQLite импорт с virtual ID |
 | `scripts/embed_posts.py` | Эмбеддинги (покрывает video_hub — нет фильтра по expert_id) |
 | `prompts/video_segmentation_prompt.md` | Golden Prompt для AI Studio сегментации |
@@ -314,22 +314,23 @@ Video Hub использует Pro (самую дорогую модель) дл
 
 3. **`INSERT OR REPLACE` в импорте** — при повторном импорте того же видео сегменты перезаписываются (virtual ID детерминирован: `MD5(url + segment_id)`). Это обеспечивает идемпотентность. Риск: если segment_id изменился между импортами (другая сегментация), старые записи останутся как "мусор". Решение при необходимости: добавить `DELETE FROM posts WHERE expert_id='video_hub' AND json_extract(media_metadata, '$.video_url') = ?` перед импортом.
 
-4. **Весь video_hub — один "эксперт"** — все видео разных авторов (Gleb, MKarpov) хранятся под одним `expert_id="video_hub"`. Это упрощает архитектуру (один sidecar), но смешивает авторов. При необходимости разделить: создать `video_hub_gleb`, `video_hub_mkarpov` и т.д. в `expert_metadata`.
+4. **Весь video_hub — один "эксперт"** — все видео разных авторов хранятся под одним `expert_id="video_hub"`, а настоящий автор остаётся в `media_metadata.original_author`. Это упрощает архитектуру (один sidecar), но смешивает авторов. При необходимости разделить: создать отдельные synthetic IDs вида `video_hub_<author_slug>` в `expert_metadata`, не переиспользуя удалённых Telegram-экспертов как живые сущности.
 
 ---
 
-## Документационный долг
+## Документационный статус
 
-Следующие файлы **не содержат** упоминаний `MODEL_VIDEO_PRO` / `MODEL_VIDEO_FLASH`, хотя по правилам проекта (см. `docs/DOCUMENTATION_MAP.md`, секция "Изменения в моделях") должны:
+Ранее здесь был долг: `MODEL_VIDEO_PRO` / `MODEL_VIDEO_FLASH` были описаны не во всех SSOT-документах. На 2026-04-27 этот долг закрыт.
 
-| Файл | Что отсутствует |
-|------|----------------|
-| `.env.example` | Нет `MODEL_VIDEO_PRO` и `MODEL_VIDEO_FLASH` (env vars без документации) |
-| `CLAUDE.md` (корень) | Секция "Current Production Models" не включает Video модели |
-| `backend/CLAUDE.md` | Секция "Models" (Configuration) не включает Video модели |
-| `docs/architecture/pipeline.md` | Таблица "Model Configuration (Env Vars)" не включает Video модели |
+| Файл | Статус |
+|------|--------|
+| `.env.example` | Содержит `MODEL_VIDEO_PRO=gemini-3.1-pro-preview` и `MODEL_VIDEO_FLASH=gemini-3-flash-preview` |
+| `CLAUDE.md` (корень) | Секция "Current Production Models" включает Video модели |
+| `backend/CLAUDE.md` | Сервисная таблица и Configuration включают Video модели |
+| `docs/architecture/pipeline.md` | Vertex notes фиксируют замену `gemini-3-pro-preview` на `gemini-3.1-pro-preview` |
+| `docs/architecture/video-hub-service.md` | Architecture SSOT содержит Video Hub model table |
 
-**Примечание:** Модели описаны только в `docs/architecture/video-hub-service.md` (специализированный SSOT) и в `backend/CLAUDE.md` в таблице сервисов (как часть описания `video_hub_service.py`). При обновлении этих моделей — добавить недостающие записи во все 4 файла выше.
+При следующей смене Video Hub моделей обновить все строки выше вместе с `backend/src/config.py`.
 
 ---
 

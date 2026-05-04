@@ -1,7 +1,7 @@
 # 🚀 Добавление нового эксперта (Полный алгоритм)
 
-**Версия:** 7.0 (Single Config + Manual Drift)
-**Дата:** 2026-02-17
+**Версия:** 7.2 (Single Config + Staged Fly DB Deploy)
+**Дата:** 2026-05-04
 **Статус:** Актуально
 
 ---
@@ -11,9 +11,9 @@
 ```
 1. Экспорт JSON из Telegram Desktop
 2. ./scripts/add_new_expert.sh <id> "<name>" <username> <json>
-3. UI интеграция (1 файл: expertConfig.ts)
+3. UI интеграция + roster doc (`expertConfig.ts`, `current-expert-roster.md`)
 4. (Опционально) Ручной запуск Drift Analysis
-5. Деплой: ./scripts/update_production_db.sh + git push
+5. Деплой: ./scripts/update_production_db.sh + targeted git commit/push
 ```
 
 ---
@@ -74,6 +74,7 @@
 Добавьте эксперта в **единственный файл конфигурации**: `frontend/src/config/expertConfig.ts`.
 
 > **Note:** Файл `ExpertSelectionBar.tsx` редактировать **НЕ НУЖНО**, он подтянет настройки автоматически.
+> Актуальный roster и группы фиксируются в `docs/architecture/current-expert-roster.md`.
 
 ```typescript
 // 1. Добавить в EXPERT_GROUPS (выбрать нужную категорию):
@@ -109,12 +110,65 @@ order: [..., '<expert_id>']
 ./scripts/update_production_db.sh
 
 # 2. Код на GitHub → автодеплой frontend
-git add .
+git add frontend/src/config/expertConfig.ts docs/architecture/current-expert-roster.md
 git commit -m "feat: add new expert <expert_id>"
 git push
 ```
 
-`update_production_db.sh` сам грузит `backend/.env`, запускает `embed_posts.py --continuous` и `run_drift_service.py`, так что и embeddings, и drift идут через Vertex AI.
+`update_production_db.sh` сам грузит `backend/.env`, запускает `embed_posts.py --continuous` и `run_drift_service.py`, так что и embeddings, и drift идут через Vertex AI. Перед заменой production DB скрипт создаёт remote backup, проверяет свободное место на `/app/data`, загружает новую БД во временный файл `/app/data/experts.db.tmp`, сверяет размер и только потом заменяет `/app/data/experts.db`.
+
+> **Важно про Fly:** `git push` сам по себе не меняет SQLite на mounted volume `/app/data/experts.db`. Он обновляет код и собранный frontend. Если менялись данные эксперта, обязательно обновите production DB через штатный DB deploy или отдельный targeted cleanup с backup.
+
+---
+
+## 🗑️ Удаление эксперта
+
+Удаление эксперта состоит из двух независимых частей: UI config и SQLite data. Нельзя считать задачу завершённой после одного `git push`.
+
+### 1. Уберите эксперта из UI
+
+В `frontend/src/config/expertConfig.ts` удалите `expert_id` из:
+
+```typescript
+EXPERT_GROUPS
+EXPERT_UI_CONFIG.displayNames
+EXPERT_UI_CONFIG.order
+```
+
+После этого обновите `docs/architecture/current-expert-roster.md`.
+
+### 2. Уберите данные из локальной SQLite
+
+Перед удалением сделайте backup `backend/data/experts.db`. Затем в одной транзакции очистите связанные строки:
+
+- `expert_metadata`
+- `posts`
+- `comments`
+- `links`
+- `comment_group_drift`
+- `post_embeddings`
+- `posts_fts`
+- `vec_posts`
+- `sync_state`
+
+`vec_posts` требует загруженный `sqlite-vec`. Если локальная версия `sqlite-vec` не удаляет строки из `vec0` direct `DELETE`, используйте проверенную пересборку virtual table или обновите `sqlite-vec`.
+
+### 3. Обновите production DB отдельно
+
+Для Fly production volume сначала создайте backup `/app/data/experts.db`, потом выполните targeted cleanup на `/app/data/experts.db` или загрузите свежую проверенную DB. Обычный deploy `vNNN` не удалит строки из mounted volume.
+
+### 4. Проверка после удаления
+
+```bash
+sqlite3 backend/data/experts.db "SELECT COUNT(*) FROM expert_metadata WHERE expert_id='<expert_id>';"
+sqlite3 backend/data/experts.db "PRAGMA foreign_key_check;"
+
+curl -sS https://experts-panel.fly.dev/api/v1/experts
+fly releases -a experts-panel
+fly status -a experts-panel
+```
+
+Для frontend sanity check скачайте production bundle и проверьте, что удалённого `expert_id`/display name там нет.
 
 ---
 

@@ -22,7 +22,7 @@ The frontend source code is located in `frontend/src/`:
 - **`App.tsx`**: Main layout controller. Manages global state and orchestrates parallel streams (Experts, Reddit, Video).
 - **`components/`**:
   - **`Sidebar.tsx`**: Left navigation panel with expert selection and search filters.
-  - **`QueryForm.tsx`**: Clean input area for user queries.
+  - **`QueryForm.tsx`**: Clean input area for user queries. Search toggles live in `Sidebar` (desktop) and the mobile expert drawer.
   - **`ExpertAccordion.tsx`**: Specialized view for expert and video insights (🎥 icons, "Video Archive" labels).
   - **`PostCard.tsx`**: Renders Telegram posts and Video segments (YouTube deep-links via `media_metadata`).
   - **`ExpertResponse.tsx`**: Renders the AI answer with source citations.
@@ -37,7 +37,7 @@ The frontend source code is located in `frontend/src/`:
   - **`pipelineAnimState.ts`**: Maps pipeline phases to character animations. `getAnimMix()` returns proportional type/read weights from active phases; `mixToKey()` buckets by ~20% to avoid excessive re-triggers. Search/analysis phases → read; synthesis phases → type.
   - **`useMediaQuery.ts`**: JS-based media query hook (used instead of CSS to prevent engine chunk loading on mobile).
 - **`config/`**:
-  - **`expertConfig.ts`**: Central configuration for expert groups, including the new **Knowledge Hub** (Video Hub).
+  - **`expertConfig.ts`**: Central configuration for expert groups, including the new **Knowledge Hub** (Video Hub). The current roster is documented in `../docs/architecture/current-expert-roster.md`.
 - **`services/`**: API client (`api.ts`) and error handling.
 - **`styles/`**: Tailwind directives in `index.css`.
 
@@ -47,7 +47,7 @@ The frontend source code is located in `frontend/src/`:
 The application uses a responsive two-pane layout:
 - **Left Sidebar**:
   - Contains **Search Options** (Top to bottom: "Embs&Keys", "Recent Only", "Reddit").
-  - Displays **Expert Groups** (Tech, Business) with "Select All" functionality.
+  - Displays **Expert Groups** (Tech, Tech & Business, Knowledge Hub) with "Select All" functionality.
   - Collapsible: Shows smart **Initials Avatars** when collapsed (e.g., "AI_Arch" -> "AA").
 - **Main Content**:
   - Top: Query Input and Progress.
@@ -88,7 +88,7 @@ The `Sidebar` updates these states, and `App` passes the current values to the A
 4. **SSE Stream** updates `progressEvents`. Each event carries `pipeline_state` — aggregate phase statuses across all experts.
 5. **ProgressSection** reads latest `pipeline_state`, groups phases into dynamic UI groups (visible/hidden based on query config).
 6. **Results** populate `expertResponses`, `redditResponse`, and `metaSynthesis`.
-6. **Meta-Synthesis** (if ≥2 experts) renders above expert accordions as `MetaSynthesisSection`.
+7. **Meta-Synthesis** (if ≥2 experts) renders above expert accordions as `MetaSynthesisSection`.
 
 ## 🛠️ Build and Development
 

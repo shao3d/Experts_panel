@@ -41,14 +41,18 @@
     *   **О чём:** Видео-сайдкар для анализа транскриптов. Логика "Digital Twin", 4 фазы, использование `gemini-3.1-pro-preview`.
     *   **Пример команды:** *"Изучи `docs/architecture/video-hub-service.md`, как мы собираем контекст из видео."*
 
+*   **📄 `current-expert-roster.md`**
+    *   **О чём:** Актуальный roster экспертов: UI-группы, источник истины `expertConfig.ts`/`expert_metadata`, production DB caveat для Fly volume, список удалённых экспертов.
+    *   **Пример команды:** *"Перед правками списка экспертов проверь `docs/architecture/current-expert-roster.md`."*
+
 ---
 
 ## 🛠️ 3. Инструкции (Действия): `docs/guides/`
 Сюда идем, когда нужно что-то **сделать руками** по четкому алгоритму.
 
 *   **📄 `add-expert.md`**
-    *   **О чём:** Пошаговый алгоритм добавления нового эксперта (скрипт -> дрифт -> UI).
-    *   **Пример команды:** *"Добавь нового эксперта строго по гайду `docs/guides/add-expert.md`."*
+    *   **О чём:** Пошаговый алгоритм добавления и удаления эксперта (скрипт -> дрифт -> UI -> Fly volume).
+    *   **Пример команды:** *"Добавь или убери эксперта строго по гайду `docs/guides/add-expert.md`."*
 
 *   **📄 `video-hub-operator.md`**
     *   **О чём:** Полный плейбук оператора Video Hub. Внешняя сегментация, сценарии склейки (Short/Long), импорт JSON, примечания про Vertex runtime и embeddings.
@@ -135,9 +139,10 @@
 
 | Что менял | Обнови |
 |-----------|--------|
-| Изменил `update_production_db.sh` | `CLAUDE.md` ("Cycle of Life" секция) |
+| Изменил `update_production_db.sh` | `CLAUDE.md` ("Cycle of Life" секция), при изменении DB-deploy semantics — `docs/guides/add-expert.md` |
 | Изменил `add_new_expert.sh` | `docs/guides/add-expert.md` |
 | Изменил `deploy_video.sh` | `docs/guides/video-hub-operator.md` |
+| Добавил/удалил эксперта или поменял `expert_metadata` | `docs/architecture/current-expert-roster.md`, `docs/guides/add-expert.md` |
 | Изменил `run_drift_service.py` или `analyze_specific_drift.py` | `docs/guides/add-expert.md`, `docs/guides/drift-analysis.md`, при необходимости `backend/CLAUDE.md` |
 | Изменил `embed_posts.py` | `CLAUDE.md` ("Cycle of Life"), `docs/guides/add-video.md`, при необходимости `backend/CLAUDE.md` |
 | Добавил/удалил сервис (файл в `services/`) | `backend/CLAUDE.md` (таблица сервисов), `CLAUDE.md` (Key Files) |
@@ -150,6 +155,7 @@
 | Новый компонент | `frontend/CLAUDE.md` (Project Structure) |
 | Изменил layout / UX | `frontend/CLAUDE.md` (Core Layout & UX) |
 | Новый стейт в App.tsx | `frontend/CLAUDE.md` (State Management) |
+| Изменил `frontend/src/config/expertConfig.ts` | `docs/architecture/current-expert-roster.md`, `docs/guides/add-expert.md`; если изменились группы/UX — `frontend/CLAUDE.md` |
 
 ### Удаление кода
 

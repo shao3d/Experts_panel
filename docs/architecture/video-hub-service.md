@@ -106,6 +106,7 @@ The Video Hub runs as a dedicated stream in `event_generator_parallel`.
 -   **Visuals**: Uses 🎥 icon and specialized `PostCard` rendering for YouTube links with `&t=XXXs` parameters.
 -   **Group**: Lives in "Knowledge Hub" expert group.
 -   **Display Order**: Video Hub appears **after all regular experts** but **before Reddit Community Insights** (last in `EXPERT_UI_CONFIG.order`).
+-   **Roster Boundary**: `video_hub` is a synthetic expert for video segments. It is not part of Telegram sync, and its original video authors must not be treated as active Telegram experts unless they also exist in `expert_metadata` and `expertConfig.ts`.
 
 ---
 

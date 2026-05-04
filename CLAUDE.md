@@ -31,7 +31,7 @@ Complete FastAPI backend with:
 - 11+ specialized services for different phases with Gemini integration
 - Real-time SSE streaming for progress tracking with enhanced error handling
 - Vertex AI LLM integration via the canonical client (`vertex_llm_client.py`) with a legacy compatibility shim
-- SQLite database with 10+ migration scripts (18MB active database)
+- SQLite database with 10+ migration scripts, precomputed embeddings, and a separate Fly.io mounted production volume
 - Production-ready Fly.io deployment with admin authentication
 - Dynamic expert loading from database with expert metadata centralization
 
@@ -70,7 +70,10 @@ React 18 + TypeScript frontend with:
 - `QueryForm.tsx` - User input form; search toggles live in the Sidebar on desktop and in the mobile expert drawer
 
 ### Database & Data Management
-**Location:** `backend/data/experts.db` (18MB active database)
+**Local location:** `backend/data/experts.db`
+**Production location:** `/app/data/experts.db` on the Fly.io `experts_data` volume
+
+The database size changes as posts, comments, embeddings, and Video Hub segments are added. Do not treat historical size notes as a freshness signal.
 
 - **Posts**: Expert channel content with metadata and expert isolation
 - **Comments**: Hierarchical comment structure with expert associations
@@ -111,10 +114,10 @@ This "Cycle of Life" script handles (9 steps):
 5.  **Drift Analysis**: Analyzes new comments for topic drift via **Vertex AI**.
 6.  **Check/Wake Machine**: Verifies Fly.io machine status and wakes it if needed.
 7.  **Remote Backup**: Creates backup of remote database on server.
-8.  **Upload Database**: Compresses and uploads the updated database to Fly.io.
+8.  **Upload Database**: Performs a staged Fly.io volume update: checks free space, uploads to `/app/data/experts.db.tmp`, verifies file size, then replaces `/app/data/experts.db` after the remote backup exists.
 9.  **Restart Application**: Restarts the app to load the new database.
 
-The script loads `backend/.env` before running the Python steps, so standalone embeddings and drift use the same Vertex credentials as the backend.
+The script loads `backend/.env` before running the Python steps, then overrides `DATABASE_URL` to the absolute local `backend/data/experts.db` path. Standalone embeddings and drift therefore use the same Vertex credentials as the backend while avoiding cwd-dependent SQLite paths.
 
 ### Database Operations
 For interactive database management (e.g., initializing, resetting, or listing tables), use the script at `backend/src/models/database`. Database backups and migrations can be performed using standard `sqlite3` CLI commands, pointing to the database file at `backend/data/experts.db`. Migration scripts are located in `backend/migrations/`.
