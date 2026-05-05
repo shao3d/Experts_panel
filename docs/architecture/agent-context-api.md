@@ -1,6 +1,6 @@
 # Agent Context API Spec
 
-**Status:** Accepted / AND-5 + AND-6 + AND-7 + AND-8 + AND-9 + AND-10 + AND-11 + AND-12 + AND-13 + AND-14 + AND-15 + AND-16 + AND-17 implemented / forced embedding search implemented
+**Status:** Accepted / AND-5 + AND-6 + AND-7 + AND-8 + AND-9 + AND-10 + AND-11 + AND-12 + AND-13 + AND-14 + AND-15 + AND-16 + AND-17 + AND-18 implemented / forced embedding search implemented
 **Decision:** `.haft/decisions/dec-20260504-b2539c3d.md`
 **Last updated:** 2026-05-06
 
@@ -27,6 +27,7 @@ Current state as of 2026-05-06:
 | AND-15 production Fly smoke mode | Done | `backend/scripts/agent_context_live_smoke.py` has an explicit external mode via `--api-url`; without that flag it still starts a local backend and ignores ambient `AGENT_CONTEXT_API_URL` to avoid accidental Fly calls. Production smoke passed on Fly with a separate production token for `refat,akimov`. |
 | AND-16 source external links V1 | Done | `source_bundle` now extracts HTTP(S) links from each selected `main_source` into `main_sources[].external_links` as author-supplied references with `fetch_status=not_fetched`. The API/CLI/subagent contract does not fetch, crawl, clone, or summarize external URLs unless a later explicit enrichment mode is requested. Local live dogfood for `neuraldeep` found 40 real external links with `bad_suffix_links_count=0`; production public endpoint verification on Fly version `338` found 99 real external links with `bad_suffix_links_count=0`. |
 | AND-17 panel-side `expert_digest` reduce | Done + deployed | Agent Context now supports `response_mode = "expert_digest"` for subagent calls. The backend still runs the same source discovery/comment-loading pipeline, then reduces selected posts and main-source comments into compact per-expert digests with provenance (`digest.source_refs`, `digest.key_signals`, `digest.comments_digest`, `digest.omitted_counts`) and omits raw `main_sources` from that response. `source_bundle` remains available for explicit raw evidence/audit/debug requests. Production Fly smoke passed for `refat` with `mode=expert_digest`, `selected_sources_count=17`, `source_refs=8`, and no `expert_digest_reduce_failed` warning. |
+| AND-18 production `expert_digest` BDD hardening | Done + deployed | Added production-live BDD tests that hit Fly.io directly with `AGENT_CONTEXT_PRODUCTION_LIVE=1` and no local backend/mocks. The first red run found that some LLM digest outputs return top-level signal lists without `position`; the backend now fills a safe fallback `position` instead of weakening the contract. Final production run passed for two-expert, three-expert, and digest-vs-source_bundle compactness scenarios. |
 | Forced embedding search for Agent Context | Done | Agent Context always forces Embs&Keys hybrid retrieval: CLI sends `use_super_passport=true`, API records `selection_used.use_super_passport=true`, and service prepares one query embedding for all selected experts before bounded parallel expert processing. UI toggle state does not apply to subagent/API calls. |
 | Production Fly exposure | Done for explicit smoke and default subagent target | `https://experts-panel.fly.dev/api/v1/agent/context` is callable with the separate production bearer token and large source-bundle budgets. The subagent must pass this Fly URL explicitly for real user research calls; localhost is only for explicit local smoke/debug. |
 
@@ -43,6 +44,7 @@ Implemented code paths:
 - `backend/tests/test_experts_panel_researcher_contract.py`
 - `backend/tests/test_experts_panel_researcher_dogfood.py`
 - `backend/tests/test_agent_context_live_smoke.py`
+- `backend/tests/test_agent_context_production_expert_digest.py`
 - `backend/tests/fixtures/experts_panel_researcher_source_bundle_sample.json`
 - `backend/scripts/agent_context_live_smoke.py`
 - `.claude/agents/experts_panel_researcher.md`
@@ -99,8 +101,17 @@ cd backend && AGENT_CONTEXT_API_TOKEN=<production token> .venv/bin/python script
 # processing_time_ms: 140105
 # warnings: []
 
-backend/.venv/bin/python -m pytest backend/tests/test_agent_context_api.py backend/tests/test_experts_api.py backend/tests/test_agent_context_cli.py backend/tests/test_agent_context_acceptance.py backend/tests/test_experts_panel_researcher_contract.py backend/tests/test_experts_panel_researcher_dogfood.py backend/tests/test_agent_context_live_smoke.py -q -o addopts=''
-# 68 passed, 2 warnings
+backend/.venv/bin/python -m pytest backend/tests/test_agent_context_api.py backend/tests/test_experts_api.py backend/tests/test_agent_context_cli.py backend/tests/test_agent_context_acceptance.py backend/tests/test_experts_panel_researcher_contract.py backend/tests/test_experts_panel_researcher_dogfood.py backend/tests/test_agent_context_live_smoke.py backend/tests/test_agent_context_production_expert_digest.py -q -o addopts=''
+# 68 passed, 3 skipped, 2 warnings
+
+backend/.venv/bin/python -m pytest backend/tests/test_agent_context_api.py backend/tests/test_agent_context_production_expert_digest.py -q -o addopts=''
+# 19 passed, 3 skipped, 2 warnings
+
+env AGENT_CONTEXT_PRODUCTION_LIVE=1 backend/.venv/bin/python -m pytest backend/tests/test_agent_context_production_expert_digest.py -q -o addopts=''
+# first run: 1 passed, 2 failed
+# failure: live Fly expert_digest sometimes had key_signals but no digest.position
+# fix: fallback position when the LLM digest reducer returns a top-level signal list or omits position
+# final run after deploy: 3 passed in 269.53s
 
 cd backend && .venv/bin/python -m src.cli.agent_context --query "Когда стоит использовать subagents?" --experts refat --response-mode expert_digest --api-url https://experts-panel.fly.dev/api/v1/agent/context
 # mode: expert_digest
@@ -1172,6 +1183,7 @@ backend/tests/test_agent_context_acceptance.py
 backend/tests/test_experts_panel_researcher_contract.py
 backend/tests/test_experts_panel_researcher_dogfood.py
 backend/tests/test_agent_context_live_smoke.py
+backend/tests/test_agent_context_production_expert_digest.py
 ```
 
 Minimum tests:
@@ -1198,6 +1210,7 @@ Minimum tests:
 - live local smoke helper can preflight, skip/fail/pass cleanly, use a free port, call CLI with explicit `--api-url`, and write a sanitized report;
 - external smoke helper mode can call an explicit production/Fly URL without starting a local backend;
 - default local smoke ignores ambient `AGENT_CONTEXT_API_URL`; subagent real-call instructions bypass the local default by always passing the Fly URL explicitly;
+- production-live expert_digest tests can hit Fly.io directly with `AGENT_CONTEXT_PRODUCTION_LIVE=1`, validate two/three-expert digest contracts, assert no raw `main_sources`/`comment_id` leakage, and compare compact digest transport against raw `source_bundle`;
 - existing `/api/v1/query` smoke still passes.
 
 ## 14. Acceptance Criteria Status
@@ -1230,6 +1243,7 @@ Backend source-bundle MVP status:
 | selected source external links are surfaced without automatic browsing | Done: `main_sources[].external_links` carries author-supplied references with `fetch_status=not_fetched`; CLI summary prints link counts; subagent instructions forbid opening/fetching/crawling/cloning/summarizing external URLs unless explicitly requested; local live dogfood for `neuraldeep` found 40 real external links across 11 selected sources, all `not_fetched`, with `bad_suffix_links_count=0`; production public endpoint verification on `https://experts-panel.fly.dev/api/v1/agent/context` found 99 real external links across 23 selected sources, all `not_fetched`, with `bad_suffix_links_count=0` |
 | subagent default response is compact enough for parent-agent synthesis | Done + deployed: `response_mode=expert_digest` returns `digest` fields with source refs/comment counts/omitted counts and clears raw `main_sources` from the transport response; Панэкс instructions use `--response-mode expert_digest` by default; production Fly smoke passed for `refat` |
 | raw evidence remains available for audit/debug | Done: `response_mode=source_bundle` remains the CLI/API default outside the subagent contract and is explicitly reserved in Панэкс instructions for raw evidence, audit/debug, and source-bundle smoke verification |
+| production BDD checks cover the deployed `expert_digest` contract | Done: `backend/tests/test_agent_context_production_expert_digest.py` passed against Fly.io with two-expert, three-expert, and digest-vs-source_bundle compactness scenarios |
 | existing UI/SSE query endpoint is unchanged | Done by route-preservation/source-bundle isolation tests |
 
 ## 15. Closed Design Decisions

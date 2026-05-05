@@ -903,6 +903,10 @@ def test_agent_context_expert_digest_accepts_top_level_signal_list():
 
     assert digest.key_signals[0].claim == "Use subagents for explicit bounded work."
     assert digest.key_signals[0].supporting_sources == ["refat:101"]
+    assert digest.position == (
+        "Refat has source-backed signals for this query, but the digest reducer "
+        "did not return a separate stance summary."
+    )
 
 
 def test_agent_context_external_link_extraction_handles_telegram_markdown_edges():

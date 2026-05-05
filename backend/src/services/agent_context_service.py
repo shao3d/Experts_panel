@@ -1052,7 +1052,7 @@ class AgentExpertDigestReducer:
                 f"{omitted_counts.main_sources} selected main sources omitted from compact digest"
             )
         return AgentExpertDigest(
-            position=self._clip(data.get("position"), 900),
+            position=self._digest_position(data=data, bundle=bundle),
             key_signals=key_signals,
             source_refs=source_refs,
             comments_digest=comments_digest,
@@ -1117,6 +1117,20 @@ class AgentExpertDigestReducer:
             if limit:
                 limits.append(limit)
         return limits
+
+    def _digest_position(
+        self,
+        *,
+        data: Dict[str, Any],
+        bundle: AgentExpertSourceBundle,
+    ) -> str:
+        position = self._clip(data.get("position"), 900)
+        if position:
+            return position
+        return (
+            f"{bundle.expert_name} has source-backed signals for this query, "
+            "but the digest reducer did not return a separate stance summary."
+        )
 
     def _clip(self, text: Any, max_chars: int) -> Optional[str]:
         if text is None:
