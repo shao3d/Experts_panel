@@ -1,6 +1,6 @@
 # Agent Context API Spec
 
-**Status:** Accepted / AND-5 + AND-6 + AND-7 + AND-8 + AND-9 + AND-10 + AND-11 + AND-12 + AND-13 + AND-14 implemented / AND-15 production smoke harness in progress
+**Status:** Accepted / AND-5 + AND-6 + AND-7 + AND-8 + AND-9 + AND-10 + AND-11 + AND-12 + AND-13 + AND-14 + AND-15 implemented
 **Decision:** `.haft/decisions/dec-20260504-b2539c3d.md`
 **Last updated:** 2026-05-05
 
@@ -24,8 +24,8 @@ Current state as of 2026-05-05:
 | AND-12 paid local live smoke | Done | Paid local smoke passed with the default `refat,akimov` query and returned a valid real `source_bundle`. Runtime defaults are intentionally large (`3600s` / `100000000` bytes) because all-expert source-bundle requests are naturally long and bulky. |
 | AND-13 bounded expert parallelism | Done | Agent Context now inherits the main pipeline's bounded expert parallelism pattern: selected experts run as async tasks behind `MAX_CONCURRENT_EXPERTS`, while response order stays aligned to the requested expert order. |
 | AND-14 all-experts paid local smoke | Done | Paid local smoke passed for the full MVP Telegram roster (`17` experts, no `video_hub`) with bounded parallelism, no warnings, and an `8.06MB` source_bundle response. |
-| AND-15 production Fly smoke mode | In progress | `backend/scripts/agent_context_live_smoke.py` now has an explicit external mode via `--api-url`; without that flag it still starts a local backend and ignores ambient `AGENT_CONTEXT_API_URL` to avoid accidental Fly calls. Live production smoke remains pending until the code is deployed with a separate production token. |
-| Production Fly exposure | Pending | Do not rely on production usage until subagent flow and production token/runtime gates are intentionally wired and smoke-tested. |
+| AND-15 production Fly smoke mode | Done | `backend/scripts/agent_context_live_smoke.py` has an explicit external mode via `--api-url`; without that flag it still starts a local backend and ignores ambient `AGENT_CONTEXT_API_URL` to avoid accidental Fly calls. Production smoke passed on Fly with a separate production token for `refat,akimov`. |
+| Production Fly exposure | Done for explicit smoke | `https://experts-panel.fly.dev/api/v1/agent/context` is callable with the separate production bearer token and large source-bundle budgets. The repo-local subagent default remains local; production calls must stay explicit. |
 
 Implemented code paths:
 
@@ -85,6 +85,14 @@ cd backend && .venv/bin/python scripts/agent_context_live_smoke.py --require-liv
 # warnings: []
 # no lingering local backend process observed after helper shutdown
 
+cd backend && AGENT_CONTEXT_API_TOKEN=<production token> .venv/bin/python scripts/agent_context_live_smoke.py --require-live --api-url https://experts-panel.fly.dev/api/v1/agent/context --experts refat,akimov --timeout 3600
+# passed: source_bundle_valid
+# target_mode: external
+# selected_source_counts: refat=54, akimov=53
+# response_bytes: 1125055
+# processing_time_ms: 40473
+# warnings: []
+
 backend/.venv/bin/python -m pytest backend/tests/test_agent_context_api.py backend/tests/test_experts_api.py backend/tests/test_agent_context_cli.py backend/tests/test_agent_context_acceptance.py backend/tests/test_experts_panel_researcher_contract.py backend/tests/test_experts_panel_researcher_dogfood.py backend/tests/test_agent_context_live_smoke.py -q -o addopts=''
 # 58 passed, 2 warnings
 
@@ -101,9 +109,9 @@ cd backend
 .venv/bin/python -m src.cli.agent_context --query "AI agents for sales" --json
 ```
 
-Important boundary: production Fly exposure is still pending until a deployed
-`https://experts-panel.fly.dev/api/v1/agent/context` run passes with the
-separate production token. This implementation still does not build a Reddit
+Important boundary: production Fly exposure is proven only for an explicit
+manual `refat,akimov` smoke. It does not make Fly the default subagent target,
+does not prove all-experts production runtime, and does not build a Reddit
 source packet or Video Hub source-bundle adapter.
 
 ---
@@ -912,7 +920,7 @@ In external mode the helper:
 
 ### Step 5.7 - Production Fly Smoke
 
-Status: **Pending.**
+Status: **Done in AND-15 for the first explicit production smoke.**
 
 First production smoke scope is intentionally narrow:
 
@@ -931,12 +939,31 @@ Production prerequisites:
 - verify `/health`;
 - run the explicit external smoke command above.
 
-Do not switch the repo-local subagent default to Fly until this production
-smoke has passed. The safe default remains local CLI usage.
+Measured production result on 2026-05-05:
+
+```text
+status = passed
+reason = source_bundle_valid
+target_mode = external
+selected_source_counts = refat=54, akimov=53
+response_bytes = 1125055
+processing_time_ms = 40473
+warnings = []
+Fly release = v333
+GitHub deploy run = 25389631513, completed success
+```
+
+The first attempt was intentionally discarded as non-proof: it ran while the
+GitHub deploy was still in progress and hit the previous production image,
+which returned `HTTP 405` for `POST /api/v1/agent/context`. The accepted proof is
+the rerun after the deploy completed and the production token was rotated.
+
+Do not switch the repo-local subagent default to Fly automatically. The safe
+default remains local CLI usage; production calls require explicit `--api-url`.
 
 ### Step 6 - Verification
 
-Status: **Partially done. Backend API/source-bundle, CLI wrapper, BDD acceptance tests, repo-local subagent contract tests, local dogfood tests, live smoke helper tests, and paid local live smoke pass. Production verification is still pending.**
+Status: **Partially done. Backend API/source-bundle, CLI wrapper, BDD acceptance tests, repo-local subagent contract tests, local dogfood tests, live smoke helper tests, paid local live smoke, all-experts local smoke, and first production Fly smoke pass. All-experts production smoke remains unproven.**
 
 Required checks:
 
@@ -998,16 +1025,17 @@ Backend source-bundle MVP status:
 | `selection_used` is always present | Done |
 | all/custom/group expert selection works | Done |
 | Reddit is off by default and separate when enabled | Partially done: Reddit remains off/default rejected in MVP; separate packet is not implemented yet |
-| production exposure is blocked until auth, rate, timeout, and audit logging exist | Partially done: auth/rate/timeout/size gates exist; production exposure still pending |
+| production exposure is blocked until auth, rate, timeout, and audit logging exist | Done for explicit smoke: auth/rate/timeout/size gates exist, production bearer token is separate, Fly `/health` passed, and external `refat,akimov` source_bundle smoke passed |
 | local CLI wrapper works before production Fly usage is enabled | Done |
 | BDD acceptance checks cover the CLI -> API -> source_bundle boundary | Done |
 | first subagent is repo-local and explicit-only | Done |
 | local dogfood can evaluate source_bundle JSON through the Signals frame | Done |
 | live local smoke helper verifies real local CLI/API readiness without Fly | Done |
-| external smoke helper can target production Fly only when explicitly requested | Done in harness: `--api-url` enables `target_mode = "external"` and default local mode ignores ambient `AGENT_CONTEXT_API_URL`; live Fly proof is pending |
+| external smoke helper can target production Fly only when explicitly requested | Done: `--api-url` enables `target_mode = "external"`, default local mode ignores ambient `AGENT_CONTEXT_API_URL`, and live Fly smoke passed |
 | Agent Context inherits bounded parallel expert processing | Done: selected experts run behind `MAX_CONCURRENT_EXPERTS`, response order stays stable |
 | first paid local live smoke returns a valid real source_bundle | Done: after bounded parallelism, default `refat,akimov` query passed with `refat=65`, `akimov=46`, `response_bytes=1314208`, `processing_time_ms=94223` |
 | all-experts paid local smoke returns a valid real source_bundle | Done: full MVP Telegram roster passed with `17` experts, `response_bytes=8060607`, `processing_time_ms=217602`, no warnings |
+| first production Fly smoke returns a valid real source_bundle | Done: explicit `refat,akimov` production smoke passed with `response_bytes=1125055`, `processing_time_ms=40473`, no warnings |
 | existing UI/SSE query endpoint is unchanged | Done by route-preservation/source-bundle isolation tests |
 
 ## 15. Closed Design Decisions
