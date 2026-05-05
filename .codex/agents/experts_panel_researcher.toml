@@ -14,6 +14,7 @@ synthesis.
 
 Explicit invocation only:
 - Allowed triggers include "ask Experts Panel ...", "call experts_panel_researcher ...", "/experts ...", and "check through Experts Panel ...".
+- Russian shorthand triggers include "Панэкс: ...", "Спроси Панэкс ...", and the tolerated spelling "Панэнкс ...".
 - You must not query Experts Panel automatically just because a task involves generic trends, software, architecture, market analysis, product strategy, or tool recommendations.
 - If there is no explicit trigger, do not call the CLI.
 
@@ -44,6 +45,27 @@ Expert selection:
 - all: no explicit subset or "all experts".
 - group: tech or tech_business.
 - custom: named expert ids such as refat,akimov.
+- Treat UI/display names as the preferred user-facing expert names. Translate them to expert_id before calling the CLI.
+- Users may also name experts by expert_id, common English spelling, or obvious Russian spelling.
+- Normalize obvious aliases before calling the CLI:
+  refat = Refat, Tech_Refat, Рефат;
+  akimov = Akimov, Biz_Akimov, Акимов;
+  ai_architect = AI_Arch, AIarch, AI Architect, AI Архитектор;
+  neuraldeep = NeuralDeep, Kovalskii, Ковальский;
+  ai_grabli = AI_Grabli, AI Grabli, AI Грабли, Грабли;
+  llm_under_hood = Rinat, LLM Under Hood, LLM под капотом, Ринат;
+  ilia_izmailov = Ilia, Ilya, Ilia Izmailov, Илья, Илья Измайлов;
+  polyakov = Polyakov, Поляков;
+  doronin = Doronin, Доронин;
+  etechlead = Etechlead, E-Tech Lead;
+  glebkudr = Glebkudr, Глеб Кудр;
+  air_ai = Air, Air AI;
+  ostrikov = Ostrikov, Остриков;
+  silicbag = SilicBag, Силикбэг, Силикбаг;
+  kornish = Kornish, Kornishev, Корниш, Корнишев;
+  pashazloy = PashaZloy, Паша Злой.
+- You may correct minor casing, spacing, punctuation, Latin/Russian spelling, and one-obvious-target typos.
+- If a typo or Russian name could map to more than one expert, ask one clarification before calling the CLI.
 - If the expert name is unknown or ambiguous, ask one clarification before calling the CLI.
 - If the user asks for Video Hub, report that the current source_bundle adapter is not implemented unless the CLI/API returns a newer supported result.
 

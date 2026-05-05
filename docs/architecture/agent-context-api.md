@@ -18,7 +18,7 @@ Current state as of 2026-05-05:
 | AND-6 real `source_bundle` pipeline | Done | The endpoint now returns selected source bundles instead of the placeholder `experts=[]` response. It runs retrieval, Map, MEDIUM scoring, HIGH resolve, source selection, and main-source comment loading. |
 | AND-7 local CLI wrapper | Done | `src.cli.agent_context` calls the endpoint over HTTP with safe source-bundle defaults, keeps the token in the Authorization header, supports all/group/custom selection, and prints agent-readable summaries or raw JSON. |
 | AND-8 BDD acceptance hardening | Done | In-process CLI -> HTTP -> FastAPI -> `source_bundle` acceptance tests cover explicit expert selection, safe defaults, no full synthesis, source evidence shape, token boundary, and actionable API failures. |
-| AND-9 repo-local `experts_panel_researcher` subagent contract | Done | Repo-local Claude and Codex agent instructions exist, stay read-only, require explicit triggers, call the Agent Context CLI/wrapper only, pin real user calls to the production Fly.io endpoint, and return practitioner-opinion intelligence using the Signals frame. |
+| AND-9 `experts_panel_researcher` / `Панэкс` subagent contract | Done | Repo-local Claude/Codex agent instructions and the user-level Codex shortcut exist, stay read-only, require explicit triggers, call the Agent Context CLI/wrapper only, pin real user calls to the production Fly.io endpoint, translate UI/Russian expert names to `expert_id`, and return practitioner-opinion intelligence using the Signals frame. |
 | AND-10 local dogfood for `experts_panel_researcher` | Done | A synthetic source_bundle fixture and dogfood tests verify that CLI JSON is synthesis input, readiness failures are actionable, local smoke remains explicit-only, and the six-section Signals frame is usable. |
 | AND-11 live local dogfood smoke | Done | `backend/scripts/agent_context_live_smoke.py` can preflight local readiness, start Experts Panel on a free localhost port, call the CLI with explicit `--api-url`, validate `source_bundle`, and write a sanitized report with `passed`/`skipped`/`failed` status. |
 | AND-12 paid local live smoke | Done | Paid local smoke passed with the default `refat,akimov` query and returned a valid real `source_bundle`. Runtime defaults are intentionally large (`3600s` / `100000000` bytes) because all-expert source-bundle requests are naturally long and bulky. |
@@ -131,7 +131,7 @@ Target shape:
 
 ```text
 Andrey
-  -> "Спроси Панель Экспертов по Refat и Akimov..."
+  -> "Панэкс: спроси Refat и Akimov..."
 
 Main Codex / Claude Code
   -> calls explicit-only experts_panel_researcher
@@ -167,6 +167,9 @@ The integration must be explicit-only.
 
 Allowed triggers:
 
+- "Панэкс: ..."
+- "Спроси Панэкс ..."
+- tolerated spelling: "Панэнкс ..."
 - "Спроси Панель Экспертов ..."
 - "вызови experts_panel_researcher ..."
 - "/experts ..."
@@ -215,6 +218,14 @@ MCP can be added later as an adapter over the same internal service after the RE
 
 Use one subagent with parameterized expert selection. Do not create separate subagents per expert or group.
 
+User-facing expert names should follow the UI labels from
+`docs/architecture/current-expert-roster.md` / `frontend/src/config/expertConfig.ts`.
+The subagent translates those labels, common English variants, and obvious
+Russian spellings into backend `expert_id` values before calling the CLI. Minor
+case, spacing, punctuation, Latin/Russian spelling, and one-obvious-target typos
+may be corrected by the subagent. If a name or typo could map to more than one
+expert, the subagent must ask one clarification before calling the API.
+
 Supported selection modes:
 
 | User phrase | API interpretation |
@@ -223,7 +234,7 @@ Supported selection modes:
 | "по технарям" / "Tech" | `expert_scope = "group"`, `expert_group = "tech"` |
 | "по бизнесовым" / "Tech & Business" | `expert_scope = "group"`, `expert_group = "tech_business"` |
 | "по видео" / "Video Hub" | `expert_scope = "custom"`, `expert_filter = ["video_hub"]` |
-| named experts | `expert_scope = "custom"`, `expert_filter = [...]` |
+| named experts using UI labels, Russian names, or `expert_id` | `expert_scope = "custom"`, `expert_filter = [...]` |
 | "только Reddit/community" | `expert_scope = "none"`, `include_reddit = true` |
 
 The current active roster source is `docs/architecture/current-expert-roster.md`.
@@ -804,7 +815,10 @@ must not fall back to random `localhost` services.
 Add durable instructions for Codex/Claude Code integration:
 
 - explicit triggers only;
-- parse expert selection;
+- recognize `Панэкс` / `Спроси Панэкс` as Russian shorthand triggers, with `Панэнкс` tolerated as a spelling variant;
+- parse expert selection using UI/display labels first, then translate to backend `expert_id`;
+- accept obvious Russian expert names and correct only one-obvious-target typos;
+- ask one clarification for unknown or ambiguous expert names before calling the CLI;
 - default `response_mode = source_bundle`;
 - print `selection_used`;
 - return practitioner-opinion intelligence using the Signals frame:
@@ -815,7 +829,11 @@ Add durable instructions for Codex/Claude Code integration:
 - never edit repo files;
 - never broaden scope silently.
 
-The first subagent lives in repo-local Claude/Codex configuration, next to this spec and the CLI wrapper. A global user-level subagent may be added later as a stable shortcut, but it must keep the production Fly URL pinned for real research calls.
+The first subagent lives in repo-local Claude/Codex configuration, next to this
+spec and the CLI wrapper. A global user-level Codex subagent also exists as a
+stable shortcut at `~/.codex/agents/experts_panel_researcher.toml`; it uses the
+canonical local Experts Panel backend checkout as the CLI wrapper host and keeps
+the production Fly URL pinned for real research calls.
 
 ### Step 5.5 - Local Dogfood
 
@@ -1094,5 +1112,5 @@ These decisions close the remaining open questions for the MVP implementation:
 
 1. `CONTEXT` association uses explicit resolve provenance only. If provenance is missing, return the linked item in `unattached_linked_context` with a warning.
 2. Build and use a local CLI wrapper before enabling production Fly usage.
-3. Keep the first `experts_panel_researcher` subagent repo-local, but pin real research calls to the production Fly.io endpoint so the same agent contract can be copied into other repositories. Add a global user-level shortcut only after the API and wrapper contract are stable.
+3. Keep the first `experts_panel_researcher` subagent repo-local, but pin real research calls to the production Fly.io endpoint so the same agent contract can be copied into other repositories. Add the user-level Codex shortcut as `Панэкс` only after the API and wrapper contract are stable.
 4. Treat external URLs found in selected source posts as references-only in default `source_bundle`. Surface them under `main_sources[].external_links` but do not fetch or summarize them without an explicit future enrichment mode.

@@ -24,6 +24,10 @@ Important: a normal `git push` updates code and the built frontend, but it does 
 
 These are frontend groups. Some backend `display_name` values differ; the UI label below is the effective sidebar label after `expertConfig.ts` mapping.
 
+Agent-facing selection uses these UI labels as the preferred human names.
+`Панэкс` / `experts_panel_researcher` translates UI labels and obvious Russian
+spellings to backend `expert_id` values before calling the Agent Context CLI.
+
 ### Tech
 
 | expert_id | UI label | Telegram channel |

@@ -116,6 +116,9 @@ def test_agents_require_explicit_triggers_and_expert_selection_clarification():
         "experts_panel_researcher",
         "/experts",
         "check through experts panel",
+        "панэкс",
+        "спроси панэкс",
+        "панэнкс",
     ]:
         assert trigger in normalized
 
@@ -127,6 +130,34 @@ def test_agents_require_explicit_triggers_and_expert_selection_clarification():
     assert "group" in combined
     assert "custom" in combined
     assert "ask one clarification" in normalized
+
+
+def test_agents_normalize_human_expert_names_but_ask_on_ambiguity():
+    combined = "\n".join([_read(CLAUDE_AGENT_PATH), _codex_agent_config()["developer_instructions"]])
+    normalized = _normalize(combined)
+
+    for alias in [
+        "refat",
+        "tech_refat",
+        "рефат",
+        "akimov",
+        "biz_akimov",
+        "акимов",
+        "llm под капотом",
+        "ринат",
+        "илья измайлов",
+        "силикбаг",
+        "корнишев",
+    ]:
+        assert alias in normalized
+
+    assert "ui/display name" in normalized
+    assert "preferred user-facing expert names" in normalized
+    assert "translate them to expert_id before calling the cli" in normalized
+    assert "obvious russian spelling" in normalized
+    assert "one-obvious-target typos" in normalized
+    assert "could map to more than one expert" in normalized
+    assert "ask one clarification before calling the cli" in normalized
 
 
 def test_agents_pin_production_fly_endpoint_for_real_calls():
@@ -177,7 +208,12 @@ def test_spec_records_and9_and_signals_frame_contract():
     spec = _read(SPEC_PATH)
     normalized = _normalize(spec)
 
-    assert "AND-9 repo-local `experts_panel_researcher` subagent contract" in spec
+    assert "AND-9 `experts_panel_researcher` / `Панэкс` subagent contract" in spec
+    assert "Панэкс" in spec
+    assert "Панэнкс" in spec
+    assert "UI/display labels" in spec
+    assert "Russian expert names" in spec
+    assert "translate to backend `expert_id`" in spec
     assert "practitioner-opinion intelligence" in normalized
     for section in SIGNALS_FRAME_SECTIONS:
         assert section in spec
