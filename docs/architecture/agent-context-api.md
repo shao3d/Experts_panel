@@ -91,9 +91,10 @@ cd backend && .venv/bin/python scripts/agent_context_live_smoke.py --require-liv
 cd backend && AGENT_CONTEXT_API_TOKEN=<production token> .venv/bin/python scripts/agent_context_live_smoke.py --require-live --api-url https://experts-panel.fly.dev/api/v1/agent/context --experts refat,akimov --timeout 3600
 # passed: source_bundle_valid
 # target_mode: external
-# selected_source_counts: refat=54, akimov=53
-# response_bytes: 1125055
-# processing_time_ms: 40473
+# selection_used.use_super_passport: true
+# selected_source_counts: refat=21, akimov=19
+# response_bytes: 438663
+# processing_time_ms: 140105
 # warnings: []
 
 backend/.venv/bin/python -m pytest backend/tests/test_agent_context_api.py backend/tests/test_experts_api.py backend/tests/test_agent_context_cli.py backend/tests/test_agent_context_acceptance.py backend/tests/test_experts_panel_researcher_contract.py backend/tests/test_experts_panel_researcher_dogfood.py backend/tests/test_agent_context_live_smoke.py -q -o addopts=''
@@ -947,24 +948,25 @@ Production prerequisites:
 - verify `/health`;
 - run the explicit external smoke command above.
 
-Measured production result on 2026-05-05:
+Measured production result on 2026-05-05 after forced Embs&Keys retrieval
+deployed:
 
 ```text
 status = passed
 reason = source_bundle_valid
 target_mode = external
-selected_source_counts = refat=54, akimov=53
-response_bytes = 1125055
-processing_time_ms = 40473
+selection_used.use_super_passport = true
+selected_source_counts = refat=21, akimov=19
+response_bytes = 438663
+processing_time_ms = 140105
 warnings = []
-Fly release = v333
-GitHub deploy run = 25389631513, completed success
+Fly release = v336
+GitHub deploy run = 25391387130, completed success
 ```
 
-The first attempt was intentionally discarded as non-proof: it ran while the
-GitHub deploy was still in progress and hit the previous production image,
-which returned `HTTP 405` for `POST /api/v1/agent/context`. The accepted proof is
-the rerun after the deploy completed and the production token was rotated.
+Earlier production smoke evidence before forced Embs&Keys retrieval used Fly
+release `v333`; the accepted current proof is the rerun after commit `5023e56`
+deployed and the production token was rotated.
 
 Do not switch the repo-local subagent default to Fly automatically. The safe
 default remains local CLI usage; production calls require explicit `--api-url`.
@@ -1044,7 +1046,7 @@ Backend source-bundle MVP status:
 | Agent Context inherits bounded parallel expert processing | Done: selected experts run behind `MAX_CONCURRENT_EXPERTS`, response order stays stable |
 | first paid local live smoke returns a valid real source_bundle | Done: after forced Embs&Keys retrieval, default `refat,akimov` query passed with `refat=42`, `akimov=67`, `response_bytes=1081305`, `processing_time_ms=57321`, no warnings |
 | all-experts paid local smoke returns a valid real source_bundle | Done: after forced Embs&Keys retrieval, full MVP Telegram roster passed with `17` experts, `response_bytes=7462364`, `processing_time_ms=275622`, no warnings |
-| first production Fly smoke returns a valid real source_bundle | Done: explicit `refat,akimov` production smoke passed with `response_bytes=1125055`, `processing_time_ms=40473`, no warnings |
+| first production Fly smoke returns a valid real source_bundle | Done after forced Embs&Keys retrieval: explicit `refat,akimov` production smoke passed with `selection_used.use_super_passport=true`, `response_bytes=438663`, `processing_time_ms=140105`, no warnings |
 | subagent/CLI/API retrieval always uses embeddings | Done: CLI sends `use_super_passport=true`, API normalizes `selection_used.use_super_passport=true`, and service passes a precomputed query embedding into `HybridRetrievalService` for every selected expert |
 | existing UI/SSE query endpoint is unchanged | Done by route-preservation/source-bundle isolation tests |
 
