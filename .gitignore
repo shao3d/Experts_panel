@@ -4,6 +4,17 @@
 .clauderc
 claude_code_zai_env.sh
 .claude/
+!.claude/
+.claude/*
+!.claude/agents/
+.claude/agents/*
+!.claude/agents/experts_panel_researcher.md
+.codex/
+!.codex/
+.codex/*
+!.codex/agents/
+.codex/agents/*
+!.codex/agents/experts_panel_researcher.toml
 .specify/
 *.pem
 *.key

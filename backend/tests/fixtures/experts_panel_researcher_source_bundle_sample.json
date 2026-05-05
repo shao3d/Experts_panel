@@ -1,0 +1,187 @@
+{
+  "request_id": "req_dogfood_sample",
+  "mode": "source_bundle",
+  "query": "How are practitioners using AI agents for sales workflows?",
+  "selection_used": {
+    "expert_scope": "custom",
+    "expert_group": null,
+    "expert_filter": [
+      "refat",
+      "akimov"
+    ],
+    "include_reddit": false,
+    "include_main_source_comments": true,
+    "include_drift_comment_groups": false,
+    "synthesis_level": "none",
+    "use_recent_only": false
+  },
+  "experts": [
+    {
+      "expert_id": "refat",
+      "expert_name": "Refat",
+      "channel_username": "refat_channel",
+      "selected_sources_count": 2,
+      "unattached_linked_context": [
+        {
+          "telegram_message_id": 9202,
+          "source_key": "refat:9202",
+          "source_role": "context",
+          "relevance": "CONTEXT",
+          "reason": "Related GTM note without direct provenance",
+          "content": "Refat separately mentions that AI agents need CRM handoff discipline before they become useful for sales teams.",
+          "created_at": "2026-04-11T11:30:00",
+          "author_name": "Refat",
+          "is_original": false,
+          "parent_source_key": null,
+          "linked_from_source_keys": null
+        }
+      ],
+      "main_sources": [
+        {
+          "telegram_message_id": 9101,
+          "source_key": "refat:9101",
+          "source_role": "main",
+          "relevance": "HIGH",
+          "reason": "Directly discusses AI agents as GTM and sales workflow helpers",
+          "content": "Refat frames AI agents for sales as GTM workflow support: lead qualification, first-touch research, and CRM-ready summaries. He warns that teams still need human ownership around offer, targeting, and handoff quality.",
+          "created_at": "2026-04-10T12:00:00",
+          "author_name": "Refat",
+          "is_original": true,
+          "score": null,
+          "score_reason": null,
+          "linked_context": [
+            {
+              "telegram_message_id": 9102,
+              "source_key": "refat:9102",
+              "source_role": "context",
+              "relevance": "CONTEXT",
+              "reason": "Adds CRM handoff detail",
+              "content": "A linked Refat note says sales agents fail when they do not write structured CRM notes and next-step tasks.",
+              "created_at": "2026-04-10T13:00:00",
+              "author_name": "Refat",
+              "is_original": false,
+              "parent_source_key": "refat:9101",
+              "linked_from_source_keys": [
+                "refat:9101"
+              ]
+            }
+          ],
+          "comments": {
+            "author_comments": [
+              {
+                "comment_id": 101,
+                "comment_text": "Author clarification: do not automate pitch strategy before the ICP and offer are clear.",
+                "author_name": "Refat",
+                "created_at": "2026-04-10T15:00:00",
+                "updated_at": "2026-04-10T15:00:00"
+              }
+            ],
+            "community_comments": [
+              {
+                "comment_id": 102,
+                "comment_text": "A reader asks whether this works for low-volume enterprise sales; Refat answers that it works better as research support than full autopilot.",
+                "author_name": "Reader",
+                "created_at": "2026-04-10T16:00:00",
+                "updated_at": "2026-04-10T16:00:00"
+              }
+            ]
+          }
+        },
+        {
+          "telegram_message_id": 9103,
+          "source_key": "refat:9103",
+          "source_role": "main",
+          "relevance": "MEDIUM",
+          "reason": "Secondary source on GTM automation quality",
+          "content": "Refat notes that GTM automation creates value only when it improves sales preparation quality rather than just increasing outbound volume.",
+          "created_at": "2026-04-09T12:00:00",
+          "author_name": "Refat",
+          "is_original": true,
+          "score": 0.91,
+          "score_reason": "Complements the high source with a quality-over-volume constraint",
+          "linked_context": [],
+          "comments": {
+            "author_comments": [],
+            "community_comments": []
+          }
+        }
+      ],
+      "no_results_reason": null
+    },
+    {
+      "expert_id": "akimov",
+      "expert_name": "Akimov",
+      "channel_username": "akimov_channel",
+      "selected_sources_count": 1,
+      "unattached_linked_context": [],
+      "main_sources": [
+        {
+          "telegram_message_id": 8101,
+          "source_key": "akimov:8101",
+          "source_role": "main",
+          "relevance": "HIGH",
+          "reason": "Discusses AI agents for operations-heavy sales workflows",
+          "content": "Akimov frames AI agents for sales as operations automation: pulling account context, drafting follow-up tasks, updating CRM fields, and reducing manual admin work. His emphasis is less on GTM strategy and more on reliable process execution.",
+          "created_at": "2026-04-08T12:00:00",
+          "author_name": "Akimov",
+          "is_original": true,
+          "score": null,
+          "score_reason": null,
+          "linked_context": [
+            {
+              "telegram_message_id": 8102,
+              "source_key": "akimov:8102",
+              "source_role": "context",
+              "relevance": "CONTEXT",
+              "reason": "Adds operational checklist detail",
+              "content": "The linked context says sales automation should keep clear audit trails for every CRM update.",
+              "created_at": "2026-04-08T13:00:00",
+              "author_name": "Akimov",
+              "is_original": false,
+              "parent_source_key": "akimov:8101",
+              "linked_from_source_keys": [
+                "akimov:8101"
+              ]
+            }
+          ],
+          "comments": {
+            "author_comments": [
+              {
+                "comment_id": 201,
+                "comment_text": "Author clarification: the agent should create tasks and notes, not silently change opportunity stages.",
+                "author_name": "Akimov",
+                "created_at": "2026-04-08T15:00:00",
+                "updated_at": "2026-04-08T15:00:00"
+              }
+            ],
+            "community_comments": []
+          }
+        }
+      ],
+      "no_results_reason": null
+    }
+  ],
+  "reddit": null,
+  "pipeline_used": [
+    "expert_selection",
+    "retrieval",
+    "map_relevance",
+    "medium_scoring_if_needed",
+    "resolve_high_sources_if_needed",
+    "source_selection",
+    "main_source_comments"
+  ],
+  "pipeline_skipped": [
+    "reduce_answer_synthesis",
+    "language_validation",
+    "drift_comment_group_scoring",
+    "comment_synthesis",
+    "cross_expert_meta_synthesis",
+    "reddit_synthesis"
+  ],
+  "warnings": [
+    "refat:9202: linked_context_without_provenance",
+    "dogfood_sample: synthetic fixture; use only for local Signals frame evaluation"
+  ],
+  "processing_time_ms": 42
+}

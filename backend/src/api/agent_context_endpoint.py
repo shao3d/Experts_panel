@@ -5,10 +5,13 @@ import time
 from typing import Iterable
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from sqlalchemy.orm import Session
 
 from .dependencies import verify_agent_context_token
 from .models import AgentContextRequest, AgentContextResponse, SelectionUsed
 from .. import config
+from ..models.base import SessionLocal
+from ..services.agent_context_service import AgentContextService
 
 
 AGENT_CONTEXT_EXPERT_GROUPS = {
@@ -42,23 +45,17 @@ _KNOWN_AGENT_CONTEXT_EXPERT_IDS = {
 } | {"video_hub"}
 
 _SUPPORTED_EXPERT_SCOPES = {"all", "group", "custom", "none"}
-_PIPELINE_SKIPPED_FOR_SKELETON = [
-    "expert_selection",
-    "retrieval",
-    "map_relevance",
-    "medium_scoring_if_needed",
-    "resolve_high_sources_if_needed",
-    "source_selection",
-    "main_source_comments",
-    "reduce_answer_synthesis",
-    "language_validation",
-    "drift_comment_group_scoring",
-    "comment_synthesis",
-    "cross_expert_meta_synthesis",
-    "reddit_synthesis",
-]
 
 router = APIRouter(prefix="/api/v1/agent", tags=["agent-context"])
+
+
+def get_db():
+    """Database dependency for Agent Context API requests."""
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 def _normalize_expert_ids(expert_ids: Iterable[str] | None) -> list[str]:
@@ -165,6 +162,24 @@ def _build_selection_used(agent_request: AgentContextRequest) -> SelectionUsed:
     )
 
 
+def _resolve_expert_ids(selection_used: SelectionUsed) -> list[str]:
+    if selection_used.expert_scope == "all":
+        expert_ids: list[str] = []
+        for group_expert_ids in AGENT_CONTEXT_EXPERT_GROUPS.values():
+            expert_ids.extend(group_expert_ids)
+        return _normalize_expert_ids(expert_ids)
+
+    return list(selection_used.expert_filter or [])
+
+
+def _reject_unsupported_video_hub(expert_ids: list[str]) -> None:
+    if "video_hub" in expert_ids:
+        raise HTTPException(
+            status_code=status.HTTP_501_NOT_IMPLEMENTED,
+            detail="video_hub source_bundle is not implemented for the Agent Context API MVP",
+        )
+
+
 def _enforce_response_size(response: AgentContextResponse) -> None:
     """Fail closed if a response exceeds the configured transport cap."""
     max_bytes = config.AGENT_CONTEXT_MAX_RESPONSE_BYTES
@@ -185,22 +200,21 @@ def _enforce_response_size(response: AgentContextResponse) -> None:
 async def _build_agent_context_response(
     agent_request: AgentContextRequest,
     http_request: Request,
+    db: Session,
     start_time: float,
 ) -> AgentContextResponse:
     selection_used = _build_selection_used(agent_request)
+    expert_ids = _resolve_expert_ids(selection_used)
+    _reject_unsupported_video_hub(expert_ids)
     request_id = getattr(http_request.state, "request_id", "unknown")
 
-    response = AgentContextResponse(
-        request_id=request_id,
-        mode="source_bundle",
-        query=agent_request.query,
+    service = AgentContextService(db)
+    response = await service.build_response(
+        agent_request=agent_request,
         selection_used=selection_used,
-        experts=[],
-        reddit=None,
-        pipeline_used=["agent_context_auth", "request_validation"],
-        pipeline_skipped=_PIPELINE_SKIPPED_FOR_SKELETON,
-        warnings=["agent_context_source_pipeline_not_implemented"],
-        processing_time_ms=int((time.perf_counter() - start_time) * 1000),
+        expert_ids=expert_ids,
+        request_id=request_id,
+        start_time=start_time,
     )
     _enforce_response_size(response)
     return response
@@ -214,6 +228,7 @@ async def _build_agent_context_response(
 async def create_agent_context(
     agent_request: AgentContextRequest,
     http_request: Request,
+    db: Session = Depends(get_db),
 ) -> AgentContextResponse:
     """Return the authenticated Agent Context API skeleton response."""
     start_time = time.perf_counter()
@@ -226,7 +241,7 @@ async def create_agent_context(
 
     try:
         return await asyncio.wait_for(
-            _build_agent_context_response(agent_request, http_request, start_time),
+            _build_agent_context_response(agent_request, http_request, db, start_time),
             timeout=timeout_seconds,
         )
     except asyncio.TimeoutError as exc:

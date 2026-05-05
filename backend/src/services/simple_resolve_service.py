@@ -130,6 +130,77 @@ class SimpleResolveService:
 
         return linked_telegram_ids
 
+    def _get_linked_posts_with_provenance(
+        self,
+        db: Session,
+        initial_post_ids: Set[int],
+        expert_id: str,
+        cutoff_date: Optional[datetime] = None
+    ) -> tuple[Set[int], Dict[int, Set[int]]]:
+        """Get linked posts and preserve which initial post pulled each link in."""
+        if not initial_post_ids:
+            return set(), {}
+
+        posts = db.query(Post).filter(
+            Post.telegram_message_id.in_(initial_post_ids),
+            Post.expert_id == expert_id
+        ).all()
+
+        if not posts:
+            logger.warning(f"No posts found for telegram_ids: {initial_post_ids}")
+            return initial_post_ids, {}
+
+        post_id_to_telegram = {p.post_id: p.telegram_message_id for p in posts}
+        db_post_ids = set(post_id_to_telegram.keys())
+
+        links = db.query(Link).filter(
+            or_(
+                Link.source_post_id.in_(db_post_ids),
+                Link.target_post_id.in_(db_post_ids)
+            )
+        ).all()
+
+        linked_telegram_ids = set(initial_post_ids)
+        linked_db_ids: Set[int] = set()
+        parent_map_by_db_id: Dict[int, Set[int]] = {}
+
+        for link in links:
+            if link.source_post_id in db_post_ids and link.target_post_id not in db_post_ids:
+                parent_telegram_id = post_id_to_telegram[link.source_post_id]
+                linked_db_ids.add(link.target_post_id)
+                parent_map_by_db_id.setdefault(link.target_post_id, set()).add(parent_telegram_id)
+
+            if link.target_post_id in db_post_ids and link.source_post_id not in db_post_ids:
+                parent_telegram_id = post_id_to_telegram[link.target_post_id]
+                linked_db_ids.add(link.source_post_id)
+                parent_map_by_db_id.setdefault(link.source_post_id, set()).add(parent_telegram_id)
+
+        parent_map_by_telegram_id: Dict[int, Set[int]] = {}
+        if linked_db_ids:
+            linked_query = db.query(Post).filter(
+                Post.post_id.in_(linked_db_ids),
+                Post.expert_id == expert_id
+            )
+
+            if cutoff_date:
+                linked_query = linked_query.filter(Post.created_at >= cutoff_date)
+
+            linked_posts = linked_query.all()
+
+            for post in linked_posts:
+                linked_telegram_ids.add(post.telegram_message_id)
+                parent_ids = parent_map_by_db_id.get(post.post_id, set())
+                if parent_ids:
+                    parent_map_by_telegram_id[post.telegram_message_id] = set(parent_ids)
+
+        filter_info = " (filtered by date)" if cutoff_date else ""
+        logger.info(
+            f"[{expert_id}] Expanded {len(initial_post_ids)} posts to {len(linked_telegram_ids)} "
+            f"(+{len(linked_telegram_ids) - len(initial_post_ids)} linked posts){filter_info}"
+        )
+
+        return linked_telegram_ids, parent_map_by_telegram_id
+
     async def process(
         self,
         relevant_posts: List[Dict[str, Any]],
@@ -179,7 +250,7 @@ class SimpleResolveService:
         db = SessionLocal()
         try:
             # Get all linked posts at depth 1 - NO LIMITS!
-            all_post_ids = self._get_linked_posts(
+            all_post_ids, linked_parent_map = self._get_linked_posts_with_provenance(
                 db,
                 set(relevant_ids),
                 expert_id,
@@ -214,6 +285,10 @@ class SimpleResolveService:
             for tid in all_post_ids:
                 if tid not in relevant_ids and tid in posts_map:
                     post = posts_map[tid]
+                    parent_telegram_ids = sorted(linked_parent_map.get(tid, set()))
+                    linked_from_source_keys = [
+                        f"{expert_id}:{parent_id}" for parent_id in parent_telegram_ids
+                    ]
                     enriched_posts.append({
                         "telegram_message_id": tid,
                         "relevance": "CONTEXT",
@@ -221,7 +296,11 @@ class SimpleResolveService:
                         "is_original": False,
                         "content": post.message_text,
                         "author": post.author_name,
-                        "created_at": post.created_at.isoformat() if post.created_at else None
+                        "created_at": post.created_at.isoformat() if post.created_at else None,
+                        "linked_from_source_keys": linked_from_source_keys,
+                        "parent_source_key": linked_from_source_keys[0]
+                        if len(linked_from_source_keys) == 1
+                        else None,
                     })
                     linked_count += 1
 

@@ -137,8 +137,8 @@ class AgentSourceComment(BaseModel):
     comment_id: int
     comment_text: str
     author_name: str
-    created_at: datetime
-    updated_at: datetime
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
 
 
 class AgentSourceComments(BaseModel):
@@ -160,6 +160,8 @@ class AgentLinkedContext(BaseModel):
     created_at: Optional[str] = None
     author_name: Optional[str] = None
     is_original: bool = False
+    parent_source_key: Optional[str] = None
+    linked_from_source_keys: Optional[List[str]] = None
 
 
 class AgentMainSource(BaseModel):
@@ -174,6 +176,8 @@ class AgentMainSource(BaseModel):
     created_at: Optional[str] = None
     author_name: Optional[str] = None
     is_original: bool = True
+    score: Optional[float] = None
+    score_reason: Optional[str] = None
     linked_context: List[AgentLinkedContext] = Field(default_factory=list)
     comments: AgentSourceComments = Field(default_factory=AgentSourceComments)
 
