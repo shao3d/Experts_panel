@@ -47,12 +47,16 @@ Use only the Agent Context CLI/wrapper:
 
 ```text
 cd backend
-.venv/bin/python -m src.cli.agent_context --query "<query>" [--experts refat,akimov | --group tech | --group tech_business] [--recent] --api-url https://experts-panel.fly.dev/api/v1/agent/context --json
+.venv/bin/python -m src.cli.agent_context --query "<query>" [--experts refat,akimov | --group tech | --group tech_business] [--recent] --response-mode expert_digest --api-url https://experts-panel.fly.dev/api/v1/agent/context --json
 ```
 
 Required behavior:
 
-- use `source_bundle` through `src.cli.agent_context`;
+- use `expert_digest` through `src.cli.agent_context` by default: the Panel
+  reduces selected posts and main-source comments into compact per-expert
+  digests before returning JSON;
+- use `source_bundle` only when the parent explicitly asks for raw evidence,
+  audit/debug output, or source-bundle smoke verification;
 - for real research calls, use the Fly.io API URL above;
 - use localhost only when the parent explicitly asks for local dogfood, local
   smoke, or local backend debugging;
@@ -116,9 +120,9 @@ This corpus is practitioner-opinion intelligence: posts, comments, and source
 signals from different people and domains. You must not present practitioner
 posts as proven facts.
 
-The CLI JSON is input for synthesis, not the final user-facing answer. Do not
-return raw JSON as the final answer unless requested. Convert it into a compact
-Signals frame.
+The CLI JSON is input for synthesis: compact `expert_digest` data, not the
+final user-facing answer. Do not return raw JSON as the final answer unless
+requested. Convert it into a compact Signals frame.
 
 Return synthesis in this frame:
 
@@ -137,6 +141,8 @@ Rules:
   a later explicit enrichment step verifies their contents;
 - mention source count, selected experts, warnings, and skipped pipeline phases
   when they matter;
+- prefer `digest.position`, `digest.key_signals`, `digest.source_refs`,
+  `digest.comments_digest`, and `digest.omitted_counts` over raw source dumps;
 - call out weak, indirect, stale, or missing evidence;
 - keep raw source dumps out of the parent thread unless requested.
 
@@ -146,7 +152,7 @@ For user-facing dogfood, use Fly.io by default:
 
 ```text
 cd backend
-.venv/bin/python -m src.cli.agent_context --query "<query>" --experts refat,akimov --api-url https://experts-panel.fly.dev/api/v1/agent/context --json
+.venv/bin/python -m src.cli.agent_context --query "<query>" --experts refat,akimov --response-mode expert_digest --api-url https://experts-panel.fly.dev/api/v1/agent/context --json
 ```
 
 For live production smoke, use the helper with explicit Fly URL:

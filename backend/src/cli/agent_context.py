@@ -23,7 +23,7 @@ class AgentContextCliError(Exception):
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Call the Experts Panel Agent Context API in source_bundle mode.",
+        description="Call the Experts Panel Agent Context API.",
     )
     parser.add_argument(
         "--query",
@@ -48,6 +48,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Restrict the backend source search to recent data.",
     )
     parser.add_argument(
+        "--response-mode",
+        choices=["source_bundle", "expert_digest"],
+        default="source_bundle",
+        help="API response mode. Defaults to source_bundle.",
+    )
+    parser.add_argument(
         "--api-url",
         help=(
             "Agent Context API URL. Defaults to AGENT_CONTEXT_API_URL or "
@@ -70,7 +76,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 def build_payload(args: argparse.Namespace) -> dict[str, Any]:
     payload: dict[str, Any] = {
         "query": args.query,
-        "response_mode": "source_bundle",
+        "response_mode": args.response_mode,
         "expert_scope": "all",
         "expert_group": None,
         "expert_filter": None,
@@ -138,7 +144,8 @@ def call_agent_context_api(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def print_summary(payload: dict[str, Any]) -> None:
-    print("Agent Context source_bundle")
+    mode = payload.get("mode") or "source_bundle"
+    print(f"Agent Context {mode}")
     print(f"request_id: {payload.get('request_id', '')}")
     print(f"query: {payload.get('query', '')}")
     print("selection_used:")
@@ -167,29 +174,10 @@ def print_summary(payload: dict[str, Any]) -> None:
         if no_results_reason:
             print(f"    no_results_reason: {no_results_reason}")
 
-        unattached_count = len(expert.get("unattached_linked_context") or [])
-        print(f"    unattached_linked_context: {unattached_count}")
-
-        main_sources = expert.get("main_sources") or []
-        if not main_sources:
-            print("    main_sources: none")
-        for source in main_sources:
-            source_id = source.get("telegram_message_id", "")
-            relevance = source.get("relevance", "")
-            reason = source.get("reason") or ""
-            comments = source.get("comments") or {}
-            author_count = len(comments.get("author_comments") or [])
-            community_count = len(comments.get("community_comments") or [])
-            linked_count = len(source.get("linked_context") or [])
-            external_link_count = len(source.get("external_links") or [])
-
-            print(f"    - {source_id} [{relevance}] {reason}")
-            print(
-                "      comments: "
-                f"author={author_count} community={community_count}; "
-                f"linked_context={linked_count}; "
-                f"external_links={external_link_count}"
-            )
+        if mode == "expert_digest":
+            _print_expert_digest_summary(expert)
+        else:
+            _print_source_bundle_summary(expert)
 
     pipeline_used = payload.get("pipeline_used") or []
     pipeline_skipped = payload.get("pipeline_skipped") or []
@@ -225,6 +213,86 @@ def _parse_expert_ids(raw_experts: str) -> list[str]:
             expert_ids.append(expert_id)
             seen.add(expert_id)
     return expert_ids
+
+
+def _print_source_bundle_summary(expert: dict[str, Any]) -> None:
+    unattached_count = len(expert.get("unattached_linked_context") or [])
+    print(f"    unattached_linked_context: {unattached_count}")
+
+    main_sources = expert.get("main_sources") or []
+    if not main_sources:
+        print("    main_sources: none")
+    for source in main_sources:
+        source_id = source.get("telegram_message_id", "")
+        relevance = source.get("relevance", "")
+        reason = source.get("reason") or ""
+        comments = source.get("comments") or {}
+        author_count = len(comments.get("author_comments") or [])
+        community_count = len(comments.get("community_comments") or [])
+        linked_count = len(source.get("linked_context") or [])
+        external_link_count = len(source.get("external_links") or [])
+
+        print(f"    - {source_id} [{relevance}] {reason}")
+        print(
+            "      comments: "
+            f"author={author_count} community={community_count}; "
+            f"linked_context={linked_count}; "
+            f"external_links={external_link_count}"
+        )
+
+
+def _print_expert_digest_summary(expert: dict[str, Any]) -> None:
+    digest = expert.get("digest") or {}
+    no_signal_reason = digest.get("no_signal_reason")
+    if no_signal_reason:
+        print(f"    digest.no_signal_reason: {no_signal_reason}")
+
+    position = digest.get("position")
+    if position:
+        print(f"    position: {position}")
+
+    source_refs = digest.get("source_refs") or []
+    print(f"    source_refs: {len(source_refs)}")
+    for source_ref in source_refs:
+        source_key = source_ref.get("source_key", "")
+        relevance = source_ref.get("relevance", "")
+        reason = source_ref.get("reason") or ""
+        comments_total = (
+            int(source_ref.get("author_comments_count") or 0)
+            + int(source_ref.get("community_comments_count") or 0)
+        )
+        print(f"    - {source_key} [{relevance}] {reason}")
+        print(
+            "      compact_counts: "
+            f"comments={comments_total}; "
+            f"linked_context={source_ref.get('linked_context_count', 0)}; "
+            f"external_links={len(source_ref.get('external_links') or [])}"
+        )
+
+    key_signals = digest.get("key_signals") or []
+    if key_signals:
+        print("    key_signals:")
+        for signal in key_signals:
+            supporting_sources = signal.get("supporting_sources") or []
+            print(
+                "      - "
+                f"[{signal.get('support_level', 'unknown')}] "
+                f"{signal.get('claim', '')} "
+                f"(sources: {', '.join(supporting_sources) or 'none'})"
+            )
+    else:
+        print("    key_signals: none")
+
+    comments = digest.get("comments_digest") or {}
+    omitted_counts = digest.get("omitted_counts") or {}
+    print(
+        "    comments_digest: "
+        f"author={comments.get('author_comments_count', 0)} "
+        f"community={comments.get('community_comments_count', 0)} "
+        f"included={len(comments.get('included_comments') or [])} "
+        f"omitted={comments.get('omitted_comments_count', 0)}"
+    )
+    print(f"    omitted_counts: {_format_value(omitted_counts)}")
 
 
 def _resolve_timeout(cli_timeout: float | None) -> float:

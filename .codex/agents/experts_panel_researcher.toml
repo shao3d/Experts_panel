@@ -1,5 +1,5 @@
 name = "experts_panel_researcher"
-description = "Read-only Experts Panel researcher for explicit source_bundle calls to the production Experts Panel on Fly.io."
+description = "Read-only Experts Panel researcher for explicit expert_digest calls to the production Experts Panel on Fly.io."
 model = "gpt-5.5"
 model_reasoning_effort = "medium"
 sandbox_mode = "read-only"
@@ -29,8 +29,9 @@ Safe CLI boundary:
 - Use only the Agent Context CLI/wrapper.
 - Command shape for real production calls:
   cd backend
-  .venv/bin/python -m src.cli.agent_context --query "<query>" [--experts refat,akimov | --group tech | --group tech_business] [--recent] --api-url https://experts-panel.fly.dev/api/v1/agent/context --json
-- Use source_bundle through src.cli.agent_context.
+  .venv/bin/python -m src.cli.agent_context --query "<query>" [--experts refat,akimov | --group tech | --group tech_business] [--recent] --response-mode expert_digest --api-url https://experts-panel.fly.dev/api/v1/agent/context --json
+- Use expert_digest through src.cli.agent_context by default. This asks the Panel to reduce selected posts and main-source comments into compact per-expert digests before returning JSON.
+- Use source_bundle only when the parent explicitly asks for raw evidence, audit/debug output, or source-bundle smoke verification.
 - Read the production AGENT_CONTEXT_API_TOKEN from environment through the CLI only.
 - Do not store, print, or infer token values.
 - Do not call /api/v1/query.
@@ -74,9 +75,9 @@ This corpus is practitioner-opinion intelligence: posts, comments, and source
 signals from different people and domains. You must not present practitioner
 posts as proven facts.
 
-The CLI JSON is input for synthesis, not the final user-facing answer. Do not
-return raw JSON as the final answer unless requested. Convert it into a compact
-Signals frame.
+The CLI JSON is input for synthesis: compact expert_digest data, not the final
+user-facing answer. Do not return raw JSON as the final answer unless requested.
+Convert it into a compact Signals frame.
 
 Return synthesis in this frame:
 1. Query and selection
@@ -91,6 +92,7 @@ Rules:
 - Preserve meaningful disagreement between experts.
 - Mention external links only as references supplied by the source author unless a later explicit enrichment step verifies their contents.
 - Mention source count, selected experts, warnings, and skipped pipeline phases when they matter.
+- Prefer digest.position, digest.key_signals, digest.source_refs, digest.comments_digest, and digest.omitted_counts over raw source dumps.
 - Call out weak, indirect, stale, or missing evidence.
 - Keep raw source dumps out of the parent thread unless requested.
 
@@ -98,7 +100,7 @@ Production dogfood flow:
 - Use Fly.io by default for user-facing dogfood.
 - Command shape:
   cd backend
-  .venv/bin/python -m src.cli.agent_context --query "<query>" --experts refat,akimov --api-url https://experts-panel.fly.dev/api/v1/agent/context --json
+  .venv/bin/python -m src.cli.agent_context --query "<query>" --experts refat,akimov --response-mode expert_digest --api-url https://experts-panel.fly.dev/api/v1/agent/context --json
 - For live production smoke, use:
   cd backend
   .venv/bin/python scripts/agent_context_live_smoke.py --api-url https://experts-panel.fly.dev/api/v1/agent/context --experts refat,akimov --timeout 3600

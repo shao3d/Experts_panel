@@ -57,6 +57,24 @@ AGENT_CONTEXT_TIMEOUT_SECONDS: int = int(
 AGENT_CONTEXT_MAX_RESPONSE_BYTES: int = int(
     os.getenv("AGENT_CONTEXT_MAX_RESPONSE_BYTES", "100000000")
 )
+AGENT_CONTEXT_DIGEST_MAX_SOURCE_REFS: int = int(
+    os.getenv("AGENT_CONTEXT_DIGEST_MAX_SOURCE_REFS", "8")
+)
+AGENT_CONTEXT_DIGEST_MAX_SOURCE_CHARS: int = int(
+    os.getenv("AGENT_CONTEXT_DIGEST_MAX_SOURCE_CHARS", "900")
+)
+AGENT_CONTEXT_DIGEST_MAX_COMMENTS_PER_SOURCE: int = int(
+    os.getenv("AGENT_CONTEXT_DIGEST_MAX_COMMENTS_PER_SOURCE", "3")
+)
+AGENT_CONTEXT_DIGEST_MAX_COMMENT_CHARS: int = int(
+    os.getenv("AGENT_CONTEXT_DIGEST_MAX_COMMENT_CHARS", "360")
+)
+AGENT_CONTEXT_DIGEST_MAX_LINKS_PER_SOURCE: int = int(
+    os.getenv("AGENT_CONTEXT_DIGEST_MAX_LINKS_PER_SOURCE", "5")
+)
+AGENT_CONTEXT_DIGEST_MAX_SIGNALS: int = int(
+    os.getenv("AGENT_CONTEXT_DIGEST_MAX_SIGNALS", "5")
+)
 
 # --- Model Configuration ---
 # Only Gemini models on Vertex AI are supported.
@@ -193,6 +211,13 @@ def get_runtime_config_log_lines() -> list[str]:
             f"  Agent Context Rate Limit: {AGENT_CONTEXT_RATE_LIMIT_PER_MINUTE}/min",
             f"  Agent Context Timeout:    {AGENT_CONTEXT_TIMEOUT_SECONDS}s",
             f"  Agent Context Max Bytes:  {AGENT_CONTEXT_MAX_RESPONSE_BYTES}",
+            "  Agent Context Digest Caps: "
+            f"sources={AGENT_CONTEXT_DIGEST_MAX_SOURCE_REFS}, "
+            f"source_chars={AGENT_CONTEXT_DIGEST_MAX_SOURCE_CHARS}, "
+            f"comments/source={AGENT_CONTEXT_DIGEST_MAX_COMMENTS_PER_SOURCE}, "
+            f"comment_chars={AGENT_CONTEXT_DIGEST_MAX_COMMENT_CHARS}, "
+            f"links/source={AGENT_CONTEXT_DIGEST_MAX_LINKS_PER_SOURCE}, "
+            f"signals={AGENT_CONTEXT_DIGEST_MAX_SIGNALS}",
             "--- Loaded logging configuration ---",
             f"  Log Level:         {LOG_LEVEL}",
             f"  Backend Log File:  {BACKEND_LOG_FILE}",

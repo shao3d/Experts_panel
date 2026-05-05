@@ -4,6 +4,7 @@
 import os
 import sys
 import asyncio
+import json
 from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace
@@ -23,7 +24,22 @@ from src.api import dependencies
 from src.api.agent_context_endpoint import AGENT_CONTEXT_EXPERT_GROUPS
 from src.api.main import app
 from src.services import health_probe_service as health_probe_module
-from src.services.agent_context_service import AgentContextSearchContext, AgentContextService
+from src.api.models import (
+    AgentDigestComments,
+    AgentDigestOmittedCounts,
+    AgentDigestSourceRef,
+    AgentExpertSourceBundle,
+    AgentExternalLink,
+    AgentLinkedContext,
+    AgentMainSource,
+    AgentSourceComment,
+    AgentSourceComments,
+)
+from src.services.agent_context_service import (
+    AgentContextSearchContext,
+    AgentContextService,
+    AgentExpertDigestReducer,
+)
 from src.services import agent_context_service as agent_context_module
 
 _ORIGINAL_PREPARE_SEARCH_CONTEXT = AgentContextService._prepare_search_context
@@ -686,6 +702,207 @@ def test_agent_context_builds_sources_context_and_comments(monkeypatch):
     assert expert["unattached_linked_context"][0]["telegram_message_id"] == 202
     assert "reduce_answer_synthesis" in response.json()["pipeline_skipped"]
     assert "agent_context_source_pipeline_not_implemented" not in response.json()["warnings"]
+
+
+def test_agent_context_expert_digest_compacts_sources_and_comments(monkeypatch):
+    monkeypatch.setattr(config, "AGENT_CONTEXT_DIGEST_MAX_SOURCE_REFS", 1)
+    monkeypatch.setattr(config, "AGENT_CONTEXT_DIGEST_MAX_SOURCE_CHARS", 40)
+    monkeypatch.setattr(config, "AGENT_CONTEXT_DIGEST_MAX_COMMENTS_PER_SOURCE", 1)
+    monkeypatch.setattr(config, "AGENT_CONTEXT_DIGEST_MAX_COMMENT_CHARS", 30)
+    monkeypatch.setattr(config, "AGENT_CONTEXT_DIGEST_MAX_LINKS_PER_SOURCE", 1)
+    monkeypatch.setattr(config, "AGENT_CONTEXT_DIGEST_MAX_SIGNALS", 2)
+    observed = {"llm_evidence": None}
+
+    async def fake_build_expert_bundle(
+        self,
+        *,
+        expert_id,
+        agent_request,
+        search_context,
+        warnings,
+    ):
+        return AgentExpertSourceBundle(
+            expert_id=expert_id,
+            expert_name="Refat",
+            channel_username="nobilix",
+            selected_sources_count=2,
+            unattached_linked_context=[
+                AgentLinkedContext(
+                    telegram_message_id=301,
+                    source_key="refat:301",
+                    source_role="context",
+                    relevance="CONTEXT",
+                    content="Unattached linked context",
+                )
+            ],
+            main_sources=[
+                AgentMainSource(
+                    telegram_message_id=101,
+                    source_key="refat:101",
+                    relevance="HIGH",
+                    reason="Direct practitioner signal",
+                    content=(
+                        "Long source content about subagents, context hygiene, "
+                        "and memory boundaries that should be clipped."
+                    ),
+                    linked_context=[
+                        AgentLinkedContext(
+                            telegram_message_id=201,
+                            source_key="refat:201",
+                            source_role="context",
+                            relevance="CONTEXT",
+                            content="Attached linked context",
+                        )
+                    ],
+                    external_links=[
+                        AgentExternalLink(
+                            url="https://github.com/example/agent-tool",
+                            domain="github.com",
+                            link_type="github_repo",
+                            fetch_status="not_fetched",
+                        ),
+                        AgentExternalLink(
+                            url="https://example.com/report",
+                            domain="example.com",
+                            link_type="web",
+                            fetch_status="not_fetched",
+                        ),
+                    ],
+                    comments=AgentSourceComments(
+                        author_comments=[
+                            AgentSourceComment(
+                                comment_id=1,
+                                comment_text="Author clarification should be clipped",
+                                author_name="Refat",
+                            ),
+                            AgentSourceComment(
+                                comment_id=2,
+                                comment_text="Second author clarification",
+                                author_name="Refat",
+                            ),
+                        ],
+                        community_comments=[
+                            AgentSourceComment(
+                                comment_id=3,
+                                comment_text="Community observation",
+                                author_name="Reader",
+                            )
+                        ],
+                    ),
+                ),
+                AgentMainSource(
+                    telegram_message_id=102,
+                    source_key="refat:102",
+                    relevance="MEDIUM",
+                    reason="Secondary practitioner signal",
+                    content="Secondary content",
+                ),
+            ],
+        )
+
+    async def fake_call_llm_digest(self, *, query, bundle, evidence):
+        observed["llm_evidence"] = evidence
+        return {
+            "position": "Refat frames subagents as explicit bounded helpers.",
+            "key_signals": [
+                {
+                    "claim": "Use subagents when selection and scope are explicit.",
+                    "support_level": "direct",
+                    "supporting_sources": ["refat:101", "refat:999"],
+                    "comment_signal": "Author comment clarifies the boundary.",
+                    "limits": "Practitioner opinion, not benchmark evidence.",
+                }
+            ],
+            "limits": ["Only compact source refs were sent to the reducer."],
+        }
+
+    monkeypatch.setattr(
+        AgentContextService,
+        "_build_expert_bundle",
+        fake_build_expert_bundle,
+    )
+    monkeypatch.setattr(
+        AgentExpertDigestReducer,
+        "_call_llm_digest",
+        fake_call_llm_digest,
+    )
+
+    with TestClient(app) as client:
+        response = client.post(
+            "/api/v1/agent/context",
+            headers=_auth_headers(),
+            json=_agent_context_payload(
+                response_mode="expert_digest",
+                expert_filter=["refat"],
+            ),
+        )
+
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["mode"] == "expert_digest"
+    assert "expert_digest_reduce" in payload["pipeline_used"]
+    assert "reduce_answer_synthesis" in payload["pipeline_skipped"]
+
+    expert = payload["experts"][0]
+    assert expert["selected_sources_count"] == 2
+    assert expert["main_sources"] == []
+    assert expert["unattached_linked_context"] == []
+    assert "comment_id" not in json.dumps(expert)
+
+    digest = expert["digest"]
+    assert digest["position"] == "Refat frames subagents as explicit bounded helpers."
+    assert digest["source_refs"][0]["source_key"] == "refat:101"
+    assert digest["source_refs"][0]["short_excerpt"].endswith("...")
+    assert len(digest["source_refs"][0]["external_links"]) == 1
+    assert digest["source_refs"][0]["external_links"][0]["fetch_status"] == "not_fetched"
+    assert digest["comments_digest"]["author_comments_count"] == 2
+    assert digest["comments_digest"]["community_comments_count"] == 1
+    assert len(digest["comments_digest"]["included_comments"]) == 1
+    assert digest["comments_digest"]["omitted_comments_count"] == 2
+    assert digest["omitted_counts"] == {
+        "main_sources": 1,
+        "linked_context": 1,
+        "author_comments": 1,
+        "community_comments": 1,
+        "external_links": 1,
+    }
+    assert digest["key_signals"][0]["supporting_sources"] == ["refat:101"]
+    assert observed["llm_evidence"]["source_refs"][0]["source_key"] == "refat:101"
+    assert len(observed["llm_evidence"]["source_refs"]) == 1
+
+
+def test_agent_context_expert_digest_accepts_top_level_signal_list():
+    reducer = AgentExpertDigestReducer()
+    bundle = AgentExpertSourceBundle(
+        expert_id="refat",
+        expert_name="Refat",
+        channel_username="nobilix",
+        selected_sources_count=1,
+    )
+    source_refs = [
+        AgentDigestSourceRef(
+            telegram_message_id=101,
+            source_key="refat:101",
+            relevance="HIGH",
+        )
+    ]
+
+    digest = reducer._normalize_llm_digest(
+        data=[
+            {
+                "claim": "Use subagents for explicit bounded work.",
+                "support_level": "direct",
+                "supporting_sources": ["refat:101"],
+            }
+        ],
+        bundle=bundle,
+        source_refs=source_refs,
+        comments_digest=AgentDigestComments(),
+        omitted_counts=AgentDigestOmittedCounts(),
+    )
+
+    assert digest.key_signals[0].claim == "Use subagents for explicit bounded work."
+    assert digest.key_signals[0].supporting_sources == ["refat:101"]
 
 
 def test_agent_context_external_link_extraction_handles_telegram_markdown_edges():

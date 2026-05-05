@@ -85,6 +85,8 @@ def test_claude_agent_is_read_only_and_uses_safe_cli_boundary():
 
     normalized = _normalize(content)
     assert "src.cli.agent_context" in content
+    assert "expert_digest" in content
+    assert "--response-mode expert_digest" in content
     assert "source_bundle" in content
     assert "explicit" in normalized
     assert "do not call /api/v1/query" in normalized
@@ -102,6 +104,8 @@ def test_codex_agent_is_read_only_and_uses_safe_cli_boundary():
     assert config["model_reasoning_effort"] == "medium"
     assert config["sandbox_mode"] == "read-only"
     assert "src.cli.agent_context" in instructions
+    assert "expert_digest" in instructions
+    assert "--response-mode expert_digest" in instructions
     assert "source_bundle" in instructions
     assert "explicit" in normalized
     assert "do not call /api/v1/query" in normalized

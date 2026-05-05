@@ -92,6 +92,99 @@ def _source_bundle_response():
     }
 
 
+def _expert_digest_response():
+    return {
+        "request_id": "req_digest",
+        "mode": "expert_digest",
+        "query": "When should we use subagents?",
+        "selection_used": {
+            "expert_scope": "custom",
+            "expert_group": None,
+            "expert_filter": ["refat"],
+            "include_reddit": False,
+            "include_main_source_comments": True,
+            "include_drift_comment_groups": False,
+            "synthesis_level": "none",
+            "use_recent_only": False,
+            "use_super_passport": True,
+        },
+        "experts": [
+            {
+                "expert_id": "refat",
+                "expert_name": "Refat",
+                "channel_username": "nobilix",
+                "selected_sources_count": 3,
+                "unattached_linked_context": [],
+                "main_sources": [],
+                "digest": {
+                    "position": "Use subagents for explicit bounded research.",
+                    "key_signals": [
+                        {
+                            "claim": "Subagents help when the task has a clear scope.",
+                            "support_level": "direct",
+                            "supporting_sources": ["refat:101"],
+                            "comment_signal": None,
+                            "limits": None,
+                        }
+                    ],
+                    "source_refs": [
+                        {
+                            "telegram_message_id": 101,
+                            "source_key": "refat:101",
+                            "relevance": "HIGH",
+                            "reason": "Direct match",
+                            "short_excerpt": "Compact source excerpt",
+                            "created_at": "2026-04-10T12:00:00",
+                            "external_links": [
+                                {
+                                    "url": "https://github.com/example/agent-tool",
+                                    "domain": "github.com",
+                                    "label": None,
+                                    "context": None,
+                                    "link_type": "github_repo",
+                                    "fetch_status": "not_fetched",
+                                }
+                            ],
+                            "linked_context_count": 1,
+                            "author_comments_count": 1,
+                            "community_comments_count": 1,
+                        }
+                    ],
+                    "comments_digest": {
+                        "author_comments_count": 1,
+                        "community_comments_count": 1,
+                        "included_comments": [
+                            {
+                                "source_key": "refat:101",
+                                "comment_role": "author",
+                                "author_name": "Refat",
+                                "short_excerpt": "Author clarification",
+                                "created_at": "2026-04-10T15:00:00",
+                            }
+                        ],
+                        "omitted_comments_count": 1,
+                    },
+                    "omitted_counts": {
+                        "main_sources": 2,
+                        "linked_context": 0,
+                        "author_comments": 0,
+                        "community_comments": 1,
+                        "external_links": 0,
+                    },
+                    "limits": ["Compact digest"],
+                    "no_signal_reason": None,
+                },
+                "no_results_reason": None,
+            }
+        ],
+        "reddit": None,
+        "pipeline_used": ["expert_selection", "source_selection", "expert_digest_reduce"],
+        "pipeline_skipped": ["reduce_answer_synthesis"],
+        "warnings": [],
+        "processing_time_ms": 42,
+    }
+
+
 @pytest.fixture
 def clean_agent_context_env(monkeypatch):
     for key in [
@@ -179,6 +272,44 @@ def test_cli_sends_safe_default_source_bundle_payload(
     }
     assert "secret-token" not in captured.out
     assert "secret-token" not in captured.err
+
+
+def test_cli_sends_expert_digest_payload_when_requested(
+    monkeypatch,
+    capsys,
+    clean_agent_context_env,
+):
+    calls = []
+    monkeypatch.setenv("AGENT_CONTEXT_API_TOKEN", "secret-token")
+
+    def fake_post(url, *, headers, json, timeout):
+        calls.append(json)
+        return FakeResponse(payload=_expert_digest_response())
+
+    monkeypatch.setattr(agent_context.requests, "post", fake_post)
+
+    exit_code = agent_context.main(
+        [
+            "--query",
+            "When should we use subagents?",
+            "--experts",
+            "refat",
+            "--response-mode",
+            "expert_digest",
+        ],
+        load_env=False,
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert calls[0]["response_mode"] == "expert_digest"
+    assert "Agent Context expert_digest" in captured.out
+    assert "position: Use subagents for explicit bounded research." in captured.out
+    assert "source_refs: 1" in captured.out
+    assert "refat:101 [HIGH] Direct match" in captured.out
+    assert "[direct] Subagents help when the task has a clear scope." in captured.out
+    assert "comments_digest: author=1 community=1 included=1 omitted=1" in captured.out
+    assert "omitted_counts" in captured.out
 
 
 def test_cli_default_timeout_matches_live_source_bundle_budget(

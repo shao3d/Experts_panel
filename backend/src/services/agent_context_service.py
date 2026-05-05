@@ -16,6 +16,12 @@ from .. import config
 from ..api.models import (
     AgentContextRequest,
     AgentContextResponse,
+    AgentDigestCommentSignal,
+    AgentDigestComments,
+    AgentDigestOmittedCounts,
+    AgentDigestSignal,
+    AgentDigestSourceRef,
+    AgentExpertDigest,
     AgentExpertSourceBundle,
     AgentExternalLink,
     AgentLinkedContext,
@@ -33,6 +39,7 @@ from ..services.embedding_service import get_embedding_service
 from ..services.hybrid_retrieval_service import HybridRetrievalService
 from ..services.map_service import MapService
 from ..services.medium_scoring_service import MediumScoringService
+from ..services.monitored_client import create_monitored_client
 from ..services.simple_resolve_service import SimpleResolveService
 from ..utils.date_utils import get_cutoff_date
 
@@ -67,6 +74,8 @@ SOURCE_BUNDLE_PIPELINE_SKIPPED = [
     "cross_expert_meta_synthesis",
     "reddit_synthesis",
 ]
+
+SUPPORTED_AGENT_CONTEXT_RESPONSE_MODES = {"source_bundle", "expert_digest"}
 
 
 @dataclass(frozen=True)
@@ -115,10 +124,12 @@ class AgentContextService:
         if not agent_request.include_main_source_comments:
             pipeline_used.remove("main_source_comments")
             pipeline_skipped.append("main_source_comments")
+        if agent_request.response_mode == "expert_digest":
+            pipeline_used.append("expert_digest_reduce")
 
         return AgentContextResponse(
             request_id=request_id,
-            mode="source_bundle",
+            mode=agent_request.response_mode,
             query=agent_request.query,
             selection_used=selection_used,
             experts=experts,
@@ -159,6 +170,12 @@ class AgentContextService:
                     bundle = self._empty_expert_bundle(
                         expert_id=expert_id,
                         no_results_reason="source_bundle_failed",
+                    )
+                if agent_request.response_mode == "expert_digest":
+                    bundle = await AgentExpertDigestReducer().compact_bundle(
+                        bundle=bundle,
+                        query=agent_request.query,
+                        warnings=expert_warnings,
                     )
             return bundle, expert_warnings
 
@@ -691,3 +708,422 @@ class AgentContextService:
                 result.append(value)
                 seen.add(value)
         return result
+
+
+class AgentExpertDigestReducer:
+    """Build a compact per-expert digest from a raw Agent Context source bundle."""
+
+    _SUPPORTED_SUPPORT_LEVELS = {"direct", "indirect", "weak", "unknown"}
+
+    async def compact_bundle(
+        self,
+        *,
+        bundle: AgentExpertSourceBundle,
+        query: str,
+        warnings: List[str],
+    ) -> AgentExpertSourceBundle:
+        digest = await self.build_digest(
+            bundle=bundle,
+            query=query,
+            warnings=warnings,
+        )
+        return bundle.model_copy(
+            update={
+                "main_sources": [],
+                "unattached_linked_context": [],
+                "digest": digest,
+            }
+        )
+
+    async def build_digest(
+        self,
+        *,
+        bundle: AgentExpertSourceBundle,
+        query: str,
+        warnings: List[str],
+    ) -> AgentExpertDigest:
+        source_refs = self._build_source_refs(bundle.main_sources)
+        comments_digest = self._build_comments_digest(bundle.main_sources, source_refs)
+        omitted_counts = self._build_omitted_counts(
+            bundle=bundle,
+            source_refs=source_refs,
+            comments_digest=comments_digest,
+        )
+
+        if not bundle.main_sources:
+            return AgentExpertDigest(
+                source_refs=[],
+                comments_digest=comments_digest,
+                omitted_counts=omitted_counts,
+                no_signal_reason=bundle.no_results_reason,
+            )
+
+        evidence = self._build_llm_evidence(
+            source_refs=source_refs,
+            comments_digest=comments_digest,
+        )
+        try:
+            llm_digest = await self._call_llm_digest(
+                query=query,
+                bundle=bundle,
+                evidence=evidence,
+            )
+            return self._normalize_llm_digest(
+                data=llm_digest,
+                bundle=bundle,
+                source_refs=source_refs,
+                comments_digest=comments_digest,
+                omitted_counts=omitted_counts,
+            )
+        except Exception as exc:
+            logger.exception("Agent Context expert_digest failed for %s", bundle.expert_id)
+            warnings.append(f"{bundle.expert_id}: expert_digest_reduce_failed: {exc}")
+            return self._fallback_digest(
+                bundle=bundle,
+                source_refs=source_refs,
+                comments_digest=comments_digest,
+                omitted_counts=omitted_counts,
+            )
+
+    def _build_source_refs(
+        self,
+        main_sources: List[AgentMainSource],
+    ) -> List[AgentDigestSourceRef]:
+        max_source_refs = max(0, int(config.AGENT_CONTEXT_DIGEST_MAX_SOURCE_REFS))
+        source_refs: List[AgentDigestSourceRef] = []
+        for source in main_sources[:max_source_refs]:
+            author_comments_count = len(source.comments.author_comments)
+            community_comments_count = len(source.comments.community_comments)
+            source_refs.append(
+                AgentDigestSourceRef(
+                    telegram_message_id=source.telegram_message_id,
+                    source_key=source.source_key,
+                    relevance=source.relevance,
+                    reason=source.reason,
+                    short_excerpt=self._clip(
+                        source.content,
+                        int(config.AGENT_CONTEXT_DIGEST_MAX_SOURCE_CHARS),
+                    ),
+                    created_at=source.created_at,
+                    external_links=source.external_links[
+                        : max(0, int(config.AGENT_CONTEXT_DIGEST_MAX_LINKS_PER_SOURCE))
+                    ],
+                    linked_context_count=len(source.linked_context),
+                    author_comments_count=author_comments_count,
+                    community_comments_count=community_comments_count,
+                )
+            )
+        return source_refs
+
+    def _build_comments_digest(
+        self,
+        main_sources: List[AgentMainSource],
+        source_refs: List[AgentDigestSourceRef],
+    ) -> AgentDigestComments:
+        included_source_keys = {source_ref.source_key for source_ref in source_refs}
+        max_comments_per_source = max(
+            0, int(config.AGENT_CONTEXT_DIGEST_MAX_COMMENTS_PER_SOURCE)
+        )
+        max_comment_chars = max(0, int(config.AGENT_CONTEXT_DIGEST_MAX_COMMENT_CHARS))
+        included_comments: List[AgentDigestCommentSignal] = []
+        author_comments_count = 0
+        community_comments_count = 0
+
+        for source in main_sources:
+            author_comments = source.comments.author_comments
+            community_comments = source.comments.community_comments
+            author_comments_count += len(author_comments)
+            community_comments_count += len(community_comments)
+            if source.source_key not in included_source_keys:
+                continue
+
+            selected_for_source: List[tuple[str, AgentSourceComment]] = []
+            for comment in author_comments:
+                selected_for_source.append(("author", comment))
+            for comment in community_comments:
+                selected_for_source.append(("community", comment))
+
+            for role, comment in selected_for_source[:max_comments_per_source]:
+                excerpt = self._clip(comment.comment_text, max_comment_chars)
+                if not excerpt:
+                    continue
+                included_comments.append(
+                    AgentDigestCommentSignal(
+                        source_key=source.source_key,
+                        comment_role=role,
+                        author_name=comment.author_name,
+                        short_excerpt=excerpt,
+                        created_at=comment.created_at,
+                    )
+                )
+
+        total_comments = author_comments_count + community_comments_count
+        return AgentDigestComments(
+            author_comments_count=author_comments_count,
+            community_comments_count=community_comments_count,
+            included_comments=included_comments,
+            omitted_comments_count=max(0, total_comments - len(included_comments)),
+        )
+
+    def _build_omitted_counts(
+        self,
+        *,
+        bundle: AgentExpertSourceBundle,
+        source_refs: List[AgentDigestSourceRef],
+        comments_digest: AgentDigestComments,
+    ) -> AgentDigestOmittedCounts:
+        included_source_keys = {source_ref.source_key for source_ref in source_refs}
+        included_external_links = sum(len(source_ref.external_links) for source_ref in source_refs)
+        total_external_links = sum(len(source.external_links) for source in bundle.main_sources)
+        total_linked_context = sum(len(source.linked_context) for source in bundle.main_sources)
+        total_linked_context += len(bundle.unattached_linked_context)
+        included_linked_context = sum(
+            source_ref.linked_context_count for source_ref in source_refs
+        )
+        author_comments_omitted = 0
+        community_comments_omitted = 0
+        for source in bundle.main_sources:
+            if source.source_key in included_source_keys:
+                continue
+            author_comments_omitted += len(source.comments.author_comments)
+            community_comments_omitted += len(source.comments.community_comments)
+
+        included_comments = len(comments_digest.included_comments)
+        included_author_comments = sum(
+            1
+            for comment in comments_digest.included_comments
+            if comment.comment_role == "author"
+        )
+        included_community_comments = included_comments - included_author_comments
+        author_comments_omitted += max(
+            0, comments_digest.author_comments_count - author_comments_omitted - included_author_comments
+        )
+        community_comments_omitted += max(
+            0,
+            comments_digest.community_comments_count
+            - community_comments_omitted
+            - included_community_comments,
+        )
+
+        return AgentDigestOmittedCounts(
+            main_sources=max(0, len(bundle.main_sources) - len(source_refs)),
+            linked_context=max(0, total_linked_context - included_linked_context),
+            author_comments=author_comments_omitted,
+            community_comments=community_comments_omitted,
+            external_links=max(0, total_external_links - included_external_links),
+        )
+
+    def _build_llm_evidence(
+        self,
+        *,
+        source_refs: List[AgentDigestSourceRef],
+        comments_digest: AgentDigestComments,
+    ) -> Dict[str, Any]:
+        return {
+            "source_refs": [
+                source_ref.model_dump(mode="json") for source_ref in source_refs
+            ],
+            "comments": comments_digest.model_dump(mode="json"),
+        }
+
+    async def _call_llm_digest(
+        self,
+        *,
+        query: str,
+        bundle: AgentExpertSourceBundle,
+        evidence: Dict[str, Any],
+    ) -> Any:
+        client = create_monitored_client()
+        source_keys = [source["source_key"] for source in evidence["source_refs"]]
+        prompt = {
+            "query": query,
+            "expert": {
+                "expert_id": bundle.expert_id,
+                "expert_name": bundle.expert_name,
+                "channel_username": bundle.channel_username,
+                "selected_sources_count": bundle.selected_sources_count,
+            },
+            "allowed_source_keys": source_keys,
+            "evidence": evidence,
+            "output_schema": {
+                "position": "short neutral summary of the expert's stance",
+                "key_signals": [
+                    {
+                        "claim": "source-backed practitioner signal",
+                        "support_level": "direct|indirect|weak|unknown",
+                        "supporting_sources": ["source_key"],
+                        "comment_signal": "optional comment evidence",
+                        "limits": "optional uncertainty or missing evidence",
+                    }
+                ],
+                "limits": ["important limitations"],
+            },
+        }
+        response = await client.chat_completions_create(
+            model=config.MODEL_SYNTHESIS,
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You write compact JSON digests for another AI agent. "
+                        "Treat Telegram posts and comments as practitioner-opinion "
+                        "intelligence, not proven facts. Use only the provided "
+                        "source_keys. Do not infer contents of external links. "
+                        "Return strict JSON only."
+                    ),
+                },
+                {
+                    "role": "user",
+                    "content": json.dumps(prompt, ensure_ascii=False),
+                },
+            ],
+            temperature=0.2,
+            response_format={"type": "json_object"},
+            service_name="agent_context_digest",
+            max_tokens=2048,
+        )
+        raw_content = response.choices[0].message.content
+        return self._parse_llm_json(raw_content)
+
+    def _parse_llm_json(self, raw_content: str) -> Any:
+        try:
+            return json.loads(raw_content)
+        except json.JSONDecodeError:
+            start = raw_content.find("{")
+            end = raw_content.rfind("}")
+            if start >= 0 and end > start:
+                return json.loads(raw_content[start : end + 1])
+            raise
+
+    def _normalize_llm_digest(
+        self,
+        *,
+        data: Any,
+        bundle: AgentExpertSourceBundle,
+        source_refs: List[AgentDigestSourceRef],
+        comments_digest: AgentDigestComments,
+        omitted_counts: AgentDigestOmittedCounts,
+    ) -> AgentExpertDigest:
+        if isinstance(data, list):
+            data = {"key_signals": data}
+        if not isinstance(data, dict):
+            data = {}
+
+        valid_source_keys = {source_ref.source_key for source_ref in source_refs}
+        key_signals: List[AgentDigestSignal] = []
+        for raw_signal in data.get("key_signals") or []:
+            if not isinstance(raw_signal, dict):
+                continue
+            claim = self._clip(str(raw_signal.get("claim") or "").strip(), 600)
+            if not claim:
+                continue
+            support_level = str(raw_signal.get("support_level") or "unknown").strip()
+            if support_level not in self._SUPPORTED_SUPPORT_LEVELS:
+                support_level = "unknown"
+            raw_supporting_sources = raw_signal.get("supporting_sources") or []
+            if isinstance(raw_supporting_sources, str):
+                raw_supporting_sources = [raw_supporting_sources]
+            supporting_sources = [
+                source_key
+                for source_key in raw_supporting_sources
+                if source_key in valid_source_keys
+            ]
+            key_signals.append(
+                AgentDigestSignal(
+                    claim=claim,
+                    support_level=support_level,
+                    supporting_sources=supporting_sources,
+                    comment_signal=self._clip(
+                        raw_signal.get("comment_signal"),
+                        360,
+                    ),
+                    limits=self._clip(raw_signal.get("limits"), 360),
+                )
+            )
+            if len(key_signals) >= max(0, int(config.AGENT_CONTEXT_DIGEST_MAX_SIGNALS)):
+                break
+
+        if not key_signals:
+            key_signals = self._fallback_signals(source_refs)
+
+        limits = self._normalize_limits(data.get("limits"))
+        if omitted_counts.main_sources > 0:
+            limits.append(
+                f"{omitted_counts.main_sources} selected main sources omitted from compact digest"
+            )
+        return AgentExpertDigest(
+            position=self._clip(data.get("position"), 900),
+            key_signals=key_signals,
+            source_refs=source_refs,
+            comments_digest=comments_digest,
+            omitted_counts=omitted_counts,
+            limits=limits[:5],
+            no_signal_reason=bundle.no_results_reason,
+        )
+
+    def _fallback_digest(
+        self,
+        *,
+        bundle: AgentExpertSourceBundle,
+        source_refs: List[AgentDigestSourceRef],
+        comments_digest: AgentDigestComments,
+        omitted_counts: AgentDigestOmittedCounts,
+    ) -> AgentExpertDigest:
+        limits = ["LLM expert_digest reduce failed; returned extractive source refs only"]
+        if omitted_counts.main_sources > 0:
+            limits.append(
+                f"{omitted_counts.main_sources} selected main sources omitted from compact digest"
+            )
+        return AgentExpertDigest(
+            position=(
+                f"{bundle.expert_name} has selected sources for this query, "
+                "but no generated stance digest is available."
+            ),
+            key_signals=self._fallback_signals(source_refs),
+            source_refs=source_refs,
+            comments_digest=comments_digest,
+            omitted_counts=omitted_counts,
+            limits=limits,
+            no_signal_reason=bundle.no_results_reason,
+        )
+
+    def _fallback_signals(
+        self,
+        source_refs: List[AgentDigestSourceRef],
+    ) -> List[AgentDigestSignal]:
+        max_signals = max(0, int(config.AGENT_CONTEXT_DIGEST_MAX_SIGNALS))
+        signals: List[AgentDigestSignal] = []
+        for source_ref in source_refs[:max_signals]:
+            claim = source_ref.reason or source_ref.short_excerpt or source_ref.source_key
+            signals.append(
+                AgentDigestSignal(
+                    claim=self._clip(claim, 600) or source_ref.source_key,
+                    support_level="direct",
+                    supporting_sources=[source_ref.source_key],
+                )
+            )
+        return signals
+
+    def _normalize_limits(self, raw_limits: Any) -> List[str]:
+        if not raw_limits:
+            return []
+        if isinstance(raw_limits, str):
+            raw_limits = [raw_limits]
+        if not isinstance(raw_limits, list):
+            return []
+        limits: List[str] = []
+        for raw_limit in raw_limits:
+            limit = self._clip(raw_limit, 360)
+            if limit:
+                limits.append(limit)
+        return limits
+
+    def _clip(self, text: Any, max_chars: int) -> Optional[str]:
+        if text is None:
+            return None
+        cleaned = re.sub(r"\s+", " ", str(text)).strip()
+        if not cleaned:
+            return None
+        if max_chars <= 0 or len(cleaned) <= max_chars:
+            return cleaned
+        return f"{cleaned[: max(0, max_chars - 3)].rstrip()}..."

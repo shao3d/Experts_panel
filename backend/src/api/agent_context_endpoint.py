@@ -14,6 +14,7 @@ from ..models.base import SessionLocal
 from ..services.agent_context_service import (
     AgentContextSearchUnavailable,
     AgentContextService,
+    SUPPORTED_AGENT_CONTEXT_RESPONSE_MODES,
 )
 
 
@@ -80,10 +81,13 @@ def _normalize_expert_ids(expert_ids: Iterable[str] | None) -> list[str]:
 
 def _build_selection_used(agent_request: AgentContextRequest) -> SelectionUsed:
     """Validate MVP request options and return normalized selection metadata."""
-    if agent_request.response_mode != "source_bundle":
+    if agent_request.response_mode not in SUPPORTED_AGENT_CONTEXT_RESPONSE_MODES:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Agent Context API MVP supports only response_mode='source_bundle'",
+            detail=(
+                "Agent Context API supports response_mode values: "
+                f"{', '.join(sorted(SUPPORTED_AGENT_CONTEXT_RESPONSE_MODES))}"
+            ),
         )
 
     if agent_request.include_drift_comment_groups:
@@ -180,7 +184,7 @@ def _reject_unsupported_video_hub(expert_ids: list[str]) -> None:
     if "video_hub" in expert_ids:
         raise HTTPException(
             status_code=status.HTTP_501_NOT_IMPLEMENTED,
-            detail="video_hub source_bundle is not implemented for the Agent Context API MVP",
+            detail="video_hub source_bundle is not implemented for the Agent Context API",
         )
 
 

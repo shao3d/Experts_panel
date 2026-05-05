@@ -82,7 +82,7 @@ class AgentContextRequest(BaseModel):
     )
     response_mode: str = Field(
         default="source_bundle",
-        description="Agent response mode; MVP supports source_bundle",
+        description="Agent response mode: source_bundle or expert_digest",
     )
     expert_scope: str = Field(
         default="all",
@@ -110,7 +110,7 @@ class AgentContextRequest(BaseModel):
     )
     synthesis_level: str = Field(
         default="none",
-        description="MVP source bundle skips answer synthesis",
+        description="Agent Context skips the full UI answer synthesis pipeline",
     )
     use_recent_only: bool = Field(
         default=False,
@@ -202,6 +202,72 @@ class AgentMainSource(BaseModel):
     comments: AgentSourceComments = Field(default_factory=AgentSourceComments)
 
 
+class AgentDigestSourceRef(BaseModel):
+    """Compact source reference included in an Agent Context expert digest."""
+
+    telegram_message_id: int
+    source_key: str
+    relevance: RelevanceLevel
+    reason: Optional[str] = None
+    short_excerpt: Optional[str] = None
+    created_at: Optional[str] = None
+    external_links: List[AgentExternalLink] = Field(default_factory=list)
+    linked_context_count: int = 0
+    author_comments_count: int = 0
+    community_comments_count: int = 0
+
+
+class AgentDigestCommentSignal(BaseModel):
+    """Compact comment snippet attached to an expert digest."""
+
+    source_key: str
+    comment_role: str
+    author_name: Optional[str] = None
+    short_excerpt: str
+    created_at: Optional[str] = None
+
+
+class AgentDigestComments(BaseModel):
+    """Aggregated comment evidence for an expert digest."""
+
+    author_comments_count: int = 0
+    community_comments_count: int = 0
+    included_comments: List[AgentDigestCommentSignal] = Field(default_factory=list)
+    omitted_comments_count: int = 0
+
+
+class AgentDigestSignal(BaseModel):
+    """One compact source-backed signal produced for an expert digest."""
+
+    claim: str
+    support_level: str = "unknown"
+    supporting_sources: List[str] = Field(default_factory=list)
+    comment_signal: Optional[str] = None
+    limits: Optional[str] = None
+
+
+class AgentDigestOmittedCounts(BaseModel):
+    """Counts of raw evidence omitted from compact expert digest transport."""
+
+    main_sources: int = 0
+    linked_context: int = 0
+    author_comments: int = 0
+    community_comments: int = 0
+    external_links: int = 0
+
+
+class AgentExpertDigest(BaseModel):
+    """Panel-side compact digest for one expert."""
+
+    position: Optional[str] = None
+    key_signals: List[AgentDigestSignal] = Field(default_factory=list)
+    source_refs: List[AgentDigestSourceRef] = Field(default_factory=list)
+    comments_digest: AgentDigestComments = Field(default_factory=AgentDigestComments)
+    omitted_counts: AgentDigestOmittedCounts = Field(default_factory=AgentDigestOmittedCounts)
+    limits: List[str] = Field(default_factory=list)
+    no_signal_reason: Optional[str] = None
+
+
 class AgentExpertSourceBundle(BaseModel):
     """Source bundle for a single expert in the Agent Context API."""
 
@@ -211,11 +277,12 @@ class AgentExpertSourceBundle(BaseModel):
     selected_sources_count: int = 0
     unattached_linked_context: List[AgentLinkedContext] = Field(default_factory=list)
     main_sources: List[AgentMainSource] = Field(default_factory=list)
+    digest: Optional[AgentExpertDigest] = None
     no_results_reason: Optional[str] = None
 
 
 class AgentContextResponse(BaseModel):
-    """Response model for Agent Context API source bundles."""
+    """Response model for Agent Context API source bundles and digests."""
 
     request_id: str
     mode: str = "source_bundle"

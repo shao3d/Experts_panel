@@ -25,7 +25,11 @@ from src.api.main import app
 from src.cli import agent_context
 from src.services import agent_context_service as agent_context_module
 from src.services import health_probe_service as health_probe_module
-from src.services.agent_context_service import AgentContextSearchContext, AgentContextService
+from src.services.agent_context_service import (
+    AgentContextSearchContext,
+    AgentContextService,
+    AgentExpertDigestReducer,
+)
 
 
 class FakeHealthProbeService:
@@ -381,6 +385,66 @@ def test_acceptance_custom_experts_flow_from_cli_to_source_bundle(monkeypatch, c
     assert result.stdout.count("selected_sources_count: 2") == 2
     assert "101 [HIGH] Direct match for refat" in result.stdout
     assert "101 [HIGH] Direct match for akimov" in result.stdout
+
+
+def test_acceptance_expert_digest_flow_compacts_evidence_before_cli_output(
+    monkeypatch,
+    capsys,
+):
+    observed = given_source_bundle_pipeline_fakes(monkeypatch)
+
+    async def fake_call_llm_digest(self, *, query, bundle, evidence):
+        return {
+            "position": f"{bundle.expert_name} has compact signal for {query}.",
+            "key_signals": [
+                {
+                    "claim": f"Digest signal for {bundle.expert_id}",
+                    "support_level": "direct",
+                    "supporting_sources": [f"{bundle.expert_id}:101"],
+                }
+            ],
+            "limits": ["Acceptance fake digest"],
+        }
+
+    monkeypatch.setattr(
+        AgentExpertDigestReducer,
+        "_call_llm_digest",
+        fake_call_llm_digest,
+    )
+
+    result = when_cli_calls_agent_context(
+        monkeypatch,
+        capsys,
+        [
+            "--query",
+            "AI agents for sales",
+            "--experts",
+            "refat",
+            "--response-mode",
+            "expert_digest",
+            "--json",
+        ],
+    )
+
+    then_cli_succeeded(result)
+    request_body = result.http_calls[0]["json"]
+    response_payload = _raw_payload(result)
+    expert = response_payload["experts"][0]
+
+    assert request_body["response_mode"] == "expert_digest"
+    assert response_payload["mode"] == "expert_digest"
+    assert "expert_digest_reduce" in response_payload["pipeline_used"]
+    assert "reduce_answer_synthesis" in response_payload["pipeline_skipped"]
+    assert observed["comment_expert_ids"] == ["refat"]
+    assert expert["selected_sources_count"] == 2
+    assert expert["main_sources"] == []
+    assert expert["unattached_linked_context"] == []
+    assert expert["digest"]["position"] == (
+        "Refat has compact signal for AI agents for sales."
+    )
+    assert expert["digest"]["key_signals"][0]["supporting_sources"] == ["refat:101"]
+    assert expert["digest"]["source_refs"][0]["source_key"] == "refat:101"
+    assert expert["digest"]["comments_digest"]["included_comments"]
 
 
 def test_acceptance_safe_defaults_survive_cli_http_api_boundary(monkeypatch, capsys):
