@@ -18,8 +18,8 @@ Current state as of 2026-05-05:
 | AND-6 real `source_bundle` pipeline | Done | The endpoint now returns selected source bundles instead of the placeholder `experts=[]` response. It runs retrieval, Map, MEDIUM scoring, HIGH resolve, source selection, and main-source comment loading. |
 | AND-7 local CLI wrapper | Done | `src.cli.agent_context` calls the endpoint over HTTP with safe source-bundle defaults, keeps the token in the Authorization header, supports all/group/custom selection, and prints agent-readable summaries or raw JSON. |
 | AND-8 BDD acceptance hardening | Done | In-process CLI -> HTTP -> FastAPI -> `source_bundle` acceptance tests cover explicit expert selection, safe defaults, no full synthesis, source evidence shape, token boundary, and actionable API failures. |
-| AND-9 repo-local `experts_panel_researcher` subagent contract | Done | Repo-local Claude and Codex agent instructions exist, stay read-only, require explicit triggers, call the local CLI only, and return practitioner-opinion intelligence using the Signals frame. |
-| AND-10 local dogfood for `experts_panel_researcher` | Done | A synthetic source_bundle fixture and dogfood tests verify that CLI JSON is synthesis input, local readiness failures are actionable, defaults stay local, and the six-section Signals frame is usable before production exposure. |
+| AND-9 repo-local `experts_panel_researcher` subagent contract | Done | Repo-local Claude and Codex agent instructions exist, stay read-only, require explicit triggers, call the Agent Context CLI/wrapper only, pin real user calls to the production Fly.io endpoint, and return practitioner-opinion intelligence using the Signals frame. |
+| AND-10 local dogfood for `experts_panel_researcher` | Done | A synthetic source_bundle fixture and dogfood tests verify that CLI JSON is synthesis input, readiness failures are actionable, local smoke remains explicit-only, and the six-section Signals frame is usable. |
 | AND-11 live local dogfood smoke | Done | `backend/scripts/agent_context_live_smoke.py` can preflight local readiness, start Experts Panel on a free localhost port, call the CLI with explicit `--api-url`, validate `source_bundle`, and write a sanitized report with `passed`/`skipped`/`failed` status. |
 | AND-12 paid local live smoke | Done | Paid local smoke passed with the default `refat,akimov` query and returned a valid real `source_bundle`. Runtime defaults are intentionally large (`3600s` / `100000000` bytes) because all-expert source-bundle requests are naturally long and bulky. |
 | AND-13 bounded expert parallelism | Done | Agent Context now inherits the main pipeline's bounded expert parallelism pattern: selected experts run as async tasks behind `MAX_CONCURRENT_EXPERTS`, while response order stays aligned to the requested expert order. |
@@ -27,7 +27,7 @@ Current state as of 2026-05-05:
 | AND-15 production Fly smoke mode | Done | `backend/scripts/agent_context_live_smoke.py` has an explicit external mode via `--api-url`; without that flag it still starts a local backend and ignores ambient `AGENT_CONTEXT_API_URL` to avoid accidental Fly calls. Production smoke passed on Fly with a separate production token for `refat,akimov`. |
 | AND-16 source external links V1 | Done | `source_bundle` now extracts HTTP(S) links from each selected `main_source` into `main_sources[].external_links` as author-supplied references with `fetch_status=not_fetched`. The API/CLI/subagent contract does not fetch, crawl, clone, or summarize external URLs unless a later explicit enrichment mode is requested. Local live dogfood for `neuraldeep` found 40 real external links with `bad_suffix_links_count=0`; production public endpoint verification on Fly version `338` found 99 real external links with `bad_suffix_links_count=0`. |
 | Forced embedding search for Agent Context | Done | Agent Context always forces Embs&Keys hybrid retrieval: CLI sends `use_super_passport=true`, API records `selection_used.use_super_passport=true`, and service prepares one query embedding for all selected experts before bounded parallel expert processing. UI toggle state does not apply to subagent/API calls. |
-| Production Fly exposure | Done for explicit smoke | `https://experts-panel.fly.dev/api/v1/agent/context` is callable with the separate production bearer token and large source-bundle budgets. The repo-local subagent default remains local; production calls must stay explicit. |
+| Production Fly exposure | Done for explicit smoke and default subagent target | `https://experts-panel.fly.dev/api/v1/agent/context` is callable with the separate production bearer token and large source-bundle budgets. The subagent must pass this Fly URL explicitly for real user research calls; localhost is only for explicit local smoke/debug. |
 
 Implemented code paths:
 
@@ -114,10 +114,10 @@ cd backend
 .venv/bin/python -m src.cli.agent_context --query "AI agents for sales" --json
 ```
 
-Important boundary: production Fly exposure is proven only for an explicit
-manual `refat,akimov` smoke. It does not make Fly the default subagent target,
-does not prove all-experts production runtime, and does not build a Reddit
-source packet or Video Hub source-bundle adapter.
+Important boundary: Fly.io is now the default target for real subagent research
+calls, but production proof is still narrow: explicit `refat,akimov` smoke has
+passed, while all-experts production runtime remains unproven. This also does
+not build a Reddit source packet or Video Hub source-bundle adapter.
 
 ---
 
@@ -781,21 +781,25 @@ The router should own its `/api/v1/agent` prefix so registration does not double
 
 ### Step 5 - Explicit-only subagent spec
 
-Status: **Done for local usage. CLI wrapper is implemented in AND-7; repo-local Claude and Codex subagent contracts are implemented in AND-9. Production exposure is still pending.**
+Status: **Done. CLI wrapper is implemented in AND-7; repo-local Claude and Codex subagent contracts are implemented in AND-9; production Fly usage is implemented and is the default target for real subagent research calls after AND-15.**
 
-Before wiring the subagent to production Fly, add a local CLI wrapper around the agent context endpoint. The wrapper is the first supported integration surface for Codex/Claude Code.
+The Agent Context CLI/wrapper is the first supported integration surface for Codex/Claude Code. The CLI still has a local default for backend debugging, but the subagent must not rely on that default for real research calls.
 
 Wrapper responsibilities:
 
 - hold the API token outside the broad main-agent prompt;
-- target local development by default;
-- allow explicit production URL configuration later;
+- target production Fly.io explicitly for real subagent calls:
+  `https://experts-panel.fly.dev/api/v1/agent/context`;
+- keep local development as an explicit smoke/debug mode only;
 - send `response_mode = source_bundle`;
 - send `use_super_passport = true` and rely on the API to force it true even if a caller tries to disable it;
 - keep `include_reddit = false`, `include_main_source_comments = true`, `include_drift_comment_groups = false`, and `synthesis_level = none` unless explicitly overridden by the caller;
 - print `selection_used`, warnings, and source packet metadata.
 
-Production Fly usage is allowed only after endpoint auth, rate limiting, timeout, response-size limits, and basic request logging are implemented and covered by tests.
+Production Fly usage is allowed because endpoint auth, rate limiting, timeout,
+response-size limits, and basic request logging are implemented and covered by
+tests. Agents copied into other repositories must keep the same Fly URL and
+must not fall back to random `localhost` services.
 
 Add durable instructions for Codex/Claude Code integration:
 
@@ -811,13 +815,14 @@ Add durable instructions for Codex/Claude Code integration:
 - never edit repo files;
 - never broaden scope silently.
 
-The first subagent lives in repo-local Claude/Codex configuration, next to this spec and the CLI wrapper. A global user-level subagent may be added later only as a stable shortcut after the endpoint and wrapper contract have proven safe.
+The first subagent lives in repo-local Claude/Codex configuration, next to this spec and the CLI wrapper. A global user-level subagent may be added later as a stable shortcut, but it must keep the production Fly URL pinned for real research calls.
 
 ### Step 5.5 - Local Dogfood
 
-Status: **Done in AND-10 for local contract and manual smoke readiness.**
+Status: **Done in AND-10 for local contract and manual smoke readiness. Local smoke is no longer the default user-facing subagent target.**
 
-Local dogfood proves the user-facing workflow before production Fly exposure:
+Local dogfood proves the workflow against a local backend only when explicitly
+requested:
 
 ```text
 explicit user request
@@ -836,7 +841,18 @@ Dogfood fixture:
 backend/tests/fixtures/experts_panel_researcher_source_bundle_sample.json
 ```
 
-Manual smoke, only when local backend and `AGENT_CONTEXT_API_TOKEN` are
+Real user-facing subagent smoke should use production Fly:
+
+```text
+cd backend
+.venv/bin/python -m src.cli.agent_context \
+  --query "AI agents for sales" \
+  --experts refat,akimov \
+  --api-url https://experts-panel.fly.dev/api/v1/agent/context \
+  --json
+```
+
+Manual local smoke, only when local backend and `AGENT_CONTEXT_API_TOKEN` are
 intentionally available:
 
 ```text
@@ -844,14 +860,14 @@ cd backend
 .venv/bin/python -m src.cli.agent_context --query "AI agents for sales" --experts refat,akimov --json
 ```
 
-The local backend default remains:
+The CLI local backend default remains for explicit local debug:
 
 ```text
 http://localhost:8000/api/v1/agent/context
 ```
 
-Do not use production/Fly for dogfood unless `AGENT_CONTEXT_API_URL` is
-explicitly configured for that later production slice.
+Do not use the CLI default for real subagent calls. Always pass the Fly URL with
+`--api-url`.
 
 Signals frame checklist:
 
@@ -864,8 +880,10 @@ Signals frame checklist:
 
 Failure handling:
 
-- missing `AGENT_CONTEXT_API_TOKEN`: explain that the local token must be configured;
-- unreachable local backend: ask to start backend or check `AGENT_CONTEXT_API_URL`;
+- missing `AGENT_CONTEXT_API_TOKEN`: explain that the production token must be configured;
+- `HTTP 403` / invalid token: explain that the configured token is not the production Agent Context token;
+- DNS/`NameResolutionError`/unreachable Fly endpoint: explain that production network access is blocked or unavailable;
+- unreachable local backend during explicit local smoke: ask to start backend or check `AGENT_CONTEXT_API_URL`;
 - `video_hub`/`501`: report unsupported source_bundle adapter;
 - unknown expert: ask one clarification before retrying.
 - `HTTP 413` / `response_too_large`: report that the source bundle exceeded
@@ -984,8 +1002,10 @@ Earlier production smoke evidence before forced Embs&Keys retrieval used Fly
 release `v333`; the accepted current proof is the rerun after commit `5023e56`
 deployed and the production token was rotated.
 
-Do not switch the repo-local subagent default to Fly automatically. The safe
-default remains local CLI usage; production calls require explicit `--api-url`.
+The subagent now treats Fly.io as the safe real-request target. It must pass
+`--api-url https://experts-panel.fly.dev/api/v1/agent/context` explicitly on
+production calls and reserve localhost/default CLI usage for explicit local
+smoke or backend debugging.
 
 ### Step 6 - Verification
 
@@ -1031,11 +1051,11 @@ Minimum tests:
 - CLI -> HTTP -> FastAPI -> source_bundle flow preserves explicit expert selection and safe defaults;
 - CLI acceptance path does not leak the API token into request body, stdout, or stderr;
 - unsupported `video_hub` request fails with an actionable API message;
-- repo-local Claude/Codex subagent instructions are read-only, explicit-only, token-safe, and use the Signals frame instead of proof framing;
-- local dogfood fixture and instructions verify JSON-as-input, actionable readiness failures, local defaults, and Signals frame usability;
+- repo-local Claude/Codex subagent instructions are read-only, explicit-only, token-safe, pin production Fly.io for real calls, and use the Signals frame instead of proof framing;
+- local dogfood fixture and instructions verify JSON-as-input, actionable readiness failures, explicit local smoke, and Signals frame usability;
 - live local smoke helper can preflight, skip/fail/pass cleanly, use a free port, call CLI with explicit `--api-url`, and write a sanitized report;
 - external smoke helper mode can call an explicit production/Fly URL without starting a local backend;
-- default local smoke ignores ambient `AGENT_CONTEXT_API_URL` so Fly is never the accidental default;
+- default local smoke ignores ambient `AGENT_CONTEXT_API_URL`; subagent real-call instructions bypass the local default by always passing the Fly URL explicitly;
 - existing `/api/v1/query` smoke still passes.
 
 ## 14. Acceptance Criteria Status
@@ -1056,10 +1076,10 @@ Backend source-bundle MVP status:
 | production exposure is blocked until auth, rate, timeout, and audit logging exist | Done for explicit smoke: auth/rate/timeout/size gates exist, production bearer token is separate, Fly `/health` passed, and external `refat,akimov` source_bundle smoke passed |
 | local CLI wrapper works before production Fly usage is enabled | Done |
 | BDD acceptance checks cover the CLI -> API -> source_bundle boundary | Done |
-| first subagent is repo-local and explicit-only | Done |
+| first subagent is repo-local and explicit-only | Done; real research calls pin the production Fly.io endpoint |
 | local dogfood can evaluate source_bundle JSON through the Signals frame | Done |
 | live local smoke helper verifies real local CLI/API readiness without Fly | Done |
-| external smoke helper can target production Fly only when explicitly requested | Done: `--api-url` enables `target_mode = "external"`, default local mode ignores ambient `AGENT_CONTEXT_API_URL`, and live Fly smoke passed |
+| external smoke helper can target production Fly only when explicitly requested | Done: `--api-url` enables `target_mode = "external"`, default local mode ignores ambient `AGENT_CONTEXT_API_URL`, live Fly smoke passed, and subagent instructions now pass the Fly URL explicitly for real calls |
 | Agent Context inherits bounded parallel expert processing | Done: selected experts run behind `MAX_CONCURRENT_EXPERTS`, response order stays stable |
 | first paid local live smoke returns a valid real source_bundle | Done: after forced Embs&Keys retrieval, default `refat,akimov` query passed with `refat=42`, `akimov=67`, `response_bytes=1081305`, `processing_time_ms=57321`, no warnings |
 | all-experts paid local smoke returns a valid real source_bundle | Done: after forced Embs&Keys retrieval, full MVP Telegram roster passed with `17` experts, `response_bytes=7462364`, `processing_time_ms=275622`, no warnings |
@@ -1074,5 +1094,5 @@ These decisions close the remaining open questions for the MVP implementation:
 
 1. `CONTEXT` association uses explicit resolve provenance only. If provenance is missing, return the linked item in `unattached_linked_context` with a warning.
 2. Build and use a local CLI wrapper before enabling production Fly usage.
-3. Keep the first `experts_panel_researcher` subagent repo-local. Add a global user-level shortcut only after the API and wrapper contract are stable.
+3. Keep the first `experts_panel_researcher` subagent repo-local, but pin real research calls to the production Fly.io endpoint so the same agent contract can be copied into other repositories. Add a global user-level shortcut only after the API and wrapper contract are stable.
 4. Treat external URLs found in selected source posts as references-only in default `source_bundle`. Surface them under `main_sources[].external_links` but do not fetch or summarize them without an explicit future enrichment mode.

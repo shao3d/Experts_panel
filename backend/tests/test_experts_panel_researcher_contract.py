@@ -129,6 +129,18 @@ def test_agents_require_explicit_triggers_and_expert_selection_clarification():
     assert "ask one clarification" in normalized
 
 
+def test_agents_pin_production_fly_endpoint_for_real_calls():
+    combined = "\n".join([_read(CLAUDE_AGENT_PATH), _codex_agent_config()["developer_instructions"]])
+    normalized = _normalize(combined)
+
+    assert "https://experts-panel.fly.dev/api/v1/agent/context" in combined
+    assert "--api-url https://experts-panel.fly.dev/api/v1/agent/context" in combined
+    assert "fly.io" in normalized
+    assert "do not rely on the cli default" in normalized
+    assert "use localhost only when" in normalized
+    assert "copied into another repository" in normalized
+
+
 def test_agents_use_signals_frame_instead_of_proof_frame():
     combined = "\n".join([_read(CLAUDE_AGENT_PATH), _codex_agent_config()["developer_instructions"]])
     normalized = _normalize(combined)

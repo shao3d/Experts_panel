@@ -121,10 +121,14 @@ def test_agents_treat_cli_json_as_synthesis_input_not_final_answer():
         assert section in instructions
 
 
-def test_agents_have_actionable_local_readiness_failure_guidance():
+def test_agents_have_actionable_readiness_failure_guidance():
     normalized = _normalize(_agent_instructions())
 
     assert "missing agent_context_api_token" in normalized
+    assert "production token" in normalized
+    assert "invalid agent context token" in normalized
+    assert "nameresolutionerror" in normalized
+    assert "fly endpoint" in normalized
     assert "unreachable local backend" in normalized
     assert "agent context api endpoint is unreachable" in normalized
     assert "video_hub" in normalized
@@ -132,7 +136,7 @@ def test_agents_have_actionable_local_readiness_failure_guidance():
     assert "tell the parent what setup/action is needed" in normalized
 
 
-def test_dogfood_defaults_to_local_without_accidental_production():
+def test_real_subagent_calls_pin_fly_without_relying_on_local_default():
     cli_source = _read(CLI_PATH)
     dogfood_text = "\n".join(
         [
@@ -144,7 +148,10 @@ def test_dogfood_defaults_to_local_without_accidental_production():
 
     assert 'DEFAULT_AGENT_CONTEXT_API_URL = "http://localhost:8000/api/v1/agent/context"' in cli_source
     assert "http://localhost:8000/api/v1/agent/context" in dogfood_text
-    assert "https://experts-panel.fly.dev" not in _agent_instructions()
+    assert "https://experts-panel.fly.dev/api/v1/agent/context" in _agent_instructions()
+    assert "--api-url https://experts-panel.fly.dev/api/v1/agent/context" in _agent_instructions()
+    assert "do not rely on the cli default" in _normalize(_agent_instructions())
+    assert "localhost only when" in _normalize(_agent_instructions())
     assert "https://experts-panel.fly.dev" not in _read(DOGFOOD_SAMPLE_PATH)
 
 
