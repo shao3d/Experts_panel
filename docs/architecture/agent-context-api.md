@@ -1,6 +1,6 @@
 # Agent Context API Spec
 
-**Status:** Accepted / AND-5 + AND-6 + AND-7 + AND-8 + AND-9 + AND-10 + AND-11 + AND-12 + AND-13 + AND-14 + AND-15 implemented / forced embedding search implemented
+**Status:** Accepted / AND-5 + AND-6 + AND-7 + AND-8 + AND-9 + AND-10 + AND-11 + AND-12 + AND-13 + AND-14 + AND-15 + AND-16 implemented / forced embedding search implemented
 **Decision:** `.haft/decisions/dec-20260504-b2539c3d.md`
 **Last updated:** 2026-05-05
 
@@ -25,6 +25,7 @@ Current state as of 2026-05-05:
 | AND-13 bounded expert parallelism | Done | Agent Context now inherits the main pipeline's bounded expert parallelism pattern: selected experts run as async tasks behind `MAX_CONCURRENT_EXPERTS`, while response order stays aligned to the requested expert order. |
 | AND-14 all-experts paid local smoke | Done | Paid local smoke passed for the full MVP Telegram roster (`17` experts, no `video_hub`) with bounded parallelism, no warnings, and a `7.46MB` source_bundle response after forced Embs&Keys retrieval. |
 | AND-15 production Fly smoke mode | Done | `backend/scripts/agent_context_live_smoke.py` has an explicit external mode via `--api-url`; without that flag it still starts a local backend and ignores ambient `AGENT_CONTEXT_API_URL` to avoid accidental Fly calls. Production smoke passed on Fly with a separate production token for `refat,akimov`. |
+| AND-16 source external links V1 | Done | `source_bundle` now extracts HTTP(S) links from each selected `main_source` into `main_sources[].external_links` as author-supplied references with `fetch_status=not_fetched`. The API/CLI/subagent contract does not fetch, crawl, clone, or summarize external URLs unless a later explicit enrichment mode is requested. Local live dogfood for `neuraldeep` found 40 real external links with `bad_suffix_links_count=0`. |
 | Forced embedding search for Agent Context | Done | Agent Context always forces Embs&Keys hybrid retrieval: CLI sends `use_super_passport=true`, API records `selection_used.use_super_passport=true`, and service prepares one query embedding for all selected experts before bounded parallel expert processing. UI toggle state does not apply to subagent/API calls. |
 | Production Fly exposure | Done for explicit smoke | `https://experts-panel.fly.dev/api/v1/agent/context` is callable with the separate production bearer token and large source-bundle budgets. The repo-local subagent default remains local; production calls must stay explicit. |
 
@@ -362,6 +363,16 @@ The endpoint returns a bounded evidence packet, not the entire corpus.
           "author_name": "Refat",
           "is_original": true,
           "linked_context": [],
+          "external_links": [
+            {
+              "url": "https://github.com/example/repo",
+              "domain": "github.com",
+              "label": "example repo",
+              "context": "... surrounding source text ...",
+              "link_type": "github_repo",
+              "fetch_status": "not_fetched"
+            }
+          ],
           "comments": {
             "author_comments": [],
             "community_comments": []
@@ -379,7 +390,8 @@ The endpoint returns a bounded evidence packet, not the entire corpus.
     "medium_scoring_if_needed",
     "resolve_high_sources_if_needed",
     "source_selection",
-    "main_source_comments"
+    "main_source_comments",
+    "external_link_references"
   ],
   "pipeline_skipped": [
     "reduce_answer_synthesis",
@@ -451,6 +463,8 @@ Rules:
 - do not include LOW posts;
 - do not promote linked CONTEXT posts to `main_sources`;
 - return linked/resolve context under the selected source as `linked_context` only when explicit provenance proves the association;
+- return external HTTP(S) references found inside selected source content as `main_sources[].external_links`;
+- external links are author-supplied references only in V1: set `fetch_status = "not_fetched"` and do not fetch, crawl, clone, or summarize URL contents inside default `source_bundle`;
 - preserve each selected source's `relevance`, `reason`, and optional medium `score` / `score_reason`.
 
 Implementation detail:
@@ -466,6 +480,7 @@ Implementation detail:
 - Heuristic attachment by date, text similarity, neighboring list position, or channel-level co-occurrence is not allowed in the MVP.
 - If one linked CONTEXT post has explicit provenance for multiple selected sources, it may appear under each relevant `linked_context` list with the same stable context id.
 - If association cannot be proven from the current data shape, return the item in expert-level `unattached_linked_context` with a warning rather than promoting it to `main_sources`.
+- External link extraction is source-local and references-only. Extract Markdown links and plain `http(s)` URLs from the selected source content, include domain/link type/context metadata, and dedupe repeated URLs within one source. Do not use external URL contents as evidence unless a future explicit link-enrichment mode records fetch status, timestamp, and provenance.
 
 This is the first deterministic source_bundle contract. If later quality checks show that Reduce's LLM-selected `main_sources` are materially better, add a narrow selector step instead of re-enabling full answer synthesis.
 
@@ -483,6 +498,7 @@ Default `source_bundle` mode should run a source discovery pipeline:
    3.4 Resolve HIGH sources if linked context is useful.
    3.5 Select sources for the evidence packet.
    3.6 Load comments under selected sources.
+   3.7 Extract external HTTP(S) references from selected source content without fetching them.
 4. Optionally add Reddit source packet if requested.
 5. Return source_bundle JSON.
 ```
@@ -1010,6 +1026,7 @@ Minimum tests:
 - Agent Context always prepares one query embedding and uses hybrid retrieval for subagent/API source discovery regardless of the UI Embs&Keys toggle;
 - default source_bundle does not call `ReduceService`, `LanguageValidationService`, `score_drift_groups`, `CommentSynthesisService`, or `MetaSynthesisService` (use monkeypatch fakes that fail if called);
 - comments under selected sources are returned under each source;
+- external links under selected sources are returned as `external_links` with `fetch_status=not_fetched`, and the subagent instructions forbid automatic external browsing;
 - `include_drift_comment_groups=true` is rejected in MVP;
 - CLI -> HTTP -> FastAPI -> source_bundle flow preserves explicit expert selection and safe defaults;
 - CLI acceptance path does not leak the API token into request body, stdout, or stderr;
@@ -1048,6 +1065,7 @@ Backend source-bundle MVP status:
 | all-experts paid local smoke returns a valid real source_bundle | Done: after forced Embs&Keys retrieval, full MVP Telegram roster passed with `17` experts, `response_bytes=7462364`, `processing_time_ms=275622`, no warnings |
 | first production Fly smoke returns a valid real source_bundle | Done after forced Embs&Keys retrieval: explicit `refat,akimov` production smoke passed with `selection_used.use_super_passport=true`, `response_bytes=438663`, `processing_time_ms=140105`, no warnings |
 | subagent/CLI/API retrieval always uses embeddings | Done: CLI sends `use_super_passport=true`, API normalizes `selection_used.use_super_passport=true`, and service passes a precomputed query embedding into `HybridRetrievalService` for every selected expert |
+| selected source external links are surfaced without automatic browsing | Done: `main_sources[].external_links` carries author-supplied references with `fetch_status=not_fetched`; CLI summary prints link counts; subagent instructions forbid opening/fetching/crawling/cloning/summarizing external URLs unless explicitly requested; local live dogfood for `neuraldeep` found 40 real external links across 11 selected sources, all `not_fetched`, with `bad_suffix_links_count=0` |
 | existing UI/SSE query endpoint is unchanged | Done by route-preservation/source-bundle isolation tests |
 
 ## 15. Closed Design Decisions
@@ -1057,3 +1075,4 @@ These decisions close the remaining open questions for the MVP implementation:
 1. `CONTEXT` association uses explicit resolve provenance only. If provenance is missing, return the linked item in `unattached_linked_context` with a warning.
 2. Build and use a local CLI wrapper before enabling production Fly usage.
 3. Keep the first `experts_panel_researcher` subagent repo-local. Add a global user-level shortcut only after the API and wrapper contract are stable.
+4. Treat external URLs found in selected source posts as references-only in default `source_bundle`. Surface them under `main_sources[].external_links` but do not fetch or summarize them without an explicit future enrichment mode.

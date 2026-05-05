@@ -85,6 +85,12 @@ def test_dogfood_sample_supports_every_signals_frame_section():
     assert all(source["source_role"] == "main" for source in all_sources)
     assert all(source["relevance"] in {"HIGH", "MEDIUM"} for source in all_sources)
     assert any(source["linked_context"] for source in all_sources)
+    assert any(source["external_links"] for source in all_sources)
+    assert all(
+        link["fetch_status"] == "not_fetched"
+        for source in all_sources
+        for link in source["external_links"]
+    )
     assert any(
         source["comments"]["author_comments"]
         or source["comments"]["community_comments"]

@@ -182,7 +182,11 @@ def given_source_bundle_pipeline_fakes(monkeypatch):
                         "telegram_message_id": 101,
                         "relevance": "HIGH",
                         "reason": f"Direct match for {expert_id}",
-                        "content": f"High source from {expert_id}",
+                        "content": (
+                            f"High source from {expert_id} cites "
+                            "[LangGraph](https://github.com/langchain-ai/langgraph) "
+                            "and https://example.com/agent-context."
+                        ),
                         "author": expert_id.title(),
                         "created_at": "2026-04-10T12:00:00",
                         "is_original": True,
@@ -491,6 +495,12 @@ def test_acceptance_source_evidence_shape_is_agent_readable(monkeypatch, capsys)
     assert high_source["source_key"] == "refat:101"
     assert high_source["source_role"] == "main"
     assert high_source["relevance"] == "HIGH"
+    assert [link["url"] for link in high_source["external_links"]] == [
+        "https://github.com/langchain-ai/langgraph",
+        "https://example.com/agent-context",
+    ]
+    assert high_source["external_links"][0]["fetch_status"] == "not_fetched"
+    assert high_source["external_links"][0]["link_type"] == "github_repo"
     assert high_source["linked_context"][0]["telegram_message_id"] == 201
     assert high_source["linked_context"][0]["parent_source_key"] == "refat:101"
     assert high_source["comments"]["author_comments"][0]["comment_text"] == (

@@ -142,6 +142,17 @@ def test_agents_use_signals_frame_instead_of_proof_frame():
         assert forbidden_term not in combined
 
 
+def test_agents_treat_external_links_as_author_references_not_auto_browsing():
+    combined = "\n".join([_read(CLAUDE_AGENT_PATH), _codex_agent_config()["developer_instructions"]])
+    normalized = _normalize(combined)
+
+    assert "external_links" in combined
+    assert "author-supplied references" in normalized
+    assert "fetch_status=not_fetched" in normalized
+    assert "do not open, fetch, crawl, clone, or summarize external links" in normalized
+    assert "explicitly asks for link enrichment or external research" in normalized
+
+
 def test_agent_files_do_not_store_token_values():
     combined = "\n".join([_read(CLAUDE_AGENT_PATH), _read(CODEX_AGENT_PATH)])
 

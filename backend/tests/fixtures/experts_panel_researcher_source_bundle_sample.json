@@ -67,6 +67,16 @@
               ]
             }
           ],
+          "external_links": [
+            {
+              "url": "https://github.com/langchain-ai/langgraph",
+              "domain": "github.com",
+              "label": "LangGraph",
+              "context": "Refat frames AI agents for sales as GTM workflow support and points to LangGraph as an author-supplied implementation reference.",
+              "link_type": "github_repo",
+              "fetch_status": "not_fetched"
+            }
+          ],
           "comments": {
             "author_comments": [
               {
@@ -101,6 +111,7 @@
           "score": 0.91,
           "score_reason": "Complements the high source with a quality-over-volume constraint",
           "linked_context": [],
+          "external_links": [],
           "comments": {
             "author_comments": [],
             "community_comments": []
@@ -145,6 +156,16 @@
               ]
             }
           ],
+          "external_links": [
+            {
+              "url": "https://example.com/sales-ops-agent-checklist",
+              "domain": "example.com",
+              "label": null,
+              "context": "Akimov frames AI agents for sales as operations automation and includes an author-supplied checklist link.",
+              "link_type": "web",
+              "fetch_status": "not_fetched"
+            }
+          ],
           "comments": {
             "author_comments": [
               {
@@ -170,7 +191,8 @@
     "medium_scoring_if_needed",
     "resolve_high_sources_if_needed",
     "source_selection",
-    "main_source_comments"
+    "main_source_comments",
+    "external_link_references"
   ],
   "pipeline_skipped": [
     "reduce_answer_synthesis",

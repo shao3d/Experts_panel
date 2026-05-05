@@ -62,6 +62,16 @@ def _source_bundle_response():
                         "source_key": "refat:101",
                         "relevance": "HIGH",
                         "reason": "Direct match",
+                        "external_links": [
+                            {
+                                "url": "https://github.com/langchain-ai/langgraph",
+                                "domain": "github.com",
+                                "label": "LangGraph",
+                                "context": "Direct match references LangGraph",
+                                "link_type": "github_repo",
+                                "fetch_status": "not_fetched",
+                            }
+                        ],
                         "linked_context": [
                             {"telegram_message_id": 201, "source_key": "refat:201"}
                         ],
@@ -264,6 +274,7 @@ def test_cli_prints_agent_readable_source_bundle_summary(
     assert "101 [HIGH] Direct match" in captured.out
     assert "comments: author=1 community=1" in captured.out
     assert "linked_context=1" in captured.out
+    assert "external_links=1" in captured.out
     assert "unattached_linked_context: 1" in captured.out
 
 

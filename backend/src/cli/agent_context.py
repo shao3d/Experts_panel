@@ -181,12 +181,14 @@ def print_summary(payload: dict[str, Any]) -> None:
             author_count = len(comments.get("author_comments") or [])
             community_count = len(comments.get("community_comments") or [])
             linked_count = len(source.get("linked_context") or [])
+            external_link_count = len(source.get("external_links") or [])
 
             print(f"    - {source_id} [{relevance}] {reason}")
             print(
                 "      comments: "
                 f"author={author_count} community={community_count}; "
-                f"linked_context={linked_count}"
+                f"linked_context={linked_count}; "
+                f"external_links={external_link_count}"
             )
 
     pipeline_used = payload.get("pipeline_used") or []

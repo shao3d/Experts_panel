@@ -556,7 +556,11 @@ def test_agent_context_builds_sources_context_and_comments(monkeypatch):
                         "telegram_message_id": 101,
                         "relevance": "HIGH",
                         "reason": "Direct match",
-                        "content": "High content",
+                        "content": (
+                            "High content references "
+                            "[LangGraph](https://github.com/langchain-ai/langgraph) "
+                            "and https://example.com/ai-agents-report."
+                        ),
                         "author": "Refat",
                         "created_at": "2026-04-10T12:00:00",
                         "is_original": True,
@@ -655,18 +659,54 @@ def test_agent_context_builds_sources_context_and_comments(monkeypatch):
 
     high_source = expert["main_sources"][0]
     assert high_source["source_key"] == "refat:101"
+    external_links = high_source["external_links"]
+    assert [link["url"] for link in external_links] == [
+        "https://github.com/langchain-ai/langgraph",
+        "https://example.com/ai-agents-report",
+    ]
+    assert external_links[0]["label"] == "LangGraph"
+    assert external_links[0]["domain"] == "github.com"
+    assert external_links[0]["link_type"] == "github_repo"
+    assert external_links[0]["fetch_status"] == "not_fetched"
+    assert "High content references" in external_links[0]["context"]
+    assert external_links[1]["label"] is None
+    assert external_links[1]["domain"] == "example.com"
+    assert external_links[1]["link_type"] == "web"
+    assert external_links[1]["fetch_status"] == "not_fetched"
     assert high_source["linked_context"][0]["telegram_message_id"] == 201
     assert high_source["comments"]["author_comments"][0]["comment_text"] == "Author clarification"
     assert high_source["comments"]["community_comments"][0]["comment_text"] == "Community comment"
 
     medium_source = expert["main_sources"][1]
     assert medium_source["telegram_message_id"] == 102
+    assert medium_source["external_links"] == []
     assert medium_source["score"] == 0.91
     assert medium_source["score_reason"] == "Complements the high source"
 
     assert expert["unattached_linked_context"][0]["telegram_message_id"] == 202
     assert "reduce_answer_synthesis" in response.json()["pipeline_skipped"]
     assert "agent_context_source_pipeline_not_implemented" not in response.json()["warnings"]
+
+
+def test_agent_context_external_link_extraction_handles_telegram_markdown_edges():
+    service = AgentContextService.__new__(AgentContextService)
+    content = (
+        "Stack **vLLM**M](https://github.com/vllm-project/vllm)** and "
+        "LiteLLM**M](https://github.com/BerriAI/litellm)** plus "
+        "[round-robin](https://ru.wikipedia.org/wiki/"
+        "Round-robin_(%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC))"
+    )
+
+    links = service._extract_external_links(content)
+
+    assert [link.url for link in links] == [
+        "https://ru.wikipedia.org/wiki/Round-robin_(%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC)",
+        "https://github.com/vllm-project/vllm",
+        "https://github.com/BerriAI/litellm",
+    ]
+    assert links[0].label == "round-robin"
+    assert all(link.fetch_status == "not_fetched" for link in links)
+    assert all(not link.url.endswith(")**") for link in links)
 
 
 def test_agent_context_can_skip_main_source_comments(monkeypatch):

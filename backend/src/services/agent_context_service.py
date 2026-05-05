@@ -3,9 +3,11 @@
 import asyncio
 import json
 import logging
+import re
 import time
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Optional
+from urllib.parse import urlparse
 
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -15,6 +17,7 @@ from ..api.models import (
     AgentContextRequest,
     AgentContextResponse,
     AgentExpertSourceBundle,
+    AgentExternalLink,
     AgentLinkedContext,
     AgentMainSource,
     AgentSourceComment,
@@ -36,6 +39,12 @@ from ..utils.date_utils import get_cutoff_date
 logger = logging.getLogger(__name__)
 
 
+MARKDOWN_LINK_RE = re.compile(
+    r"\[([^\]\n]{1,200})\]\((https?://(?:[^\s()]|\([^\s()]*\))+)\)"
+)
+URL_RE = re.compile(r"https?://[^\s<>\]\"']+")
+TRAILING_URL_PUNCTUATION = ".,;:!?]}*"
+
 SOURCE_BUNDLE_PIPELINE_USED = [
     "expert_selection",
     "ai_scout_query",
@@ -47,6 +56,7 @@ SOURCE_BUNDLE_PIPELINE_USED = [
     "resolve_high_sources_if_needed",
     "source_selection",
     "main_source_comments",
+    "external_link_references",
 ]
 
 SOURCE_BUNDLE_PIPELINE_SKIPPED = [
@@ -451,6 +461,7 @@ class AgentContextService:
             is_original=True,
             score=post.get("score"),
             score_reason=post.get("score_reason"),
+            external_links=self._extract_external_links(post.get("content")),
         )
 
     def _build_linked_context(
@@ -485,6 +496,122 @@ class AgentContextService:
             keys.append(parent_source_key)
         keys.extend(post.get("linked_from_source_keys") or [])
         return self._dedupe(keys)
+
+    def _extract_external_links(self, content: Optional[str]) -> List[AgentExternalLink]:
+        if not content:
+            return []
+
+        links: List[AgentExternalLink] = []
+        seen_urls: set[str] = set()
+        markdown_url_spans: List[tuple[int, int]] = []
+
+        for match in MARKDOWN_LINK_RE.finditer(content):
+            label = self._clean_link_label(match.group(1))
+            link = self._build_external_link(
+                raw_url=match.group(2),
+                label=label,
+                content=content,
+                context_start=match.start(),
+                context_end=match.end(),
+            )
+            markdown_url_spans.append(match.span(2))
+            if link and link.url not in seen_urls:
+                links.append(link)
+                seen_urls.add(link.url)
+
+        for match in URL_RE.finditer(content):
+            if self._is_inside_span(match.start(), markdown_url_spans):
+                continue
+
+            link = self._build_external_link(
+                raw_url=match.group(0),
+                label=None,
+                content=content,
+                context_start=match.start(),
+                context_end=match.end(),
+            )
+            if link and link.url not in seen_urls:
+                links.append(link)
+                seen_urls.add(link.url)
+
+        return links
+
+    def _build_external_link(
+        self,
+        *,
+        raw_url: str,
+        label: Optional[str],
+        content: str,
+        context_start: int,
+        context_end: int,
+    ) -> Optional[AgentExternalLink]:
+        url = self._clean_url(raw_url)
+        parsed = urlparse(url)
+        if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+            return None
+
+        domain = self._normalize_domain(parsed.netloc)
+        return AgentExternalLink(
+            url=url,
+            domain=domain,
+            label=label,
+            context=self._link_context(content, context_start, context_end),
+            link_type=self._classify_external_link(domain, parsed.path),
+            fetch_status="not_fetched",
+        )
+
+    def _clean_url(self, raw_url: str) -> str:
+        url = raw_url.strip().rstrip(TRAILING_URL_PUNCTUATION)
+        while url.endswith(")") and url.count("(") < url.count(")"):
+            url = url[:-1]
+        return url
+
+    def _clean_link_label(self, label: str) -> Optional[str]:
+        cleaned = re.sub(r"\s+", " ", label).strip()
+        return cleaned or None
+
+    def _normalize_domain(self, netloc: str) -> str:
+        domain = netloc.lower()
+        if "@" in domain:
+            domain = domain.rsplit("@", 1)[-1]
+        if ":" in domain:
+            domain = domain.split(":", 1)[0]
+        if domain.startswith("www."):
+            domain = domain[4:]
+        return domain
+
+    def _classify_external_link(self, domain: str, path: str) -> str:
+        if domain == "github.com":
+            path_parts = [part for part in path.split("/") if part]
+            if len(path_parts) >= 2:
+                return "github_repo"
+            return "github"
+        if domain in {"t.me", "telegram.me"}:
+            return "telegram_post"
+        if domain in {"youtube.com", "youtu.be"}:
+            return "video"
+        return "web"
+
+    def _link_context(
+        self,
+        content: str,
+        context_start: int,
+        context_end: int,
+        *,
+        max_chars: int = 220,
+    ) -> str:
+        padding = max(40, max_chars // 2)
+        start = max(0, context_start - padding)
+        end = min(len(content), context_end + padding)
+        snippet = re.sub(r"\s+", " ", content[start:end]).strip()
+        if start > 0:
+            snippet = f"... {snippet}"
+        if end < len(content):
+            snippet = f"{snippet} ..."
+        return snippet
+
+    def _is_inside_span(self, position: int, spans: List[tuple[int, int]]) -> bool:
+        return any(start <= position < end for start, end in spans)
 
     def _attach_main_source_comments(
         self,

@@ -172,6 +172,17 @@ class AgentLinkedContext(BaseModel):
     linked_from_source_keys: Optional[List[str]] = None
 
 
+class AgentExternalLink(BaseModel):
+    """External author-supplied reference found inside a main source."""
+
+    url: str
+    domain: Optional[str] = None
+    label: Optional[str] = None
+    context: Optional[str] = None
+    link_type: str = "web"
+    fetch_status: str = "not_fetched"
+
+
 class AgentMainSource(BaseModel):
     """Main source selected for an Agent Context evidence packet."""
 
@@ -187,6 +198,7 @@ class AgentMainSource(BaseModel):
     score: Optional[float] = None
     score_reason: Optional[str] = None
     linked_context: List[AgentLinkedContext] = Field(default_factory=list)
+    external_links: List[AgentExternalLink] = Field(default_factory=list)
     comments: AgentSourceComments = Field(default_factory=AgentSourceComments)
 
 

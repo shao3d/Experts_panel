@@ -41,6 +41,10 @@ Required behavior:
 - use `source_bundle` through `src.cli.agent_context`;
 - rely on the CLI/API forced Embs&Keys path; Agent Context source discovery
   always uses query embeddings and is not controlled by the UI search toggle;
+- treat `main_sources[].external_links` as author-supplied references with
+  `fetch_status=not_fetched`;
+- do not open, fetch, crawl, clone, or summarize external links unless the
+  parent explicitly asks for link enrichment or external research;
 - read `AGENT_CONTEXT_API_TOKEN` from environment through the CLI only;
 - do not store, print, or infer token values;
 - do not call /api/v1/query;
@@ -82,6 +86,8 @@ Rules:
 
 - separate what sources explicitly say from your interpretation;
 - preserve meaningful disagreement between experts;
+- mention external links only as references supplied by the source author unless
+  a later explicit enrichment step verifies their contents;
 - mention source count, selected experts, warnings, and skipped pipeline phases
   when they matter;
 - call out weak, indirect, stale, or missing evidence;
