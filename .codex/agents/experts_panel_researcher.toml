@@ -1,6 +1,6 @@
 name = "experts_panel_researcher"
 description = "Read-only Experts Panel researcher for explicit source_bundle calls to the production Experts Panel on Fly.io."
-model = "gpt-5.4-mini"
+model = "gpt-5.5"
 model_reasoning_effort = "medium"
 sandbox_mode = "read-only"
 nickname_candidates = ["PanelScout", "SourceLens", "ExpertTrace"]

@@ -98,6 +98,8 @@ def test_codex_agent_is_read_only_and_uses_safe_cli_boundary():
     normalized = _normalize(instructions)
 
     assert config["name"] == "experts_panel_researcher"
+    assert config["model"] == "gpt-5.5"
+    assert config["model_reasoning_effort"] == "medium"
     assert config["sandbox_mode"] == "read-only"
     assert "src.cli.agent_context" in instructions
     assert "source_bundle" in instructions
