@@ -46,6 +46,18 @@ GOOGLE_APPLICATION_CREDENTIALS_PATH = os.getenv("GOOGLE_APPLICATION_CREDENTIALS"
 VERTEX_AI_PROJECT_ID = os.getenv("VERTEX_AI_PROJECT_ID")
 VERTEX_AI_LOCATION = os.getenv("VERTEX_AI_LOCATION", "us-central1")
 
+# --- Agent Context API ---
+AGENT_CONTEXT_API_TOKEN: str | None = os.getenv("AGENT_CONTEXT_API_TOKEN")
+AGENT_CONTEXT_RATE_LIMIT_PER_MINUTE: int = int(
+    os.getenv("AGENT_CONTEXT_RATE_LIMIT_PER_MINUTE", "10")
+)
+AGENT_CONTEXT_TIMEOUT_SECONDS: int = int(
+    os.getenv("AGENT_CONTEXT_TIMEOUT_SECONDS", "90")
+)
+AGENT_CONTEXT_MAX_RESPONSE_BYTES: int = int(
+    os.getenv("AGENT_CONTEXT_MAX_RESPONSE_BYTES", "500000")
+)
+
 # --- Model Configuration ---
 # Only Gemini models on Vertex AI are supported.
 # Defined in .env or defaulting to stable versions here.
@@ -175,6 +187,12 @@ def get_runtime_config_log_lines() -> list[str]:
             "--- Loaded limits configuration ---",
             f"  Map Max Parallel:      {MAP_MAX_PARALLEL}",
             f"  Max Concurrent Experts: {MAX_CONCURRENT_EXPERTS}",
+            "--- Loaded Agent Context API configuration ---",
+            "  Agent Context API Token: "
+            f"{'Configured' if AGENT_CONTEXT_API_TOKEN else 'Not configured'}",
+            f"  Agent Context Rate Limit: {AGENT_CONTEXT_RATE_LIMIT_PER_MINUTE}/min",
+            f"  Agent Context Timeout:    {AGENT_CONTEXT_TIMEOUT_SECONDS}s",
+            f"  Agent Context Max Bytes:  {AGENT_CONTEXT_MAX_RESPONSE_BYTES}",
             "--- Loaded logging configuration ---",
             f"  Log Level:         {LOG_LEVEL}",
             f"  Backend Log File:  {BACKEND_LOG_FILE}",

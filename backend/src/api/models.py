@@ -71,6 +71,148 @@ class QueryRequest(BaseModel):
     )
 
 
+class AgentContextRequest(BaseModel):
+    """Request model for the explicit-only Agent Context API."""
+
+    query: str = Field(
+        ...,
+        description="Natural language query for source bundle discovery",
+        min_length=3,
+        max_length=1000,
+    )
+    response_mode: str = Field(
+        default="source_bundle",
+        description="Agent response mode; MVP supports source_bundle",
+    )
+    expert_scope: str = Field(
+        default="all",
+        description="Expert selection mode: all, group, custom, or none",
+    )
+    expert_group: Optional[str] = Field(
+        default=None,
+        description="Known expert group when expert_scope=group",
+    )
+    expert_filter: Optional[List[str]] = Field(
+        default=None,
+        description="Explicit expert_id list when expert_scope=custom",
+    )
+    include_reddit: bool = Field(
+        default=False,
+        description="Include separate Reddit source packet when implemented",
+    )
+    include_main_source_comments: bool = Field(
+        default=True,
+        description="Include direct comments under selected main sources",
+    )
+    include_drift_comment_groups: bool = Field(
+        default=False,
+        description="Reserved for future deep comment-group mode",
+    )
+    synthesis_level: str = Field(
+        default="none",
+        description="MVP source bundle skips answer synthesis",
+    )
+    use_recent_only: bool = Field(
+        default=False,
+        description="Restrict retrieval to recent sources when implemented",
+    )
+
+
+class SelectionUsed(BaseModel):
+    """Normalized Agent Context API selection metadata."""
+
+    expert_scope: str
+    expert_group: Optional[str] = None
+    expert_filter: Optional[List[str]] = None
+    include_reddit: bool = False
+    include_main_source_comments: bool = True
+    include_drift_comment_groups: bool = False
+    synthesis_level: str = "none"
+    use_recent_only: bool = False
+
+
+class AgentSourceComment(BaseModel):
+    """Comment attached to an Agent Context source."""
+
+    comment_id: int
+    comment_text: str
+    author_name: str
+    created_at: datetime
+    updated_at: datetime
+
+
+class AgentSourceComments(BaseModel):
+    """Author/community comments attached under one main source."""
+
+    author_comments: List[AgentSourceComment] = Field(default_factory=list)
+    community_comments: List[AgentSourceComment] = Field(default_factory=list)
+
+
+class AgentLinkedContext(BaseModel):
+    """Linked context item attached to or returned near a main source."""
+
+    telegram_message_id: int
+    source_key: str
+    source_role: str = "context"
+    relevance: RelevanceLevel = RelevanceLevel.CONTEXT
+    reason: Optional[str] = None
+    content: Optional[str] = None
+    created_at: Optional[str] = None
+    author_name: Optional[str] = None
+    is_original: bool = False
+
+
+class AgentMainSource(BaseModel):
+    """Main source selected for an Agent Context evidence packet."""
+
+    telegram_message_id: int
+    source_key: str
+    source_role: str = "main"
+    relevance: RelevanceLevel
+    reason: Optional[str] = None
+    content: Optional[str] = None
+    created_at: Optional[str] = None
+    author_name: Optional[str] = None
+    is_original: bool = True
+    linked_context: List[AgentLinkedContext] = Field(default_factory=list)
+    comments: AgentSourceComments = Field(default_factory=AgentSourceComments)
+
+
+class AgentExpertSourceBundle(BaseModel):
+    """Source bundle for a single expert in the Agent Context API."""
+
+    expert_id: str
+    expert_name: str
+    channel_username: str
+    selected_sources_count: int = 0
+    unattached_linked_context: List[AgentLinkedContext] = Field(default_factory=list)
+    main_sources: List[AgentMainSource] = Field(default_factory=list)
+    no_results_reason: Optional[str] = None
+
+
+class AgentContextResponse(BaseModel):
+    """Response model for Agent Context API source bundles."""
+
+    request_id: str
+    mode: str = "source_bundle"
+    query: str
+    selection_used: SelectionUsed
+    experts: List[AgentExpertSourceBundle] = Field(default_factory=list)
+    reddit: Optional[Dict[str, Any]] = None
+    pipeline_used: List[str] = Field(default_factory=list)
+    pipeline_skipped: List[str] = Field(default_factory=list)
+    warnings: List[str] = Field(default_factory=list)
+    processing_time_ms: int = 0
+
+
+class AgentContextError(BaseModel):
+    """Error response model for the Agent Context API."""
+
+    error: str
+    message: str
+    request_id: Optional[str] = None
+
+
 class PostReference(BaseModel):
     """Reference to a post with relevance information."""
 

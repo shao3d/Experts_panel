@@ -28,6 +28,7 @@ from .import_endpoints import router as import_router
 from .comment_endpoints import router as comment_router
 from .simplified_query_endpoint import router as query_router
 from .log_endpoints import router as log_router
+from .agent_context_endpoint import router as agent_context_router
 from .dependencies import verify_admin_secret
 from ..models.base import engine, Base
 from .. import config
@@ -420,6 +421,7 @@ async def api_info() -> Dict[str, Any]:
 app.include_router(import_router, prefix="/api/v1")
 app.include_router(comment_router, prefix="/api/v1")
 app.include_router(log_router)
+app.include_router(agent_context_router)
 # Simplified Map-Resolve+Reduce architecture (no GPT link evaluation)
 app.include_router(query_router)
 
