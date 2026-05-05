@@ -71,6 +71,7 @@ def test_missing_token_is_skipped_by_default(tmp_path, monkeypatch):
     assert exit_code == 0
     assert report["status"] == "skipped"
     assert report["reason"] == "missing_agent_context_api_token"
+    assert report["target_mode"] == "local"
     assert "AGENT_CONTEXT_API_TOKEN" in report["message"]
     assert "Bearer" not in json.dumps(report)
 
@@ -147,8 +148,140 @@ def test_live_smoke_uses_free_port_and_explicit_api_url(tmp_path, monkeypatch):
     assert observed["api_url"] == "http://127.0.0.1:54321/api/v1/agent/context"
     assert observed["timeout_seconds"] == 3600.0
     assert report["status"] == "passed"
+    assert report["target_mode"] == "local"
     assert report["api_url"] == "http://127.0.0.1:54321/api/v1/agent/context"
     assert "secret-live-token" not in json.dumps(report)
+
+
+def test_live_smoke_ignores_env_api_url_without_explicit_api_url(tmp_path, monkeypatch):
+    report_path = tmp_path / "latest.json"
+    observed = {}
+    monkeypatch.setattr(live_smoke, "load_backend_env", lambda path: path)
+    monkeypatch.setenv("AGENT_CONTEXT_API_TOKEN", "secret-live-token")
+    monkeypatch.setenv(
+        "AGENT_CONTEXT_API_URL",
+        "https://experts-panel.fly.dev/api/v1/agent/context",
+    )
+    monkeypatch.setattr(live_smoke, "_find_free_port", lambda: 54328)
+    monkeypatch.setattr(live_smoke, "_start_backend", lambda port: None)
+    monkeypatch.setattr(
+        live_smoke,
+        "_wait_for_health",
+        lambda base_url, timeout_seconds: observed.setdefault("health_url", base_url)
+        or True,
+    )
+
+    def fake_run_cli(*, query, experts, api_url, timeout_seconds):
+        observed["api_url"] = api_url
+        return SimpleNamespace(returncode=0, stdout=json.dumps(_passed_payload()), stderr="")
+
+    monkeypatch.setattr(live_smoke, "_run_cli", fake_run_cli)
+
+    exit_code = live_smoke.main(["--report-path", str(report_path)])
+
+    report = json.loads(report_path.read_text())
+    assert exit_code == 0
+    assert observed["health_url"] == "http://127.0.0.1:54328"
+    assert observed["api_url"] == "http://127.0.0.1:54328/api/v1/agent/context"
+    assert report["target_mode"] == "local"
+    assert report["api_url"] == "http://127.0.0.1:54328/api/v1/agent/context"
+
+
+def test_external_smoke_uses_explicit_api_url_without_local_backend(
+    tmp_path, monkeypatch
+):
+    report_path = tmp_path / "latest.json"
+    observed = {}
+    production_api_url = "https://experts-panel.fly.dev/api/v1/agent/context"
+    monkeypatch.setattr(live_smoke, "load_backend_env", lambda path: path)
+    monkeypatch.setenv("AGENT_CONTEXT_API_TOKEN", "secret-production-token")
+    monkeypatch.setattr(
+        live_smoke,
+        "_find_free_port",
+        lambda: (_ for _ in ()).throw(AssertionError("local port not expected")),
+    )
+    monkeypatch.setattr(
+        live_smoke,
+        "_start_backend",
+        lambda port: (_ for _ in ()).throw(AssertionError("local backend not expected")),
+    )
+
+    def fake_wait_for_health(base_url, timeout_seconds):
+        observed["health_url"] = base_url
+        observed["health_timeout_seconds"] = timeout_seconds
+        return True
+
+    def fake_run_cli(*, query, experts, api_url, timeout_seconds):
+        observed["query"] = query
+        observed["experts"] = experts
+        observed["api_url"] = api_url
+        observed["timeout_seconds"] = timeout_seconds
+        return SimpleNamespace(returncode=0, stdout=json.dumps(_passed_payload()), stderr="")
+
+    monkeypatch.setattr(live_smoke, "_wait_for_health", fake_wait_for_health)
+    monkeypatch.setattr(live_smoke, "_run_cli", fake_run_cli)
+
+    exit_code = live_smoke.main(
+        [
+            "--report-path",
+            str(report_path),
+            "--api-url",
+            production_api_url,
+            "--query",
+            "AI agents for sales",
+            "--experts",
+            "refat,akimov",
+        ]
+    )
+
+    report = json.loads(report_path.read_text())
+    serialized = json.dumps(report)
+    assert exit_code == 0
+    assert observed["health_url"] == "https://experts-panel.fly.dev"
+    assert observed["health_timeout_seconds"] == 3600.0
+    assert observed["api_url"] == production_api_url
+    assert observed["experts"] == "refat,akimov"
+    assert report["status"] == "passed"
+    assert report["target_mode"] == "external"
+    assert report["api_url"] == production_api_url
+    assert "secret-production-token" not in serialized
+    assert "Bearer" not in serialized
+
+
+def test_external_require_live_missing_token_fails_without_local_backend(
+    tmp_path, monkeypatch
+):
+    report_path = tmp_path / "latest.json"
+    production_api_url = "https://experts-panel.fly.dev/api/v1/agent/context"
+    monkeypatch.setattr(live_smoke, "load_backend_env", lambda path: path)
+    monkeypatch.delenv("AGENT_CONTEXT_API_TOKEN", raising=False)
+    monkeypatch.setattr(
+        live_smoke,
+        "_find_free_port",
+        lambda: (_ for _ in ()).throw(AssertionError("local port not expected")),
+    )
+    monkeypatch.setattr(
+        live_smoke,
+        "_start_backend",
+        lambda port: (_ for _ in ()).throw(AssertionError("local backend not expected")),
+    )
+
+    exit_code = live_smoke.main(
+        [
+            "--report-path",
+            str(report_path),
+            "--api-url",
+            production_api_url,
+            "--require-live",
+        ]
+    )
+
+    report = json.loads(report_path.read_text())
+    assert exit_code == 1
+    assert report["status"] == "failed"
+    assert report["reason"] == "missing_agent_context_api_token"
+    assert report["target_mode"] == "external"
+    assert report["api_url"] == production_api_url
 
 
 def test_successful_smoke_sanitizes_report(tmp_path, monkeypatch):
@@ -347,6 +480,8 @@ def test_live_smoke_command_and_statuses_are_documented():
 
     assert "scripts/agent_context_live_smoke.py" in combined
     assert "--require-live" in combined
+    assert "--api-url" in combined
+    assert "https://experts-panel.fly.dev/api/v1/agent/context" in combined
     assert "passed" in normalized
     assert "skipped" in normalized
     assert "failed" in normalized

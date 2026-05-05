@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Live local smoke helper for the explicit Agent Context API."""
+"""Live smoke helper for the explicit Agent Context API."""
 
 from __future__ import annotations
 
@@ -13,6 +13,7 @@ import sys
 import time
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse, urlunparse
 
 import requests
 
@@ -35,7 +36,7 @@ DEFAULT_REPORT_PATH = (
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Run a live local smoke test for the Agent Context API.",
+        description="Run a live smoke test for the Agent Context API.",
     )
     parser.add_argument(
         "--query",
@@ -59,6 +60,13 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help=f"Where to write sanitized smoke report. Default: {DEFAULT_REPORT_PATH}.",
     )
     parser.add_argument(
+        "--api-url",
+        help=(
+            "Explicit Agent Context API URL. When set, the helper uses that "
+            "external/running backend and does not start a local backend."
+        ),
+    )
+    parser.add_argument(
         "--require-live",
         action="store_true",
         help="Treat missing local readiness as a nonzero failure instead of skipped.",
@@ -71,6 +79,24 @@ def main(argv: list[str] | None = None) -> int:
     load_backend_env(BACKEND_DIR / ".env")
 
     report_path = Path(args.report_path)
+    experts = _parse_experts(args.experts)
+    target_mode = "external" if args.api_url else "local"
+    try:
+        external_api_url = _normalize_api_url(args.api_url) if args.api_url else None
+    except ValueError as exc:
+        report = _base_report(
+            status="failed",
+            reason="invalid_api_url",
+            message=str(exc),
+            query=args.query,
+            experts=experts,
+            api_url=args.api_url,
+            target_mode=target_mode,
+        )
+        _write_report(report_path, report)
+        _print_status(report)
+        return 1
+
     token = os.getenv("AGENT_CONTEXT_API_TOKEN", "").strip()
     if not token:
         status = "failed" if args.require_live else "skipped"
@@ -78,35 +104,39 @@ def main(argv: list[str] | None = None) -> int:
             status=status,
             reason="missing_agent_context_api_token",
             message=(
-                "AGENT_CONTEXT_API_TOKEN is required for live local smoke. "
+                f"AGENT_CONTEXT_API_TOKEN is required for live {target_mode} smoke. "
                 "Configure it in backend/.env or the shell environment."
             ),
             query=args.query,
-            experts=_parse_experts(args.experts),
+            experts=experts,
+            api_url=external_api_url,
+            target_mode=target_mode,
         )
         _write_report(report_path, report)
         _print_status(report)
         return 1 if args.require_live else 0
 
     process = None
-    port = _find_free_port()
-    base_url = f"http://127.0.0.1:{port}"
-    api_url = f"{base_url}/api/v1/agent/context"
-    experts = _parse_experts(args.experts)
+    if external_api_url:
+        api_url = external_api_url
+        base_url = _base_url_from_api_url(api_url)
+    else:
+        port = _find_free_port()
+        base_url = f"http://127.0.0.1:{port}"
+        api_url = f"{base_url}/api/v1/agent/context"
 
     try:
-        process = _start_backend(port)
+        if target_mode == "local":
+            process = _start_backend(port)
         if not _wait_for_health(base_url, args.timeout):
             report = _base_report(
                 status="failed",
                 reason="backend_health_unavailable",
-                message=(
-                    "Local backend did not become healthy before timeout. "
-                    "Check backend startup logs and local runtime configuration."
-                ),
+                message=_health_failure_message(target_mode),
                 query=args.query,
                 experts=experts,
                 api_url=api_url,
+                target_mode=target_mode,
             )
             _write_report(report_path, report)
             _print_status(report)
@@ -130,6 +160,7 @@ def main(argv: list[str] | None = None) -> int:
                 query=args.query,
                 experts=experts,
                 api_url=api_url,
+                target_mode=target_mode,
                 error=_sanitize_text(str(exc), [token]),
             )
             _write_report(report_path, report)
@@ -145,6 +176,7 @@ def main(argv: list[str] | None = None) -> int:
                 query=args.query,
                 experts=experts,
                 api_url=api_url,
+                target_mode=target_mode,
                 error=_sanitize_text(raw_error, [token]),
             )
             _write_report(report_path, report)
@@ -161,6 +193,7 @@ def main(argv: list[str] | None = None) -> int:
                 query=args.query,
                 experts=experts,
                 api_url=api_url,
+                target_mode=target_mode,
                 error=_sanitize_text(cli_result.stdout or cli_result.stderr, [token]),
             )
             _write_report(report_path, report)
@@ -172,6 +205,7 @@ def main(argv: list[str] | None = None) -> int:
             query=args.query,
             experts=experts,
             api_url=api_url,
+            target_mode=target_mode,
             response_bytes=len(cli_result.stdout.encode("utf-8")),
         )
         _write_report(report_path, report)
@@ -189,6 +223,7 @@ def _base_report(
     query: str,
     experts: list[str],
     api_url: str | None = None,
+    target_mode: str = "local",
     error: str | None = None,
 ) -> dict[str, Any]:
     report: dict[str, Any] = {
@@ -199,6 +234,7 @@ def _base_report(
         "query": query,
         "experts": experts,
         "api_url": api_url,
+        "target_mode": target_mode,
         "generated_at_unix": int(time.time()),
     }
     if error:
@@ -212,6 +248,7 @@ def _build_pass_report(
     query: str,
     experts: list[str],
     api_url: str,
+    target_mode: str,
     response_bytes: int,
 ) -> dict[str, Any]:
     if payload.get("mode") != "source_bundle":
@@ -222,6 +259,7 @@ def _build_pass_report(
             query=query,
             experts=experts,
             api_url=api_url,
+            target_mode=target_mode,
         )
 
     selection_used = payload.get("selection_used")
@@ -235,6 +273,7 @@ def _build_pass_report(
             query=query,
             experts=experts,
             api_url=api_url,
+            target_mode=target_mode,
         )
     if not isinstance(pipeline_skipped, list):
         return _base_report(
@@ -244,6 +283,7 @@ def _build_pass_report(
             query=query,
             experts=experts,
             api_url=api_url,
+            target_mode=target_mode,
         )
 
     selected_source_counts = {
@@ -256,10 +296,11 @@ def _build_pass_report(
         "schema_version": 1,
         "status": "passed",
         "reason": "source_bundle_valid",
-        "message": "Live local Agent Context smoke returned a valid source_bundle.",
+        "message": f"Live {target_mode} Agent Context smoke returned a valid source_bundle.",
         "query": payload.get("query") or query,
         "experts": [expert.get("expert_id") for expert in response_experts],
         "api_url": api_url,
+        "target_mode": target_mode,
         "selection_used": selection_used,
         "selected_source_counts": selected_source_counts,
         "response_bytes": response_bytes,
@@ -293,6 +334,34 @@ def _parse_experts(raw_experts: str) -> list[str]:
             result.append(expert)
             seen.add(expert)
     return result
+
+
+def _normalize_api_url(raw_api_url: str) -> str:
+    api_url = raw_api_url.strip()
+    parsed = urlparse(api_url)
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        raise ValueError(
+            "--api-url must be an absolute http(s) URL, for example "
+            "https://experts-panel.fly.dev/api/v1/agent/context."
+        )
+    return api_url.rstrip("/")
+
+
+def _base_url_from_api_url(api_url: str) -> str:
+    parsed = urlparse(api_url)
+    return urlunparse((parsed.scheme, parsed.netloc, "", "", "", ""))
+
+
+def _health_failure_message(target_mode: str) -> str:
+    if target_mode == "external":
+        return (
+            "External Agent Context backend did not become healthy before timeout. "
+            "Check the Fly deployment, /health endpoint, and the explicit --api-url."
+        )
+    return (
+        "Local backend did not become healthy before timeout. "
+        "Check backend startup logs and local runtime configuration."
+    )
 
 
 def _find_free_port() -> int:

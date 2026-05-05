@@ -45,8 +45,8 @@
     *   **О чём:** Актуальный roster экспертов: UI-группы, источник истины `expertConfig.ts`/`expert_metadata`, production DB caveat для Fly volume, список удалённых экспертов.
     *   **Пример команды:** *"Перед правками списка экспертов проверь `docs/architecture/current-expert-roster.md`."*
 
-*   **📄 `agent-context-api.md` (Accepted / AND-5..AND-14 Implemented / Production Pending)**
-    *   **О чём:** Спека и текущий статус agent-facing API для Codex/Claude Code: authenticated endpoint, real `source_bundle`, local CLI wrapper, BDD acceptance hardening, repo-local `experts_panel_researcher`, local dogfood/live smoke helper, paid two-expert and all-experts local smoke passed, bounded expert parallelism via `MAX_CONCURRENT_EXPERTS`, large all-experts-friendly budget `3600s`/`100000000` bytes, выбор экспертов, comments под `main_sources`, Signals frame, explicit-only invocation и pending Fly.io gates.
+*   **📄 `agent-context-api.md` (Accepted / AND-5..AND-14 Implemented / AND-15 Production Smoke Harness In Progress)**
+    *   **О чём:** Спека и текущий статус agent-facing API для Codex/Claude Code: authenticated endpoint, real `source_bundle`, local CLI wrapper, BDD acceptance hardening, repo-local `experts_panel_researcher`, local dogfood/live smoke helper, paid two-expert and all-experts local smoke passed, bounded expert parallelism via `MAX_CONCURRENT_EXPERTS`, large all-experts-friendly budget `3600s`/`100000000` bytes, выбор экспертов, comments под `main_sources`, Signals frame, explicit-only invocation, external `--api-url` smoke mode и pending Fly.io live proof.
     *   **Пример команды:** *"Перед следующим слайсом repo-local subagent перечитай `docs/architecture/agent-context-api.md` и проверь Implementation Status."*
 
 ---
