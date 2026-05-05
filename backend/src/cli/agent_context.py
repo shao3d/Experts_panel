@@ -79,6 +79,7 @@ def build_payload(args: argparse.Namespace) -> dict[str, Any]:
         "include_drift_comment_groups": False,
         "synthesis_level": "none",
         "use_recent_only": bool(args.recent),
+        "use_super_passport": True,
     }
 
     if args.experts:

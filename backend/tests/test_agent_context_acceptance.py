@@ -25,7 +25,7 @@ from src.api.main import app
 from src.cli import agent_context
 from src.services import agent_context_service as agent_context_module
 from src.services import health_probe_service as health_probe_module
-from src.services.agent_context_service import AgentContextService
+from src.services.agent_context_service import AgentContextSearchContext, AgentContextService
 
 
 class FakeHealthProbeService:
@@ -73,6 +73,35 @@ def agent_context_acceptance_config(monkeypatch):
             "expert_name": expert_id.title(),
             "channel_username": f"{expert_id}_channel",
         },
+    )
+
+    async def fake_prepare_search_context(self, query):
+        return AgentContextSearchContext(
+            scout_query="ai OR agents OR sales",
+            query_embedding=[0.1] * 768,
+            warnings=[],
+        )
+
+    async def fake_load_candidate_posts_with_embeddings(
+        self,
+        *,
+        expert_id,
+        query,
+        cutoff_date,
+        search_context,
+        warnings,
+    ):
+        return self._load_candidate_posts(expert_id, cutoff_date)
+
+    monkeypatch.setattr(
+        AgentContextService,
+        "_prepare_search_context",
+        fake_prepare_search_context,
+    )
+    monkeypatch.setattr(
+        AgentContextService,
+        "_load_candidate_posts_with_embeddings",
+        fake_load_candidate_posts_with_embeddings,
     )
     dependencies._AGENT_CONTEXT_RATE_LIMIT_BUCKETS.clear()
     yield
@@ -378,6 +407,7 @@ def test_acceptance_safe_defaults_survive_cli_http_api_boundary(monkeypatch, cap
         "include_drift_comment_groups": False,
         "synthesis_level": "none",
         "use_recent_only": False,
+        "use_super_passport": True,
     }
 
     response_payload = _raw_payload(result)
@@ -390,6 +420,7 @@ def test_acceptance_safe_defaults_survive_cli_http_api_boundary(monkeypatch, cap
         "include_drift_comment_groups": False,
         "synthesis_level": "none",
         "use_recent_only": False,
+        "use_super_passport": True,
     }
     assert response_payload["reddit"] is None
     assert "source_selection" in response_payload["pipeline_used"]

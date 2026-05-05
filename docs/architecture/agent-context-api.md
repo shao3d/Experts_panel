@@ -1,6 +1,6 @@
 # Agent Context API Spec
 
-**Status:** Accepted / AND-5 + AND-6 + AND-7 + AND-8 + AND-9 + AND-10 + AND-11 + AND-12 + AND-13 + AND-14 + AND-15 implemented
+**Status:** Accepted / AND-5 + AND-6 + AND-7 + AND-8 + AND-9 + AND-10 + AND-11 + AND-12 + AND-13 + AND-14 + AND-15 implemented / forced embedding search implemented
 **Decision:** `.haft/decisions/dec-20260504-b2539c3d.md`
 **Last updated:** 2026-05-05
 
@@ -23,8 +23,9 @@ Current state as of 2026-05-05:
 | AND-11 live local dogfood smoke | Done | `backend/scripts/agent_context_live_smoke.py` can preflight local readiness, start Experts Panel on a free localhost port, call the CLI with explicit `--api-url`, validate `source_bundle`, and write a sanitized report with `passed`/`skipped`/`failed` status. |
 | AND-12 paid local live smoke | Done | Paid local smoke passed with the default `refat,akimov` query and returned a valid real `source_bundle`. Runtime defaults are intentionally large (`3600s` / `100000000` bytes) because all-expert source-bundle requests are naturally long and bulky. |
 | AND-13 bounded expert parallelism | Done | Agent Context now inherits the main pipeline's bounded expert parallelism pattern: selected experts run as async tasks behind `MAX_CONCURRENT_EXPERTS`, while response order stays aligned to the requested expert order. |
-| AND-14 all-experts paid local smoke | Done | Paid local smoke passed for the full MVP Telegram roster (`17` experts, no `video_hub`) with bounded parallelism, no warnings, and an `8.06MB` source_bundle response. |
+| AND-14 all-experts paid local smoke | Done | Paid local smoke passed for the full MVP Telegram roster (`17` experts, no `video_hub`) with bounded parallelism, no warnings, and a `7.46MB` source_bundle response after forced Embs&Keys retrieval. |
 | AND-15 production Fly smoke mode | Done | `backend/scripts/agent_context_live_smoke.py` has an explicit external mode via `--api-url`; without that flag it still starts a local backend and ignores ambient `AGENT_CONTEXT_API_URL` to avoid accidental Fly calls. Production smoke passed on Fly with a separate production token for `refat,akimov`. |
+| Forced embedding search for Agent Context | Done | Agent Context always forces Embs&Keys hybrid retrieval: CLI sends `use_super_passport=true`, API records `selection_used.use_super_passport=true`, and service prepares one query embedding for all selected experts before bounded parallel expert processing. UI toggle state does not apply to subagent/API calls. |
 | Production Fly exposure | Done for explicit smoke | `https://experts-panel.fly.dev/api/v1/agent/context` is callable with the separate production bearer token and large source-bundle budgets. The repo-local subagent default remains local; production calls must stay explicit. |
 
 Implemented code paths:
@@ -49,7 +50,7 @@ Verified checks:
 
 ```text
 backend/.venv/bin/python -m pytest backend/tests/test_agent_context_api.py -q -o addopts=''
-# 14 passed
+# 16 passed
 
 backend/.venv/bin/python -m pytest backend/tests/test_experts_api.py -q -o addopts=''
 # 1 passed
@@ -71,17 +72,19 @@ backend/.venv/bin/python -m pytest backend/tests/test_agent_context_live_smoke.p
 
 cd backend && .venv/bin/python scripts/agent_context_live_smoke.py --require-live
 # passed: source_bundle_valid
-# selected_source_counts: refat=65, akimov=46
-# response_bytes: 1314208
-# processing_time_ms: 94223
+# selection_used.use_super_passport: true
+# selected_source_counts: refat=42, akimov=67
+# response_bytes: 1081305
+# processing_time_ms: 57321
 # no lingering local backend process observed after helper shutdown
 
 cd backend && .venv/bin/python scripts/agent_context_live_smoke.py --require-live --experts ai_architect,neuraldeep,ilia_izmailov,polyakov,etechlead,glebkudr,ostrikov,pashazloy,ai_grabli,refat,akimov,llm_under_hood,elkornacio,doronin,air_ai,silicbag,kornish
 # passed: source_bundle_valid
 # experts: 17
-# selected_source_counts: ai_architect=22, neuraldeep=50, ilia_izmailov=7, polyakov=29, etechlead=28, glebkudr=34, ostrikov=25, pashazloy=19, ai_grabli=6, refat=37, akimov=51, llm_under_hood=47, elkornacio=20, doronin=53, air_ai=11, silicbag=73, kornish=13
-# response_bytes: 8060607
-# processing_time_ms: 217602
+# selection_used.use_super_passport: true
+# selected_source_counts: ai_architect=10, neuraldeep=10, ilia_izmailov=6, polyakov=31, etechlead=41, glebkudr=3, ostrikov=38, pashazloy=30, ai_grabli=7, refat=68, akimov=32, llm_under_hood=31, elkornacio=41, doronin=66, air_ai=9, silicbag=60, kornish=14
+# response_bytes: 7462364
+# processing_time_ms: 275622
 # warnings: []
 # no lingering local backend process observed after helper shutdown
 
@@ -94,7 +97,7 @@ cd backend && AGENT_CONTEXT_API_TOKEN=<production token> .venv/bin/python script
 # warnings: []
 
 backend/.venv/bin/python -m pytest backend/tests/test_agent_context_api.py backend/tests/test_experts_api.py backend/tests/test_agent_context_cli.py backend/tests/test_agent_context_acceptance.py backend/tests/test_experts_panel_researcher_contract.py backend/tests/test_experts_panel_researcher_dogfood.py backend/tests/test_agent_context_live_smoke.py -q -o addopts=''
-# 58 passed, 2 warnings
+# 60 passed, 2 warnings
 
 git diff --check
 # clean
@@ -286,7 +289,8 @@ Content-Type: application/json
   "include_main_source_comments": true,
   "include_drift_comment_groups": false,
   "synthesis_level": "none",
-  "use_recent_only": false
+  "use_recent_only": false,
+  "use_super_passport": true
 }
 ```
 
@@ -304,6 +308,7 @@ Field rules:
 | `include_drift_comment_groups` | Default `false`; not part of MVP unless explicitly added later. |
 | `synthesis_level` | Default `none` for source bundle. Possible future values: `compact`, `deep`. |
 | `use_recent_only` | Explicit or auto-derived later; do not silently change without showing it in `selection_used`. |
+| `use_super_passport` | Always normalized to `true` for Agent Context. The UI Embs&Keys toggle does not control subagent/API retrieval. |
 
 Validation rules:
 
@@ -315,6 +320,7 @@ Validation rules:
 - reject `include_drift_comment_groups = true` in MVP with `400` or return `501 Not Implemented`; do not silently run drift scoring.
 - reject `synthesis_level != "none"` in MVP with `400` or `501`; do not silently run Reduce.
 - default `include_reddit = false`, `include_main_source_comments = true`, `include_drift_comment_groups = false`, `synthesis_level = "none"`.
+- force `use_super_passport = true` even if a caller sends `false`; Agent Context must use Embs&Keys hybrid retrieval rather than the UI-controlled standard search mode.
 
 ## 6. Response Contract
 
@@ -333,7 +339,8 @@ The endpoint returns a bounded evidence packet, not the entire corpus.
     "include_main_source_comments": true,
     "include_drift_comment_groups": false,
     "synthesis_level": "none",
-    "use_recent_only": false
+    "use_recent_only": false,
+    "use_super_passport": true
   },
   "experts": [
     {
@@ -767,6 +774,7 @@ Wrapper responsibilities:
 - target local development by default;
 - allow explicit production URL configuration later;
 - send `response_mode = source_bundle`;
+- send `use_super_passport = true` and rely on the API to force it true even if a caller tries to disable it;
 - keep `include_reddit = false`, `include_main_source_comments = true`, `include_drift_comment_groups = false`, and `synthesis_level = none` unless explicitly overridden by the caller;
 - print `selection_used`, warnings, and source packet metadata.
 
@@ -997,6 +1005,7 @@ Minimum tests:
 - unknown expert returns `400`;
 - `source_bundle` response includes `selection_used`, `pipeline_used`, `pipeline_skipped`;
 - Agent Context processes selected experts with bounded parallelism through `MAX_CONCURRENT_EXPERTS` and preserves response order;
+- Agent Context always prepares one query embedding and uses hybrid retrieval for subagent/API source discovery regardless of the UI Embs&Keys toggle;
 - default source_bundle does not call `ReduceService`, `LanguageValidationService`, `score_drift_groups`, `CommentSynthesisService`, or `MetaSynthesisService` (use monkeypatch fakes that fail if called);
 - comments under selected sources are returned under each source;
 - `include_drift_comment_groups=true` is rejected in MVP;
@@ -1033,9 +1042,10 @@ Backend source-bundle MVP status:
 | live local smoke helper verifies real local CLI/API readiness without Fly | Done |
 | external smoke helper can target production Fly only when explicitly requested | Done: `--api-url` enables `target_mode = "external"`, default local mode ignores ambient `AGENT_CONTEXT_API_URL`, and live Fly smoke passed |
 | Agent Context inherits bounded parallel expert processing | Done: selected experts run behind `MAX_CONCURRENT_EXPERTS`, response order stays stable |
-| first paid local live smoke returns a valid real source_bundle | Done: after bounded parallelism, default `refat,akimov` query passed with `refat=65`, `akimov=46`, `response_bytes=1314208`, `processing_time_ms=94223` |
-| all-experts paid local smoke returns a valid real source_bundle | Done: full MVP Telegram roster passed with `17` experts, `response_bytes=8060607`, `processing_time_ms=217602`, no warnings |
+| first paid local live smoke returns a valid real source_bundle | Done: after forced Embs&Keys retrieval, default `refat,akimov` query passed with `refat=42`, `akimov=67`, `response_bytes=1081305`, `processing_time_ms=57321`, no warnings |
+| all-experts paid local smoke returns a valid real source_bundle | Done: after forced Embs&Keys retrieval, full MVP Telegram roster passed with `17` experts, `response_bytes=7462364`, `processing_time_ms=275622`, no warnings |
 | first production Fly smoke returns a valid real source_bundle | Done: explicit `refat,akimov` production smoke passed with `response_bytes=1125055`, `processing_time_ms=40473`, no warnings |
+| subagent/CLI/API retrieval always uses embeddings | Done: CLI sends `use_super_passport=true`, API normalizes `selection_used.use_super_passport=true`, and service passes a precomputed query embedding into `HybridRetrievalService` for every selected expert |
 | existing UI/SSE query endpoint is unchanged | Done by route-preservation/source-bundle isolation tests |
 
 ## 15. Closed Design Decisions

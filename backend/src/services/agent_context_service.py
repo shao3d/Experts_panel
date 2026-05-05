@@ -4,6 +4,7 @@ import asyncio
 import json
 import logging
 import time
+from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Optional
 
 from sqlalchemy import func
@@ -24,6 +25,9 @@ from ..api.models import (
 from ..models.expert import Expert
 from ..models.post import Post
 from ..services.comment_group_map_service import CommentGroupMapService
+from ..services.ai_scout_service import AIScoutService
+from ..services.embedding_service import get_embedding_service
+from ..services.hybrid_retrieval_service import HybridRetrievalService
 from ..services.map_service import MapService
 from ..services.medium_scoring_service import MediumScoringService
 from ..services.simple_resolve_service import SimpleResolveService
@@ -34,7 +38,10 @@ logger = logging.getLogger(__name__)
 
 SOURCE_BUNDLE_PIPELINE_USED = [
     "expert_selection",
+    "ai_scout_query",
+    "query_embedding",
     "retrieval",
+    "hybrid_retrieval",
     "map_relevance",
     "medium_scoring_if_needed",
     "resolve_high_sources_if_needed",
@@ -50,6 +57,19 @@ SOURCE_BUNDLE_PIPELINE_SKIPPED = [
     "cross_expert_meta_synthesis",
     "reddit_synthesis",
 ]
+
+
+@dataclass(frozen=True)
+class AgentContextSearchContext:
+    """Shared forced-hybrid search inputs for one Agent Context request."""
+
+    scout_query: str
+    query_embedding: List[float]
+    warnings: List[str]
+
+
+class AgentContextSearchUnavailable(RuntimeError):
+    """Raised when Agent Context cannot satisfy its embedding-search contract."""
 
 
 class AgentContextService:
@@ -68,9 +88,12 @@ class AgentContextService:
         start_time: float,
     ) -> AgentContextResponse:
         warnings: List[str] = []
+        search_context = await self._prepare_search_context(agent_request.query)
+        warnings.extend(search_context.warnings)
         expert_results = await self._build_expert_bundles_parallel(
             expert_ids=expert_ids,
             agent_request=agent_request,
+            search_context=search_context,
         )
         experts = []
         for expert_bundle, expert_warnings in expert_results:
@@ -101,6 +124,7 @@ class AgentContextService:
         *,
         expert_ids: List[str],
         agent_request: AgentContextRequest,
+        search_context: AgentContextSearchContext,
     ) -> List[tuple[AgentExpertSourceBundle, List[str]]]:
         max_concurrent_experts = max(1, int(config.MAX_CONCURRENT_EXPERTS))
         semaphore = asyncio.Semaphore(max_concurrent_experts)
@@ -114,6 +138,7 @@ class AgentContextService:
                     bundle = await self._build_expert_bundle(
                         expert_id=expert_id,
                         agent_request=agent_request,
+                        search_context=search_context,
                         warnings=expert_warnings,
                     )
                 except Exception as exc:
@@ -138,10 +163,17 @@ class AgentContextService:
         *,
         expert_id: str,
         agent_request: AgentContextRequest,
+        search_context: AgentContextSearchContext,
         warnings: List[str],
     ) -> AgentExpertSourceBundle:
         cutoff_date = get_cutoff_date(months=3) if agent_request.use_recent_only else None
-        posts = self._load_candidate_posts(expert_id, cutoff_date)
+        posts = await self._load_candidate_posts_with_embeddings(
+            expert_id=expert_id,
+            query=agent_request.query,
+            cutoff_date=cutoff_date,
+            search_context=search_context,
+            warnings=warnings,
+        )
 
         if not posts:
             warnings.append(f"{expert_id}: no_runtime_posts")
@@ -202,6 +234,63 @@ class AgentContextService:
             main_sources=selected_sources,
             no_results_reason=no_results_reason,
         )
+
+    async def _prepare_search_context(self, query: str) -> AgentContextSearchContext:
+        """Prepare forced hybrid retrieval inputs once per Agent Context request."""
+        scout_service = AIScoutService()
+        embedding_service = get_embedding_service()
+        warnings: List[str] = []
+
+        async def build_scout_query() -> str:
+            scout_query, scout_success = await scout_service.generate_match_query(query)
+            if not scout_success:
+                warnings.append("agent_context_ai_scout_fallback_used")
+            return scout_query or query
+
+        async def build_query_embedding() -> List[float]:
+            try:
+                embedding = await embedding_service.embed_query(query)
+            except Exception as exc:
+                raise AgentContextSearchUnavailable(
+                    "agent_context_embedding_search_unavailable"
+                ) from exc
+            if not embedding:
+                raise AgentContextSearchUnavailable(
+                    "agent_context_embedding_search_unavailable"
+                )
+            return embedding
+
+        scout_query, query_embedding = await asyncio.gather(
+            build_scout_query(),
+            build_query_embedding(),
+        )
+        return AgentContextSearchContext(
+            scout_query=scout_query,
+            query_embedding=query_embedding,
+            warnings=warnings,
+        )
+
+    async def _load_candidate_posts_with_embeddings(
+        self,
+        *,
+        expert_id: str,
+        query: str,
+        cutoff_date,
+        search_context: AgentContextSearchContext,
+        warnings: List[str],
+    ) -> List[Post]:
+        hybrid_service = HybridRetrievalService(self.db)
+        posts, retrieval_stats = await hybrid_service.search_posts(
+            expert_id=expert_id,
+            query=query,
+            match_query=search_context.scout_query,
+            cutoff_date=cutoff_date,
+            query_embedding=search_context.query_embedding,
+        )
+        retrieval_mode = str(retrieval_stats.get("mode") or "unknown")
+        if retrieval_mode != "hybrid":
+            warnings.append(f"{expert_id}: hybrid_retrieval_{retrieval_mode}")
+        return posts
 
     def _load_candidate_posts(
         self,

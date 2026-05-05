@@ -116,6 +116,13 @@ class AgentContextRequest(BaseModel):
         default=False,
         description="Restrict retrieval to recent sources when implemented",
     )
+    use_super_passport: bool = Field(
+        default=True,
+        description=(
+            "Agent Context always forces Embs&Keys hybrid retrieval; client false "
+            "values are normalized to true by the API."
+        ),
+    )
 
 
 class SelectionUsed(BaseModel):
@@ -129,6 +136,7 @@ class SelectionUsed(BaseModel):
     include_drift_comment_groups: bool = False
     synthesis_level: str = "none"
     use_recent_only: bool = False
+    use_super_passport: bool = True
 
 
 class AgentSourceComment(BaseModel):

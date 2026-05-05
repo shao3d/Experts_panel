@@ -45,6 +45,7 @@ def _source_bundle_response():
             "include_drift_comment_groups": False,
             "synthesis_level": "none",
             "use_recent_only": False,
+            "use_super_passport": True,
         },
         "experts": [
             {
@@ -164,6 +165,7 @@ def test_cli_sends_safe_default_source_bundle_payload(
         "include_drift_comment_groups": False,
         "synthesis_level": "none",
         "use_recent_only": False,
+        "use_super_passport": True,
     }
     assert "secret-token" not in captured.out
     assert "secret-token" not in captured.err

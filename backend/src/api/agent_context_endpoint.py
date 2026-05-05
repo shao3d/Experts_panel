@@ -11,7 +11,10 @@ from .dependencies import verify_agent_context_token
 from .models import AgentContextRequest, AgentContextResponse, SelectionUsed
 from .. import config
 from ..models.base import SessionLocal
-from ..services.agent_context_service import AgentContextService
+from ..services.agent_context_service import (
+    AgentContextSearchUnavailable,
+    AgentContextService,
+)
 
 
 AGENT_CONTEXT_EXPERT_GROUPS = {
@@ -159,6 +162,7 @@ def _build_selection_used(agent_request: AgentContextRequest) -> SelectionUsed:
         include_drift_comment_groups=agent_request.include_drift_comment_groups,
         synthesis_level=agent_request.synthesis_level,
         use_recent_only=agent_request.use_recent_only,
+        use_super_passport=True,
     )
 
 
@@ -209,13 +213,19 @@ async def _build_agent_context_response(
     request_id = getattr(http_request.state, "request_id", "unknown")
 
     service = AgentContextService(db)
-    response = await service.build_response(
-        agent_request=agent_request,
-        selection_used=selection_used,
-        expert_ids=expert_ids,
-        request_id=request_id,
-        start_time=start_time,
-    )
+    try:
+        response = await service.build_response(
+            agent_request=agent_request,
+            selection_used=selection_used,
+            expert_ids=expert_ids,
+            request_id=request_id,
+            start_time=start_time,
+        )
+    except AgentContextSearchUnavailable as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(exc),
+        ) from exc
     _enforce_response_size(response)
     return response
 

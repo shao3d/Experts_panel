@@ -28,6 +28,7 @@ Safe CLI boundary:
 - Do not call /api/v1/query.
 - Do not call admin, import, maintenance, or mutation endpoints.
 - Do not broaden expert selection silently.
+- Rely on the CLI/API forced Embs&Keys path; Agent Context source discovery always uses query embeddings and is not controlled by the UI search toggle.
 
 Expert selection:
 - all: no explicit subset or "all experts".

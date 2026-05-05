@@ -23,8 +23,13 @@ from src.api import dependencies
 from src.api.agent_context_endpoint import AGENT_CONTEXT_EXPERT_GROUPS
 from src.api.main import app
 from src.services import health_probe_service as health_probe_module
-from src.services.agent_context_service import AgentContextService
+from src.services.agent_context_service import AgentContextSearchContext, AgentContextService
 from src.services import agent_context_service as agent_context_module
+
+_ORIGINAL_PREPARE_SEARCH_CONTEXT = AgentContextService._prepare_search_context
+_ORIGINAL_LOAD_CANDIDATE_POSTS_WITH_EMBEDDINGS = (
+    AgentContextService._load_candidate_posts_with_embeddings
+)
 
 
 class FakeHealthProbeService:
@@ -56,6 +61,35 @@ def agent_context_test_config(monkeypatch):
             "expert_name": expert_id,
             "channel_username": expert_id,
         },
+    )
+
+    async def fake_prepare_search_context(self, query):
+        return AgentContextSearchContext(
+            scout_query="ai OR agents OR sales",
+            query_embedding=[0.1] * 768,
+            warnings=[],
+        )
+
+    async def fake_load_candidate_posts_with_embeddings(
+        self,
+        *,
+        expert_id,
+        query,
+        cutoff_date,
+        search_context,
+        warnings,
+    ):
+        return self._load_candidate_posts(expert_id, cutoff_date)
+
+    monkeypatch.setattr(
+        AgentContextService,
+        "_prepare_search_context",
+        fake_prepare_search_context,
+    )
+    monkeypatch.setattr(
+        AgentContextService,
+        "_load_candidate_posts_with_embeddings",
+        fake_load_candidate_posts_with_embeddings,
     )
     dependencies._AGENT_CONTEXT_RATE_LIMIT_BUCKETS.clear()
     yield
@@ -150,10 +184,189 @@ def test_agent_context_valid_token_returns_source_bundle_shape():
         "include_drift_comment_groups": False,
         "synthesis_level": "none",
         "use_recent_only": False,
+        "use_super_passport": True,
     }
     assert "source_selection" in payload["pipeline_used"]
     assert "reduce_answer_synthesis" in payload["pipeline_skipped"]
     assert "agent_context_source_pipeline_not_implemented" not in payload["warnings"]
+
+
+def test_agent_context_forces_embedding_hybrid_search_even_if_client_disables_toggle(
+    monkeypatch,
+):
+    observed = {
+        "scout_queries": [],
+        "embedding_queries": [],
+        "hybrid_calls": [],
+        "standard_fallback_calls": [],
+    }
+
+    async def real_prepare_search_context(self, query):
+        return await _ORIGINAL_PREPARE_SEARCH_CONTEXT(self, query)
+
+    async def real_load_candidate_posts_with_embeddings(
+        self,
+        *,
+        expert_id,
+        query,
+        cutoff_date,
+        search_context,
+        warnings,
+    ):
+        return await _ORIGINAL_LOAD_CANDIDATE_POSTS_WITH_EMBEDDINGS(
+            self,
+            expert_id=expert_id,
+            query=query,
+            cutoff_date=cutoff_date,
+            search_context=search_context,
+            warnings=warnings,
+        )
+
+    monkeypatch.setattr(
+        AgentContextService,
+        "_prepare_search_context",
+        real_prepare_search_context,
+    )
+    monkeypatch.setattr(
+        AgentContextService,
+        "_load_candidate_posts_with_embeddings",
+        real_load_candidate_posts_with_embeddings,
+    )
+    monkeypatch.setattr(
+        AgentContextService,
+        "_load_candidate_posts",
+        lambda self, expert_id, cutoff_date=None: observed["standard_fallback_calls"].append(
+            expert_id
+        )
+        or [],
+    )
+
+    class FakeScoutService:
+        async def generate_match_query(self, query):
+            observed["scout_queries"].append(query)
+            return "ai OR agents OR sales", True
+
+    class FakeEmbeddingService:
+        async def embed_query(self, query):
+            observed["embedding_queries"].append(query)
+            return [0.25] * 768
+
+    class FakeHybridRetrievalService:
+        def __init__(self, db):
+            self.db = db
+
+        async def search_posts(
+            self,
+            *,
+            expert_id,
+            query,
+            match_query,
+            cutoff_date,
+            query_embedding,
+        ):
+            observed["hybrid_calls"].append(
+                {
+                    "expert_id": expert_id,
+                    "query": query,
+                    "match_query": match_query,
+                    "cutoff_date": cutoff_date,
+                    "query_embedding": query_embedding,
+                }
+            )
+            return [], {
+                "mode": "hybrid",
+                "vector_count": 0,
+                "fts5_count": 0,
+                "merged_count": 0,
+                "final_count": 0,
+            }
+
+    monkeypatch.setattr(agent_context_module, "AIScoutService", FakeScoutService)
+    monkeypatch.setattr(
+        agent_context_module,
+        "get_embedding_service",
+        lambda: FakeEmbeddingService(),
+    )
+    monkeypatch.setattr(
+        agent_context_module,
+        "HybridRetrievalService",
+        FakeHybridRetrievalService,
+    )
+
+    with TestClient(app) as client:
+        response = client.post(
+            "/api/v1/agent/context",
+            headers=_auth_headers(),
+            json=_agent_context_payload(
+                expert_filter=["refat", "akimov"],
+                use_super_passport=False,
+            ),
+        )
+
+    assert response.status_code == 200, response.text
+    assert response.json()["selection_used"]["use_super_passport"] is True
+    assert "query_embedding" in response.json()["pipeline_used"]
+    assert "hybrid_retrieval" in response.json()["pipeline_used"]
+    assert observed["scout_queries"] == [_agent_context_payload()["query"]]
+    assert observed["embedding_queries"] == [_agent_context_payload()["query"]]
+    assert observed["standard_fallback_calls"] == []
+    assert [call["expert_id"] for call in observed["hybrid_calls"]] == [
+        "refat",
+        "akimov",
+    ]
+    assert all(
+        call["query_embedding"] == [0.25] * 768
+        for call in observed["hybrid_calls"]
+    )
+
+
+def test_agent_context_fails_closed_when_query_embedding_is_unavailable(
+    monkeypatch,
+):
+    observed = {"standard_fallback_calls": []}
+
+    async def real_prepare_search_context(self, query):
+        return await _ORIGINAL_PREPARE_SEARCH_CONTEXT(self, query)
+
+    monkeypatch.setattr(
+        AgentContextService,
+        "_prepare_search_context",
+        real_prepare_search_context,
+    )
+    monkeypatch.setattr(
+        AgentContextService,
+        "_load_candidate_posts",
+        lambda self, expert_id, cutoff_date=None: observed["standard_fallback_calls"].append(
+            expert_id
+        )
+        or [],
+    )
+
+    class FakeScoutService:
+        async def generate_match_query(self, query):
+            return "ai OR agents OR sales", True
+
+    class FailingEmbeddingService:
+        async def embed_query(self, query):
+            raise RuntimeError("embedding backend unavailable")
+
+    monkeypatch.setattr(agent_context_module, "AIScoutService", FakeScoutService)
+    monkeypatch.setattr(
+        agent_context_module,
+        "get_embedding_service",
+        lambda: FailingEmbeddingService(),
+    )
+
+    with TestClient(app) as client:
+        response = client.post(
+            "/api/v1/agent/context",
+            headers=_auth_headers(),
+            json=_agent_context_payload(expert_filter=["refat"]),
+        )
+
+    assert response.status_code == 503, response.text
+    assert response.json()["message"] == "agent_context_embedding_search_unavailable"
+    assert observed["standard_fallback_calls"] == []
 
 
 def test_agent_context_group_tech_resolves_expected_roster():
@@ -198,7 +411,14 @@ def test_agent_context_processes_experts_with_bounded_parallelism(monkeypatch):
     max_active_count = 0
     started_expert_ids = []
 
-    async def fake_build_expert_bundle(self, *, expert_id, agent_request, warnings):
+    async def fake_build_expert_bundle(
+        self,
+        *,
+        expert_id,
+        agent_request,
+        search_context,
+        warnings,
+    ):
         nonlocal active_count, max_active_count
         started_expert_ids.append(expert_id)
         active_count += 1

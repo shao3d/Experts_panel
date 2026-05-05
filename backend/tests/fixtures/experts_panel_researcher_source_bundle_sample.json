@@ -13,7 +13,8 @@
     "include_main_source_comments": true,
     "include_drift_comment_groups": false,
     "synthesis_level": "none",
-    "use_recent_only": false
+    "use_recent_only": false,
+    "use_super_passport": true
   },
   "experts": [
     {

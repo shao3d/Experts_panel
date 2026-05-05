@@ -39,6 +39,8 @@ cd backend
 Required behavior:
 
 - use `source_bundle` through `src.cli.agent_context`;
+- rely on the CLI/API forced Embs&Keys path; Agent Context source discovery
+  always uses query embeddings and is not controlled by the UI search toggle;
 - read `AGENT_CONTEXT_API_TOKEN` from environment through the CLI only;
 - do not store, print, or infer token values;
 - do not call /api/v1/query;
