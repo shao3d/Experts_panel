@@ -254,12 +254,38 @@ def test_agents_keep_source_expand_output_as_lean_evidence_note_not_digest():
     assert "lean evidence note" in normalized
     assert "not a new digest/reduce/synthesis" in normalized
     assert "do not rebuild the expert's overall position" in normalized
+    assert "intentionally different from the digest request passport" in normalized
+    assert "does not need query_sent" in normalized
+    assert "does not need experts_sent" in normalized
     assert "what the source itself says" in normalized
     assert "what direct comments add" in normalized
     assert "mostly noise" in normalized
     assert "truncation/limits" in normalized
     assert "3-6 bullets" in normalized
     assert "if the parent asked for raw text" in normalized
+
+
+def test_agents_default_to_compact_digest_answers_and_offer_targeted_expansion():
+    combined = "\n".join([_read(CLAUDE_AGENT_PATH), _codex_agent_config()["developer_instructions"]])
+    normalized = _normalize(combined)
+
+    assert "default expert_digest answers should be compact" in normalized
+    assert "3500-6000 characters" in normalized
+    assert "soft ceiling around 6500" in normalized
+    assert "only produce a long/deep report" in normalized
+    for explicit_deep_trigger in [
+        "подробно",
+        "глубоко",
+        "разверни",
+        "full report",
+        "deep analysis",
+    ]:
+        assert explicit_deep_trigger in normalized
+    assert "3-5 source-backed signals" in normalized
+    assert "2-4 practical decision bullets" in normalized
+    assert "1-3 concrete source_key handles" in normalized
+    assert "weak, indirect, or comment-heavy" in normalized
+    assert "proof-style headings" in normalized
 
 
 def test_agents_surface_evidence_quality_calibration_without_proof_framing():

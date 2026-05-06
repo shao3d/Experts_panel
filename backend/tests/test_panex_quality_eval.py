@@ -68,6 +68,23 @@ def test_good_panex_answer_passes_product_quality_rubric():
     assert checks["request_passport"]["score"] == 1.0
 
 
+def test_source_expand_answer_passes_with_lean_expansion_passport():
+    scenario = _scenario("expand_sources_followup")
+
+    result = quality_eval.evaluate_scenario(
+        scenario=scenario,
+        answer_text=_good_source_expand_answer(),
+        digest_payload=_source_expand_payload(),
+    )
+
+    assert result["status"] == "passed"
+    checks = {check["id"]: check for check in result["checks"]}
+    assert checks["request_passport"]["score"] == 1.0
+    assert "source_expand Request passport" in checks["request_passport"]["details"]
+    assert checks["source_grounding"]["score"] == 1.0
+    assert checks["expand_path"]["score"] == 1.0
+
+
 def test_proof_framed_ungrounded_answer_fails_quality_rubric():
     scenario = _scenario("subagents_tradeoff")
     bad_answer = (
@@ -206,6 +223,18 @@ def _digest_payload(scenario: dict) -> dict:
     }
 
 
+def _source_expand_payload() -> dict:
+    return {
+        "mode": "source_expand",
+        "sources": [
+            {"source_key": "refat:238", "expert_id": "refat"},
+            {"source_key": "doronin:1066", "expert_id": "doronin"},
+        ],
+        "not_found": [],
+        "warnings": [],
+    }
+
+
 def _good_subagents_answer() -> str:
     return """
 **Query and selection**
@@ -238,3 +267,25 @@ refat:101 и частично поддержан akimov:202.
 проверить нюансы и ограничения.
 """
 
+
+def _good_source_expand_answer() -> str:
+    return """
+**Request passport**
+
+- source_keys_sent: refat:238, doronin:1066
+- target: https://experts-panel.fly.dev/api/v1/agent/context/expand
+- mode: source_expand
+- warnings: none
+
+**Evidence Note**
+
+- refat:238: в источнике видно не доказательство, а практический сигнал:
+  автор уточняет, почему исходный тезис нельзя читать слишком широко. Комментарии
+  добавляют нюанс, но не превращают это в сильный факт.
+- doronin:1066: источник поддерживает осторожную интерпретацию и показывает
+  ограничение: часть вывода зависит от контекста задачи. Комментарии скорее
+  уточняют оговорку, чем дают новый самостоятельный вывод.
+- По этим двум источникам прежний digest скорее подтверждается, но его стоит
+  читать мягко: это practitioner-opinion evidence, а не ground-truth oracle.
+  Следующий шаг нужен только если хочется раскрыть raw text или внешние ссылки.
+"""

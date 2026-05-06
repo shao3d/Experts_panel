@@ -331,7 +331,7 @@ def build_checks(
     normalized = normalize(answer_text)
     return [
         check_raw_json(answer_text),
-        check_request_passport(normalized),
+        check_request_passport(scenario, normalized),
         check_scope_fidelity(scenario, normalized),
         check_source_grounding(scenario, answer_text, digest_payload),
         check_signal_honesty(normalized),
@@ -357,21 +357,37 @@ def check_raw_json(answer_text: str) -> dict[str, Any]:
     )
 
 
-def check_request_passport(normalized: str) -> dict[str, Any]:
-    terms = [
-        "query_sent",
-        "experts_sent",
-        "response_mode",
-        "target",
-        "warnings",
-        "query and selection",
-    ]
+def check_request_passport(scenario: dict[str, Any], normalized: str) -> dict[str, Any]:
+    response_mode = scenario.get("response_mode")
+    if response_mode == "source_expand":
+        terms = [
+            "source_keys_sent",
+            "target",
+            "mode",
+            "warnings",
+            "source_expand",
+            "request passport",
+        ]
+        required_hits = 4
+        details_label = "source_expand Request passport markers"
+    else:
+        terms = [
+            "query_sent",
+            "experts_sent",
+            "response_mode",
+            "target",
+            "warnings",
+            "query and selection",
+        ]
+        required_hits = 4
+        details_label = "expert_digest Request passport markers"
+
     hits = count_hits(normalized, terms)
     return make_check(
         "request_passport",
         weight=1.0,
-        score=min(1.0, hits / 4),
-        details=f"Matched {hits}/{len(terms)} Request passport markers.",
+        score=min(1.0, hits / required_hits),
+        details=f"Matched {hits}/{len(terms)} {details_label}.",
     )
 
 

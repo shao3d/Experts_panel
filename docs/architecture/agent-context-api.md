@@ -317,6 +317,9 @@ experts_panel_researcher
   - requests expert_digest by default
   - requests source_bundle only for explicit raw evidence/audit/debug mode
   - returns practitioner-opinion intelligence, not proof claims
+  - keeps default expert_digest answers compact, around 3500-6000 characters
+    with a soft ceiling around 6500 unless the user explicitly asks for
+    "подробно", "глубоко", "разверни", "full report", or "deep analysis"
   - uses the Signals frame:
     1. Query and selection
     2. Source-backed signals
@@ -340,6 +343,14 @@ warnings: none, or important top-level API warnings
 The passport exists to verify scope through the parent-agent -> subagent ->
 CLI/API chain. It must not include the API token, raw JSON, or long pipeline
 dumps.
+
+Default `expert_digest` synthesis should use a compact shape: Request passport,
+a short take / "Короткий вывод", 3-5 source-backed signals with `source_key`
+handles, 2-4 practical decision bullets, and a "Limits and next expansion"
+section with 1-3 concrete handles when deeper audit would help. If evidence is
+weak, indirect, or comment-heavy, Панэкс should explicitly suggest targeted
+`source_expand` handles rather than expanding everything or writing a long
+report by default.
 
 The subagent must not present practitioner posts as proven facts. It should
 separate what the selected sources explicitly say, how different experts frame
@@ -776,7 +787,10 @@ should briefly state what the source itself says, what direct comments add or
 whether they are mostly noise, notable author-supplied external refs,
 truncation/limits, and whether the raw evidence changes or merely supports the
 earlier digest. For one or two sources, keep this to roughly 3-6 bullets unless
-the parent explicitly asks for raw text or raw JSON.
+the parent explicitly asks for raw text or raw JSON. The expansion Request
+passport is intentionally different from the digest passport: it uses
+`source_keys_sent`, `target`, `mode`, and `warnings`, and does not need
+`query_sent`, `experts_sent`, or `response_mode`.
 
 Error response should use the existing API style where practical:
 
@@ -1475,7 +1489,7 @@ Minimum tests:
 - CLI -> HTTP -> FastAPI -> source_expand flow reveals exact source keys without rerunning search/digest;
 - CLI acceptance path does not leak the API token into request body, stdout, or stderr;
 - unsupported `video_hub` request fails with an actionable API message;
-- repo-local Claude/Codex subagent instructions are read-only, explicit-only, token-safe, pin production Fly.io for real calls, use the Signals frame instead of proof framing, and start `Query and selection` with a compact Request passport;
+- repo-local Claude/Codex subagent instructions are read-only, explicit-only, token-safe, pin production Fly.io for real calls, use the Signals frame instead of proof framing, start `Query and selection` with a compact Request passport, and keep default `expert_digest` answers compact unless the user explicitly asks for a deep report;
 - local dogfood fixture and instructions verify JSON-as-input, actionable readiness failures, explicit local smoke, and Signals frame usability;
 - live local smoke helper can preflight, skip/fail/pass cleanly, use a free port, call CLI with explicit `--api-url`, and write a sanitized report;
 - external smoke helper mode can call an explicit production/Fly URL without starting a local backend;
@@ -1516,7 +1530,7 @@ Backend source-bundle MVP status:
 | subagent responses expose the actual request scope | Done: Панэкс instructions require a compact Request passport with `query_sent`, `experts_sent`, `response_mode`, `target`, and `warnings` at the start of `Query and selection` |
 | raw evidence remains available for audit/debug | Done: `response_mode=source_bundle` remains the CLI/API default outside the subagent contract and is explicitly reserved in Панэкс instructions for raw evidence, audit/debug, and source-bundle smoke verification |
 | production BDD checks cover the deployed `expert_digest` and `source_expand` contract | Done: `backend/tests/test_agent_context_production_expert_digest.py` passed against Fly.io with two-expert, three-expert, evidence_quality labels in digest/source_bundle/source_expand, bounded/raw-free digest output, comments-off labels, exact source expansion, realistic Панэкс query styles (casual typo, mixed RU/EN punctuation, multiline PM-style query, `tech_business` group scope, recent-only), capped multi-source expansion, unknown expert, unsupported response mode, invalid human source handle, and `video_hub` 501 scenarios. Latest production run: `16 passed in 1599.35s (0:26:39)`. |
-| product-quality checks cover final Панэкс answer shape | Done locally: `docs/quality/panex-product-quality-rubric.md`, `backend/tests/fixtures/panex_quality_scenarios.json`, `backend/scripts/panex_quality_eval.py`, and `backend/tests/test_panex_quality_eval.py` define and test a deterministic guardrail for final answers. It checks Request passport, scope fidelity, source handles, signal honesty, coverage, actionability, brevity, expansion path, and external-link boundary while leaving final usefulness judgment to human review. |
+| product-quality checks cover final Панэкс answer shape | Done locally: `docs/quality/panex-product-quality-rubric.md`, `backend/tests/fixtures/panex_quality_scenarios.json`, `backend/scripts/panex_quality_eval.py`, and `backend/tests/test_panex_quality_eval.py` define and test a deterministic guardrail for final answers. It checks mode-aware Request passport, scope fidelity, source handles, signal honesty, coverage, actionability, brevity, expansion path, and external-link boundary while leaving final usefulness judgment to human review. |
 | FTS5 side of hybrid retrieval survives punctuation-heavy Scout/fallback queries | Done locally: `backend/tests/test_fts5_query_sanitization.py` covers `file-fist`, question-mark suffixes, and unbalanced Scout quotes; broad Agent Context/backend contour passed with `71 passed, 7 skipped` |
 | existing UI/SSE query endpoint is unchanged | Done by route-preservation/source-bundle isolation tests |
 

@@ -90,3 +90,15 @@ The current Панэкс behavior is good enough for real dogfood as an explicit
 research helper, with one clear next tuning target: make default answers more
 compact while preserving source handles, caveats, and practical decision help.
 
+## Follow-Up Tuning
+
+The follow-up tuning turned those findings into contract checks:
+
+- default `expert_digest` answers now have an explicit compact target
+  (`3500-6000` characters, soft ceiling around `6500`);
+- long/deep reports are reserved for explicit user requests such as "подробно",
+  "глубоко", "разверни", "full report", or "deep analysis";
+- weak, indirect, or comment-heavy evidence should trigger a targeted
+  `source_expand` suggestion with concrete handles;
+- `source_expand` answers are evaluated with their own lean passport:
+  `source_keys_sent`, `target`, `mode`, and `warnings`.

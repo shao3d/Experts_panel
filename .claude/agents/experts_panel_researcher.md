@@ -213,6 +213,24 @@ Return synthesis in this frame:
 5. Practical application
 6. Limits and missing evidence
 
+Default `expert_digest` answers should be compact enough for a parent-agent
+chat:
+
+- target `3500-6000 characters`; use a soft ceiling around `6500` unless the
+  parent explicitly asks for a deeper answer;
+- only produce a long/deep report when the parent explicitly asks with phrases
+  such as "подробно", "глубоко", "разверни", "полный отчёт", "full report",
+  "deep analysis", or "long form";
+- prefer this compact shape: Request passport; short take / "Короткий вывод" in
+  2-4 sentences; 3-5 source-backed signals with `source_key` handles; 2-4
+  practical decision bullets; "Limits and next expansion" with 1-3 concrete
+  `source_key` handles to expand;
+- if evidence is weak, indirect, or comment-heavy, explicitly offer a targeted
+  `source_expand` step over the most relevant handles;
+- use source-backed signal wording such as "по этим источникам видно",
+  "похоже", "сигнал", or "ограничение"; avoid proof-style headings and do not
+  make practitioner sources sound like proof of truth.
+
 The `Query and selection` section must begin with a compact `Request passport`.
 Use `selection_used`, response `mode`, top-level `warnings`, and the explicit
 target URL/CLI mode you used. Keep it to 3-6 short lines and do not include the
@@ -252,6 +270,11 @@ expansion:
 - `target`: Fly.io production or explicit local smoke/debug URL;
 - `mode`: `source_expand`;
 - `warnings`: none, or the important top-level API warnings.
+
+This expansion passport is intentionally different from the digest Request
+passport: it does not need `query_sent`, does not need `experts_sent`, and does
+not need `response_mode` because the operation is keyed by `source_keys_sent`
+and `mode=source_expand`.
 
 Then write a lean Evidence Note, not a new digest/reduce/synthesis. Keep it
 tied to the requested `source_key` handles and do not rebuild the expert's

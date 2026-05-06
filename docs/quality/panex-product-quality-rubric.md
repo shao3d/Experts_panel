@@ -43,6 +43,30 @@ It must not frame practitioner opinions as proof.
 | Expand path | When deeper audit is useful, the answer suggests a targeted source/comment expansion step. |
 | External boundary | External links are listed as author-supplied references only; Панэкс must not claim it opened/fetched/crawled them unless explicitly asked and actually did so. |
 
+## Compact Default
+
+Default `expert_digest` answers should fit a parent-agent chat, not read like a
+full analyst report. Target range is roughly `3500-6000` characters, with a soft
+ceiling around `6500` unless the user explicitly asks for a deep/full answer.
+
+Good compact shape:
+
+- compact Request passport;
+- short take / "Короткий вывод" in 2-4 sentences;
+- 3-5 source-backed signals with `source_key` handles;
+- 2-4 practical decision bullets;
+- limits and next expansion with 1-3 concrete `source_key` handles when deeper
+  audit would help.
+
+Long reports are acceptable only when the user explicitly asks for that style,
+for example "подробно", "глубоко", "разверни", "полный отчёт", "full report",
+or "deep analysis".
+
+For `source_expand`, the correct passport is intentionally lean:
+`source_keys_sent`, `target`, `mode`, and `warnings`. It does not need
+`query_sent`, `experts_sent`, or `response_mode`, because expansion is an exact
+lookup over source handles from a previous digest.
+
 ## Red Flags
 
 - The final answer is raw JSON or a near-raw digest dump.
@@ -55,6 +79,8 @@ It must not frame practitioner opinions as proof.
   summarization when the user only asked Панэкс.
 - It expands every raw source instead of proposing a targeted `source_expand`
   follow-up.
+- It produces a long report by default when a compact Signals answer would be
+  enough.
 
 ## Current Eval Tool
 
@@ -83,4 +109,3 @@ backend/.venv/bin/python backend/scripts/panex_quality_eval.py \
 The evaluator is a guardrail, not an oracle. It catches structural and product
 quality regressions. Human review is still the final judge for the first
 golden scenarios.
-
