@@ -20,12 +20,17 @@ from ..api.models import (
     AgentDigestComments,
     AgentDigestOmittedCounts,
     AgentDigestSignal,
+    AgentDigestSourceIndexEntry,
     AgentDigestSourceRef,
     AgentExpertDigest,
+    AgentExpandedSource,
     AgentExpertSourceBundle,
     AgentExternalLink,
     AgentLinkedContext,
     AgentMainSource,
+    AgentSourceExpandRequest,
+    AgentSourceExpandResponse,
+    AgentSourceExpandTruncation,
     AgentSourceComment,
     AgentSourceComments,
     RelevanceLevel,
@@ -51,6 +56,7 @@ MARKDOWN_LINK_RE = re.compile(
 )
 URL_RE = re.compile(r"https?://[^\s<>\]\"']+")
 TRAILING_URL_PUNCTUATION = ".,;:!?]}*"
+SOURCE_KEY_RE = re.compile(r"^([A-Za-z0-9_]+):([0-9]+)$")
 
 SOURCE_BUNDLE_PIPELINE_USED = [
     "expert_selection",
@@ -89,6 +95,10 @@ class AgentContextSearchContext:
 
 class AgentContextSearchUnavailable(RuntimeError):
     """Raised when Agent Context cannot satisfy its embedding-search contract."""
+
+
+class AgentContextInvalidSourceKey(ValueError):
+    """Raised when an expand request carries an invalid source_key."""
 
 
 class AgentContextService:
@@ -136,6 +146,41 @@ class AgentContextService:
             reddit=None,
             pipeline_used=pipeline_used,
             pipeline_skipped=pipeline_skipped,
+            warnings=warnings,
+            processing_time_ms=int((time.perf_counter() - start_time) * 1000),
+        )
+
+    async def build_expand_response(
+        self,
+        *,
+        expand_request: AgentSourceExpandRequest,
+        request_id: str,
+        start_time: float,
+    ) -> AgentSourceExpandResponse:
+        sources: List[AgentExpandedSource] = []
+        not_found: List[str] = []
+        warnings: List[str] = []
+
+        for source_key in expand_request.source_keys:
+            expert_id, telegram_message_id = self._parse_source_key(source_key)
+            post = self._load_post_by_source_key(expert_id, telegram_message_id)
+            if not post:
+                not_found.append(source_key)
+                continue
+            sources.append(
+                self._build_expanded_source(
+                    source_key=source_key,
+                    expert_id=expert_id,
+                    telegram_message_id=telegram_message_id,
+                    post=post,
+                    expand_request=expand_request,
+                )
+            )
+
+        return AgentSourceExpandResponse(
+            request_id=request_id,
+            sources=sources,
+            not_found=not_found,
             warnings=warnings,
             processing_time_ms=int((time.perf_counter() - start_time) * 1000),
         )
@@ -332,6 +377,108 @@ class AgentContextService:
         if cutoff_date:
             query = query.filter(Post.created_at >= cutoff_date)
         return query.order_by(Post.created_at.desc()).all()
+
+    def _load_post_by_source_key(
+        self,
+        expert_id: str,
+        telegram_message_id: int,
+    ) -> Optional[Post]:
+        return (
+            self.db.query(Post)
+            .filter(
+                Post.expert_id == expert_id,
+                Post.telegram_message_id == telegram_message_id,
+            )
+            .first()
+        )
+
+    def _parse_source_key(self, source_key: str) -> tuple[str, int]:
+        match = SOURCE_KEY_RE.match(source_key.strip())
+        if not match:
+            raise AgentContextInvalidSourceKey(
+                "source_key must use '<expert_id>:<telegram_message_id>' format"
+            )
+        return match.group(1), int(match.group(2))
+
+    def _build_expanded_source(
+        self,
+        *,
+        source_key: str,
+        expert_id: str,
+        telegram_message_id: int,
+        post: Post,
+        expand_request: AgentSourceExpandRequest,
+    ) -> AgentExpandedSource:
+        metadata = self._get_expert_metadata(expert_id)
+        raw_content = post.message_text or ""
+        content, content_truncated = self._clip_with_truncation(
+            raw_content,
+            expand_request.max_content_chars,
+        )
+        comments = AgentSourceComments()
+        comments_truncated = False
+        if expand_request.include_comments:
+            temp_source = AgentMainSource(
+                telegram_message_id=telegram_message_id,
+                source_key=source_key,
+                relevance=RelevanceLevel.HIGH,
+                content=raw_content,
+                created_at=post.created_at.isoformat() if post.created_at else None,
+                author_name=post.author_name,
+            )
+            self._attach_main_source_comments(
+                expert_id=expert_id,
+                main_sources=[temp_source],
+            )
+            comments, comments_truncated = self._cap_source_comments(
+                temp_source.comments,
+                expand_request.max_comments_per_source,
+            )
+
+        external_links = (
+            self._extract_external_links(raw_content)
+            if expand_request.include_external_links
+            else []
+        )
+        return AgentExpandedSource(
+            source_key=source_key,
+            expert_id=expert_id,
+            expert_name=metadata["expert_name"],
+            channel_username=metadata["channel_username"],
+            telegram_message_id=telegram_message_id,
+            content=content,
+            created_at=post.created_at.isoformat() if post.created_at else None,
+            author_name=post.author_name,
+            comments=comments,
+            external_links=external_links,
+            truncation=AgentSourceExpandTruncation(
+                content_truncated=content_truncated,
+                comments_truncated=comments_truncated,
+            ),
+        )
+
+    def _cap_source_comments(
+        self,
+        comments: AgentSourceComments,
+        max_comments: int,
+    ) -> tuple[AgentSourceComments, bool]:
+        author_comments = list(comments.author_comments)
+        community_comments = list(comments.community_comments)
+        total_comments = len(author_comments) + len(community_comments)
+        if max_comments < 0 or total_comments <= max_comments:
+            return comments, False
+
+        remaining = max_comments
+        capped_author = author_comments[:remaining]
+        remaining -= len(capped_author)
+        capped_community = community_comments[: max(0, remaining)]
+        return (
+            AgentSourceComments(
+                author_comments=capped_author,
+                community_comments=capped_community,
+            ),
+            True,
+        )
 
     async def _select_medium_posts(
         self,
@@ -709,6 +856,13 @@ class AgentContextService:
                 seen.add(value)
         return result
 
+    def _clip_with_truncation(self, text: str, max_chars: int) -> tuple[str, bool]:
+        if len(text) <= max_chars:
+            return text, False
+        if max_chars <= 3:
+            return text[:max_chars], True
+        return f"{text[: max_chars - 3].rstrip()}...", True
+
 
 class AgentExpertDigestReducer:
     """Build a compact per-expert digest from a raw Agent Context source bundle."""
@@ -742,6 +896,7 @@ class AgentExpertDigestReducer:
         query: str,
         warnings: List[str],
     ) -> AgentExpertDigest:
+        source_index = self._build_source_index(bundle.main_sources)
         source_refs = self._build_source_refs(bundle.main_sources)
         comments_digest = self._build_comments_digest(bundle.main_sources, source_refs)
         omitted_counts = self._build_omitted_counts(
@@ -752,6 +907,7 @@ class AgentExpertDigestReducer:
 
         if not bundle.main_sources:
             return AgentExpertDigest(
+                source_index=source_index,
                 source_refs=[],
                 comments_digest=comments_digest,
                 omitted_counts=omitted_counts,
@@ -771,6 +927,7 @@ class AgentExpertDigestReducer:
             return self._normalize_llm_digest(
                 data=llm_digest,
                 bundle=bundle,
+                source_index=source_index,
                 source_refs=source_refs,
                 comments_digest=comments_digest,
                 omitted_counts=omitted_counts,
@@ -780,10 +937,33 @@ class AgentExpertDigestReducer:
             warnings.append(f"{bundle.expert_id}: expert_digest_reduce_failed: {exc}")
             return self._fallback_digest(
                 bundle=bundle,
+                source_index=source_index,
                 source_refs=source_refs,
                 comments_digest=comments_digest,
                 omitted_counts=omitted_counts,
             )
+
+    def _build_source_index(
+        self,
+        main_sources: List[AgentMainSource],
+    ) -> List[AgentDigestSourceIndexEntry]:
+        source_index: List[AgentDigestSourceIndexEntry] = []
+        for source in main_sources:
+            source_index.append(
+                AgentDigestSourceIndexEntry(
+                    telegram_message_id=source.telegram_message_id,
+                    source_key=source.source_key,
+                    relevance=source.relevance,
+                    reason=source.reason,
+                    created_at=source.created_at,
+                    author_comments_count=len(source.comments.author_comments),
+                    community_comments_count=len(source.comments.community_comments),
+                    external_links_count=len(source.external_links),
+                    linked_context_count=len(source.linked_context),
+                    content_chars=len(source.content or ""),
+                )
+            )
+        return source_index
 
     def _build_source_refs(
         self,
@@ -1000,6 +1180,7 @@ class AgentExpertDigestReducer:
         *,
         data: Any,
         bundle: AgentExpertSourceBundle,
+        source_index: List[AgentDigestSourceIndexEntry],
         source_refs: List[AgentDigestSourceRef],
         comments_digest: AgentDigestComments,
         omitted_counts: AgentDigestOmittedCounts,
@@ -1055,6 +1236,7 @@ class AgentExpertDigestReducer:
             position=self._digest_position(data=data, bundle=bundle),
             key_signals=key_signals,
             source_refs=source_refs,
+            source_index=source_index,
             comments_digest=comments_digest,
             omitted_counts=omitted_counts,
             limits=limits[:5],
@@ -1065,6 +1247,7 @@ class AgentExpertDigestReducer:
         self,
         *,
         bundle: AgentExpertSourceBundle,
+        source_index: List[AgentDigestSourceIndexEntry],
         source_refs: List[AgentDigestSourceRef],
         comments_digest: AgentDigestComments,
         omitted_counts: AgentDigestOmittedCounts,
@@ -1081,6 +1264,7 @@ class AgentExpertDigestReducer:
             ),
             key_signals=self._fallback_signals(source_refs),
             source_refs=source_refs,
+            source_index=source_index,
             comments_digest=comments_digest,
             omitted_counts=omitted_counts,
             limits=limits,

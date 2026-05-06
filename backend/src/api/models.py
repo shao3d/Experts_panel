@@ -217,6 +217,21 @@ class AgentDigestSourceRef(BaseModel):
     community_comments_count: int = 0
 
 
+class AgentDigestSourceIndexEntry(BaseModel):
+    """Compact handle for every source selected before expert digest compaction."""
+
+    telegram_message_id: int
+    source_key: str
+    relevance: RelevanceLevel
+    reason: Optional[str] = None
+    created_at: Optional[str] = None
+    author_comments_count: int = 0
+    community_comments_count: int = 0
+    external_links_count: int = 0
+    linked_context_count: int = 0
+    content_chars: int = 0
+
+
 class AgentDigestCommentSignal(BaseModel):
     """Compact comment snippet attached to an expert digest."""
 
@@ -262,6 +277,7 @@ class AgentExpertDigest(BaseModel):
     position: Optional[str] = None
     key_signals: List[AgentDigestSignal] = Field(default_factory=list)
     source_refs: List[AgentDigestSourceRef] = Field(default_factory=list)
+    source_index: List[AgentDigestSourceIndexEntry] = Field(default_factory=list)
     comments_digest: AgentDigestComments = Field(default_factory=AgentDigestComments)
     omitted_counts: AgentDigestOmittedCounts = Field(default_factory=AgentDigestOmittedCounts)
     limits: List[str] = Field(default_factory=list)
@@ -292,6 +308,52 @@ class AgentContextResponse(BaseModel):
     reddit: Optional[Dict[str, Any]] = None
     pipeline_used: List[str] = Field(default_factory=list)
     pipeline_skipped: List[str] = Field(default_factory=list)
+    warnings: List[str] = Field(default_factory=list)
+    processing_time_ms: int = 0
+
+
+class AgentSourceExpandRequest(BaseModel):
+    """Request model for exact Agent Context source expansion by source_key."""
+
+    source_keys: List[str] = Field(..., min_length=1)
+    include_comments: bool = True
+    include_external_links: bool = True
+    max_content_chars: int = Field(default=20000, ge=1, le=100000)
+    max_comments_per_source: int = Field(default=50, ge=0, le=500)
+
+
+class AgentSourceExpandTruncation(BaseModel):
+    """Truncation metadata for one expanded source."""
+
+    content_truncated: bool = False
+    comments_truncated: bool = False
+
+
+class AgentExpandedSource(BaseModel):
+    """Raw/capped source returned by source_expand."""
+
+    source_key: str
+    expert_id: str
+    expert_name: str
+    channel_username: str
+    telegram_message_id: int
+    content: Optional[str] = None
+    created_at: Optional[str] = None
+    author_name: Optional[str] = None
+    comments: AgentSourceComments = Field(default_factory=AgentSourceComments)
+    external_links: List[AgentExternalLink] = Field(default_factory=list)
+    truncation: AgentSourceExpandTruncation = Field(
+        default_factory=AgentSourceExpandTruncation
+    )
+
+
+class AgentSourceExpandResponse(BaseModel):
+    """Response model for exact Agent Context source expansion."""
+
+    request_id: str
+    mode: str = "source_expand"
+    sources: List[AgentExpandedSource] = Field(default_factory=list)
+    not_found: List[str] = Field(default_factory=list)
     warnings: List[str] = Field(default_factory=list)
     processing_time_ms: int = 0
 

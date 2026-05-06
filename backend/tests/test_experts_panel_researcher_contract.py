@@ -178,6 +178,21 @@ def test_agents_pin_production_fly_endpoint_for_real_calls():
     assert "copied into another repository" in normalized
 
 
+def test_agents_use_source_expand_for_explicit_raw_source_requests():
+    combined = "\n".join([_read(CLAUDE_AGENT_PATH), _codex_agent_config()["developer_instructions"]])
+    normalized = _normalize(combined)
+
+    assert "src.cli.agent_context_expand" in combined
+    assert "https://experts-panel.fly.dev/api/v1/agent/context/expand" in combined
+    assert "source_expand" in combined
+    assert "source_index" in combined
+    assert "source_keys_sent" in combined
+    assert "раскрой" in combined
+    assert "refat:234" in combined
+    assert "not a new expert_digest query" in normalized
+    assert "not a new source_bundle query" in normalized
+
+
 def test_agents_use_signals_frame_instead_of_proof_frame():
     combined = "\n".join([_read(CLAUDE_AGENT_PATH), _codex_agent_config()["developer_instructions"]])
     normalized = _normalize(combined)

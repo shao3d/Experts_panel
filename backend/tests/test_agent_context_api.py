@@ -853,6 +853,13 @@ def test_agent_context_expert_digest_compacts_sources_and_comments(monkeypatch):
     assert digest["position"] == "Refat frames subagents as explicit bounded helpers."
     assert digest["source_refs"][0]["source_key"] == "refat:101"
     assert digest["source_refs"][0]["short_excerpt"].endswith("...")
+    assert [source["source_key"] for source in digest["source_index"]] == [
+        "refat:101",
+        "refat:102",
+    ]
+    assert digest["source_index"][0]["content_chars"] > 0
+    assert digest["source_index"][0]["external_links_count"] == 2
+    assert digest["source_index"][1]["external_links_count"] == 0
     assert len(digest["source_refs"][0]["external_links"]) == 1
     assert digest["source_refs"][0]["external_links"][0]["fetch_status"] == "not_fetched"
     assert digest["comments_digest"]["author_comments_count"] == 2
@@ -896,6 +903,7 @@ def test_agent_context_expert_digest_accepts_top_level_signal_list():
             }
         ],
         bundle=bundle,
+        source_index=[],
         source_refs=source_refs,
         comments_digest=AgentDigestComments(),
         omitted_counts=AgentDigestOmittedCounts(),
@@ -907,6 +915,146 @@ def test_agent_context_expert_digest_accepts_top_level_signal_list():
         "Refat has source-backed signals for this query, but the digest reducer "
         "did not return a separate stance summary."
     )
+
+
+def test_agent_context_expand_returns_raw_source_without_search_pipeline(monkeypatch):
+    observed = {"comment_source_ids": []}
+
+    async def fail_if_called_async(*args, **kwargs):
+        raise AssertionError("source_expand must not call search or synthesis pipeline")
+
+    def fail_if_called(*args, **kwargs):
+        raise AssertionError("source_expand must not call search or synthesis pipeline")
+
+    fake_post = SimpleNamespace(
+        expert_id="refat",
+        telegram_message_id=101,
+        message_text=(
+            "Refat raw source about source expansion with "
+            "[LangGraph](https://github.com/langchain-ai/langgraph) and extra detail."
+        ),
+        author_name="Refat",
+        created_at=datetime.fromisoformat("2026-04-10T12:00:00"),
+    )
+
+    def fake_load_post_by_source_key(self, expert_id, telegram_message_id):
+        assert expert_id == "refat"
+        assert telegram_message_id == 101
+        return fake_post
+
+    class FakeCommentGroupMapService:
+        def __init__(self, **kwargs):
+            pass
+
+        def merge_with_main_sources(self, scored_drift_groups, db, expert_id, main_source_ids):
+            assert scored_drift_groups == []
+            assert expert_id == "refat"
+            assert main_source_ids == [101]
+            observed["comment_source_ids"].extend(main_source_ids)
+            return [
+                {
+                    "parent_telegram_message_id": 101,
+                    "is_main_source_clarification": True,
+                    "comments": [
+                        {
+                            "comment_id": 1,
+                            "comment_text": "Author clarification",
+                            "author_name": "Refat",
+                            "created_at": "2026-04-10T15:00:00",
+                            "updated_at": "2026-04-10T15:00:00",
+                        }
+                    ],
+                },
+                {
+                    "parent_telegram_message_id": 101,
+                    "is_main_source_community": True,
+                    "comments": [
+                        {
+                            "comment_id": 2,
+                            "comment_text": "Community comment",
+                            "author_name": "Reader",
+                            "created_at": "2026-04-10T16:00:00",
+                            "updated_at": "2026-04-10T16:00:00",
+                        }
+                    ],
+                },
+            ]
+
+    monkeypatch.setattr(AgentContextService, "_prepare_search_context", fail_if_called_async)
+    monkeypatch.setattr(
+        AgentContextService,
+        "_load_candidate_posts_with_embeddings",
+        fail_if_called_async,
+    )
+    monkeypatch.setattr(AgentContextService, "_load_post_by_source_key", fake_load_post_by_source_key)
+    monkeypatch.setattr(agent_context_module, "MapService", fail_if_called)
+    monkeypatch.setattr(agent_context_module, "MediumScoringService", fail_if_called)
+    monkeypatch.setattr(agent_context_module, "SimpleResolveService", fail_if_called)
+    monkeypatch.setattr(agent_context_module, "CommentGroupMapService", FakeCommentGroupMapService)
+    monkeypatch.setattr(AgentExpertDigestReducer, "compact_bundle", fail_if_called_async)
+
+    with TestClient(app) as client:
+        response = client.post(
+            "/api/v1/agent/context/expand",
+            headers=_auth_headers(),
+            json={
+                "source_keys": ["refat:101"],
+                "max_content_chars": 48,
+                "max_comments_per_source": 2,
+            },
+        )
+
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["mode"] == "source_expand"
+    assert payload["not_found"] == []
+    assert payload["warnings"] == []
+    assert observed["comment_source_ids"] == [101]
+
+    source = payload["sources"][0]
+    assert source["source_key"] == "refat:101"
+    assert source["expert_id"] == "refat"
+    assert source["telegram_message_id"] == 101
+    assert source["content"].endswith("...")
+    assert source["truncation"]["content_truncated"] is True
+    assert source["truncation"]["comments_truncated"] is False
+    assert source["external_links"][0]["domain"] == "github.com"
+    assert source["external_links"][0]["fetch_status"] == "not_fetched"
+    assert source["comments"]["author_comments"][0]["comment_text"] == "Author clarification"
+    assert source["comments"]["community_comments"][0]["comment_text"] == "Community comment"
+
+
+def test_agent_context_expand_missing_source_goes_to_not_found(monkeypatch):
+    monkeypatch.setattr(
+        AgentContextService,
+        "_load_post_by_source_key",
+        lambda self, expert_id, telegram_message_id: None,
+    )
+
+    with TestClient(app) as client:
+        response = client.post(
+            "/api/v1/agent/context/expand",
+            headers=_auth_headers(),
+            json={"source_keys": ["refat:999"]},
+        )
+
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["mode"] == "source_expand"
+    assert payload["sources"] == []
+    assert payload["not_found"] == ["refat:999"]
+
+
+def test_agent_context_expand_rejects_invalid_source_key():
+    with TestClient(app) as client:
+        response = client.post(
+            "/api/v1/agent/context/expand",
+            headers=_auth_headers(),
+            json={"source_keys": ["not-a-source-key"]},
+        )
+
+    assert response.status_code == 400, response.text
+    assert "source_key must use" in response.json()["message"]
 
 
 def test_agent_context_external_link_extraction_handles_telegram_markdown_edges():

@@ -1,6 +1,6 @@
 # Agent Context API Spec
 
-**Status:** Accepted / AND-5 + AND-6 + AND-7 + AND-8 + AND-9 + AND-10 + AND-11 + AND-12 + AND-13 + AND-14 + AND-15 + AND-16 + AND-17 + AND-18 implemented / forced embedding search implemented
+**Status:** Accepted / AND-5 + AND-6 + AND-7 + AND-8 + AND-9 + AND-10 + AND-11 + AND-12 + AND-13 + AND-14 + AND-15 + AND-16 + AND-17 + AND-18 + AND-19 implemented / forced embedding search implemented
 **Decision:** `.haft/decisions/dec-20260504-b2539c3d.md`
 **Last updated:** 2026-05-06
 
@@ -26,8 +26,9 @@ Current state as of 2026-05-06:
 | AND-14 all-experts paid local smoke | Done | Paid local smoke passed for the full MVP Telegram roster (`17` experts, no `video_hub`) with bounded parallelism, no warnings, and a `7.46MB` source_bundle response after forced Embs&Keys retrieval. |
 | AND-15 production Fly smoke mode | Done | `backend/scripts/agent_context_live_smoke.py` has an explicit external mode via `--api-url`; without that flag it still starts a local backend and ignores ambient `AGENT_CONTEXT_API_URL` to avoid accidental Fly calls. Production smoke passed on Fly with a separate production token for `refat,akimov`. |
 | AND-16 source external links V1 | Done | `source_bundle` now extracts HTTP(S) links from each selected `main_source` into `main_sources[].external_links` as author-supplied references with `fetch_status=not_fetched`. The API/CLI/subagent contract does not fetch, crawl, clone, or summarize external URLs unless a later explicit enrichment mode is requested. Local live dogfood for `neuraldeep` found 40 real external links with `bad_suffix_links_count=0`; production public endpoint verification on Fly version `338` found 99 real external links with `bad_suffix_links_count=0`. |
-| AND-17 panel-side `expert_digest` reduce | Done + deployed | Agent Context now supports `response_mode = "expert_digest"` for subagent calls. The backend still runs the same source discovery/comment-loading pipeline, then reduces selected posts and main-source comments into compact per-expert digests with provenance (`digest.source_refs`, `digest.key_signals`, `digest.comments_digest`, `digest.omitted_counts`) and omits raw `main_sources` from that response. `source_bundle` remains available for explicit raw evidence/audit/debug requests. Production Fly smoke passed for `refat` with `mode=expert_digest`, `selected_sources_count=17`, `source_refs=8`, and no `expert_digest_reduce_failed` warning. |
+| AND-17 panel-side `expert_digest` reduce | Done + deployed | Agent Context now supports `response_mode = "expert_digest"` for subagent calls. The backend still runs the same source discovery/comment-loading pipeline, then reduces selected posts and main-source comments into compact per-expert digests with provenance (`digest.source_refs`, `digest.source_index`, `digest.key_signals`, `digest.comments_digest`, `digest.omitted_counts`) and omits raw `main_sources` from that response. `source_bundle` remains available for explicit raw evidence/audit/debug requests. Production Fly smoke passed for `refat` with `mode=expert_digest`, `selected_sources_count=17`, `source_refs=8`, and no `expert_digest_reduce_failed` warning. |
 | AND-18 production `expert_digest` BDD hardening | Done + deployed | Added production-live BDD tests that hit Fly.io directly with `AGENT_CONTEXT_PRODUCTION_LIVE=1` and no local backend/mocks. The first red run found that some LLM digest outputs return top-level signal lists without `position`; the backend now fills a safe fallback `position` instead of weakening the contract. Final production runs passed for two-expert, three-expert, digest-vs-source_bundle compactness, comments-off, unknown expert, unsupported response mode, and `video_hub` 501 scenarios. |
+| AND-19 evidence expansion by `source_key` | Done locally | `expert_digest` now includes compact `digest.source_index` handles for all selected sources, while `POST /api/v1/agent/context/expand` expands exact `source_key` handles such as `refat:234` into raw/capped post evidence, direct comments, external link metadata, truncation metadata, and `not_found` entries without rerunning search, Map, Resolve, Reduce, or digest. Панэкс instructions use `src.cli.agent_context_expand` only when the user explicitly asks to reveal concrete sources. |
 | Forced embedding search for Agent Context | Done | Agent Context always forces Embs&Keys hybrid retrieval: CLI sends `use_super_passport=true`, API records `selection_used.use_super_passport=true`, and service prepares one query embedding for all selected experts before bounded parallel expert processing. UI toggle state does not apply to subagent/API calls. |
 | FTS5 query sanitation hardening | Done | Production logs for the Панэкс query about `file-fist` showed AI Scout returning an invalid FTS5 query and then fallback producing unsafe terms such as `file-fist*`, which made the FTS5 side of hybrid retrieval fail with `no such column: fist` while vector retrieval still worked. `AIScoutService` fallback and `sanitize_fts5_query()` now normalize hyphens, punctuation, and unbalanced Scout quotes into safe OR-only FTS5 terms such as `file* OR fist*`. |
 | Production Fly exposure | Done for explicit smoke and default subagent target | `https://experts-panel.fly.dev/api/v1/agent/context` is callable with the separate production bearer token and large source-bundle budgets. The subagent must pass this Fly URL explicitly for real user research calls; localhost is only for explicit local smoke/debug. |
@@ -41,6 +42,7 @@ Implemented code paths:
 - `backend/src/services/simple_resolve_service.py`
 - `backend/src/api/models.py`
 - `backend/src/cli/agent_context.py`
+- `backend/src/cli/agent_context_expand.py`
 - `backend/tests/test_agent_context_acceptance.py`
 - `backend/tests/test_agent_context_api.py`
 - `backend/tests/test_agent_context_cli.py`
@@ -125,7 +127,10 @@ backend/.venv/bin/python -m pytest backend/tests/test_fts5_query_sanitization.py
 # final run after sanitizer hardening: 3 passed
 
 backend/.venv/bin/python -m pytest backend/tests/test_fts5_query_sanitization.py backend/tests/test_agent_context_api.py backend/tests/test_experts_api.py backend/tests/test_agent_context_cli.py backend/tests/test_agent_context_acceptance.py backend/tests/test_experts_panel_researcher_contract.py backend/tests/test_experts_panel_researcher_dogfood.py backend/tests/test_agent_context_live_smoke.py backend/tests/test_agent_context_production_expert_digest.py -q -o addopts=''
-# 71 passed, 7 skipped, 2 warnings
+# 80 passed, 7 skipped, 2 warnings
+
+backend/.venv/bin/python -m pytest backend/tests/test_experts_panel_researcher_contract.py backend/tests/test_agent_context_api.py backend/tests/test_agent_context_acceptance.py backend/tests/test_agent_context_cli.py -q -o addopts=''
+# AND-19 local BDD/TDD: 56 passed, 2 warnings
 
 cd backend && .venv/bin/python -m src.cli.agent_context --query "Когда стоит использовать subagents?" --experts refat --response-mode expert_digest --api-url https://experts-panel.fly.dev/api/v1/agent/context
 # mode: expert_digest
@@ -146,6 +151,7 @@ cd backend
 .venv/bin/python -m src.cli.agent_context --query "AI agents for sales" --experts refat,akimov --response-mode expert_digest
 .venv/bin/python -m src.cli.agent_context --query "AI agents for sales" --group tech
 .venv/bin/python -m src.cli.agent_context --query "AI agents for sales" --json
+.venv/bin/python -m src.cli.agent_context_expand --source-keys refat:234,etechlead:139 --api-url https://experts-panel.fly.dev/api/v1/agent/context/expand --json
 ```
 
 Important boundary: Fly.io is now the default target for real subagent research
@@ -513,7 +519,7 @@ compact digest fields instead of the raw posts/comments payload:
             "limits": "Optional uncertainty or missing evidence."
           }
         ],
-        "source_refs": [
+	        "source_refs": [
           {
             "telegram_message_id": 123,
             "source_key": "refat:123",
@@ -531,9 +537,23 @@ compact digest fields instead of the raw posts/comments payload:
             "linked_context_count": 1,
             "author_comments_count": 2,
             "community_comments_count": 4
-          }
-        ],
-        "comments_digest": {
+	          }
+	        ],
+	        "source_index": [
+	          {
+	            "telegram_message_id": 123,
+	            "source_key": "refat:123",
+	            "relevance": "HIGH",
+	            "reason": "Why this source matched the query.",
+	            "created_at": "2026-04-10T12:00:00",
+	            "author_comments_count": 2,
+	            "community_comments_count": 4,
+	            "external_links_count": 1,
+	            "linked_context_count": 1,
+	            "content_chars": 3140
+	          }
+	        ],
+	        "comments_digest": {
           "author_comments_count": 2,
           "community_comments_count": 4,
           "included_comments": [],
@@ -554,8 +574,66 @@ compact digest fields instead of the raw posts/comments payload:
   ],
   "pipeline_used": ["expert_selection", "source_selection", "expert_digest_reduce"],
   "pipeline_skipped": ["reduce_answer_synthesis", "comment_synthesis"]
+	}
+	```
+
+### `source_expand` endpoint
+
+`source_expand` is a second-step exact lookup by `source_key`, not a new search.
+It should be used after `expert_digest` when the user asks Панэкс to reveal raw
+evidence such as `refat:234`.
+
+```text
+POST /api/v1/agent/context/expand
+```
+
+```json
+{
+  "source_keys": ["refat:234", "etechlead:139"],
+  "include_comments": true,
+  "include_external_links": true,
+  "max_content_chars": 20000,
+  "max_comments_per_source": 50
 }
 ```
+
+Response:
+
+```json
+{
+  "request_id": "req_...",
+  "mode": "source_expand",
+  "sources": [
+    {
+      "source_key": "refat:234",
+      "expert_id": "refat",
+      "expert_name": "Refat",
+      "channel_username": "nobilix",
+      "telegram_message_id": 234,
+      "content": "... raw or capped post text ...",
+      "created_at": "2026-04-10T12:00:00",
+      "author_name": "Refat",
+      "comments": {
+        "author_comments": [],
+        "community_comments": []
+      },
+      "external_links": [],
+      "truncation": {
+        "content_truncated": false,
+        "comments_truncated": false
+      }
+    }
+  ],
+  "not_found": [],
+  "warnings": [],
+  "processing_time_ms": 0
+}
+```
+
+`source_expand` must not call AI Scout, embeddings, retrieval, Map, MEDIUM
+scoring, Resolve, `ReduceService`, `expert_digest`, language validation,
+comment synthesis, Reddit, or meta synthesis. Missing valid keys go to
+`not_found`; malformed keys return actionable `400`.
 
 Error response should use the existing API style where practical:
 
@@ -653,7 +731,7 @@ Both modes start with the same source discovery pipeline:
 4. Optionally add Reddit source packet if requested.
 5. Return response:
    - `source_bundle`: raw selected sources/comments/context.
-   - `expert_digest`: compact per-expert digest plus source refs and omitted counts.
+   - `expert_digest`: compact per-expert digest plus source refs/source index and omitted counts.
 ```
 
 Expert execution must follow the same operational shape as the existing
@@ -684,6 +762,7 @@ loading:
 ```text
 raw AgentExpertSourceBundle
   -> cap source refs/comments/external links by Agent Context digest limits
+  -> include source_index handles for all selected sources
   -> LLM compact digest per expert
   -> return digest fields and clear raw main_sources from the transport response
 ```
@@ -694,6 +773,20 @@ expert meta synthesis, Reddit synthesis, or the UI `/api/v1/query` pipeline.
 If digest generation fails for one expert, return extractive source refs for
 that expert with an `expert_digest_reduce_failed` warning rather than failing
 the entire request.
+
+`source_expand` is intentionally outside this search pipeline:
+
+```text
+source_key handles
+  -> exact DB lookup by expert_id + telegram_message_id
+  -> load direct main-source comments
+  -> extract source-local external link references
+  -> return raw/capped source evidence with truncation metadata
+```
+
+It must not rerun search, AI Scout, embeddings, Map, MEDIUM scoring, Resolve,
+full Reduce, or `expert_digest`. This keeps second-step expansion fast,
+deterministic, and scoped to user-requested evidence handles.
 
 ## 9. Comments Policy
 
@@ -1236,6 +1329,7 @@ Minimum tests:
 - `include_drift_comment_groups=true` is rejected in MVP;
 - CLI -> HTTP -> FastAPI -> source_bundle flow preserves explicit expert selection and safe defaults;
 - CLI -> HTTP -> FastAPI -> expert_digest flow compacts raw evidence before subagent output and preserves source provenance;
+- CLI -> HTTP -> FastAPI -> source_expand flow reveals exact source keys without rerunning search/digest;
 - CLI acceptance path does not leak the API token into request body, stdout, or stderr;
 - unsupported `video_hub` request fails with an actionable API message;
 - repo-local Claude/Codex subagent instructions are read-only, explicit-only, token-safe, pin production Fly.io for real calls, use the Signals frame instead of proof framing, and start `Query and selection` with a compact Request passport;
@@ -1274,7 +1368,8 @@ Backend source-bundle MVP status:
 | first production Fly smoke returns a valid real source_bundle | Done after forced Embs&Keys retrieval: explicit `refat,akimov` production smoke passed with `selection_used.use_super_passport=true`, `response_bytes=438663`, `processing_time_ms=140105`, no warnings |
 | subagent/CLI/API retrieval always uses embeddings | Done: CLI sends `use_super_passport=true`, API normalizes `selection_used.use_super_passport=true`, and service passes a precomputed query embedding into `HybridRetrievalService` for every selected expert |
 | selected source external links are surfaced without automatic browsing | Done: `main_sources[].external_links` carries author-supplied references with `fetch_status=not_fetched`; CLI summary prints link counts; subagent instructions forbid opening/fetching/crawling/cloning/summarizing external URLs unless explicitly requested; local live dogfood for `neuraldeep` found 40 real external links across 11 selected sources, all `not_fetched`, with `bad_suffix_links_count=0`; production public endpoint verification on `https://experts-panel.fly.dev/api/v1/agent/context` found 99 real external links across 23 selected sources, all `not_fetched`, with `bad_suffix_links_count=0` |
-| subagent default response is compact enough for parent-agent synthesis | Done + deployed: `response_mode=expert_digest` returns `digest` fields with source refs/comment counts/omitted counts and clears raw `main_sources` from the transport response; Панэкс instructions use `--response-mode expert_digest` by default; production Fly smoke passed for `refat` |
+| subagent default response is compact enough for parent-agent synthesis | Done + deployed: `response_mode=expert_digest` returns `digest` fields with source refs/source index/comment counts/omitted counts and clears raw `main_sources` from the transport response; Панэкс instructions use `--response-mode expert_digest` by default; production Fly smoke passed for `refat` |
+| Панэкс can reveal specific digest sources without a new search query | Done locally: `POST /api/v1/agent/context/expand` and `src.cli.agent_context_expand` expand concrete `source_key` handles into raw/capped source evidence, comments, external links, truncation metadata, and `not_found`; tests assert search/Map/Resolve/Reduce/digest are not called |
 | subagent responses expose the actual request scope | Done: Панэкс instructions require a compact Request passport with `query_sent`, `experts_sent`, `response_mode`, `target`, and `warnings` at the start of `Query and selection` |
 | raw evidence remains available for audit/debug | Done: `response_mode=source_bundle` remains the CLI/API default outside the subagent contract and is explicitly reserved in Панэкс instructions for raw evidence, audit/debug, and source-bundle smoke verification |
 | production BDD checks cover the deployed `expert_digest` contract | Done: `backend/tests/test_agent_context_production_expert_digest.py` passed against Fly.io with two-expert, three-expert, digest-vs-source_bundle compactness, comments-off, unknown expert, unsupported response mode, and `video_hub` 501 scenarios |
@@ -1290,3 +1385,4 @@ These decisions close the remaining open questions for the MVP implementation:
 3. Keep the first `experts_panel_researcher` subagent repo-local, but pin real research calls to the production Fly.io endpoint so the same agent contract can be copied into other repositories. Add the user-level Codex shortcut as `Панэкс` only after the API and wrapper contract are stable.
 4. Treat external URLs found in selected source posts as references-only in default `source_bundle`. Surface them under `main_sources[].external_links` but do not fetch or summarize them without an explicit future enrichment mode.
 5. Use `expert_digest` as the default Панэкс/subagent response mode. It is a narrow panel-side reduce over selected sources and direct main-source comments, not the old full UI Reduce/Meta/Comment synthesis pipeline. Keep `source_bundle` as explicit raw evidence/audit/debug mode.
+6. Use exact `source_key` expansion as the second-step raw evidence path. `source_expand` is a lookup over `digest.source_refs` / `digest.source_index` handles, not a new `expert_digest` or `source_bundle` search.

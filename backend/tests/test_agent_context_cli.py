@@ -12,7 +12,7 @@ import requests
 BACKEND_DIR = Path(__file__).parent.parent
 sys.path.insert(0, str(BACKEND_DIR))
 
-from src.cli import agent_context
+from src.cli import agent_context, agent_context_expand
 
 
 class FakeResponse:
@@ -150,6 +150,32 @@ def _expert_digest_response():
                             "community_comments_count": 1,
                         }
                     ],
+                    "source_index": [
+                        {
+                            "telegram_message_id": 101,
+                            "source_key": "refat:101",
+                            "relevance": "HIGH",
+                            "reason": "Direct match",
+                            "created_at": "2026-04-10T12:00:00",
+                            "author_comments_count": 1,
+                            "community_comments_count": 1,
+                            "external_links_count": 1,
+                            "linked_context_count": 1,
+                            "content_chars": 123,
+                        },
+                        {
+                            "telegram_message_id": 102,
+                            "source_key": "refat:102",
+                            "relevance": "MEDIUM",
+                            "reason": "Secondary match",
+                            "created_at": "2026-04-09T12:00:00",
+                            "author_comments_count": 0,
+                            "community_comments_count": 0,
+                            "external_links_count": 0,
+                            "linked_context_count": 0,
+                            "content_chars": 88,
+                        },
+                    ],
                     "comments_digest": {
                         "author_comments_count": 1,
                         "community_comments_count": 1,
@@ -182,6 +208,50 @@ def _expert_digest_response():
         "pipeline_skipped": ["reduce_answer_synthesis"],
         "warnings": [],
         "processing_time_ms": 42,
+    }
+
+
+def _source_expand_response():
+    return {
+        "request_id": "req_expand",
+        "mode": "source_expand",
+        "sources": [
+            {
+                "source_key": "refat:101",
+                "expert_id": "refat",
+                "expert_name": "Refat",
+                "channel_username": "nobilix",
+                "telegram_message_id": 101,
+                "content": "Expanded raw source content",
+                "created_at": "2026-04-10T12:00:00",
+                "author_name": "Refat",
+                "comments": {
+                    "author_comments": [
+                        {"comment_id": 1, "comment_text": "Author comment"}
+                    ],
+                    "community_comments": [
+                        {"comment_id": 2, "comment_text": "Community comment"}
+                    ],
+                },
+                "external_links": [
+                    {
+                        "url": "https://github.com/example/repo",
+                        "domain": "github.com",
+                        "label": None,
+                        "context": "Expanded raw source content",
+                        "link_type": "github_repo",
+                        "fetch_status": "not_fetched",
+                    }
+                ],
+                "truncation": {
+                    "content_truncated": False,
+                    "comments_truncated": False,
+                },
+            }
+        ],
+        "not_found": [],
+        "warnings": [],
+        "processing_time_ms": 12,
     }
 
 
@@ -306,10 +376,76 @@ def test_cli_sends_expert_digest_payload_when_requested(
     assert "Agent Context expert_digest" in captured.out
     assert "position: Use subagents for explicit bounded research." in captured.out
     assert "source_refs: 1" in captured.out
+    assert "source_index: 2" in captured.out
     assert "refat:101 [HIGH] Direct match" in captured.out
     assert "[direct] Subagents help when the task has a clear scope." in captured.out
     assert "comments_digest: author=1 community=1 included=1 omitted=1" in captured.out
     assert "omitted_counts" in captured.out
+
+
+def test_expand_cli_sends_source_keys_payload(monkeypatch, capsys, clean_agent_context_env):
+    calls = []
+
+    def fake_post(url, *, headers, json, timeout):
+        calls.append(
+            {
+                "url": url,
+                "headers": headers,
+                "json": json,
+                "timeout": timeout,
+            }
+        )
+        return FakeResponse(payload=_source_expand_response())
+
+    monkeypatch.setenv("AGENT_CONTEXT_API_TOKEN", "token")
+    monkeypatch.setattr(agent_context_expand.requests, "post", fake_post)
+
+    exit_code = agent_context_expand.main(
+        [
+            "--source-keys",
+            "refat:101,etechlead:139",
+            "--max-content-chars",
+            "1234",
+            "--max-comments-per-source",
+            "7",
+        ],
+        load_env=False,
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert calls[0]["url"] == "http://localhost:8000/api/v1/agent/context/expand"
+    assert calls[0]["json"] == {
+        "source_keys": ["refat:101", "etechlead:139"],
+        "include_comments": True,
+        "include_external_links": True,
+        "max_content_chars": 1234,
+        "max_comments_per_source": 7,
+    }
+    assert "Agent Context source_expand" in captured.out
+    assert "refat:101 (@nobilix)" in captured.out
+    assert "comments: author=1 community=1" in captured.out
+    assert "external_links=1" in captured.out
+
+
+def test_expand_cli_missing_token_fails_before_http_call(
+    monkeypatch,
+    capsys,
+    clean_agent_context_env,
+):
+    def fail_post(*args, **kwargs):
+        raise AssertionError("Expand CLI should not call HTTP without a token")
+
+    monkeypatch.setattr(agent_context_expand.requests, "post", fail_post)
+
+    exit_code = agent_context_expand.main(
+        ["--source-keys", "refat:101"],
+        load_env=False,
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 1
+    assert "AGENT_CONTEXT_API_TOKEN is required" in captured.err
 
 
 def test_cli_default_timeout_matches_live_source_bundle_budget(

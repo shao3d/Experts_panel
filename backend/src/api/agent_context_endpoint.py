@@ -2,16 +2,23 @@
 
 import asyncio
 import time
-from typing import Iterable
+from typing import Any, Iterable
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from .dependencies import verify_agent_context_token
-from .models import AgentContextRequest, AgentContextResponse, SelectionUsed
+from .models import (
+    AgentContextRequest,
+    AgentContextResponse,
+    AgentSourceExpandRequest,
+    AgentSourceExpandResponse,
+    SelectionUsed,
+)
 from .. import config
 from ..models.base import SessionLocal
 from ..services.agent_context_service import (
+    AgentContextInvalidSourceKey,
     AgentContextSearchUnavailable,
     AgentContextService,
     SUPPORTED_AGENT_CONTEXT_RESPONSE_MODES,
@@ -188,7 +195,7 @@ def _reject_unsupported_video_hub(expert_ids: list[str]) -> None:
         )
 
 
-def _enforce_response_size(response: AgentContextResponse) -> None:
+def _enforce_response_size(response: Any) -> None:
     """Fail closed if a response exceeds the configured transport cap."""
     max_bytes = config.AGENT_CONTEXT_MAX_RESPONSE_BYTES
     if max_bytes <= 0:
@@ -234,6 +241,29 @@ async def _build_agent_context_response(
     return response
 
 
+async def _build_source_expand_response(
+    expand_request: AgentSourceExpandRequest,
+    http_request: Request,
+    db: Session,
+    start_time: float,
+) -> AgentSourceExpandResponse:
+    request_id = getattr(http_request.state, "request_id", "unknown")
+    service = AgentContextService(db)
+    try:
+        response = await service.build_expand_response(
+            expand_request=expand_request,
+            request_id=request_id,
+            start_time=start_time,
+        )
+    except AgentContextInvalidSourceKey as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+    _enforce_response_size(response)
+    return response
+
+
 @router.post(
     "/context",
     response_model=AgentContextResponse,
@@ -262,4 +292,40 @@ async def create_agent_context(
         raise HTTPException(
             status_code=status.HTTP_504_GATEWAY_TIMEOUT,
             detail="Agent Context API request exceeded configured timeout",
+        ) from exc
+
+
+@router.post(
+    "/context/expand",
+    response_model=AgentSourceExpandResponse,
+    dependencies=[Depends(verify_agent_context_token)],
+)
+async def expand_agent_context_sources(
+    expand_request: AgentSourceExpandRequest,
+    http_request: Request,
+    db: Session = Depends(get_db),
+) -> AgentSourceExpandResponse:
+    """Return exact raw/capped Agent Context sources by source_key."""
+    start_time = time.perf_counter()
+    timeout_seconds = config.AGENT_CONTEXT_TIMEOUT_SECONDS
+    if timeout_seconds <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="AGENT_CONTEXT_TIMEOUT_SECONDS must be positive",
+        )
+
+    try:
+        return await asyncio.wait_for(
+            _build_source_expand_response(
+                expand_request,
+                http_request,
+                db,
+                start_time,
+            ),
+            timeout=timeout_seconds,
+        )
+    except asyncio.TimeoutError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+            detail="Agent Context API source expansion exceeded configured timeout",
         ) from exc

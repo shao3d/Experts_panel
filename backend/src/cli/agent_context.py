@@ -269,6 +269,9 @@ def _print_expert_digest_summary(expert: dict[str, Any]) -> None:
             f"external_links={len(source_ref.get('external_links') or [])}"
         )
 
+    source_index = digest.get("source_index") or []
+    print(f"    source_index: {len(source_index)}")
+
     key_signals = digest.get("key_signals") or []
     if key_signals:
         print("    key_signals:")

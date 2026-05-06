@@ -22,6 +22,8 @@ Production target:
 - For real user research requests, always call the production Experts Panel on Fly.io.
 - Canonical API URL:
   https://experts-panel.fly.dev/api/v1/agent/context
+- Canonical source expansion URL:
+  https://experts-panel.fly.dev/api/v1/agent/context/expand
 - Always pass this URL explicitly with --api-url. Do not rely on the CLI default, because the default is local localhost for local backend debugging and may point to an unrelated project.
 - Use localhost only when the parent explicitly asks for local dogfood, local smoke, or local backend debugging.
 
@@ -32,6 +34,11 @@ Safe CLI boundary:
   .venv/bin/python -m src.cli.agent_context --query "<query>" [--experts refat,akimov | --group tech | --group tech_business] [--recent] --response-mode expert_digest --api-url https://experts-panel.fly.dev/api/v1/agent/context --json
 - Use expert_digest through src.cli.agent_context by default. This asks the Panel to reduce selected posts and main-source comments into compact per-expert digests before returning JSON.
 - Use source_bundle only when the parent explicitly asks for raw evidence, audit/debug output, or source-bundle smoke verification.
+- Use src.cli.agent_context_expand only when the parent explicitly asks to reveal raw evidence for concrete source_key handles, for example "раскрой refat:234" or "show raw source etechlead:139".
+- Command shape for explicit source expansion:
+  cd backend
+  .venv/bin/python -m src.cli.agent_context_expand --source-keys refat:234,etechlead:139 --api-url https://experts-panel.fly.dev/api/v1/agent/context/expand --json
+- source_expand is a lookup step over source keys from digest.source_refs or digest.source_index; it is not a new expert_digest query and not a new source_bundle query.
 - Read the production AGENT_CONTEXT_API_TOKEN from environment through the CLI only.
 - Do not store, print, or infer token values.
 - Do not call /api/v1/query.
@@ -102,15 +109,24 @@ Rules:
 - Preserve meaningful disagreement between experts.
 - Mention external links only as references supplied by the source author unless a later explicit enrichment step verifies their contents.
 - Mention source count and skipped pipeline phases when they matter; selected experts and warnings belong in the Request passport by default.
-- Prefer digest.position, digest.key_signals, digest.source_refs, digest.comments_digest, and digest.omitted_counts over raw source dumps.
+- Prefer digest.position, digest.key_signals, digest.source_refs, digest.source_index, digest.comments_digest, and digest.omitted_counts over raw source dumps.
 - Call out weak, indirect, stale, or missing evidence.
 - Keep raw source dumps out of the parent thread unless requested.
+
+Source expansion output:
+- When you use source_expand, start with a compact Request passport for expansion.
+- Required fields: source_keys_sent, target, mode, warnings.
+- Summarize the expanded raw post/comment evidence in normal prose; do not paste full raw JSON unless the parent explicitly asks.
+- Keep external links as author-supplied references with fetch_status=not_fetched unless a separate explicit link-enrichment request is made.
 
 Production dogfood flow:
 - Use Fly.io by default for user-facing dogfood.
 - Command shape:
   cd backend
   .venv/bin/python -m src.cli.agent_context --query "<query>" --experts refat,akimov --response-mode expert_digest --api-url https://experts-panel.fly.dev/api/v1/agent/context --json
+- Explicit source expansion command shape:
+  cd backend
+  .venv/bin/python -m src.cli.agent_context_expand --source-keys refat:234 --api-url https://experts-panel.fly.dev/api/v1/agent/context/expand --json
 - For live production smoke, use:
   cd backend
   .venv/bin/python scripts/agent_context_live_smoke.py --api-url https://experts-panel.fly.dev/api/v1/agent/context --experts refat,akimov --timeout 3600

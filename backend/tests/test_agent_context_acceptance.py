@@ -22,7 +22,7 @@ os.environ.setdefault("FRONTEND_LOG_FILE", str(BACKEND_DIR / "logs" / "frontend.
 from src import config
 from src.api import dependencies
 from src.api.main import app
-from src.cli import agent_context
+from src.cli import agent_context, agent_context_expand
 from src.services import agent_context_service as agent_context_module
 from src.services import health_probe_service as health_probe_module
 from src.services.agent_context_service import (
@@ -332,6 +332,38 @@ def when_cli_calls_agent_context(monkeypatch, capsys, argv):
     )
 
 
+def when_cli_calls_agent_context_expand(monkeypatch, capsys, argv):
+    http_calls = []
+
+    with TestClient(app) as client:
+        def fake_post(url, *, headers, json, timeout):
+            http_calls.append(
+                {
+                    "url": url,
+                    "headers": headers,
+                    "json": json,
+                    "timeout": timeout,
+                }
+            )
+            response = client.post(
+                "/api/v1/agent/context/expand",
+                headers=headers,
+                json=json,
+            )
+            return RequestsLikeResponse(response)
+
+        monkeypatch.setattr(agent_context_expand.requests, "post", fake_post)
+        exit_code = agent_context_expand.main(argv, load_env=False)
+
+    captured = capsys.readouterr()
+    return SimpleNamespace(
+        exit_code=exit_code,
+        stdout=captured.out,
+        stderr=captured.err,
+        http_calls=http_calls,
+    )
+
+
 def then_cli_succeeded(result):
     assert result.exit_code == 0, result.stderr
 
@@ -444,7 +476,84 @@ def test_acceptance_expert_digest_flow_compacts_evidence_before_cli_output(
     )
     assert expert["digest"]["key_signals"][0]["supporting_sources"] == ["refat:101"]
     assert expert["digest"]["source_refs"][0]["source_key"] == "refat:101"
+    assert [source["source_key"] for source in expert["digest"]["source_index"]] == [
+        "refat:101",
+        "refat:102",
+    ]
     assert expert["digest"]["comments_digest"]["included_comments"]
+
+
+def test_acceptance_expand_flow_reveals_source_key_without_new_digest_query(
+    monkeypatch,
+    capsys,
+):
+    observed = {"loaded_source_keys": [], "comment_source_ids": []}
+
+    fake_post = SimpleNamespace(
+        expert_id="refat",
+        telegram_message_id=101,
+        message_text=(
+            "Expanded raw Refat source with "
+            "https://example.com/evidence and enough content."
+        ),
+        author_name="Refat",
+        created_at=datetime.fromisoformat("2026-04-10T12:00:00"),
+    )
+
+    def fake_load_post_by_source_key(self, expert_id, telegram_message_id):
+        observed["loaded_source_keys"].append(f"{expert_id}:{telegram_message_id}")
+        return fake_post
+
+    class FakeCommentGroupMapService:
+        def __init__(self, **kwargs):
+            pass
+
+        def merge_with_main_sources(self, scored_drift_groups, db, expert_id, main_source_ids):
+            observed["comment_source_ids"].extend(main_source_ids)
+            return [
+                {
+                    "parent_telegram_message_id": 101,
+                    "is_main_source_clarification": True,
+                    "comments": [
+                        {
+                            "comment_id": 1,
+                            "comment_text": "Raw author comment",
+                            "author_name": "Refat",
+                            "created_at": "2026-04-10T15:00:00",
+                            "updated_at": "2026-04-10T15:00:00",
+                        }
+                    ],
+                }
+            ]
+
+    async def fail_if_called_async(*args, **kwargs):
+        raise AssertionError("Expand must not rerun digest/search pipeline")
+
+    monkeypatch.setattr(AgentContextService, "_load_post_by_source_key", fake_load_post_by_source_key)
+    monkeypatch.setattr(AgentContextService, "_prepare_search_context", fail_if_called_async)
+    monkeypatch.setattr(AgentExpertDigestReducer, "compact_bundle", fail_if_called_async)
+    monkeypatch.setattr(agent_context_module, "CommentGroupMapService", FakeCommentGroupMapService)
+
+    result = when_cli_calls_agent_context_expand(
+        monkeypatch,
+        capsys,
+        [
+            "--source-keys",
+            "refat:101",
+            "--json",
+        ],
+    )
+
+    then_cli_succeeded(result)
+    assert result.http_calls[0]["json"]["source_keys"] == ["refat:101"]
+    assert observed["loaded_source_keys"] == ["refat:101"]
+    assert observed["comment_source_ids"] == [101]
+    payload = _raw_payload(result)
+    assert payload["mode"] == "source_expand"
+    assert payload["sources"][0]["source_key"] == "refat:101"
+    assert payload["sources"][0]["comments"]["author_comments"][0]["comment_text"] == (
+        "Raw author comment"
+    )
 
 
 def test_acceptance_safe_defaults_survive_cli_http_api_boundary(monkeypatch, capsys):
