@@ -132,6 +132,16 @@ backend/.venv/bin/python -m pytest backend/tests/test_fts5_query_sanitization.py
 backend/.venv/bin/python -m pytest backend/tests/test_experts_panel_researcher_contract.py backend/tests/test_agent_context_api.py backend/tests/test_agent_context_acceptance.py backend/tests/test_agent_context_cli.py -q -o addopts=''
 # AND-19 local BDD/TDD: 57 passed, 2 warnings
 
+cd backend && .venv/bin/python -m src.cli.agent_context_expand --api-url https://experts-panel.fly.dev/api/v1/agent/context/expand --source-keys refat:220 --max-content-chars 1200 --max-comments-per-source 3 --timeout 3600 --json
+# AND-19 production source_expand smoke after Fly deploy
+# mode: source_expand
+# source_key: refat:220
+# not_found: []
+# warnings: []
+# returned: raw content, 3 direct comments under source, external_links metadata
+# truncation: content_truncated=true, comments_truncated=true
+# processing_time_ms: 92
+
 cd backend && .venv/bin/python -m src.cli.agent_context --query "Когда стоит использовать subagents?" --experts refat --response-mode expert_digest --api-url https://experts-panel.fly.dev/api/v1/agent/context
 # mode: expert_digest
 # selected_sources_count: refat=17
