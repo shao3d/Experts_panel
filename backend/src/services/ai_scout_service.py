@@ -15,6 +15,33 @@ from ..config import MODEL_SCOUT
 logger = logging.getLogger(__name__)
 
 FALLBACK_TOKEN_RE = re.compile(r"[A-Za-zА-Яа-яЁё0-9+#.]+")
+FALLBACK_STOP_WORDS = {
+    "как",
+    "что",
+    "где",
+    "когда",
+    "зачем",
+    "почему",
+    "и",
+    "или",
+    "а",
+    "в",
+    "на",
+    "с",
+    "для",
+    "по",
+    "a",
+    "an",
+    "the",
+    "is",
+    "are",
+    "to",
+    "how",
+    "сделать",
+    "использовать",
+    "настроить",
+}
+MIN_PARTIAL_SLANG_MATCH_CHARS = 3
 
 
 class AIScoutService:
@@ -217,22 +244,20 @@ OUTPUT (OR-only FTS5 query):"""
 
         for word in words:
             # Skip common stop words (intent/action words - let Map Phase handle semantics)
-            if word in ("как", "что", "где", "когда", "зачем", "почему", "и", "или", "в", "на", "с", "для", "по", "a", "an", "the", "is", "are", "to", "how", "сделать", "использовать", "настроить"):
+            if word in FALLBACK_STOP_WORDS:
                 continue
 
             # Check for known slang
-            found_slang = False
-            for ru, en in self.KNOWN_SLANG.items():
-                if ru in word or word in ru:
-                    # Check if the word itself has special chars - don't add wildcard
-                    if any(c in word for c in '+#.'):
-                        expanded_terms.append(f"{en}")
-                    else:
-                        expanded_terms.append(f"{word}*")
-                        # Also add the expanded English terms
-                        expanded_terms.append(f"{en}")
-                    found_slang = True
-                    break
+            slang_expansion = self._match_known_slang(word)
+            found_slang = slang_expansion is not None
+            if slang_expansion:
+                # Check if the word itself has special chars - don't add wildcard
+                if any(c in word for c in '+#.'):
+                    expanded_terms.append(f"{slang_expansion}")
+                else:
+                    expanded_terms.append(f"{word}*")
+                    # Also add the expanded English terms
+                    expanded_terms.append(f"{slang_expansion}")
 
             if not found_slang and len(word) >= 3:
                 # Add prefix wildcard
@@ -246,6 +271,21 @@ OUTPUT (OR-only FTS5 query):"""
 
         # Entity-Centric v2: OR-only, no AND
         return sanitize_fts5_query(" OR ".join(expanded_terms))
+
+    def _match_known_slang(self, word: str) -> Optional[str]:
+        exact_match = self.KNOWN_SLANG.get(word)
+        if exact_match:
+            return exact_match
+
+        if len(word) < MIN_PARTIAL_SLANG_MATCH_CHARS:
+            return None
+
+        for ru, en in self.KNOWN_SLANG.items():
+            if len(ru) < MIN_PARTIAL_SLANG_MATCH_CHARS:
+                continue
+            if ru in word or word in ru:
+                return en
+        return None
 
     def validate_match_query(self, match_query: str) -> bool:
         """Validate FTS5 MATCH query syntax.

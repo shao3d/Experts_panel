@@ -81,3 +81,28 @@ def test_ai_scout_fallback_generates_fts5_safe_terms_for_user_punctuation():
     assert "fist*" in fallback_query
     assert "эмбеддинги*" in fallback_query
     _assert_fts5_accepts(fallback_query)
+
+
+def test_ai_scout_fallback_does_not_expand_short_particles_as_slang():
+    scout = AIScoutService.__new__(AIScoutService)
+
+    fallback_query = scout._generate_fallback(
+        "Когда subagents реально помогают в AI-разработке, а когда только усложняют систему?"
+    )
+
+    assert "subagents*" in fallback_query
+    assert "разработке*" in fallback_query
+    assert "elasticsearch" not in fallback_query
+    _assert_fts5_accepts(fallback_query)
+
+
+def test_ai_scout_fallback_preserves_exact_short_slang_terms():
+    scout = AIScoutService.__new__(AIScoutService)
+
+    fallback_query = scout._generate_fallback("бд c# c++ .net")
+
+    assert "database" in fallback_query
+    assert "csharp" in fallback_query
+    assert "cpp" in fallback_query
+    assert "dotnet" in fallback_query
+    _assert_fts5_accepts(fallback_query)
