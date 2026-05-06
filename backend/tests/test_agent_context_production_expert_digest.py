@@ -157,20 +157,135 @@ def test_production_expert_digest_is_smaller_than_source_bundle_for_same_scope(
     assert digest_bytes <= int(source_bytes * 0.75)
 
 
+def test_production_expert_digest_comments_off_does_not_return_comment_counts(
+    production_token: str,
+):
+    payload, response_bytes = _post_agent_context(
+        production_token,
+        {
+            "query": (
+                "Когда стоит использовать subagents для узких задач, "
+                "а когда лучше оставить работу основному агенту?"
+            ),
+            "response_mode": "expert_digest",
+            "expert_scope": "custom",
+            "expert_filter": ["refat", "akimov"],
+            "include_main_source_comments": False,
+            "include_drift_comment_groups": False,
+            "include_reddit": False,
+            "synthesis_level": "none",
+            "use_super_passport": True,
+        },
+    )
+
+    _assert_expert_digest_contract(
+        payload,
+        expected_experts=["refat", "akimov"],
+        min_experts_with_sources=1,
+        include_main_source_comments=False,
+    )
+    assert "main_source_comments" in payload["pipeline_skipped"]
+    for expert in payload["experts"]:
+        digest = expert["digest"]
+        comments_digest = digest["comments_digest"]
+        assert comments_digest["author_comments_count"] == 0
+        assert comments_digest["community_comments_count"] == 0
+        assert comments_digest["included_comments"] == []
+        assert comments_digest["omitted_comments_count"] == 0
+        assert digest["omitted_counts"]["author_comments"] == 0
+        assert digest["omitted_counts"]["community_comments"] == 0
+        for source_ref in digest["source_refs"]:
+            assert source_ref["author_comments_count"] == 0
+            assert source_ref["community_comments_count"] == 0
+    assert response_bytes < 300_000
+
+
+def test_production_rejects_unknown_expert_before_digest(production_token: str):
+    response = _post_agent_context_raw(
+        production_token,
+        {
+            "query": "Когда стоит использовать subagents?",
+            "response_mode": "expert_digest",
+            "expert_scope": "custom",
+            "expert_filter": ["not_a_real_expert"],
+            "include_reddit": False,
+            "include_main_source_comments": True,
+            "include_drift_comment_groups": False,
+            "synthesis_level": "none",
+            "use_super_passport": True,
+        },
+    )
+
+    assert response.status_code == 400, response.text[:1000]
+    payload = response.json()
+    assert payload["message"]["unknown_expert_ids"] == ["not_a_real_expert"]
+
+
+def test_production_rejects_unsupported_response_mode(production_token: str):
+    response = _post_agent_context_raw(
+        production_token,
+        {
+            "query": "Когда стоит использовать subagents?",
+            "response_mode": "full_answer",
+            "expert_scope": "custom",
+            "expert_filter": ["refat"],
+            "include_reddit": False,
+            "include_main_source_comments": True,
+            "include_drift_comment_groups": False,
+            "synthesis_level": "none",
+            "use_super_passport": True,
+        },
+    )
+
+    assert response.status_code == 400, response.text[:1000]
+    assert "expert_digest" in str(response.json()["message"])
+    assert "source_bundle" in str(response.json()["message"])
+
+
+def test_production_video_hub_remains_explicitly_unsupported(
+    production_token: str,
+):
+    response = _post_agent_context_raw(
+        production_token,
+        {
+            "query": "Что было в видео про subagents?",
+            "response_mode": "expert_digest",
+            "expert_scope": "custom",
+            "expert_filter": ["video_hub"],
+            "include_reddit": False,
+            "include_main_source_comments": True,
+            "include_drift_comment_groups": False,
+            "synthesis_level": "none",
+            "use_super_passport": True,
+        },
+    )
+
+    assert response.status_code == 501, response.text[:1000]
+    assert "video_hub source_bundle is not implemented" in response.json()["message"]
+
+
 def _post_agent_context(
     token: str,
     payload: dict[str, Any],
 ) -> tuple[dict[str, Any], int]:
+    response = _post_agent_context_raw(token, payload)
+    safe_body = response.text[:2000]
+    assert response.status_code == 200, safe_body
+    parsed = response.json()
+    return parsed, len(response.content)
+
+
+def _post_agent_context_raw(
+    token: str,
+    payload: dict[str, Any],
+) -> requests.Response:
     response = requests.post(
         PRODUCTION_API_URL,
         headers={"Authorization": f"Bearer {token}"},
         json=payload,
         timeout=PRODUCTION_TIMEOUT_SECONDS,
     )
-    safe_body = response.text[:2000]
-    assert response.status_code == 200, safe_body
-    parsed = response.json()
-    return parsed, len(response.content)
+    return response
 
 
 def _assert_expert_digest_contract(
@@ -178,11 +293,15 @@ def _assert_expert_digest_contract(
     *,
     expected_experts: list[str],
     min_experts_with_sources: int,
+    include_main_source_comments: bool = True,
 ) -> None:
     assert payload["mode"] == "expert_digest"
     assert payload["selection_used"]["expert_scope"] == "custom"
     assert payload["selection_used"]["expert_filter"] == expected_experts
-    assert payload["selection_used"]["include_main_source_comments"] is True
+    assert (
+        payload["selection_used"]["include_main_source_comments"]
+        is include_main_source_comments
+    )
     assert payload["selection_used"]["include_drift_comment_groups"] is False
     assert payload["selection_used"]["include_reddit"] is False
     assert payload["selection_used"]["synthesis_level"] == "none"
