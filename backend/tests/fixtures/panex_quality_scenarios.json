@@ -278,6 +278,176 @@
         "forbidden_terms": ["doronin:", "kornish:", "etechlead:", "tech_business", "all experts", "по всем экспертам"],
         "forbidden_terms_critical": true
       }
+    },
+    {
+      "id": "and23_expand_named_expert",
+      "title": "AND-23 natural named-expert expansion selects top previous source",
+      "query": "Панэкс, раскрой по Рефату из предыдущего ответа.",
+      "response_mode": "source_expand",
+      "selection": {
+        "expert_scope": "custom",
+        "expert_group": null,
+        "expert_filter": ["refat"],
+        "use_recent_only": false
+      },
+      "rubric": {
+        "min_score": 0.78,
+        "min_source_handles": 1,
+        "max_answer_chars": 3200,
+        "must_cover_any": [
+          ["source_keys_sent", "source_expand"],
+          ["refat", "рефат"],
+          ["что в источнике", "источник", "source"],
+          ["коммент", "комментар"],
+          ["предыдущ", "previous digest", "прежн"]
+        ],
+        "action_terms": ["уточн", "огранич", "поддерж", "меняет"],
+        "expect_expansion_offer": false,
+        "forbidden_terms": ["query_sent", "experts_sent", "response_mode", "запущу новый digest", "запускаю новый digest", "новый поиск по всем источникам", "по всем источникам"],
+        "forbidden_terms_weight": 0.75
+      }
+    },
+    {
+      "id": "and23_expand_claim",
+      "title": "AND-23 claim selector maps to supporting_sources",
+      "query": "Раскрой этот вывод про plan-first дисциплину: на чём он основан?",
+      "response_mode": "source_expand",
+      "selection": {
+        "expert_scope": "custom",
+        "expert_group": null,
+        "expert_filter": ["refat", "akimov"],
+        "use_recent_only": false
+      },
+      "rubric": {
+        "min_score": 0.78,
+        "min_source_handles": 1,
+        "max_answer_chars": 3400,
+        "must_cover_any": [
+          ["source_keys_sent", "source_expand"],
+          ["этот вывод", "тезис", "supporting_sources", "основан"],
+          ["plan-first", "plan first", "план"],
+          ["что в источнике", "источник"],
+          ["коммент", "комментар"]
+        ],
+        "action_terms": ["уточн", "огранич", "поддерж", "меняет"],
+        "expect_expansion_offer": false,
+        "forbidden_terms": ["query_sent", "experts_sent", "запущу новый digest", "запускаю новый digest", "новый поиск по всем источникам", "по всем источникам"],
+        "forbidden_terms_weight": 0.75
+      }
+    },
+    {
+      "id": "and23_expand_comments_focus",
+      "title": "AND-23 comments-focused selector stays source_expand and comments-first",
+      "query": "Что там в комментариях по самому спорному источнику?",
+      "response_mode": "source_expand",
+      "selection": {
+        "expert_scope": "custom",
+        "expert_group": null,
+        "expert_filter": ["doronin"],
+        "use_recent_only": false
+      },
+      "rubric": {
+        "min_score": 0.78,
+        "min_source_handles": 1,
+        "max_answer_chars": 3200,
+        "must_cover_any": [
+          ["source_keys_sent", "source_expand"],
+          ["коммент", "комментар"],
+          ["спорн", "слаб", "огранич"],
+          ["шум", "noise", "нюанс"],
+          ["источник", "source"]
+        ],
+        "action_terms": ["уточн", "огранич", "поддерж", "меняет"],
+        "expect_expansion_offer": false,
+        "forbidden_terms": ["query_sent", "experts_sent", "запущу новый digest", "запускаю новый digest", "новый поиск по всем источникам", "по всем источникам"],
+        "forbidden_terms_weight": 0.75
+      }
+    },
+    {
+      "id": "and23_expand_weak_sources",
+      "title": "AND-23 weak-source selector does not overstate evidence",
+      "query": "Покажи слабые места и слабые источники по предыдущему ответу.",
+      "response_mode": "source_expand",
+      "selection": {
+        "expert_scope": "custom",
+        "expert_group": null,
+        "expert_filter": ["refat", "akimov"],
+        "use_recent_only": false
+      },
+      "rubric": {
+        "min_score": 0.80,
+        "min_source_handles": 2,
+        "max_answer_chars": 3600,
+        "must_cover_any": [
+          ["source_keys_sent", "source_expand"],
+          ["слаб", "weak", "низк"],
+          ["огранич", "недостаточно", "не видно"],
+          ["источник", "source"],
+          ["не доказ", "не факт", "сигнал"]
+        ],
+        "action_terms": ["уточн", "огранич", "провер", "меняет"],
+        "expect_expansion_offer": false,
+        "forbidden_terms": ["query_sent", "experts_sent", "строго доказано", "это факт", "запущу новый digest", "запускаю новый digest", "новый поиск по всем источникам", "по всем источникам"],
+        "forbidden_terms_critical": true
+      }
+    },
+    {
+      "id": "and23_ambiguous_selector_clarifies",
+      "title": "AND-23 ambiguous human selector asks one clarification instead of guessing",
+      "query": "Панэкс, раскрой этот вывод подробнее.",
+      "response_mode": "clarification",
+      "selection": {
+        "expert_scope": "custom",
+        "expert_group": null,
+        "expert_filter": ["refat", "akimov"],
+        "use_recent_only": false
+      },
+      "rubric": {
+        "min_score": 0.78,
+        "min_source_handles": 0,
+        "min_answer_chars": 220,
+        "max_answer_chars": 1500,
+        "must_cover_any": [
+          ["уточн", "какой вывод", "какой тезис"],
+          ["refat", "akimov", "рефат", "акимов", "source"],
+          ["не буду гадать", "без уточнения", "несколько"],
+          ["одним сообщением", "коротко", "выбери"]
+        ],
+        "action_terms": ["уточн", "какой", "выбери", "ответь"],
+        "expect_expansion_offer": false,
+        "expect_request_passport": false,
+        "forbidden_terms": ["source_keys_sent", "mode: source_expand", "query_sent", "experts_sent", "новый digest", "новый поиск", "по всем источникам"],
+        "forbidden_terms_critical": true
+      }
+    },
+    {
+      "id": "and23_no_previous_digest_boundary",
+      "title": "AND-23 no previous digest boundary does not invent source handles",
+      "query": "Панэкс, раскрой по Рефату.",
+      "response_mode": "boundary",
+      "selection": {
+        "expert_scope": "custom",
+        "expert_group": null,
+        "expert_filter": ["refat"],
+        "use_recent_only": false
+      },
+      "rubric": {
+        "min_score": 0.78,
+        "min_source_handles": 0,
+        "min_answer_chars": 220,
+        "max_answer_chars": 1500,
+        "must_cover_any": [
+          ["нет previous digest", "нет предыдущего digest", "нет контекста"],
+          ["сначала", "основной вопрос", "main панэкс question"],
+          ["не буду гадать", "не могу выбрать", "не буду придумывать"],
+          ["рефат", "refat"]
+        ],
+        "action_terms": ["сначала", "спросить", "вопрос", "после"],
+        "expect_expansion_offer": false,
+        "expect_request_passport": false,
+        "forbidden_terms": ["source_keys_sent", "mode: source_expand", "query_sent", "experts_sent", "refat:101", "новый digest", "новый поиск"],
+        "forbidden_terms_critical": true
+      }
     }
   ]
 }

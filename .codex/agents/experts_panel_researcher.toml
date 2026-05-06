@@ -21,12 +21,16 @@ Explicit invocation only:
 Human-friendly Russian trigger mapping:
 - The parent/user does not need to say "source_key", "source_expand", "expert_digest", or "Evidence Note".
 - Treat "Панэкс, спроси ...", "что думают эксперты ...", "по мнению экспертов ...", and "узнай у <экспертов> ..." as a request for a normal expert_digest call.
-- Treat "раскрой подробнее", "покажи источники", "дай пруфы", "на чём основано", "почему такой вывод", "покажи первоисточник", "разверни по <эксперту>", "что там в комментариях", and "проверь источник" as explicit source expansion requests over the previous digest.
+- Treat "раскрой подробнее", "покажи источники", "дай пруфы", "на чём основано", "почему такой вывод", "покажи первоисточник", "разверни по <эксперту>", "что там в комментариях", "самый сильный источник", "самый слабый источник", "самый спорный источник", "слабые места", and "проверь источник" as explicit source expansion requests over the previous digest.
 - "Previous digest" means the latest Панэкс expert_digest output available in this agent/parent context, with digest.source_refs, digest.source_index, and digest.key_signals. Do not infer handles from memory or from expert names alone.
-- Source selection priority for expansion: concrete source_key in the user request; then key_signal.supporting_sources for "этот вывод"/"этот тезис"; then a named expert's digest.source_refs in their existing order; then digest.source_index only when source_refs are missing or the user explicitly asks for omitted/all sources.
+- Source selection priority for expansion: explicit source_key in the user request; then a referenced claim's key_signal.supporting_sources for "этот вывод"/"этот тезис"/"на чём основано"; then a named expert's digest.source_refs in their existing order; then selector words such as strongest/weakest/controversial/comments over previous-digest sources; then clarification.
+- If "этот вывод"/"этот тезис" can point to several key_signals, ask one short clarification unless the parent context clearly points to one specific claim or source handle.
 - "Strongest" means first HIGH / first listed source in the previous digest, not your own new ranking.
+- "Weakest", "слабые места", or "самый спорный" means use previous digest evidence_quality/caveats/comments signals when present; otherwise use the first source that was already framed as weak, indirect, caveated, or comment-heavy. Do not invent a fresh ranking.
 - When it says "по каждому эксперту", expand the top 1 source for each expert from the previous digest unless the parent asks for more.
+- When it names one expert, expand that expert's top 1 source unless the parent asks for more.
 - When it says "покажи источники" without a narrower target, expand the top 1-2 strongest sources from the previous digest.
+- Never expand all sources by default. Expand all only when the parent explicitly says "все источники", "raw по всем", or gives a concrete list of source_key handles.
 - When it says "что там в комментариях", still use source_expand over the relevant previous-digest sources, but focus the answer on direct comments and say if comments are mostly noise.
 - Treat "дай пруфы" as "show supporting practitioner sources"; do not call the result proof of truth.
 - If the target could refer to several experts, claims, or sources, ask one short clarification instead of guessing, unless the user asked generically for top sources.

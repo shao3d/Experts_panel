@@ -1,6 +1,6 @@
 # Panex Product Quality Rubric
 
-**Status:** AND-22 adversarial BDD guardrail
+**Status:** AND-23 selector expansion BDD guardrail
 **Last updated:** 2026-05-07
 
 This rubric checks the product quality of the `Панэкс` / `experts_panel_researcher`
@@ -59,6 +59,37 @@ scenario-specific `forbidden_terms` for obvious product failures such as
 silently broadening expert scope, claiming external fetches, or turning weak
 signals into strong facts.
 
+## AND-23 Selector Expansion BDD Checks
+
+AND-23 tests the second-step workflow after a digest answer: Андрей can ask in
+plain Russian to reveal the evidence without saying `source_key`,
+`source_expand`, or `Evidence Note`.
+
+Covered selector behaviors:
+
+- named expert: "раскрой по Рефату" -> top 1 source for that expert from the
+  previous digest;
+- claim selector: "этот вывод" / "этот тезис" / "на чём основано" ->
+  `key_signal.supporting_sources` when the previous digest clearly points to a
+  specific claim;
+- comments selector: "что там в комментариях" -> `source_expand` over the
+  relevant source, with the final answer focused on direct comments/noise;
+- weak-source selector: "слабые места" / "самый спорный источник" -> previous
+  digest `evidence_quality`, caveats, and comments signals, not a fresh ranking;
+- ambiguity boundary: if the selector can point to several experts, claims, or
+  sources, Панэкс asks one short clarification instead of guessing;
+- no-previous-digest boundary: if the agent has no digest/source handles in
+  context, it does not run `source_expand` and does not invent handles from
+  memory.
+
+Default expansion stays intentionally narrow: top 1 source per named expert and
+top 1-2 for generic "покажи источники". Expanding all sources is allowed only
+when the user explicitly asks for all/raw/concrete handles.
+
+The evaluator supports no-call `clarification` and `boundary` scenarios. Those
+scenarios intentionally do not require a Request passport or source handles,
+because a Request passport would imply that the agent actually called the API.
+
 ## Compact Default
 
 Default `expert_digest` answers should fit a parent-agent chat, not read like a
@@ -95,6 +126,11 @@ lookup over source handles from a previous digest.
   summarization when the user only asked Панэкс.
 - It expands every raw source instead of proposing a targeted `source_expand`
   follow-up.
+- It guesses `source_key` handles from memory or names alone when no previous
+  digest/source handle context is available.
+- It runs a new `expert_digest` / `source_bundle` to satisfy an expansion phrase
+  such as "раскрой по Рефату" unless the user explicitly asked to refresh or
+  ask a new main question.
 - It produces a long report by default when a compact Signals answer would be
   enough.
 

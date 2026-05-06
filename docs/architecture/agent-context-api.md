@@ -1,6 +1,6 @@
 # Agent Context API Spec
 
-**Status:** Accepted / AND-5..AND-22 implemented / forced embedding search implemented
+**Status:** Accepted / AND-5..AND-23 implemented / forced embedding search implemented
 **Decision:** `.haft/decisions/dec-20260504-b2539c3d.md`
 **Last updated:** 2026-05-07
 
@@ -32,6 +32,7 @@ Current state as of 2026-05-07:
 | AND-20 evidence quality calibration | Done + deployed | Agent Context now attaches lightweight `evidence_quality` calibration to raw `main_sources`, compact `digest.source_refs`, full `digest.source_index`, and exact `source_expand` results. Labels are deterministic over already selected source text, relevance, comments, and author-supplied external-link metadata; they do not add a new LLM call, do not fetch links, and must be presented by Панэкс as calibration rather than proof. Production Fly BDD passed on release `v364` for digest labels, source_bundle labels, comments-off labels, exact source expansion labels, bad input boundaries, and raw-free bounded digest output. |
 | AND-21 Панэкс product-quality eval scaffold | Done locally | Added a separate product-quality evaluation layer for final Панэкс answers, intentionally distinct from API contract tests. `docs/quality/panex-product-quality-rubric.md` defines the human-readable rubric; `backend/tests/fixtures/panex_quality_scenarios.json` defines golden scenarios; `backend/scripts/panex_quality_eval.py` scores a final answer against request fidelity, source grounding, signal honesty, coverage, actionability, brevity, expansion path, and external-link boundary checks. The first evaluator is deterministic guardrail + human-review support, not an oracle for answer quality. |
 | AND-22 Панэкс adversarial product dogfood | Done locally + production dogfood | Added five BDD-heavy product scenarios for compact default behavior, weak-signal honesty, human Russian source expansion follow-up, external-link boundary, and exact expert-scope discipline. Production Панэкс dogfood against Fly.io passed all five new scenarios; the full product-quality evaluator run passed `11` scenarios with `0` failures. |
+| AND-23 selector-based expansion UX | Done locally + production dogfood | Панэкс instructions now map human follow-up selectors such as "раскрой по Рефату", "этот вывод", "самый спорный источник", "что там в комментариях", and "слабые места" onto exact source handles from the previous `expert_digest`. Default expansion stays small: top 1 per named expert, top 1-2 generic strongest sources, and never all sources unless explicitly requested. Ambiguous selectors and missing previous digest context must ask one clarification or request a main Панэкс question first instead of guessing handles or running a new search. Production dogfood on Fly.io passed digest -> named-expert expansion (`refat:239`) and comments/weak-source expansion (`doronin:73`) without rerunning a new digest/source_bundle. |
 | Forced embedding search for Agent Context | Done | Agent Context always forces Embs&Keys hybrid retrieval: CLI sends `use_super_passport=true`, API records `selection_used.use_super_passport=true`, and service prepares one query embedding for all selected experts before bounded parallel expert processing. UI toggle state does not apply to subagent/API calls. |
 | FTS5 query sanitation hardening | Done | Production logs for the Панэкс query about `file-fist` showed AI Scout returning an invalid FTS5 query and then fallback producing unsafe terms such as `file-fist*`, which made the FTS5 side of hybrid retrieval fail with `no such column: fist` while vector retrieval still worked. `AIScoutService` fallback and `sanitize_fts5_query()` now normalize hyphens, punctuation, and unbalanced Scout quotes into safe OR-only FTS5 terms such as `file* OR fist*`. Fallback slang expansion also avoids treating short particles like Russian `а` as substring slang matches while preserving exact short tech terms such as `бд`, `c#`, `c++`, and `.net`. |
 | Production Fly exposure | Done for explicit smoke and default subagent target | `https://experts-panel.fly.dev/api/v1/agent/context` is callable with the separate production bearer token and large source-bundle budgets. The subagent must pass this Fly URL explicitly for real user research calls; localhost is only for explicit local smoke/debug. |
@@ -160,6 +161,20 @@ backend/.venv/bin/python -m pytest backend/tests/test_agent_context_api.py backe
 backend/.venv/bin/python backend/scripts/panex_quality_eval.py --answers-dir backend/test_results/panex_quality_eval/answers --report-path backend/test_results/panex_quality_eval/latest.json
 # AND-22 product dogfood eval: 11 passed, 0 failed, 0 needs_answer
 
+backend/.venv/bin/python -m pytest backend/tests/test_panex_quality_eval.py backend/tests/test_experts_panel_researcher_contract.py -q -o addopts=''
+# AND-23 selector expansion BDD/contract: 29 passed
+
+backend/.venv/bin/python backend/scripts/panex_quality_eval.py --answers-dir backend/test_results/panex_quality_eval/answers --report-path backend/test_results/panex_quality_eval/latest.json
+# AND-23 product dogfood eval: 17 passed, 0 failed, 0 needs_answer
+
+Панэкс production dogfood on Fly.io for query "Когда subagents реально помогают в AI-разработке, а когда только усложняют workflow?"
+# expert_digest: refat,akimov,doronin
+# digest latency: 79559ms
+# warnings: none
+# follow-up "раскрой по Рефату" -> source_expand refat:239, latency 12ms
+# follow-up "что там в комментариях по самому спорному или слабому источнику?" -> source_expand doronin:73, latency 15ms
+# no new expert_digest/source_bundle for follow-ups; external links not fetched
+
 cd backend && .venv/bin/python -m src.cli.agent_context_expand --api-url https://experts-panel.fly.dev/api/v1/agent/context/expand --source-keys refat:220 --max-content-chars 1200 --max-comments-per-source 3 --timeout 3600 --json
 # AND-19 production source_expand smoke after Fly deploy
 # mode: source_expand
@@ -274,6 +289,10 @@ Plain Russian expansion triggers over the previous digest:
 - "покажи первоисточник";
 - "разверни по <эксперту>";
 - "что там в комментариях";
+- "самый сильный источник";
+- "самый слабый источник";
+- "самый спорный источник";
+- "слабые места";
 - "проверь источник".
 
 For expansion triggers, "previous digest" means the latest Панэкс
@@ -283,18 +302,31 @@ must not infer source handles from memory or expert names alone.
 
 Expansion source selection priority:
 
-1. concrete `source_key` in the user request;
-2. `key_signal.supporting_sources` for "этот вывод" / "этот тезис";
+1. explicit `source_key` in the user request;
+2. referenced claim -> `key_signal.supporting_sources` for "этот вывод" /
+   "этот тезис" / "на чём основано";
 3. named expert -> that expert's `digest.source_refs` in their existing order;
-4. `digest.source_index` only when `source_refs` are missing or the user
-   explicitly asks for omitted/all sources.
+4. selector words such as strongest / weakest / controversial / comments over
+   previous-digest sources;
+5. clarification.
 
 "Strongest" means first HIGH / first listed source in the previous digest, not
 a new ranking by the subagent. "по каждому эксперту" -> top 1 source per expert
-unless the user asks for more; generic "покажи источники" -> top 1-2 strongest
-sources. "что там в комментариях" still uses `source_expand`, but the answer
-should focus on direct comments and say if comments are mostly noise. "дай
-пруфы" means supporting practitioner sources, not proof of truth.
+unless the user asks for more. A named expert selector such as "раскрой по
+Рефату" also means top 1 source for that expert by default. Generic "покажи
+источники" -> top 1-2 strongest sources.
+
+"Weakest", "слабые места", or "самый спорный" means use previous digest
+`evidence_quality`, caveats, and comments signals when available; otherwise use
+the first source already framed as weak, indirect, caveated, or comment-heavy.
+Панэкс must not invent a fresh ranking. "что там в комментариях" still uses
+`source_expand`, but the answer should focus on direct comments and say if
+comments are mostly noise. "дай пруфы" means supporting practitioner sources,
+not proof of truth.
+
+Панэкс must never expand all sources by default. Expanding all is allowed only
+when the user explicitly says "все источники", "raw по всем", or gives a
+concrete list of `source_key` handles.
 
 If the target could refer to several experts, claims, or sources, Панэкс should
 ask one short clarification unless the user asked generically for top sources.

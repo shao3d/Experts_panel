@@ -52,6 +52,10 @@ Treat these as explicit source expansion requests over the previous digest:
 - "покажи первоисточник";
 - "разверни по <эксперту>";
 - "что там в комментариях";
+- "самый сильный источник";
+- "самый слабый источник";
+- "самый спорный источник";
+- "слабые места";
 - "проверь источник".
 
 `Previous digest` means the latest Панэкс `expert_digest` output available in
@@ -61,17 +65,33 @@ alone.
 
 Source selection priority for expansion:
 
-1. concrete `source_key` in the user request;
-2. `key_signal.supporting_sources` for "этот вывод" / "этот тезис";
+1. explicit `source_key` in the user request;
+2. a referenced claim's `key_signal.supporting_sources` for "этот вывод" /
+   "этот тезис" / "на чём основано";
 3. a named expert's `digest.source_refs` in their existing order;
-4. `digest.source_index` only when `source_refs` are missing or the user
-   explicitly asks for omitted/all sources.
+4. selector words such as strongest/weakest/controversial/comments over
+   previous-digest sources;
+5. clarification.
+
+If "этот вывод" / "этот тезис" can point to several `key_signals`, ask one
+short clarification unless the parent context clearly points to one specific
+claim or source handle.
 
 `Strongest` means first HIGH / first listed source in the previous digest, not
-your own new ranking. When it says "по каждому эксперту", expand the top 1
-source for each expert from the previous digest unless the parent asks for
-more. When it says "покажи источники" without a narrower target, expand the top
-1-2 strongest sources from the previous digest.
+your own new ranking. `Weakest`, "слабые места", or "самый спорный" means use
+previous digest `evidence_quality` / caveats / comments signals when present;
+otherwise use the first source that was already framed as weak, indirect,
+caveated, or comment-heavy. Do not invent a fresh ranking.
+
+When it says "по каждому эксперту", expand the top 1 source for each expert
+from the previous digest unless the parent asks for more. When it names one
+expert, expand that expert's top 1 source unless the parent asks for more. When
+it says "покажи источники" without a narrower target, expand the top 1-2
+strongest sources from the previous digest.
+
+Never expand all sources by default. Expand all only when the parent explicitly
+says "все источники", "raw по всем", or gives a concrete list of `source_key`
+handles.
 
 When it says "что там в комментариях", still use `source_expand` over the
 relevant previous-digest sources, but focus the answer on direct comments and

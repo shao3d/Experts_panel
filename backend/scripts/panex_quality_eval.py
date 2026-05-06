@@ -359,6 +359,15 @@ def check_raw_json(answer_text: str) -> dict[str, Any]:
 
 
 def check_request_passport(scenario: dict[str, Any], normalized: str) -> dict[str, Any]:
+    rubric = scenario.get("rubric") or {}
+    if not rubric.get("expect_request_passport", True):
+        return make_check(
+            "request_passport",
+            weight=1.0,
+            score=1.0,
+            details="Scenario intentionally expects no API Request passport.",
+        )
+
     response_mode = scenario.get("response_mode")
     if response_mode == "source_expand":
         terms = [
@@ -399,6 +408,13 @@ def check_scope_fidelity(scenario: dict[str, Any], normalized: str) -> dict[str,
         group = selection["expert_group"]
         expected_terms.extend([group, group.replace("_", " "), "tech & business"])
     expected_terms.extend(selection.get("expert_filter") or [])
+    if not expected_terms:
+        return make_check(
+            "scope_fidelity",
+            weight=1.0,
+            score=1.0,
+            details="No explicit expert/group scope required for this scenario.",
+        )
     hits = count_hits(normalized, expected_terms)
     needed = 1 if selection.get("expert_group") else max(1, len(expected_terms))
     return make_check(
@@ -418,6 +434,14 @@ def check_source_grounding(
     answer_source_keys = {f"{expert}:{message_id}" for expert, message_id in handles}
     expected_source_keys = source_keys_from_digest(digest_payload)
     min_handles = int(scenario["rubric"].get("min_source_handles", 1))
+
+    if min_handles <= 0:
+        return make_check(
+            "source_grounding",
+            weight=1.5,
+            score=1.0,
+            details="Scenario expects no source handles because no API lookup should run.",
+        )
 
     if expected_source_keys:
         matched = answer_source_keys & expected_source_keys
@@ -466,6 +490,14 @@ def check_signal_honesty(normalized: str) -> dict[str, Any]:
         "не видно",
         "недостаточно",
         "caveat",
+        "уточн",
+        "не буду",
+        "не буду гадать",
+        "нет previous digest",
+        "нет предыдущего digest",
+        "нет контекста",
+        "нужен основной запрос",
+        "сначала",
     ]
     has_forbidden = any(term in normalized for term in forbidden)
     caution_hits = count_hits(normalized, caution_terms)

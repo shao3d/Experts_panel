@@ -223,6 +223,10 @@ def test_agents_accept_human_russian_triggers_without_requiring_jargon():
         "покажи первоисточник",
         "разверни по <эксперту>",
         "что там в комментариях",
+        "самый сильный источник",
+        "самый слабый источник",
+        "самый спорный источник",
+        "слабые места",
         "проверь источник",
     ]:
         assert expansion_trigger in normalized
@@ -231,14 +235,30 @@ def test_agents_accept_human_russian_triggers_without_requiring_jargon():
     assert "latest панэкс expert_digest output available" in normalized
     assert "do not infer handles from memory" in normalized
     assert "source selection priority" in normalized
-    assert "concrete source_key" in normalized
+    assert "explicit source_key" in normalized
     assert "key_signal.supporting_sources" in combined
+    assert "referenced claim" in normalized
     assert "digest.source_refs in their existing order" in normalized
-    assert "digest.source_index only when" in normalized
+    assert "selector words such as strongest/weakest/controversial/comments" in normalized
+    assert "then clarification" in normalized
+    assert "can point to several key_signals" in normalized
+    assert "one specific claim or source handle" in normalized
     assert "first high / first listed source" in normalized
+    assert "weakest" in normalized
+    assert "слабые места" in normalized
+    assert "самый спорный" in normalized
+    assert "evidence_quality" in normalized
+    assert "caveats" in normalized
+    assert "comments signals" in normalized
+    assert "do not invent a fresh ranking" in normalized
     assert "supporting_sources" in combined
     assert "top 1 source for each expert" in normalized
+    assert "names one expert" in normalized
+    assert "top 1 source unless" in normalized
     assert "top 1-2 strongest sources" in normalized
+    assert "never expand all sources by default" in normalized
+    assert "все источники" in normalized
+    assert "raw по всем" in normalized
     assert "focus the answer on direct comments" in normalized
     assert "supporting practitioner sources" in normalized
     assert "proof of truth" in normalized
