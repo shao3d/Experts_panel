@@ -9,9 +9,12 @@ import logging
 import re
 from typing import Optional, Tuple
 from .vertex_llm_client import get_vertex_llm_client
+from .fts5_retrieval_service import sanitize_fts5_query
 from ..config import MODEL_SCOUT
 
 logger = logging.getLogger(__name__)
+
+FALLBACK_TOKEN_RE = re.compile(r"[A-Za-zА-Яа-яЁё0-9+#.]+")
 
 
 class AIScoutService:
@@ -209,7 +212,7 @@ OUTPUT (OR-only FTS5 query):"""
         Entity-Centric v2: OR-only, no AND operators.
         Uses known slang mappings and basic keyword extraction.
         """
-        words = user_query.lower().split()
+        words = FALLBACK_TOKEN_RE.findall(user_query.lower())
         expanded_terms = []
 
         for word in words:
@@ -237,10 +240,12 @@ OUTPUT (OR-only FTS5 query):"""
 
         if not expanded_terms:
             # Ultimate fallback: just use original query words
-            return " OR ".join(f"{w}*" for w in words if len(w) >= 2)
+            return sanitize_fts5_query(
+                " OR ".join(f"{w}*" for w in words if len(w) >= 2)
+            )
 
         # Entity-Centric v2: OR-only, no AND
-        return " OR ".join(expanded_terms)
+        return sanitize_fts5_query(" OR ".join(expanded_terms))
 
     def validate_match_query(self, match_query: str) -> bool:
         """Validate FTS5 MATCH query syntax.

@@ -18,6 +18,84 @@ from ..config import MAX_FTS_RESULTS
 
 logger = logging.getLogger(__name__)
 
+FTS5_OR_SPLIT_RE = re.compile(r"\bOR\b", re.IGNORECASE)
+FTS5_TOKEN_RE = re.compile(r"[A-Za-zА-Яа-яЁё0-9_]+")
+FTS5_QUOTED_PHRASE_RE = re.compile(r'"([^"]+)"')
+FTS5_RESERVED_TOKENS = {"AND", "MATCH", "NEAR", "NOT", "OR"}
+FTS5_MAX_QUERY_CHARS = 500
+
+
+def _append_fts5_term(terms: List[str], seen: set[str], term: str) -> None:
+    term = term.strip()
+    if not term:
+        return
+    dedupe_key = term.lower()
+    if dedupe_key in seen:
+        return
+    seen.add(dedupe_key)
+    terms.append(term)
+
+
+def _append_fts5_tokens(
+    terms: List[str],
+    seen: set[str],
+    text: str,
+    *,
+    prefix: bool = False,
+) -> None:
+    for token in FTS5_TOKEN_RE.findall(text):
+        if len(token) < 2 or token.upper() in FTS5_RESERVED_TOKENS:
+            continue
+        suffix = "*" if prefix and not token.endswith("*") else ""
+        _append_fts5_term(terms, seen, f"{token}{suffix}")
+
+
+def _append_fts5_phrase_or_tokens(
+    terms: List[str],
+    seen: set[str],
+    phrase: str,
+) -> None:
+    phrase_tokens = [
+        token
+        for token in FTS5_TOKEN_RE.findall(phrase)
+        if len(token) >= 2 and token.upper() not in FTS5_RESERVED_TOKENS
+    ]
+    if not phrase_tokens:
+        return
+    if len(phrase_tokens) == 1:
+        _append_fts5_term(terms, seen, phrase_tokens[0])
+        return
+    _append_fts5_term(terms, seen, f'"{" ".join(phrase_tokens)}"')
+
+
+def _safe_fts5_or_query(query: str) -> str:
+    """Convert model/user-ish MATCH text into a conservative OR-only query."""
+    terms: List[str] = []
+    seen: set[str] = set()
+
+    for raw_part in FTS5_OR_SPLIT_RE.split(query):
+        part = raw_part.strip()
+        if not part:
+            continue
+
+        for phrase in FTS5_QUOTED_PHRASE_RE.findall(part):
+            _append_fts5_phrase_or_tokens(terms, seen, phrase)
+        part_without_phrases = FTS5_QUOTED_PHRASE_RE.sub(" ", part)
+        _append_fts5_tokens(
+            terms,
+            seen,
+            part_without_phrases,
+            prefix="*" in part_without_phrases,
+        )
+
+    bounded_terms: List[str] = []
+    for term in terms:
+        candidate = " OR ".join([*bounded_terms, term])
+        if len(candidate) > FTS5_MAX_QUERY_CHARS:
+            break
+        bounded_terms.append(term)
+    return " OR ".join(bounded_terms)
+
 
 def sanitize_fts5_query(query: str) -> str:
     """Sanitize FTS5 MATCH query to prevent injection and syntax errors.
@@ -61,10 +139,12 @@ def sanitize_fts5_query(query: str) -> str:
         logger.warning(f"[FTS5 Sanitize] Unbalanced quotes, removing: {original[:50]}")
         query = query.replace('"', "")
 
+    query = _safe_fts5_or_query(query)
+
     # Limit query length to prevent DoS
-    if len(query) > 500:
+    if len(query) > FTS5_MAX_QUERY_CHARS:
         logger.warning(f"[FTS5 Sanitize] Query too long ({len(query)}), truncating")
-        query = query[:500]
+        query = query[:FTS5_MAX_QUERY_CHARS]
 
     # Validate that query still has meaningful content
     cleaned = query.strip()

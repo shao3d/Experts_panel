@@ -29,12 +29,15 @@ Current state as of 2026-05-06:
 | AND-17 panel-side `expert_digest` reduce | Done + deployed | Agent Context now supports `response_mode = "expert_digest"` for subagent calls. The backend still runs the same source discovery/comment-loading pipeline, then reduces selected posts and main-source comments into compact per-expert digests with provenance (`digest.source_refs`, `digest.key_signals`, `digest.comments_digest`, `digest.omitted_counts`) and omits raw `main_sources` from that response. `source_bundle` remains available for explicit raw evidence/audit/debug requests. Production Fly smoke passed for `refat` with `mode=expert_digest`, `selected_sources_count=17`, `source_refs=8`, and no `expert_digest_reduce_failed` warning. |
 | AND-18 production `expert_digest` BDD hardening | Done + deployed | Added production-live BDD tests that hit Fly.io directly with `AGENT_CONTEXT_PRODUCTION_LIVE=1` and no local backend/mocks. The first red run found that some LLM digest outputs return top-level signal lists without `position`; the backend now fills a safe fallback `position` instead of weakening the contract. Final production runs passed for two-expert, three-expert, digest-vs-source_bundle compactness, comments-off, unknown expert, unsupported response mode, and `video_hub` 501 scenarios. |
 | Forced embedding search for Agent Context | Done | Agent Context always forces Embs&Keys hybrid retrieval: CLI sends `use_super_passport=true`, API records `selection_used.use_super_passport=true`, and service prepares one query embedding for all selected experts before bounded parallel expert processing. UI toggle state does not apply to subagent/API calls. |
+| FTS5 query sanitation hardening | Done | Production logs for the Панэкс query about `file-fist` showed AI Scout returning an invalid FTS5 query and then fallback producing unsafe terms such as `file-fist*`, which made the FTS5 side of hybrid retrieval fail with `no such column: fist` while vector retrieval still worked. `AIScoutService` fallback and `sanitize_fts5_query()` now normalize hyphens, punctuation, and unbalanced Scout quotes into safe OR-only FTS5 terms such as `file* OR fist*`. |
 | Production Fly exposure | Done for explicit smoke and default subagent target | `https://experts-panel.fly.dev/api/v1/agent/context` is callable with the separate production bearer token and large source-bundle budgets. The subagent must pass this Fly URL explicitly for real user research calls; localhost is only for explicit local smoke/debug. |
 
 Implemented code paths:
 
 - `backend/src/api/agent_context_endpoint.py`
 - `backend/src/services/agent_context_service.py`
+- `backend/src/services/ai_scout_service.py`
+- `backend/src/services/fts5_retrieval_service.py`
 - `backend/src/services/simple_resolve_service.py`
 - `backend/src/api/models.py`
 - `backend/src/cli/agent_context.py`
@@ -45,6 +48,7 @@ Implemented code paths:
 - `backend/tests/test_experts_panel_researcher_dogfood.py`
 - `backend/tests/test_agent_context_live_smoke.py`
 - `backend/tests/test_agent_context_production_expert_digest.py`
+- `backend/tests/test_fts5_query_sanitization.py`
 - `backend/tests/fixtures/experts_panel_researcher_source_bundle_sample.json`
 - `backend/scripts/agent_context_live_smoke.py`
 - `.claude/agents/experts_panel_researcher.md`
@@ -115,6 +119,13 @@ env AGENT_CONTEXT_PRODUCTION_LIVE=1 backend/.venv/bin/python -m pytest backend/t
 
 env AGENT_CONTEXT_PRODUCTION_LIVE=1 backend/.venv/bin/python -m pytest backend/tests/test_agent_context_production_expert_digest.py -q -o addopts=''
 # extended run after adding comments-off and bad-input scenarios: 7 passed in 355.19s
+
+backend/.venv/bin/python -m pytest backend/tests/test_fts5_query_sanitization.py -q -o addopts=''
+# first red run: 3 failed on file-fist*/method?*/unbalanced Scout quote cases
+# final run after sanitizer hardening: 3 passed
+
+backend/.venv/bin/python -m pytest backend/tests/test_fts5_query_sanitization.py backend/tests/test_agent_context_api.py backend/tests/test_experts_api.py backend/tests/test_agent_context_cli.py backend/tests/test_agent_context_acceptance.py backend/tests/test_experts_panel_researcher_contract.py backend/tests/test_experts_panel_researcher_dogfood.py backend/tests/test_agent_context_live_smoke.py backend/tests/test_agent_context_production_expert_digest.py -q -o addopts=''
+# 71 passed, 7 skipped, 2 warnings
 
 cd backend && .venv/bin/python -m src.cli.agent_context --query "Когда стоит использовать subagents?" --experts refat --response-mode expert_digest --api-url https://experts-panel.fly.dev/api/v1/agent/context
 # mode: expert_digest
@@ -1187,6 +1198,7 @@ backend/tests/test_experts_panel_researcher_contract.py
 backend/tests/test_experts_panel_researcher_dogfood.py
 backend/tests/test_agent_context_live_smoke.py
 backend/tests/test_agent_context_production_expert_digest.py
+backend/tests/test_fts5_query_sanitization.py
 ```
 
 Minimum tests:
@@ -1200,6 +1212,7 @@ Minimum tests:
 - `source_bundle` response includes `selection_used`, `pipeline_used`, `pipeline_skipped`;
 - Agent Context processes selected experts with bounded parallelism through `MAX_CONCURRENT_EXPERTS` and preserves response order;
 - Agent Context always prepares one query embedding and uses hybrid retrieval for subagent/API source discovery regardless of the UI Embs&Keys toggle;
+- AI Scout fallback and shared FTS5 sanitization keep punctuation-heavy queries safe for hybrid retrieval (`file-fist`, `метод?`, unbalanced Scout quotes);
 - default source_bundle does not call `ReduceService`, `LanguageValidationService`, `score_drift_groups`, `CommentSynthesisService`, or `MetaSynthesisService` (use monkeypatch fakes that fail if called);
 - comments under selected sources are returned under each source;
 - external links under selected sources are returned as `external_links` with `fetch_status=not_fetched`, and the subagent instructions forbid automatic external browsing;
@@ -1247,6 +1260,7 @@ Backend source-bundle MVP status:
 | subagent default response is compact enough for parent-agent synthesis | Done + deployed: `response_mode=expert_digest` returns `digest` fields with source refs/comment counts/omitted counts and clears raw `main_sources` from the transport response; Панэкс instructions use `--response-mode expert_digest` by default; production Fly smoke passed for `refat` |
 | raw evidence remains available for audit/debug | Done: `response_mode=source_bundle` remains the CLI/API default outside the subagent contract and is explicitly reserved in Панэкс instructions for raw evidence, audit/debug, and source-bundle smoke verification |
 | production BDD checks cover the deployed `expert_digest` contract | Done: `backend/tests/test_agent_context_production_expert_digest.py` passed against Fly.io with two-expert, three-expert, digest-vs-source_bundle compactness, comments-off, unknown expert, unsupported response mode, and `video_hub` 501 scenarios |
+| FTS5 side of hybrid retrieval survives punctuation-heavy Scout/fallback queries | Done locally: `backend/tests/test_fts5_query_sanitization.py` covers `file-fist`, question-mark suffixes, and unbalanced Scout quotes; broad Agent Context/backend contour passed with `71 passed, 7 skipped` |
 | existing UI/SSE query endpoint is unchanged | Done by route-preservation/source-bundle isolation tests |
 
 ## 15. Closed Design Decisions

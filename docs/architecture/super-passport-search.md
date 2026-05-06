@@ -3,7 +3,7 @@
 > [!NOTE]
 > **Эволюция Фичи:** Данная архитектура эволюционировала. Текущая реализация (Embs&Keys Search) объединяет описанный здесь Entity-Centric FTS5 подход с **векторным поиском (`sqlite-vec`)** и сливает их через алгоритм *Reciprocal Rank Fusion (RRF)*. См. `hybrid_retrieval_plan.md` и исходный код `hybrid_retrieval_service.py` как актуальный SSOT.
 
-**Статус:** ✅ Эволюционировало в Hybrid Retrieval (Updated 2026-04-12)
+**Статус:** ✅ Эволюционировало в Hybrid Retrieval (Updated 2026-05-06)
 **Feature Flag:** `use_super_passport` (доступно через UI чекбокс "Embs&Keys"; backend default = `false`, текущий frontend init = `true`)
 **Цель:** Масштабирование предфильтрации постов для Map Phase через гибридный сплит (Vector + FTS5), предотвращение OOM/CPU spikes.
 
@@ -23,7 +23,7 @@ FTS5 влияет ТОЛЬКО на шаг 1. Все остальные фазы
 ```
 1. AI Scout генерирует FTS5 MATCH-запрос (OR-only Entity Cloud), параллельно оркестратор считает query embedding.
 2. Загрузка постов:
-   - FTS5 ищет совпадения по `message_text`.
+   - FTS5 ищет совпадения по `message_text`; перед SQL общий sanitizer нормализует опасные токены (`file-fist*`, `метод?*`, незакрытые кавычки) в safe OR-only запрос.
    - Vector KNN ищет по предвычисленным эмбеддингам (`sqlite-vec`).
    - RRF с Soft Freshness Decay сливает результаты в единый shortlist.
    - Если hybrid retrieval не дал usable shortlist, сервис откатывается к стандартной загрузке всех постов эксперта.
@@ -61,13 +61,30 @@ FTS5 — это лексический поиск. Пост эксперта: *"
 4. **RRF** сливает результаты FTS5 и Vector KNN с Soft Freshness Decay.
 5. **Smart Fallback** возвращает стандартную выборку постов эксперта, если hybrid path не даёт достаточного результата.
 
+### Sanitation hardening (2026-05-06)
+
+Production logs for an Agent Context query containing `file-fist`, `метод?`,
+and `хорошо?` showed two separate safety needs:
+
+- AI Scout can successfully call Vertex but still return invalid FTS5 syntax,
+  such as an unbalanced quote. In that case `AIScoutService.generate_match_query()`
+  correctly marks Scout as fallback-used.
+- The fallback query itself must still be FTS5-safe. It now tokenizes user
+  punctuation before adding wildcards, and `sanitize_fts5_query()` converts
+  hyphens/punctuation/unbalanced quote fragments into conservative OR-only
+  terms. Example: `file-fist* OR метод?* OR хорошо?*` becomes
+  `file* OR fist* OR метод* OR хорошо*`.
+
+This keeps the FTS5 side of Hybrid Retrieval from failing with parser errors
+such as `no such column: fist`; the Vector KNN side remains available either way.
+
 ---
 
 ## 🛡️ Защиты и Edge Cases
 
 | # | Edge Case | Серьёзность | Решение |
 |---|-----------|-------------|---------|
-| 1 | FTS5 Syntax Error на спецсимволах | 🔴 | Скаут переводит `C++` в `cpp OR "си плюс плюс"`. Запрет `*` после спецсимволов. |
+| 1 | FTS5 Syntax Error на спецсимволах, дефисах, punctuation и кавычках | 🔴 | Скаут переводит `C++` в `cpp OR "си плюс плюс"`. Fallback и общий sanitizer не выпускают `C++*`, `file-fist*`, `метод?*` или незакрытые фразы в FTS5. |
 | 2 | BM25 Pollution (мусор в выдаче) | 🔴 | Промпт Скаута строго запрещает использование глаголов и общих слов (настройка, опыт). |
 | 3 | Hybrid path не дал usable shortlist | 🟡 | Smart Fallback: возврат к стандартной загрузке постов эксперта (например, если нет эмбеддингов или retrieval не дал пригодного shortlist). |
 | 4 | Semantic Gap | 🟡 | Решено через Vector KNN (sqlite-vec) + AI Scout v3 билингвальное расширение. |

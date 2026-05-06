@@ -22,11 +22,11 @@
     *   **Пример команды:** *"Посмотри в `docs/architecture/pipeline.md`, как мы обрабатываем MEDIUM посты."*
 
 *   **📄 `super-passport-search.md` (Embs&Keys Search)**
-    *   **О чём:** Гибридный поиск (Vector KNN + FTS5 + RRF). Эволюционировал из чистой FTS5 стратегии.
+    *   **О чём:** Гибридный поиск (Vector KNN + FTS5 + RRF). Эволюционировал из чистой FTS5 стратегии. Включает текущие правила AI Scout / FTS5 sanitation для спецсимволов, дефисов, punctuation и незакрытых кавычек.
     *   **Пример команды:** *"Изучи `docs/architecture/super-passport-search.md` для понимания предфильтрации."*
 
 *   **📄 `ai-scout-level1-upgrade.md`**
-    *   **О чём:** План и реализация защиты FTS5 от Syntax Errors при поиске спецсимволов (C++, C#).
+    *   **О чём:** Исторический план и реализация защиты FTS5 от Syntax Errors при поиске спецсимволов (C++, C#). Текущий production hardening по punctuation-heavy terms живёт в `super-passport-search.md` и коде `fts5_retrieval_service.py`.
     *   **Пример команды:** *"Проверь по `docs/architecture/ai-scout-level1-upgrade.md`, как мы маппим спецсимволы."*
 
 *   **📄 `ai-scout-level2-upgrade.md` (🔬 Proposed)**
@@ -46,7 +46,7 @@
     *   **Пример команды:** *"Перед правками списка экспертов проверь `docs/architecture/current-expert-roster.md`."*
 
 *   **📄 `agent-context-api.md` (Accepted / AND-5..AND-16 Implemented / Forced Embeddings)**
-    *   **О чём:** Спека и текущий статус agent-facing API для Codex/Claude Code: authenticated endpoint, real `source_bundle`, deployed panel-side `expert_digest` reduce for default Панэкс calls, local CLI wrapper, BDD acceptance hardening, repo-local and user-level `experts_panel_researcher` / `Панэкс`, local dogfood/live smoke helper, paid two-expert and all-experts local smoke passed, bounded expert parallelism via `MAX_CONCURRENT_EXPERTS`, forced Embs&Keys/embedding hybrid retrieval for subagent/API calls, large all-experts-friendly budget `3600s`/`100000000` bytes, выбор экспертов по UI labels / русским именам с переводом в `expert_id`, comments под `main_sources`, compact `digest.source_refs` / `digest.comments_digest` / `digest.omitted_counts`, `external_links` как author-supplied references без auto-fetch, Signals frame, explicit-only invocation, external `--api-url` smoke mode, Fly.io production smoke for `refat,akimov`, AND-16 production external-links verification on Fly version `338`, AND-17 production expert_digest smoke for `refat`, and AND-18 production-live BDD tests for two/three experts, digest-vs-source_bundle compactness, comments-off, unknown expert, unsupported response mode, and `video_hub` 501.
+    *   **О чём:** Спека и текущий статус agent-facing API для Codex/Claude Code: authenticated endpoint, real `source_bundle`, deployed panel-side `expert_digest` reduce for default Панэкс calls, local CLI wrapper, BDD acceptance hardening, repo-local and user-level `experts_panel_researcher` / `Панэкс`, local dogfood/live smoke helper, paid two-expert and all-experts local smoke passed, bounded expert parallelism via `MAX_CONCURRENT_EXPERTS`, forced Embs&Keys/embedding hybrid retrieval for subagent/API calls, FTS5 sanitation hardening for punctuation-heavy Scout/fallback queries, large all-experts-friendly budget `3600s`/`100000000` bytes, выбор экспертов по UI labels / русским именам с переводом в `expert_id`, comments под `main_sources`, compact `digest.source_refs` / `digest.comments_digest` / `digest.omitted_counts`, `external_links` как author-supplied references без auto-fetch, Signals frame, explicit-only invocation, external `--api-url` smoke mode, Fly.io production smoke for `refat,akimov`, AND-16 production external-links verification on Fly version `338`, AND-17 production expert_digest smoke for `refat`, and AND-18 production-live BDD tests for two/three experts, digest-vs-source_bundle compactness, comments-off, unknown expert, unsupported response mode, and `video_hub` 501.
     *   **Пример команды:** *"Перед следующим слайсом repo-local subagent перечитай `docs/architecture/agent-context-api.md` и проверь Implementation Status."*
 
 ---
