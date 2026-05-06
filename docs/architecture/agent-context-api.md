@@ -130,7 +130,7 @@ backend/.venv/bin/python -m pytest backend/tests/test_fts5_query_sanitization.py
 # 80 passed, 7 skipped, 2 warnings
 
 backend/.venv/bin/python -m pytest backend/tests/test_experts_panel_researcher_contract.py backend/tests/test_agent_context_api.py backend/tests/test_agent_context_acceptance.py backend/tests/test_agent_context_cli.py -q -o addopts=''
-# AND-19 local BDD/TDD: 56 passed, 2 warnings
+# AND-19 local BDD/TDD: 57 passed, 2 warnings
 
 cd backend && .venv/bin/python -m src.cli.agent_context --query "Когда стоит использовать subagents?" --experts refat --response-mode expert_digest --api-url https://experts-panel.fly.dev/api/v1/agent/context
 # mode: expert_digest

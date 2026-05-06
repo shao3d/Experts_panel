@@ -3,6 +3,7 @@
 
 import json
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -446,6 +447,29 @@ def test_expand_cli_missing_token_fails_before_http_call(
     captured = capsys.readouterr()
     assert exit_code == 1
     assert "AGENT_CONTEXT_API_TOKEN is required" in captured.err
+
+
+def test_expand_cli_module_entrypoint_runs_before_http_call(clean_agent_context_env):
+    env = os.environ.copy()
+    env["AGENT_CONTEXT_API_TOKEN"] = ""
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "src.cli.agent_context_expand",
+            "--source-keys",
+            "refat:101",
+        ],
+        cwd=BACKEND_DIR,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 1
+    assert "AGENT_CONTEXT_API_TOKEN is required" in result.stderr
 
 
 def test_cli_default_timeout_matches_live_source_bundle_budget(

@@ -236,3 +236,7 @@ def _resolve_timeout(cli_timeout: float | None) -> float:
     if timeout <= 0:
         raise AgentContextCliError("AGENT_CONTEXT_TIMEOUT_SECONDS must be positive")
     return timeout
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
