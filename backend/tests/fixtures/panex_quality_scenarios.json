@@ -1,0 +1,150 @@
+{
+  "version": 1,
+  "scenarios": [
+    {
+      "id": "subagents_tradeoff",
+      "title": "When subagents help vs add complexity",
+      "query": "Когда стоит использовать subagents, а когда они только усложняют систему?",
+      "response_mode": "expert_digest",
+      "selection": {
+        "expert_scope": "custom",
+        "expert_group": null,
+        "expert_filter": ["refat", "akimov", "doronin"],
+        "use_recent_only": false
+      },
+      "rubric": {
+        "min_score": 0.72,
+        "min_source_handles": 2,
+        "max_answer_chars": 6500,
+        "must_cover_any": [
+          ["когда помогают", "когда использовать", "полезны"],
+          ["когда мешают", "когда не стоит", "усложняют"],
+          ["критер", "правило выбора", "decision", "trade-off"]
+        ],
+        "action_terms": ["критер", "если", "когда", "выбор", "следующий шаг"],
+        "expect_expansion_offer": true
+      }
+    },
+    {
+      "id": "context_rot",
+      "title": "Context rot explanation and mitigation",
+      "query": "Что такое context rot и как с ним бороться в AI-разработке?",
+      "response_mode": "expert_digest",
+      "selection": {
+        "expert_scope": "group",
+        "expert_group": "tech_business",
+        "expert_filter": null,
+        "use_recent_only": false
+      },
+      "rubric": {
+        "min_score": 0.72,
+        "min_source_handles": 2,
+        "max_answer_chars": 7500,
+        "must_cover_any": [
+          ["context rot", "контекст"],
+          ["симптом", "ломает", "деградац"],
+          ["бороться", "снижать", "митиг", "практик"]
+        ],
+        "action_terms": ["контекст", "очист", "сократ", "раздел", "провер"],
+        "expect_expansion_offer": true
+      }
+    },
+    {
+      "id": "file_first_embeddings",
+      "title": "File-first and embeddings caveats",
+      "query": "Что такое file-first метод? Почему embeddings - это не всегда хорошо?",
+      "response_mode": "expert_digest",
+      "selection": {
+        "expert_scope": "custom",
+        "expert_group": null,
+        "expert_filter": ["refat", "doronin", "kornish"],
+        "use_recent_only": false
+      },
+      "rubric": {
+        "min_score": 0.72,
+        "min_source_handles": 2,
+        "max_answer_chars": 7000,
+        "must_cover_any": [
+          ["file-first", "file first", "файл"],
+          ["embedding", "эмбеддинг"],
+          ["не всегда", "огранич", "плохо", "риск"]
+        ],
+        "action_terms": ["поиск", "контекст", "структур", "когда", "если"],
+        "expect_expansion_offer": true
+      }
+    },
+    {
+      "id": "llm_caching_recent",
+      "title": "Recent LLM caching signals",
+      "query": "Что сейчас полезно знать про кеширование при использовании LLM?",
+      "response_mode": "expert_digest",
+      "selection": {
+        "expert_scope": "custom",
+        "expert_group": null,
+        "expert_filter": ["refat", "akimov"],
+        "use_recent_only": true
+      },
+      "rubric": {
+        "min_score": 0.70,
+        "min_source_handles": 1,
+        "max_answer_chars": 6000,
+        "must_cover_any": [
+          ["кеш", "cache"],
+          ["стоимость", "latency", "скорость", "задерж"],
+          ["риск", "устар", "инвалид"]
+        ],
+        "action_terms": ["когда", "если", "стоимость", "latency", "провер"],
+        "expect_expansion_offer": true
+      }
+    },
+    {
+      "id": "weak_signal_probe",
+      "title": "Weak evidence should stay weak",
+      "query": "Есть ли у экспертов сильный сигнал по применению subagents для маленьких однофайловых задач?",
+      "response_mode": "expert_digest",
+      "selection": {
+        "expert_scope": "custom",
+        "expert_group": null,
+        "expert_filter": ["refat", "akimov", "doronin"],
+        "use_recent_only": false
+      },
+      "rubric": {
+        "min_score": 0.76,
+        "min_source_handles": 2,
+        "max_answer_chars": 6500,
+        "must_cover_any": [
+          ["сильный сигнал", "сигнал"],
+          ["маленьк", "однофайлов"],
+          ["слаб", "не видно", "недостаточно", "огранич"]
+        ],
+        "action_terms": ["не стоит", "если", "критер", "провер"],
+        "expect_expansion_offer": true
+      }
+    },
+    {
+      "id": "expand_sources_followup",
+      "title": "Follow-up answer after exact source expansion",
+      "query": "Раскрой подробнее источники по Рефату и Доронину из предыдущего ответа.",
+      "response_mode": "source_expand",
+      "selection": {
+        "expert_scope": "custom",
+        "expert_group": null,
+        "expert_filter": ["refat", "doronin"],
+        "use_recent_only": false
+      },
+      "rubric": {
+        "min_score": 0.74,
+        "min_source_handles": 2,
+        "max_answer_chars": 5500,
+        "must_cover_any": [
+          ["что в источнике", "источник"],
+          ["коммент", "комментар"],
+          ["нюанс", "оговор", "важно"]
+        ],
+        "action_terms": ["подтвержд", "уточн", "огранич", "следующий"],
+        "expect_expansion_offer": false
+      }
+    }
+  ]
+}
+
