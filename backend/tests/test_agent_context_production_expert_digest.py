@@ -46,6 +46,17 @@ EVIDENCE_COMMENT_SIGNALS = {
     "unknown",
 }
 EVIDENCE_CONFIDENCES = {"high", "medium", "low"}
+TECH_BUSINESS_EXPERTS = [
+    "ai_grabli",
+    "refat",
+    "akimov",
+    "llm_under_hood",
+    "elkornacio",
+    "doronin",
+    "air_ai",
+    "silicbag",
+    "kornish",
+]
 
 
 class RedactedToken(str):
@@ -131,6 +142,179 @@ def test_production_expert_digest_carries_evidence_quality_calibration(
         quality["confidence"] in {"medium", "high"}
         for quality in source_qualities
     )
+    assert response_bytes < 400_000
+
+
+def test_production_expert_digest_handles_casual_ru_typo_query_and_forces_embeddings(
+    production_token: str,
+):
+    query = (
+        "Панэкс, по-человечески: когда сабагенты реально помогают, "
+        "а когда они только мешают? Без воды, как для кодинга."
+    )
+
+    payload, response_bytes = _post_agent_context(
+        production_token,
+        {
+            "query": query,
+            "response_mode": "expert_digest",
+            "expert_scope": "custom",
+            "expert_filter": ["refat", "akimov"],
+            "include_main_source_comments": True,
+            "include_drift_comment_groups": False,
+            "include_reddit": False,
+            "synthesis_level": "none",
+            "use_super_passport": False,
+        },
+    )
+
+    assert payload["query"] == query
+    assert payload["selection_used"]["use_super_passport"] is True
+    _assert_expert_digest_contract(
+        payload,
+        expected_experts=["refat", "akimov"],
+        min_experts_with_sources=2,
+    )
+    _assert_no_retrieval_parser_failure_warnings(payload)
+    assert response_bytes < 400_000
+
+
+def test_production_expert_digest_survives_mixed_ru_en_punctuation_query(
+    production_token: str,
+):
+    query = (
+        "Что такое file-fist / file-first подход? Почему embeddings - это не "
+        "всегда хорошо для поиска? context rot, FTS5, RAG, Claude Code."
+    )
+
+    payload, response_bytes = _post_agent_context(
+        production_token,
+        {
+            "query": query,
+            "response_mode": "expert_digest",
+            "expert_scope": "custom",
+            "expert_filter": ["refat", "doronin", "kornish"],
+            "include_main_source_comments": True,
+            "include_drift_comment_groups": False,
+            "include_reddit": False,
+            "synthesis_level": "none",
+            "use_super_passport": True,
+        },
+    )
+
+    assert payload["query"] == query
+    _assert_expert_digest_contract(
+        payload,
+        expected_experts=["refat", "doronin", "kornish"],
+        min_experts_with_sources=2,
+    )
+    _assert_no_retrieval_parser_failure_warnings(payload)
+    assert response_bytes < 550_000
+
+
+def test_production_expert_digest_handles_long_pm_style_multiline_query(
+    production_token: str,
+):
+    query = (
+        "Мне нужно принять рабочее решение для AI-coding процесса.\n"
+        "- когда заводить subagents;\n"
+        "- когда держать одного главного агента;\n"
+        "- как не словить context rot;\n"
+        "- где memory, tests, review и стоимость начинают мешать.\n"
+        "Дай практическую картину без маркетинга."
+    )
+
+    payload, response_bytes = _post_agent_context(
+        production_token,
+        {
+            "query": query,
+            "response_mode": "expert_digest",
+            "expert_scope": "custom",
+            "expert_filter": ["refat", "akimov", "doronin"],
+            "include_main_source_comments": True,
+            "include_drift_comment_groups": False,
+            "include_reddit": False,
+            "synthesis_level": "none",
+            "use_super_passport": True,
+        },
+    )
+
+    assert payload["query"] == query
+    _assert_expert_digest_contract(
+        payload,
+        expected_experts=["refat", "akimov", "doronin"],
+        min_experts_with_sources=2,
+    )
+    _assert_no_retrieval_parser_failure_warnings(payload)
+    assert response_bytes < 650_000
+
+
+def test_production_expert_digest_handles_real_group_scope_request(
+    production_token: str,
+):
+    query = (
+        "По всем экспертам группы Tech & Business: что такое context rot, "
+        "почему он ломает AI-разработку и какие практики реально помогают?"
+    )
+
+    payload, response_bytes = _post_agent_context(
+        production_token,
+        {
+            "query": query,
+            "response_mode": "expert_digest",
+            "expert_scope": "group",
+            "expert_group": "tech_business",
+            "include_main_source_comments": True,
+            "include_drift_comment_groups": False,
+            "include_reddit": False,
+            "synthesis_level": "none",
+            "use_super_passport": True,
+        },
+    )
+
+    assert payload["query"] == query
+    _assert_expert_digest_contract(
+        payload,
+        expected_experts=TECH_BUSINESS_EXPERTS,
+        expected_expert_scope="group",
+        expected_expert_group="tech_business",
+        min_experts_with_sources=4,
+    )
+    _assert_no_retrieval_parser_failure_warnings(payload)
+    assert response_bytes < 1_200_000
+
+
+def test_production_expert_digest_recent_only_keeps_selection_explicit(
+    production_token: str,
+):
+    query = (
+        "Что сейчас полезно знать про кеширование при использовании LLM: "
+        "prompt cache, context reuse, latency, стоимость и риски устаревания?"
+    )
+
+    payload, response_bytes = _post_agent_context(
+        production_token,
+        {
+            "query": query,
+            "response_mode": "expert_digest",
+            "expert_scope": "custom",
+            "expert_filter": ["refat", "akimov"],
+            "include_main_source_comments": True,
+            "include_drift_comment_groups": False,
+            "include_reddit": False,
+            "synthesis_level": "none",
+            "use_recent_only": True,
+            "use_super_passport": True,
+        },
+    )
+
+    assert payload["selection_used"]["use_recent_only"] is True
+    _assert_expert_digest_contract(
+        payload,
+        expected_experts=["refat", "akimov"],
+        min_experts_with_sources=1,
+    )
+    _assert_no_retrieval_parser_failure_warnings(payload)
     assert response_bytes < 400_000
 
 
@@ -263,6 +447,68 @@ def test_production_expert_digest_comments_off_does_not_return_comment_counts(
     assert response_bytes < 300_000
 
 
+def test_production_source_expand_caps_multiple_digest_sources_without_new_digest(
+    production_token: str,
+):
+    digest_payload, _ = _post_agent_context(
+        production_token,
+        {
+            "query": (
+                "Какие источники лучше раскрывать после краткого digest, "
+                "если нужно проверить нюансы про AI-workflow?"
+            ),
+            "response_mode": "expert_digest",
+            "expert_scope": "custom",
+            "expert_filter": ["refat", "doronin"],
+            "include_main_source_comments": True,
+            "include_drift_comment_groups": False,
+            "include_reddit": False,
+            "synthesis_level": "none",
+            "use_super_passport": True,
+        },
+    )
+    _assert_expert_digest_contract(
+        digest_payload,
+        expected_experts=["refat", "doronin"],
+        min_experts_with_sources=1,
+    )
+    source_keys = _first_source_key_per_expert(digest_payload)[:2]
+    assert source_keys
+
+    expand_payload = _post_source_expand(
+        production_token,
+        {
+            "source_keys": source_keys,
+            "include_comments": True,
+            "include_external_links": True,
+            "max_content_chars": 240,
+            "max_comments_per_source": 1,
+        },
+    )
+
+    assert expand_payload["mode"] == "source_expand"
+    assert expand_payload["not_found"] == []
+    assert expand_payload["warnings"] == []
+    assert len(expand_payload["sources"]) == len(source_keys)
+    for source in expand_payload["sources"]:
+        assert source["source_key"] in source_keys
+        assert source["content"] is None or len(source["content"]) <= 240
+        comments = source["comments"]
+        comment_count = len(comments["author_comments"]) + len(
+            comments["community_comments"]
+        )
+        assert comment_count <= 1
+        assert set(source["truncation"]) == {
+            "content_truncated",
+            "comments_truncated",
+        }
+        _assert_evidence_quality(source["evidence_quality"])
+        assert source["external_links"] == [] or all(
+            link["fetch_status"] == "not_fetched"
+            for link in source["external_links"]
+        )
+
+
 def test_production_source_expand_reveals_exact_source_with_evidence_quality(
     production_token: str,
 ):
@@ -381,6 +627,24 @@ def test_production_video_hub_remains_explicitly_unsupported(
     assert "video_hub source_bundle is not implemented" in response.json()["message"]
 
 
+def test_production_source_expand_rejects_human_but_invalid_source_handle(
+    production_token: str,
+):
+    response = requests.post(
+        PRODUCTION_EXPAND_API_URL,
+        headers={"Authorization": f"Bearer {production_token}"},
+        json={
+            "source_keys": ["рефат вот тот пост про subagents"],
+            "include_comments": True,
+            "include_external_links": True,
+        },
+        timeout=PRODUCTION_TIMEOUT_SECONDS,
+    )
+
+    assert response.status_code == 400, response.text[:1000]
+    assert "<expert_id>:<telegram_message_id>" in response.text
+
+
 def _post_agent_context(
     token: str,
     payload: dict[str, Any],
@@ -424,10 +688,13 @@ def _assert_expert_digest_contract(
     *,
     expected_experts: list[str],
     min_experts_with_sources: int,
+    expected_expert_scope: str = "custom",
+    expected_expert_group: str | None = None,
     include_main_source_comments: bool = True,
 ) -> None:
     assert payload["mode"] == "expert_digest"
-    assert payload["selection_used"]["expert_scope"] == "custom"
+    assert payload["selection_used"]["expert_scope"] == expected_expert_scope
+    assert payload["selection_used"].get("expert_group") == expected_expert_group
     assert payload["selection_used"]["expert_filter"] == expected_experts
     assert (
         payload["selection_used"]["include_main_source_comments"]
@@ -497,6 +764,28 @@ def _assert_expert_digest_contract(
             assert set(signal.get("supporting_sources") or []).issubset(source_keys)
 
     assert experts_with_sources >= min_experts_with_sources
+
+
+def _first_source_key_per_expert(payload: dict[str, Any]) -> list[str]:
+    source_keys = []
+    for expert in payload["experts"]:
+        source_refs = expert["digest"]["source_refs"]
+        if source_refs:
+            source_keys.append(source_refs[0]["source_key"])
+    return source_keys
+
+
+def _assert_no_retrieval_parser_failure_warnings(payload: dict[str, Any]) -> None:
+    warning_text = json.dumps(payload.get("warnings", []), ensure_ascii=False).lower()
+    fatal_fragments = [
+        "no such column",
+        "syntax error",
+        "fts5",
+        "source_bundle_failed",
+        "query_embedding_failed",
+        "hybrid_retrieval_failed",
+    ]
+    assert not any(fragment in warning_text for fragment in fatal_fragments)
 
 
 def _assert_evidence_quality(quality: dict[str, Any]) -> None:
