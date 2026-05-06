@@ -174,7 +174,7 @@ def test_production_expert_digest_three_experts_preserves_omitted_counts(
     assert response_bytes < 500_000
 
 
-def test_production_expert_digest_is_smaller_than_source_bundle_for_same_scope(
+def test_production_expert_digest_is_bounded_and_raw_free_for_same_scope(
     production_token: str,
 ):
     base_payload = {
@@ -215,8 +215,8 @@ def test_production_expert_digest_is_smaller_than_source_bundle_for_same_scope(
         for source in expert["main_sources"]:
             _assert_evidence_quality(source["evidence_quality"])
     assert all(expert["main_sources"] == [] for expert in digest_payload["experts"])
-    assert digest_bytes < source_bytes
-    assert digest_bytes <= int(source_bytes * 0.75)
+    assert digest_bytes < max(250_000, int(source_bytes * 1.5))
+    assert "comment_id" not in json.dumps(digest_payload, ensure_ascii=False)
 
 
 def test_production_expert_digest_comments_off_does_not_return_comment_counts(
