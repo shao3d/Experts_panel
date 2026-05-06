@@ -121,6 +121,21 @@ def test_agents_treat_cli_json_as_synthesis_input_not_final_answer():
         assert section in instructions
 
 
+def test_agents_surface_request_passport_before_synthesis():
+    instructions = _agent_instructions()
+    normalized = _normalize(instructions)
+
+    assert "request passport" in normalized
+    assert "query_sent" in instructions
+    assert "experts_sent" in instructions
+    assert "response_mode" in instructions
+    assert "target" in instructions
+    assert "warnings" in instructions
+    assert "selection_used" in instructions
+    assert "top-level" in normalized
+    assert "do not include the api token" in normalized
+
+
 def test_agents_have_actionable_readiness_failure_guidance():
     normalized = _normalize(_agent_instructions())
 

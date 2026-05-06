@@ -18,7 +18,7 @@ Current state as of 2026-05-06:
 | AND-6 real `source_bundle` pipeline | Done | The endpoint now returns selected source bundles instead of the placeholder `experts=[]` response. It runs retrieval, Map, MEDIUM scoring, HIGH resolve, source selection, and main-source comment loading. |
 | AND-7 local CLI wrapper | Done | `src.cli.agent_context` calls the endpoint over HTTP with safe source-bundle defaults, keeps the token in the Authorization header, supports all/group/custom selection, and prints agent-readable summaries or raw JSON. |
 | AND-8 BDD acceptance hardening | Done | In-process CLI -> HTTP -> FastAPI -> `source_bundle` acceptance tests cover explicit expert selection, safe defaults, no full synthesis, source evidence shape, token boundary, and actionable API failures. |
-| AND-9 `experts_panel_researcher` / `Панэкс` subagent contract | Done | Repo-local Claude/Codex agent instructions and the user-level Codex shortcut exist, stay read-only, require explicit triggers, call the Agent Context CLI/wrapper only, pin real user calls to the production Fly.io endpoint, translate UI/Russian expert names to `expert_id`, and return practitioner-opinion intelligence using the Signals frame. |
+| AND-9 `experts_panel_researcher` / `Панэкс` subagent contract | Done | Repo-local Claude/Codex agent instructions and the user-level Codex shortcut exist, stay read-only, require explicit triggers, call the Agent Context CLI/wrapper only, pin real user calls to the production Fly.io endpoint, translate UI/Russian expert names to `expert_id`, and return practitioner-opinion intelligence using the Signals frame with a compact Request passport. |
 | AND-10 local dogfood for `experts_panel_researcher` | Done | A synthetic source_bundle fixture and dogfood tests verify that CLI JSON is synthesis input, readiness failures are actionable, local smoke remains explicit-only, and the six-section Signals frame is usable. |
 | AND-11 live local dogfood smoke | Done | `backend/scripts/agent_context_live_smoke.py` can preflight local readiness, start Experts Panel on a free localhost port, call the CLI with explicit `--api-url`, validate `source_bundle`, and write a sanitized report with `passed`/`skipped`/`failed` status. |
 | AND-12 paid local live smoke | Done | Paid local smoke passed with the default `refat,akimov` query and returned a valid real `source_bundle`. Runtime defaults are intentionally large (`3600s` / `100000000` bytes) because all-expert source-bundle requests are naturally long and bulky. |
@@ -234,6 +234,21 @@ experts_panel_researcher
     5. Practical application
     6. Limits and missing evidence
 ```
+
+The `Query and selection` section must start with a compact Request passport,
+not a raw JSON dump. Required fields are:
+
+```text
+query_sent: exact query string sent in the API payload
+experts_sent: selected expert ids, group, or all
+response_mode: expert_digest or source_bundle
+target: Fly.io production or explicit local smoke/debug URL
+warnings: none, or important top-level API warnings
+```
+
+The passport exists to verify scope through the parent-agent -> subagent ->
+CLI/API chain. It must not include the API token, raw JSON, or long pipeline
+dumps.
 
 The subagent must not present practitioner posts as proven facts. It should
 separate what the selected sources explicitly say, how different experts frame
@@ -1038,6 +1053,8 @@ Do not use the CLI default for real subagent calls. Always pass the Fly URL with
 Signals frame checklist:
 
 1. Query and selection
+   - starts with the compact Request passport:
+     `query_sent`, `experts_sent`, `response_mode`, `target`, `warnings`
 2. Source-backed signals
 3. Expert positions
 4. Convergence / divergence
@@ -1221,7 +1238,7 @@ Minimum tests:
 - CLI -> HTTP -> FastAPI -> expert_digest flow compacts raw evidence before subagent output and preserves source provenance;
 - CLI acceptance path does not leak the API token into request body, stdout, or stderr;
 - unsupported `video_hub` request fails with an actionable API message;
-- repo-local Claude/Codex subagent instructions are read-only, explicit-only, token-safe, pin production Fly.io for real calls, and use the Signals frame instead of proof framing;
+- repo-local Claude/Codex subagent instructions are read-only, explicit-only, token-safe, pin production Fly.io for real calls, use the Signals frame instead of proof framing, and start `Query and selection` with a compact Request passport;
 - local dogfood fixture and instructions verify JSON-as-input, actionable readiness failures, explicit local smoke, and Signals frame usability;
 - live local smoke helper can preflight, skip/fail/pass cleanly, use a free port, call CLI with explicit `--api-url`, and write a sanitized report;
 - external smoke helper mode can call an explicit production/Fly URL without starting a local backend;
@@ -1258,6 +1275,7 @@ Backend source-bundle MVP status:
 | subagent/CLI/API retrieval always uses embeddings | Done: CLI sends `use_super_passport=true`, API normalizes `selection_used.use_super_passport=true`, and service passes a precomputed query embedding into `HybridRetrievalService` for every selected expert |
 | selected source external links are surfaced without automatic browsing | Done: `main_sources[].external_links` carries author-supplied references with `fetch_status=not_fetched`; CLI summary prints link counts; subagent instructions forbid opening/fetching/crawling/cloning/summarizing external URLs unless explicitly requested; local live dogfood for `neuraldeep` found 40 real external links across 11 selected sources, all `not_fetched`, with `bad_suffix_links_count=0`; production public endpoint verification on `https://experts-panel.fly.dev/api/v1/agent/context` found 99 real external links across 23 selected sources, all `not_fetched`, with `bad_suffix_links_count=0` |
 | subagent default response is compact enough for parent-agent synthesis | Done + deployed: `response_mode=expert_digest` returns `digest` fields with source refs/comment counts/omitted counts and clears raw `main_sources` from the transport response; Панэкс instructions use `--response-mode expert_digest` by default; production Fly smoke passed for `refat` |
+| subagent responses expose the actual request scope | Done: Панэкс instructions require a compact Request passport with `query_sent`, `experts_sent`, `response_mode`, `target`, and `warnings` at the start of `Query and selection` |
 | raw evidence remains available for audit/debug | Done: `response_mode=source_bundle` remains the CLI/API default outside the subagent contract and is explicitly reserved in Панэкс instructions for raw evidence, audit/debug, and source-bundle smoke verification |
 | production BDD checks cover the deployed `expert_digest` contract | Done: `backend/tests/test_agent_context_production_expert_digest.py` passed against Fly.io with two-expert, three-expert, digest-vs-source_bundle compactness, comments-off, unknown expert, unsupported response mode, and `video_hub` 501 scenarios |
 | FTS5 side of hybrid retrieval survives punctuation-heavy Scout/fallback queries | Done locally: `backend/tests/test_fts5_query_sanitization.py` covers `file-fist`, question-mark suffixes, and unbalanced Scout quotes; broad Agent Context/backend contour passed with `71 passed, 7 skipped` |

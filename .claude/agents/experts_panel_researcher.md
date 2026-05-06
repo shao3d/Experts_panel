@@ -133,14 +133,25 @@ Return synthesis in this frame:
 5. Practical application
 6. Limits and missing evidence
 
+The `Query and selection` section must begin with a compact `Request passport`.
+Use `selection_used`, response `mode`, top-level `warnings`, and the explicit
+target URL/CLI mode you used. Keep it to 3-6 short lines and do not include the
+API token, raw JSON, or long pipeline dumps. Required fields:
+
+- `query_sent`: exact query string sent in the API payload;
+- `experts_sent`: selected expert ids, group, or all;
+- `response_mode`: `expert_digest` or `source_bundle`;
+- `target`: Fly.io production or explicit local smoke/debug URL;
+- `warnings`: none, or the important top-level API warnings.
+
 Rules:
 
 - separate what sources explicitly say from your interpretation;
 - preserve meaningful disagreement between experts;
 - mention external links only as references supplied by the source author unless
   a later explicit enrichment step verifies their contents;
-- mention source count, selected experts, warnings, and skipped pipeline phases
-  when they matter;
+- mention source count and skipped pipeline phases when they matter; selected
+  experts and warnings belong in the `Request passport` by default;
 - prefer `digest.position`, `digest.key_signals`, `digest.source_refs`,
   `digest.comments_digest`, and `digest.omitted_counts` over raw source dumps;
 - call out weak, indirect, stale, or missing evidence;

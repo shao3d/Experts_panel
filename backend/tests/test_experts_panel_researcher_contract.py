@@ -191,6 +191,25 @@ def test_agents_use_signals_frame_instead_of_proof_frame():
         assert forbidden_term not in combined
 
 
+def test_agents_include_compact_request_passport_in_query_selection():
+    combined = "\n".join([_read(CLAUDE_AGENT_PATH), _codex_agent_config()["developer_instructions"]])
+    normalized = _normalize(combined)
+
+    assert "request passport" in normalized
+    assert "query and selection" in normalized
+    for field in [
+        "query_sent",
+        "experts_sent",
+        "response_mode",
+        "target",
+        "warnings",
+    ]:
+        assert field in combined
+    assert "do not include the api token" in normalized
+    assert "raw json" in normalized
+    assert "long pipeline dumps" in normalized
+
+
 def test_agents_treat_external_links_as_author_references_not_auto_browsing():
     combined = "\n".join([_read(CLAUDE_AGENT_PATH), _codex_agent_config()["developer_instructions"]])
     normalized = _normalize(combined)
@@ -221,6 +240,15 @@ def test_spec_records_and9_and_signals_frame_contract():
     assert "Russian expert names" in spec
     assert "translate to backend `expert_id`" in spec
     assert "practitioner-opinion intelligence" in normalized
+    assert "Request passport" in spec
+    for field in [
+        "query_sent",
+        "experts_sent",
+        "response_mode",
+        "target",
+        "warnings",
+    ]:
+        assert field in spec
     for section in SIGNALS_FRAME_SECTIONS:
         assert section in spec
     for forbidden_term in FORBIDDEN_PROOF_FRAME_TERMS:
