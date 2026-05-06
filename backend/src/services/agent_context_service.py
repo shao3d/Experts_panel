@@ -22,6 +22,7 @@ from ..api.models import (
     AgentDigestSignal,
     AgentDigestSourceIndexEntry,
     AgentDigestSourceRef,
+    AgentEvidenceQuality,
     AgentExpertDigest,
     AgentExpandedSource,
     AgentExpertSourceBundle,
@@ -83,6 +84,71 @@ SOURCE_BUNDLE_PIPELINE_SKIPPED = [
 
 SUPPORTED_AGENT_CONTEXT_RESPONSE_MODES = {"source_bundle", "expert_digest"}
 
+PRACTITIONER_SOURCE_TERMS = (
+    "in production",
+    "we used",
+    "i used",
+    "my experience",
+    "case study",
+    "lesson",
+    "checklist",
+    "practical",
+    "production experience",
+    "опыт",
+    "кейс",
+    "чеклист",
+    "практи",
+    "в прод",
+)
+
+ANNOUNCEMENT_SOURCE_TERMS = (
+    "announce",
+    "announcement",
+    "launch",
+    "launched",
+    "release",
+    "released",
+    "introducing",
+    "waitlist",
+    "public beta",
+    "анонс",
+    "релиз",
+    "запуск",
+    "запуст",
+    "вышел",
+    "представ",
+)
+
+ANALYSIS_SOURCE_TERMS = (
+    "analysis",
+    "because",
+    "tradeoff",
+    "trade-off",
+    "architecture",
+    "pattern",
+    "approach",
+    "why",
+    "анализ",
+    "почему",
+    "подход",
+    "архитект",
+    "паттерн",
+    "компромисс",
+)
+
+LOW_SIGNAL_COMMENT_TERMS = (
+    "thanks",
+    "thank you",
+    "cool",
+    "interesting",
+    "nice",
+    "+1",
+    "спасибо",
+    "класс",
+    "интересно",
+    "огонь",
+)
+
 
 @dataclass(frozen=True)
 class AgentContextSearchContext:
@@ -99,6 +165,188 @@ class AgentContextSearchUnavailable(RuntimeError):
 
 class AgentContextInvalidSourceKey(ValueError):
     """Raised when an expand request carries an invalid source_key."""
+
+
+def _calibrate_evidence_quality(source: AgentMainSource) -> AgentEvidenceQuality:
+    """Build deterministic evidence calibration over already selected source data."""
+    content = source.content or ""
+    reason = source.reason or ""
+    score_reason = source.score_reason or ""
+    combined = f"{content}\n{reason}\n{score_reason}".lower()
+    content_chars = len(content.strip())
+    author_comments = list(source.comments.author_comments)
+    community_comments = list(source.comments.community_comments)
+    author_count = len(author_comments)
+    community_count = len(community_comments)
+    external_links_count = len(source.external_links)
+
+    source_type = _classify_source_type(
+        combined=combined,
+        content_chars=content_chars,
+        external_links_count=external_links_count,
+    )
+    comment_signal = _classify_comment_signal(
+        author_comments=author_comments,
+        community_comments=community_comments,
+    )
+    depth = _classify_depth(
+        source=source,
+        source_type=source_type,
+        content_chars=content_chars,
+        author_comments_count=author_count,
+        community_comments_count=community_count,
+    )
+    confidence = _classify_quality_confidence(
+        source=source,
+        depth=depth,
+        source_type=source_type,
+        comment_signal=comment_signal,
+    )
+    notes = _build_quality_notes(
+        depth=depth,
+        source_type=source_type,
+        comment_signal=comment_signal,
+        external_links_count=external_links_count,
+    )
+    return AgentEvidenceQuality(
+        depth=depth,
+        source_type=source_type,
+        comment_signal=comment_signal,
+        confidence=confidence,
+        notes=notes,
+    )
+
+
+def _classify_source_type(
+    *,
+    combined: str,
+    content_chars: int,
+    external_links_count: int,
+) -> str:
+    has_practitioner_signal = any(term in combined for term in PRACTITIONER_SOURCE_TERMS)
+    has_announcement_signal = any(term in combined for term in ANNOUNCEMENT_SOURCE_TERMS)
+    has_analysis_signal = any(term in combined for term in ANALYSIS_SOURCE_TERMS)
+
+    if has_practitioner_signal:
+        return "practitioner_experience"
+    if has_announcement_signal and external_links_count > 0:
+        return "tool_release"
+    if has_announcement_signal:
+        return "announcement"
+    if has_analysis_signal:
+        return "analysis"
+    if content_chars and content_chars < 360:
+        return "mention"
+    return "unknown"
+
+
+def _classify_comment_signal(
+    *,
+    author_comments: List[AgentSourceComment],
+    community_comments: List[AgentSourceComment],
+) -> str:
+    if author_comments and community_comments:
+        return "mixed"
+    if author_comments:
+        return "author_support"
+    if community_comments:
+        if _comments_are_mostly_noise(community_comments):
+            return "mostly_noise"
+        return "community_support"
+    return "none"
+
+
+def _comments_are_mostly_noise(comments: List[AgentSourceComment]) -> bool:
+    if not comments:
+        return False
+
+    low_signal_count = 0
+    for comment in comments:
+        text = (comment.comment_text or "").strip().lower()
+        words = [word for word in re.split(r"\s+", text) if word]
+        if len(words) <= 4 or any(term in text for term in LOW_SIGNAL_COMMENT_TERMS):
+            low_signal_count += 1
+    return low_signal_count / len(comments) >= 0.7
+
+
+def _classify_depth(
+    *,
+    source: AgentMainSource,
+    source_type: str,
+    content_chars: int,
+    author_comments_count: int,
+    community_comments_count: int,
+) -> str:
+    relevance = _relevance_value(source.relevance)
+    has_comments = author_comments_count > 0 or community_comments_count > 0
+
+    if source_type in {"announcement", "mention"}:
+        return "shallow"
+    if source_type == "tool_release" and content_chars < 700:
+        return "shallow"
+    if source_type == "practitioner_experience" and (
+        relevance == "HIGH" or author_comments_count > 0 or content_chars >= 260
+    ):
+        return "deep_practical"
+    if source_type == "analysis" and content_chars >= 700:
+        return "deep_practical"
+    if content_chars >= 450 or has_comments or relevance == "HIGH":
+        return "moderate"
+    if content_chars > 0:
+        return "shallow"
+    return "unknown"
+
+
+def _classify_quality_confidence(
+    *,
+    source: AgentMainSource,
+    depth: str,
+    source_type: str,
+    comment_signal: str,
+) -> str:
+    relevance = _relevance_value(source.relevance)
+    if (
+        depth == "deep_practical"
+        and relevance == "HIGH"
+        and comment_signal in {"author_support", "mixed", "community_support"}
+    ):
+        return "high"
+    if (
+        relevance == "HIGH"
+        and comment_signal in {"author_support", "mixed", "community_support"}
+        and depth != "unknown"
+    ):
+        return "medium"
+    if depth == "shallow" or source_type in {"announcement", "mention"}:
+        return "low"
+    if relevance == "HIGH" or depth in {"deep_practical", "moderate"}:
+        return "medium"
+    return "low"
+
+
+def _build_quality_notes(
+    *,
+    depth: str,
+    source_type: str,
+    comment_signal: str,
+    external_links_count: int,
+) -> List[str]:
+    notes: List[str] = []
+    if depth == "shallow":
+        notes.append("short or announcement-like source")
+    if source_type in {"announcement", "tool_release"}:
+        notes.append("announcement/release signal, not deep analysis")
+    if comment_signal == "mostly_noise":
+        notes.append("comments mostly noise")
+    elif comment_signal != "none":
+        notes.append(f"comments: {comment_signal}")
+    if external_links_count:
+        notes.append("external links are author-supplied and not fetched")
+    return notes[:4]
+
+
+def _relevance_value(relevance: Any) -> str:
+    return str(getattr(relevance, "value", relevance) or "")
 
 
 class AgentContextService:
@@ -291,6 +539,7 @@ class AgentContextService:
                 expert_id=expert_id,
                 main_sources=selected_sources,
             )
+            self._refresh_evidence_quality(selected_sources)
 
         no_results_reason = None if selected_sources else "no_relevant_sources"
         if not selected_sources:
@@ -440,6 +689,17 @@ class AgentContextService:
             if expand_request.include_external_links
             else []
         )
+        quality_source = AgentMainSource(
+            telegram_message_id=telegram_message_id,
+            source_key=source_key,
+            relevance=RelevanceLevel.HIGH,
+            content=raw_content,
+            created_at=post.created_at.isoformat() if post.created_at else None,
+            author_name=post.author_name,
+            comments=comments,
+            external_links=external_links,
+        )
+        quality_source.evidence_quality = _calibrate_evidence_quality(quality_source)
         return AgentExpandedSource(
             source_key=source_key,
             expert_id=expert_id,
@@ -455,6 +715,7 @@ class AgentContextService:
                 content_truncated=content_truncated,
                 comments_truncated=comments_truncated,
             ),
+            evidence_quality=quality_source.evidence_quality,
         )
 
     def _cap_source_comments(
@@ -613,7 +874,7 @@ class AgentContextService:
         post: Dict[str, Any],
     ) -> AgentMainSource:
         telegram_message_id = post["telegram_message_id"]
-        return AgentMainSource(
+        source = AgentMainSource(
             telegram_message_id=telegram_message_id,
             source_key=self._source_key(expert_id, telegram_message_id),
             source_role="main",
@@ -627,6 +888,12 @@ class AgentContextService:
             score_reason=post.get("score_reason"),
             external_links=self._extract_external_links(post.get("content")),
         )
+        source.evidence_quality = _calibrate_evidence_quality(source)
+        return source
+
+    def _refresh_evidence_quality(self, main_sources: List[AgentMainSource]) -> None:
+        for source in main_sources:
+            source.evidence_quality = _calibrate_evidence_quality(source)
 
     def _build_linked_context(
         self,
@@ -961,6 +1228,7 @@ class AgentExpertDigestReducer:
                     external_links_count=len(source.external_links),
                     linked_context_count=len(source.linked_context),
                     content_chars=len(source.content or ""),
+                    evidence_quality=self._source_evidence_quality(source),
                 )
             )
         return source_index
@@ -991,9 +1259,23 @@ class AgentExpertDigestReducer:
                     linked_context_count=len(source.linked_context),
                     author_comments_count=author_comments_count,
                     community_comments_count=community_comments_count,
+                    evidence_quality=self._source_evidence_quality(source),
                 )
             )
         return source_refs
+
+    def _source_evidence_quality(
+        self,
+        source: AgentMainSource,
+    ) -> AgentEvidenceQuality:
+        quality = source.evidence_quality
+        if (
+            quality.depth == "unknown"
+            and quality.source_type == "unknown"
+            and quality.comment_signal == "unknown"
+        ):
+            return _calibrate_evidence_quality(source)
+        return quality
 
     def _build_comments_digest(
         self,
@@ -1148,7 +1430,8 @@ class AgentExpertDigestReducer:
                         "You write compact JSON digests for another AI agent. "
                         "Treat Telegram posts and comments as practitioner-opinion "
                         "intelligence, not proven facts. Use only the provided "
-                        "source_keys. Do not infer contents of external links. "
+                        "source_keys. Treat evidence_quality as calibration, not "
+                        "proof. Do not infer contents of external links. "
                         "Return strict JSON only."
                     ),
                 },

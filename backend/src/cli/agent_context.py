@@ -233,6 +233,9 @@ def _print_source_bundle_summary(expert: dict[str, Any]) -> None:
         external_link_count = len(source.get("external_links") or [])
 
         print(f"    - {source_id} [{relevance}] {reason}")
+        quality = _format_evidence_quality(source)
+        if quality:
+            print(f"      {quality}")
         print(
             "      comments: "
             f"author={author_count} community={community_count}; "
@@ -262,6 +265,9 @@ def _print_expert_digest_summary(expert: dict[str, Any]) -> None:
             + int(source_ref.get("community_comments_count") or 0)
         )
         print(f"    - {source_key} [{relevance}] {reason}")
+        quality = _format_evidence_quality(source_ref)
+        if quality:
+            print(f"      {quality}")
         print(
             "      compact_counts: "
             f"comments={comments_total}; "
@@ -317,6 +323,22 @@ def _resolve_timeout(cli_timeout: float | None) -> float:
     if timeout <= 0:
         raise AgentContextCliError("AGENT_CONTEXT_TIMEOUT_SECONDS must be positive")
     return timeout
+
+
+def _format_evidence_quality(item: dict[str, Any]) -> str | None:
+    quality = item.get("evidence_quality") or {}
+    if not quality:
+        return None
+
+    depth = quality.get("depth") or "unknown"
+    source_type = quality.get("source_type") or "unknown"
+    comment_signal = quality.get("comment_signal") or "unknown"
+    confidence = quality.get("confidence") or "low"
+    return (
+        f"quality: {depth}/{source_type}; "
+        f"comments={comment_signal}; "
+        f"confidence={confidence}"
+    )
 
 
 def _format_http_error(exc: requests.HTTPError) -> str:

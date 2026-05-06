@@ -23,10 +23,29 @@ from src.cli.bootstrap import load_backend_env
 
 
 PRODUCTION_API_URL = "https://experts-panel.fly.dev/api/v1/agent/context"
+PRODUCTION_EXPAND_API_URL = "https://experts-panel.fly.dev/api/v1/agent/context/expand"
 PRODUCTION_TIMEOUT_SECONDS = float(
     os.getenv("AGENT_CONTEXT_PRODUCTION_TIMEOUT_SECONDS", "3600")
 )
 SUPPORT_LEVELS = {"direct", "indirect", "weak", "unknown"}
+EVIDENCE_DEPTHS = {"deep_practical", "moderate", "shallow", "unknown"}
+EVIDENCE_SOURCE_TYPES = {
+    "practitioner_experience",
+    "tool_release",
+    "announcement",
+    "mention",
+    "analysis",
+    "unknown",
+}
+EVIDENCE_COMMENT_SIGNALS = {
+    "author_support",
+    "community_support",
+    "mixed",
+    "mostly_noise",
+    "none",
+    "unknown",
+}
+EVIDENCE_CONFIDENCES = {"high", "medium", "low"}
 
 
 class RedactedToken(str):
@@ -73,6 +92,46 @@ def test_production_expert_digest_two_experts_is_compact_source_backed(
         min_experts_with_sources=2,
     )
     assert response_bytes < 350_000
+
+
+def test_production_expert_digest_carries_evidence_quality_calibration(
+    production_token: str,
+):
+    payload, response_bytes = _post_agent_context(
+        production_token,
+        {
+            "query": (
+                "Когда subagents реально помогают в AI-разработке, "
+                "а когда только создают лишнюю сложность?"
+            ),
+            "response_mode": "expert_digest",
+            "expert_scope": "custom",
+            "expert_filter": ["refat", "doronin"],
+            "include_main_source_comments": True,
+            "include_drift_comment_groups": False,
+            "include_reddit": False,
+            "synthesis_level": "none",
+            "use_super_passport": True,
+        },
+    )
+
+    _assert_expert_digest_contract(
+        payload,
+        expected_experts=["refat", "doronin"],
+        min_experts_with_sources=2,
+    )
+    source_qualities = [
+        source_ref["evidence_quality"]
+        for expert in payload["experts"]
+        for source_ref in expert["digest"]["source_refs"]
+    ]
+    assert source_qualities
+    assert any(quality["depth"] != "unknown" for quality in source_qualities)
+    assert any(
+        quality["confidence"] in {"medium", "high"}
+        for quality in source_qualities
+    )
+    assert response_bytes < 400_000
 
 
 def test_production_expert_digest_three_experts_preserves_omitted_counts(
@@ -152,6 +211,9 @@ def test_production_expert_digest_is_smaller_than_source_bundle_for_same_scope(
         "akimov",
     ]
     assert any(expert["main_sources"] for expert in source_payload["experts"])
+    for expert in source_payload["experts"]:
+        for source in expert["main_sources"]:
+            _assert_evidence_quality(source["evidence_quality"])
     assert all(expert["main_sources"] == [] for expert in digest_payload["experts"])
     assert digest_bytes < source_bytes
     assert digest_bytes <= int(source_bytes * 0.75)
@@ -197,7 +259,62 @@ def test_production_expert_digest_comments_off_does_not_return_comment_counts(
         for source_ref in digest["source_refs"]:
             assert source_ref["author_comments_count"] == 0
             assert source_ref["community_comments_count"] == 0
+            assert source_ref["evidence_quality"]["comment_signal"] == "none"
     assert response_bytes < 300_000
+
+
+def test_production_source_expand_reveals_exact_source_with_evidence_quality(
+    production_token: str,
+):
+    digest_payload, _ = _post_agent_context(
+        production_token,
+        {
+            "query": "Как понять, что источник по AI-workflow сильный, а не просто анонс?",
+            "response_mode": "expert_digest",
+            "expert_scope": "custom",
+            "expert_filter": ["refat", "akimov"],
+            "include_main_source_comments": True,
+            "include_drift_comment_groups": False,
+            "include_reddit": False,
+            "synthesis_level": "none",
+            "use_super_passport": True,
+        },
+    )
+    _assert_expert_digest_contract(
+        digest_payload,
+        expected_experts=["refat", "akimov"],
+        min_experts_with_sources=1,
+    )
+    source_key = next(
+        source_ref["source_key"]
+        for expert in digest_payload["experts"]
+        for source_ref in expert["digest"]["source_refs"]
+    )
+
+    expand_payload = _post_source_expand(
+        production_token,
+        {
+            "source_keys": [source_key],
+            "include_comments": True,
+            "include_external_links": True,
+            "max_content_chars": 1600,
+            "max_comments_per_source": 4,
+        },
+    )
+
+    assert expand_payload["mode"] == "source_expand"
+    assert expand_payload["not_found"] == []
+    assert expand_payload["warnings"] == []
+    assert len(expand_payload["sources"]) == 1
+    source = expand_payload["sources"][0]
+    assert source["source_key"] == source_key
+    assert source["content"]
+    assert "evidence_quality" in source
+    _assert_evidence_quality(source["evidence_quality"])
+    assert source["external_links"] == [] or all(
+        link["fetch_status"] == "not_fetched"
+        for link in source["external_links"]
+    )
 
 
 def test_production_rejects_unknown_expert_before_digest(production_token: str):
@@ -288,6 +405,20 @@ def _post_agent_context_raw(
     return response
 
 
+def _post_source_expand(
+    token: str,
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    response = requests.post(
+        PRODUCTION_EXPAND_API_URL,
+        headers={"Authorization": f"Bearer {token}"},
+        json=payload,
+        timeout=PRODUCTION_TIMEOUT_SECONDS,
+    )
+    assert response.status_code == 200, response.text[:2000]
+    return response.json()
+
+
 def _assert_expert_digest_contract(
     payload: dict[str, Any],
     *,
@@ -327,6 +458,7 @@ def _assert_expert_digest_contract(
         digest = expert.get("digest")
         assert isinstance(digest, dict)
         assert isinstance(digest.get("source_refs"), list)
+        assert isinstance(digest.get("source_index"), list)
         assert isinstance(digest.get("key_signals"), list)
         assert isinstance(digest.get("comments_digest"), dict)
         assert isinstance(digest.get("omitted_counts"), dict)
@@ -342,14 +474,22 @@ def _assert_expert_digest_contract(
         assert len(source_refs) <= 8
         assert digest["key_signals"]
         assert digest.get("position")
+        assert digest["source_index"]
 
         for source_ref in source_refs:
             assert source_ref["source_key"].startswith(f"{expert['expert_id']}:")
             assert source_ref["relevance"] in {"HIGH", "MEDIUM"}
             assert source_ref.get("short_excerpt")
             assert len(source_ref["short_excerpt"]) <= 950
+            assert "evidence_quality" in source_ref
+            _assert_evidence_quality(source_ref["evidence_quality"])
             for external_link in source_ref.get("external_links") or []:
                 assert external_link["fetch_status"] == "not_fetched"
+
+        for source_index_entry in digest["source_index"]:
+            assert source_index_entry["source_key"].startswith(f"{expert['expert_id']}:")
+            assert "evidence_quality" in source_index_entry
+            _assert_evidence_quality(source_index_entry["evidence_quality"])
 
         for signal in digest["key_signals"]:
             assert signal["claim"]
@@ -357,3 +497,11 @@ def _assert_expert_digest_contract(
             assert set(signal.get("supporting_sources") or []).issubset(source_keys)
 
     assert experts_with_sources >= min_experts_with_sources
+
+
+def _assert_evidence_quality(quality: dict[str, Any]) -> None:
+    assert quality["depth"] in EVIDENCE_DEPTHS
+    assert quality["source_type"] in EVIDENCE_SOURCE_TYPES
+    assert quality["comment_signal"] in EVIDENCE_COMMENT_SIGNALS
+    assert quality["confidence"] in EVIDENCE_CONFIDENCES
+    assert isinstance(quality.get("notes"), list)

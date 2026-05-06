@@ -1,6 +1,6 @@
 # Agent Context API Spec
 
-**Status:** Accepted / AND-5 + AND-6 + AND-7 + AND-8 + AND-9 + AND-10 + AND-11 + AND-12 + AND-13 + AND-14 + AND-15 + AND-16 + AND-17 + AND-18 + AND-19 implemented / forced embedding search implemented
+**Status:** Accepted / AND-5 + AND-6 + AND-7 + AND-8 + AND-9 + AND-10 + AND-11 + AND-12 + AND-13 + AND-14 + AND-15 + AND-16 + AND-17 + AND-18 + AND-19 implemented / AND-20 implemented locally / forced embedding search implemented
 **Decision:** `.haft/decisions/dec-20260504-b2539c3d.md`
 **Last updated:** 2026-05-06
 
@@ -29,6 +29,7 @@ Current state as of 2026-05-06:
 | AND-17 panel-side `expert_digest` reduce | Done + deployed | Agent Context now supports `response_mode = "expert_digest"` for subagent calls. The backend still runs the same source discovery/comment-loading pipeline, then reduces selected posts and main-source comments into compact per-expert digests with provenance (`digest.source_refs`, `digest.source_index`, `digest.key_signals`, `digest.comments_digest`, `digest.omitted_counts`) and omits raw `main_sources` from that response. `source_bundle` remains available for explicit raw evidence/audit/debug requests. Production Fly smoke passed for `refat` with `mode=expert_digest`, `selected_sources_count=17`, `source_refs=8`, and no `expert_digest_reduce_failed` warning. |
 | AND-18 production `expert_digest` BDD hardening | Done + deployed | Added production-live BDD tests that hit Fly.io directly with `AGENT_CONTEXT_PRODUCTION_LIVE=1` and no local backend/mocks. The first red run found that some LLM digest outputs return top-level signal lists without `position`; the backend now fills a safe fallback `position` instead of weakening the contract. Final production runs passed for two-expert, three-expert, digest-vs-source_bundle compactness, comments-off, unknown expert, unsupported response mode, and `video_hub` 501 scenarios. |
 | AND-19 evidence expansion by `source_key` | Done + deployed | `expert_digest` now includes compact `digest.source_index` handles for all selected sources, while `POST /api/v1/agent/context/expand` expands exact `source_key` handles such as `refat:234` into raw/capped post evidence, direct comments, external link metadata, truncation metadata, and `not_found` entries without rerunning search, Map, Resolve, Reduce, or digest. Панэкс instructions use `src.cli.agent_context_expand` when the user asks in plain Russian to reveal sources/proofs/details from a previous digest, or gives concrete handles, then report a lean Evidence Note rather than a second digest. |
+| AND-20 evidence quality calibration | Done locally | Agent Context now attaches lightweight `evidence_quality` calibration to raw `main_sources`, compact `digest.source_refs`, full `digest.source_index`, and exact `source_expand` results. Labels are deterministic over already selected source text, relevance, comments, and author-supplied external-link metadata; they do not add a new LLM call, do not fetch links, and must be presented by Панэкс as calibration rather than proof. |
 | Forced embedding search for Agent Context | Done | Agent Context always forces Embs&Keys hybrid retrieval: CLI sends `use_super_passport=true`, API records `selection_used.use_super_passport=true`, and service prepares one query embedding for all selected experts before bounded parallel expert processing. UI toggle state does not apply to subagent/API calls. |
 | FTS5 query sanitation hardening | Done | Production logs for the Панэкс query about `file-fist` showed AI Scout returning an invalid FTS5 query and then fallback producing unsafe terms such as `file-fist*`, which made the FTS5 side of hybrid retrieval fail with `no such column: fist` while vector retrieval still worked. `AIScoutService` fallback and `sanitize_fts5_query()` now normalize hyphens, punctuation, and unbalanced Scout quotes into safe OR-only FTS5 terms such as `file* OR fist*`. Fallback slang expansion also avoids treating short particles like Russian `а` as substring slang matches while preserving exact short tech terms such as `бд`, `c#`, `c++`, and `.net`. |
 | Production Fly exposure | Done for explicit smoke and default subagent target | `https://experts-panel.fly.dev/api/v1/agent/context` is callable with the separate production bearer token and large source-bundle budgets. The subagent must pass this Fly URL explicitly for real user research calls; localhost is only for explicit local smoke/debug. |
@@ -60,19 +61,19 @@ Verified checks:
 
 ```text
 backend/.venv/bin/python -m pytest backend/tests/test_agent_context_api.py -q -o addopts=''
-# 19 passed
+# 23 passed
 
 backend/.venv/bin/python -m pytest backend/tests/test_experts_api.py -q -o addopts=''
 # 1 passed
 
 backend/.venv/bin/python -m pytest backend/tests/test_agent_context_cli.py -q -o addopts=''
-# 11 passed
+# 14 passed
 
 backend/.venv/bin/python -m pytest backend/tests/test_agent_context_acceptance.py -q -o addopts=''
-# 7 passed
+# 8 passed
 
 backend/.venv/bin/python -m pytest backend/tests/test_experts_panel_researcher_contract.py -q -o addopts=''
-# 11 passed
+# 16 passed
 
 backend/.venv/bin/python -m pytest backend/tests/test_experts_panel_researcher_dogfood.py -q -o addopts=''
 # 6 passed
@@ -131,6 +132,12 @@ backend/.venv/bin/python -m pytest backend/tests/test_fts5_query_sanitization.py
 
 backend/.venv/bin/python -m pytest backend/tests/test_experts_panel_researcher_contract.py backend/tests/test_agent_context_api.py backend/tests/test_agent_context_acceptance.py backend/tests/test_agent_context_cli.py -q -o addopts=''
 # AND-19 local BDD/TDD: 57 passed, 2 warnings
+
+backend/.venv/bin/python -m pytest backend/tests/test_agent_context_api.py backend/tests/test_agent_context_acceptance.py backend/tests/test_agent_context_cli.py backend/tests/test_experts_panel_researcher_contract.py -q -o addopts=''
+# AND-20 local BDD/TDD: 61 passed, 2 warnings
+
+backend/.venv/bin/python -m pytest backend/tests/test_agent_context_api.py backend/tests/test_agent_context_acceptance.py backend/tests/test_agent_context_cli.py backend/tests/test_experts_panel_researcher_contract.py backend/tests/test_agent_context_production_expert_digest.py -q -o addopts=''
+# AND-20 local + production-live collection gate before deploy: 61 passed, 9 skipped, 2 warnings
 
 cd backend && .venv/bin/python -m src.cli.agent_context_expand --api-url https://experts-panel.fly.dev/api/v1/agent/context/expand --source-keys refat:220 --max-content-chars 1200 --max-comments-per-source 3 --timeout 3600 --json
 # AND-19 production source_expand smoke after Fly deploy
@@ -322,6 +329,11 @@ separate what the selected sources explicitly say, how different experts frame
 the topic, where sources converge or diverge, what practical interpretation is
 reasonable for the user's query, and what remains weak, missing, stale,
 indirect, or unsupported.
+
+When `evidence_quality` is present, Панэкс should translate it into natural
+language such as "strong practical source", "announcement/mention",
+"comments mostly noise", or "author-supported source". These labels are
+calibration, not proof; the subagent must not turn labels into proof claims.
 
 Optional shortcut:
 
@@ -597,7 +609,14 @@ compact digest fields instead of the raw posts/comments payload:
             ],
             "linked_context_count": 1,
             "author_comments_count": 2,
-            "community_comments_count": 4
+            "community_comments_count": 4,
+            "evidence_quality": {
+              "depth": "deep_practical",
+              "source_type": "practitioner_experience",
+              "comment_signal": "mixed",
+              "confidence": "high",
+              "notes": ["comments: mixed"]
+            }
 	          }
 	        ],
 	        "source_index": [
@@ -611,7 +630,14 @@ compact digest fields instead of the raw posts/comments payload:
 	            "community_comments_count": 4,
 	            "external_links_count": 1,
 	            "linked_context_count": 1,
-	            "content_chars": 3140
+	            "content_chars": 3140,
+	            "evidence_quality": {
+	              "depth": "deep_practical",
+	              "source_type": "practitioner_experience",
+	              "comment_signal": "mixed",
+	              "confidence": "high",
+	              "notes": ["comments: mixed"]
+	            }
 	          }
 	        ],
 	        "comments_digest": {
@@ -636,7 +662,30 @@ compact digest fields instead of the raw posts/comments payload:
   "pipeline_used": ["expert_selection", "source_selection", "expert_digest_reduce"],
   "pipeline_skipped": ["reduce_answer_synthesis", "comment_synthesis"]
 	}
-	```
+		```
+
+### Evidence quality calibration
+
+`evidence_quality` is a lightweight calibration aid, not proof and not
+fact-checking. It helps Панэкс explain whether a practitioner source looks like
+a strong practical source, an announcement/mention, a moderate analysis signal,
+or a weak/indirect source.
+
+Fields:
+
+- `depth`: `deep_practical`, `moderate`, `shallow`, or `unknown`;
+- `source_type`: `practitioner_experience`, `tool_release`, `announcement`,
+  `mention`, `analysis`, or `unknown`;
+- `comment_signal`: `author_support`, `community_support`, `mixed`,
+  `mostly_noise`, `none`, or `unknown`;
+- `confidence`: `high`, `medium`, or `low`;
+- `notes`: short calibration hints such as `comments: mixed` or
+  `external links are author-supplied and not fetched`.
+
+The backend computes this deterministically from already selected source text,
+relevance, reason/score reason, direct comments, and external-link metadata. It
+must not add a mandatory LLM pass and must not infer the contents of external
+links.
 
 ### `source_expand` endpoint
 
@@ -679,11 +728,18 @@ Response:
         "community_comments": []
       },
       "external_links": [],
-      "truncation": {
-        "content_truncated": false,
-        "comments_truncated": false
-      }
-    }
+	      "truncation": {
+	        "content_truncated": false,
+	        "comments_truncated": false
+	      },
+	      "evidence_quality": {
+	        "depth": "moderate",
+	        "source_type": "analysis",
+	        "comment_signal": "none",
+	        "confidence": "medium",
+	        "notes": []
+	      }
+	    }
   ],
   "not_found": [],
   "warnings": [],

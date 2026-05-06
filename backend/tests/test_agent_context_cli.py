@@ -80,6 +80,13 @@ def _source_bundle_response():
                             "author_comments": [{"comment_id": 1}],
                             "community_comments": [{"comment_id": 2}],
                         },
+                        "evidence_quality": {
+                            "depth": "moderate",
+                            "source_type": "analysis",
+                            "comment_signal": "mixed",
+                            "confidence": "medium",
+                            "notes": ["direct comments are attached"],
+                        },
                     }
                 ],
                 "no_results_reason": None,
@@ -149,6 +156,13 @@ def _expert_digest_response():
                             "linked_context_count": 1,
                             "author_comments_count": 1,
                             "community_comments_count": 1,
+                            "evidence_quality": {
+                                "depth": "deep_practical",
+                                "source_type": "practitioner_experience",
+                                "comment_signal": "mixed",
+                                "confidence": "high",
+                                "notes": ["source has practical detail"],
+                            },
                         }
                     ],
                     "source_index": [
@@ -163,6 +177,13 @@ def _expert_digest_response():
                             "external_links_count": 1,
                             "linked_context_count": 1,
                             "content_chars": 123,
+                            "evidence_quality": {
+                                "depth": "deep_practical",
+                                "source_type": "practitioner_experience",
+                                "comment_signal": "mixed",
+                                "confidence": "high",
+                                "notes": ["source has practical detail"],
+                            },
                         },
                         {
                             "telegram_message_id": 102,
@@ -175,6 +196,13 @@ def _expert_digest_response():
                             "external_links_count": 0,
                             "linked_context_count": 0,
                             "content_chars": 88,
+                            "evidence_quality": {
+                                "depth": "shallow",
+                                "source_type": "mention",
+                                "comment_signal": "none",
+                                "confidence": "low",
+                                "notes": ["short source"],
+                            },
                         },
                     ],
                     "comments_digest": {
@@ -247,6 +275,13 @@ def _source_expand_response():
                 "truncation": {
                     "content_truncated": False,
                     "comments_truncated": False,
+                },
+                "evidence_quality": {
+                    "depth": "moderate",
+                    "source_type": "analysis",
+                    "comment_signal": "mixed",
+                    "confidence": "medium",
+                    "notes": ["direct comments are attached"],
                 },
             }
         ],
@@ -379,6 +414,7 @@ def test_cli_sends_expert_digest_payload_when_requested(
     assert "source_refs: 1" in captured.out
     assert "source_index: 2" in captured.out
     assert "refat:101 [HIGH] Direct match" in captured.out
+    assert "quality: deep_practical/practitioner_experience; comments=mixed; confidence=high" in captured.out
     assert "[direct] Subagents help when the task has a clear scope." in captured.out
     assert "comments_digest: author=1 community=1 included=1 omitted=1" in captured.out
     assert "omitted_counts" in captured.out
@@ -425,6 +461,7 @@ def test_expand_cli_sends_source_keys_payload(monkeypatch, capsys, clean_agent_c
     }
     assert "Agent Context source_expand" in captured.out
     assert "refat:101 (@nobilix)" in captured.out
+    assert "quality: moderate/analysis; comments=mixed; confidence=medium" in captured.out
     assert "comments: author=1 community=1" in captured.out
     assert "external_links=1" in captured.out
 
@@ -563,6 +600,7 @@ def test_cli_prints_agent_readable_source_bundle_summary(
     assert "refat" in captured.out
     assert "selected_sources_count: 1" in captured.out
     assert "101 [HIGH] Direct match" in captured.out
+    assert "quality: moderate/analysis; comments=mixed; confidence=medium" in captured.out
     assert "comments: author=1 community=1" in captured.out
     assert "linked_context=1" in captured.out
     assert "external_links=1" in captured.out

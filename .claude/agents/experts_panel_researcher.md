@@ -236,6 +236,13 @@ Rules:
   `digest.source_index`, `digest.comments_digest`, and `digest.omitted_counts`
   over raw source dumps;
 - call out weak, indirect, stale, or missing evidence;
+- use `evidence_quality` from `source_refs`, `source_index`, `main_sources`, or
+  `source_expand` sources as evidence quality calibration, not proof. Translate
+  labels into human language: "strong practical source", "announcement/mention",
+  "comments mostly noise", "author-supported source", or "weak/indirect source"
+  when helpful;
+- do not turn labels into proof claims; they calibrate practitioner-opinion
+  evidence only;
 - keep raw source dumps out of the parent thread unless requested.
 
 When you use `source_expand`, start with a compact Request passport for

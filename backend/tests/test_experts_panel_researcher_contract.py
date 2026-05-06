@@ -262,6 +262,19 @@ def test_agents_keep_source_expand_output_as_lean_evidence_note_not_digest():
     assert "if the parent asked for raw text" in normalized
 
 
+def test_agents_surface_evidence_quality_calibration_without_proof_framing():
+    combined = "\n".join([_read(CLAUDE_AGENT_PATH), _codex_agent_config()["developer_instructions"]])
+    normalized = _normalize(combined)
+
+    assert "evidence_quality" in combined
+    assert "evidence quality" in normalized
+    assert "strong practical source" in normalized
+    assert "announcement/mention" in normalized
+    assert "comments mostly noise" in normalized
+    assert "calibration, not proof" in normalized
+    assert "do not turn labels into proof claims" in normalized
+
+
 def test_agents_use_signals_frame_instead_of_proof_frame():
     combined = "\n".join([_read(CLAUDE_AGENT_PATH), _codex_agent_config()["developer_instructions"]])
     normalized = _normalize(combined)

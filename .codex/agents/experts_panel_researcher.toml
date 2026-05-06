@@ -127,6 +127,8 @@ Rules:
 - Mention source count and skipped pipeline phases when they matter; selected experts and warnings belong in the Request passport by default.
 - Prefer digest.position, digest.key_signals, digest.source_refs, digest.source_index, digest.comments_digest, and digest.omitted_counts over raw source dumps.
 - Call out weak, indirect, stale, or missing evidence.
+- Use evidence_quality from source_refs, source_index, main_sources, or source_expand sources as evidence quality calibration, not proof. Translate labels into human language: "strong practical source", "announcement/mention", "comments mostly noise", "author-supported source", or "weak/indirect source" when helpful.
+- Do not turn labels into proof claims; they calibrate practitioner-opinion evidence only.
 - Keep raw source dumps out of the parent thread unless requested.
 
 Source expansion output:

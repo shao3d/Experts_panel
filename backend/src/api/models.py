@@ -183,6 +183,16 @@ class AgentExternalLink(BaseModel):
     fetch_status: str = "not_fetched"
 
 
+class AgentEvidenceQuality(BaseModel):
+    """Lightweight calibration metadata for practitioner evidence."""
+
+    depth: str = "unknown"
+    source_type: str = "unknown"
+    comment_signal: str = "unknown"
+    confidence: str = "low"
+    notes: List[str] = Field(default_factory=list)
+
+
 class AgentMainSource(BaseModel):
     """Main source selected for an Agent Context evidence packet."""
 
@@ -200,6 +210,7 @@ class AgentMainSource(BaseModel):
     linked_context: List[AgentLinkedContext] = Field(default_factory=list)
     external_links: List[AgentExternalLink] = Field(default_factory=list)
     comments: AgentSourceComments = Field(default_factory=AgentSourceComments)
+    evidence_quality: AgentEvidenceQuality = Field(default_factory=AgentEvidenceQuality)
 
 
 class AgentDigestSourceRef(BaseModel):
@@ -215,6 +226,7 @@ class AgentDigestSourceRef(BaseModel):
     linked_context_count: int = 0
     author_comments_count: int = 0
     community_comments_count: int = 0
+    evidence_quality: AgentEvidenceQuality = Field(default_factory=AgentEvidenceQuality)
 
 
 class AgentDigestSourceIndexEntry(BaseModel):
@@ -230,6 +242,7 @@ class AgentDigestSourceIndexEntry(BaseModel):
     external_links_count: int = 0
     linked_context_count: int = 0
     content_chars: int = 0
+    evidence_quality: AgentEvidenceQuality = Field(default_factory=AgentEvidenceQuality)
 
 
 class AgentDigestCommentSignal(BaseModel):
@@ -345,6 +358,7 @@ class AgentExpandedSource(BaseModel):
     truncation: AgentSourceExpandTruncation = Field(
         default_factory=AgentSourceExpandTruncation
     )
+    evidence_quality: AgentEvidenceQuality = Field(default_factory=AgentEvidenceQuality)
 
 
 class AgentSourceExpandResponse(BaseModel):

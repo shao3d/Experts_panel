@@ -476,10 +476,12 @@ def test_acceptance_expert_digest_flow_compacts_evidence_before_cli_output(
     )
     assert expert["digest"]["key_signals"][0]["supporting_sources"] == ["refat:101"]
     assert expert["digest"]["source_refs"][0]["source_key"] == "refat:101"
+    assert expert["digest"]["source_refs"][0]["evidence_quality"]["comment_signal"] == "mixed"
     assert [source["source_key"] for source in expert["digest"]["source_index"]] == [
         "refat:101",
         "refat:102",
     ]
+    assert expert["digest"]["source_index"][0]["evidence_quality"]["comment_signal"] == "mixed"
     assert expert["digest"]["comments_digest"]["included_comments"]
 
 
@@ -551,6 +553,7 @@ def test_acceptance_expand_flow_reveals_source_key_without_new_digest_query(
     payload = _raw_payload(result)
     assert payload["mode"] == "source_expand"
     assert payload["sources"][0]["source_key"] == "refat:101"
+    assert payload["sources"][0]["evidence_quality"]["comment_signal"] == "author_support"
     assert payload["sources"][0]["comments"]["author_comments"][0]["comment_text"] == (
         "Raw author comment"
     )
@@ -682,12 +685,15 @@ def test_acceptance_source_evidence_shape_is_agent_readable(monkeypatch, capsys)
     assert high_source["comments"]["community_comments"][0]["comment_text"] == (
         "Community comment under refat"
     )
+    assert high_source["evidence_quality"]["comment_signal"] == "mixed"
+    assert high_source["evidence_quality"]["confidence"] in {"medium", "high"}
 
     medium_source = expert["main_sources"][1]
     assert medium_source["telegram_message_id"] == 102
     assert medium_source["relevance"] == "MEDIUM"
     assert medium_source["score"] == 0.91
     assert medium_source["score_reason"] == "Complements the high source"
+    assert medium_source["evidence_quality"]["depth"] in {"shallow", "moderate"}
 
     assert expert["unattached_linked_context"][0]["telegram_message_id"] == 202
     assert expert["unattached_linked_context"][0]["source_role"] == "context"

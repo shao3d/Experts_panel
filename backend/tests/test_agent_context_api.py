@@ -692,12 +692,15 @@ def test_agent_context_builds_sources_context_and_comments(monkeypatch):
     assert high_source["linked_context"][0]["telegram_message_id"] == 201
     assert high_source["comments"]["author_comments"][0]["comment_text"] == "Author clarification"
     assert high_source["comments"]["community_comments"][0]["comment_text"] == "Community comment"
+    assert high_source["evidence_quality"]["comment_signal"] == "mixed"
+    assert high_source["evidence_quality"]["confidence"] in {"medium", "high"}
 
     medium_source = expert["main_sources"][1]
     assert medium_source["telegram_message_id"] == 102
     assert medium_source["external_links"] == []
     assert medium_source["score"] == 0.91
     assert medium_source["score_reason"] == "Complements the high source"
+    assert medium_source["evidence_quality"]["depth"] in {"shallow", "moderate"}
 
     assert expert["unattached_linked_context"][0]["telegram_message_id"] == 202
     assert "reduce_answer_synthesis" in response.json()["pipeline_skipped"]
@@ -852,11 +855,17 @@ def test_agent_context_expert_digest_compacts_sources_and_comments(monkeypatch):
     digest = expert["digest"]
     assert digest["position"] == "Refat frames subagents as explicit bounded helpers."
     assert digest["source_refs"][0]["source_key"] == "refat:101"
+    assert digest["source_refs"][0]["evidence_quality"]["comment_signal"] == "mixed"
     assert digest["source_refs"][0]["short_excerpt"].endswith("...")
     assert [source["source_key"] for source in digest["source_index"]] == [
         "refat:101",
         "refat:102",
     ]
+    assert digest["source_index"][0]["evidence_quality"]["comment_signal"] == "mixed"
+    assert digest["source_index"][1]["evidence_quality"]["depth"] in {
+        "shallow",
+        "moderate",
+    }
     assert digest["source_index"][0]["content_chars"] > 0
     assert digest["source_index"][0]["external_links_count"] == 2
     assert digest["source_index"][1]["external_links_count"] == 0
@@ -875,6 +884,7 @@ def test_agent_context_expert_digest_compacts_sources_and_comments(monkeypatch):
     }
     assert digest["key_signals"][0]["supporting_sources"] == ["refat:101"]
     assert observed["llm_evidence"]["source_refs"][0]["source_key"] == "refat:101"
+    assert observed["llm_evidence"]["source_refs"][0]["evidence_quality"]["comment_signal"] == "mixed"
     assert len(observed["llm_evidence"]["source_refs"]) == 1
 
 
@@ -1022,6 +1032,51 @@ def test_agent_context_expand_returns_raw_source_without_search_pipeline(monkeyp
     assert source["external_links"][0]["fetch_status"] == "not_fetched"
     assert source["comments"]["author_comments"][0]["comment_text"] == "Author clarification"
     assert source["comments"]["community_comments"][0]["comment_text"] == "Community comment"
+    assert source["evidence_quality"]["comment_signal"] == "mixed"
+    assert source["evidence_quality"]["confidence"] in {"medium", "high"}
+
+
+def test_agent_context_evidence_quality_calibration_distinguishes_practical_sources_from_announcements():
+    service = AgentContextService.__new__(AgentContextService)
+    practical_source = AgentMainSource(
+        telegram_message_id=701,
+        source_key="refat:701",
+        relevance="HIGH",
+        reason="Direct practitioner signal from production experience",
+        content=(
+            "In production we used subagents for bounded codebase research. "
+            "The practical lesson is to give each helper a narrow scope, a clear "
+            "handoff, and source-backed output. The tradeoff is coordination cost, "
+            "so I use them only when parallel investigation saves time and the "
+            "parent agent can verify the claims against files and tests."
+        ),
+        comments=AgentSourceComments(
+            author_comments=[
+                AgentSourceComment(
+                    comment_id=1,
+                    comment_text="Author clarification: this worked only with explicit scope.",
+                    author_name="Refat",
+                )
+            ]
+        ),
+    )
+    announcement_source = AgentMainSource(
+        telegram_message_id=702,
+        source_key="refat:702",
+        relevance="MEDIUM",
+        reason="Secondary mention of a tool announcement",
+        content="Launch: a new agent helper is out. Link in the post.",
+    )
+
+    service._refresh_evidence_quality([practical_source, announcement_source])
+
+    assert practical_source.evidence_quality.depth == "deep_practical"
+    assert practical_source.evidence_quality.source_type == "practitioner_experience"
+    assert practical_source.evidence_quality.comment_signal == "author_support"
+    assert practical_source.evidence_quality.confidence == "high"
+    assert announcement_source.evidence_quality.depth == "shallow"
+    assert announcement_source.evidence_quality.source_type == "announcement"
+    assert announcement_source.evidence_quality.confidence == "low"
 
 
 def test_agent_context_expand_missing_source_goes_to_not_found(monkeypatch):

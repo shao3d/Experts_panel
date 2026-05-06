@@ -11,7 +11,11 @@ from typing import Any
 import requests
 
 from .bootstrap import bootstrap_cli
-from .agent_context import AgentContextCliError, _format_http_error
+from .agent_context import (
+    AgentContextCliError,
+    _format_evidence_quality,
+    _format_http_error,
+)
 
 
 DEFAULT_AGENT_CONTEXT_EXPAND_API_URL = (
@@ -162,6 +166,9 @@ def print_summary(payload: dict[str, Any]) -> None:
             f"  - {source.get('source_key', '')} "
             f"(@{source.get('channel_username', '')})"
         )
+        quality = _format_evidence_quality(source)
+        if quality:
+            print(f"    {quality}")
         print(
             "    comments: "
             f"author={author_count} community={community_count}; "
