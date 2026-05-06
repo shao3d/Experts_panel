@@ -13,7 +13,7 @@ import requests
 BACKEND_DIR = Path(__file__).parent.parent
 sys.path.insert(0, str(BACKEND_DIR))
 
-from src.cli import agent_context, agent_context_expand
+from src.cli import agent_context, agent_context_expand, panex
 
 
 class FakeResponse:
@@ -296,6 +296,7 @@ def clean_agent_context_env(monkeypatch):
     for key in [
         "AGENT_CONTEXT_API_TOKEN",
         "AGENT_CONTEXT_API_URL",
+        "AGENT_CONTEXT_EXPAND_API_URL",
         "AGENT_CONTEXT_TIMEOUT_SECONDS",
     ]:
         monkeypatch.delenv(key, raising=False)
@@ -378,6 +379,259 @@ def test_cli_sends_safe_default_source_bundle_payload(
     }
     assert "secret-token" not in captured.out
     assert "secret-token" not in captured.err
+
+
+def test_panex_ask_from_foreign_cwd_uses_fly_expert_digest_by_default(
+    monkeypatch,
+    capsys,
+    tmp_path,
+    clean_agent_context_env,
+):
+    calls = []
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("AGENT_CONTEXT_API_TOKEN", "secret-token")
+    monkeypatch.setenv(
+        "AGENT_CONTEXT_API_URL",
+        "http://localhost:8000/api/v1/agent/context",
+    )
+
+    def fake_post(url, *, headers, json, timeout):
+        calls.append(
+            {
+                "url": url,
+                "headers": headers,
+                "json": json,
+                "timeout": timeout,
+            }
+        )
+        return FakeResponse(payload=_expert_digest_response())
+
+    monkeypatch.setattr(panex.requests, "post", fake_post)
+
+    exit_code = panex.main(
+        [
+            "ask",
+            "--query",
+            "When should we use subagents?",
+            "--experts",
+            "refat,akimov,refat",
+            "--json",
+        ],
+        load_env=False,
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert calls[0]["url"] == panex.PRODUCTION_AGENT_CONTEXT_API_URL
+    assert "localhost" not in calls[0]["url"]
+    assert calls[0]["headers"] == {"Authorization": "Bearer secret-token"}
+    assert calls[0]["timeout"] == 3600.0
+    assert calls[0]["json"] == {
+        "query": "When should we use subagents?",
+        "response_mode": "expert_digest",
+        "expert_scope": "custom",
+        "expert_group": None,
+        "expert_filter": ["refat", "akimov"],
+        "include_reddit": False,
+        "include_main_source_comments": True,
+        "include_drift_comment_groups": False,
+        "synthesis_level": "none",
+        "use_recent_only": False,
+        "use_super_passport": True,
+    }
+    assert "secret-token" not in captured.out
+    assert "secret-token" not in captured.err
+
+
+def test_panex_ask_keeps_source_bundle_opt_in_for_raw_audit(
+    monkeypatch,
+    tmp_path,
+    clean_agent_context_env,
+):
+    calls = []
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("AGENT_CONTEXT_API_TOKEN", "secret-token")
+
+    def fake_post(url, *, headers, json, timeout):
+        calls.append({"url": url, "json": json})
+        return FakeResponse(payload=_source_bundle_response())
+
+    monkeypatch.setattr(panex.requests, "post", fake_post)
+
+    exit_code = panex.main(
+        [
+            "ask",
+            "--query",
+            "raw audit",
+            "--experts",
+            "refat",
+            "--response-mode",
+            "source_bundle",
+            "--json",
+        ],
+        load_env=False,
+    )
+
+    assert exit_code == 0
+    assert calls == [
+        {
+            "url": panex.PRODUCTION_AGENT_CONTEXT_API_URL,
+            "json": {
+                "query": "raw audit",
+                "response_mode": "source_bundle",
+                "expert_scope": "custom",
+                "expert_group": None,
+                "expert_filter": ["refat"],
+                "include_reddit": False,
+                "include_main_source_comments": True,
+                "include_drift_comment_groups": False,
+                "synthesis_level": "none",
+                "use_recent_only": False,
+                "use_super_passport": True,
+            },
+        }
+    ]
+
+
+def test_panex_expand_from_foreign_cwd_uses_fly_expand_by_default(
+    monkeypatch,
+    capsys,
+    tmp_path,
+    clean_agent_context_env,
+):
+    calls = []
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("AGENT_CONTEXT_API_TOKEN", "secret-token")
+    monkeypatch.setenv(
+        "AGENT_CONTEXT_EXPAND_API_URL",
+        "http://localhost:8000/api/v1/agent/context/expand",
+    )
+
+    def fake_post(url, *, headers, json, timeout):
+        calls.append(
+            {
+                "url": url,
+                "headers": headers,
+                "json": json,
+                "timeout": timeout,
+            }
+        )
+        return FakeResponse(payload=_source_expand_response())
+
+    monkeypatch.setattr(panex.requests, "post", fake_post)
+
+    exit_code = panex.main(
+        [
+            "expand",
+            "--source-keys",
+            "refat:101,akimov:201",
+            "--max-content-chars",
+            "1200",
+            "--max-comments-per-source",
+            "3",
+            "--json",
+        ],
+        load_env=False,
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert calls[0]["url"] == panex.PRODUCTION_AGENT_CONTEXT_EXPAND_API_URL
+    assert "localhost" not in calls[0]["url"]
+    assert calls[0]["json"] == {
+        "source_keys": ["refat:101", "akimov:201"],
+        "include_comments": True,
+        "include_external_links": True,
+        "max_content_chars": 1200,
+        "max_comments_per_source": 3,
+    }
+    assert "secret-token" not in captured.out
+    assert "secret-token" not in captured.err
+
+
+def test_panex_missing_token_fails_before_http_call(
+    monkeypatch,
+    capsys,
+    clean_agent_context_env,
+):
+    def fail_post(*args, **kwargs):
+        raise AssertionError("panex should not call HTTP without token")
+
+    monkeypatch.setattr(panex.requests, "post", fail_post)
+
+    exit_code = panex.main(
+        ["ask", "--query", "When should we use subagents?", "--experts", "refat"],
+        load_env=False,
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 1
+    assert "AGENT_CONTEXT_API_TOKEN is required for panex production calls" in captured.err
+    assert "secret" not in captured.err.lower()
+
+
+def test_panex_local_debug_is_explicit(monkeypatch, clean_agent_context_env):
+    calls = []
+    monkeypatch.setenv("AGENT_CONTEXT_API_TOKEN", "secret-token")
+
+    def fake_post(url, *, headers, json, timeout):
+        calls.append(url)
+        return FakeResponse(payload=_expert_digest_response())
+
+    monkeypatch.setattr(panex.requests, "post", fake_post)
+
+    exit_code = panex.main(
+        ["ask", "--query", "debug", "--experts", "refat", "--local"],
+        load_env=False,
+    )
+
+    assert exit_code == 0
+    assert calls == [panex.LOCAL_AGENT_CONTEXT_API_URL]
+
+
+def test_panex_doctor_reports_setup_without_printing_token(
+    monkeypatch,
+    capsys,
+    clean_agent_context_env,
+):
+    monkeypatch.setenv("AGENT_CONTEXT_API_TOKEN", "very-secret-token")
+    monkeypatch.setattr(panex.shutil, "which", lambda name: "/Users/me/.local/bin/panex")
+
+    exit_code = panex.main(["doctor"], load_env=False)
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "Panex doctor" in captured.out
+    assert "token_configured: True" in captured.out
+    assert "very-secret-token" not in captured.out
+    assert panex.PRODUCTION_AGENT_CONTEXT_API_URL in captured.out
+
+
+def test_panex_install_script_writes_user_level_shim_without_token(tmp_path):
+    install_dir = tmp_path / "bin"
+    env = os.environ.copy()
+    env["PANEX_INSTALL_DIR"] = str(install_dir)
+    env["AGENT_CONTEXT_API_TOKEN"] = "very-secret-token"
+
+    result = subprocess.run(
+        [str(BACKEND_DIR.parent / "scripts" / "install_panex_runner.sh")],
+        cwd=BACKEND_DIR.parent,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    shim = install_dir / "panex"
+    assert result.returncode == 0
+    assert shim.exists()
+    assert os.access(shim, os.X_OK)
+    shim_content = shim.read_text(encoding="utf-8")
+    assert "src.cli.panex" in shim_content
+    assert str(BACKEND_DIR) in shim_content
+    assert "very-secret-token" not in shim_content
+    assert "very-secret-token" not in result.stdout
+    assert "very-secret-token" not in result.stderr
 
 
 def test_cli_sends_expert_digest_payload_when_requested(

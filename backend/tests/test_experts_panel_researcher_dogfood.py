@@ -14,6 +14,7 @@ CLAUDE_AGENT_PATH = REPO_ROOT / ".claude" / "agents" / "experts_panel_researcher
 CODEX_AGENT_PATH = REPO_ROOT / ".codex" / "agents" / "experts_panel_researcher.toml"
 SPEC_PATH = REPO_ROOT / "docs" / "architecture" / "agent-context-api.md"
 CLI_PATH = REPO_ROOT / "backend" / "src" / "cli" / "agent_context.py"
+PANEX_CLI_PATH = REPO_ROOT / "backend" / "src" / "cli" / "panex.py"
 DOGFOOD_SAMPLE_PATH = (
     REPO_ROOT
     / "backend"
@@ -153,6 +154,7 @@ def test_agents_have_actionable_readiness_failure_guidance():
 
 def test_real_subagent_calls_pin_fly_without_relying_on_local_default():
     cli_source = _read(CLI_PATH)
+    panex_source = _read(PANEX_CLI_PATH)
     dogfood_text = "\n".join(
         [
             _agent_instructions(),
@@ -162,10 +164,16 @@ def test_real_subagent_calls_pin_fly_without_relying_on_local_default():
     )
 
     assert 'DEFAULT_AGENT_CONTEXT_API_URL = "http://localhost:8000/api/v1/agent/context"' in cli_source
+    assert "PRODUCTION_AGENT_CONTEXT_API_URL" in panex_source
+    assert "https://experts-panel.fly.dev/api/v1/agent/context" in panex_source
     assert "http://localhost:8000/api/v1/agent/context" in dogfood_text
     assert "https://experts-panel.fly.dev/api/v1/agent/context" in _agent_instructions()
-    assert "--api-url https://experts-panel.fly.dev/api/v1/agent/context" in _agent_instructions()
-    assert "do not rely on the cli default" in _normalize(_agent_instructions())
+    assert "panex ask" in _agent_instructions()
+    assert "panex expand" in _agent_instructions()
+    assert "--response-mode source_bundle" in _agent_instructions()
+    assert "defaults to the fly.io urls" in _normalize(_agent_instructions())
+    assert "ignores ambient local" in _normalize(_agent_instructions())
+    assert "do not use the lower-level" in _normalize(_agent_instructions())
     assert "localhost only when" in _normalize(_agent_instructions())
     assert "https://experts-panel.fly.dev" not in _read(DOGFOOD_SAMPLE_PATH)
 

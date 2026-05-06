@@ -44,27 +44,26 @@ Production target:
   https://experts-panel.fly.dev/api/v1/agent/context
 - Canonical source expansion URL:
   https://experts-panel.fly.dev/api/v1/agent/context/expand
-- Always pass this URL explicitly with --api-url. Do not rely on the CLI default, because the default is local localhost for local backend debugging and may point to an unrelated project.
+- Use the global `panex` portable runner for real production calls. `panex` defaults to the Fly.io URLs above and ignores ambient local `AGENT_CONTEXT_API_URL` unless --local or --api-url is explicitly provided.
+- Do not use the lower-level `src.cli.agent_context` defaults for real user calls, because those defaults are local localhost for backend debugging and may point to an unrelated project.
 - Use localhost only when the parent explicitly asks for local dogfood, local smoke, or local backend debugging.
 
 Safe CLI boundary:
 - Use only the Agent Context CLI/wrapper.
 - Command shape for real production calls:
-  cd backend
-  .venv/bin/python -m src.cli.agent_context --query "<query>" [--experts refat,akimov | --group tech | --group tech_business] [--recent] --response-mode expert_digest --api-url https://experts-panel.fly.dev/api/v1/agent/context --json
-- Use expert_digest through src.cli.agent_context by default. This asks the Panel to reduce selected posts and main-source comments into compact per-expert digests before returning JSON.
-- Use source_bundle only when the parent explicitly asks for raw evidence, audit/debug output, or source-bundle smoke verification.
-- Use src.cli.agent_context_expand only when the parent explicitly asks to reveal source/evidence details from a previous digest, either through human Russian phrases or concrete source_key handles, for example "раскрой подробнее по Рефату", "покажи источники по этому выводу", "дай пруфы", "что там в комментариях", "раскрой refat:234", or "show raw source etechlead:139".
+  panex ask --query "<query>" [--experts refat,akimov | --group tech | --group tech_business | --all] [--response-mode expert_digest|source_bundle] [--recent] --json
+- Use expert_digest through `panex ask` by default. This asks the Panel to reduce selected posts and main-source comments into compact per-expert digests before returning JSON.
+- Use source_bundle only when the parent explicitly asks for raw evidence, audit/debug output, or source-bundle smoke verification; pass `--response-mode source_bundle` explicitly.
+- Use `panex expand` only when the parent explicitly asks to reveal source/evidence details from a previous digest, either through human Russian phrases or concrete source_key handles, for example "раскрой подробнее по Рефату", "покажи источники по этому выводу", "дай пруфы", "что там в комментариях", "раскрой refat:234", or "show raw source etechlead:139".
 - Command shape for explicit source expansion:
-  cd backend
-  .venv/bin/python -m src.cli.agent_context_expand --source-keys refat:234,etechlead:139 --api-url https://experts-panel.fly.dev/api/v1/agent/context/expand --json
+  panex expand --source-keys refat:234,etechlead:139 --json
 - source_expand is a lookup step over source keys from digest.source_refs or digest.source_index; it is not a new expert_digest query and not a new source_bundle query.
 - Read the production AGENT_CONTEXT_API_TOKEN from environment through the CLI only.
 - Do not store, print, or infer token values.
 - Do not call /api/v1/query.
 - Do not call admin, import, maintenance, or mutation endpoints.
 - Do not broaden expert selection silently.
-- If this agent is copied into another repository, keep the same Fly.io API URL and use an equivalent safe CLI/wrapper. If no wrapper is available, fail with an actionable setup message instead of falling back to localhost or broad web search.
+- If this agent is copied into another repository, use the global `panex` command. If `panex` is unavailable, run `panex doctor` if possible or fail with an actionable setup message instead of falling back to localhost or broad web search.
 - Rely on the CLI/API forced Embs&Keys path; Agent Context source discovery always uses query embeddings and is not controlled by the UI search toggle.
 - Treat main_sources[].external_links as author-supplied references with fetch_status=not_fetched.
 - Do not open, fetch, crawl, clone, or summarize external links unless the parent explicitly asks for link enrichment or external research.
@@ -155,14 +154,14 @@ Source expansion output:
 Production dogfood flow:
 - Use Fly.io by default for user-facing dogfood.
 - Command shape:
-  cd backend
-  .venv/bin/python -m src.cli.agent_context --query "<query>" --experts refat,akimov --response-mode expert_digest --api-url https://experts-panel.fly.dev/api/v1/agent/context --json
+  panex ask --query "<query>" --experts refat,akimov --json
+- Raw/audit source-bundle shape, only when explicitly requested:
+  panex ask --query "<query>" --experts refat,akimov --response-mode source_bundle --json
 - Explicit source expansion command shape:
-  cd backend
-  .venv/bin/python -m src.cli.agent_context_expand --source-keys refat:234 --api-url https://experts-panel.fly.dev/api/v1/agent/context/expand --json
+  panex expand --source-keys refat:234 --json
 - For live production smoke, use:
-  cd backend
-  .venv/bin/python scripts/agent_context_live_smoke.py --api-url https://experts-panel.fly.dev/api/v1/agent/context --experts refat,akimov --timeout 3600
+  panex doctor
+  panex ask --query "Когда стоит использовать subagents?" --experts refat,akimov --json --timeout 3600
 
 Local-only dogfood flow:
 - Use local backend only when the parent explicitly asks for local smoke/debug.

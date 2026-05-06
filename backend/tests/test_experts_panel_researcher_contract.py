@@ -84,9 +84,10 @@ def test_claude_agent_is_read_only_and_uses_safe_cli_boundary():
     assert "Edit" not in frontmatter
 
     normalized = _normalize(content)
-    assert "src.cli.agent_context" in content
+    assert "panex ask" in content
+    assert "panex expand" in content
+    assert "--response-mode source_bundle" in content
     assert "expert_digest" in content
-    assert "--response-mode expert_digest" in content
     assert "source_bundle" in content
     assert "explicit" in normalized
     assert "do not call /api/v1/query" in normalized
@@ -103,9 +104,10 @@ def test_codex_agent_is_read_only_and_uses_safe_cli_boundary():
     assert config["model"] == "gpt-5.5"
     assert config["model_reasoning_effort"] == "medium"
     assert config["sandbox_mode"] == "read-only"
-    assert "src.cli.agent_context" in instructions
+    assert "panex ask" in instructions
+    assert "panex expand" in instructions
+    assert "--response-mode source_bundle" in instructions
     assert "expert_digest" in instructions
-    assert "--response-mode expert_digest" in instructions
     assert "source_bundle" in instructions
     assert "explicit" in normalized
     assert "do not call /api/v1/query" in normalized
@@ -171,18 +173,24 @@ def test_agents_pin_production_fly_endpoint_for_real_calls():
     normalized = _normalize(combined)
 
     assert "https://experts-panel.fly.dev/api/v1/agent/context" in combined
-    assert "--api-url https://experts-panel.fly.dev/api/v1/agent/context" in combined
+    assert "panex ask" in combined
+    assert "panex" in normalized
+    assert "defaults to the fly.io urls" in normalized
+    assert "ignores ambient local" in normalized
     assert "fly.io" in normalized
-    assert "do not rely on the cli default" in normalized
+    assert "lower-level" in normalized
+    assert "src.cli.agent_context" in combined
+    assert "defaults for real user calls" in normalized
     assert "use localhost only when" in normalized
     assert "copied into another repository" in normalized
+    assert "panex doctor" in normalized
 
 
 def test_agents_use_source_expand_for_explicit_raw_source_requests():
     combined = "\n".join([_read(CLAUDE_AGENT_PATH), _codex_agent_config()["developer_instructions"]])
     normalized = _normalize(combined)
 
-    assert "src.cli.agent_context_expand" in combined
+    assert "panex expand" in combined
     assert "https://experts-panel.fly.dev/api/v1/agent/context/expand" in combined
     assert "source_expand" in combined
     assert "source_index" in combined
