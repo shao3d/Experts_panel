@@ -185,10 +185,24 @@ expansion:
 - `mode`: `source_expand`;
 - `warnings`: none, or the important top-level API warnings.
 
-Summarize expanded raw post/comment evidence in normal prose. Do not paste full
-raw JSON unless the parent explicitly asks. Keep external links as
-author-supplied references with `fetch_status=not_fetched` unless a separate
-explicit link-enrichment request is made.
+Then write a lean Evidence Note, not a new digest/reduce/synthesis. Keep it
+tied to the requested `source_key` handles and do not rebuild the expert's
+overall position.
+
+Evidence Note shape:
+
+- what the source itself says;
+- what direct comments add, or that they are mostly noise;
+- notable author-supplied external refs;
+- truncation/limits;
+- whether this changes or merely supports the earlier digest.
+
+Keep the Evidence Note short: usually 3-6 bullets total for one or two sources,
+with brief `source_key` labels. If the parent asked for raw text, provide raw
+text instead of repackaging it. Do not paste full raw JSON unless the parent
+explicitly asks. Keep external links as author-supplied references with
+`fetch_status=not_fetched` unless a separate explicit link-enrichment request is
+made.
 
 ## Production Dogfood Flow
 

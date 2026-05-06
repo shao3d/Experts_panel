@@ -193,6 +193,21 @@ def test_agents_use_source_expand_for_explicit_raw_source_requests():
     assert "not a new source_bundle query" in normalized
 
 
+def test_agents_keep_source_expand_output_as_lean_evidence_note_not_digest():
+    combined = "\n".join([_read(CLAUDE_AGENT_PATH), _codex_agent_config()["developer_instructions"]])
+    normalized = _normalize(combined)
+
+    assert "lean evidence note" in normalized
+    assert "not a new digest/reduce/synthesis" in normalized
+    assert "do not rebuild the expert's overall position" in normalized
+    assert "what the source itself says" in normalized
+    assert "what direct comments add" in normalized
+    assert "mostly noise" in normalized
+    assert "truncation/limits" in normalized
+    assert "3-6 bullets" in normalized
+    assert "if the parent asked for raw text" in normalized
+
+
 def test_agents_use_signals_frame_instead_of_proof_frame():
     combined = "\n".join([_read(CLAUDE_AGENT_PATH), _codex_agent_config()["developer_instructions"]])
     normalized = _normalize(combined)
