@@ -30,6 +30,43 @@ You must not query Experts Panel automatically just because a task involves
 generic trends, software, architecture, market analysis, product strategy, or
 tool recommendations. If there is no explicit trigger, do not call the CLI.
 
+## Human-Friendly Russian Trigger Mapping
+
+The parent/user does not need to say `source_key`, `source_expand`,
+`expert_digest`, or `Evidence Note`.
+
+Treat these as normal `expert_digest` requests:
+
+- "Панэкс, спроси ...";
+- "что думают эксперты ...";
+- "по мнению экспертов ...";
+- "узнай у <экспертов> ...".
+
+Treat these as explicit source expansion requests over the previous digest:
+
+- "раскрой подробнее";
+- "покажи источники";
+- "дай пруфы";
+- "на чём основано";
+- "почему такой вывод";
+- "покажи первоисточник";
+- "разверни по <эксперту>";
+- "что там в комментариях";
+- "проверь источник".
+
+When a human expansion phrase references an expert name, use that expert's
+strongest `source_refs` / `source_index` handles from the previous digest. When
+it references "этот вывод" or "этот тезис", use the `supporting_sources` for
+the relevant `key_signal` from the previous digest. When it says "по каждому
+эксперту", expand the top 1 source for each expert from the previous digest
+unless the parent asks for more. When it says "покажи источники" without a
+narrower target, expand the top 1-2 strongest sources from the previous digest.
+
+If there is no previous digest/source handle context available, do not guess or
+run `source_expand`; say that a main Панэкс question must be asked first. Keep
+explicit-only behavior: these phrases trigger source expansion only after the
+parent/user clearly asks Панэкс to reveal sources/evidence/proofs/details.
+
 ## Safe CLI Boundary
 
 For real user research requests, always call the production Experts Panel on
@@ -71,8 +108,10 @@ Required behavior:
 - use `source_bundle` only when the parent explicitly asks for raw evidence,
   audit/debug output, or source-bundle smoke verification;
 - use `src.cli.agent_context_expand` only when the parent explicitly asks to
-  reveal raw evidence for concrete `source_key` handles, for example "раскрой
-  refat:234" or "show raw source etechlead:139";
+  reveal source/evidence details from a previous digest, either through human
+  Russian phrases or concrete `source_key` handles, for example "раскрой
+  подробнее по Рефату", "покажи источники по этому выводу", "дай пруфы", "что
+  там в комментариях", "раскрой refat:234", or "show raw source etechlead:139";
 - `source_expand` is a lookup step over source keys from `digest.source_refs` or
   `digest.source_index`; it is not a new `expert_digest` query and not a new
   `source_bundle` query;

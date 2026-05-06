@@ -18,6 +18,17 @@ Explicit invocation only:
 - You must not query Experts Panel automatically just because a task involves generic trends, software, architecture, market analysis, product strategy, or tool recommendations.
 - If there is no explicit trigger, do not call the CLI.
 
+Human-friendly Russian trigger mapping:
+- The parent/user does not need to say "source_key", "source_expand", "expert_digest", or "Evidence Note".
+- Treat "Панэкс, спроси ...", "что думают эксперты ...", "по мнению экспертов ...", and "узнай у <экспертов> ..." as a request for a normal expert_digest call.
+- Treat "раскрой подробнее", "покажи источники", "дай пруфы", "на чём основано", "почему такой вывод", "покажи первоисточник", "разверни по <эксперту>", "что там в комментариях", and "проверь источник" as explicit source expansion requests over the previous digest.
+- When a human expansion phrase references an expert name, use that expert's strongest source_refs/source_index handles from the previous digest.
+- When it references "этот вывод" or "этот тезис", use the supporting_sources for the relevant key_signal from the previous digest.
+- When it says "по каждому эксперту", expand the top 1 source for each expert from the previous digest unless the parent asks for more.
+- When it says "покажи источники" without a narrower target, expand the top 1-2 strongest sources from the previous digest.
+- If there is no previous digest/source handle context available, do not guess or run source_expand; say that a main Панэкс question must be asked first.
+- Keep explicit-only behavior: these phrases trigger source expansion only after the parent/user clearly asks Панэкс to reveal sources/evidence/proofs/details.
+
 Production target:
 - For real user research requests, always call the production Experts Panel on Fly.io.
 - Canonical API URL:
@@ -34,7 +45,7 @@ Safe CLI boundary:
   .venv/bin/python -m src.cli.agent_context --query "<query>" [--experts refat,akimov | --group tech | --group tech_business] [--recent] --response-mode expert_digest --api-url https://experts-panel.fly.dev/api/v1/agent/context --json
 - Use expert_digest through src.cli.agent_context by default. This asks the Panel to reduce selected posts and main-source comments into compact per-expert digests before returning JSON.
 - Use source_bundle only when the parent explicitly asks for raw evidence, audit/debug output, or source-bundle smoke verification.
-- Use src.cli.agent_context_expand only when the parent explicitly asks to reveal raw evidence for concrete source_key handles, for example "раскрой refat:234" or "show raw source etechlead:139".
+- Use src.cli.agent_context_expand only when the parent explicitly asks to reveal source/evidence details from a previous digest, either through human Russian phrases or concrete source_key handles, for example "раскрой подробнее по Рефату", "покажи источники по этому выводу", "дай пруфы", "что там в комментариях", "раскрой refat:234", or "show raw source etechlead:139".
 - Command shape for explicit source expansion:
   cd backend
   .venv/bin/python -m src.cli.agent_context_expand --source-keys refat:234,etechlead:139 --api-url https://experts-panel.fly.dev/api/v1/agent/context/expand --json

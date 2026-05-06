@@ -193,6 +193,48 @@ def test_agents_use_source_expand_for_explicit_raw_source_requests():
     assert "not a new source_bundle query" in normalized
 
 
+def test_agents_accept_human_russian_triggers_without_requiring_jargon():
+    combined = "\n".join([_read(CLAUDE_AGENT_PATH), _codex_agent_config()["developer_instructions"]])
+    normalized = _normalize(combined)
+
+    assert "does not need to say" in normalized
+    for jargon in [
+        "source_key",
+        "source_expand",
+        "expert_digest",
+        "evidence note",
+    ]:
+        assert jargon in combined.lower()
+
+    for digest_trigger in [
+        "панэкс, спроси",
+        "что думают эксперты",
+        "по мнению экспертов",
+        "узнай у <экспертов>",
+    ]:
+        assert digest_trigger in normalized
+
+    for expansion_trigger in [
+        "раскрой подробнее",
+        "покажи источники",
+        "дай пруфы",
+        "на чём основано",
+        "почему такой вывод",
+        "покажи первоисточник",
+        "разверни по <эксперту>",
+        "что там в комментариях",
+        "проверь источник",
+    ]:
+        assert expansion_trigger in normalized
+
+    assert "previous digest" in normalized
+    assert "strongest source_refs" in normalized
+    assert "supporting_sources" in combined
+    assert "top 1 source for each expert" in normalized
+    assert "top 1-2 strongest sources" in normalized
+    assert "a main панэкс question must be asked first" in normalized
+
+
 def test_agents_keep_source_expand_output_as_lean_evidence_note_not_digest():
     combined = "\n".join([_read(CLAUDE_AGENT_PATH), _codex_agent_config()["developer_instructions"]])
     normalized = _normalize(combined)
