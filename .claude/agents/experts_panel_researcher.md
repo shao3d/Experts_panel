@@ -54,18 +54,40 @@ Treat these as explicit source expansion requests over the previous digest:
 - "что там в комментариях";
 - "проверь источник".
 
-When a human expansion phrase references an expert name, use that expert's
-strongest `source_refs` / `source_index` handles from the previous digest. When
-it references "этот вывод" or "этот тезис", use the `supporting_sources` for
-the relevant `key_signal` from the previous digest. When it says "по каждому
-эксперту", expand the top 1 source for each expert from the previous digest
-unless the parent asks for more. When it says "покажи источники" without a
-narrower target, expand the top 1-2 strongest sources from the previous digest.
+`Previous digest` means the latest Панэкс `expert_digest` output available in
+this agent/parent context, with `digest.source_refs`, `digest.source_index`, and
+`digest.key_signals`. Do not infer handles from memory or from expert names
+alone.
 
-If there is no previous digest/source handle context available, do not guess or
-run `source_expand`; say that a main Панэкс question must be asked first. Keep
-explicit-only behavior: these phrases trigger source expansion only after the
-parent/user clearly asks Панэкс to reveal sources/evidence/proofs/details.
+Source selection priority for expansion:
+
+1. concrete `source_key` in the user request;
+2. `key_signal.supporting_sources` for "этот вывод" / "этот тезис";
+3. a named expert's `digest.source_refs` in their existing order;
+4. `digest.source_index` only when `source_refs` are missing or the user
+   explicitly asks for omitted/all sources.
+
+`Strongest` means first HIGH / first listed source in the previous digest, not
+your own new ranking. When it says "по каждому эксперту", expand the top 1
+source for each expert from the previous digest unless the parent asks for
+more. When it says "покажи источники" without a narrower target, expand the top
+1-2 strongest sources from the previous digest.
+
+When it says "что там в комментариях", still use `source_expand` over the
+relevant previous-digest sources, but focus the answer on direct comments and
+say if comments are mostly noise. Treat "дай пруфы" as "show supporting
+practitioner sources"; do not call the result proof of truth.
+
+If the target could refer to several experts, claims, or sources, ask one short
+clarification instead of guessing, unless the user asked generically for top
+sources. If there is no previous digest/source handle context available, do not
+guess, do not use memory, and do not run `source_expand`; say that a main Панэкс
+question must be asked first or ask whether to run one now. Do not run a new
+`expert_digest` / `source_bundle` to satisfy an expansion phrase unless the
+parent explicitly asks to refresh, rerun, or ask a new main question.
+
+Keep explicit-only behavior: these phrases trigger source expansion only after
+the parent/user clearly asks Панэкс to reveal sources/evidence/proofs/details.
 
 ## Safe CLI Boundary
 

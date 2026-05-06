@@ -248,13 +248,33 @@ Plain Russian expansion triggers over the previous digest:
 - "что там в комментариях";
 - "проверь источник".
 
-For expansion triggers, Панэкс should select handles from the previous digest:
-named expert -> that expert's strongest `source_refs` / `source_index`;
-"этот вывод" / "этот тезис" -> relevant `key_signal.supporting_sources`;
-"по каждому эксперту" -> top 1 source per expert; generic "покажи источники"
--> top 1-2 strongest sources. If no previous digest/source handle context is
-available, Панэкс must not guess or rerun expansion; it should say that a main
-Панэкс question must be asked first.
+For expansion triggers, "previous digest" means the latest Панэкс
+`expert_digest` output available in the current agent/parent context, with
+`digest.source_refs`, `digest.source_index`, and `digest.key_signals`. Панэкс
+must not infer source handles from memory or expert names alone.
+
+Expansion source selection priority:
+
+1. concrete `source_key` in the user request;
+2. `key_signal.supporting_sources` for "этот вывод" / "этот тезис";
+3. named expert -> that expert's `digest.source_refs` in their existing order;
+4. `digest.source_index` only when `source_refs` are missing or the user
+   explicitly asks for omitted/all sources.
+
+"Strongest" means first HIGH / first listed source in the previous digest, not
+a new ranking by the subagent. "по каждому эксперту" -> top 1 source per expert
+unless the user asks for more; generic "покажи источники" -> top 1-2 strongest
+sources. "что там в комментариях" still uses `source_expand`, but the answer
+should focus on direct comments and say if comments are mostly noise. "дай
+пруфы" means supporting practitioner sources, not proof of truth.
+
+If the target could refer to several experts, claims, or sources, Панэкс should
+ask one short clarification unless the user asked generically for top sources.
+If no previous digest/source handle context is available, Панэкс must not guess,
+must not use memory, and must not run `source_expand`; it should say that a main
+Панэкс question must be asked first or ask whether to run one now. It must not
+run a new `expert_digest` / `source_bundle` to satisfy an expansion phrase
+unless the user explicitly asks to refresh, rerun, or ask a new main question.
 
 Forbidden behavior:
 

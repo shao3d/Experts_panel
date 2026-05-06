@@ -228,11 +228,23 @@ def test_agents_accept_human_russian_triggers_without_requiring_jargon():
         assert expansion_trigger in normalized
 
     assert "previous digest" in normalized
-    assert "strongest source_refs" in normalized
+    assert "latest панэкс expert_digest output available" in normalized
+    assert "do not infer handles from memory" in normalized
+    assert "source selection priority" in normalized
+    assert "concrete source_key" in normalized
+    assert "key_signal.supporting_sources" in combined
+    assert "digest.source_refs in their existing order" in normalized
+    assert "digest.source_index only when" in normalized
+    assert "first high / first listed source" in normalized
     assert "supporting_sources" in combined
     assert "top 1 source for each expert" in normalized
     assert "top 1-2 strongest sources" in normalized
+    assert "focus the answer on direct comments" in normalized
+    assert "supporting practitioner sources" in normalized
+    assert "proof of truth" in normalized
+    assert "ask one short clarification" in normalized
     assert "a main панэкс question must be asked first" in normalized
+    assert "do not run a new expert_digest/source_bundle" in normalized
 
 
 def test_agents_keep_source_expand_output_as_lean_evidence_note_not_digest():
