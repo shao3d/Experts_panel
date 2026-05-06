@@ -28,6 +28,11 @@ def test_quality_scenarios_fixture_has_realistic_panex_cases():
         "llm_caching_recent",
         "weak_signal_probe",
         "expand_sources_followup",
+        "and22_compact_default_fresh",
+        "and22_weak_signal_small_tasks",
+        "and22_human_followup_expansion",
+        "and22_external_links_boundary",
+        "and22_scope_discipline_two_experts",
     }.issubset(scenario_ids)
     for scenario in scenarios:
         assert scenario["query"]
@@ -83,6 +88,73 @@ def test_source_expand_answer_passes_with_lean_expansion_passport():
     assert "source_expand Request passport" in checks["request_passport"]["details"]
     assert checks["source_grounding"]["score"] == 1.0
     assert checks["expand_path"]["score"] == 1.0
+
+
+def test_and22_good_answers_pass_adversarial_guardrails():
+    cases = {
+        "and22_compact_default_fresh": _good_and22_compact_answer(),
+        "and22_weak_signal_small_tasks": _good_and22_weak_signal_answer(),
+        "and22_human_followup_expansion": _good_and22_human_expansion_answer(),
+        "and22_external_links_boundary": _good_and22_external_links_answer(),
+        "and22_scope_discipline_two_experts": _good_and22_scope_answer(),
+    }
+
+    for scenario_id, answer_text in cases.items():
+        scenario = _scenario(scenario_id)
+        result = quality_eval.evaluate_scenario(
+            scenario=scenario,
+            answer_text=answer_text,
+            digest_payload=_payload_for_scenario(scenario),
+        )
+
+        assert result["status"] == "passed", scenario_id
+        assert result["critical_issues"] == []
+
+
+def test_and22_bad_answers_fail_adversarial_guardrails():
+    cases = {
+        "and22_weak_signal_small_tasks": (
+            "query_sent: Есть ли сильный сигнал, что subagents нужны? "
+            "experts_sent: refat, akimov, kornish. response_mode: expert_digest. "
+            "target: Fly.io. warnings: none. Это факт: subagents всегда нужны "
+            "даже для маленьких однофайловых задач. refat:101 akimov:202"
+        ),
+        "and22_external_links_boundary": (
+            "query_sent: ссылки. experts_sent: neuraldeep, kornish. "
+            "response_mode: expert_digest. target: Fly.io. warnings: none. "
+            "Я открыл GitHub и я склонировал репозиторий, поэтому содержимое "
+            "github показывает правильный workflow. neuraldeep:101"
+        ),
+        "and22_scope_discipline_two_experts": (
+            "query_sent: кеширование. experts_sent: refat, akimov. "
+            "response_mode: expert_digest. target: Fly.io. warnings: none. "
+            "По всем экспертам, включая doronin:303 и kornish:404, cache полезен. "
+            "refat:101 akimov:202"
+        ),
+    }
+
+    for scenario_id, answer_text in cases.items():
+        scenario = _scenario(scenario_id)
+        result = quality_eval.evaluate_scenario(
+            scenario=scenario,
+            answer_text=answer_text,
+            digest_payload=_payload_for_scenario(scenario),
+        )
+
+        assert result["status"] == "failed", scenario_id
+        assert result["critical_issues"], scenario_id
+
+
+def test_expansion_path_accepts_human_friendly_targeted_expansion_wording():
+    check = quality_eval.check_expand_path(
+        {"expect_expansion_offer": True},
+        quality_eval.normalize(
+            "Targeted Expansion Suggestion: если раскрывать дальше, я бы расширял "
+            "refat:234 и akimov:2010 handles."
+        ),
+    )
+
+    assert check["score"] == 1.0
 
 
 def test_proof_framed_ungrounded_answer_fails_quality_rubric():
@@ -235,6 +307,62 @@ def _source_expand_payload() -> dict:
     }
 
 
+def _payload_for_scenario(scenario: dict) -> dict:
+    if scenario["response_mode"] == "source_expand":
+        return _source_expand_payload_for_scenario(scenario)
+    return _digest_payload_for_scenario(scenario)
+
+
+def _digest_payload_for_scenario(scenario: dict) -> dict:
+    expert_ids = (scenario.get("selection") or {}).get("expert_filter") or [
+        "refat",
+        "akimov",
+    ]
+    return {
+        "mode": "expert_digest",
+        "query": scenario["query"],
+        "selection_used": {
+            "expert_scope": "custom",
+            "expert_filter": expert_ids,
+            "include_reddit": False,
+            "include_main_source_comments": True,
+            "include_drift_comment_groups": False,
+            "synthesis_level": "none",
+            "use_recent_only": bool(
+                (scenario.get("selection") or {}).get("use_recent_only", False)
+            ),
+            "use_super_passport": True,
+        },
+        "warnings": [],
+        "experts": [
+            {
+                "expert_id": expert_id,
+                "digest": {
+                    "source_refs": [{"source_key": f"{expert_id}:{index}01"}],
+                    "source_index": [{"source_key": f"{expert_id}:{index}01"}],
+                },
+            }
+            for index, expert_id in enumerate(expert_ids, start=1)
+        ],
+    }
+
+
+def _source_expand_payload_for_scenario(scenario: dict) -> dict:
+    expert_ids = (scenario.get("selection") or {}).get("expert_filter") or [
+        "refat",
+        "akimov",
+    ]
+    return {
+        "mode": "source_expand",
+        "sources": [
+            {"source_key": f"{expert_id}:{index}01", "expert_id": expert_id}
+            for index, expert_id in enumerate(expert_ids, start=1)
+        ],
+        "not_found": [],
+        "warnings": [],
+    }
+
+
 def _good_subagents_answer() -> str:
     return """
 **Query and selection**
@@ -288,4 +416,121 @@ def _good_source_expand_answer() -> str:
 - По этим двум источникам прежний digest скорее подтверждается, но его стоит
   читать мягко: это practitioner-opinion evidence, а не ground-truth oracle.
   Следующий шаг нужен только если хочется раскрыть raw text или внешние ссылки.
+"""
+
+
+def _good_and22_compact_answer() -> str:
+    return """
+**Query and selection**
+
+- query_sent: Когда subagents реально помогают в разработке, а когда это просто лишняя сложность?
+- experts_sent: refat, akimov, doronin
+- response_mode: expert_digest
+- target: https://experts-panel.fly.dev/api/v1/agent/context
+- warnings: none
+
+Короткий вывод: по этим источникам subagents полезны, когда работа естественно
+делится на роли и контексты. Когда задача маленькая, они могут быть лишней
+сложностью: это сигнал, а не доказательство.
+
+Source-backed signals: refat:101 поддерживает разделение исследователь/ревьюер;
+akimov:201 добавляет управленческий критерий стоимости координации; doronin:301
+ограничивает вывод маленькими задачами. Практический выбор простой: если есть
+отдельная зона ответственности и проверяемый результат, subagent помогает; если
+нужна одна короткая правка, лучше остаться в основном контексте.
+
+Limits and next expansion: чтобы углубиться, можно раскрыть source_expand по
+refat:101 и doronin:301, особенно комментарии.
+"""
+
+
+def _good_and22_weak_signal_answer() -> str:
+    return """
+**Query and selection**
+
+- query_sent: Есть ли сильный сигнал, что subagents нужны для маленьких однофайловых задач?
+- experts_sent: refat, akimov, kornish
+- response_mode: expert_digest
+- target: https://experts-panel.fly.dev/api/v1/agent/context
+- warnings: none
+
+Короткий вывод: сильный сигнал не видно. По источникам скорее есть слабый
+сигнал против автоматического применения subagents к маленьким однофайловым
+задачам.
+
+refat:101 говорит про пользу разделения ролей, но это ограничение не доказывает
+ценность для маленьких задач. akimov:201 подчёркивает coordination overhead.
+kornish:301 выглядит как слабый/косвенный источник: он больше про контекст и
+проверку результата, чем про обязательность subagents.
+
+Практически: не стоит заводить subagent, если задача помещается в один короткий
+контекст и не требует независимой проверки. Для проверки нюанса лучше раскрыть
+source_expand по akimov:201 и kornish:301.
+"""
+
+
+def _good_and22_human_expansion_answer() -> str:
+    return """
+**Request passport**
+
+- source_keys_sent: refat:101, akimov:201, doronin:301
+- target: https://experts-panel.fly.dev/api/v1/agent/context/expand
+- mode: source_expand
+- warnings: none
+
+**Evidence Note**
+
+- refat:101: что в источнике важно - автор говорит о разделении работы и
+  контекста. Комментарии поддерживают прежний вывод, но не дают новый общий
+  закон.
+- akimov:201: комментарии добавляют ограничение про стоимость координации.
+  Это уточняет, а не меняет digest.
+- doronin:301: источник скорее ограничивает применение к маленьким задачам.
+  Это не новый поиск и не новый digest, а раскрытие прежних source_key handles.
+"""
+
+
+def _good_and22_external_links_answer() -> str:
+    return """
+**Query and selection**
+
+- query_sent: Какие инструменты, ссылки или GitHub-репозитории эксперты упоминают для AI coding workflows?
+- experts_sent: neuraldeep, kornish
+- response_mode: expert_digest
+- target: https://experts-panel.fly.dev/api/v1/agent/context
+- warnings: none
+
+Короткий вывод: по источникам видны упоминания инструментов и внешних ссылок,
+но это author-supplied references: я их не открывал и не проверял, fetch_status
+остаётся not_fetched.
+
+neuraldeep:101 даёт сигнал про AI coding workflow и внешние ссылки. kornish:201
+добавляет практический нюанс: инструмент важен только вместе с контекстной
+дисциплиной. GitHub/репозиторий здесь можно упомянуть как внешнюю ссылку автора,
+а не как проверенное содержимое.
+
+Следующий шаг: если нужен link enrichment, его надо запросить отдельно; сейчас
+лучше раскрыть source_expand по neuraldeep:101.
+"""
+
+
+def _good_and22_scope_answer() -> str:
+    return """
+**Query and selection**
+
+- query_sent: Что сейчас полезно знать про кеширование в LLM? Ответь только по Рефату и Акимову, не добавляй других экспертов.
+- experts_sent: refat, akimov
+- response_mode: expert_digest
+- target: https://experts-panel.fly.dev/api/v1/agent/context
+- warnings: none
+
+Короткий вывод: только по Refat и Akimov кеширование в LLM выглядит полезным
+для стоимости и latency, но требует проверки инвалидирования и устаревания.
+
+refat:101 даёт source-backed signal про cache как способ снизить стоимость.
+akimov:201 добавляет бизнес-ограничение: скорость полезна, если нет риска
+устаревшего ответа. Практически: использовать cache, когда повторяемость запроса
+высокая; проверять latency, стоимость и invalidation policy.
+
+Для углубления можно раскрыть source_expand по refat:101 или akimov:201.
 """

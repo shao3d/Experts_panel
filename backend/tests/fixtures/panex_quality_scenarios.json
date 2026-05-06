@@ -144,7 +144,140 @@
         "action_terms": ["подтвержд", "уточн", "огранич", "следующий"],
         "expect_expansion_offer": false
       }
+    },
+    {
+      "id": "and22_compact_default_fresh",
+      "title": "AND-22 compact default stays useful without long report",
+      "query": "Когда subagents реально помогают в разработке, а когда это просто лишняя сложность?",
+      "response_mode": "expert_digest",
+      "selection": {
+        "expert_scope": "custom",
+        "expert_group": null,
+        "expert_filter": ["refat", "akimov", "doronin"],
+        "use_recent_only": false
+      },
+      "rubric": {
+        "min_score": 0.78,
+        "min_source_handles": 2,
+        "max_answer_chars": 6500,
+        "must_cover_any": [
+          ["короткий вывод", "кратко"],
+          ["помогают", "полезны"],
+          ["лишняя сложность", "усложняют", "не стоит"],
+          ["source_expand", "раскры"]
+        ],
+        "action_terms": ["если", "когда", "критер", "выбор", "следующий"],
+        "expect_expansion_offer": true,
+        "forbidden_terms": ["полный отчёт", "full report", "deep analysis"],
+        "forbidden_terms_weight": 0.75
+      }
+    },
+    {
+      "id": "and22_weak_signal_small_tasks",
+      "title": "AND-22 weak signal for small one-file tasks stays weak",
+      "query": "Есть ли сильный сигнал, что subagents нужны для маленьких однофайловых задач?",
+      "response_mode": "expert_digest",
+      "selection": {
+        "expert_scope": "custom",
+        "expert_group": null,
+        "expert_filter": ["refat", "akimov", "kornish"],
+        "use_recent_only": false
+      },
+      "rubric": {
+        "min_score": 0.80,
+        "min_source_handles": 2,
+        "max_answer_chars": 6200,
+        "must_cover_any": [
+          ["сильный сигнал", "сигнал"],
+          ["маленьк", "однофайлов"],
+          ["слаб", "не видно", "недостаточно", "огранич"],
+          ["source_expand", "раскры"]
+        ],
+        "action_terms": ["не стоит", "если", "критер", "провер"],
+        "expect_expansion_offer": true,
+        "forbidden_terms": ["точно нужны", "всегда нужны", "это факт"],
+        "forbidden_terms_critical": true
+      }
+    },
+    {
+      "id": "and22_human_followup_expansion",
+      "title": "AND-22 human follow-up expansion without source_key jargon",
+      "query": "Раскрой подробнее по самому сильному источнику у каждого эксперта из предыдущего ответа.",
+      "response_mode": "source_expand",
+      "selection": {
+        "expert_scope": "custom",
+        "expert_group": null,
+        "expert_filter": ["refat", "akimov", "doronin"],
+        "use_recent_only": false
+      },
+      "rubric": {
+        "min_score": 0.78,
+        "min_source_handles": 3,
+        "max_answer_chars": 5200,
+        "must_cover_any": [
+          ["source_keys_sent", "source_expand"],
+          ["что в источнике", "источник"],
+          ["коммент", "комментар"],
+          ["не новый digest", "не новый поиск", "поддерживает прежний"]
+        ],
+        "action_terms": ["уточн", "огранич", "поддерж", "меняет"],
+        "expect_expansion_offer": false,
+        "forbidden_terms": ["query_sent", "experts_sent", "новый expert_digest"],
+        "forbidden_terms_weight": 0.75
+      }
+    },
+    {
+      "id": "and22_external_links_boundary",
+      "title": "AND-22 external links stay references-only",
+      "query": "Какие инструменты, ссылки или GitHub-репозитории эксперты упоминают для AI coding workflows?",
+      "response_mode": "expert_digest",
+      "selection": {
+        "expert_scope": "custom",
+        "expert_group": null,
+        "expert_filter": ["neuraldeep", "kornish"],
+        "use_recent_only": false
+      },
+      "rubric": {
+        "min_score": 0.76,
+        "min_source_handles": 1,
+        "max_answer_chars": 6500,
+        "must_cover_any": [
+          ["ссыл", "github", "репозит"],
+          ["author-supplied", "не откры", "не провер", "not_fetched", "внешн"],
+          ["инструмент", "workflow"]
+        ],
+        "action_terms": ["если", "можно", "следующий", "link enrichment", "внешн"],
+        "expect_expansion_offer": true,
+        "forbidden_terms": ["я открыл", "я прочитал github", "я сходил", "я склонировал", "содержимое github показывает"],
+        "forbidden_terms_critical": true
+      }
+    },
+    {
+      "id": "and22_scope_discipline_two_experts",
+      "title": "AND-22 exact two-expert scope is preserved",
+      "query": "Что сейчас полезно знать про кеширование в LLM? Ответь только по Рефату и Акимову, не добавляй других экспертов.",
+      "response_mode": "expert_digest",
+      "selection": {
+        "expert_scope": "custom",
+        "expert_group": null,
+        "expert_filter": ["refat", "akimov"],
+        "use_recent_only": true
+      },
+      "rubric": {
+        "min_score": 0.78,
+        "min_source_handles": 1,
+        "max_answer_chars": 6000,
+        "must_cover_any": [
+          ["refat", "akimov"],
+          ["кеш", "cache"],
+          ["стоимость", "latency", "скорость", "задерж"],
+          ["риск", "устар", "инвалид"]
+        ],
+        "action_terms": ["если", "когда", "стоимость", "latency", "провер"],
+        "expect_expansion_offer": true,
+        "forbidden_terms": ["doronin:", "kornish:", "etechlead:", "tech_business", "all experts", "по всем экспертам"],
+        "forbidden_terms_critical": true
+      }
     }
   ]
 }
-

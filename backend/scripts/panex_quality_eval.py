@@ -335,6 +335,7 @@ def build_checks(
         check_scope_fidelity(scenario, normalized),
         check_source_grounding(scenario, answer_text, digest_payload),
         check_signal_honesty(normalized),
+        check_forbidden_terms(rubric, normalized),
         check_required_coverage(rubric, normalized),
         check_actionability(rubric, normalized),
         check_brevity(rubric, answer_text),
@@ -478,6 +479,29 @@ def check_signal_honesty(normalized: str) -> dict[str, Any]:
     )
 
 
+def check_forbidden_terms(rubric: dict[str, Any], normalized: str) -> dict[str, Any]:
+    terms = rubric.get("forbidden_terms") or []
+    if not terms:
+        return make_check(
+            "forbidden_terms",
+            weight=0.5,
+            score=1.0,
+            details="No scenario-specific forbidden terms.",
+        )
+
+    matched = [term for term in terms if normalize(term) in normalized]
+    return make_check(
+        "forbidden_terms",
+        weight=float(rubric.get("forbidden_terms_weight", 1.0)),
+        score=0.0 if matched else 1.0,
+        details=(
+            "Matched forbidden terms: "
+            + (", ".join(matched) if matched else "none")
+        ),
+        critical=bool(matched and rubric.get("forbidden_terms_critical", False)),
+    )
+
+
 def check_required_coverage(rubric: dict[str, Any], normalized: str) -> dict[str, Any]:
     groups = rubric.get("must_cover_any") or []
     if not groups:
@@ -536,6 +560,10 @@ def check_expand_path(rubric: dict[str, Any], normalized: str) -> dict[str, Any]
         "раскрыть источник",
         "комментар",
         "углуб",
+        "targeted expansion",
+        "expansion suggestion",
+        "расшир",
+        "handles",
     ]
     hits = count_hits(normalized, terms)
     return make_check(

@@ -1,8 +1,8 @@
 # Agent Context API Spec
 
-**Status:** Accepted / AND-5..AND-21 implemented / forced embedding search implemented
+**Status:** Accepted / AND-5..AND-22 implemented / forced embedding search implemented
 **Decision:** `.haft/decisions/dec-20260504-b2539c3d.md`
-**Last updated:** 2026-05-06
+**Last updated:** 2026-05-07
 
 This spec defines the first agent-facing surface for Experts Panel: an explicit-only research/context API for Codex, Claude Code, and similar coding/research agents.
 
@@ -10,7 +10,7 @@ This spec defines the first agent-facing surface for Experts Panel: an explicit-
 
 ## 0. Implementation Status
 
-Current state as of 2026-05-06:
+Current state as of 2026-05-07:
 
 | Slice | Status | What it means |
 |-------|--------|---------------|
@@ -31,6 +31,7 @@ Current state as of 2026-05-06:
 | AND-19 evidence expansion by `source_key` | Done + deployed | `expert_digest` now includes compact `digest.source_index` handles for all selected sources, while `POST /api/v1/agent/context/expand` expands exact `source_key` handles such as `refat:234` into raw/capped post evidence, direct comments, external link metadata, truncation metadata, and `not_found` entries without rerunning search, Map, Resolve, Reduce, or digest. Панэкс instructions use `src.cli.agent_context_expand` when the user asks in plain Russian to reveal sources/proofs/details from a previous digest, or gives concrete handles, then report a lean Evidence Note rather than a second digest. |
 | AND-20 evidence quality calibration | Done + deployed | Agent Context now attaches lightweight `evidence_quality` calibration to raw `main_sources`, compact `digest.source_refs`, full `digest.source_index`, and exact `source_expand` results. Labels are deterministic over already selected source text, relevance, comments, and author-supplied external-link metadata; they do not add a new LLM call, do not fetch links, and must be presented by Панэкс as calibration rather than proof. Production Fly BDD passed on release `v364` for digest labels, source_bundle labels, comments-off labels, exact source expansion labels, bad input boundaries, and raw-free bounded digest output. |
 | AND-21 Панэкс product-quality eval scaffold | Done locally | Added a separate product-quality evaluation layer for final Панэкс answers, intentionally distinct from API contract tests. `docs/quality/panex-product-quality-rubric.md` defines the human-readable rubric; `backend/tests/fixtures/panex_quality_scenarios.json` defines golden scenarios; `backend/scripts/panex_quality_eval.py` scores a final answer against request fidelity, source grounding, signal honesty, coverage, actionability, brevity, expansion path, and external-link boundary checks. The first evaluator is deterministic guardrail + human-review support, not an oracle for answer quality. |
+| AND-22 Панэкс adversarial product dogfood | Done locally + production dogfood | Added five BDD-heavy product scenarios for compact default behavior, weak-signal honesty, human Russian source expansion follow-up, external-link boundary, and exact expert-scope discipline. Production Панэкс dogfood against Fly.io passed all five new scenarios; the full product-quality evaluator run passed `11` scenarios with `0` failures. |
 | Forced embedding search for Agent Context | Done | Agent Context always forces Embs&Keys hybrid retrieval: CLI sends `use_super_passport=true`, API records `selection_used.use_super_passport=true`, and service prepares one query embedding for all selected experts before bounded parallel expert processing. UI toggle state does not apply to subagent/API calls. |
 | FTS5 query sanitation hardening | Done | Production logs for the Панэкс query about `file-fist` showed AI Scout returning an invalid FTS5 query and then fallback producing unsafe terms such as `file-fist*`, which made the FTS5 side of hybrid retrieval fail with `no such column: fist` while vector retrieval still worked. `AIScoutService` fallback and `sanitize_fts5_query()` now normalize hyphens, punctuation, and unbalanced Scout quotes into safe OR-only FTS5 terms such as `file* OR fist*`. Fallback slang expansion also avoids treating short particles like Russian `а` as substring slang matches while preserving exact short tech terms such as `бд`, `c#`, `c++`, and `.net`. |
 | Production Fly exposure | Done for explicit smoke and default subagent target | `https://experts-panel.fly.dev/api/v1/agent/context` is callable with the separate production bearer token and large source-bundle budgets. The subagent must pass this Fly URL explicitly for real user research calls; localhost is only for explicit local smoke/debug. |
@@ -151,10 +152,13 @@ env AGENT_CONTEXT_PRODUCTION_LIVE=1 backend/.venv/bin/python -m pytest backend/t
 # final AND-20 production run: 9 passed in 534.89s
 
 backend/.venv/bin/python -m pytest backend/tests/test_panex_quality_eval.py -q -o addopts=''
-# AND-21 product-quality eval scaffold: 6 passed
+# AND-22 product-quality eval scaffold: 10 passed
 
 backend/.venv/bin/python -m pytest backend/tests/test_agent_context_api.py backend/tests/test_agent_context_acceptance.py backend/tests/test_agent_context_cli.py backend/tests/test_experts_panel_researcher_contract.py backend/tests/test_panex_quality_eval.py -q -o addopts=''
-# AND-21 targeted local contour: 67 passed, 2 warnings
+# AND-22 targeted local contour: 79 passed, 2 warnings
+
+backend/.venv/bin/python backend/scripts/panex_quality_eval.py --answers-dir backend/test_results/panex_quality_eval/answers --report-path backend/test_results/panex_quality_eval/latest.json
+# AND-22 product dogfood eval: 11 passed, 0 failed, 0 needs_answer
 
 cd backend && .venv/bin/python -m src.cli.agent_context_expand --api-url https://experts-panel.fly.dev/api/v1/agent/context/expand --source-keys refat:220 --max-content-chars 1200 --max-comments-per-source 3 --timeout 3600 --json
 # AND-19 production source_expand smoke after Fly deploy
@@ -1530,7 +1534,7 @@ Backend source-bundle MVP status:
 | subagent responses expose the actual request scope | Done: Панэкс instructions require a compact Request passport with `query_sent`, `experts_sent`, `response_mode`, `target`, and `warnings` at the start of `Query and selection` |
 | raw evidence remains available for audit/debug | Done: `response_mode=source_bundle` remains the CLI/API default outside the subagent contract and is explicitly reserved in Панэкс instructions for raw evidence, audit/debug, and source-bundle smoke verification |
 | production BDD checks cover the deployed `expert_digest` and `source_expand` contract | Done: `backend/tests/test_agent_context_production_expert_digest.py` passed against Fly.io with two-expert, three-expert, evidence_quality labels in digest/source_bundle/source_expand, bounded/raw-free digest output, comments-off labels, exact source expansion, realistic Панэкс query styles (casual typo, mixed RU/EN punctuation, multiline PM-style query, `tech_business` group scope, recent-only), capped multi-source expansion, unknown expert, unsupported response mode, invalid human source handle, and `video_hub` 501 scenarios. Latest production run: `16 passed in 1599.35s (0:26:39)`. |
-| product-quality checks cover final Панэкс answer shape | Done locally: `docs/quality/panex-product-quality-rubric.md`, `backend/tests/fixtures/panex_quality_scenarios.json`, `backend/scripts/panex_quality_eval.py`, and `backend/tests/test_panex_quality_eval.py` define and test a deterministic guardrail for final answers. It checks mode-aware Request passport, scope fidelity, source handles, signal honesty, coverage, actionability, brevity, expansion path, and external-link boundary while leaving final usefulness judgment to human review. |
+| product-quality checks cover final Панэкс answer shape | Done locally + production dogfood: `docs/quality/panex-product-quality-rubric.md`, `backend/tests/fixtures/panex_quality_scenarios.json`, `backend/scripts/panex_quality_eval.py`, and `backend/tests/test_panex_quality_eval.py` define and test a deterministic guardrail for final answers. It checks mode-aware Request passport, scope fidelity, source handles, signal honesty, scenario-specific forbidden terms, coverage, actionability, brevity, expansion path, and external-link boundary while leaving final usefulness judgment to human review. AND-22 production dogfood passed five adversarial user-style scenarios and the full evaluator passed `11` scenarios. |
 | FTS5 side of hybrid retrieval survives punctuation-heavy Scout/fallback queries | Done locally: `backend/tests/test_fts5_query_sanitization.py` covers `file-fist`, question-mark suffixes, and unbalanced Scout quotes; broad Agent Context/backend contour passed with `71 passed, 7 skipped` |
 | existing UI/SSE query endpoint is unchanged | Done by route-preservation/source-bundle isolation tests |
 

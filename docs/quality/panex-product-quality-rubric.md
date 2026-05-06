@@ -1,7 +1,7 @@
 # Panex Product Quality Rubric
 
-**Status:** AND-21 initial rubric
-**Last updated:** 2026-05-06
+**Status:** AND-22 adversarial BDD guardrail
+**Last updated:** 2026-05-07
 
 This rubric checks the product quality of the `Панэкс` / `experts_panel_researcher`
 answer after the Agent Context API has already returned `expert_digest` or
@@ -42,6 +42,22 @@ It must not frame practitioner opinions as proof.
 | Brevity | The answer is compact enough for the parent chat, not a raw digest dump. |
 | Expand path | When deeper audit is useful, the answer suggests a targeted source/comment expansion step. |
 | External boundary | External links are listed as author-supplied references only; Панэкс must not claim it opened/fetched/crawled them unless explicitly asked and actually did so. |
+
+## AND-22 Adversarial BDD Checks
+
+AND-22 adds product-behavior scenarios rather than backend API scenarios. They
+stress Панэкс as a user-facing research helper:
+
+- compact default answers for ordinary expert questions;
+- weak-signal honesty for small/single-file subagent questions;
+- human Russian follow-up expansion without requiring `source_key` jargon;
+- external-link boundary when sources mention GitHub/repos/tools;
+- exact expert-scope discipline when the user says "only these experts".
+
+The evaluator remains deterministic and non-oracular. It now supports
+scenario-specific `forbidden_terms` for obvious product failures such as
+silently broadening expert scope, claiming external fetches, or turning weak
+signals into strong facts.
 
 ## Compact Default
 
