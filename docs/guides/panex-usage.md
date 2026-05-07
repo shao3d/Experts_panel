@@ -108,6 +108,27 @@ panex read --path /path/to/response.json --source-key refat:238 --json
 Do not use `cat response.json` for large Панэкс artifacts; that can reintroduce
 tool-output truncation.
 
+## Routing From Other Repos
+
+When you ask in another repo:
+
+```text
+Панэкс, что думают эксперты про ...
+```
+
+the parent Codex should prefer the `experts_panel_researcher` subagent. Direct
+`panex` CLI from the parent chat is only a fallback when the subagent is
+unavailable or you explicitly ask for CLI. If fallback happens, it must still
+use artifact transport:
+
+```bash
+panex ask --query "..." --group tech_business --save --receipt-json
+panex read --path /path/to/response.json --manifest --json
+panex read --path /path/to/response.json --expert refat --json
+```
+
+This keeps the explicit-only boundary and avoids parent-chat stdout truncation.
+
 ## Expand Sources
 
 After an `expert_digest`, Панэкс can reveal selected sources without rerunning

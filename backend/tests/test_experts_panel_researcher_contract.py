@@ -115,6 +115,26 @@ def test_codex_agent_is_read_only_and_uses_safe_cli_boundary():
     assert "do not edit files" in normalized
 
 
+def test_agent_metadata_routes_panex_to_subagent_before_direct_cli():
+    claude_content = _read(CLAUDE_AGENT_PATH)
+    config = _codex_agent_config()
+    combined = "\n".join([claude_content, config["developer_instructions"]])
+    normalized = _normalize(combined)
+
+    assert "панэкс" in config["description"].lower()
+    assert "панэкс" in [candidate.lower() for candidate in config["nickname_candidates"]]
+    assert "панэнкс" in [candidate.lower() for candidate in config["nickname_candidates"]]
+    assert "панэкс" in claude_content.split("---", 2)[1].lower()
+    assert "parent routing contract" in normalized
+    assert "prefer experts_panel_researcher" in normalized
+    assert "over direct panex cli" in normalized
+    assert "direct cli is a fallback" in normalized
+    assert "--save --receipt-json" in combined
+    assert "panex read" in combined
+    assert "do not dump raw stdout" in normalized
+    assert "do not call panex automatically" in normalized
+
+
 def test_agents_use_artifact_transport_for_real_panex_calls():
     combined = "\n".join([_read(CLAUDE_AGENT_PATH), _codex_agent_config()["developer_instructions"]])
     normalized = _normalize(combined)
