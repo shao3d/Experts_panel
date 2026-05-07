@@ -150,14 +150,35 @@ unrelated project.
 Use only the Agent Context CLI/wrapper:
 
 ```text
-panex ask --query "<query>" [--experts refat,akimov | --group tech | --group tech_business | --all] [--response-mode expert_digest|source_bundle] [--recent] --json
+panex ask --query "<query>" [--experts refat,akimov | --group tech | --group tech_business | --all] [--response-mode expert_digest|source_bundle] [--recent] --save --receipt-json
 ```
 
 For explicit source expansion:
 
 ```text
-panex expand --source-keys refat:234,etechlead:139 --json
+panex expand --source-keys refat:234,etechlead:139 --save --receipt-json
 ```
+
+Artifact transport:
+
+- for real production `panex ask` / `panex expand` calls, always use
+  `--save --receipt-json`; do not rely on large raw stdout as the evidence
+  transport;
+- the receipt is small and includes `artifact_path`, `request_id`,
+  `response_bytes`, mode, warnings, and suggested `panex read` commands;
+- before final synthesis, read the saved artifact with `panex read`, using
+  `panex read --path <artifact_path> --manifest --json` and then
+  `panex read --path <artifact_path> --expert <expert_id> --json` for each
+  selected expert you need to synthesize;
+- for exact source details, use
+  `panex read --path <artifact_path> --source-key refat:234 --json` or a fresh
+  explicit `panex expand --source-keys ... --save --receipt-json` when the
+  parent asks for raw expansion;
+- never use `cat` on saved Panex artifacts; this can reintroduce tool-output
+  truncation;
+- write only Panex artifacts through `panex --save` into
+  `PANEX_ARTIFACT_DIR` or the system temp directory; you must not edit repo
+  files or other project state.
 
 Required behavior:
 
@@ -338,26 +359,26 @@ made.
 For user-facing dogfood, use Fly.io by default:
 
 ```text
-panex ask --query "<query>" --experts refat,akimov --json
+panex ask --query "<query>" --experts refat,akimov --save --receipt-json
 ```
 
 Raw/audit source-bundle shape, only when explicitly requested:
 
 ```text
-panex ask --query "<query>" --experts refat,akimov --response-mode source_bundle --json
+panex ask --query "<query>" --experts refat,akimov --response-mode source_bundle --save --receipt-json
 ```
 
 For explicit source expansion:
 
 ```text
-panex expand --source-keys refat:234 --json
+panex expand --source-keys refat:234 --save --receipt-json
 ```
 
 For live production smoke, use:
 
 ```text
 panex doctor
-panex ask --query "Когда стоит использовать subagents?" --experts refat,akimov --json --timeout 3600
+panex ask --query "Когда стоит использовать subagents?" --experts refat,akimov --save --receipt-json --timeout 3600
 ```
 
 ## Local-Only Dogfood Flow

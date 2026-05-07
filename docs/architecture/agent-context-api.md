@@ -35,6 +35,7 @@ Current state as of 2026-05-07:
 | AND-23 selector-based expansion UX | Done locally + production dogfood | Панэкс instructions now map human follow-up selectors such as "раскрой по Рефату", "этот вывод", "самый спорный источник", "что там в комментариях", and "слабые места" onto exact source handles from the previous `expert_digest`. Default expansion stays small: top 1 per named expert, top 1-2 generic strongest sources, and never all sources unless explicitly requested. Ambiguous selectors and missing previous digest context must ask one clarification or request a main Панэкс question first instead of guessing handles or running a new search. Production dogfood on Fly.io passed digest -> named-expert expansion (`refat:239`) and comments/weak-source expansion (`doronin:73`) without rerunning a new digest/source_bundle. |
 | AND-24 cross-repo Панэкс portable runner | Done locally + production dogfood | Added the global/user-level `panex` runner contract for calling Панэкс from any repo/cwd. `panex ask` defaults to production Fly.io and `response_mode=expert_digest`, ignores ambient local `AGENT_CONTEXT_API_URL` unless `--local` or `--api-url` is explicit, keeps `source_bundle` as opt-in raw/audit mode through `--response-mode source_bundle`, and `panex expand` targets production `source_expand` by default. `panex doctor` verifies setup without printing secrets; `scripts/install_panex_runner.sh` installs `~/.local/bin/panex` without storing the API token. Production dogfood from `/private/tmp` passed `panex ask` for `refat` and `panex expand refat:238` against Fly.io. |
 | Панэкс human help/usage | Done locally | Added `panex guide` / `panex help` as token-free human CLI help, plus agent help triggers such as "Панэкс, помощь", "что ты умеешь", and "как пользоваться Панэксом". Help requests must answer from instructions and must not call `panex ask`, `panex expand`, or the API. `docs/guides/panex-usage.md` is the human quick reference. |
+| AND-25 Panex artifact transport | Done locally | Real subagent calls now use artifact-first transport: `panex ask` and `panex expand` support `--save --receipt-json`, save the full API response outside the current repo under `PANEX_ARTIFACT_DIR` or system temp, and print only a compact receipt with `artifact_path`, `request_id`, `response_bytes`, warnings, and `panex read` commands. `panex read` returns manifest, per-expert, or per-source-key slices so the subagent does not rely on huge stdout; `panex cleanup` removes old artifacts by TTL. Existing non-save `--json` behavior remains available for manual/small calls. |
 | Forced embedding search for Agent Context | Done | Agent Context always forces Embs&Keys hybrid retrieval: CLI sends `use_super_passport=true`, API records `selection_used.use_super_passport=true`, and service prepares one query embedding for all selected experts before bounded parallel expert processing. UI toggle state does not apply to subagent/API calls. |
 | FTS5 query sanitation hardening | Done | Production logs for the Панэкс query about `file-fist` showed AI Scout returning an invalid FTS5 query and then fallback producing unsafe terms such as `file-fist*`, which made the FTS5 side of hybrid retrieval fail with `no such column: fist` while vector retrieval still worked. `AIScoutService` fallback and `sanitize_fts5_query()` now normalize hyphens, punctuation, and unbalanced Scout quotes into safe OR-only FTS5 terms such as `file* OR fist*`. Fallback slang expansion also avoids treating short particles like Russian `а` as substring slang matches while preserving exact short tech terms such as `бд`, `c#`, `c++`, and `.net`. |
 | Production Fly exposure | Done for explicit smoke and default subagent target | `https://experts-panel.fly.dev/api/v1/agent/context` is callable with the separate production bearer token and large source-bundle budgets. The global `panex` runner now pins Fly.io as the default real-request target for `ask` and `expand`; localhost is only for explicit `--local` smoke/debug. |
@@ -182,14 +183,55 @@ backend/.venv/bin/python -m pytest backend/tests/test_agent_context_api.py backe
 backend/.venv/bin/python -m pytest backend/tests/test_agent_context_cli.py backend/tests/test_experts_panel_researcher_contract.py backend/tests/test_experts_panel_researcher_dogfood.py -q -o addopts=''
 # Панэкс human help/usage contract: 48 passed
 
+backend/.venv/bin/python -m pytest backend/tests/test_agent_context_cli.py backend/tests/test_experts_panel_researcher_contract.py -q -o addopts=''
+# AND-25 artifact transport BDD/TDD targeted: 48 passed
+
+backend/.venv/bin/python -m pytest backend/tests/test_agent_context_cli.py backend/tests/test_experts_panel_researcher_contract.py backend/tests/test_experts_panel_researcher_dogfood.py -q -o addopts=''
+# AND-25 artifact transport contract/dogfood: 55 passed
+
 backend/.venv/bin/python -m pytest backend/tests/test_agent_context_api.py backend/tests/test_agent_context_acceptance.py backend/tests/test_agent_context_cli.py backend/tests/test_experts_panel_researcher_contract.py backend/tests/test_experts_panel_researcher_dogfood.py backend/tests/test_panex_quality_eval.py -q -o addopts=''
 # Панэкс human help/usage broad Agent Context/Panex contour: 91 passed, 2 warnings
+
+backend/.venv/bin/python -m pytest backend/tests/test_agent_context_api.py backend/tests/test_agent_context_acceptance.py backend/tests/test_agent_context_cli.py backend/tests/test_experts_panel_researcher_contract.py backend/tests/test_experts_panel_researcher_dogfood.py backend/tests/test_panex_quality_eval.py -q -o addopts=''
+# AND-25 artifact transport broad Agent Context/Panex contour: 98 passed, 2 warnings
 
 panex guide
 # prints human Панэкс usage guide without token or API call
 
 panex help
 # alias of panex guide; prints human Панэкс usage guide without token or API call
+
+panex ask --query "Когда subagents помогают?" --experts refat,akimov --save --receipt-json
+# writes full response.json outside the current repo and prints compact artifact receipt
+
+panex read --path <artifact_path> --manifest --json
+# reads saved artifact manifest without dumping full response
+
+panex read --path <artifact_path> --expert refat --json
+# reads one expert slice from saved artifact
+
+panex ask --query "AND-25 artifact transport smoke: когда subagents реально помогают?" --experts refat --recent --save --receipt-json --timeout 3600
+# AND-25 production artifact transport smoke against Fly.io
+# request_id: a22a9e6e-ced7-49fc-9179-a971d05d6001
+# mode: expert_digest
+# experts: refat
+# response_bytes: 19316
+# artifact_path: /var/folders/.../panex-artifacts/2026-05-07/.../response.json
+# warnings: ["agent_context_ai_scout_fallback_used"]
+
+panex read --path /var/folders/.../response.json --manifest --json
+# AND-25 saved artifact manifest read passed
+# mode: expert_digest
+# expert_count: 1
+# source_keys_count: 4
+
+panex read --path /var/folders/.../response.json --expert refat --json
+# AND-25 saved expert slice read passed
+# expert_id: refat
+# selected_sources_count: 2
+
+panex cleanup
+# deletes old Панэкс artifacts by TTL
 
 panex doctor
 # status: passed
@@ -255,11 +297,15 @@ CLI usage:
 ```text
 panex doctor
 panex guide
-panex ask --query "AI agents for sales" --experts refat,akimov --json
-panex ask --query "AI agents for sales" --group tech --json
-panex ask --query "AI agents for sales" --all --json
-panex ask --query "AI agents for sales" --experts refat,akimov --response-mode source_bundle --json
-panex expand --source-keys refat:234,etechlead:139 --json
+panex ask --query "AI agents for sales" --experts refat,akimov --save --receipt-json
+panex ask --query "AI agents for sales" --group tech --save --receipt-json
+panex ask --query "AI agents for sales" --all --save --receipt-json
+panex ask --query "AI agents for sales" --experts refat,akimov --response-mode source_bundle --save --receipt-json
+panex expand --source-keys refat:234,etechlead:139 --save --receipt-json
+panex read --path <artifact_path> --manifest --json
+panex read --path <artifact_path> --expert refat --json
+panex read --path <artifact_path> --source-key refat:234 --json
+panex cleanup
 ```
 
 Important boundary: Fly.io is now the default target for real subagent research
@@ -1304,8 +1350,8 @@ debugging, but the subagent must not rely on that default for real research
 calls. For day-to-day use from any repo, use the installed `panex` runner:
 
 ```text
-panex ask --query "<query>" --experts refat,akimov --json
-panex expand --source-keys refat:234 --json
+panex ask --query "<query>" --experts refat,akimov --save --receipt-json
+panex expand --source-keys refat:234 --save --receipt-json
 panex doctor
 ```
 
@@ -1313,7 +1359,7 @@ panex doctor
 Raw/audit source-bundle mode is still available, but must be explicit:
 
 ```text
-panex ask --query "<query>" --experts refat,akimov --response-mode source_bundle --json
+panex ask --query "<query>" --experts refat,akimov --response-mode source_bundle --save --receipt-json
 ```
 
 Wrapper responsibilities:
@@ -1326,6 +1372,7 @@ Wrapper responsibilities:
 - keep local development as an explicit smoke/debug mode only;
 - send `response_mode = expert_digest` by default;
 - reserve `response_mode = source_bundle` for explicit raw evidence/audit/debug requests;
+- use artifact-first transport through `--save --receipt-json` for real subagent calls, then read saved slices with `panex read` instead of dumping large stdout;
 - send `use_super_passport = true` and rely on the API to force it true even if a caller tries to disable it;
 - keep `include_reddit = false`, `include_main_source_comments = true`, `include_drift_comment_groups = false`, and `synthesis_level = none` unless explicitly overridden by the caller;
 - print `selection_used`, warnings, and source packet metadata.
@@ -1368,7 +1415,9 @@ requested:
 ```text
 explicit user request
   -> experts_panel_researcher
-  -> local CLI with --json
+  -> panex with --save --receipt-json
+  -> saved artifact + compact receipt
+  -> panex read slices
   -> expert_digest JSON by default
   -> compact Signals frame synthesis
 ```
@@ -1387,7 +1436,7 @@ backend/tests/fixtures/experts_panel_researcher_source_bundle_sample.json
 Real user-facing subagent smoke should use production Fly:
 
 ```text
-panex ask --query "AI agents for sales" --experts refat,akimov --json
+panex ask --query "AI agents for sales" --experts refat,akimov --save --receipt-json
 ```
 
 Manual local smoke, only when local backend and `AGENT_CONTEXT_API_TOKEN` are

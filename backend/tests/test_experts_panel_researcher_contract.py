@@ -115,6 +115,22 @@ def test_codex_agent_is_read_only_and_uses_safe_cli_boundary():
     assert "do not edit files" in normalized
 
 
+def test_agents_use_artifact_transport_for_real_panex_calls():
+    combined = "\n".join([_read(CLAUDE_AGENT_PATH), _codex_agent_config()["developer_instructions"]])
+    normalized = _normalize(combined)
+
+    assert "--save --receipt-json" in combined
+    assert "panex read" in combined
+    assert "never use cat" in normalized
+    assert "saved panex artifacts" in normalized
+    assert "before final synthesis" in normalized
+    assert "read the saved artifact" in normalized
+    assert "artifact_path" in combined
+    assert "response_bytes" in combined
+    assert "write only panex artifacts" in normalized
+    assert "must not edit repo files" in normalized
+
+
 def test_agents_require_explicit_triggers_and_expert_selection_clarification():
     combined = "\n".join([_read(CLAUDE_AGENT_PATH), _codex_agent_config()["developer_instructions"]])
     normalized = _normalize(combined)

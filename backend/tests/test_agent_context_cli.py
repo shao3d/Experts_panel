@@ -240,6 +240,68 @@ def _expert_digest_response():
     }
 
 
+def _large_expert_digest_response():
+    payload = _expert_digest_response()
+    payload["request_id"] = "req_large_digest"
+    payload["experts"] = [
+        {
+            **payload["experts"][0],
+            "expert_id": "refat",
+            "expert_name": "Refat",
+        },
+        {
+            **payload["experts"][0],
+            "expert_id": "akimov",
+            "expert_name": "Akimov",
+            "channel_username": "ai_product",
+            "digest": {
+                **payload["experts"][0]["digest"],
+                "position": "AI should be tied to a concrete product workflow.",
+                "key_signals": [
+                    {
+                        "claim": "AI helps when it is tied to a concrete workflow.",
+                        "support_level": "direct",
+                        "supporting_sources": ["akimov:201"],
+                        "comment_signal": None,
+                        "limits": None,
+                    }
+                ],
+                "source_refs": [
+                    {
+                        **payload["experts"][0]["digest"]["source_refs"][0],
+                        "telegram_message_id": 201,
+                        "source_key": "akimov:201",
+                        "short_excerpt": "Product workflow excerpt " * 800,
+                    }
+                ],
+                "source_index": [
+                    {
+                        **payload["experts"][0]["digest"]["source_index"][0],
+                        "telegram_message_id": 201,
+                        "source_key": "akimov:201",
+                    }
+                ],
+                "comments_digest": {
+                    **payload["experts"][0]["digest"]["comments_digest"],
+                    "included_comments": [
+                        {
+                            "source_key": "akimov:201",
+                            "comment_role": "author",
+                            "author_name": "Akimov",
+                            "short_excerpt": "Author clarification",
+                            "created_at": "2026-04-10T15:00:00",
+                        }
+                    ],
+                },
+            },
+        },
+    ]
+    payload["experts"][0]["digest"]["source_refs"][0]["short_excerpt"] = (
+        "Bounded subagent excerpt " * 800
+    )
+    return payload
+
+
 def _source_expand_response():
     return {
         "request_id": "req_expand",
@@ -441,6 +503,250 @@ def test_panex_ask_from_foreign_cwd_uses_fly_expert_digest_by_default(
     }
     assert "secret-token" not in captured.out
     assert "secret-token" not in captured.err
+
+
+def test_panex_ask_save_receipt_json_writes_full_artifact_without_stdout_dump(
+    monkeypatch,
+    capsys,
+    tmp_path,
+    clean_agent_context_env,
+):
+    artifact_dir = tmp_path / "artifacts"
+    payload = _large_expert_digest_response()
+    foreign_repo = tmp_path / "foreign_repo"
+    foreign_repo.mkdir()
+    monkeypatch.chdir(foreign_repo)
+    monkeypatch.setenv("AGENT_CONTEXT_API_TOKEN", "secret-token")
+    monkeypatch.setenv("PANEX_ARTIFACT_DIR", str(artifact_dir))
+    monkeypatch.setattr(
+        panex.requests,
+        "post",
+        lambda *args, **kwargs: FakeResponse(payload=payload),
+    )
+
+    exit_code = panex.main(
+        [
+            "ask",
+            "--query",
+            "When should we use subagents?",
+            "--experts",
+            "refat,akimov",
+            "--save",
+            "--receipt-json",
+        ],
+        load_env=False,
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    receipt = json.loads(captured.out)
+    assert receipt["kind"] == "panex_artifact"
+    assert receipt["operation"] == "ask"
+    assert receipt["request_id"] == "req_large_digest"
+    assert receipt["mode"] == "expert_digest"
+    assert receipt["artifact_path"].startswith(str(artifact_dir))
+    assert receipt["response_bytes"] > 1000
+    assert "Bounded subagent excerpt" not in captured.out
+    assert "secret-token" not in captured.out
+    assert "secret-token" not in captured.err
+
+    response_path = Path(receipt["artifact_path"])
+    receipt_path = Path(receipt["receipt_path"])
+    assert response_path.exists()
+    assert receipt_path.exists()
+    assert response_path.parent == receipt_path.parent
+    assert not response_path.is_relative_to(Path.cwd())
+    assert json.loads(response_path.read_text(encoding="utf-8")) == payload
+    assert "secret-token" not in response_path.read_text(encoding="utf-8")
+    assert json.loads(receipt_path.read_text(encoding="utf-8")) == receipt
+
+
+def test_panex_save_creates_unique_artifacts_for_repeated_calls(
+    monkeypatch,
+    capsys,
+    tmp_path,
+    clean_agent_context_env,
+):
+    artifact_dir = tmp_path / "artifacts"
+    monkeypatch.setenv("AGENT_CONTEXT_API_TOKEN", "secret-token")
+    monkeypatch.setenv("PANEX_ARTIFACT_DIR", str(artifact_dir))
+    calls = iter([
+        FakeResponse(payload={**_expert_digest_response(), "request_id": "req_one"}),
+        FakeResponse(payload={**_expert_digest_response(), "request_id": "req_two"}),
+    ])
+    monkeypatch.setattr(panex.requests, "post", lambda *args, **kwargs: next(calls))
+
+    for _ in range(2):
+        assert panex.main(
+            [
+                "ask",
+                "--query",
+                "When should we use subagents?",
+                "--experts",
+                "refat",
+                "--save",
+                "--receipt-json",
+            ],
+            load_env=False,
+        ) == 0
+
+    outputs = [json.loads(line) for line in capsys.readouterr().out.splitlines()]
+    assert outputs[0]["artifact_path"] != outputs[1]["artifact_path"]
+    assert Path(outputs[0]["artifact_path"]).exists()
+    assert Path(outputs[1]["artifact_path"]).exists()
+
+
+def test_panex_expand_save_receipt_json_writes_source_expand_artifact(
+    monkeypatch,
+    capsys,
+    tmp_path,
+    clean_agent_context_env,
+):
+    payload = _source_expand_response()
+    monkeypatch.setenv("AGENT_CONTEXT_API_TOKEN", "secret-token")
+    monkeypatch.setenv("PANEX_ARTIFACT_DIR", str(tmp_path / "artifacts"))
+    monkeypatch.setattr(
+        panex.requests,
+        "post",
+        lambda *args, **kwargs: FakeResponse(payload=payload),
+    )
+
+    exit_code = panex.main(
+        [
+            "expand",
+            "--source-keys",
+            "refat:101",
+            "--save",
+            "--receipt-json",
+        ],
+        load_env=False,
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    receipt = json.loads(captured.out)
+    assert receipt["operation"] == "expand"
+    assert receipt["mode"] == "source_expand"
+    assert receipt["source_keys"] == ["refat:101"]
+    assert json.loads(Path(receipt["artifact_path"]).read_text(encoding="utf-8")) == payload
+
+
+def test_panex_output_file_requires_overwrite_for_existing_file(
+    monkeypatch,
+    capsys,
+    tmp_path,
+    clean_agent_context_env,
+):
+    output_path = tmp_path / "panex_raw.json"
+    output_path.write_text("existing", encoding="utf-8")
+    monkeypatch.setenv("AGENT_CONTEXT_API_TOKEN", "secret-token")
+    monkeypatch.setattr(
+        panex.requests,
+        "post",
+        lambda *args, **kwargs: FakeResponse(payload=_expert_digest_response()),
+    )
+
+    exit_code = panex.main(
+        [
+            "ask",
+            "--query",
+            "When should we use subagents?",
+            "--experts",
+            "refat",
+            "--output",
+            str(output_path),
+        ],
+        load_env=False,
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 1
+    assert "already exists" in captured.err
+    assert output_path.read_text(encoding="utf-8") == "existing"
+
+    exit_code = panex.main(
+        [
+            "ask",
+            "--query",
+            "When should we use subagents?",
+            "--experts",
+            "refat",
+            "--output",
+            str(output_path),
+            "--overwrite",
+            "--receipt-json",
+        ],
+        load_env=False,
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    receipt = json.loads(captured.out)
+    assert receipt["artifact_path"] == str(output_path)
+    assert json.loads(output_path.read_text(encoding="utf-8")) == _expert_digest_response()
+
+
+def test_panex_read_manifest_expert_and_source_key_slices(
+    monkeypatch,
+    capsys,
+    tmp_path,
+    clean_agent_context_env,
+):
+    artifact_path = tmp_path / "response.json"
+    payload = _large_expert_digest_response()
+    artifact_path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+
+    assert panex.main(["read", "--path", str(artifact_path), "--manifest", "--json"], load_env=False) == 0
+    manifest = json.loads(capsys.readouterr().out)
+    assert manifest["request_id"] == "req_large_digest"
+    assert manifest["mode"] == "expert_digest"
+    assert manifest["experts"] == ["refat", "akimov"]
+    assert manifest["expert_count"] == 2
+    assert manifest["response_bytes"] == artifact_path.stat().st_size
+
+    assert panex.main(["read", "--path", str(artifact_path), "--expert", "akimov", "--json"], load_env=False) == 0
+    expert_slice = json.loads(capsys.readouterr().out)
+    assert expert_slice["expert_id"] == "akimov"
+    assert "refat" not in json.dumps(expert_slice, ensure_ascii=False)
+
+    assert panex.main(["read", "--path", str(artifact_path), "--source-key", "akimov:201", "--json"], load_env=False) == 0
+    source_slice = json.loads(capsys.readouterr().out)
+    assert source_slice["source_key"] == "akimov:201"
+
+
+def test_panex_cleanup_removes_only_old_artifacts(
+    monkeypatch,
+    capsys,
+    tmp_path,
+    clean_agent_context_env,
+):
+    artifact_dir = tmp_path / "artifacts"
+    old_dir = artifact_dir / "2026-04-01" / "old"
+    fresh_dir = artifact_dir / "2026-05-07" / "fresh"
+    tmp_dir = artifact_dir / "2026-04-01" / "writing.tmp"
+    lock_dir = artifact_dir / "2026-04-01" / "locked"
+    for directory in [old_dir, fresh_dir, tmp_dir, lock_dir]:
+        directory.mkdir(parents=True)
+        (directory / "response.json").write_text("{}", encoding="utf-8")
+    (lock_dir / ".lock").write_text("", encoding="utf-8")
+
+    old_timestamp = 1_700_000_000
+    os.utime(old_dir, (old_timestamp, old_timestamp))
+    os.utime(old_dir / "response.json", (old_timestamp, old_timestamp))
+    os.utime(tmp_dir, (old_timestamp, old_timestamp))
+    os.utime(lock_dir, (old_timestamp, old_timestamp))
+    monkeypatch.setenv("PANEX_ARTIFACT_DIR", str(artifact_dir))
+
+    exit_code = panex.main(["cleanup", "--ttl-days", "1", "--json"], load_env=False)
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    result = json.loads(captured.out)
+    assert result["deleted_count"] == 1
+    assert not old_dir.exists()
+    assert fresh_dir.exists()
+    assert tmp_dir.exists()
+    assert lock_dir.exists()
 
 
 @pytest.mark.parametrize("command", ["guide", "help"])

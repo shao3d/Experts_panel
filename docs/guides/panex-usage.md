@@ -17,6 +17,7 @@ Default behavior:
 - uses production Fly.io;
 - searches selected experts with forced hybrid/embedding retrieval;
 - returns `expert_digest`, not a giant raw bundle;
+- saves full real-call responses as local artifacts for subagent workflows;
 - includes direct comments under selected answer sources;
 - includes `source_key` handles for follow-up expansion;
 - keeps external links as author-supplied references;
@@ -45,6 +46,8 @@ panex help
 panex --help
 panex ask --help
 panex expand --help
+panex read --help
+panex cleanup --help
 ```
 
 `panex guide` and `panex help` are human-friendly and do not require
@@ -61,7 +64,7 @@ Ask concrete experts:
 Equivalent CLI shape:
 
 ```bash
-panex ask --query "Когда subagents реально помогают?" --experts refat,akimov --json
+panex ask --query "Когда subagents реально помогают?" --experts refat,akimov --save --receipt-json
 ```
 
 Ask a group:
@@ -71,14 +74,39 @@ Ask a group:
 ```
 
 ```bash
-panex ask --query "Что такое context rot?" --group tech_business --json
+panex ask --query "Что такое context rot?" --group tech_business --save --receipt-json
 ```
 
 Ask all supported experts:
 
 ```bash
-panex ask --query "Что думают про LLM caching?" --all --json
+panex ask --query "Что думают про LLM caching?" --all --save --receipt-json
 ```
+
+## Artifact Transport
+
+For real Codex/Claude subagent calls, use artifact-first transport:
+
+```bash
+panex ask --query "..." --group tech_business --save --receipt-json
+```
+
+This prevents large Панэкс responses from being truncated in tool output. The
+full API response is saved outside the current repo, under
+`PANEX_ARTIFACT_DIR` or the system temp directory. Stdout contains only a small
+receipt with `artifact_path`, `request_id`, `response_bytes`, warnings, and
+suggested `panex read` commands.
+
+Read saved results in slices:
+
+```bash
+panex read --path /path/to/response.json --manifest --json
+panex read --path /path/to/response.json --expert refat --json
+panex read --path /path/to/response.json --source-key refat:238 --json
+```
+
+Do not use `cat response.json` for large Панэкс artifacts; that can reintroduce
+tool-output truncation.
 
 ## Expand Sources
 
@@ -95,8 +123,8 @@ the full search:
 Equivalent CLI shape:
 
 ```bash
-panex expand --source-keys refat:238 --json
-panex expand --source-keys refat:238 --max-comments-per-source 3 --json
+panex expand --source-keys refat:238 --save --receipt-json
+panex expand --source-keys refat:238 --max-comments-per-source 3 --save --receipt-json
 ```
 
 `source_expand` is exact source lookup. It is not a new search, not a new
@@ -107,7 +135,7 @@ digest, and not a raw dump of every source.
 Use raw `source_bundle` only when explicitly needed for audit/debug:
 
 ```bash
-panex ask --query "..." --experts refat,akimov --response-mode source_bundle --json
+panex ask --query "..." --experts refat,akimov --response-mode source_bundle --save --receipt-json
 ```
 
 Default Панэкс answers should use `expert_digest`.
@@ -129,6 +157,15 @@ panex doctor --live
 `panex doctor` reports whether the token is configured, but does not print the
 token value.
 
+Clean up old local artifacts:
+
+```bash
+panex cleanup
+```
+
+Default retention is 7 days. Override it with `PANEX_ARTIFACT_TTL_DAYS` or
+`panex cleanup --ttl-days 14`.
+
 ## Boundaries
 
 - Панэкс must be invoked explicitly.
@@ -136,6 +173,8 @@ token value.
 - Панэкс should not be called automatically for every trends/software/architecture question.
 - Production calls go to `https://experts-panel.fly.dev`.
 - Localhost is used only through explicit `--local` or `--api-url`.
+- Saved artifacts live outside the current repo by default and may contain
+  project-sensitive queries/responses.
 - External links are not opened, crawled, cloned, or summarized by default.
 - Drift comment groups are not selected by default; current API only includes
   direct comments under selected `main_sources`.

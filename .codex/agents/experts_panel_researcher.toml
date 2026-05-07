@@ -53,12 +53,18 @@ Production target:
 Safe CLI boundary:
 - Use only the Agent Context CLI/wrapper.
 - Command shape for real production calls:
-  panex ask --query "<query>" [--experts refat,akimov | --group tech | --group tech_business | --all] [--response-mode expert_digest|source_bundle] [--recent] --json
+  panex ask --query "<query>" [--experts refat,akimov | --group tech | --group tech_business | --all] [--response-mode expert_digest|source_bundle] [--recent] --save --receipt-json
 - Use expert_digest through `panex ask` by default. This asks the Panel to reduce selected posts and main-source comments into compact per-expert digests before returning JSON.
 - Use source_bundle only when the parent explicitly asks for raw evidence, audit/debug output, or source-bundle smoke verification; pass `--response-mode source_bundle` explicitly.
 - Use `panex expand` only when the parent explicitly asks to reveal source/evidence details from a previous digest, either through human Russian phrases or concrete source_key handles, for example "раскрой подробнее по Рефату", "покажи источники по этому выводу", "дай пруфы", "что там в комментариях", "раскрой refat:234", or "show raw source etechlead:139".
 - Command shape for explicit source expansion:
-  panex expand --source-keys refat:234,etechlead:139 --json
+  panex expand --source-keys refat:234,etechlead:139 --save --receipt-json
+- Artifact transport for real production calls: always use --save --receipt-json for panex ask and panex expand; do not rely on large raw stdout as the evidence transport.
+- The receipt is small and includes artifact_path, request_id, response_bytes, mode, warnings, and suggested panex read commands.
+- Before final synthesis, read the saved artifact with panex read: first panex read --path <artifact_path> --manifest --json, then panex read --path <artifact_path> --expert <expert_id> --json for each selected expert you need to synthesize.
+- For exact source details, use panex read --path <artifact_path> --source-key refat:234 --json or a fresh explicit panex expand --source-keys ... --save --receipt-json when the parent asks for raw expansion.
+- Never use cat on saved Panex artifacts; this can reintroduce tool-output truncation.
+- Write only Panex artifacts through panex --save into PANEX_ARTIFACT_DIR or the system temp directory; you must not edit repo files or other project state.
 - source_expand is a lookup step over source keys from digest.source_refs or digest.source_index; it is not a new expert_digest query and not a new source_bundle query.
 - Read the production AGENT_CONTEXT_API_TOKEN from environment through the CLI only.
 - Do not store, print, or infer token values.
@@ -156,14 +162,14 @@ Source expansion output:
 Production dogfood flow:
 - Use Fly.io by default for user-facing dogfood.
 - Command shape:
-  panex ask --query "<query>" --experts refat,akimov --json
+  panex ask --query "<query>" --experts refat,akimov --save --receipt-json
 - Raw/audit source-bundle shape, only when explicitly requested:
-  panex ask --query "<query>" --experts refat,akimov --response-mode source_bundle --json
+  panex ask --query "<query>" --experts refat,akimov --response-mode source_bundle --save --receipt-json
 - Explicit source expansion command shape:
-  panex expand --source-keys refat:234 --json
+  panex expand --source-keys refat:234 --save --receipt-json
 - For live production smoke, use:
   panex doctor
-  panex ask --query "Когда стоит использовать subagents?" --experts refat,akimov --json --timeout 3600
+  panex ask --query "Когда стоит использовать subagents?" --experts refat,akimov --save --receipt-json --timeout 3600
 
 Local-only dogfood flow:
 - Use local backend only when the parent explicitly asks for local smoke/debug.
