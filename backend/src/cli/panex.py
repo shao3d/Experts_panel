@@ -44,6 +44,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
+    subparsers.add_parser(
+        "guide",
+        aliases=["help"],
+        help="Print a human-friendly Панэкс usage guide without API calls.",
+    )
+
     ask = subparsers.add_parser(
         "ask",
         help="Ask Experts Panel through production expert_digest by default.",
@@ -255,6 +261,9 @@ def main(argv: list[str] | None = None, *, load_env: bool = True) -> int:
 
     args = parse_args(argv)
     try:
+        if args.command in {"guide", "help"}:
+            _print_guide()
+            return 0
         if args.command == "ask":
             payload = call_ask_api(args)
             if args.json:
@@ -393,6 +402,62 @@ def _print_doctor(result: dict[str, Any]) -> None:
             print(f"  - {warning}")
     else:
         print("  - none")
+
+
+def _print_guide() -> None:
+    print(
+        """Panex guide
+
+Что это:
+  Панэкс - явный помощник для запросов к Experts Panel на Fly.io.
+  Он приносит practitioner-opinion signals из постов экспертов, direct comments
+  под выбранными источниками, source_key handles и evidence_quality calibration.
+
+Главное правило:
+  Панэкс не запускается автоматически. Используй явный запрос:
+    "Спроси Панэкс ..."
+    "Панэкс, узнай ..."
+    "Вызови experts_panel_researcher ..."
+
+Обычный поиск:
+  panex ask --query "Когда использовать subagents?" --experts refat,akimov --json
+  panex ask --query "Что такое context rot?" --group tech_business --json
+  panex ask --query "Что думают про LLM caching?" --all --json
+
+Выбор экспертов:
+  --experts refat,akimov       конкретные expert_id
+  --group tech                 группа tech
+  --group tech_business        группа Tech & Business
+  --all                        все поддерживаемые эксперты
+
+Режимы ответа:
+  expert_digest                default: компактный digest для parent chat
+  source_bundle                raw/audit режим, только явно:
+    panex ask --query "..." --experts refat --response-mode source_bundle --json
+
+Раскрытие источников после digest:
+  panex expand --source-keys refat:238 --json
+  panex expand --source-keys refat:238 --max-comments-per-source 3 --json
+
+Человеческие follow-up фразы:
+  "раскрой по Рефату"
+  "покажи источники"
+  "дай пруфы"
+  "что там в комментариях?"
+  "самый спорный источник"
+
+Диагностика:
+  panex doctor
+  panex doctor --live
+
+Границы:
+  - production default: https://experts-panel.fly.dev
+  - localhost только явно через --local или --api-url
+  - external links не открываются и не суммаризируются автоматически
+  - drift comment groups не выбираются в agent API default
+  - token нужен для live calls, но не печатается и не хранится в shim
+"""
+    )
 
 
 if __name__ == "__main__":

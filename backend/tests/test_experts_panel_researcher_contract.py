@@ -140,6 +140,29 @@ def test_agents_require_explicit_triggers_and_expert_selection_clarification():
     assert "ask one clarification" in normalized
 
 
+def test_agents_answer_help_requests_without_api_calls():
+    combined = "\n".join([_read(CLAUDE_AGENT_PATH), _codex_agent_config()["developer_instructions"]])
+    normalized = _normalize(combined)
+
+    for phrase in [
+        "панэкс, помощь",
+        "панэкс, что ты умеешь",
+        "как пользоваться панэксом",
+        "покажи примеры панэкса",
+        "как искать через панэкс",
+    ]:
+        assert phrase in normalized
+
+    assert "do not call panex ask" in normalized
+    assert "panex expand" in normalized
+    assert "or any api" in normalized
+    assert "panex guide" in normalized
+    assert "explicit-only boundary" in normalized
+    assert "source_bundle as explicit raw/audit" in normalized
+    assert "external links as references-only" in normalized
+    assert "drift comment groups not selected by default" in normalized
+
+
 def test_agents_normalize_human_expert_names_but_ask_on_ambiguity():
     combined = "\n".join([_read(CLAUDE_AGENT_PATH), _codex_agent_config()["developer_instructions"]])
     normalized = _normalize(combined)

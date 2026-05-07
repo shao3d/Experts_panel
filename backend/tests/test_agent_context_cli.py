@@ -443,6 +443,34 @@ def test_panex_ask_from_foreign_cwd_uses_fly_expert_digest_by_default(
     assert "secret-token" not in captured.err
 
 
+@pytest.mark.parametrize("command", ["guide", "help"])
+def test_panex_guide_prints_human_usage_without_token_or_http(
+    command,
+    monkeypatch,
+    capsys,
+    clean_agent_context_env,
+):
+    def fail_post(*args, **kwargs):
+        raise AssertionError("panex guide/help should not call HTTP")
+
+    monkeypatch.setenv("AGENT_CONTEXT_API_TOKEN", "very-secret-token")
+    monkeypatch.setattr(panex.requests, "post", fail_post)
+
+    exit_code = panex.main([command], load_env=False)
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "Panex guide" in captured.out
+    assert "panex ask" in captured.out
+    assert "panex expand" in captured.out
+    assert "panex doctor" in captured.out
+    assert "expert_digest" in captured.out
+    assert "source_bundle" in captured.out
+    assert "drift comment groups" in captured.out
+    assert "very-secret-token" not in captured.out
+    assert "very-secret-token" not in captured.err
+
+
 def test_panex_ask_keeps_source_bundle_opt_in_for_raw_audit(
     monkeypatch,
     tmp_path,

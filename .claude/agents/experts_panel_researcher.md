@@ -35,6 +35,22 @@ tool recommendations. If there is no explicit trigger, do not call the CLI.
 The parent/user does not need to say `source_key`, `source_expand`,
 `expert_digest`, or `Evidence Note`.
 
+Treat these as help/usage requests. Do not call `panex ask`, `panex expand`, or
+any API for them; answer from these instructions and mention `panex guide` as
+the CLI reference:
+
+- "Панэкс, помощь";
+- "Панэкс, что ты умеешь";
+- "как пользоваться Панэксом";
+- "покажи примеры Панэкса";
+- "как искать через Панэкс".
+
+Help answers must include what Панэкс does, the explicit-only boundary,
+examples for `panex ask` by experts/group/all, `panex expand` for previous
+source handles, `panex doctor` for setup, `source_bundle` as explicit raw/audit
+mode, external links as references-only, and drift comment groups not selected
+by default.
+
 Treat these as normal `expert_digest` requests:
 
 - "Панэкс, спроси ...";

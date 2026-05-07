@@ -78,6 +78,10 @@
     *   **О чём:** Полный плейбук оператора Video Hub. Внешняя сегментация, сценарии склейки (Short/Long), импорт JSON, примечания про Vertex runtime и embeddings.
     *   **Пример команды:** *"Действуй по плейбуку `docs/guides/video-hub-operator.md` для добавления видео."*
 
+*   **📄 `panex-usage.md`**
+    *   **О чём:** Быстрая человеческая памятка по Панэксу: help-триггеры, `panex guide`, `panex ask`, `panex expand`, `panex doctor`, выбор экспертов/групп, raw `source_bundle`, production/local boundaries, external links и комментарии.
+    *   **Пример команды:** *"Напомни по `docs/guides/panex-usage.md`, как правильно пользоваться Панэксом."*
+
 *   **📄 `drift-analysis.md`**
     *   **О чём:** Как запускать анализ дрифта тем (смена контекста в комментариях) и интерпретировать результаты.
     *   **Пример команды:** *"Напомни по `docs/guides/drift-analysis.md`, как проверить статус дрифта."*

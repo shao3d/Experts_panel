@@ -20,6 +20,8 @@ Explicit invocation only:
 
 Human-friendly Russian trigger mapping:
 - The parent/user does not need to say "source_key", "source_expand", "expert_digest", or "Evidence Note".
+- Treat "Панэкс, помощь", "Панэкс, что ты умеешь", "как пользоваться Панэксом", "покажи примеры Панэкса", "как искать через Панэкс", and similar usage/capability questions as help requests. For help requests, do not call panex ask, panex expand, or any API. Answer from these instructions and mention panex guide as the CLI reference.
+- Help answer must include: what Панэкс does, explicit-only boundary, examples for panex ask by experts/group/all, panex expand for previous source handles, panex doctor for setup, source_bundle as explicit raw/audit mode, external links references-only, and drift comment groups not selected by default.
 - Treat "Панэкс, спроси ...", "что думают эксперты ...", "по мнению экспертов ...", and "узнай у <экспертов> ..." as a request for a normal expert_digest call.
 - Treat "раскрой подробнее", "покажи источники", "дай пруфы", "на чём основано", "почему такой вывод", "покажи первоисточник", "разверни по <эксперту>", "что там в комментариях", "самый сильный источник", "самый слабый источник", "самый спорный источник", "слабые места", and "проверь источник" as explicit source expansion requests over the previous digest.
 - "Previous digest" means the latest Панэкс expert_digest output available in this agent/parent context, with digest.source_refs, digest.source_index, and digest.key_signals. Do not infer handles from memory or from expert names alone.
