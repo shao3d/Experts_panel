@@ -122,8 +122,12 @@ def test_agent_metadata_routes_panex_to_subagent_before_direct_cli():
     normalized = _normalize(combined)
 
     assert "панэкс" in config["description"].lower()
-    assert "панэкс" in [candidate.lower() for candidate in config["nickname_candidates"]]
-    assert "панэнкс" in [candidate.lower() for candidate in config["nickname_candidates"]]
+    assert "panex" in [candidate.lower() for candidate in config["nickname_candidates"]]
+    assert "panenx" in [candidate.lower() for candidate in config["nickname_candidates"]]
+    assert all(
+        re.fullmatch(r"[A-Za-z0-9 _-]+", candidate)
+        for candidate in config["nickname_candidates"]
+    )
     assert "панэкс" in claude_content.split("---", 2)[1].lower()
     assert "parent routing contract" in normalized
     assert "prefer experts_panel_researcher" in normalized
