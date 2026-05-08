@@ -882,6 +882,15 @@ def test_agent_context_expert_digest_compacts_sources_and_comments(monkeypatch):
         "community_comments": 1,
         "external_links": 1,
     }
+    assert digest["limits_used"] == {
+        "max_source_refs": 1,
+        "max_source_chars": 40,
+        "max_comments_per_source": 1,
+        "max_comment_chars": 30,
+        "max_links_per_source": 1,
+        "max_signals": 2,
+        "source_index_scope": "all_selected_sources_compact",
+    }
     assert digest["key_signals"][0]["supporting_sources"] == ["refat:101"]
     assert observed["llm_evidence"]["source_refs"][0]["source_key"] == "refat:101"
     assert observed["llm_evidence"]["source_refs"][0]["evidence_quality"]["comment_signal"] == "mixed"
@@ -1017,6 +1026,12 @@ def test_agent_context_expand_returns_raw_source_without_search_pipeline(monkeyp
     assert response.status_code == 200, response.text
     payload = response.json()
     assert payload["mode"] == "source_expand"
+    assert payload["limits_used"] == {
+        "include_comments": True,
+        "include_external_links": True,
+        "max_content_chars": 48,
+        "max_comments_per_source": 2,
+    }
     assert payload["not_found"] == []
     assert payload["warnings"] == []
     assert observed["comment_source_ids"] == [101]

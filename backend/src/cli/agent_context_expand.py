@@ -153,6 +153,17 @@ def print_summary(payload: dict[str, Any]) -> None:
         print("  - none")
 
     sources = payload.get("sources") or []
+    limits_used = payload.get("limits_used") or {}
+    if limits_used:
+        print(
+            "limits_used: "
+            f"content_chars<={limits_used.get('max_content_chars', 0)}; "
+            f"comments/source<={limits_used.get('max_comments_per_source', 0)}; "
+            f"include_comments={str(limits_used.get('include_comments', False)).lower()}; "
+            f"include_external_links="
+            f"{str(limits_used.get('include_external_links', False)).lower()}"
+        )
+
     print("sources:")
     if not sources:
         print("  - none")

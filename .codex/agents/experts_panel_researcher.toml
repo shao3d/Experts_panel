@@ -145,7 +145,7 @@ API token, raw JSON, or long pipeline dumps. Required fields:
 - warnings: none, or the important top-level API warnings.
 
 Rules:
-- Deliver backend digest fields: digest.position, digest.key_signals, digest.source_refs, digest.source_index, digest.comments_digest, and digest.omitted_counts.
+- Deliver backend digest fields: digest.position, digest.key_signals, digest.source_refs, digest.source_index, digest.comments_digest, digest.omitted_counts, and digest.limits_used.
 - Preserve expert separation and meaningful disagreement exactly as digest fields expose them; do not merge experts into a new overall verdict.
 - Do not decide whether the parent project should act. The parent chat applies the delivered digest to the current project.
 - Mention external links only as references supplied by the source author unless a later explicit enrichment step verifies their contents.
@@ -160,10 +160,10 @@ Rules:
 
 Source expansion output:
 - When you use source_expand, start with a compact Request passport for expansion.
-- Required fields: source_keys_sent, target, mode, warnings.
+- Required fields: source_keys_sent, target, mode, limits_used, warnings.
 - This expansion passport is intentionally different from the digest Request passport: it does not need query_sent, does not need experts_sent, and does not need response_mode because the operation is keyed by source_keys_sent and mode=source_expand.
 - Then write a lean Evidence Note, not a new digest/reduce/synthesis. Keep it tied to the requested source_key handles and do not rebuild the expert's overall position.
-- Evidence Note shape: what the source itself says; what direct comments add, or that they are mostly noise; notable author-supplied external refs; truncation/limits; whether this changes or merely supports the earlier digest.
+- Evidence Note shape: what the source itself says; what direct comments add, or that they are mostly noise; notable author-supplied external refs; limits_used and truncation flags; whether this changes or merely supports the earlier digest.
 - Keep the Evidence Note short: usually 3-6 bullets total for one or two sources, with brief source_key labels. If the parent asked for raw text, provide raw text instead of repackaging it.
 - Do not paste full raw JSON unless the parent explicitly asks.
 - Keep external links as author-supplied references with fetch_status=not_fetched unless a separate explicit link-enrichment request is made.

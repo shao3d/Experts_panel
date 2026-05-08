@@ -284,6 +284,18 @@ class AgentDigestOmittedCounts(BaseModel):
     external_links: int = 0
 
 
+class AgentDigestLimitsUsed(BaseModel):
+    """Compaction limits applied while building one expert digest."""
+
+    max_source_refs: int = 0
+    max_source_chars: int = 0
+    max_comments_per_source: int = 0
+    max_comment_chars: int = 0
+    max_links_per_source: int = 0
+    max_signals: int = 0
+    source_index_scope: str = "all_selected_sources_compact"
+
+
 class AgentExpertDigest(BaseModel):
     """Panel-side compact digest for one expert."""
 
@@ -293,6 +305,7 @@ class AgentExpertDigest(BaseModel):
     source_index: List[AgentDigestSourceIndexEntry] = Field(default_factory=list)
     comments_digest: AgentDigestComments = Field(default_factory=AgentDigestComments)
     omitted_counts: AgentDigestOmittedCounts = Field(default_factory=AgentDigestOmittedCounts)
+    limits_used: AgentDigestLimitsUsed = Field(default_factory=AgentDigestLimitsUsed)
     limits: List[str] = Field(default_factory=list)
     no_signal_reason: Optional[str] = None
 
@@ -335,6 +348,15 @@ class AgentSourceExpandRequest(BaseModel):
     max_comments_per_source: int = Field(default=50, ge=0, le=500)
 
 
+class AgentSourceExpandLimitsUsed(BaseModel):
+    """Limits applied to one exact source expansion request."""
+
+    include_comments: bool = True
+    include_external_links: bool = True
+    max_content_chars: int = 20000
+    max_comments_per_source: int = 50
+
+
 class AgentSourceExpandTruncation(BaseModel):
     """Truncation metadata for one expanded source."""
 
@@ -366,6 +388,9 @@ class AgentSourceExpandResponse(BaseModel):
 
     request_id: str
     mode: str = "source_expand"
+    limits_used: AgentSourceExpandLimitsUsed = Field(
+        default_factory=AgentSourceExpandLimitsUsed
+    )
     sources: List[AgentExpandedSource] = Field(default_factory=list)
     not_found: List[str] = Field(default_factory=list)
     warnings: List[str] = Field(default_factory=list)

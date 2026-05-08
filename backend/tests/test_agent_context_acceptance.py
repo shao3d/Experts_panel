@@ -552,6 +552,12 @@ def test_acceptance_expand_flow_reveals_source_key_without_new_digest_query(
     assert observed["comment_source_ids"] == [101]
     payload = _raw_payload(result)
     assert payload["mode"] == "source_expand"
+    assert payload["limits_used"] == {
+        "include_comments": True,
+        "include_external_links": True,
+        "max_content_chars": 20000,
+        "max_comments_per_source": 50,
+    }
     assert payload["sources"][0]["source_key"] == "refat:101"
     assert payload["sources"][0]["evidence_quality"]["comment_signal"] == "author_support"
     assert payload["sources"][0]["comments"]["author_comments"][0]["comment_text"] == (

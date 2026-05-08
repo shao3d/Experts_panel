@@ -226,6 +226,15 @@ def _expert_digest_response():
                         "community_comments": 1,
                         "external_links": 0,
                     },
+                    "limits_used": {
+                        "max_source_refs": 8,
+                        "max_source_chars": 900,
+                        "max_comments_per_source": 3,
+                        "max_comment_chars": 360,
+                        "max_links_per_source": 5,
+                        "max_signals": 5,
+                        "source_index_scope": "all_selected_sources_compact",
+                    },
                     "limits": ["Compact digest"],
                     "no_signal_reason": None,
                 },
@@ -302,10 +311,17 @@ def _large_expert_digest_response():
     return payload
 
 
-def _source_expand_response():
+def _source_expand_response(limits_used=None):
     return {
         "request_id": "req_expand",
         "mode": "source_expand",
+        "limits_used": limits_used
+        or {
+            "include_comments": True,
+            "include_external_links": True,
+            "max_content_chars": 20000,
+            "max_comments_per_source": 50,
+        },
         "sources": [
             {
                 "source_key": "refat:101",
@@ -350,6 +366,15 @@ def _source_expand_response():
         "not_found": [],
         "warnings": [],
         "processing_time_ms": 12,
+    }
+
+
+def _source_expand_limits_from_request(request_payload):
+    return {
+        "include_comments": request_payload["include_comments"],
+        "include_external_links": request_payload["include_external_links"],
+        "max_content_chars": request_payload["max_content_chars"],
+        "max_comments_per_source": request_payload["max_comments_per_source"],
     }
 
 
@@ -850,7 +875,11 @@ def test_panex_expand_from_foreign_cwd_uses_fly_expand_by_default(
                 "timeout": timeout,
             }
         )
-        return FakeResponse(payload=_source_expand_response())
+        return FakeResponse(
+            payload=_source_expand_response(
+                limits_used=_source_expand_limits_from_request(json)
+            )
+        )
 
     monkeypatch.setattr(panex.requests, "post", fake_post)
 
@@ -1001,6 +1030,11 @@ def test_cli_sends_expert_digest_payload_when_requested(
     assert "position: Use subagents for explicit bounded research." in captured.out
     assert "source_refs: 1" in captured.out
     assert "source_index: 2" in captured.out
+    assert (
+        "limits_used: source_refs<=8; source_chars<=900; comments/source<=3; "
+        "comment_chars<=360; links/source<=5; signals<=5; "
+        "source_index=all_selected_sources_compact"
+    ) in captured.out
     assert "refat:101 [HIGH] Direct match" in captured.out
     assert "quality: deep_practical/practitioner_experience; comments=mixed; confidence=high" in captured.out
     assert "[direct] Subagents help when the task has a clear scope." in captured.out
@@ -1020,7 +1054,11 @@ def test_expand_cli_sends_source_keys_payload(monkeypatch, capsys, clean_agent_c
                 "timeout": timeout,
             }
         )
-        return FakeResponse(payload=_source_expand_response())
+        return FakeResponse(
+            payload=_source_expand_response(
+                limits_used=_source_expand_limits_from_request(json)
+            )
+        )
 
     monkeypatch.setenv("AGENT_CONTEXT_API_TOKEN", "token")
     monkeypatch.setattr(agent_context_expand.requests, "post", fake_post)
@@ -1050,6 +1088,10 @@ def test_expand_cli_sends_source_keys_payload(monkeypatch, capsys, clean_agent_c
     assert "Agent Context source_expand" in captured.out
     assert "refat:101 (@nobilix)" in captured.out
     assert "quality: moderate/analysis; comments=mixed; confidence=medium" in captured.out
+    assert (
+        "limits_used: content_chars<=1234; comments/source<=7; "
+        "include_comments=true; include_external_links=true"
+    ) in captured.out
     assert "comments: author=1 community=1" in captured.out
     assert "external_links=1" in captured.out
 

@@ -18,6 +18,7 @@ from ..api.models import (
     AgentContextResponse,
     AgentDigestCommentSignal,
     AgentDigestComments,
+    AgentDigestLimitsUsed,
     AgentDigestOmittedCounts,
     AgentDigestSignal,
     AgentDigestSourceIndexEntry,
@@ -30,6 +31,7 @@ from ..api.models import (
     AgentLinkedContext,
     AgentMainSource,
     AgentSourceExpandRequest,
+    AgentSourceExpandLimitsUsed,
     AgentSourceExpandResponse,
     AgentSourceExpandTruncation,
     AgentSourceComment,
@@ -427,6 +429,12 @@ class AgentContextService:
 
         return AgentSourceExpandResponse(
             request_id=request_id,
+            limits_used=AgentSourceExpandLimitsUsed(
+                include_comments=expand_request.include_comments,
+                include_external_links=expand_request.include_external_links,
+                max_content_chars=expand_request.max_content_chars,
+                max_comments_per_source=expand_request.max_comments_per_source,
+            ),
             sources=sources,
             not_found=not_found,
             warnings=warnings,
@@ -1178,6 +1186,7 @@ class AgentExpertDigestReducer:
                 source_refs=[],
                 comments_digest=comments_digest,
                 omitted_counts=omitted_counts,
+                limits_used=self._limits_used(),
                 no_signal_reason=bundle.no_results_reason,
             )
 
@@ -1263,6 +1272,21 @@ class AgentExpertDigestReducer:
                 )
             )
         return source_refs
+
+    def _limits_used(self) -> AgentDigestLimitsUsed:
+        return AgentDigestLimitsUsed(
+            max_source_refs=max(0, int(config.AGENT_CONTEXT_DIGEST_MAX_SOURCE_REFS)),
+            max_source_chars=max(0, int(config.AGENT_CONTEXT_DIGEST_MAX_SOURCE_CHARS)),
+            max_comments_per_source=max(
+                0, int(config.AGENT_CONTEXT_DIGEST_MAX_COMMENTS_PER_SOURCE)
+            ),
+            max_comment_chars=max(0, int(config.AGENT_CONTEXT_DIGEST_MAX_COMMENT_CHARS)),
+            max_links_per_source=max(
+                0, int(config.AGENT_CONTEXT_DIGEST_MAX_LINKS_PER_SOURCE)
+            ),
+            max_signals=max(0, int(config.AGENT_CONTEXT_DIGEST_MAX_SIGNALS)),
+            source_index_scope="all_selected_sources_compact",
+        )
 
     def _source_evidence_quality(
         self,
@@ -1522,6 +1546,7 @@ class AgentExpertDigestReducer:
             source_index=source_index,
             comments_digest=comments_digest,
             omitted_counts=omitted_counts,
+            limits_used=self._limits_used(),
             limits=limits[:5],
             no_signal_reason=bundle.no_results_reason,
         )
@@ -1550,6 +1575,7 @@ class AgentExpertDigestReducer:
             source_index=source_index,
             comments_digest=comments_digest,
             omitted_counts=omitted_counts,
+            limits_used=self._limits_used(),
             limits=limits,
             no_signal_reason=bundle.no_results_reason,
         )

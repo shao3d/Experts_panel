@@ -317,7 +317,7 @@ Rules:
 
 - deliver backend digest fields: `digest.position`, `digest.key_signals`,
   `digest.source_refs`, `digest.source_index`, `digest.comments_digest`, and
-  `digest.omitted_counts`;
+  `digest.omitted_counts`, and `digest.limits_used`;
 - preserve expert separation and meaningful disagreement exactly as digest
   fields expose them; do not merge experts into a new overall verdict;
 - do not decide whether the parent project should act. The parent chat applies
@@ -348,6 +348,8 @@ expansion:
 - `source_keys_sent`: exact source keys sent to the API;
 - `target`: Fly.io production or explicit local smoke/debug URL;
 - `mode`: `source_expand`;
+- `limits_used`: the API limits applied to content, comments, links, or included
+  fields;
 - `warnings`: none, or the important top-level API warnings.
 
 This expansion passport is intentionally different from the digest Request
@@ -364,7 +366,7 @@ Evidence Note shape:
 - what the source itself says;
 - what direct comments add, or that they are mostly noise;
 - notable author-supplied external refs;
-- truncation/limits;
+- `limits_used` and truncation flags;
 - whether this changes or merely supports the earlier digest.
 
 Keep the Evidence Note short: usually 3-6 bullets total for one or two sources,

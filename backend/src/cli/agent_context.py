@@ -278,6 +278,19 @@ def _print_expert_digest_summary(expert: dict[str, Any]) -> None:
     source_index = digest.get("source_index") or []
     print(f"    source_index: {len(source_index)}")
 
+    limits_used = digest.get("limits_used") or {}
+    if limits_used:
+        print(
+            "    limits_used: "
+            f"source_refs<={limits_used.get('max_source_refs', 0)}; "
+            f"source_chars<={limits_used.get('max_source_chars', 0)}; "
+            f"comments/source<={limits_used.get('max_comments_per_source', 0)}; "
+            f"comment_chars<={limits_used.get('max_comment_chars', 0)}; "
+            f"links/source<={limits_used.get('max_links_per_source', 0)}; "
+            f"signals<={limits_used.get('max_signals', 0)}; "
+            f"source_index={limits_used.get('source_index_scope', 'unknown')}"
+        )
+
     key_signals = digest.get("key_signals") or []
     if key_signals:
         print("    key_signals:")

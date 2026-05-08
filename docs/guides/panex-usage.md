@@ -160,6 +160,18 @@ panex expand --source-keys refat:238 --max-comments-per-source 3 --save --receip
 `source_expand` is exact source lookup. It is not a new search, not a new
 digest, and not a raw dump of every source.
 
+Default expansion limits are explicit in the API response: `max_content_chars`
+is `20000` per source and `max_comments_per_source` is `50` per source, with
+direct comments and author-supplied external links included by default. If the
+response says `content_truncated=true` or `comments_truncated=true`, ask Панэкс
+to expand the same source with higher limits.
+
+Default `expert_digest` is also compacted per expert: up to `8` visible
+`source_refs`, `900` excerpt characters, `3` comment snippets per visible
+source, `360` characters per comment, `5` external-link refs per visible source,
+and `5` key signals. `digest.source_index` keeps compact handles for all
+selected sources so follow-up expansion can target omitted evidence.
+
 ## Raw/Audit Mode
 
 Use raw `source_bundle` only when explicitly needed for audit/debug:

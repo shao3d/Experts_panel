@@ -362,10 +362,11 @@ def test_agents_keep_source_expand_output_as_lean_evidence_note_not_digest():
     assert "intentionally different from the digest request passport" in normalized
     assert "does not need query_sent" in normalized
     assert "does not need experts_sent" in normalized
+    assert "limits_used" in normalized
     assert "what the source itself says" in normalized
     assert "what direct comments add" in normalized
     assert "mostly noise" in normalized
-    assert "truncation/limits" in normalized
+    assert "truncation flags" in normalized
     assert "3-6 bullets" in normalized
     assert "if the parent asked for raw text" in normalized
 
@@ -382,6 +383,7 @@ def test_agents_default_to_relay_only_digest_delivery():
     assert "digest.key_signals" in combined
     assert "digest.source_refs" in combined
     assert "digest.omitted_counts" in combined
+    assert "digest.limits_used" in combined
     assert "expansion candidates" in normalized
     assert "signals frame" not in normalized
     assert "convert it into a compact signals frame" not in normalized
