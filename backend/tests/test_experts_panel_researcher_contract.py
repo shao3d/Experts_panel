@@ -139,6 +139,22 @@ def test_agent_metadata_routes_panex_to_subagent_before_direct_cli():
     assert "do not call panex automatically" in normalized
 
 
+def test_agent_keeps_project_applicability_in_parent_chat():
+    claude_content = _read(CLAUDE_AGENT_PATH)
+    config = _codex_agent_config()
+    combined = "\n".join([claude_content, config["developer_instructions"]])
+    normalized = _normalize(combined)
+
+    assert "research/retrieval agent only" in normalized
+    assert "parent project's context only as a retrieval lens" in normalized
+    assert "do not make project-specific pm" in normalized
+    assert "go/no-go" in normalized
+    assert "implementation recommendations for the parent project" in normalized
+    assert "final applicability analysis belongs in the parent chat" in normalized
+    assert "the parent chat applies them to the current project" in normalized
+    assert "teya" not in normalized
+
+
 def test_agents_use_artifact_transport_for_real_panex_calls():
     combined = "\n".join([_read(CLAUDE_AGENT_PATH), _codex_agent_config()["developer_instructions"]])
     normalized = _normalize(combined)

@@ -1,7 +1,7 @@
 # Panex Usage Guide
 
 **Status:** Active
-**Last updated:** 2026-05-07
+**Last updated:** 2026-05-08
 
 This is the human-facing quick guide for using Панэкс from Codex/Claude chats
 in any repo.
@@ -128,6 +128,13 @@ panex read --path /path/to/response.json --expert refat --json
 ```
 
 This keeps the explicit-only boundary and avoids parent-chat stdout truncation.
+
+The parent chat may pass current-project context to Панэкс as a retrieval lens:
+domain, constraints, target audience, architecture area, or decision question.
+Панэкс should use that context only to search and summarize Experts Panel
+signals. It should not make project-specific PM, product, backend, architecture,
+roadmap, go/no-go, or implementation recommendations. Final applicability
+analysis stays in the parent chat.
 
 ## Expand Sources
 

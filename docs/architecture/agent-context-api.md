@@ -1,8 +1,8 @@
 # Agent Context API Spec
 
-**Status:** Accepted / AND-5..AND-24 implemented / forced embedding search implemented
+**Status:** Accepted / AND-5..AND-27 implemented / forced embedding search implemented
 **Decision:** `.haft/decisions/dec-20260504-b2539c3d.md`
-**Last updated:** 2026-05-07
+**Last updated:** 2026-05-08
 
 This spec defines the first agent-facing surface for Experts Panel: an explicit-only research/context API for Codex, Claude Code, and similar coding/research agents.
 
@@ -37,6 +37,7 @@ Current state as of 2026-05-07:
 | Панэкс human help/usage | Done locally | Added `panex guide` / `panex help` as token-free human CLI help, plus agent help triggers such as "Панэкс, помощь", "что ты умеешь", and "как пользоваться Панэксом". Help requests must answer from instructions and must not call `panex ask`, `panex expand`, or the API. `docs/guides/panex-usage.md` is the human quick reference. |
 | AND-25 Panex artifact transport | Done locally | Real subagent calls now use artifact-first transport: `panex ask` and `panex expand` support `--save --receipt-json`, save the full API response outside the current repo under `PANEX_ARTIFACT_DIR` or system temp, and print only a compact receipt with `artifact_path`, `request_id`, `response_bytes`, warnings, and `panex read` commands. `panex read` returns manifest, per-expert, or per-source-key slices so the subagent does not rely on huge stdout; `panex cleanup` removes old artifacts by TTL. Existing non-save `--json` behavior remains available for manual/small calls. |
 | AND-26 Panex parent routing hardening | Done locally | Agent metadata and global Codex guidance now make "Панэкс" / "Панэнкс" a subagent-routing signal: parent chats should prefer `experts_panel_researcher` over direct `panex CLI` when the user explicitly asks Панэкс / Experts Panel / selected experts. Direct CLI is fallback-only and must still use `--save --receipt-json` plus `panex read`, never large raw stdout. |
+| AND-27 Panex project-applicability boundary | Done locally | Панэкс is now explicitly a research/retrieval agent only. Parent chats may pass current-project context as a retrieval lens, but `experts_panel_researcher` must not make project-specific PM, product, backend, architecture, roadmap, go/no-go, or implementation recommendations. It returns practitioner signals, trade-offs, constraints, caveats, and source handles; final applicability analysis stays in the parent chat. |
 | Forced embedding search for Agent Context | Done | Agent Context always forces Embs&Keys hybrid retrieval: CLI sends `use_super_passport=true`, API records `selection_used.use_super_passport=true`, and service prepares one query embedding for all selected experts before bounded parallel expert processing. UI toggle state does not apply to subagent/API calls. |
 | FTS5 query sanitation hardening | Done | Production logs for the Панэкс query about `file-fist` showed AI Scout returning an invalid FTS5 query and then fallback producing unsafe terms such as `file-fist*`, which made the FTS5 side of hybrid retrieval fail with `no such column: fist` while vector retrieval still worked. `AIScoutService` fallback and `sanitize_fts5_query()` now normalize hyphens, punctuation, and unbalanced Scout quotes into safe OR-only FTS5 terms such as `file* OR fist*`. Fallback slang expansion also avoids treating short particles like Russian `а` as substring slang matches while preserving exact short tech terms such as `бд`, `c#`, `c++`, and `.net`. |
 | Production Fly exposure | Done for explicit smoke and default subagent target | `https://experts-panel.fly.dev/api/v1/agent/context` is callable with the separate production bearer token and large source-bundle budgets. The global `panex` runner now pins Fly.io as the default real-request target for `ask` and `expand`; localhost is only for explicit `--local` smoke/debug. |
@@ -205,6 +206,15 @@ backend/.venv/bin/python -m pytest backend/tests/test_agent_context_api.py backe
 backend/.venv/bin/python -m pytest backend/tests/test_agent_context_api.py backend/tests/test_agent_context_acceptance.py backend/tests/test_agent_context_cli.py backend/tests/test_experts_panel_researcher_contract.py backend/tests/test_experts_panel_researcher_dogfood.py backend/tests/test_panex_quality_eval.py -q -o addopts=''
 # AND-26 parent routing hardening broad Agent Context/Panex contour: 99 passed, 2 warnings
 
+backend/.venv/bin/python -m pytest backend/tests/test_experts_panel_researcher_contract.py -q -o addopts=''
+# AND-27 project-applicability boundary contract: 21 passed
+
+backend/.venv/bin/python -m pytest backend/tests/test_agent_context_cli.py backend/tests/test_experts_panel_researcher_contract.py backend/tests/test_experts_panel_researcher_dogfood.py -q -o addopts=''
+# AND-27 project-applicability boundary contract/dogfood: 57 passed
+
+backend/.venv/bin/python -m pytest backend/tests/test_agent_context_api.py backend/tests/test_agent_context_acceptance.py backend/tests/test_agent_context_cli.py backend/tests/test_experts_panel_researcher_contract.py backend/tests/test_experts_panel_researcher_dogfood.py backend/tests/test_panex_quality_eval.py -q -o addopts=''
+# AND-27 project-applicability boundary broad Agent Context/Panex contour: 100 passed, 2 warnings
+
 panex guide
 # prints human Панэкс usage guide without token or API call
 
@@ -343,8 +353,10 @@ Andrey
 
 Main Codex / Claude Code
   -> prefers explicit-only experts_panel_researcher over direct panex CLI
+  -> applies Панэкс evidence to the current project itself
 
 experts_panel_researcher
+  -> uses project context only as a retrieval lens
   -> panex ask ... --save --receipt-json
   -> production POST /api/v1/agent/context
   -> response_mode = "expert_digest" by default
@@ -1407,6 +1419,10 @@ Add durable instructions for Codex/Claude Code integration:
   `Query and selection`, `Source-backed signals`, `Expert positions`,
   `Convergence / divergence`, `Practical application`,
   `Limits and missing evidence`;
+- use the parent project's context only as a retrieval lens;
+- do not make project-specific PM, product, backend, architecture, roadmap,
+  go/no-go, or implementation recommendations for the parent project;
+- leave final applicability analysis in the parent chat;
 - never present practitioner posts as proven facts;
 - never edit repo files;
 - never broaden scope silently.
