@@ -448,6 +448,57 @@
         "forbidden_terms": ["source_keys_sent", "mode: source_expand", "query_sent", "experts_sent", "refat:101", "новый digest", "новый поиск"],
         "forbidden_terms_critical": true
       }
+    },
+    {
+      "id": "and28_relay_digest_delivery",
+      "title": "AND-28 relay-only digest delivery does not second-summarize",
+      "query": "Что эксперты думают про AI agents и где смотреть исходные сигналы?",
+      "response_mode": "expert_digest",
+      "selection": {
+        "expert_scope": "custom",
+        "expert_group": null,
+        "expert_filter": ["refat", "akimov"],
+        "use_recent_only": false
+      },
+      "rubric": {
+        "min_score": 0.82,
+        "min_source_handles": 2,
+        "max_answer_chars": 5200,
+        "relay_only": true,
+        "min_delivery_terms": 5,
+        "must_cover_any": [
+          ["request passport", "query_sent"],
+          ["expert digest delivery", "digest.position", "digest.key_signals"],
+          ["source_refs", "source_key", "refat:", "akimov:"],
+          ["omitted_counts", "comments_digest", "warnings"],
+          ["expansion candidates", "source_expand", "раскры"]
+        ],
+        "delivery_terms": [
+          "request passport",
+          "scope and warnings",
+          "expert digest delivery",
+          "digest.position",
+          "digest.key_signals",
+          "source_refs",
+          "comments_digest",
+          "omitted_counts",
+          "expansion candidates"
+        ],
+        "expect_expansion_offer": true,
+        "forbidden_terms": [
+          "new meta-synthesis",
+          "новая meta-synthesis",
+          "новый общий вывод",
+          "practical decision bullets",
+          "практическое правило",
+          "go/no-go",
+          "стоит внедрять",
+          "ship",
+          "build",
+          "adopt"
+        ],
+        "forbidden_terms_critical": true
+      }
     }
   ]
 }

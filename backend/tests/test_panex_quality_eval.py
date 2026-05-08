@@ -39,6 +39,7 @@ def test_quality_scenarios_fixture_has_realistic_panex_cases():
         "and23_expand_weak_sources",
         "and23_ambiguous_selector_clarifies",
         "and23_no_previous_digest_boundary",
+        "and28_relay_digest_delivery",
     }.issubset(scenario_ids)
     for scenario in scenarios:
         assert scenario["query"]
@@ -58,10 +59,11 @@ def test_quality_rubric_separates_product_answer_quality_from_api_contract():
     normalized = quality_eval.normalize(content)
 
     assert "api tests prove" in normalized
-    assert "product-quality eval" in normalized
+    assert "delivery-quality eval" in normalized
     assert "practitioner posts" in normalized
     assert "not as a ground-truth oracle" in normalized
-    assert "source-backed signals" in normalized
+    assert "relay-only" in normalized
+    assert "must not summarize the digest again" in normalized
     assert "must not frame practitioner opinions as proof" in normalized
     assert "panex_quality_eval.py" in content
 
@@ -207,6 +209,47 @@ def test_and23_selector_bad_answers_fail_when_they_guess_or_rerun():
         assert result["status"] == "failed", scenario_id
         if scenario["response_mode"] in {"clarification", "boundary"}:
             assert result["critical_issues"], scenario_id
+
+
+def test_and28_relay_delivery_answer_passes_guardrails():
+    scenario = _scenario("and28_relay_digest_delivery")
+    result = quality_eval.evaluate_scenario(
+        scenario=scenario,
+        answer_text=_good_and28_relay_delivery_answer(),
+        digest_payload=_payload_for_scenario(scenario),
+    )
+
+    assert result["status"] == "passed"
+    checks = {check["id"]: check for check in result["checks"]}
+    assert checks["relay_delivery"]["score"] == 1.0
+    assert checks["forbidden_terms"]["score"] == 1.0
+
+
+def test_and28_second_summarizer_answer_fails_guardrails():
+    scenario = _scenario("and28_relay_digest_delivery")
+    bad_answer = """
+**Query and selection**
+- query_sent: Что эксперты думают про AI agents?
+- experts_sent: refat, akimov
+- response_mode: expert_digest
+- target: Fly.io
+- warnings: none
+
+Короткий вывод: я сделал новую meta-synthesis поверх digest и считаю, что
+проекту стоит внедрять это как go/no-go решение. Практическое правило:
+строить, ship и применять. Источники где-то были, но source_refs не нужны.
+"""
+
+    result = quality_eval.evaluate_scenario(
+        scenario=scenario,
+        answer_text=bad_answer,
+        digest_payload=_payload_for_scenario(scenario),
+    )
+
+    assert result["status"] == "failed"
+    assert "forbidden_terms" in result["critical_issues"]
+    checks = {check["id"]: check for check in result["checks"]}
+    assert checks["relay_delivery"]["score"] < 1.0
 
 
 def test_expansion_path_accepts_human_friendly_targeted_expansion_wording():
@@ -459,6 +502,47 @@ refat:101 и частично поддержан akimov:202.
 результат проще получить в основном контексте. Если нужно углубиться, я бы
 раскрыл source_expand по refat:101 и doronin:303, особенно комментарии, чтобы
 проверить нюансы и ограничения.
+"""
+
+
+def _good_and28_relay_delivery_answer() -> str:
+    return """
+**Request passport**
+
+- query_sent: Что эксперты думают про AI agents и где смотреть исходные сигналы?
+- experts_sent: refat, akimov
+- response_mode: expert_digest
+- target: Fly.io production
+- warnings: none
+
+**Scope and warnings**
+
+- mode: expert_digest
+- scope: только refat и akimov
+- signal type: practitioner-opinion signals, не доказательство
+
+**Expert digest delivery**
+
+Refat
+- digest.position: по backend digest у Refat есть осторожная позиция про agents
+  как способ разделять работу и контекст.
+- digest.key_signals: сигнал про разделение ролей и source-backed workflow.
+- digest.source_refs: refat:101
+- comments_digest / omitted_counts: comments_digest есть в digest; omitted_counts
+  нужно читать как границу доставленного evidence.
+
+Akimov
+- digest.position: по backend digest Akimov даёт бизнесовый сигнал про цену
+  координации и пользу только при явной зоне ответственности.
+- digest.key_signals: сигнал про coordination overhead и проверяемый результат.
+- digest.source_refs: akimov:201
+- comments_digest / omitted_counts: comments_digest и omitted_counts сохранены
+  как ограничения доставки, без дополнительного verdict.
+
+**Expansion candidates**
+
+Для проверки исходных сигналов лучше раскрыть source_expand по refat:101 и
+akimov:201. Здесь я доставляю digest fields, а не добавляю второй reduce layer.
 """
 
 

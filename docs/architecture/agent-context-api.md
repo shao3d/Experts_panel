@@ -1,6 +1,6 @@
 # Agent Context API Spec
 
-**Status:** Accepted / AND-5..AND-27 implemented / forced embedding search implemented
+**Status:** Accepted / AND-5..AND-28 implemented / forced embedding search implemented
 **Decision:** `.haft/decisions/dec-20260504-b2539c3d.md`
 **Last updated:** 2026-05-08
 
@@ -10,7 +10,7 @@ This spec defines the first agent-facing surface for Experts Panel: an explicit-
 
 ## 0. Implementation Status
 
-Current state as of 2026-05-07:
+Current state as of 2026-05-08:
 
 | Slice | Status | What it means |
 |-------|--------|---------------|
@@ -18,8 +18,8 @@ Current state as of 2026-05-07:
 | AND-6 real `source_bundle` pipeline | Done | The endpoint now returns selected source bundles instead of the placeholder `experts=[]` response. It runs retrieval, Map, MEDIUM scoring, HIGH resolve, source selection, and main-source comment loading. |
 | AND-7 local CLI wrapper | Done | `src.cli.agent_context` calls the endpoint over HTTP with safe source-bundle defaults, keeps the token in the Authorization header, supports all/group/custom selection, and prints agent-readable summaries or raw JSON. |
 | AND-8 BDD acceptance hardening | Done | In-process CLI -> HTTP -> FastAPI -> `source_bundle` acceptance tests cover explicit expert selection, safe defaults, no full synthesis, source evidence shape, token boundary, and actionable API failures. |
-| AND-9 `experts_panel_researcher` / `Панэкс` subagent contract | Done | Repo-local Claude/Codex agent instructions and the user-level Codex shortcut exist, stay read-only, require explicit triggers, call the Agent Context CLI/wrapper only, pin real user calls to the production Fly.io endpoint, translate UI/Russian expert names to `expert_id`, accept human Russian trigger phrases without requiring API jargon, and return practitioner-opinion intelligence using the Signals frame with a compact Request passport. |
-| AND-10 local dogfood for `experts_panel_researcher` | Done | A synthetic source_bundle fixture and dogfood tests verify that CLI JSON is synthesis input, readiness failures are actionable, local smoke remains explicit-only, and the six-section Signals frame is usable. |
+| AND-9 `experts_panel_researcher` / `Панэкс` subagent contract | Done | Repo-local Claude/Codex agent instructions and the user-level Codex shortcut exist, stay read-only, require explicit triggers, call the Agent Context CLI/wrapper only, pin real user calls to the production Fly.io endpoint, translate UI/Russian expert names to `expert_id`, accept human Russian trigger phrases without requiring API jargon, and return practitioner-opinion intelligence with a compact Request passport. |
+| AND-10 local dogfood for `experts_panel_researcher` | Done | A synthetic source_bundle fixture and dogfood tests verify that readiness failures are actionable, local smoke remains explicit-only, and source evidence is usable for delivery/evidence-note workflows. |
 | AND-11 live local dogfood smoke | Done | `backend/scripts/agent_context_live_smoke.py` can preflight local readiness, start Experts Panel on a free localhost port, call the CLI with explicit `--api-url`, validate `source_bundle`, and write a sanitized report with `passed`/`skipped`/`failed` status. |
 | AND-12 paid local live smoke | Done | Paid local smoke passed with the default `refat,akimov` query and returned a valid real `source_bundle`. Runtime defaults are intentionally large (`3600s` / `100000000` bytes) because all-expert source-bundle requests are naturally long and bulky. |
 | AND-13 bounded expert parallelism | Done | Agent Context now inherits the main pipeline's bounded expert parallelism pattern: selected experts run as async tasks behind `MAX_CONCURRENT_EXPERTS`, while response order stays aligned to the requested expert order. |
@@ -30,14 +30,15 @@ Current state as of 2026-05-07:
 | AND-18 production `expert_digest` BDD hardening | Done + deployed | Added production-live BDD tests that hit Fly.io directly with `AGENT_CONTEXT_PRODUCTION_LIVE=1` and no local backend/mocks. The first red run found that some LLM digest outputs return top-level signal lists without `position`; the backend now fills a safe fallback `position` instead of weakening the contract. Final production runs passed for two-expert, three-expert, digest-vs-source_bundle compactness, comments-off, unknown expert, unsupported response mode, and `video_hub` 501 scenarios. |
 | AND-19 evidence expansion by `source_key` | Done + deployed | `expert_digest` now includes compact `digest.source_index` handles for all selected sources, while `POST /api/v1/agent/context/expand` expands exact `source_key` handles such as `refat:234` into raw/capped post evidence, direct comments, external link metadata, truncation metadata, and `not_found` entries without rerunning search, Map, Resolve, Reduce, or digest. Панэкс instructions use `src.cli.agent_context_expand` when the user asks in plain Russian to reveal sources/proofs/details from a previous digest, or gives concrete handles, then report a lean Evidence Note rather than a second digest. |
 | AND-20 evidence quality calibration | Done + deployed | Agent Context now attaches lightweight `evidence_quality` calibration to raw `main_sources`, compact `digest.source_refs`, full `digest.source_index`, and exact `source_expand` results. Labels are deterministic over already selected source text, relevance, comments, and author-supplied external-link metadata; they do not add a new LLM call, do not fetch links, and must be presented by Панэкс as calibration rather than proof. Production Fly BDD passed on release `v364` for digest labels, source_bundle labels, comments-off labels, exact source expansion labels, bad input boundaries, and raw-free bounded digest output. |
-| AND-21 Панэкс product-quality eval scaffold | Done locally | Added a separate product-quality evaluation layer for final Панэкс answers, intentionally distinct from API contract tests. `docs/quality/panex-product-quality-rubric.md` defines the human-readable rubric; `backend/tests/fixtures/panex_quality_scenarios.json` defines golden scenarios; `backend/scripts/panex_quality_eval.py` scores a final answer against request fidelity, source grounding, signal honesty, coverage, actionability, brevity, expansion path, and external-link boundary checks. The first evaluator is deterministic guardrail + human-review support, not an oracle for answer quality. |
-| AND-22 Панэкс adversarial product dogfood | Done locally + production dogfood | Added five BDD-heavy product scenarios for compact default behavior, weak-signal honesty, human Russian source expansion follow-up, external-link boundary, and exact expert-scope discipline. Production Панэкс dogfood against Fly.io passed all five new scenarios; the full product-quality evaluator run passed `11` scenarios with `0` failures. |
+| AND-21 Панэкс delivery-quality eval scaffold | Done locally | Added a separate delivery-quality evaluation layer for final Панэкс answers, intentionally distinct from API contract tests. `docs/quality/panex-product-quality-rubric.md` defines the human-readable rubric; `backend/tests/fixtures/panex_quality_scenarios.json` defines golden scenarios; `backend/scripts/panex_quality_eval.py` scores a final answer against request fidelity, source grounding, signal honesty, coverage, relay delivery, brevity, expansion path, and external-link boundary checks. The evaluator is deterministic guardrail + human-review support, not an oracle for answer quality. |
+| AND-22 Панэкс adversarial delivery dogfood | Done locally + production dogfood | Added five BDD-heavy product scenarios for compact default behavior, weak-signal honesty, human Russian source expansion follow-up, external-link boundary, and exact expert-scope discipline. Production Панэкс dogfood against Fly.io passed all five new scenarios; the full delivery-quality evaluator run passed `11` scenarios with `0` failures. |
 | AND-23 selector-based expansion UX | Done locally + production dogfood | Панэкс instructions now map human follow-up selectors such as "раскрой по Рефату", "этот вывод", "самый спорный источник", "что там в комментариях", and "слабые места" onto exact source handles from the previous `expert_digest`. Default expansion stays small: top 1 per named expert, top 1-2 generic strongest sources, and never all sources unless explicitly requested. Ambiguous selectors and missing previous digest context must ask one clarification or request a main Панэкс question first instead of guessing handles or running a new search. Production dogfood on Fly.io passed digest -> named-expert expansion (`refat:239`) and comments/weak-source expansion (`doronin:73`) without rerunning a new digest/source_bundle. |
 | AND-24 cross-repo Панэкс portable runner | Done locally + production dogfood | Added the global/user-level `panex` runner contract for calling Панэкс from any repo/cwd. `panex ask` defaults to production Fly.io and `response_mode=expert_digest`, ignores ambient local `AGENT_CONTEXT_API_URL` unless `--local` or `--api-url` is explicit, keeps `source_bundle` as opt-in raw/audit mode through `--response-mode source_bundle`, and `panex expand` targets production `source_expand` by default. `panex doctor` verifies setup without printing secrets; `scripts/install_panex_runner.sh` installs `~/.local/bin/panex` without storing the API token. Production dogfood from `/private/tmp` passed `panex ask` for `refat` and `panex expand refat:238` against Fly.io. |
 | Панэкс human help/usage | Done locally | Added `panex guide` / `panex help` as token-free human CLI help, plus agent help triggers such as "Панэкс, помощь", "что ты умеешь", and "как пользоваться Панэксом". Help requests must answer from instructions and must not call `panex ask`, `panex expand`, or the API. `docs/guides/panex-usage.md` is the human quick reference. |
 | AND-25 Panex artifact transport | Done locally | Real subagent calls now use artifact-first transport: `panex ask` and `panex expand` support `--save --receipt-json`, save the full API response outside the current repo under `PANEX_ARTIFACT_DIR` or system temp, and print only a compact receipt with `artifact_path`, `request_id`, `response_bytes`, warnings, and `panex read` commands. `panex read` returns manifest, per-expert, or per-source-key slices so the subagent does not rely on huge stdout; `panex cleanup` removes old artifacts by TTL. Existing non-save `--json` behavior remains available for manual/small calls. |
 | AND-26 Panex parent routing hardening | Done locally | Agent metadata and global Codex guidance now make "Панэкс" / "Панэнкс" a subagent-routing signal: parent chats should prefer `experts_panel_researcher` over direct `panex CLI` when the user explicitly asks Панэкс / Experts Panel / selected experts. Direct CLI is fallback-only and must still use `--save --receipt-json` plus `panex read`, never large raw stdout. |
 | AND-27 Panex project-applicability boundary | Done locally | Панэкс is now explicitly a research/retrieval agent only. Parent chats may pass current-project context as a retrieval lens, but `experts_panel_researcher` must not make project-specific PM, product, backend, architecture, roadmap, go/no-go, or implementation recommendations. It returns practitioner signals, trade-offs, constraints, caveats, and source handles; final applicability analysis stays in the parent chat. |
+| AND-28 Panex relay-only subagent | Done locally | Since `expert_digest` is already reduced on the Panel side, `experts_panel_researcher` is now a relay-only delivery layer. It must not summarize the digest again, create a new meta-synthesis, rerank experts/sources, or add decision advice. It delivers backend digest fields through Request passport, Scope and warnings, Expert digest delivery, and Expansion candidates. |
 | Forced embedding search for Agent Context | Done | Agent Context always forces Embs&Keys hybrid retrieval: CLI sends `use_super_passport=true`, API records `selection_used.use_super_passport=true`, and service prepares one query embedding for all selected experts before bounded parallel expert processing. UI toggle state does not apply to subagent/API calls. |
 | FTS5 query sanitation hardening | Done | Production logs for the Панэкс query about `file-fist` showed AI Scout returning an invalid FTS5 query and then fallback producing unsafe terms such as `file-fist*`, which made the FTS5 side of hybrid retrieval fail with `no such column: fist` while vector retrieval still worked. `AIScoutService` fallback and `sanitize_fts5_query()` now normalize hyphens, punctuation, and unbalanced Scout quotes into safe OR-only FTS5 terms such as `file* OR fist*`. Fallback slang expansion also avoids treating short particles like Russian `а` as substring slang matches while preserving exact short tech terms such as `бд`, `c#`, `c++`, and `.net`. |
 | Production Fly exposure | Done for explicit smoke and default subagent target | `https://experts-panel.fly.dev/api/v1/agent/context` is callable with the separate production bearer token and large source-bundle budgets. The global `panex` runner now pins Fly.io as the default real-request target for `ask` and `expand`; localhost is only for explicit `--local` smoke/debug. |
@@ -162,7 +163,7 @@ env AGENT_CONTEXT_PRODUCTION_LIVE=1 backend/.venv/bin/python -m pytest backend/t
 # final AND-20 production run: 9 passed in 534.89s
 
 backend/.venv/bin/python -m pytest backend/tests/test_panex_quality_eval.py -q -o addopts=''
-# AND-22 product-quality eval scaffold: 10 passed
+# AND-22 delivery-quality eval scaffold: 10 passed
 
 backend/.venv/bin/python -m pytest backend/tests/test_agent_context_api.py backend/tests/test_agent_context_acceptance.py backend/tests/test_agent_context_cli.py backend/tests/test_experts_panel_researcher_contract.py backend/tests/test_panex_quality_eval.py -q -o addopts=''
 # AND-22 targeted local contour: 79 passed, 2 warnings
@@ -214,6 +215,15 @@ backend/.venv/bin/python -m pytest backend/tests/test_agent_context_cli.py backe
 
 backend/.venv/bin/python -m pytest backend/tests/test_agent_context_api.py backend/tests/test_agent_context_acceptance.py backend/tests/test_agent_context_cli.py backend/tests/test_experts_panel_researcher_contract.py backend/tests/test_experts_panel_researcher_dogfood.py backend/tests/test_panex_quality_eval.py -q -o addopts=''
 # AND-27 project-applicability boundary broad Agent Context/Panex contour: 100 passed, 2 warnings
+
+backend/.venv/bin/python -m pytest backend/tests/test_experts_panel_researcher_contract.py backend/tests/test_experts_panel_researcher_dogfood.py backend/tests/test_panex_quality_eval.py -q -o addopts=''
+# AND-28 relay-only BDD/contract/quality: 42 passed
+
+backend/.venv/bin/python -m pytest backend/tests/test_agent_context_cli.py backend/tests/test_experts_panel_researcher_contract.py backend/tests/test_experts_panel_researcher_dogfood.py -q -o addopts=''
+# AND-28 relay-only contract/dogfood: 57 passed
+
+backend/.venv/bin/python -m pytest backend/tests/test_agent_context_api.py backend/tests/test_agent_context_acceptance.py backend/tests/test_agent_context_cli.py backend/tests/test_experts_panel_researcher_contract.py backend/tests/test_experts_panel_researcher_dogfood.py backend/tests/test_panex_quality_eval.py -q -o addopts=''
+# AND-28 relay-only broad Agent Context/Panex contour: 102 passed, 2 warnings
 
 panex guide
 # prints human Панэкс usage guide without token or API call
@@ -482,20 +492,17 @@ experts_panel_researcher
   - requests expert_digest by default
   - requests source_bundle only for explicit raw evidence/audit/debug mode
   - returns practitioner-opinion intelligence, not proof claims
-  - keeps default expert_digest answers compact, around 3500-6000 characters
-    with a soft ceiling around 6500 unless the user explicitly asks for
-    "подробно", "глубоко", "разверни", "full report", or "deep analysis"
-  - uses the Signals frame:
-    1. Query and selection
-    2. Source-backed signals
-    3. Expert positions
-    4. Convergence / divergence
-    5. Practical application
-    6. Limits and missing evidence
+  - treats expert_digest as already reduced backend output
+  - does not summarize the digest again or create a new meta-synthesis
+  - uses the delivery frame:
+    1. Request passport
+    2. Scope and warnings
+    3. Expert digest delivery
+    4. Expansion candidates
 ```
 
-The `Query and selection` section must start with a compact Request passport,
-not a raw JSON dump. Required fields are:
+The answer must start with a compact Request passport, not a raw JSON dump.
+Required fields are:
 
 ```text
 query_sent: exact query string sent in the API payload
@@ -509,13 +516,12 @@ The passport exists to verify scope through the parent-agent -> subagent ->
 CLI/API chain. It must not include the API token, raw JSON, or long pipeline
 dumps.
 
-Default `expert_digest` synthesis should use a compact shape: Request passport,
-a short take / "Короткий вывод", 3-5 source-backed signals with `source_key`
-handles, 2-4 practical decision bullets, and a "Limits and next expansion"
-section with 1-3 concrete handles when deeper audit would help. If evidence is
-weak, indirect, or comment-heavy, Панэкс should explicitly suggest targeted
-`source_expand` handles rather than expanding everything or writing a long
-report by default.
+Default `expert_digest` delivery should preserve backend fields such as
+`digest.position`, `digest.key_signals`, `digest.source_refs`,
+`digest.source_index`, `digest.comments_digest`, and `digest.omitted_counts`.
+If evidence is weak, indirect, or comment-heavy, Панэкс should explicitly
+suggest targeted `source_expand` handles rather than expanding everything or
+writing a new analysis by default.
 
 The subagent must not present practitioner posts as proven facts. It should
 separate what the selected sources explicitly say, how different experts frame
@@ -1415,10 +1421,9 @@ Add durable instructions for Codex/Claude Code integration:
 - ask one clarification for unknown or ambiguous expert names before calling the CLI;
 - default `response_mode = expert_digest`;
 - print `selection_used`;
-- return practitioner-opinion intelligence using the Signals frame:
-  `Query and selection`, `Source-backed signals`, `Expert positions`,
-  `Convergence / divergence`, `Practical application`,
-  `Limits and missing evidence`;
+- return practitioner-opinion intelligence using the delivery frame:
+  `Request passport`, `Scope and warnings`, `Expert digest delivery`,
+  `Expansion candidates`;
 - use the parent project's context only as a retrieval lens;
 - do not make project-specific PM, product, backend, architecture, roadmap,
   go/no-go, or implementation recommendations for the parent project;
@@ -1447,11 +1452,12 @@ explicit user request
   -> saved artifact + compact receipt
   -> panex read slices
   -> expert_digest JSON by default
-  -> compact Signals frame synthesis
+  -> relay-only digest delivery
 ```
 
-The CLI JSON is input for synthesis, not the final answer. The subagent should
-not dump raw JSON unless the parent explicitly asks for it. The older
+The saved API response is the delivery source, not material for a second
+summary. The subagent should not dump raw JSON unless the parent explicitly asks
+for it. The older
 `source_bundle` fixture remains useful for raw evidence dogfood and audit
 coverage; user-facing Панэкс calls now prefer `expert_digest`.
 
@@ -1485,16 +1491,18 @@ Do not use the lower-level CLI local default for real subagent calls. Use
 `panex` instead; it defaults to Fly.io and ignores ambient local API URLs unless
 `--local` or `--api-url` is explicit.
 
-Signals frame checklist:
+Delivery frame checklist:
 
-1. Query and selection
-   - starts with the compact Request passport:
+1. Request passport
+   - starts the answer and includes:
      `query_sent`, `experts_sent`, `response_mode`, `target`, `warnings`
-2. Source-backed signals
-3. Expert positions
-4. Convergence / divergence
-5. Practical application
-6. Limits and missing evidence
+2. Scope and warnings
+3. Expert digest delivery
+   - preserves `digest.position`, `digest.key_signals`, `digest.source_refs`,
+     `digest.source_index`, `digest.comments_digest`, and
+     `digest.omitted_counts`
+4. Expansion candidates
+   - suggests targeted `source_expand` handles when deeper audit would help
 
 Failure handling:
 
@@ -1674,8 +1682,8 @@ Minimum tests:
 - CLI -> HTTP -> FastAPI -> source_expand flow reveals exact source keys without rerunning search/digest;
 - CLI acceptance path does not leak the API token into request body, stdout, or stderr;
 - unsupported `video_hub` request fails with an actionable API message;
-- repo-local Claude/Codex subagent instructions are read-only, explicit-only, token-safe, pin production Fly.io for real calls, use the Signals frame instead of proof framing, start `Query and selection` with a compact Request passport, and keep default `expert_digest` answers compact unless the user explicitly asks for a deep report;
-- local dogfood fixture and instructions verify JSON-as-input, actionable readiness failures, explicit local smoke, and Signals frame usability;
+- repo-local Claude/Codex subagent instructions are read-only, explicit-only, token-safe, pin production Fly.io for real calls, use relay-only digest delivery instead of a second summary, start with a compact Request passport, and keep project applicability in the parent chat;
+- local dogfood fixture and instructions verify actionable readiness failures, explicit local smoke, and delivery/evidence-note usability;
 - live local smoke helper can preflight, skip/fail/pass cleanly, use a free port, call CLI with explicit `--api-url`, and write a sanitized report;
 - external smoke helper mode can call an explicit production/Fly URL without starting a local backend;
 - default local smoke ignores ambient `AGENT_CONTEXT_API_URL`; subagent real-call instructions bypass lower-level local defaults by using `panex`, whose default target is Fly.io;
@@ -1706,7 +1714,7 @@ Backend source-bundle MVP status:
 | BDD acceptance checks cover the CLI -> API -> source_bundle boundary | Done |
 | first subagent is repo-local and explicit-only | Done; real research calls pin the production Fly.io endpoint |
 | Панэкс can be called from other repos without cwd/env confusion | Done locally + production dogfood: `backend/src/cli/panex.py` and `scripts/install_panex_runner.sh` provide a global `panex` command. `panex ask` defaults to Fly.io `expert_digest`, `panex expand` defaults to Fly.io `source_expand`, ambient local API URLs are ignored unless explicit, `panex doctor` checks setup without printing secrets, and production smoke from `/private/tmp` passed `ask` and `expand`. |
-| local dogfood can evaluate source_bundle JSON through the Signals frame | Done |
+| local dogfood can evaluate source_bundle evidence for delivery/evidence-note workflows | Done |
 | live local smoke helper verifies real local CLI/API readiness without Fly | Done |
 | external smoke helper can target production Fly only when explicitly requested | Done: `--api-url` enables `target_mode = "external"`, default local mode ignores ambient `AGENT_CONTEXT_API_URL`, live Fly smoke passed, and subagent instructions now use `panex` for real calls so the lower-level local default is bypassed |
 | portable production runner works from a foreign cwd | Done: `panex doctor` passed with global command `/Users/andreysazonov/.local/bin/panex`; `cd /private/tmp && panex ask --query "Когда subagents помогают в AI-разработке?" --experts refat --json --timeout 3600` returned `mode=expert_digest`, `selected_sources_count=28`, `warnings=[]`; `cd /private/tmp && panex expand --source-keys refat:238 --json --max-content-chars 1200 --max-comments-per-source 3 --timeout 3600` returned `mode=source_expand`, direct comments, external link metadata, `not_found=[]`, `warnings=[]`. |
@@ -1716,12 +1724,12 @@ Backend source-bundle MVP status:
 | first production Fly smoke returns a valid real source_bundle | Done after forced Embs&Keys retrieval: explicit `refat,akimov` production smoke passed with `selection_used.use_super_passport=true`, `response_bytes=438663`, `processing_time_ms=140105`, no warnings |
 | subagent/CLI/API retrieval always uses embeddings | Done: CLI sends `use_super_passport=true`, API normalizes `selection_used.use_super_passport=true`, and service passes a precomputed query embedding into `HybridRetrievalService` for every selected expert |
 | selected source external links are surfaced without automatic browsing | Done: `main_sources[].external_links` carries author-supplied references with `fetch_status=not_fetched`; CLI summary prints link counts; subagent instructions forbid opening/fetching/crawling/cloning/summarizing external URLs unless explicitly requested; local live dogfood for `neuraldeep` found 40 real external links across 11 selected sources, all `not_fetched`, with `bad_suffix_links_count=0`; production public endpoint verification on `https://experts-panel.fly.dev/api/v1/agent/context` found 99 real external links across 23 selected sources, all `not_fetched`, with `bad_suffix_links_count=0` |
-| subagent default response is compact enough for parent-agent synthesis | Done + deployed: `response_mode=expert_digest` returns `digest` fields with source refs/source index/comment counts/omitted counts and clears raw `main_sources` from the transport response; Панэкс instructions use `--response-mode expert_digest` by default; production Fly smoke passed for `refat` |
+| subagent default response is relay-only digest delivery | Done locally: `response_mode=expert_digest` returns `digest` fields with source refs/source index/comment counts/omitted counts and clears raw `main_sources` from the transport response; Панэкс instructions use `--response-mode expert_digest` by default and deliver backend digest fields without a second summary |
 | Панэкс can reveal specific digest sources without a new search query | Done locally: `POST /api/v1/agent/context/expand` and `src.cli.agent_context_expand` expand concrete `source_key` handles into raw/capped source evidence, comments, external links, truncation metadata, and `not_found`; tests assert search/Map/Resolve/Reduce/digest are not called |
-| subagent responses expose the actual request scope | Done: Панэкс instructions require a compact Request passport with `query_sent`, `experts_sent`, `response_mode`, `target`, and `warnings` at the start of `Query and selection` |
+| subagent responses expose the actual request scope | Done: Панэкс instructions require a compact Request passport with `query_sent`, `experts_sent`, `response_mode`, `target`, and `warnings` at the start of the answer |
 | raw evidence remains available for audit/debug | Done: `response_mode=source_bundle` remains the CLI/API default outside the subagent contract and is explicitly reserved in Панэкс instructions for raw evidence, audit/debug, and source-bundle smoke verification |
 | production BDD checks cover the deployed `expert_digest` and `source_expand` contract | Done: `backend/tests/test_agent_context_production_expert_digest.py` passed against Fly.io with two-expert, three-expert, evidence_quality labels in digest/source_bundle/source_expand, bounded/raw-free digest output, comments-off labels, exact source expansion, realistic Панэкс query styles (casual typo, mixed RU/EN punctuation, multiline PM-style query, `tech_business` group scope, recent-only), capped multi-source expansion, unknown expert, unsupported response mode, invalid human source handle, and `video_hub` 501 scenarios. Latest production run: `16 passed in 1599.35s (0:26:39)`. |
-| product-quality checks cover final Панэкс answer shape | Done locally + production dogfood: `docs/quality/panex-product-quality-rubric.md`, `backend/tests/fixtures/panex_quality_scenarios.json`, `backend/scripts/panex_quality_eval.py`, and `backend/tests/test_panex_quality_eval.py` define and test a deterministic guardrail for final answers. It checks mode-aware Request passport, scope fidelity, source handles, signal honesty, scenario-specific forbidden terms, coverage, actionability, brevity, expansion path, and external-link boundary while leaving final usefulness judgment to human review. AND-22 production dogfood passed five adversarial user-style scenarios and the full evaluator passed `11` scenarios. |
+| delivery-quality checks cover final Панэкс answer shape | Done locally + production dogfood: `docs/quality/panex-product-quality-rubric.md`, `backend/tests/fixtures/panex_quality_scenarios.json`, `backend/scripts/panex_quality_eval.py`, and `backend/tests/test_panex_quality_eval.py` define and test a deterministic guardrail for final answers. It checks mode-aware Request passport, scope fidelity, source handles, signal honesty, scenario-specific forbidden terms, coverage, relay delivery, brevity, expansion path, and external-link boundary while leaving final usefulness judgment to human review. AND-28 adds a relay-only scenario that fails second-summarizer answers. |
 | FTS5 side of hybrid retrieval survives punctuation-heavy Scout/fallback queries | Done locally: `backend/tests/test_fts5_query_sanitization.py` covers `file-fist`, question-mark suffixes, and unbalanced Scout quotes; broad Agent Context/backend contour passed with `71 passed, 7 skipped` |
 | existing UI/SSE query endpoint is unchanged | Done by route-preservation/source-bundle isolation tests |
 

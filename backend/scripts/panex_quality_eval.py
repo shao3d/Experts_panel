@@ -337,7 +337,7 @@ def build_checks(
         check_signal_honesty(normalized),
         check_forbidden_terms(rubric, normalized),
         check_required_coverage(rubric, normalized),
-        check_actionability(rubric, normalized),
+        check_relay_delivery(scenario, rubric, normalized),
         check_brevity(rubric, answer_text),
         check_expand_path(rubric, normalized),
         check_external_boundary(normalized),
@@ -353,7 +353,7 @@ def check_raw_json(answer_text: str) -> dict[str, Any]:
         "not_raw_json",
         weight=1.5,
         score=0.0 if looks_like_raw_json else 1.0,
-        details="Final answer must be synthesized prose, not raw API JSON.",
+        details="Final answer must be delivered prose, not raw API JSON.",
         critical=True,
     )
 
@@ -547,14 +547,49 @@ def check_required_coverage(rubric: dict[str, Any], normalized: str) -> dict[str
     )
 
 
-def check_actionability(rubric: dict[str, Any], normalized: str) -> dict[str, Any]:
-    terms = rubric.get("action_terms") or ["когда", "если", "следующий", "критер"]
+def check_relay_delivery(
+    scenario: dict[str, Any],
+    rubric: dict[str, Any],
+    normalized: str,
+) -> dict[str, Any]:
+    if scenario.get("response_mode") == "source_expand":
+        terms = rubric.get("delivery_terms") or rubric.get("action_terms") or [
+            "source_keys_sent",
+            "source_expand",
+            "evidence note",
+            "комментар",
+            "огранич",
+        ]
+        required_hits = int(rubric.get("min_delivery_terms", 3))
+    elif rubric.get("relay_only"):
+        terms = rubric.get("delivery_terms") or [
+            "request passport",
+            "scope and warnings",
+            "expert digest delivery",
+            "digest.position",
+            "digest.key_signals",
+            "source_refs",
+            "comments_digest",
+            "omitted_counts",
+            "expansion candidates",
+        ]
+        required_hits = int(rubric.get("min_delivery_terms", 5))
+    else:
+        terms = rubric.get("delivery_terms") or rubric.get("action_terms") or [
+            "source_refs",
+            "source_key",
+            "source-backed",
+            "source_expand",
+            "warnings",
+        ]
+        required_hits = int(rubric.get("min_delivery_terms", 3))
+
     hits = count_hits(normalized, terms)
     return make_check(
-        "actionability",
+        "relay_delivery",
         weight=1.0,
-        score=min(1.0, hits / 3),
-        details=f"Matched {hits}/{len(terms)} action terms.",
+        score=min(1.0, hits / max(1, required_hits)),
+        details=f"Matched {hits}/{len(terms)} relay/delivery terms.",
     )
 
 

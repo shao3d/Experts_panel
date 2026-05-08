@@ -1,31 +1,32 @@
-# Panex Product Quality Rubric
+# Panex Delivery Quality Rubric
 
-**Status:** AND-23 selector expansion BDD guardrail
-**Last updated:** 2026-05-07
+**Status:** AND-28 relay-only delivery BDD guardrail
+**Last updated:** 2026-05-08
 
-This rubric checks the product quality of the `Панэкс` / `experts_panel_researcher`
-answer after the Agent Context API has already returned `expert_digest` or
-`source_expand` data.
+This rubric checks the delivery quality of the `Панэкс` /
+`experts_panel_researcher` answer after the Agent Context API has already
+returned `expert_digest` or `source_expand` data.
 
 It is intentionally separate from API contract tests:
 
 - API tests prove that Fly.io, auth, selection, retrieval, digest shape,
   `source_refs`, `source_index`, and `evidence_quality` work.
-- Product-quality eval checks whether the final subagent answer is useful to a
-  human who asked for expert/practitioner signals.
+- Delivery-quality eval checks whether the subagent faithfully delivers the
+  Panel's digest/source expansion without becoming a second summarizer.
 
 ## Core Principle
 
-Панэкс must treat the database as a collection of practitioner posts and
-comments, not as a ground-truth oracle.
+Панэкс must be a relay-only delivery layer over practitioner posts and comments,
+not as a ground-truth oracle and not as a second reducer.
 
-The answer should therefore frame output as:
+For default `expert_digest`, Панэкс must not summarize the digest again. It
+should deliver backend digest fields with minimal wrapping:
 
-- source-backed signals;
-- practitioner positions;
-- convergence / divergence;
-- caveats and missing evidence;
-- practical decision help.
+- compact Request passport;
+- scope and warnings;
+- per-expert `digest.position`, `digest.key_signals`, `digest.source_refs`,
+  `digest.comments_digest`, and `digest.omitted_counts`;
+- expansion candidates for targeted `source_expand`.
 
 It must not frame practitioner opinions as proof.
 
@@ -37,7 +38,7 @@ It must not frame practitioner opinions as proof.
 | Source grounding | Important claims reference `source_key` handles such as `refat:234`, or clearly name the source handles used. |
 | Signal honesty | The answer says "signals", "по источникам", "мнение", "похоже", "ограничение", "слабый сигнал" when evidence is not strong. |
 | Coverage | The answer covers the scenario-specific asks, not just a generic summary. |
-| Decision usefulness | The answer helps the user decide what to do: criteria, trade-offs, when yes/no, risks, next steps. |
+| Relay fidelity | The answer preserves backend digest fields and does not create a new meta-synthesis, fresh ranking, or project verdict. |
 | Nuance preservation | The answer keeps caveats, disagreement, and low-confidence areas visible. |
 | Brevity | The answer is compact enough for the parent chat, not a raw digest dump. |
 | Expand path | When deeper audit is useful, the answer suggests a targeted source/comment expansion step. |
@@ -90,24 +91,41 @@ The evaluator supports no-call `clarification` and `boundary` scenarios. Those
 scenarios intentionally do not require a Request passport or source handles,
 because a Request passport would imply that the agent actually called the API.
 
+## AND-28 Relay-Only Digest Delivery
+
+AND-28 changes default `expert_digest` output from synthesis to delivery.
+Панэкс is still useful as the safe cross-repo protocol layer: it calls Fly.io,
+saves artifacts, reads slices, preserves scope/warnings, and exposes source
+handles. It should not add another semantic reduce pass over the digest.
+
+Good default delivery shape:
+
+- Request passport;
+- Scope and warnings;
+- Expert digest delivery;
+- Expansion candidates.
+
+Red flags:
+
+- it creates a new meta-synthesis over already reduced digest fields;
+- it adds practical decision bullets, go/no-go recommendations, or project
+  applicability;
+- it reranks experts or sources beyond the order/calibration returned by the
+  digest;
+- it hides `source_refs`, `comments_digest`, `omitted_counts`, or warnings.
+
 ## Compact Default
 
 Default `expert_digest` answers should fit a parent-agent chat, not read like a
-full analyst report. Target range is roughly `3500-6000` characters, with a soft
-ceiling around `6500` unless the user explicitly asks for a deep/full answer.
+full analyst report. Keep them compact by delivering the digest fields instead
+of rewriting every signal into new analysis.
 
 Good compact shape:
 
 - compact Request passport;
-- short take / "Короткий вывод" in 2-4 sentences;
-- 3-5 source-backed signals with `source_key` handles;
-- 2-4 practical decision bullets;
-- limits and next expansion with 1-3 concrete `source_key` handles when deeper
-  audit would help.
-
-Long reports are acceptable only when the user explicitly asks for that style,
-for example "подробно", "глубоко", "разверни", "полный отчёт", "full report",
-or "deep analysis".
+- scope and warnings;
+- per-expert digest delivery with `source_key` handles;
+- limits and next expansion with concrete handles when deeper audit would help.
 
 For `source_expand`, the correct passport is intentionally lean:
 `source_keys_sent`, `target`, `mode`, and `warnings`. It does not need
@@ -121,6 +139,8 @@ lookup over source handles from a previous digest.
 - It gives strong conclusions without source handles or caveats.
 - It uses proof framing such as "доказано" or "scientifically proven" for
   practitioner opinions.
+- It second-summarizes the `expert_digest` into a new overall verdict.
+- It adds project-specific go/no-go or implementation recommendations.
 - It silently changes the user scope.
 - It automatically invokes Reddit, external browsing, GitHub cloning, or link
   summarization when the user only asked Панэкс.
@@ -131,7 +151,7 @@ lookup over source handles from a previous digest.
 - It runs a new `expert_digest` / `source_bundle` to satisfy an expansion phrase
   such as "раскрой по Рефату" unless the user explicitly asked to refresh or
   ask a new main question.
-- It produces a long report by default when a compact Signals answer would be
+- It produces a long report by default when compact digest delivery would be
   enough.
 
 ## Current Eval Tool

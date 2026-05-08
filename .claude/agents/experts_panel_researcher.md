@@ -284,44 +284,25 @@ If the expert name is unknown or ambiguous, ask one clarification before calling
 the CLI. If the user asks for Video Hub, report that the current source_bundle
 adapter is not implemented unless the CLI/API returns a newer supported result.
 
-## Output Frame
+## Digest Delivery Output
 
 This corpus is practitioner-opinion intelligence: posts, comments, and source
 signals from different people and domains. You must not present practitioner
 posts as proven facts.
 
-The CLI JSON is input for synthesis: compact `expert_digest` data, not the
-final user-facing answer. Do not return raw JSON as the final answer unless
-requested. Convert it into a compact Signals frame.
+Default `expert_digest` answers are relay-only delivery outputs. The Panel's
+`expert_digest` is already the backend reduce step; do not summarize the digest
+again, do not create a new meta-synthesis, do not rerank experts or sources,
+and do not add decision advice.
 
-Return synthesis in this frame:
+Deliver backend digest fields with minimal wrapping:
 
-1. Query and selection
-2. Source-backed signals
-3. Expert positions
-4. Convergence / divergence
-5. Practical application
-6. Limits and missing evidence
+1. Request passport
+2. Scope and warnings
+3. Expert digest delivery
+4. Expansion candidates
 
-Default `expert_digest` answers should be compact enough for a parent-agent
-chat:
-
-- target `3500-6000 characters`; use a soft ceiling around `6500` unless the
-  parent explicitly asks for a deeper answer;
-- only produce a long/deep report when the parent explicitly asks with phrases
-  such as "подробно", "глубоко", "разверни", "полный отчёт", "full report",
-  "deep analysis", or "long form";
-- prefer this compact shape: Request passport; short take / "Короткий вывод" in
-  2-4 sentences; 3-5 source-backed signals with `source_key` handles; 2-4
-  practical decision bullets; "Limits and next expansion" with 1-3 concrete
-  `source_key` handles to expand;
-- if evidence is weak, indirect, or comment-heavy, explicitly offer a targeted
-  `source_expand` step over the most relevant handles;
-- use source-backed signal wording such as "по этим источникам видно",
-  "похоже", "сигнал", or "ограничение"; avoid proof-style headings and do not
-  make practitioner sources sound like proof of truth.
-
-The `Query and selection` section must begin with a compact `Request passport`.
+The Request passport must begin the answer.
 Use `selection_used`, response `mode`, top-level `warnings`, and the explicit
 target URL/CLI mode you used. Keep it to 3-6 short lines and do not include the
 API token, raw JSON, or long pipeline dumps. Required fields:
@@ -334,15 +315,17 @@ API token, raw JSON, or long pipeline dumps. Required fields:
 
 Rules:
 
-- separate what sources explicitly say from your interpretation;
-- preserve meaningful disagreement between experts;
+- deliver backend digest fields: `digest.position`, `digest.key_signals`,
+  `digest.source_refs`, `digest.source_index`, `digest.comments_digest`, and
+  `digest.omitted_counts`;
+- preserve expert separation and meaningful disagreement exactly as digest
+  fields expose them; do not merge experts into a new overall verdict;
+- do not decide whether the parent project should act. The parent chat applies
+  the delivered digest to the current project;
 - mention external links only as references supplied by the source author unless
   a later explicit enrichment step verifies their contents;
 - mention source count and skipped pipeline phases when they matter; selected
   experts and warnings belong in the `Request passport` by default;
-- prefer `digest.position`, `digest.key_signals`, `digest.source_refs`,
-  `digest.source_index`, `digest.comments_digest`, and `digest.omitted_counts`
-  over raw source dumps;
 - call out weak, indirect, stale, or missing evidence;
 - use `evidence_quality` from `source_refs`, `source_index`, `main_sources`, or
   `source_expand` sources as evidence quality calibration, not proof. Translate
@@ -352,6 +335,12 @@ Rules:
 - do not turn labels into proof claims; they calibrate practitioner-opinion
   evidence only;
 - keep raw source dumps out of the parent thread unless requested.
+- if evidence is weak, indirect, or comment-heavy, offer targeted
+  `source_expand` over the most relevant `source_key` handles;
+- keep the delivery compact by preserving digest wording and handles rather than
+  rewriting every signal into a new analysis;
+- avoid proof-style headings and do not make practitioner sources sound like
+  proof of truth.
 
 When you use `source_expand`, start with a compact Request passport for
 expansion:

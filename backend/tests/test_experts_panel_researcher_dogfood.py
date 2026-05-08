@@ -23,13 +23,11 @@ DOGFOOD_SAMPLE_PATH = (
     / "experts_panel_researcher_source_bundle_sample.json"
 )
 
-SIGNALS_FRAME_SECTIONS = [
-    "Query and selection",
-    "Source-backed signals",
-    "Expert positions",
-    "Convergence / divergence",
-    "Practical application",
-    "Limits and missing evidence",
+DELIVERY_FRAME_SECTIONS = [
+    "Request passport",
+    "Scope and warnings",
+    "Expert digest delivery",
+    "Expansion candidates",
 ]
 
 
@@ -68,7 +66,7 @@ def test_dogfood_sample_exists_and_matches_source_bundle_shape():
     assert len(payload["experts"]) == 2
 
 
-def test_dogfood_sample_supports_every_signals_frame_section():
+def test_dogfood_sample_supports_relay_delivery_inputs():
     payload = _sample_payload()
     experts = {expert["expert_id"]: expert for expert in payload["experts"]}
 
@@ -110,15 +108,17 @@ def test_dogfood_sample_supports_every_signals_frame_section():
     assert "cross_expert_meta_synthesis" in payload["pipeline_skipped"]
 
 
-def test_agents_treat_cli_json_as_synthesis_input_not_final_answer():
+def test_agents_treat_expert_digest_as_relay_delivery_not_second_synthesis():
     instructions = _agent_instructions()
     normalized = _normalize(instructions)
 
     assert "--json" in instructions
-    assert "json is input for synthesis" in normalized
-    assert "do not return raw json as the final answer unless requested" in normalized
-    assert "compact signals frame" in normalized
-    for section in SIGNALS_FRAME_SECTIONS:
+    assert "relay-only delivery outputs" in normalized
+    assert "do not summarize the digest again" in normalized
+    assert "do not create a new meta-synthesis" in normalized
+    assert "deliver backend digest fields" in normalized
+    assert "practical decision bullets" not in normalized
+    for section in DELIVERY_FRAME_SECTIONS:
         assert section in instructions
 
 
@@ -187,5 +187,5 @@ def test_spec_records_and10_local_dogfood_contract():
     assert "experts_panel_researcher_source_bundle_sample.json" in spec
     assert "manual smoke" in normalized
     assert "local backend" in normalized
-    for section in SIGNALS_FRAME_SECTIONS:
+    for section in DELIVERY_FRAME_SECTIONS:
         assert section in spec

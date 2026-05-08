@@ -204,7 +204,7 @@
   ],
   "warnings": [
     "refat:9202: linked_context_without_provenance",
-    "dogfood_sample: synthetic fixture; use only for local Signals frame evaluation"
+    "dogfood_sample: synthetic fixture; use only for local delivery/evidence-note evaluation"
   ],
   "processing_time_ms": 42
 }

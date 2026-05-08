@@ -15,13 +15,11 @@ CLAUDE_AGENT_PATH = REPO_ROOT / ".claude" / "agents" / "experts_panel_researcher
 CODEX_AGENT_PATH = REPO_ROOT / ".codex" / "agents" / "experts_panel_researcher.toml"
 SPEC_PATH = REPO_ROOT / "docs" / "architecture" / "agent-context-api.md"
 
-SIGNALS_FRAME_SECTIONS = [
-    "Query and selection",
-    "Source-backed signals",
-    "Expert positions",
-    "Convergence / divergence",
-    "Practical application",
-    "Limits and missing evidence",
+DELIVERY_FRAME_SECTIONS = [
+    "Request passport",
+    "Expert digest delivery",
+    "Scope and warnings",
+    "Expansion candidates",
 ]
 
 FORBIDDEN_PROOF_FRAME_TERMS = [
@@ -372,25 +370,23 @@ def test_agents_keep_source_expand_output_as_lean_evidence_note_not_digest():
     assert "if the parent asked for raw text" in normalized
 
 
-def test_agents_default_to_compact_digest_answers_and_offer_targeted_expansion():
+def test_agents_default_to_relay_only_digest_delivery():
     combined = "\n".join([_read(CLAUDE_AGENT_PATH), _codex_agent_config()["developer_instructions"]])
     normalized = _normalize(combined)
 
-    assert "default expert_digest answers should be compact" in normalized
-    assert "3500-6000 characters" in normalized
-    assert "soft ceiling around 6500" in normalized
-    assert "only produce a long/deep report" in normalized
-    for explicit_deep_trigger in [
-        "подробно",
-        "глубоко",
-        "разверни",
-        "full report",
-        "deep analysis",
-    ]:
-        assert explicit_deep_trigger in normalized
-    assert "3-5 source-backed signals" in normalized
-    assert "2-4 practical decision bullets" in normalized
-    assert "1-3 concrete source_key handles" in normalized
+    assert "relay-only" in normalized
+    assert "do not summarize the digest again" in normalized
+    assert "do not create a new meta-synthesis" in normalized
+    assert "deliver backend digest fields" in normalized
+    assert "digest.position" in combined
+    assert "digest.key_signals" in combined
+    assert "digest.source_refs" in combined
+    assert "digest.omitted_counts" in combined
+    assert "expansion candidates" in normalized
+    assert "signals frame" not in normalized
+    assert "convert it into a compact signals frame" not in normalized
+    assert "practical decision bullets" not in normalized
+    assert "practical application" not in combined
     assert "weak, indirect, or comment-heavy" in normalized
     assert "proof-style headings" in normalized
 
@@ -408,11 +404,11 @@ def test_agents_surface_evidence_quality_calibration_without_proof_framing():
     assert "do not turn labels into proof claims" in normalized
 
 
-def test_agents_use_signals_frame_instead_of_proof_frame():
+def test_agents_use_delivery_frame_instead_of_proof_frame():
     combined = "\n".join([_read(CLAUDE_AGENT_PATH), _codex_agent_config()["developer_instructions"]])
     normalized = _normalize(combined)
 
-    for section in SIGNALS_FRAME_SECTIONS:
+    for section in DELIVERY_FRAME_SECTIONS:
         assert section in combined
 
     assert "must not present practitioner posts as proven facts" in normalized
@@ -421,12 +417,12 @@ def test_agents_use_signals_frame_instead_of_proof_frame():
         assert forbidden_term not in combined
 
 
-def test_agents_include_compact_request_passport_in_query_selection():
+def test_agents_include_compact_request_passport_in_digest_delivery():
     combined = "\n".join([_read(CLAUDE_AGENT_PATH), _codex_agent_config()["developer_instructions"]])
     normalized = _normalize(combined)
 
     assert "request passport" in normalized
-    assert "query and selection" in normalized
+    assert "must begin the answer" in normalized
     for field in [
         "query_sent",
         "experts_sent",
@@ -459,7 +455,7 @@ def test_agent_files_do_not_store_token_values():
         assert secret_literal not in combined
 
 
-def test_spec_records_and9_and_signals_frame_contract():
+def test_spec_records_and9_and_delivery_frame_contract():
     spec = _read(SPEC_PATH)
     normalized = _normalize(spec)
 
@@ -479,7 +475,7 @@ def test_spec_records_and9_and_signals_frame_contract():
         "warnings",
     ]:
         assert field in spec
-    for section in SIGNALS_FRAME_SECTIONS:
+    for section in DELIVERY_FRAME_SECTIONS:
         assert section in spec
     for forbidden_term in FORBIDDEN_PROOF_FRAME_TERMS:
         assert forbidden_term not in spec

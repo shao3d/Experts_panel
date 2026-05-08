@@ -10,13 +10,14 @@ in any repo.
 
 Панэкс is an explicit-only bridge to Experts Panel on Fly.io. It helps a parent
 agent ask selected practitioners/experts for context, patterns, trade-offs, and
-source-backed signals.
+source-backed signals, then delivers the Panel digest without a second summary.
 
 Default behavior:
 
 - uses production Fly.io;
 - searches selected experts with forced hybrid/embedding retrieval;
 - returns `expert_digest`, not a giant raw bundle;
+- treats `expert_digest` as already reduced Panel output;
 - saves full real-call responses as local artifacts for subagent workflows;
 - includes direct comments under selected answer sources;
 - includes `source_key` handles for follow-up expansion;
@@ -131,10 +132,11 @@ This keeps the explicit-only boundary and avoids parent-chat stdout truncation.
 
 The parent chat may pass current-project context to Панэкс as a retrieval lens:
 domain, constraints, target audience, architecture area, or decision question.
-Панэкс should use that context only to search and summarize Experts Panel
-signals. It should not make project-specific PM, product, backend, architecture,
-roadmap, go/no-go, or implementation recommendations. Final applicability
-analysis stays in the parent chat.
+Панэкс should use that context only to search and deliver Experts Panel digest
+fields. It should not make project-specific PM, product, backend, architecture,
+roadmap, go/no-go, or implementation recommendations. It should not summarize
+the digest again or create a new meta-synthesis. Final applicability analysis
+stays in the parent chat.
 
 ## Expand Sources
 
