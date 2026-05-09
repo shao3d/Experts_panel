@@ -70,6 +70,14 @@ Boundary:
 Use when the user wants decision-grade external evidence for a later Haft
 analysis.
 
+Current implementation:
+
+- global Codex agent: `/Users/andreysazonov/.codex/agents/web-researcher.toml`;
+- trigger mode: `Pre-Haft Evidence Packet mode`;
+- Harvester target: private VPS sidecar through SSH, `deploy@153.75.248.11`;
+- Harvester API from VPS: `http://127.0.0.1:8000`;
+- required Harvester request mode: `POST /research` with `mode=standard`.
+
 What it does:
 
 1. Runs discovery like normal `Вебсёрчер`:
@@ -90,6 +98,11 @@ What it does:
    - candidate comparison dimensions;
    - source quality labels.
 
+The global `web_researcher` must surface the Harvester `job_id`, final
+`status`, `error`/warnings when present, and `citation_integrity`. If Harvester
+is unavailable or returns degraded citation integrity, the packet is incomplete
+and must say so explicitly.
+
 Typical phrases:
 
 - "Вебсёрчер, собери фактуру под Хафт..."
@@ -104,6 +117,8 @@ Boundary:
 - Harvester standard is mandatory for the key decision sources.
 - It should not run Harvester deep unless the user explicitly asks for
   `Дипресёрчер` / `deep research`.
+- It should not pretend a source was read merely because it appeared in search;
+  source reading must be backed by Harvester `citation_integrity`.
 
 ## 4. Дипресёрчер
 

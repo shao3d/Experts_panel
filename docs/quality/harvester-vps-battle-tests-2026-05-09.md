@@ -275,8 +275,8 @@ Continue hardening before broader product use:
 1. Re-test the `report.md` recovery hardening with an end-to-end missing-report
    case: completed recovered jobs must persist `report.md`, mark the result
    degraded, and never use sub-agent messages as fallback.
-2. Wire `mode=standard` into `web_researcher` pre-Haft mode so decision-grade
-   packets always pass through extract-backed Harvester standard research.
+2. Run a fresh-session live dogfood of global `web_researcher` pre-Haft mode
+   and verify the agent actually calls Harvester `mode=standard`.
 3. Keep `mode=deep` reserved for explicit deep-research requests, because the
    production battle tests show it can exceed a normal interactive waiting
    budget.

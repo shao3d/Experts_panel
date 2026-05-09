@@ -480,10 +480,36 @@ Expected:
   or reused as another password.
 - Keep public ports closed until there is a deliberate auth/reverse-proxy plan.
 
+## Global Agent Integration
+
+`web_researcher` is configured at user level:
+
+```text
+/Users/andreysazonov/.codex/agents/web-researcher.toml
+```
+
+For normal quick web research, it stays on ordinary web/Tavily/Reddit search.
+For `Pre-Haft Evidence Packet mode`, it must also call this private VPS
+Harvester sidecar with:
+
+```json
+{
+  "mode": "standard",
+  "max_report_chars": 9000,
+  "language": "auto"
+}
+```
+
+The agent must return Harvester `job_id`, `status`, `error`/warnings when
+present, and `citation_integrity`, and it must keep search-only discovery
+separate from extract-backed Harvester sources.
+
+`mode=deep` remains explicit-only for `Дипресёрчер` / `deep research`.
+
 ## Next Hardening Options
 
-1. Wire `mode=standard` into `web_researcher` pre-Haft mode so key external
-   sources always go through Harvester `search -> extract -> report`.
+1. Run a live `web_researcher` pre-Haft dogfood from a fresh Codex session and
+   verify it actually calls Harvester `mode=standard`.
 2. Add a small authenticated reverse proxy if browser/API access without SSH
    tunnel becomes necessary.
 3. Add scheduled `docker compose ps` / health probe and log rotation checks.
