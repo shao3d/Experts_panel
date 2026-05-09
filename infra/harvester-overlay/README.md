@@ -1,0 +1,45 @@
+# Harvester VPS Overlay
+
+This directory is the source-controlled overlay for the live
+Searcharvester/Harvester sidecar deployed on the InterServer VPS.
+
+The live server path is:
+
+```text
+/opt/searcharvester
+```
+
+The overlay intentionally includes only rebuildable source/config artifacts:
+
+- `docker-compose.yaml`
+- `config.example.yaml`
+- `frontend/`
+- `simple_tavily_adapter/`
+- `vertex-openai-proxy/`
+- `hermes_skills/`
+- `hermes-data/config.yaml`
+- `hermes-data/SOUL.md`
+
+It intentionally excludes runtime and secret material:
+
+- `.env`
+- `config.yaml`
+- `secrets/`
+- `jobs/`
+- generated `hermes-data/` state, sessions, logs, memories, skills, and DB files
+
+To deploy, copy this directory to the VPS, provide secrets out-of-band, generate
+`config.yaml` from `config.example.yaml`, then run Docker Compose.
+
+`simple_tavily_adapter` owns the `/research` result contract. Completed jobs
+must read a physical `report.md`; if that file is missing, recovery is allowed
+only from the final top-level lead-agent message. Recovered reports are written
+back to `report.md` and marked degraded. Sub-agent messages are not valid final
+report fallbacks.
+
+See:
+
+```text
+docs/guides/harvester-vps-deploy.md
+docs/quality/harvester-vps-battle-tests-2026-05-09.md
+```

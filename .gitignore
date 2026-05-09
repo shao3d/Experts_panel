@@ -64,6 +64,8 @@ downloads/
 eggs/
 .eggs/
 lib/
+!infra/harvester-overlay/frontend/src/lib/
+!infra/harvester-overlay/frontend/src/lib/**
 lib64/
 parts/
 sdist/
