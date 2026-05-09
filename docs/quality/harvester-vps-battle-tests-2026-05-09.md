@@ -123,6 +123,43 @@ terminal failed: BLOCKED: User denied. Do NOT retry.
 The job recovered by writing the report through another path, but the callback
 mismatch should be fixed or avoided.
 
+## Follow-Up: Citation Integrity Live Smoke
+
+After implementing final-report citation hardening, a live VPS smoke was run
+against `/research`:
+
+```text
+job_id: 88ccd3de1dc74950
+query: Short cited smoke test for "what is SearXNG and why self-host it"
+status: completed
+duration_sec: 466.581114
+report_chars: 5060
+error: citation contract degraded - unverified citations: 7
+```
+
+Observed `citation_integrity`:
+
+```json
+{
+  "total_urls": 15,
+  "verified_urls": 8,
+  "unverified_urls": 7
+}
+```
+
+The live `report.md` persisted under
+`/opt/searcharvester/jobs/88ccd3de1dc74950/report.md` and included:
+
+- a `## Citation Integrity` section;
+- `[search_only_unverified]` markers on unverified references;
+- a final `done` event payload with `degraded: true`,
+  `citation_integrity`, and `note`.
+
+This confirms the API no longer silently blends search-only URLs with
+extract-backed citations. It also confirms the remaining product issue:
+even a short smoke query still ran the full deep pipeline and took about
+7.8 minutes.
+
 ## Verdict
 
 The VPS deployment is operational, but not yet "strict research grade".
@@ -149,11 +186,9 @@ The VPS deployment is operational, but not yet "strict research grade".
 
 Continue hardening before broader product use:
 
-1. Re-test citation-integrity hardening end-to-end on live jobs: final reports
-   should include `citation_integrity` and label unverified URLs.
-2. Re-test the `report.md` recovery hardening with an end-to-end missing-report
+1. Re-test the `report.md` recovery hardening with an end-to-end missing-report
    case: completed recovered jobs must persist `report.md`, mark the result
    degraded, and never use sub-agent messages as fallback.
-3. Add request-level knobs for `mode`, `language`, and `max_report_chars`.
-4. Re-run the same five scenarios and compare latency, partial counts, and
+2. Add request-level knobs for `mode`, `language`, and `max_report_chars`.
+3. Re-run the same five scenarios and compare latency, partial counts, and
    report fidelity.
