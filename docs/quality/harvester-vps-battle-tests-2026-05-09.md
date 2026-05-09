@@ -160,6 +160,53 @@ extract-backed citations. It also confirms the remaining product issue:
 even a short smoke query still ran the full deep pipeline and took about
 7.8 minutes.
 
+## Follow-Up: Standard Mode Live Smoke
+
+After adding `POST /research` request modes, a short `mode=standard` smoke was
+run against the live VPS:
+
+```text
+job_id: 1d1bf2594865414b
+query: In 2 cited bullets, what is SearXNG and why would someone self-host it? Keep it short.
+mode: standard
+max_report_chars: 3000
+language: en
+status: completed
+duration_sec: 26.594431
+error: null
+```
+
+Observed `citation_integrity`:
+
+```json
+{
+  "total_urls": 2,
+  "verified_urls": 2,
+  "unverified_urls": 0,
+  "unverified": []
+}
+```
+
+Snapshot checks:
+
+```text
+artifacts: plan.md=441, report.md=1374, hermes.log=1663
+event_count: 22
+delegate_mentions: 0
+```
+
+An earlier `mode=standard` smoke completed in about 34.6s but returned
+`citation contract degraded - unverified citations: 1`. The standard
+prompt/skill was tightened so final reports must not include raw URLs unless
+that exact URL was extracted and read. The next smoke passed with no unverified
+citations.
+
+Product implication: Harvester now has the split needed by the four-channel
+research operating model:
+
+- `mode=standard`: bounded extract-backed report for `Вебсёрчер под Хафт`;
+- `mode=deep`: existing multi-agent deep research for `Дипресёрчер`.
+
 ## Verdict
 
 The VPS deployment is operational, but not yet "strict research grade".
@@ -169,6 +216,9 @@ The VPS deployment is operational, but not yet "strict research grade".
 - The Harvester stack runs on the VPS and survives several real research jobs.
 - The custom Vertex AI proxy is viable for Hermes tool-calling in this setup.
 - The current deep-research flow can produce useful reports, but it is slow.
+- `mode=standard` can complete a short extract-backed report without
+  `delegate_task`; the first clean VPS smoke finished in about 26.6 seconds
+  with 2/2 URLs verified by extracts.
 - Partial URL grounding was a repeated, not theoretical, issue before
   final-report citation hardening.
 - Before hardening, completed jobs did not always produce a physical
@@ -178,7 +228,7 @@ The VPS deployment is operational, but not yet "strict research grade".
 
 - Final reports may still contain search-only URLs, but the adapter now labels
   them `search_only_unverified`; product surfaces must make that warning visible.
-- The default deep-research path can exceed a normal interactive waiting budget.
+- `mode=deep` can exceed a normal interactive waiting budget.
 - A user may ask for "short" or "на русском", but the system currently enforces
   those constraints softly.
 
@@ -189,6 +239,7 @@ Continue hardening before broader product use:
 1. Re-test the `report.md` recovery hardening with an end-to-end missing-report
    case: completed recovered jobs must persist `report.md`, mark the result
    degraded, and never use sub-agent messages as fallback.
-2. Add request-level knobs for `mode`, `language`, and `max_report_chars`.
+2. Run broader production dogfood for `mode=standard` on 3-5 realistic
+   pre-Haft style prompts.
 3. Re-run the same five scenarios and compare latency, partial counts, and
    report fidelity.

@@ -5,7 +5,7 @@ Endpoints:
 - POST /search                       — Tavily-совместимый поиск
 - POST /extract                      — Извлечение страницы в markdown (s/m/l/f)
 - GET  /extract/{id}/{page}          — Пагинация для size=f
-- POST /research                     — Запустить deep-research задачу (ephemeral Hermes)
+- POST /research                     — Запустить standard/deep research задачу
 - GET  /research/{job_id}            — Статус / готовый report.md
 - GET  /research/{job_id}/logs       — Hermes stdout/stderr (для отладки)
 - DELETE /research/{job_id}          — Cancel активной задачи
@@ -37,7 +37,7 @@ from orchestrator import Orchestrator, Job, JobStatus
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Searcharvester", version="2.3.0")
+app = FastAPI(title="Searcharvester", version="2.4.0")
 
 # ---------- CORS ----------
 # Frontend dev server is on :9762. Prod build served by the same origin or
@@ -84,6 +84,7 @@ def _build_orchestrator() -> Orchestrator | None:
     return Orchestrator(
         hermes_bin=hermes_bin,
         skills=[
+            "searcharvester-standard-research",
             "searcharvester-deep-research",
             "searcharvester-search",
             "searcharvester-extract",
@@ -413,18 +414,30 @@ async def extract_page(
 # ---------- /research ----------
 
 class ResearchRequest(BaseModel):
-    query: constr(min_length=1, max_length=2000)  # type: ignore[valid-type]
+    query: constr(strip_whitespace=True, min_length=1, max_length=2000)  # type: ignore[valid-type]
+    mode: Literal["standard", "deep"] = Field(
+        default="standard",
+        description="standard=bounded extract-backed research, deep=multi-agent deep research",
+    )
+    max_report_chars: int | None = Field(default=None, ge=1000, le=50000)
+    language: Literal["auto", "en", "ru"] = "auto"
 
 
 class ResearchCreated(BaseModel):
     job_id: str
     status: str
+    mode: str
+    max_report_chars: int
+    language: str
 
 
 class ResearchStatus(BaseModel):
     job_id: str
     status: str
     query: str
+    mode: str
+    max_report_chars: int
+    language: str
     started_at: str | None = None
     finished_at: str | None = None
     duration_sec: float | None = None
@@ -450,6 +463,9 @@ def _job_to_status(job: Job) -> ResearchStatus:
         job_id=job.id,
         status=job.status.value,
         query=job.query,
+        mode=job.mode,
+        max_report_chars=job.max_report_chars,
+        language=job.language,
         started_at=job.started_at.isoformat() if job.started_at else None,
         finished_at=job.finished_at.isoformat() if job.finished_at else None,
         duration_sec=job.duration_sec,
@@ -501,10 +517,26 @@ def _job_artifacts(job: Job) -> dict[str, int]:
 
 
 @app.post("/research", response_model=ResearchCreated, status_code=202)
-async def research_create(req: ResearchRequest) -> dict[str, str]:
+async def research_create(req: ResearchRequest) -> dict[str, Any]:
     orch = _ensure_orchestrator()
-    job_id = await orch.spawn(query=req.query)
-    return {"job_id": job_id, "status": "queued"}
+    job_id = await orch.spawn(
+        query=req.query,
+        mode=req.mode,
+        max_report_chars=req.max_report_chars,
+        language=req.language,
+    )
+    job = orch.get(job_id)
+    return {
+        "job_id": job_id,
+        "status": "queued",
+        "mode": job.mode if job is not None else req.mode,
+        "max_report_chars": (
+            job.max_report_chars
+            if job is not None
+            else (req.max_report_chars or (6000 if req.mode == "standard" else 20000))
+        ),
+        "language": job.language if job is not None else req.language,
+    }
 
 
 @app.get("/research/{job_id}", response_model=ResearchStatus)
@@ -562,6 +594,9 @@ async def research_events(job_id: str):
                 "data": json.dumps({
                     "job_id": final.id,
                     "status": final.status.value,
+                    "mode": final.mode,
+                    "max_report_chars": final.max_report_chars,
+                    "language": final.language,
                     "duration_sec": final.duration_sec,
                     "has_report": final.report is not None,
                     "error": final.error,
@@ -584,6 +619,9 @@ async def research_snapshot(job_id: str) -> dict[str, Any]:
     return {
         "job_id": job_id,
         "status": job.status.value,
+        "mode": job.mode,
+        "max_report_chars": job.max_report_chars,
+        "language": job.language,
         "phase": _job_phase(job),
         "artifacts": _job_artifacts(job),
         "events": [e.to_dict() for e in events],
@@ -607,7 +645,7 @@ async def health() -> dict[str, Any]:
     return {
         "status": "ok",
         "service": "searcharvester",
-        "version": "2.3.0",
+        "version": "2.4.0",
         "orchestrator": "available" if orchestrator is not None else "unavailable",
     }
 

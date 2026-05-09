@@ -7,6 +7,7 @@ import DebugDrawer from "./components/DebugDrawer";
 import {
   API_URL,
   AgentEvent,
+  ResearchMode,
   JobStatus,
   JobTerminalStatus,
   SSESubscription,
@@ -21,6 +22,7 @@ import {
 interface ActiveJob {
   jobId: string;
   query: string;
+  mode: ResearchMode;
 }
 
 function useHealth() {
@@ -54,7 +56,8 @@ function useHashJob(): [
       const params = new URLSearchParams(raw);
       const id = params.get("job");
       const q = params.get("q");
-      if (id && q) setJob({ jobId: id, query: q });
+      const mode = params.get("mode") === "deep" ? "deep" : "standard";
+      if (id && q) setJob({ jobId: id, query: q, mode });
       else setJob(null);
     };
     parseHash();
@@ -64,7 +67,7 @@ function useHashJob(): [
 
   const writeJob = useCallback((j: ActiveJob | null) => {
     if (j) {
-      const p = new URLSearchParams({ job: j.jobId, q: j.query });
+      const p = new URLSearchParams({ job: j.jobId, q: j.query, mode: j.mode });
       window.location.hash = p.toString();
     } else {
       history.replaceState(null, "", window.location.pathname);
@@ -125,6 +128,9 @@ export default function App() {
         setFinalStatus({
           job_id: snapshot.job_id,
           status: snapshot.status,
+          mode: snapshot.mode,
+          max_report_chars: snapshot.max_report_chars,
+          language: snapshot.language,
           duration_sec: snapshot.duration_sec,
           has_report: snapshot.report !== null,
           error: snapshot.error,
@@ -174,10 +180,10 @@ export default function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [job?.jobId]);
 
-  const onSubmit = async (query: string) => {
+  const onSubmit = async (query: string, mode: ResearchMode) => {
     try {
-      const res = await createResearch(query);
-      setJob({ jobId: res.job_id, query });
+      const res = await createResearch(query, mode);
+      setJob({ jobId: res.job_id, query, mode: res.mode });
     } catch (e) {
       alert(`Failed to start research: ${(e as Error).message}`);
     }
@@ -238,6 +244,7 @@ export default function App() {
         {job && (
           <JobStatusCard
             query={job.query}
+            mode={job.mode}
             jobId={job.jobId}
             events={events}
             finalStatus={finalStatus}

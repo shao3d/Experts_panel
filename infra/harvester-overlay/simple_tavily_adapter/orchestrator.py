@@ -24,7 +24,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from events import Event, normalize_acp_update
 
@@ -38,15 +38,40 @@ RECOVERED_REPORT_WARNING = "report.md missing - recovered final lead message"
 MISSING_REPORT_ERROR = "agent finished without report.md or final lead message"
 CITATION_UNVERIFIED_MARKER = "[search_only_unverified]"
 CITATION_DEGRADED_PREFIX = "citation contract degraded - unverified citations"
+ResearchMode = Literal["standard", "deep"]
+LanguageMode = Literal["auto", "en", "ru"]
+STANDARD_RESEARCH_SKILL = "searcharvester-standard-research"
+DEEP_RESEARCH_SKILL = "searcharvester-deep-research"
+SEARCH_SKILL = "searcharvester-search"
+EXTRACT_SKILL = "searcharvester-extract"
+DEFAULT_MAX_REPORT_CHARS_BY_MODE: dict[str, int] = {
+    "standard": 6000,
+    "deep": 20000,
+}
 
-# Appended to every user query. Keeps the agent honest about where the final
-# report lives and nudges it away from reflexive refusals on legitimate
-# public-web research tasks.
-def _mandatory_suffix() -> str:
-    """Prompt suffix — kept short. Defers detail to the
-    searcharvester-deep-research skill."""
-    from datetime import datetime, timezone
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+def _today_utc() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+
+def _language_instruction(language: LanguageMode) -> str:
+    if language == "ru":
+        return "Write the final report in Russian."
+    if language == "en":
+        return "Write the final report in English."
+    return "Write the final report in the user's language."
+
+
+def effective_max_report_chars(
+    mode: ResearchMode,
+    max_report_chars: int | None,
+) -> int:
+    return max_report_chars or DEFAULT_MAX_REPORT_CHARS_BY_MODE[mode]
+
+
+def _standard_suffix(language: LanguageMode, max_report_chars: int) -> str:
+    """Prompt suffix for bounded extract-backed research without sub-agents."""
+    today = _today_utc()
+    language_hint = _language_instruction(language)
     return f"""
 
 ---
@@ -54,7 +79,49 @@ CONTEXT — today's date is {today}. Your training data is older than
 this, so anything you "know" about records, counts, versions, or
 current holders may be outdated. TRUST SOURCES OVER MEMORY.
 
-INSTRUCTIONS — use the `searcharvester-deep-research` skill. It runs a
+MODE — STANDARD RESEARCH.
+
+INSTRUCTIONS — use the `{STANDARD_RESEARCH_SKILL}` skill. This is a
+bounded extract-backed reading task, not deep research.
+
+Hard constraints:
+- Do NOT use delegate_task.
+- Do NOT spawn researcher, critic, or fact-checker sub-agents.
+- First find candidate URLs with `{SEARCH_SKILL}` / search.py.
+- Then choose the key sources and read them with `{EXTRACT_SKILL}` / extract.py.
+- Treat search results as discovery only. Evidence requires a saved extract.
+- Do not put any URL in `./report.md` unless you ran extract.py for that exact
+  URL and read the saved `./extracts/<id>.md` file.
+- If a search-only URL influenced source selection, mention it without a raw URL
+  or leave it out. The final citation contract will mark unextracted URLs as
+  degraded.
+- Write the final answer to `./report.md`.
+- Target maximum report length: {max_report_chars} characters.
+- {language_hint}
+
+Output: `./report.md` (relative path). Finish with:
+
+    REPORT_SAVED: ./report.md"""
+
+
+# Appended to deep user queries. Keeps the agent honest about where the final
+# report lives and nudges it away from reflexive refusals on legitimate
+# public-web research tasks.
+def _deep_suffix(language: LanguageMode, max_report_chars: int) -> str:
+    """Prompt suffix — kept short. Defers detail to the
+    searcharvester-deep-research skill."""
+    today = _today_utc()
+    language_hint = _language_instruction(language)
+    return f"""
+
+---
+CONTEXT — today's date is {today}. Your training data is older than
+this, so anything you "know" about records, counts, versions, or
+current holders may be outdated. TRUST SOURCES OVER MEMORY.
+
+MODE — DEEP RESEARCH.
+
+INSTRUCTIONS — use the `{DEEP_RESEARCH_SKILL}` skill. It runs a
 two-round pipeline:
   Round 1: delegate_task([researchers...])  — 2–3 researchers in parallel
   Round 2: delegate_task([critic, fact-checker])  — with the
@@ -73,7 +140,37 @@ task in EVERY delegate_task call, the FIRST line of context must be:
 Sub-agents have stale training data too — without this preamble they
 search for "latest 2024" news in {today[:4]} and miss everything new.
 
+Target maximum report length: {max_report_chars} characters unless the
+evidence genuinely requires a longer report. {language_hint}
+
 Output: `./report.md` (relative path), following the skill's format."""
+
+
+def _research_suffix(
+    mode: ResearchMode,
+    language: LanguageMode,
+    max_report_chars: int,
+) -> str:
+    if mode == "standard":
+        return _standard_suffix(language, max_report_chars)
+    return _deep_suffix(language, max_report_chars)
+
+
+def _skills_for_mode(skills: list[str], mode: ResearchMode) -> list[str]:
+    desired = (
+        [STANDARD_RESEARCH_SKILL, SEARCH_SKILL, EXTRACT_SKILL]
+        if mode == "standard"
+        else [DEEP_RESEARCH_SKILL, SEARCH_SKILL, EXTRACT_SKILL]
+    )
+    selected = [skill for skill in desired if skill in skills]
+    return selected or list(skills)
+
+
+def _mandatory_suffix() -> str:
+    return _deep_suffix(
+        language="auto",
+        max_report_chars=DEFAULT_MAX_REPORT_CHARS_BY_MODE["deep"],
+    )
 
 
 # Keep the module-level constant for back-compat but it's evaluated once
@@ -95,6 +192,9 @@ class JobStatus(str, Enum):
 class Job:
     id: str
     query: str
+    mode: ResearchMode = "standard"
+    max_report_chars: int = DEFAULT_MAX_REPORT_CHARS_BY_MODE["standard"]
+    language: LanguageMode = "auto"
     status: JobStatus = JobStatus.queued
     workspace_path: Path | None = None
     started_at: datetime | None = None
@@ -147,14 +247,25 @@ class Orchestrator:
 
     # ---------- public API ----------
 
-    async def spawn(self, query: str) -> str:
+    async def spawn(
+        self,
+        query: str,
+        *,
+        mode: ResearchMode = "standard",
+        max_report_chars: int | None = None,
+        language: LanguageMode = "auto",
+    ) -> str:
         job_id = uuid.uuid4().hex[:16]
         workspace = self._jobs_dir / job_id
         workspace.mkdir(parents=True, exist_ok=True)
+        effective_max = effective_max_report_chars(mode, max_report_chars)
 
         job = Job(
             id=job_id,
             query=query,
+            mode=mode,
+            max_report_chars=effective_max,
+            language=language,
             status=JobStatus.queued,
             workspace_path=workspace,
             started_at=datetime.now(timezone.utc),
@@ -163,7 +274,7 @@ class Orchestrator:
         async with self._lock:
             self._jobs[job_id] = job
 
-        asyncio.create_task(self._run(job_id, query))
+        asyncio.create_task(self._run(job_id, query, mode, effective_max, language))
         return job_id
 
     def get(self, job_id: str) -> Job | None:
@@ -270,12 +381,26 @@ class Orchestrator:
             async with cond:
                 cond.notify_all()
 
-    async def _run(self, job_id: str, query: str) -> None:
+    async def _run(
+        self,
+        job_id: str,
+        query: str,
+        mode: ResearchMode,
+        max_report_chars: int,
+        language: LanguageMode,
+    ) -> None:
         job = self._jobs[job_id]
+        prompt_skills = _skills_for_mode(self._skills, mode)
         await self._emit(job, Event.now(
             job_id=job_id, agent_id="lead", type="spawn",
-            payload={"query": query, "skills": self._skills,
-                     "hermes_bin": self._hermes_bin},
+            payload={
+                "query": query,
+                "mode": mode,
+                "max_report_chars": max_report_chars,
+                "language": language,
+                "skills": prompt_skills,
+                "hermes_bin": self._hermes_bin,
+            },
         ))
 
         # Lazy import — acp SDK lives inside the hermes venv.
@@ -375,13 +500,13 @@ class Orchestrator:
             # the same `--skills` contract through the /skills slash command.
             # Simpler: shove skills load into the query text itself (agent reads
             # SKILL.md when it sees the name). That matches chat-mode behaviour.
-            skills_hint = ", ".join(self._skills)
+            skills_hint = ", ".join(prompt_skills)
             # Build suffix per-call so the current-date hint stays fresh
             # even on long-running containers.
             wrapped = (
                 f"Use these skills: {skills_hint}.\n\n"
                 f"{query}"
-                f"{_mandatory_suffix()}"
+                f"{_research_suffix(mode, language, max_report_chars)}"
             )
 
             prompt_task = asyncio.create_task(

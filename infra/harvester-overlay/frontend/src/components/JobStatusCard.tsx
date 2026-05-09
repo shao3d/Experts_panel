@@ -1,8 +1,9 @@
 import { Clock, Loader2, Square, XCircle, CheckCircle2, AlertTriangle } from "lucide-react";
-import { AgentEvent, JobStatus, JobTerminalStatus } from "../lib/api";
+import { AgentEvent, JobStatus, JobTerminalStatus, ResearchMode } from "../lib/api";
 
 interface Props {
   query: string;
+  mode: ResearchMode;
   jobId: string;
   events: AgentEvent[];
   finalStatus: JobTerminalStatus | null;
@@ -57,6 +58,7 @@ function elapsedFromEvents(events: AgentEvent[], final: JobTerminalStatus | null
 
 export default function JobStatusCard({
   query,
+  mode,
   jobId,
   events,
   finalStatus,
@@ -80,7 +82,12 @@ export default function JobStatusCard({
       <div className="px-5 py-4 border-b border-base-700 flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Research query</div>
-          <div className="text-slate-100 font-medium line-clamp-2">{query}</div>
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-slate-100 font-medium line-clamp-2">{query}</span>
+            <span className="shrink-0 rounded border border-base-700 bg-base-900 px-2 py-0.5 text-[11px] font-mono uppercase text-slate-400">
+              {mode}
+            </span>
+          </div>
           <div className="text-xs text-slate-500 mt-1 font-mono">job: {jobId}</div>
         </div>
         <div className="flex items-center gap-3 shrink-0">

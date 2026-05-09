@@ -78,7 +78,7 @@ services:
       # events.jsonl). Exposed on the host for inspection / post-mortem.
       - ./jobs:/srv/searxng-docker/jobs:rw
       # HERMES_HOME — config.yaml, SOUL.md, skills. Bundled skills get
-      # synced on boot; our 3 custom skills ship alongside in skills/.
+      # synced on boot; custom Harvester skills ship alongside in skills/.
       - ./hermes-data:/opt/data:rw
       - ./hermes_skills:/opt/searcharvester-hermes-skills:ro
     environment:

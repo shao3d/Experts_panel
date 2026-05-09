@@ -37,8 +37,52 @@ def test_post_research_returns_202_and_job_id(client):
     c, orch = client
     r = c.post("/research", json={"query": "what is RAG"})
     assert r.status_code == 202
-    assert r.json() == {"job_id": "abcdef0123456789", "status": "queued"}
-    orch.spawn.assert_awaited_once_with(query="what is RAG")
+    assert r.json() == {
+        "job_id": "abcdef0123456789",
+        "status": "queued",
+        "mode": "standard",
+        "max_report_chars": 6000,
+        "language": "auto",
+    }
+    orch.spawn.assert_awaited_once_with(
+        query="what is RAG",
+        mode="standard",
+        max_report_chars=None,
+        language="auto",
+    )
+
+
+def test_post_research_accepts_deep_mode_options(client):
+    c, orch = client
+    r = c.post(
+        "/research",
+        json={
+            "query": "compare hosted search options",
+            "mode": "deep",
+            "max_report_chars": 16000,
+            "language": "ru",
+        },
+    )
+    assert r.status_code == 202
+    assert r.json() == {
+        "job_id": "abcdef0123456789",
+        "status": "queued",
+        "mode": "deep",
+        "max_report_chars": 16000,
+        "language": "ru",
+    }
+    orch.spawn.assert_awaited_once_with(
+        query="compare hosted search options",
+        mode="deep",
+        max_report_chars=16000,
+        language="ru",
+    )
+
+
+def test_post_research_unknown_mode_returns_422(client):
+    c, _ = client
+    r = c.post("/research", json={"query": "what is RAG", "mode": "quick"})
+    assert r.status_code == 422
 
 
 def test_get_research_unknown_returns_404(client):
@@ -55,6 +99,7 @@ def test_get_research_running_does_not_include_report(client):
     assert r.status_code == 200
     body = r.json()
     assert body["status"] == "running"
+    assert body["mode"] == "standard"
     assert body.get("report") is None
 
 

@@ -78,7 +78,7 @@ API endpoints:
 
 - `POST /search` - Tavily-compatible search through SearXNG.
 - `POST /extract` - URL to markdown extraction through trafilatura.
-- `POST /research` - deep research job through Hermes.
+- `POST /research` - standard or deep research job through Hermes.
 - `GET /research/{job_id}` - status and final `report.md`.
 - `GET /research/{job_id}/events` - structured job events.
 - `GET /research/{job_id}/logs` - Hermes logs.
@@ -369,7 +369,7 @@ Research smoke:
 ```bash
 curl -sS -X POST http://127.0.0.1:8000/research \
   -H "Content-Type: application/json" \
-  -d '{"query":"In 3 cited bullets, what is SearXNG? Use 2 sources. Keep the report short."}'
+  -d '{"query":"In 3 cited bullets, what is SearXNG? Use 2 sources. Keep the report short.","mode":"standard"}'
 ```
 
 Then poll:
@@ -391,8 +391,8 @@ The run completed:
 
 - skill loading;
 - `plan.md` creation;
-- round 1 researcher delegation;
-- round 2 critic/fact-checker delegation;
+- `mode=deep` round 1 researcher delegation;
+- `mode=deep` round 2 critic/fact-checker delegation;
 - final `report.md` write;
 - report retrieval through `GET /research/{job_id}`.
 
@@ -451,7 +451,9 @@ Expected:
   - If there is no final lead message, the job fails with
     `agent finished without report.md or final lead message`.
 - `/research` is naturally slow. The successful smoke took about 5 minutes for
-  a small query.
+  a small deep query. `mode=standard` is the bounded extract-backed path for
+  fast/Haft-ready evidence packets; `mode=deep` keeps the multi-agent
+  researcher + critic/fact-checker pipeline.
 - Gemini 3 tool-calling through Vertex requires protocol care:
   - keep `thoughtSignature` with function calls;
   - return all tool responses for a multi-call model turn as one Vertex user
@@ -472,8 +474,8 @@ Expected:
 
 ## Next Hardening Options
 
-1. Add request-level knobs for `mode`, `language`, and `max_report_chars` so the
-   API can enforce quick/standard/deep depth and output constraints.
+1. Add production dogfood for `mode=standard` and compare it with `mode=deep`
+   on the same query.
 2. Add a small authenticated reverse proxy if browser/API access without SSH
    tunnel becomes necessary.
 3. Add scheduled `docker compose ps` / health probe and log rotation checks.

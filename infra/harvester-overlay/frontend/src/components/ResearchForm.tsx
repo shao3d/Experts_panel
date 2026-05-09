@@ -1,8 +1,9 @@
 import { KeyboardEvent, useEffect, useRef, useState } from "react";
-import { SendHorizontal } from "lucide-react";
+import { Network, SendHorizontal, Zap } from "lucide-react";
+import { ResearchMode } from "../lib/api";
 
 interface Props {
-  onSubmit: (query: string) => void;
+  onSubmit: (query: string, mode: ResearchMode) => void;
   disabled: boolean;
 }
 
@@ -12,6 +13,7 @@ interface Props {
  */
 export default function ResearchForm({ onSubmit, disabled }: Props) {
   const [query, setQuery] = useState("");
+  const [mode, setMode] = useState<ResearchMode>("standard");
   const ref = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -21,7 +23,7 @@ export default function ResearchForm({ onSubmit, disabled }: Props) {
   const submit = () => {
     const q = query.trim();
     if (!q || disabled) return;
-    onSubmit(q);
+    onSubmit(q, mode);
   };
 
   const onKey = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -39,6 +41,38 @@ export default function ResearchForm({ onSubmit, disabled }: Props) {
       }}
       className="w-full"
     >
+      <div className="mb-3 inline-grid grid-cols-2 rounded-lg border border-base-700 bg-base-800 p-1">
+        <button
+          type="button"
+          onClick={() => setMode("standard")}
+          aria-pressed={mode === "standard"}
+          title="Standard extract-backed research"
+          className={`h-9 min-w-32 rounded-md px-3 text-sm font-medium transition-colors
+                     flex items-center justify-center gap-2 ${
+                       mode === "standard"
+                         ? "bg-accent-500 text-white"
+                         : "text-slate-400 hover:text-slate-100 hover:bg-base-700"
+                     }`}
+        >
+          <Zap size={15} />
+          <span>Standard</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setMode("deep")}
+          aria-pressed={mode === "deep"}
+          title="Deep multi-agent research"
+          className={`h-9 min-w-32 rounded-md px-3 text-sm font-medium transition-colors
+                     flex items-center justify-center gap-2 ${
+                       mode === "deep"
+                         ? "bg-accent-500 text-white"
+                         : "text-slate-400 hover:text-slate-100 hover:bg-base-700"
+                     }`}
+        >
+          <Network size={15} />
+          <span>Deep</span>
+        </button>
+      </div>
       <div className="relative">
         <textarea
           ref={ref}

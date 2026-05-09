@@ -14,9 +14,14 @@ export type JobStatus =
   | "timeout"
   | "cancelled";
 
+export type ResearchMode = "standard" | "deep";
+
 export interface ResearchCreated {
   job_id: string;
   status: JobStatus;
+  mode: ResearchMode;
+  max_report_chars: number;
+  language: string;
 }
 
 export interface CitationIntegrity {
@@ -30,6 +35,9 @@ export interface JobSnapshot {
   job_id: string;
   status: JobStatus;
   query: string;
+  mode: ResearchMode;
+  max_report_chars: number;
+  language: string;
   started_at: string | null;
   finished_at: string | null;
   duration_sec: number | null;
@@ -63,6 +71,9 @@ export interface AgentEvent {
 export interface JobTerminalStatus {
   job_id: string;
   status: JobStatus;
+  mode: ResearchMode;
+  max_report_chars: number;
+  language: string;
   duration_sec: number | null;
   has_report: boolean;
   error: string | null;
@@ -71,11 +82,14 @@ export interface JobTerminalStatus {
 
 // --------- Calls ---------
 
-export async function createResearch(query: string): Promise<ResearchCreated> {
+export async function createResearch(
+  query: string,
+  mode: ResearchMode = "standard"
+): Promise<ResearchCreated> {
   const r = await fetch(`${API_URL}/research`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query }),
+    body: JSON.stringify({ query, mode }),
   });
   if (!r.ok) {
     throw new Error(`POST /research failed: ${r.status} ${await r.text()}`);
