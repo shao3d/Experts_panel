@@ -1,7 +1,7 @@
 # Harvester VPS Deploy Runbook
 
 **Status:** Active sidecar runbook
-**Last updated:** 2026-05-09
+**Last updated:** 2026-05-10
 **Scope:** Searcharvester/Harvester stack on the InterServer VPS for web search,
 extraction, and Hermes deep research through Vertex AI.
 
@@ -400,8 +400,10 @@ Broader live battle-test report:
 
 - `docs/quality/harvester-vps-battle-tests-2026-05-09.md`
 - 5 production-like `/research` scenarios
-- verdict: infra and Vertex proxy passed; strict research quality still needs
-  citation/artifact/request-fidelity hardening.
+- 5 additional production `mode=standard` pre-Haft scenarios
+- verdict: infra and Vertex proxy passed; `mode=standard` is usable for
+  extract-backed pre-Haft packets, with citation-contract hardening now catching
+  missing/source-ID-only URLs and markdown-wrapped URL edge cases.
 
 ## Public Exposure Check
 
@@ -443,6 +445,12 @@ Expected:
     completed job as degraded.
   - Treat degraded citation integrity as a research-quality warning, not an
     infra failure.
+- Standard reports must cite extracted/read sources by their original source
+  URL, not only by `./extracts/<id>.md`. If extracts exist but the final report
+  contains no source URLs, the current overlay/live adapter marks the job
+  degraded with `citation contract degraded - no report URLs`.
+- Report URL verification normalizes common markdown/sentence wrappers such as
+  trailing backticks and punctuation before comparing URLs to extract hashes.
 - If the agent finishes without physically writing `report.md`, the current
   overlay/live adapter may recover only from the last top-level `lead` message,
   persist that text back into `report.md`, and mark the job as degraded:
@@ -474,8 +482,8 @@ Expected:
 
 ## Next Hardening Options
 
-1. Add production dogfood for `mode=standard` and compare it with `mode=deep`
-   on the same query.
+1. Wire `mode=standard` into `web_researcher` pre-Haft mode so key external
+   sources always go through Harvester `search -> extract -> report`.
 2. Add a small authenticated reverse proxy if browser/API access without SSH
    tunnel becomes necessary.
 3. Add scheduled `docker compose ps` / health probe and log rotation checks.

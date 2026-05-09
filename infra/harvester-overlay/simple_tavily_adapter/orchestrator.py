@@ -38,6 +38,7 @@ RECOVERED_REPORT_WARNING = "report.md missing - recovered final lead message"
 MISSING_REPORT_ERROR = "agent finished without report.md or final lead message"
 CITATION_UNVERIFIED_MARKER = "[search_only_unverified]"
 CITATION_DEGRADED_PREFIX = "citation contract degraded - unverified citations"
+CITATION_NO_URLS_WARNING = "citation contract degraded - no report URLs"
 ResearchMode = Literal["standard", "deep"]
 LanguageMode = Literal["auto", "en", "ru"]
 STANDARD_RESEARCH_SKILL = "searcharvester-standard-research"
@@ -92,6 +93,8 @@ Hard constraints:
 - Treat search results as discovery only. Evidence requires a saved extract.
 - Do not put any URL in `./report.md` unless you ran extract.py for that exact
   URL and read the saved `./extracts/<id>.md` file.
+- In `./report.md`, cite extracted/read sources by their original URL, not by
+  extract file IDs alone.
 - If a search-only URL influenced source selection, mention it without a raw URL
   or leave it out. The final citation contract will mark unextracted URLs as
   degraded.
@@ -819,6 +822,14 @@ class Orchestrator:
                 f"{CITATION_DEGRADED_PREFIX}: "
                 f"{job.citation_integrity['unverified_urls']}"
             )
+        if (
+            job.citation_integrity
+            and job.citation_integrity["total_urls"] == 0
+            and job.mode == "standard"
+            and _has_extract_files(job.workspace_path)
+        ):
+            notes.append(CITATION_NO_URLS_WARNING)
+            job.report = _append_citation_integrity_section(job.report, job.citation_integrity)
         try:
             report_path.parent.mkdir(parents=True, exist_ok=True)
             report_path.write_text(job.report, encoding="utf-8")
@@ -1030,7 +1041,19 @@ def _extract_unique_urls(text: str) -> set[str]:
     if not text:
         return set()
     import re
-    return set(re.findall(r"https?://[^\s)\]\"'<>]+", text))
+    urls = re.findall(r"https?://[^\s)\]\"'<>]+", text)
+    return {u for u in (_clean_report_url(url) for url in urls) if u}
+
+
+def _clean_report_url(url: str) -> str:
+    """Normalize markdown-captured URLs before md5 verification.
+
+    Reports often wrap URLs in backticks or let sentence punctuation trail the
+    link. extract.py keys files by the raw URL passed to --url, so citation
+    integrity should ignore surrounding markdown punctuation, not treat it as
+    a different source.
+    """
+    return url.strip().rstrip("`.,;:!?]}>")
 
 
 def _verify_urls_against_extracts(
@@ -1052,7 +1075,7 @@ def _verify_urls_against_extracts(
     missing: list[str] = []
     for url in urls:
         # Strip trailing punctuation that the regex sometimes captures
-        clean = url.rstrip(".,;:!?]")
+        clean = _clean_report_url(url)
         h = hashlib.md5(clean.encode("utf-8")).hexdigest()[:16]
         # Also try the un-stripped form, since extract.py might key on the
         # exact passed string
@@ -1062,6 +1085,16 @@ def _verify_urls_against_extracts(
         else:
             missing.append(url)
     return (verified, missing)
+
+
+def _has_extract_files(workspace_path: Path | None) -> bool:
+    if workspace_path is None:
+        return False
+    extracts_dir = workspace_path / "extracts"
+    try:
+        return extracts_dir.exists() and any(extracts_dir.glob("*.md"))
+    except Exception:
+        return False
 
 
 def _index_sub_sessions(

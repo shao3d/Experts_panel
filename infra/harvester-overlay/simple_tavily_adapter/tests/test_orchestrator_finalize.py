@@ -121,6 +121,65 @@ def test_finalize_marks_unverified_report_citations(tmp_path):
     assert done.payload["citation_integrity"] == job.citation_integrity
 
 
+def test_finalize_normalizes_markdown_backtick_urls(tmp_path):
+    verified_url = "https://example.com/verified"
+
+    with _event_loop() as loop:
+        orch = _orchestrator(tmp_path)
+        workspace = tmp_path / "job"
+        extracts_dir = workspace / "extracts"
+        extracts_dir.mkdir(parents=True)
+        extract_id = hashlib.md5(verified_url.encode("utf-8")).hexdigest()[:16]
+        (extracts_dir / f"{extract_id}.md").write_text("verified source", encoding="utf-8")
+        (workspace / "report.md").write_text(
+            "# Final report\n\n## References\n"
+            f"- Verified — `{verified_url}`\n",
+            encoding="utf-8",
+        )
+        job = Job(id="job", query="q", status=JobStatus.running, workspace_path=workspace)
+
+        loop.run_until_complete(orch._finalize_success(job))
+
+    assert job.status == JobStatus.completed
+    assert job.error is None
+    assert job.citation_integrity == {
+        "total_urls": 1,
+        "verified_urls": 1,
+        "unverified_urls": 0,
+        "unverified": [],
+    }
+    assert "search_only_unverified" not in job.report
+
+
+def test_standard_finalize_degrades_when_extracts_exist_but_report_has_no_urls(tmp_path):
+    with _event_loop() as loop:
+        orch = _orchestrator(tmp_path)
+        workspace = tmp_path / "job"
+        extracts_dir = workspace / "extracts"
+        extracts_dir.mkdir(parents=True)
+        (extracts_dir / "abc123.md").write_text("source text", encoding="utf-8")
+        (workspace / "report.md").write_text(
+            "# Final report\n\nSource: abc123.md\n",
+            encoding="utf-8",
+        )
+        job = Job(id="job", query="q", status=JobStatus.running, workspace_path=workspace)
+
+        loop.run_until_complete(orch._finalize_success(job))
+
+    assert job.status == JobStatus.completed
+    assert job.error == "citation contract degraded - no report URLs"
+    assert job.citation_integrity == {
+        "total_urls": 0,
+        "verified_urls": 0,
+        "unverified_urls": 0,
+        "unverified": [],
+    }
+    assert "## Citation Integrity" in job.report
+    done = [event for event in job.events if event.type == "done"][-1]
+    assert done.payload["degraded"] is True
+    assert done.payload["note"] == job.error
+
+
 def test_finalize_recovers_only_final_lead_message_when_report_file_missing(tmp_path):
     with _event_loop() as loop:
         orch = _orchestrator(tmp_path)

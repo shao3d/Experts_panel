@@ -207,6 +207,39 @@ research operating model:
 - `mode=standard`: bounded extract-backed report for `Вебсёрчер под Хафт`;
 - `mode=deep`: existing multi-agent deep research for `Дипресёрчер`.
 
+## Follow-Up: Standard Mode Pre-Haft Dogfood
+
+After the first clean `mode=standard` smoke, five more production VPS dogfood
+runs were executed with realistic pre-Haft / decision-grade prompts.
+
+| Scenario | Job ID | Status | Duration | Citation integrity | Notes |
+|---|---:|---:|---:|---:|---|
+| Perplexity API vs Harvester | `d67b07b0237b44bf` | completed | `54.1s` | `4/4` verified | clean |
+| Fly.io vs Railway vs VPS AI sidecar | `1ed0c75559874c2e` | completed | `56.2s` | `0` URLs in report | issue found: extracted sources existed, but final report cited extract IDs/names instead of source URLs |
+| SearXNG vs Tavily vs Perplexity discovery | `5c74c649eeea4429` | completed | `49.3s` | `4/4` verified | clean |
+| MCP vs REST agent tools | `dc40c6ccaec8475f` | completed | `43.4s` | `5/5` verified | clean |
+| Gemini Flash for research pipelines | `79ca83797f5f4d40` | completed degraded | `85.4s` | `0/5` verified | issue found: markdown backticks around URLs caused false unverified matches; one search-only URL was also present |
+
+Two hardening changes followed from this run:
+
+- Standard reports must cite extracted/read sources by original source URL, not
+  by `./extracts/<id>.md` file IDs alone.
+- Citation verification now normalizes markdown/sentence wrappers around URLs
+  before comparing report URLs with extract hashes.
+
+The hardening was deployed to the VPS and the two failing scenarios were rerun:
+
+| Scenario | Job ID | Status | Duration | Citation integrity | Notes |
+|---|---:|---:|---:|---:|---|
+| Fly.io vs Railway vs VPS AI sidecar rerun | `5fb79afd41bc4fa1` | completed | `55.5s` | `7/7` verified | fixed |
+| Gemini Flash research pipeline rerun | `565daf0ca1ac4f2a` | completed | `375.7s` | `3/3` verified | fixed, but slow |
+
+The second rerun shows an important product nuance: `mode=standard` is much
+faster than `mode=deep` in normal cases, but can still take several minutes
+when extraction/reporting pulls heavier model/vendor documentation. This is
+acceptable for `Вебсёрчер под Хафт`, but the caller should still treat it as a
+research operation, not an instant search.
+
 ## Verdict
 
 The VPS deployment is operational, but not yet "strict research grade".
@@ -219,6 +252,9 @@ The VPS deployment is operational, but not yet "strict research grade".
 - `mode=standard` can complete a short extract-backed report without
   `delegate_task`; the first clean VPS smoke finished in about 26.6 seconds
   with 2/2 URLs verified by extracts.
+- Five realistic pre-Haft `mode=standard` dogfood runs completed, and the two
+  citation-contract defects found there were fixed and rerun successfully on
+  production VPS.
 - Partial URL grounding was a repeated, not theoretical, issue before
   final-report citation hardening.
 - Before hardening, completed jobs did not always produce a physical
@@ -239,7 +275,8 @@ Continue hardening before broader product use:
 1. Re-test the `report.md` recovery hardening with an end-to-end missing-report
    case: completed recovered jobs must persist `report.md`, mark the result
    degraded, and never use sub-agent messages as fallback.
-2. Run broader production dogfood for `mode=standard` on 3-5 realistic
-   pre-Haft style prompts.
-3. Re-run the same five scenarios and compare latency, partial counts, and
-   report fidelity.
+2. Wire `mode=standard` into `web_researcher` pre-Haft mode so decision-grade
+   packets always pass through extract-backed Harvester standard research.
+3. Keep `mode=deep` reserved for explicit deep-research requests, because the
+   production battle tests show it can exceed a normal interactive waiting
+   budget.

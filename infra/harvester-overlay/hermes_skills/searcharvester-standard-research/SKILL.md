@@ -111,3 +111,7 @@ should avoid unverified citations proactively.
 Only URLs that were extracted and read may appear in `## References` or inline
 citations. If a search-only page helped with discovery, mention that a
 search-only source existed without printing the URL, or omit it entirely.
+
+Do not cite sources by extract IDs alone. `./extracts/<id>.md` proves that the
+page was read, but the final report still needs the original source URL so the
+API citation contract can verify and expose provenance.

@@ -20,6 +20,7 @@ def test_standard_prompt_forbids_delegate_task_and_requires_extracts():
     assert "Do NOT use delegate_task" in suffix
     assert "saved extract" in suffix
     assert "Do not put any URL" in suffix
+    assert "extract file IDs alone" in suffix
     assert "Target maximum report length: 6000 characters" in suffix
     assert "Round 1" not in suffix
     assert "Round 2" not in suffix
