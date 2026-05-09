@@ -37,7 +37,7 @@ from orchestrator import Orchestrator, Job, JobStatus
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Searcharvester", version="2.2.0")
+app = FastAPI(title="Searcharvester", version="2.3.0")
 
 # ---------- CORS ----------
 # Frontend dev server is on :9762. Prod build served by the same origin or
@@ -430,6 +430,7 @@ class ResearchStatus(BaseModel):
     duration_sec: float | None = None
     report: str | None = None
     error: str | None = None
+    citation_integrity: dict[str, Any] | None = None
 
 
 def _ensure_orchestrator() -> Orchestrator:
@@ -454,6 +455,7 @@ def _job_to_status(job: Job) -> ResearchStatus:
         duration_sec=job.duration_sec,
         report=job.report,
         error=job.error,
+        citation_integrity=job.citation_integrity,
     )
 
 
@@ -563,6 +565,7 @@ async def research_events(job_id: str):
                     "duration_sec": final.duration_sec,
                     "has_report": final.report is not None,
                     "error": final.error,
+                    "citation_integrity": final.citation_integrity,
                 }, ensure_ascii=False),
             }
 
@@ -604,7 +607,7 @@ async def health() -> dict[str, Any]:
     return {
         "status": "ok",
         "service": "searcharvester",
-        "version": "2.2.0",
+        "version": "2.3.0",
         "orchestrator": "available" if orchestrator is not None else "unavailable",
     }
 

@@ -37,6 +37,11 @@ only from the final top-level lead-agent message. Recovered reports are written
 back to `report.md` and marked degraded. Sub-agent messages are not valid final
 report fallbacks.
 
+Final reports also get citation-integrity enforcement. URLs in `report.md` are
+checked against saved `./extracts/<id>.md` artifacts. URLs without a matching
+extract are labeled `search_only_unverified`, reported in `citation_integrity`,
+and mark the completed job as degraded rather than silently passing as evidence.
+
 See:
 
 ```text

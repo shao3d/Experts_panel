@@ -19,6 +19,13 @@ export interface ResearchCreated {
   status: JobStatus;
 }
 
+export interface CitationIntegrity {
+  total_urls: number;
+  verified_urls: number;
+  unverified_urls: number;
+  unverified: string[];
+}
+
 export interface JobSnapshot {
   job_id: string;
   status: JobStatus;
@@ -28,6 +35,7 @@ export interface JobSnapshot {
   duration_sec: number | null;
   report: string | null;
   error: string | null;
+  citation_integrity: CitationIntegrity | null;
 }
 
 // --------- Agent events (mirror of events.py / Event dataclass) ---------
@@ -58,6 +66,7 @@ export interface JobTerminalStatus {
   duration_sec: number | null;
   has_report: boolean;
   error: string | null;
+  citation_integrity: CitationIntegrity | null;
 }
 
 // --------- Calls ---------

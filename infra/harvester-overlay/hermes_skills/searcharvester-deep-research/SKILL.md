@@ -56,6 +56,10 @@ cannot research online (private data, pure opinion).
 
 - **Evidence before prose.** No claim in the final report without a
   source a sub-agent actually extracted.
+- **Extract-backed citations only.** A URL found by search is discovery, not
+  evidence. If a URL was not saved under `./extracts/<id>.md`, do not present
+  it as a verified citation; mark it as `search_only_unverified` or move it to
+  caveats.
 - **Trust sources over memory.** Even "well-known" facts get stale.
 - **Adversarial verification.** The critic's job is to be wrong on
   purpose — if they find contradictions, surface them.
@@ -383,6 +387,9 @@ When `delegate_task` returns:
 Hard rules:
 - Every claim has an inline [n] citation.
 - Same URL = same number.
+- Every [n] reference used as evidence must point to a URL with a saved
+  `./extracts/<id>.md` file. Search-result-only URLs are not evidence; label
+  them `search_only_unverified` if they must be mentioned.
 - Claim from only 1 source → `[tentative — single source]`.
 - If the critic or fact-checker surfaced a conflict, the
   "What changed / Disagreements" section is mandatory.

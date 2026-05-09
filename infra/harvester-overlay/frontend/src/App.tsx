@@ -128,6 +128,7 @@ export default function App() {
           duration_sec: snapshot.duration_sec,
           has_report: snapshot.report !== null,
           error: snapshot.error,
+          citation_integrity: snapshot.citation_integrity,
         });
         return;
       }

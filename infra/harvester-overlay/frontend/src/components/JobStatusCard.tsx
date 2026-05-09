@@ -137,6 +137,12 @@ export default function JobStatusCard({
           {error}
         </div>
       )}
+
+      {isDone && error && (
+        <div className="px-5 py-3 border-t border-amber-900/30 bg-amber-950/20 text-amber-200/85 font-mono text-xs break-all">
+          {error}
+        </div>
+      )}
     </div>
   );
 }

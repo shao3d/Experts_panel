@@ -437,9 +437,12 @@ Expected:
 - Hermes delegated tasks can cite a URL even when not every source was verified
   by an extract file. Events may show `partial: N URLs verified by extracts, M
   cited without extract files`.
-  - Treat this as a quality risk, not an infra failure.
-  - Future hardening should enforce "no extract, no final citation" for strict
-    research mode.
+  - The current overlay/live adapter enforces this at final-report time:
+    URLs in `report.md` without a matching `./extracts/<id>.md` are labeled
+    `search_only_unverified`, surfaced in `citation_integrity`, and mark the
+    completed job as degraded.
+  - Treat degraded citation integrity as a research-quality warning, not an
+    infra failure.
 - If the agent finishes without physically writing `report.md`, the current
   overlay/live adapter may recover only from the last top-level `lead` message,
   persist that text back into `report.md`, and mark the job as degraded:
@@ -469,12 +472,10 @@ Expected:
 
 ## Next Hardening Options
 
-1. Add strict citation mode: final reports may cite only URLs that have a
-   successful extract artifact.
-2. Add request-level knobs for `mode`, `language`, and `max_report_chars` so the
+1. Add request-level knobs for `mode`, `language`, and `max_report_chars` so the
    API can enforce quick/standard/deep depth and output constraints.
-3. Add a small authenticated reverse proxy if browser/API access without SSH
+2. Add a small authenticated reverse proxy if browser/API access without SSH
    tunnel becomes necessary.
-4. Add scheduled `docker compose ps` / health probe and log rotation checks.
-5. Add a restore script that rebuilds `/opt/searcharvester` from the repo
+3. Add scheduled `docker compose ps` / health probe and log rotation checks.
+4. Add a restore script that rebuilds `/opt/searcharvester` from the repo
    overlay plus externally supplied secrets.

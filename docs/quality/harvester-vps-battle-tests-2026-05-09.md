@@ -55,6 +55,11 @@ Product implication: for strict research, "found a URL" and "read/extracted the
 source" must be separated. A final citation should require a successful extract,
 or the report must label it as unverified/search-only.
 
+Follow-up hardening in the source-controlled overlay and live VPS adapter now
+enforces this at final-report time: URLs without a matching `./extracts/<id>.md`
+are labeled `search_only_unverified`, surfaced in `citation_integrity`, and
+mark the completed job as degraded.
+
 ### 2. Deep Research Is Too Slow For Default Daily Use
 
 Completed jobs took roughly 12-18.5 minutes. One job exceeded 20 minutes and
@@ -127,27 +132,28 @@ The VPS deployment is operational, but not yet "strict research grade".
 - The Harvester stack runs on the VPS and survives several real research jobs.
 - The custom Vertex AI proxy is viable for Hermes tool-calling in this setup.
 - The current deep-research flow can produce useful reports, but it is slow.
-- Partial URL grounding is a repeated, not theoretical, issue.
+- Partial URL grounding was a repeated, not theoretical, issue before
+  final-report citation hardening.
 - Before hardening, completed jobs did not always produce a physical
   `report.md`.
 
 **Риск:**
 
-- Final reports may look polished while mixing extracted evidence with
-  search-only or unextracted URLs.
+- Final reports may still contain search-only URLs, but the adapter now labels
+  them `search_only_unverified`; product surfaces must make that warning visible.
 - The default deep-research path can exceed a normal interactive waiting budget.
 - A user may ask for "short" or "на русском", but the system currently enforces
   those constraints softly.
 
 ## Recommended Next Slice
 
-Implement a strict evidence mode before broader product use:
+Continue hardening before broader product use:
 
-1. Final citations require successful extract files by default.
-2. URLs without extract are either omitted or labeled `search_only_unverified`.
-3. Re-test the `report.md` recovery hardening with an end-to-end missing-report
+1. Re-test citation-integrity hardening end-to-end on live jobs: final reports
+   should include `citation_integrity` and label unverified URLs.
+2. Re-test the `report.md` recovery hardening with an end-to-end missing-report
    case: completed recovered jobs must persist `report.md`, mark the result
    degraded, and never use sub-agent messages as fallback.
-4. Add request-level knobs for `mode`, `language`, and `max_report_chars`.
-5. Re-run the same five scenarios and compare latency, partial counts, and
+3. Add request-level knobs for `mode`, `language`, and `max_report_chars`.
+4. Re-run the same five scenarios and compare latency, partial counts, and
    report fidelity.

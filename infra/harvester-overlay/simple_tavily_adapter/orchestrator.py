@@ -36,6 +36,8 @@ EVENTS_FILENAME = "events.jsonl"
 REPORT_SAVED_MARKER = "REPORT_SAVED:"
 RECOVERED_REPORT_WARNING = "report.md missing - recovered final lead message"
 MISSING_REPORT_ERROR = "agent finished without report.md or final lead message"
+CITATION_UNVERIFIED_MARKER = "[search_only_unverified]"
+CITATION_DEGRADED_PREFIX = "citation contract degraded - unverified citations"
 
 # Appended to every user query. Keeps the agent honest about where the final
 # report lives and nudges it away from reflexive refusals on legitimate
@@ -100,6 +102,7 @@ class Job:
     duration_sec: float | None = None
     report: str | None = None
     error: str | None = None
+    citation_integrity: dict[str, Any] | None = None
 
     # Event log — appended to by the ACP session callback. Copied out via
     # snapshot() for /events SSE.
@@ -645,19 +648,12 @@ class Orchestrator:
         """
         report_path = job.workspace_path / REPORT_FILENAME if job.workspace_path else None
         if report_path and report_path.exists():
-            job.report = report_path.read_text(encoding="utf-8", errors="replace")
-            await self._emit(job, Event.now(
-                job_id=job.id, agent_id="lead", type="done",
-                payload={"status": "completed", "report_bytes": len(job.report)},
-            ))
-            job.status = JobStatus.completed
-            await self._notify(job)
+            report = report_path.read_text(encoding="utf-8", errors="replace")
+            await self._complete_with_report(job, report_path, report)
             return
 
         fallback = _recover_final_lead_report(job.events)
         if fallback:
-            job.report = fallback
-            job.error = RECOVERED_REPORT_WARNING
             if report_path is None:
                 job.report = None
                 job.error = "failed to persist recovered report.md: missing workspace_path"
@@ -668,30 +664,9 @@ class Orchestrator:
                 job.status = JobStatus.failed
                 await self._notify(job)
                 return
-            try:
-                report_path.parent.mkdir(parents=True, exist_ok=True)
-                report_path.write_text(fallback, encoding="utf-8")
-            except Exception as exc:
-                job.report = None
-                job.error = f"failed to persist recovered report.md: {exc}"
-                await self._emit(job, Event.now(
-                    job_id=job.id, agent_id="lead", type="done",
-                    payload={"status": "failed", "error": job.error},
-                ))
-                job.status = JobStatus.failed
-                await self._notify(job)
-                return
-            await self._emit(job, Event.now(
-                job_id=job.id, agent_id="lead", type="done",
-                payload={
-                    "status": "completed",
-                    "degraded": True,
-                    "note": job.error,
-                    "report_bytes": len(job.report),
-                },
-            ))
-            job.status = JobStatus.completed
-            await self._notify(job)
+            await self._complete_with_report(
+                job, report_path, fallback, notes=[RECOVERED_REPORT_WARNING]
+            )
             return
 
         job.error = MISSING_REPORT_ERROR
@@ -700,6 +675,53 @@ class Orchestrator:
             payload={"status": "failed", "error": job.error},
         ))
         job.status = JobStatus.failed
+        await self._notify(job)
+
+    async def _complete_with_report(
+        self,
+        job: Job,
+        report_path: Path,
+        report: str,
+        *,
+        notes: list[str] | None = None,
+    ) -> None:
+        notes = list(notes or [])
+        job.report, job.citation_integrity = _enforce_citation_contract(
+            report, job.workspace_path
+        )
+        if job.citation_integrity and job.citation_integrity["unverified_urls"] > 0:
+            notes.append(
+                f"{CITATION_DEGRADED_PREFIX}: "
+                f"{job.citation_integrity['unverified_urls']}"
+            )
+        try:
+            report_path.parent.mkdir(parents=True, exist_ok=True)
+            report_path.write_text(job.report, encoding="utf-8")
+        except Exception as exc:
+            job.report = None
+            job.error = f"failed to persist report.md: {exc}"
+            await self._emit(job, Event.now(
+                job_id=job.id, agent_id="lead", type="done",
+                payload={"status": "failed", "error": job.error},
+            ))
+            job.status = JobStatus.failed
+            await self._notify(job)
+            return
+
+        job.error = "; ".join(notes) if notes else None
+        payload: dict[str, Any] = {
+            "status": "completed",
+            "report_bytes": len(job.report),
+            "citation_integrity": job.citation_integrity,
+        }
+        if notes:
+            payload["degraded"] = True
+            payload["note"] = job.error
+        await self._emit(job, Event.now(
+            job_id=job.id, agent_id="lead", type="done",
+            payload=payload,
+        ))
+        job.status = JobStatus.completed
         await self._notify(job)
 
     async def _notify(self, job: Job) -> None:
@@ -752,6 +774,56 @@ def _strip_report_saved_marker(text: str) -> str:
         while lines and not lines[-1].strip():
             lines.pop()
     return "\n".join(lines).strip()
+
+
+def _enforce_citation_contract(
+    report: str, workspace_path: Path | None
+) -> tuple[str, dict[str, Any]]:
+    urls = _extract_unique_urls(report)
+    extracts_dir = (workspace_path / "extracts") if workspace_path else Path()
+    verified_count, unverified = _verify_urls_against_extracts(urls, extracts_dir)
+    integrity = {
+        "total_urls": len(urls),
+        "verified_urls": verified_count,
+        "unverified_urls": len(unverified),
+        "unverified": unverified,
+    }
+    if not unverified:
+        return report, integrity
+
+    marked = _mark_unverified_report_urls(report, set(unverified))
+    marked = _append_citation_integrity_section(marked, integrity)
+    return marked, integrity
+
+
+def _mark_unverified_report_urls(report: str, unverified_urls: set[str]) -> str:
+    import re
+
+    marked = report
+    for url in sorted(unverified_urls, key=len, reverse=True):
+        pattern = re.compile(
+            rf"({re.escape(url)})(?!\s+{re.escape(CITATION_UNVERIFIED_MARKER)})"
+        )
+        marked = pattern.sub(rf"\1 {CITATION_UNVERIFIED_MARKER}", marked)
+    return marked
+
+
+def _append_citation_integrity_section(report: str, integrity: dict[str, Any]) -> str:
+    if "## Citation Integrity" in report:
+        return report
+
+    unverified = integrity["unverified"]
+    shown = "\n".join(f"- {url}" for url in unverified[:10])
+    if len(unverified) > 10:
+        shown += f"\n- ... {len(unverified) - 10} more"
+    section = f"""## Citation Integrity
+- Verified extract-backed URLs: {integrity["verified_urls"]}/{integrity["total_urls"]}.
+- Search-only/unverified URLs: {integrity["unverified_urls"]}.
+- References marked `{CITATION_UNVERIFIED_MARKER}` were discovered but not backed by a saved extract file and should not be treated as extracted evidence.
+"""
+    if shown:
+        section += f"\nUnverified URLs:\n{shown}\n"
+    return report.rstrip() + "\n\n" + section
 
 
 def _delegate_index(messages: list[Any], i: int) -> int:

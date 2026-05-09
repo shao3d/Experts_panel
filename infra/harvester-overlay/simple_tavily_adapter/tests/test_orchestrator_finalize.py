@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
 from collections.abc import Generator
 from contextlib import contextmanager
 
@@ -44,6 +45,80 @@ def test_finalize_uses_existing_report_file(tmp_path):
     assert job.error is None
     assert job.report == "# Final report\n"
     assert (workspace / "report.md").read_text(encoding="utf-8") == "# Final report\n"
+
+
+def test_finalize_keeps_extract_backed_citations_clean(tmp_path):
+    verified_url = "https://example.com/verified"
+
+    with _event_loop() as loop:
+        orch = _orchestrator(tmp_path)
+        workspace = tmp_path / "job"
+        extracts_dir = workspace / "extracts"
+        extracts_dir.mkdir(parents=True)
+        extract_id = hashlib.md5(verified_url.encode("utf-8")).hexdigest()[:16]
+        (extracts_dir / f"{extract_id}.md").write_text("verified source", encoding="utf-8")
+        (workspace / "report.md").write_text(
+            "# Final report\n\nClaim [1].\n\n## References\n[1] Verified - https://example.com/verified\n",
+            encoding="utf-8",
+        )
+        job = Job(id="job", query="q", status=JobStatus.running, workspace_path=workspace)
+
+        loop.run_until_complete(orch._finalize_success(job))
+
+    assert job.status == JobStatus.completed
+    assert job.error is None
+    assert "search_only_unverified" not in job.report
+    assert job.citation_integrity == {
+        "total_urls": 1,
+        "verified_urls": 1,
+        "unverified_urls": 0,
+        "unverified": [],
+    }
+    done = [event for event in job.events if event.type == "done"][-1]
+    assert done.payload["status"] == "completed"
+    assert done.payload["citation_integrity"] == job.citation_integrity
+    assert "degraded" not in done.payload
+
+
+def test_finalize_marks_unverified_report_citations(tmp_path):
+    verified_url = "https://example.com/verified"
+    unverified_url = "https://example.com/search-only"
+
+    with _event_loop() as loop:
+        orch = _orchestrator(tmp_path)
+        workspace = tmp_path / "job"
+        extracts_dir = workspace / "extracts"
+        extracts_dir.mkdir(parents=True)
+        extract_id = hashlib.md5(verified_url.encode("utf-8")).hexdigest()[:16]
+        (extracts_dir / f"{extract_id}.md").write_text("verified source", encoding="utf-8")
+        (workspace / "report.md").write_text(
+            "# Final report\n\nClaim [1], caveat [2].\n\n"
+            "## References\n"
+            "[1] Verified - https://example.com/verified\n"
+            "[2] Search-only - https://example.com/search-only\n",
+            encoding="utf-8",
+        )
+        job = Job(id="job", query="q", status=JobStatus.running, workspace_path=workspace)
+
+        loop.run_until_complete(orch._finalize_success(job))
+
+    assert job.status == JobStatus.completed
+    assert job.error == "citation contract degraded - unverified citations: 1"
+    assert job.citation_integrity == {
+        "total_urls": 2,
+        "verified_urls": 1,
+        "unverified_urls": 1,
+        "unverified": [unverified_url],
+    }
+    assert f"{unverified_url} [search_only_unverified]" in job.report
+    assert "## Citation Integrity" in job.report
+    assert "Search-only/unverified URLs: 1" in job.report
+    assert (workspace / "report.md").read_text(encoding="utf-8") == job.report
+    done = [event for event in job.events if event.type == "done"][-1]
+    assert done.payload["status"] == "completed"
+    assert done.payload["degraded"] is True
+    assert done.payload["note"] == job.error
+    assert done.payload["citation_integrity"] == job.citation_integrity
 
 
 def test_finalize_recovers_only_final_lead_message_when_report_file_missing(tmp_path):
