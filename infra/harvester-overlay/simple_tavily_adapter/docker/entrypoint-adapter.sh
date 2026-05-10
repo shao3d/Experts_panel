@@ -27,13 +27,22 @@ if [ "$(id -u)" = "0" ]; then
         chown -R hermes:hermes /srv/searxng-docker/jobs 2>/dev/null || true
     fi
 
+    # Make Harvester research wrappers visible to Hermes terminal child
+    # environments. Some delegated agents call the short commands directly
+    # instead of the absolute /opt/data/skills/... script paths.
+    ln -sf "$HERMES_HOME/bin/searcharvester" /usr/local/bin/searcharvester
+    ln -sf "$HERMES_HOME/bin/searcharvester-search" /usr/local/bin/searcharvester-search
+    ln -sf "$HERMES_HOME/bin/searcharvester-extract" /usr/local/bin/searcharvester-extract
+    ln -sf "$HERMES_HOME/skills/searcharvester-search/scripts/search.py" /usr/local/bin/search.py
+    ln -sf "$HERMES_HOME/skills/searcharvester-extract/scripts/extract.py" /usr/local/bin/extract.py
+
     exec gosu hermes "$0" "$@"
 fi
 
 # Running as hermes from here on.
 source "${INSTALL_DIR}/.venv/bin/activate"
 
-mkdir -p "$HERMES_HOME"/{cron,sessions,logs,hooks,memories,skills,skins,plans,workspace,home}
+mkdir -p "$HERMES_HOME"/{bin,cron,sessions,logs,hooks,memories,skills,skins,plans,workspace,home}
 
 [ ! -f "$HERMES_HOME/.env" ]        && cp "$INSTALL_DIR/.env.example" "$HERMES_HOME/.env" 2>/dev/null || true
 [ ! -f "$HERMES_HOME/config.yaml" ] && cp "$INSTALL_DIR/cli-config.yaml.example" "$HERMES_HOME/config.yaml" 2>/dev/null || true

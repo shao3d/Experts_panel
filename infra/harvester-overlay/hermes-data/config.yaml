@@ -776,6 +776,9 @@ delegation:
   # Deep-research: up to 5 sub-questions running in parallel.
   max_concurrent_children: 5
   max_spawn_depth: 1                          # Flat — children can't spawn grandchildren.
+  # Harvester installs a strict pre_tool_call guard below. Subagent terminal
+  # approvals can be automatic because unknown commands are blocked by the guard.
+  subagent_auto_approve: true
   # orchestrator_enabled: true                # Kill switch for role="orchestrator" children (default: true).
   # model: "google/gemini-3-flash-preview"    # Override model for subagents (empty = inherit parent)
   # provider: "openrouter"                    # Override provider for subagents (empty = inherit parent)
@@ -955,4 +958,10 @@ display:
 #   subagent_stop:
 #     - command: "~/.hermes/agent-hooks/log-orchestration.sh"
 #
-# hooks_auto_accept: false
+hooks:
+  pre_tool_call:
+    - matcher: "(terminal|google_search|read_file)"
+      command: "python3 /opt/data/hooks/research_terminal_guard.py"
+      timeout: 5
+
+hooks_auto_accept: true

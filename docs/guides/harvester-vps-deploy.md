@@ -479,6 +479,24 @@ Expected:
     (`grep`, `head`, `sed`, `cat`, `ls`) and forbid imagined tools or internal
     service probes such as `google_search`, `read_file`, `skill_view`, `curl`,
     `wget`, `netstat`, `ss`, and direct `http://searxng:*` calls.
+  - Follow-up delegated-tool routing hardening adds real short wrappers
+    (`searcharvester-search`, `searcharvester-extract`) on `HERMES_HOME/bin`,
+    puts that directory on the Hermes subprocess `PATH`, and registers a
+    `pre_tool_call` shell hook (`/opt/data/hooks/research_terminal_guard.py`).
+    The hook is now a default-deny command contract: it blocks known bad
+    tool/terminal attempts such as `google_search`, `read_file`, `curl`/`wget`,
+    `ss`/`netstat`, direct internal-service probes, container introspection,
+    destructive package/file commands, and unknown terminal commands.
+    It allows only valid Searcharvester search/extract wrapper forms and
+    bounded file readers.
+  - Deep subagents run with `delegation.subagent_auto_approve: true`, but only
+    after the strict `pre_tool_call` guard is installed. This prevents Hermes'
+    non-interactive subagent security scanner from auto-denying safe wrapper
+    commands while still blocking commands outside the Harvester contract.
+  - Valid delegated search/extract forms must include the required flags:
+    `searcharvester-search --query "<query>"` and
+    `searcharvester-extract --url "<single-url>"`. The guard blocks chained
+    commands and multi-URL extract calls before they reach the shell.
   - If deep mode still exceeds `RESEARCH_TIMEOUT_SEC`, the API returns terminal
     `status: timeout`, runs one final sub-agent backfill, persists
     `partial_report.md`, and exposes it as `partial_report` plus `progress` in

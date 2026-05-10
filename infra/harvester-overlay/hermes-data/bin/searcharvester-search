@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec python3 /opt/data/skills/searcharvester-search/scripts/search.py "$@"

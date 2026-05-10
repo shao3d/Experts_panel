@@ -647,6 +647,120 @@ optimization is not citation quality; it is stronger tool routing for delegated
 critic/fact-checker tasks. Prompt warnings reduced damage and duration, but did
 not fully prevent imagined tools or internal-service probes.
 
+## Follow-Up: Delegated Tool Routing Hardening
+
+The post-hardening deep dogfood proved that prompt-level instructions reduced
+damage but did not fully prevent bad delegated tool attempts. Structural
+hardening was added:
+
+- `HERMES_HOME/bin` is prepended to the Hermes subprocess `PATH`.
+- Short wrapper commands now exist:
+  - `searcharvester-search`
+  - `searcharvester-extract`
+- Deep skill instructions now prefer those wrappers and version the skill as
+  `2.6.0`.
+- Deep `plan.md` creation now instructs the lead to use the file write/edit
+  tool instead of shell heredocs, avoiding false backgrounding/security blocks
+  when user text contains `&`.
+- Hermes config registers a `pre_tool_call` shell hook:
+  `/opt/data/hooks/research_terminal_guard.py`.
+- The hook blocks known bad delegated routes:
+  `google_search`, `read_file`, `curl`, `wget`, `netstat`, `ss`,
+  direct `http://searxng:*` probes, and container-introspection commands.
+- The guard was then tightened from blocklist to default-deny allowlist:
+  unknown terminal commands are blocked, safe file readers are bounded to
+  `./extracts`, `extracts/`, `report.md`, and `plan.md`, and search/extract
+  wrappers must use valid flag syntax.
+- `delegation.subagent_auto_approve: true` is set inside the Hermes
+  `delegation` block, not as a top-level key. This matters: the top-level
+  form did not prevent subagent auto-denials in live testing.
+- The guard now blocks malformed wrapper calls before execution:
+  `searcharvester-search` without `--query`, chained search/extract commands,
+  and `searcharvester-extract --url` with extra positional URLs.
+
+Verification:
+
+```text
+local focused tests: 25 passed
+VPS focused container tests: 21 passed, then 25 passed after syntax validation
+VPS full container tests: 55 passed, 1 skipped
+VPS health: ok
+Hermes hooks doctor: all hooks healthy
+```
+
+Live standard smoke after deployment:
+
+```text
+job_id: 5a67923244e94a81
+mode: standard
+status: completed
+duration_sec: 62.140356
+error: null
+citation_integrity: 1/1 verified
+extracts: 2
+```
+
+Runtime checks:
+
+- Hermes shell hook allowlist shows
+  `python3 /opt/data/hooks/research_terminal_guard.py` as `pre_tool_call`
+  `✓ allowed`.
+- The live smoke log had zero occurrences of:
+  `google_search`, `searcharvester-search: command not found`,
+  `http://searxng`, `ss: command not found`, or
+  `Tool terminal returned error`.
+
+Product conclusion:
+
+The system now has actual routing rails: subagents can use concise
+Searcharvester commands, and common bad or malformed routes are blocked before execution.
+This does not prove every future deep Round 2 will be noise-free, because
+unknown model/tool behavior can still surface new variants, but the previously
+observed bad paths now have structural coverage instead of prompt-only
+coverage.
+
+Live deep smoke after strict guard and `delegation.subagent_auto_approve`:
+
+```text
+job_id: 844852f329284ba6
+mode: deep
+status: completed
+duration_sec: 253.392096
+extracts: 20
+subagents: 4 completed
+citation_integrity: 10/10 verified
+old routing noise:
+  auto-denied dangerous command: 0
+  command not found: 0
+  google_search: 0
+  http://searxng: 0
+```
+
+Live deep smoke after wrapper-argument validation:
+
+```text
+job_id: 54ef6a059cd5476b
+mode: deep
+status: completed
+duration_sec: 297.562675
+extracts: 19
+citation_integrity: 11/12 verified
+error: citation contract degraded - unverified citations: 1
+routing/syntax noise:
+  auto-denied dangerous command: 0
+  command not found: 0
+  google_search: 0
+  http://searxng: 0
+  usage: search.py: 0
+  usage: extract.py: 0
+  malformed wrapper guard blocks: 0
+```
+
+The remaining terminal errors in that smoke were HTTP 502/422 extraction
+failures and `grep` no-match exits, not delegated-tool routing failures.
+The remaining product gap is therefore extraction/citation reliability for
+hard-to-fetch sources such as Medium, not command routing.
+
 ## Verdict
 
 The VPS deployment is operational, but not yet "strict research grade".
@@ -682,6 +796,10 @@ The VPS deployment is operational, but not yet "strict research grade".
 - Deep skill defaults are now budgeted to preserve time for final synthesis.
 - Deep Round 2 now has explicit tool-discipline rules to avoid burning budget
   on imagined tools or internal service probes.
+- Delegated tool routing now has structural coverage through
+  `searcharvester-search` / `searcharvester-extract` wrappers, a strict Hermes
+  `pre_tool_call` guard hook, and `delegation.subagent_auto_approve` guarded
+  by that allowlist.
 - A fresh post-hardening single deep dogfood completed in `392.1s` with
   `11/11` verified citations; deep citation repair recovered six URLs before
   final verification.
@@ -700,9 +818,9 @@ The VPS deployment is operational, but not yet "strict research grade".
 - `mode=deep` can still exceed a normal interactive waiting budget, especially
   when several deep jobs run in parallel and the critic/fact-check round starts
   late. The result is now inspectable, but not final evidence.
-- `mode=deep` delegated critic/fact-checker tasks can still waste budget on
-  invalid or blocked tool attempts even after prompt-level tool-discipline
-  hardening.
+- `mode=deep` delegated critic/fact-checker tasks can still spend time on
+  failed external extracts or no-match file searches, but the known command
+  routing and wrapper syntax failures now have structural guards.
 - A user may ask for "short" or "на русском", but the system currently enforces
   those constraints softly.
 
@@ -710,10 +828,11 @@ The VPS deployment is operational, but not yet "strict research grade".
 
 Continue hardening before broader product use:
 
-1. Add stronger delegated-tool routing for deep Round 2 so critic/fact-checker
-   tasks cannot spend attempts on imagined tools or internal service probes.
-2. If deep still times out often, add per-round time budgeting rather than only
+1. If deep still times out often, add per-round time budgeting rather than only
    prompt-level budgets.
-3. Consider optional `round1.md` / `critic_factcheck.md` artifacts if
+2. Consider optional `round1.md` / `critic_factcheck.md` artifacts if
    `partial_report.md` is useful but too coarse.
-4. Keep `mode=deep` reserved for explicit deep-research requests.
+3. Keep `mode=deep` reserved for explicit deep-research requests.
+4. For extraction/citation quality, next investigate whether failed extracts
+   should be excluded earlier or retried through alternate sources before final
+   synthesis.

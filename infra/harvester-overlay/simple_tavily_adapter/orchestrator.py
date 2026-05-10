@@ -459,6 +459,10 @@ class Orchestrator:
             "SEARCHARVESTER_URL": self._adapter_url,
             "HERMES_HOME": self._hermes_home,
         }
+        proc_env["PATH"] = (
+            f"{self._hermes_home}/bin:"
+            f"{proc_env.get('PATH') or os.environ.get('PATH', '')}"
+        )
 
         # Subprocess
         try:

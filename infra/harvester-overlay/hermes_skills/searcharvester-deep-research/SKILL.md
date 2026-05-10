@@ -8,7 +8,7 @@ description: >
   a cited report at ./report.md. Use for "research", "deep research", "report
   with sources", comparisons with citations, anything needing grounded
   multi-source evidence.
-version: 2.5.0
+version: 2.6.0
 author: Searcharvester
 license: MIT
 metadata:
@@ -69,10 +69,12 @@ cannot research online (private data, pure opinion).
 
 ### Phase 1 — Decompose (lead)
 
-Write a plan to `./plan.md`. Keep the scope budgeted enough to finish:
+Write a plan to `./plan.md` using the file write/edit tool. Do not use shell
+heredocs for markdown artifacts; user text can contain `&` or other characters
+that trip terminal backgrounding/security guards. Keep the scope budgeted enough
+to finish:
 
-```bash
-cat > ./plan.md << 'EOF'
+```markdown
 ## Intent
 <one sentence on what the user wants>
 
@@ -85,7 +87,6 @@ cat > ./plan.md << 'EOF'
 
 ## Out of scope
 - <things we won't cover>
-EOF
 ```
 
 ### Phase 2 — Two-round pipeline (lead)
@@ -192,26 +193,31 @@ TOOLS: You only have the `terminal` toolset. Call the searcharvester
 scripts as shell commands — they are not registered as tools:
 
   # Search — returns JSON of URLs + snippets
-  python3 /opt/data/skills/searcharvester-search/scripts/search.py \
+  searcharvester-search \
     --query "<query>" --max-results 5
 
   # Extract — saves FULL markdown to ./extracts/<id>.md and returns a
   # pointer (id, url, total_chars, path, 800-char preview).
   # There is no --size any more; every extract is saved in full so
   # you can read specific sections with shell tools.
-  python3 /opt/data/skills/searcharvester-extract/scripts/extract.py \
+  searcharvester-extract \
     --url "<url>"
+
+  # Run exactly one search/extract command per terminal call. Do not chain
+  # commands with && or pass multiple URLs to one extract call.
 
   # Then read the saved file precisely — no truncation:
   grep -ni 'keyword' ./extracts/<id>.md
   head -200 ./extracts/<id>.md
   sed -n '300,600p' ./extracts/<id>.md
 
-HARD RULE: Your FIRST action must be a `terminal` call with search.py.
+HARD RULE: Your FIRST action must be a `terminal` call with
+`searcharvester-search --query "<query>" --max-results <n>`.
 Never answer from your training memory — your data is older than today.
 
 METHOD:
-1. Run 2–3 search.py invocations with varied phrasings.
+1. Run 2–3 `searcharvester-search --query "<query>"` invocations with
+   varied phrasings.
 2. Pick 3–4 authoritative URLs from the combined results.
 3. Run extract.py on each — this saves the FULL page to
    `./extracts/<id>.md`. If HTTP 422/502/500, try another URL.
@@ -262,6 +268,10 @@ any extract the researchers already pulled — the workspace is shared.
 Allowed terminal commands:
 - `python3 /opt/data/skills/searcharvester-search/scripts/search.py --query "<query>" --max-results <n>`
 - `python3 /opt/data/skills/searcharvester-extract/scripts/extract.py --url "<url>"`
+- `searcharvester-search --query "<query>" --max-results <n>`
+- `searcharvester-extract --url "<url>"`
+- Run exactly one search/extract command per terminal call.
+- Extract exactly one URL per `searcharvester-extract --url "<url>"` call.
 - `grep -ni "<keyword>" ./extracts/<id>.md`
 - `head -200 ./extracts/<id>.md`
 - `sed -n 'START,ENDp' ./extracts/<id>.md`
@@ -334,6 +344,10 @@ TOOLS: Same as researcher (extract saves to `./extracts/<id>.md`; use
 Allowed terminal commands:
 - `python3 /opt/data/skills/searcharvester-search/scripts/search.py --query "<query>" --max-results <n>`
 - `python3 /opt/data/skills/searcharvester-extract/scripts/extract.py --url "<url>"`
+- `searcharvester-search --query "<query>" --max-results <n>`
+- `searcharvester-extract --url "<url>"`
+- Run exactly one search/extract command per terminal call.
+- Extract exactly one URL per `searcharvester-extract --url "<url>"` call.
 - `grep -ni "<keyword>" ./extracts/<id>.md`
 - `head -200 ./extracts/<id>.md`
 - `sed -n 'START,ENDp' ./extracts/<id>.md`

@@ -84,6 +84,7 @@ services:
     environment:
       - JOBS_DIR=/srv/searxng-docker/jobs
       - HERMES_HOME=/opt/data
+      - HERMES_ACCEPT_HOOKS=1
       - ADAPTER_URL_FOR_HERMES=http://localhost:8000
       - RESEARCH_TIMEOUT_SEC=1200
       # Match the UID of the repo owner so mounted files stay owned by

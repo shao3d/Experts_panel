@@ -53,6 +53,14 @@ hermes-data/*
 # that the upstream Hermes template would otherwise overwrite. Versioning
 # the whole file so clones get identical behaviour.
 !hermes-data/config.yaml
+# Harvester delegated-tool routing contract: tiny wrappers and pre_tool_call
+# guard are part of the deployable overlay, not runtime state.
+!hermes-data/bin/
+!hermes-data/bin/searcharvester
+!hermes-data/bin/searcharvester-search
+!hermes-data/bin/searcharvester-extract
+!hermes-data/hooks/
+!hermes-data/hooks/research_terminal_guard.py
 jobs/
 .env.hermes
 
