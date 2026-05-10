@@ -403,6 +403,58 @@ In the live research smoke, the agent extracted the Playwright docs itself, so
 the repair pass was not needed. The synthetic in-container smoke proves the
 repair path directly.
 
+## Follow-Up: Parallel Deep-Mode Stress Test
+
+Three production `mode=deep` jobs were launched in parallel to test the
+explicit `Дипресёрчер` path under realistic heavy prompts:
+
+| Scenario | Job ID | Status | Duration | Extracts | Report | Notes |
+|---|---:|---:|---:|---:|---:|---|
+| Workflow orchestration: Postgres queue vs Redis/Celery/RQ vs Temporal | `2a1eee9152ea479c` | timeout | `1209.3s` | `9` | none | first delegate round had 2 completed subagents and 1 timeout; second delegate round was still running when lead timed out |
+| Current search APIs: Perplexity vs Tavily vs Exa vs Google/Vertex vs Harvester | `bdaa24e7854441ed` | timeout | `1209.2s` | `19` | none | first delegate round completed; second critic/fact-check round had 1 completed subagent and 1 timeout |
+| Psychology/self-help AI safety: no-AI vs bounded AI ops vs open-ended chat | `daf75aa03b1c431c` | timeout | `1209.2s` | `30` | none | first delegate round completed; second critic/fact-check round did not finish before lead timeout |
+
+Observed API result for all three:
+
+```text
+status: timeout
+error: exceeded timeout of 1200s
+citation_integrity: null
+report_len: 0
+```
+
+What this proves:
+
+- deep mode timeout semantics are explicit: jobs become terminal `timeout`
+  instead of hanging forever;
+- the VPS stack survived the parallel load and remained healthy after timeout;
+- the jobs accumulated real extracts and sub-agent outputs before timeout;
+- no partial report is exposed as a final `report.md`, so the API does not
+  pretend incomplete deep research is completed evidence.
+
+What failed product-wise:
+
+- parallel deep mode is too slow for the current `1200s` job budget;
+- the parent API exposes only `running` until timeout, even though internal
+  phases and extracts are progressing;
+- there is no stable partial artifact such as `round1.md`, `critic.md`, or
+  `partial_report.md` for interrupted jobs;
+- sub-agent evidence can be partial (`URLs cited without extract files`) before
+  final report citation repair has a chance to run;
+- the lead agent may lose the chance to synthesize because the second
+  critic/fact-check delegate round consumes the remaining job budget;
+- one plan-write attempt used shell heredoc with an `&` character in text and
+  was blocked as backgrounding. The agent recovered with the file write tool,
+  but deep skills should prefer file write/edit over shell heredocs for
+  markdown artifacts.
+
+Product implication:
+
+`mode=deep` is not ready as a default "better search" mode. It should remain an
+explicit `Дипресёрчер` path with long-run expectations, and its next hardening
+should focus on phase visibility, partial artifacts, and bounded round budgets
+rather than citation repair alone.
+
 ## Verdict
 
 The VPS deployment is operational, but not yet "strict research grade".
@@ -429,6 +481,9 @@ The VPS deployment is operational, but not yet "strict research grade".
 - Standard-mode citation repair can now recover extractable report URLs before
   marking a job degraded; this was proved in the live container against
   `https://playwright.dev/docs/ci`.
+- Parallel `mode=deep` stress testing produced terminal `timeout` statuses on
+  all three heavy scenarios; the stack stayed healthy, but no final report or
+  citation integrity was available.
 - Partial URL grounding was a repeated, not theoretical, issue before
   final-report citation hardening.
 - Before hardening, completed jobs did not always produce a physical
@@ -441,7 +496,8 @@ The VPS deployment is operational, but not yet "strict research grade".
   must make that warning visible.
 - Global subagents can still violate workflow discipline unless their
   instructions enforce terminal Harvester status before final delivery.
-- `mode=deep` can exceed a normal interactive waiting budget.
+- `mode=deep` can exceed a normal interactive waiting budget, especially when
+  several deep jobs run in parallel and the critic/fact-check round starts late.
 - A user may ask for "short" or "на русском", but the system currently enforces
   those constraints softly.
 
@@ -449,11 +505,13 @@ The VPS deployment is operational, but not yet "strict research grade".
 
 Continue hardening before broader product use:
 
-1. Run a broader fresh-session dogfood of global `web_researcher` pre-Haft mode
-   on 2-3 real decision questions, verifying Harvester `job_id`,
-   `citation_integrity`, and no `report.md` recovery warnings.
-2. Keep monitoring `mode=deep` separately; deep mode can still exceed normal
-   interactive waiting budgets and may have different artifact behavior.
-3. Keep `mode=deep` reserved for explicit deep-research requests, because the
-   production battle tests show it can exceed a normal interactive waiting
-   budget.
+1. Add deep-mode phase visibility to `/research/{job_id}`: current phase,
+   delegate round, extract count, subagent completed/failed counts, and last
+   progress timestamp.
+2. Persist partial deep artifacts before each delegate round returns:
+   `round1.md`, `critic_factcheck.md`, and/or `partial_report.md`.
+3. Add explicit round budgets so the lead preserves enough time for final
+   synthesis, or mark `partial` with a stable artifact instead of timing out
+   without a report.
+4. Keep `mode=deep` reserved for explicit deep-research requests until the
+   partial-artifact contract is implemented and dogfooded.
