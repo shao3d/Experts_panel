@@ -508,6 +508,69 @@ This does not make deep research "fast"; it makes it bounded and inspectable.
 The product rule remains: use `mode=standard` for normal pre-Haft evidence and
 reserve `mode=deep` for explicit `Дипресёрчер` requests.
 
+## Follow-Up: Single Deep Dogfood After Budget Hardening
+
+A fresh single-job `mode=deep` smoke was run after the timeout/progress and
+budget changes, without parallel deep load:
+
+```text
+job_id: 339bba2f499d4bd0
+query: VPS vs Google Cloud Run for a private AI research sidecar, 3-10 requests/day
+mode: deep
+max_report_chars: 12000
+language: en
+status: completed
+duration_sec: 715.477497
+report.md: 5334 bytes
+extracts: 7
+delegate_rounds: 2
+subagents done: 4 completed
+error: citation contract degraded - unverified citations: 4
+citation_integrity: 4/8 verified
+```
+
+Observed behavior:
+
+- the new deep budget worked at the decomposition layer: Round 1 launched 2
+  researchers, not 3;
+- Round 1 completed quickly for deep mode: 2 researcher tasks in about `102s`;
+- Round 2 completed but dominated runtime: critic/fact-checker took about
+  `557s`;
+- the lead wrote a physical `report.md` after the heredoc write was blocked by
+  the `&` backgrounding guard; it recovered via the file write tool;
+- the final report surfaced a useful critic correction: Cloud Run warm-instance
+  cost and egress are less favorable than the initial researcher framing;
+- the final job completed inside the `1200s` budget, so the single-job deep
+  path is viable after budget hardening.
+
+Remaining issues found:
+
+- Round 2 still wastes budget on tool-discipline mistakes: attempts included
+  non-existent shell commands / tools such as `google_search`, `read_file`, and
+  wrong skill paths before recovering.
+- The ACP stream still does not expose sub-agent spawn metadata reliably when
+  `raw_input` is null; `subagents.done` is backfilled, but `subagents.spawned`
+  remains `0`.
+- Deep-mode finalization does not run the standard-mode citation repair pass.
+  The completed report stayed degraded with four unverified URLs:
+  - `https://www.danilchenko.dev/posts/digitalocean-to-hetzner-migration/`
+  - `https://cloud.google.com/run/docs/instances`
+  - `https://www.hetzner.com/cloud`
+  - `https://cloud.google.com/blog/products/serverless/whats-new-in-cloud-run-at-next-26`
+
+Conclusion:
+
+`mode=deep` is now usable as an explicit long-running `Дипресёрчер` path for a
+single request, but not yet strict-research clean. The next high-value hardening
+is not more timeout handling; it is:
+
+1. tighten critic/fact-checker tool instructions so Round 2 does not burn time
+   on imaginary tools or wrong paths;
+2. extend bounded citation repair to completed deep reports, or clearly decide
+   that deep keeps degraded citation labels without repair;
+3. improve progress telemetry for live delegate sub-agents when ACP does not
+   include `raw_input`.
+
 ## Verdict
 
 The VPS deployment is operational, but not yet "strict research grade".
