@@ -292,6 +292,57 @@ Observed event sequence:
 - final message: `REPORT_SAVED: ./report.md`
 - final `done` payload had no `degraded` flag.
 
+## Follow-Up: Global `web_researcher` Pre-Haft Five-Scenario Dogfood
+
+Five fresh-session `web_researcher` subagents were run against realistic
+pre-Haft decision prompts. Each prompt was expected to do normal discovery,
+then call Harvester `mode=standard`, wait for terminal status, and return an
+evidence packet without making the final Haft decision.
+
+| Scenario | Harvester job | Harvester result | Agent behavior | Verdict |
+|---|---:|---:|---|---|
+| AI sidecar hosting: Cloud Run vs Fly.io vs Railway vs budget VPS | `a44261306e8846ae` | completed, `6/6` verified | waited for final status and surfaced `job_id`, `status`, `citation_integrity` | pass |
+| Cross-repo research interface: MCP vs REST+CLI vs subagent | `ba88f9561c6a432f` | completed, `5/5` verified | waited for final status and kept the packet decision-oriented | pass |
+| Web research model choice: Flash vs reasoning vs router/executor | `bdb7d65d37c14cab` | completed, `6/6` verified | returned while Harvester was still `running`; server completed later | agent wait fail |
+| Private research service exposure: SSH vs reverse proxy vs bearer API | `ff10736e098f492c` | completed, `3/3` verified | returned while Harvester was still `running`; server completed later | agent wait fail |
+| Psychology-adjacent AI cards: bounded AI ops vs universal AI coach | `c502e5286d65473f` | completed degraded, `5/6` verified | waited for final status and marked the unverified LinkedIn citation | pass with degraded citation |
+
+Server-side observation:
+
+- all five Harvester jobs reached a terminal status;
+- all five had a final `wc -c ./report.md` check;
+- four of five had fully verified citations;
+- one had a deliberately surfaced degraded citation warning;
+- the two failures were not Harvester completion failures, but
+  `web_researcher` workflow failures: the agent treated `running` as something
+  it could report as a usable Harvester packet.
+
+Follow-up hardening applied to the global user-level agent:
+
+- in `Pre-Haft Evidence Packet mode`, `web_researcher` must keep polling until
+  Harvester reaches `completed`, `failed`, or `error`;
+- `running`, `queued`, `pending`, and `citation_integrity: null` are not
+  deliverable evidence;
+- if interrupted or practically timed out, the agent may return only an
+  explicit incomplete status with `job_id` and current status, not a
+  decision-grade packet.
+
+Post-hardening smoke:
+
+```text
+query: Playwright vs Chrome DevTools MCP vs browser-use style agent plugin
+job_id: 1742d985c60e4301
+status: completed
+duration_sec: 176.123219
+error: citation contract degraded - unverified citations: 2
+citation_integrity: 3/5 verified
+```
+
+The smoke confirms the wait-rule fix at the agent layer: the subagent did not
+return while Harvester was still `running`; it waited until the final
+`completed` status. It also confirmed that degraded citation integrity remains
+visible to the parent chat instead of being silently treated as clean evidence.
+
 ## Verdict
 
 The VPS deployment is operational, but not yet "strict research grade".
@@ -312,6 +363,9 @@ The VPS deployment is operational, but not yet "strict research grade".
   citation integrity.
 - Standard-mode `report.md` writing was hardened and proved on VPS: the agent
   wrote `report.md`, verified it with `wc -c`, and returned only the marker.
+- Five realistic global `web_researcher` pre-Haft dogfood scenarios proved that
+  Harvester itself can complete realistic standard-mode jobs, including one
+  degraded-citation case that was surfaced instead of hidden.
 - Partial URL grounding was a repeated, not theoretical, issue before
   final-report citation hardening.
 - Before hardening, completed jobs did not always produce a physical
@@ -321,6 +375,8 @@ The VPS deployment is operational, but not yet "strict research grade".
 
 - Final reports may still contain search-only URLs, but the adapter now labels
   them `search_only_unverified`; product surfaces must make that warning visible.
+- Global subagents can still violate workflow discipline unless their
+  instructions enforce terminal Harvester status before final delivery.
 - `mode=deep` can exceed a normal interactive waiting budget.
 - A user may ask for "short" or "на русском", but the system currently enforces
   those constraints softly.

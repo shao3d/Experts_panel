@@ -103,6 +103,16 @@ The global `web_researcher` must surface the Harvester `job_id`, final
 is unavailable or returns degraded citation integrity, the packet is incomplete
 and must say so explicitly.
 
+Important waiting rule:
+
+- `web_researcher` must not return a final pre-Haft packet while Harvester is
+  still `running`, `queued`, or otherwise non-terminal.
+- `citation_integrity: null` means the Harvester report is not ready yet.
+- If the agent is interrupted or times out before Harvester reaches
+  `completed`, `failed`, or `error`, it should return only an explicit
+  incomplete status with the `job_id` and current status, not a decision-grade
+  packet.
+
 Typical phrases:
 
 - "Вебсёрчер, собери фактуру под Хафт..."
