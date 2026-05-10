@@ -98,11 +98,17 @@ Hard constraints:
 - If a search-only URL influenced source selection, mention it without a raw URL
   or leave it out. The final citation contract will mark unextracted URLs as
   degraded.
-- Write the final answer to `./report.md`.
+- Use the file write/edit tool to write the final answer to `./report.md`.
+- Do not put the report body in the final assistant message.
+- After writing, verify `./report.md` exists and is non-empty, for example with
+  `wc -c ./report.md`.
+- If you cannot write or verify `./report.md`, say why; do not claim
+  `REPORT_SAVED`.
 - Target maximum report length: {max_report_chars} characters.
 - {language_hint}
 
-Output: `./report.md` (relative path). Finish with:
+Output: `./report.md` (relative path). The final assistant message must contain
+only this marker and nothing else:
 
     REPORT_SAVED: ./report.md"""
 

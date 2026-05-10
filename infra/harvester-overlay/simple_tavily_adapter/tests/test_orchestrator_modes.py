@@ -1,6 +1,8 @@
 """Mode contract tests for standard vs deep research prompts."""
 from __future__ import annotations
 
+from pathlib import Path
+
 from orchestrator import (
     DEEP_RESEARCH_SKILL,
     EXTRACT_SKILL,
@@ -21,9 +23,32 @@ def test_standard_prompt_forbids_delegate_task_and_requires_extracts():
     assert "saved extract" in suffix
     assert "Do not put any URL" in suffix
     assert "extract file IDs alone" in suffix
+    assert "Use the file write/edit tool" in suffix
+    assert "Do not put the report body in the final assistant message" in suffix
+    assert "verify `./report.md` exists and is non-empty" in suffix
+    assert "The final assistant message must contain\nonly this marker" in suffix
     assert "Target maximum report length: 6000 characters" in suffix
     assert "Round 1" not in suffix
     assert "Round 2" not in suffix
+
+
+def test_standard_skill_requires_real_report_file_before_marker():
+    overlay_root = Path(__file__).resolve().parents[2]
+    candidates = [
+        overlay_root
+        / "hermes_skills"
+        / "searcharvester-standard-research"
+        / "SKILL.md",
+        Path("/opt/data/skills/searcharvester-standard-research/SKILL.md"),
+    ]
+    skill_path = next(path for path in candidates if path.exists())
+    skill = skill_path.read_text(encoding="utf-8")
+
+    assert "Write `./report.md` using the file write/edit tool" in skill
+    assert "Do not put the report\n   body in the final assistant message" in skill
+    assert "wc -c ./report.md" in skill
+    assert "with exactly this marker and no report body" in skill
+    assert "instead of claiming\n`REPORT_SAVED`" in skill
 
 
 def test_deep_prompt_preserves_two_round_delegate_pipeline():

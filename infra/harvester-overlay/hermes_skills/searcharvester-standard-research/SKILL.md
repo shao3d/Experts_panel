@@ -58,12 +58,22 @@ grep -ni "<keyword>" ./extracts/<id>.md
 sed -n '120,260p' ./extracts/<id>.md
 ```
 
-6. Write `./report.md`.
-7. End the final assistant message with:
+6. Write `./report.md` using the file write/edit tool. Do not put the report
+   body in the final assistant message.
+7. Verify that `./report.md` exists and is non-empty:
+
+```bash
+wc -c ./report.md
+```
+
+8. End the final assistant message with exactly this marker and no report body:
 
 ```text
 REPORT_SAVED: ./report.md
 ```
+
+If you cannot write or verify `./report.md`, say why instead of claiming
+`REPORT_SAVED`.
 
 ## Report Shape
 

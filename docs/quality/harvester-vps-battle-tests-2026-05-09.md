@@ -240,6 +240,58 @@ when extraction/reporting pulls heavier model/vendor documentation. This is
 acceptable for `Вебсёрчер под Хафт`, but the caller should still treat it as a
 research operation, not an instant search.
 
+## Follow-Up: Standard Report-File Contract Hardening
+
+A fresh `web_researcher` pre-Haft smoke proved that the global agent now calls
+Harvester `mode=standard`, but it also surfaced a standard-mode artifact issue:
+
+```text
+job_id: 42640dbf1d524db3
+status: completed
+duration_sec: 48.7497
+citation_integrity: 4/4 verified
+warning: report.md missing - recovered final lead message
+```
+
+Root cause from `events.jsonl`:
+
+- the agent wrote `./plan.md`;
+- it extracted and read sources;
+- it did not emit `write: ./report.md`;
+- it returned the full report as the final assistant message and appended
+  `REPORT_SAVED: ./report.md`;
+- the adapter recovered that final lead message and persisted `report.md`.
+
+The fix tightened both the standard prompt suffix and the
+`searcharvester-standard-research` skill:
+
+- write `./report.md` with the file write/edit tool;
+- do not put the report body in the final assistant message;
+- verify the file with `wc -c ./report.md`;
+- final assistant message must contain only `REPORT_SAVED: ./report.md`;
+- do not claim `REPORT_SAVED` if the file cannot be written or verified.
+
+Live VPS rerun:
+
+```text
+job_id: 6fd36cd5c5244192
+query: In 2 cited bullets, what is trafilatura and why use it for LLM evidence extraction? Keep it short.
+mode: standard
+status: completed
+duration_sec: 29.698797
+error: null
+citation_integrity: 3/3 verified
+report.md: 931 bytes
+```
+
+Observed event sequence:
+
+- `write: ./plan.md`
+- `write: ./report.md`
+- `terminal: wc -c ./report.md`
+- final message: `REPORT_SAVED: ./report.md`
+- final `done` payload had no `degraded` flag.
+
 ## Verdict
 
 The VPS deployment is operational, but not yet "strict research grade".
@@ -255,6 +307,11 @@ The VPS deployment is operational, but not yet "strict research grade".
 - Five realistic pre-Haft `mode=standard` dogfood runs completed, and the two
   citation-contract defects found there were fixed and rerun successfully on
   production VPS.
+- The global `web_researcher` pre-Haft route now calls Harvester
+  `mode=standard`; a real smoke returned a Harvester `job_id` and verified
+  citation integrity.
+- Standard-mode `report.md` writing was hardened and proved on VPS: the agent
+  wrote `report.md`, verified it with `wc -c`, and returned only the marker.
 - Partial URL grounding was a repeated, not theoretical, issue before
   final-report citation hardening.
 - Before hardening, completed jobs did not always produce a physical
@@ -272,11 +329,11 @@ The VPS deployment is operational, but not yet "strict research grade".
 
 Continue hardening before broader product use:
 
-1. Re-test the `report.md` recovery hardening with an end-to-end missing-report
-   case: completed recovered jobs must persist `report.md`, mark the result
-   degraded, and never use sub-agent messages as fallback.
-2. Run a fresh-session live dogfood of global `web_researcher` pre-Haft mode
-   and verify the agent actually calls Harvester `mode=standard`.
+1. Run a broader fresh-session dogfood of global `web_researcher` pre-Haft mode
+   on 2-3 real decision questions, verifying Harvester `job_id`,
+   `citation_integrity`, and no `report.md` recovery warnings.
+2. Keep monitoring `mode=deep` separately; deep mode can still exceed normal
+   interactive waiting budgets and may have different artifact behavior.
 3. Keep `mode=deep` reserved for explicit deep-research requests, because the
    production battle tests show it can exceed a normal interactive waiting
    budget.

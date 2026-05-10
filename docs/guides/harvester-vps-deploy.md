@@ -458,6 +458,10 @@ Expected:
   - Sub-agent messages are never used as report fallback.
   - If there is no final lead message, the job fails with
     `agent finished without report.md or final lead message`.
+  - Standard mode was hardened on 2026-05-10 so the agent must write
+    `./report.md` with the file write/edit tool, verify it with
+    `wc -c ./report.md`, and then return only `REPORT_SAVED: ./report.md`.
+    A live VPS smoke (`6fd36cd5c5244192`) completed without recovery warning.
 - `/research` is naturally slow. The successful smoke took about 5 minutes for
   a small deep query. `mode=standard` is the bounded extract-backed path for
   fast/Haft-ready evidence packets; `mode=deep` keeps the multi-agent
