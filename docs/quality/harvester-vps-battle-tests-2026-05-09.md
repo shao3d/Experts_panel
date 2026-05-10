@@ -585,6 +585,68 @@ discipline and deep citation repair. The remaining high-value hardening is
 progress telemetry for live delegate sub-agents when ACP does not include
 `raw_input`.
 
+## Follow-Up: Single Deep Dogfood After Round 2 And Citation Repair Hardening
+
+A fresh single-job `mode=deep` smoke was run after Round 2 tool-discipline
+instructions and deep citation repair were deployed:
+
+```text
+job_id: f456f9d05a91456a
+query: VPS vs Google Cloud Run for a private AI research sidecar, 3-10 requests/day
+mode: deep
+max_report_chars: 12000
+language: en
+status: completed
+duration_sec: 392.056596
+report.md: 5095 bytes
+extracts: 16
+delegate_rounds: 2
+subagents done: 4 completed
+error: null
+citation_integrity: 11/11 verified
+repaired_urls: 6
+```
+
+Comparison with the previous single deep dogfood `339bba2f499d4bd0`:
+
+| Metric | Before | After | Result |
+|---|---:|---:|---|
+| Total duration | `715.5s` | `392.1s` | improved |
+| Round 1 duration | about `102s` | about `168s` | slower in this run, but not the bottleneck |
+| Round 2 duration | about `557s` | about `157s` | improved |
+| Extracts | `7` | `16` | improved evidence coverage |
+| Citation integrity | `4/8` verified | `11/11` verified | fixed for this run |
+| Final error | `citation contract degraded - unverified citations: 4` | `null` | fixed for this run |
+
+What improved:
+
+- Deep completed inside the `1200s` budget with a large margin.
+- Deep finalization repaired six URLs by extracting them before final citation
+  verification.
+- The final report had no `search_only_unverified` references.
+- Round 2 no longer dominated the whole job; critic/fact-checker time dropped
+  from roughly nine minutes to about two and a half minutes.
+
+What remains imperfect:
+
+- Round 2 still attempted some invalid or blocked tool paths before recovering:
+  `google_search`, `searcharvester-search` as a shell command, `ss`, direct
+  probing of `http://searxng:8080`, and a shell command that tried to inspect
+  available tools.
+- Those attempts did not break the job, but they still burn model/tool budget
+  and show that prompt-level tool discipline is not enough.
+- `subagents.spawned` remains `0` in progress telemetry even though
+  `subagents.done` was backfilled as `4 completed`; ACP still does not expose
+  reliable live spawn metadata for delegate calls with `raw_input: null`.
+
+Product conclusion:
+
+The deep path is now materially better: citation repair works on completed deep
+reports, and a single `Дипресёрчер` run is viable on the VPS. The remaining
+optimization is not citation quality; it is stronger tool routing for delegated
+critic/fact-checker tasks. Prompt warnings reduced damage and duration, but did
+not fully prevent imagined tools or internal-service probes.
+
 ## Verdict
 
 The VPS deployment is operational, but not yet "strict research grade".
@@ -620,6 +682,9 @@ The VPS deployment is operational, but not yet "strict research grade".
 - Deep skill defaults are now budgeted to preserve time for final synthesis.
 - Deep Round 2 now has explicit tool-discipline rules to avoid burning budget
   on imagined tools or internal service probes.
+- A fresh post-hardening single deep dogfood completed in `392.1s` with
+  `11/11` verified citations; deep citation repair recovered six URLs before
+  final verification.
 - Partial URL grounding was a repeated, not theoretical, issue before
   final-report citation hardening.
 - Before hardening, completed jobs did not always produce a physical
@@ -635,6 +700,9 @@ The VPS deployment is operational, but not yet "strict research grade".
 - `mode=deep` can still exceed a normal interactive waiting budget, especially
   when several deep jobs run in parallel and the critic/fact-check round starts
   late. The result is now inspectable, but not final evidence.
+- `mode=deep` delegated critic/fact-checker tasks can still waste budget on
+  invalid or blocked tool attempts even after prompt-level tool-discipline
+  hardening.
 - A user may ask for "short" or "на русском", but the system currently enforces
   those constraints softly.
 
@@ -642,8 +710,8 @@ The VPS deployment is operational, but not yet "strict research grade".
 
 Continue hardening before broader product use:
 
-1. Dogfood a fresh single-job `mode=deep` run after the budget changes to see
-   whether it now completes within `1200s`.
+1. Add stronger delegated-tool routing for deep Round 2 so critic/fact-checker
+   tasks cannot spend attempts on imagined tools or internal service probes.
 2. If deep still times out often, add per-round time budgeting rather than only
    prompt-level budgets.
 3. Consider optional `round1.md` / `critic_factcheck.md` artifacts if
