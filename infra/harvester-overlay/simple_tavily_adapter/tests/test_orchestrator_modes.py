@@ -58,7 +58,30 @@ def test_deep_prompt_preserves_two_round_delegate_pipeline():
     assert DEEP_RESEARCH_SKILL in suffix
     assert "Round 1: delegate_task" in suffix
     assert "Round 2: delegate_task" in suffix
+    assert "TIME BUDGET" in suffix
+    assert "2 researchers" in suffix
+    assert "No third round" in suffix
     assert "Write the final report in Russian" in suffix
+
+
+def test_deep_skill_has_default_completion_budget():
+    overlay_root = Path(__file__).resolve().parents[2]
+    candidates = [
+        overlay_root
+        / "hermes_skills"
+        / "searcharvester-deep-research"
+        / "SKILL.md",
+        Path("/opt/data/skills/searcharvester-deep-research/SKILL.md"),
+        Path("/opt/searcharvester-hermes-skills/searcharvester-deep-research/SKILL.md"),
+    ]
+    skill_path = next(path for path in candidates if path.exists())
+    skill = skill_path.read_text(encoding="utf-8")
+
+    assert "version: 2.4.0" in skill
+    assert "Default time budget" in skill
+    assert "Use 2 researchers" in skill
+    assert "Each researcher targets 3–4 successful extracts" in skill
+    assert "The fact-checker verifies the top 3 facts" in skill
 
 
 def test_skills_are_filtered_by_mode():

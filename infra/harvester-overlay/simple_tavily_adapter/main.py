@@ -32,7 +32,7 @@ from sse_starlette.sse import EventSourceResponse
 
 from tavily_client import TavilyResponse, TavilyResult
 from config_loader import config
-from orchestrator import Orchestrator, Job, JobStatus
+from orchestrator import Orchestrator, Job, JobStatus, PARTIAL_REPORT_FILENAME
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -442,8 +442,10 @@ class ResearchStatus(BaseModel):
     finished_at: str | None = None
     duration_sec: float | None = None
     report: str | None = None
+    partial_report: str | None = None
     error: str | None = None
     citation_integrity: dict[str, Any] | None = None
+    progress: dict[str, Any] | None = None
 
 
 def _ensure_orchestrator() -> Orchestrator:
@@ -470,8 +472,10 @@ def _job_to_status(job: Job) -> ResearchStatus:
         finished_at=job.finished_at.isoformat() if job.finished_at else None,
         duration_sec=job.duration_sec,
         report=job.report,
+        partial_report=job.partial_report,
         error=job.error,
         citation_integrity=job.citation_integrity,
+        progress=_job_progress(job),
     )
 
 
@@ -484,6 +488,8 @@ def _job_phase(job: Job) -> str:
     - running with notes.md, no report.md → "synthesise"
     - running with report.md → "verify"  (the agent is writing the REPORT_SAVED marker now)
     """
+    if job.status == JobStatus.timeout and _has_partial_report(job):
+        return "partial_timeout"
     if job.status != JobStatus.running:
         return job.status.value
     ws = job.workspace_path
@@ -506,7 +512,7 @@ def _job_artifacts(job: Job) -> dict[str, int]:
     if job.workspace_path is None:
         return {}
     out: dict[str, int] = {}
-    for name in ("plan.md", "notes.md", "report.md", "hermes.log"):
+    for name in ("plan.md", "notes.md", "report.md", PARTIAL_REPORT_FILENAME, "hermes.log"):
         p = job.workspace_path / name
         try:
             if p.exists():
@@ -514,6 +520,72 @@ def _job_artifacts(job: Job) -> dict[str, int]:
         except Exception:
             pass
     return out
+
+
+def _job_progress(job: Job) -> dict[str, Any]:
+    events = list(job.events)
+    delegate_rounds = [
+        event for event in events
+        if event.type == "tool_call"
+        and event.agent_id == "lead"
+        and "delegate" in str((event.payload or {}).get("title") or "").lower()
+        and "task" in str((event.payload or {}).get("title") or "").lower()
+    ]
+    sub_spawns = [
+        event for event in events
+        if event.type == "spawn" and event.parent_id == "lead"
+    ]
+    sub_done = [
+        event for event in events
+        if event.type == "done" and event.parent_id == "lead"
+    ]
+    status_counts: dict[str, int] = {}
+    for event in sub_done:
+        status = str((event.payload or {}).get("status") or "unknown")
+        status_counts[status] = status_counts.get(status, 0) + 1
+
+    return {
+        "phase": _job_phase(job),
+        "event_count": len(events),
+        "delegate_rounds": len(delegate_rounds),
+        "subagents": {
+            "spawned": len(sub_spawns),
+            "done": len(sub_done),
+            "status_counts": status_counts,
+        },
+        "extracts": {
+            "count": _extract_file_count(job),
+        },
+        "artifacts": _job_artifacts(job),
+        "has_report": job.report is not None or _workspace_file_exists(job, "report.md"),
+        "has_partial_report": _has_partial_report(job),
+        "last_event": events[-1].to_dict() if events else None,
+    }
+
+
+def _extract_file_count(job: Job) -> int:
+    if job.workspace_path is None:
+        return 0
+    extracts_dir = job.workspace_path / "extracts"
+    try:
+        if not extracts_dir.exists():
+            return 0
+        return sum(1 for _ in extracts_dir.glob("*.md"))
+    except Exception:
+        return 0
+
+
+def _workspace_file_exists(job: Job, name: str) -> bool:
+    if job.workspace_path is None:
+        return False
+    try:
+        return (job.workspace_path / name).exists()
+    except Exception:
+        return False
+
+
+def _has_partial_report(job: Job) -> bool:
+    return job.partial_report is not None or _workspace_file_exists(job, PARTIAL_REPORT_FILENAME)
 
 
 @app.post("/research", response_model=ResearchCreated, status_code=202)
@@ -599,8 +671,10 @@ async def research_events(job_id: str):
                     "language": final.language,
                     "duration_sec": final.duration_sec,
                     "has_report": final.report is not None,
+                    "has_partial_report": _has_partial_report(final),
                     "error": final.error,
                     "citation_integrity": final.citation_integrity,
+                    "progress": _job_progress(final),
                 }, ensure_ascii=False),
             }
 
@@ -623,6 +697,7 @@ async def research_snapshot(job_id: str) -> dict[str, Any]:
         "max_report_chars": job.max_report_chars,
         "language": job.language,
         "phase": _job_phase(job),
+        "progress": _job_progress(job),
         "artifacts": _job_artifacts(job),
         "events": [e.to_dict() for e in events],
     }

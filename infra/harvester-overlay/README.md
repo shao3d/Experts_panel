@@ -46,6 +46,13 @@ extracted are labeled `search_only_unverified`, reported in
 `citation_integrity`, and mark the completed job as degraded rather than
 silently passing as evidence.
 
+Deep-mode timeouts are also handled explicitly. If `mode=deep` exceeds the
+job timeout, the adapter now performs a final sub-agent backfill and writes a
+mechanical `partial_report.md` from already observed events, sub-agent
+summaries, and saved extracts. This artifact is exposed as `partial_report`
+and `progress` through `GET /research/{job_id}`; it is not treated as a final
+`report.md` and has no citation-integrity verdict.
+
 See:
 
 ```text

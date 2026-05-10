@@ -455,6 +455,59 @@ explicit `Дипресёрчер` path with long-run expectations, and its next 
 should focus on phase visibility, partial artifacts, and bounded round budgets
 rather than citation repair alone.
 
+## Follow-Up: Deep Timeout Progress And Partial Artifact Hardening
+
+Root-cause analysis after the three parallel deep timeouts:
+
+- running three deep jobs in parallel amplified load, but was not the only
+  cause;
+- each deep job already contains internal parallelism: researcher batch first,
+  then critic/fact-checker batch;
+- the old deep skill let the work expand too far: 2-3 researchers, 4-6 extracts
+  each, then additional adversarial/fact-check extracts;
+- the second delegate round could consume the remaining `1200s` budget, leaving
+  no time for lead synthesis;
+- the API exposed only `running` until terminal timeout even when extracts and
+  sub-agent messages had already accumulated.
+
+Hardening added on 2026-05-10:
+
+- `GET /research/{job_id}` now includes `progress`:
+  - phase;
+  - delegate round count;
+  - sub-agent spawned/done/status counts;
+  - extract count;
+  - artifact sizes;
+  - last observed event.
+- On timeout, the orchestrator runs a final `_backfill_subagents(...)` pass and
+  writes `partial_report.md`.
+- `partial_report.md` is assembled mechanically from already observed events,
+  sub-agent summaries, saved extracts, and artifact sizes. It does not call an
+  LLM and is not a second synthesis layer.
+- Timeout responses expose `partial_report` and `progress`, while keeping:
+  - `status: timeout`;
+  - `report: null`;
+  - `citation_integrity: null`.
+- The deep skill now has a smaller default completion budget:
+  - 2 researchers by default;
+  - 3 only for broad three-branch questions;
+  - 3-4 successful extracts per researcher;
+  - critic targets top 2-3 contestable claims;
+  - fact-checker verifies top 3 facts/dates/numbers;
+  - no third delegate round.
+
+Verification:
+
+```text
+local orchestrator/mode tests: 15 passed
+VPS container tests: 25 passed
+VPS health: ok
+```
+
+This does not make deep research "fast"; it makes it bounded and inspectable.
+The product rule remains: use `mode=standard` for normal pre-Haft evidence and
+reserve `mode=deep` for explicit `Дипресёрчер` requests.
+
 ## Verdict
 
 The VPS deployment is operational, but not yet "strict research grade".
@@ -484,6 +537,9 @@ The VPS deployment is operational, but not yet "strict research grade".
 - Parallel `mode=deep` stress testing produced terminal `timeout` statuses on
   all three heavy scenarios; the stack stayed healthy, but no final report or
   citation integrity was available.
+- Deep timeout handling now produces inspectable `progress` and
+  `partial_report.md` without pretending the job completed.
+- Deep skill defaults are now budgeted to preserve time for final synthesis.
 - Partial URL grounding was a repeated, not theoretical, issue before
   final-report citation hardening.
 - Before hardening, completed jobs did not always produce a physical
@@ -496,8 +552,9 @@ The VPS deployment is operational, but not yet "strict research grade".
   must make that warning visible.
 - Global subagents can still violate workflow discipline unless their
   instructions enforce terminal Harvester status before final delivery.
-- `mode=deep` can exceed a normal interactive waiting budget, especially when
-  several deep jobs run in parallel and the critic/fact-check round starts late.
+- `mode=deep` can still exceed a normal interactive waiting budget, especially
+  when several deep jobs run in parallel and the critic/fact-check round starts
+  late. The result is now inspectable, but not final evidence.
 - A user may ask for "short" or "на русском", but the system currently enforces
   those constraints softly.
 
@@ -505,13 +562,10 @@ The VPS deployment is operational, but not yet "strict research grade".
 
 Continue hardening before broader product use:
 
-1. Add deep-mode phase visibility to `/research/{job_id}`: current phase,
-   delegate round, extract count, subagent completed/failed counts, and last
-   progress timestamp.
-2. Persist partial deep artifacts before each delegate round returns:
-   `round1.md`, `critic_factcheck.md`, and/or `partial_report.md`.
-3. Add explicit round budgets so the lead preserves enough time for final
-   synthesis, or mark `partial` with a stable artifact instead of timing out
-   without a report.
-4. Keep `mode=deep` reserved for explicit deep-research requests until the
-   partial-artifact contract is implemented and dogfooded.
+1. Dogfood a fresh single-job `mode=deep` run after the budget changes to see
+   whether it now completes within `1200s`.
+2. If deep still times out often, add per-round time budgeting rather than only
+   prompt-level budgets.
+3. Consider optional `round1.md` / `critic_factcheck.md` artifacts if
+   `partial_report.md` is useful but too coarse.
+4. Keep `mode=deep` reserved for explicit deep-research requests.

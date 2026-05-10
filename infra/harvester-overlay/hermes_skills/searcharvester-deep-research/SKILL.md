@@ -2,13 +2,13 @@
 name: searcharvester-deep-research
 description: >
   Deep-research methodology with a ROLE-BASED team of parallel sub-agents.
-  One `delegate_task` batch dispatches 2–3 researchers (each on a distinct
-  sub-question), 1 critic (adversarial counter-search), and 1 fact-checker
-  (numeric/date verification). The lead synthesises their findings into a
-  cited report at ./report.md. Use for "research", "deep research", "report
+  Round 1 dispatches 2 researchers by default (3 only for broad three-branch
+  questions). Round 2 dispatches 1 critic and 1 fact-checker with the
+  researchers' findings as context. The lead synthesises their findings into
+  a cited report at ./report.md. Use for "research", "deep research", "report
   with sources", comparisons with citations, anything needing grounded
   multi-source evidence.
-version: 2.3.0
+version: 2.4.0
 author: Searcharvester
 license: MIT
 metadata:
@@ -35,9 +35,10 @@ a fact-checker verifies numbers. Save to `./report.md`.
 You are the **lead researcher / editor**. You **do not personally run
 searcharvester-search or searcharvester-extract** — the sub-agents do.
 Your job:
-1. Decompose the user query into 2–3 concrete sub-questions.
-2. Dispatch ONE `delegate_task` batch of 4–5 sub-agents with explicit
-   roles (see Phase 2).
+1. Decompose the user query into 2 concrete sub-questions by default
+   (3 only for a broad three-branch comparison).
+2. Dispatch a Round 1 `delegate_task` batch of researchers, then a
+   Round 2 batch with critic + fact-checker (see Phase 2).
 3. Collect their findings, reconcile disagreements, write `./report.md`.
 
 ## When to use
@@ -68,14 +69,14 @@ cannot research online (private data, pure opinion).
 
 ### Phase 1 — Decompose (lead)
 
-Write a plan to `./plan.md`:
+Write a plan to `./plan.md`. Keep the scope budgeted enough to finish:
 
 ```bash
 cat > ./plan.md << 'EOF'
 ## Intent
 <one sentence on what the user wants>
 
-## Sub-questions (2–3)
+## Sub-questions (2 by default; 3 only when necessary)
 1. <concrete, factually researchable>
 2. ...
 
@@ -94,6 +95,16 @@ second round sees what the first round produced. Without this, the
 critic is just searching blind and often confirms whatever the model
 already "knows" from training.
 
+Default time budget:
+- Use 2 researchers. Use 3 only when the question clearly has three
+  independent branches and dropping one would make the report misleading.
+- Each researcher targets 3–4 successful extracts, not 6+.
+- The critic targets the top 2–3 contestable claims.
+- The fact-checker verifies the top 3 facts/dates/numbers.
+- Exactly two delegate_task rounds. No third round.
+- If the budget runs short, write caveats in `./report.md` instead of
+  launching more work.
+
 #### Round 1 — Researchers only (parallel)
 
 ```python
@@ -109,7 +120,7 @@ delegate_task(
             "context": RESEARCHER_TEMPLATE.replace("<SUBQ>", "<q2>").replace("<USER_QUERY>", user_query),
             "toolsets": ["terminal"],
         },
-        # 2 to 3 researchers, one per sub-question
+        # 2 researchers by default; 3 only for broad three-branch questions
     ],
 )
 ```
@@ -200,14 +211,14 @@ HARD RULE: Your FIRST action must be a `terminal` call with search.py.
 Never answer from your training memory — your data is older than today.
 
 METHOD:
-1. Run 2–4 search.py invocations with varied phrasings.
-2. Pick 4–6 authoritative URLs from the combined results.
+1. Run 2–3 search.py invocations with varied phrasings.
+2. Pick 3–4 authoritative URLs from the combined results.
 3. Run extract.py on each — this saves the FULL page to
    `./extracts/<id>.md`. If HTTP 422/502/500, try another URL.
 4. Use `grep -ni` / `head` / `sed` on the saved files to find the
    specific quote you want to cite. The preview in extract.py's
    output is only 800 chars — the file has the rest.
-5. Target: 4–6 successful extracts, each actually read (not just
+5. Target: 3–4 successful extracts, each actually read (not just
    fetched — if you never grep or head it, you don't know what's
    really in there).
 
@@ -260,9 +271,9 @@ Examples:
     record holder <current year>" and look for names other than X.
 
 METHOD:
-1. Run 3–5 adversarial search.py calls derived from the concrete
+1. Run 2–3 adversarial search.py calls derived from the concrete
    claims (not generic "X debate" searches).
-2. Extract 2–4 URLs. Prefer primary sources (official site of the
+2. Extract 1–3 URLs. Prefer primary sources (official site of the
    governing body) over news aggregators.
 3. Read each extract from disk (`cat ./extracts/<id>.md | grep ...`) —
    the researchers' extracts are already there; you can re-read them
@@ -310,7 +321,9 @@ confirmation — big sites reprint each other's errors. After extract,
 preview snippets.
 
 METHOD:
-1. For each fact in the list, run 2 search.py calls with different
+0. Pick the top 3 facts/dates/numbers by importance. Put the rest in
+   "Unverified due to budget" if needed.
+1. For each selected fact, run 2 search.py calls with different
    phrasings that would reveal the correct value.
 2. Extract from 2 authoritative URLs per fact (preferably official
    or primary sources: governing body, Wikipedia, major newspaper).

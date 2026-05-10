@@ -7,6 +7,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 import main
+from events import Event
 from orchestrator import Job, JobStatus
 
 
@@ -116,6 +117,63 @@ def test_get_research_completed_returns_report_content(client):
     body = r.json()
     assert body["status"] == "completed"
     assert body["report"].startswith("# Title")
+
+
+def test_get_research_timeout_returns_partial_report_and_progress(client, tmp_path):
+    c, orch = client
+    workspace = tmp_path / "job"
+    extracts_dir = workspace / "extracts"
+    extracts_dir.mkdir(parents=True)
+    (extracts_dir / "source-a.md").write_text("# Source A\n", encoding="utf-8")
+    (workspace / "partial_report.md").write_text(
+        "# Partial Deep Research Report\n",
+        encoding="utf-8",
+    )
+    job = Job(
+        id="abc",
+        query="x",
+        mode="deep",
+        status=JobStatus.timeout,
+        workspace_path=workspace,
+        partial_report="# Partial Deep Research Report\n",
+        error="exceeded timeout of 1200s",
+    )
+    job.events = [
+        Event.now(
+            job_id="abc",
+            agent_id="lead",
+            type="tool_call",
+            payload={"title": "delegate task", "id": "call-1"},
+        ),
+        Event.now(
+            job_id="abc",
+            agent_id="sub-call-1-1",
+            parent_id="lead",
+            type="spawn",
+            payload={"goal": "Research one branch."},
+        ),
+        Event.now(
+            job_id="abc",
+            agent_id="sub-call-1-1",
+            parent_id="lead",
+            type="done",
+            payload={"status": "completed"},
+        ),
+    ]
+    orch.get.return_value = job
+
+    r = c.get("/research/abc")
+
+    assert r.status_code == 200
+    body = r.json()
+    assert body["status"] == "timeout"
+    assert body["partial_report"].startswith("# Partial")
+    assert body["progress"]["phase"] == "partial_timeout"
+    assert body["progress"]["delegate_rounds"] == 1
+    assert body["progress"]["subagents"]["spawned"] == 1
+    assert body["progress"]["subagents"]["status_counts"] == {"completed": 1}
+    assert body["progress"]["extracts"]["count"] == 1
+    assert body["progress"]["has_partial_report"] is True
 
 
 def test_delete_research_calls_cancel(client):

@@ -141,6 +141,9 @@ What it does:
 - includes critic/fact-checking behavior;
 - waits for a long-running report;
 - expects minutes or tens of minutes, not a quick answer.
+- if Harvester reaches `timeout`, returns only incomplete deep status plus
+  `progress` / `partial_report` when available; this is not a final report and
+  should not be treated as decision-grade evidence.
 
 Typical phrases:
 

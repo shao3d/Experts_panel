@@ -7,7 +7,7 @@ from collections.abc import Generator
 from contextlib import contextmanager
 
 from events import Event
-from orchestrator import Orchestrator, Job, JobStatus
+from orchestrator import Orchestrator, Job, JobStatus, PARTIAL_REPORT_FILENAME
 
 
 @contextmanager
@@ -292,3 +292,70 @@ def test_finalize_fails_without_report_or_final_lead_message(tmp_path):
     assert job.report is None
     assert not (workspace / "report.md").exists()
     assert job.error == "agent finished without report.md or final lead message"
+
+
+def test_timeout_partial_report_packages_existing_progress(tmp_path):
+    with _event_loop() as loop:
+        orch = _orchestrator(tmp_path)
+        workspace = tmp_path / "job"
+        extracts_dir = workspace / "extracts"
+        extracts_dir.mkdir(parents=True)
+        (extracts_dir / "source-a.md").write_text(
+            "# Source A\n\nExtracted source body.",
+            encoding="utf-8",
+        )
+        (workspace / "plan.md").write_text("# Plan\n", encoding="utf-8")
+        job = Job(
+            id="job",
+            query="compare realistic deep research workflows",
+            mode="deep",
+            status=JobStatus.running,
+            workspace_path=workspace,
+        )
+        job.events = [
+            Event.now(
+                job_id="job",
+                agent_id="lead",
+                type="tool_call",
+                payload={
+                    "id": "call-1",
+                    "title": "delegate task",
+                    "preview": "Round 1 researchers",
+                },
+            ),
+            Event.now(
+                job_id="job",
+                agent_id="sub-call-1-1",
+                parent_id="lead",
+                type="spawn",
+                payload={"goal": "Find current sources about deep research UX."},
+            ),
+            Event.now(
+                job_id="job",
+                agent_id="sub-call-1-1",
+                parent_id="lead",
+                type="message",
+                payload={"text": "Found two extract-backed sources and one caveat."},
+            ),
+            Event.now(
+                job_id="job",
+                agent_id="sub-call-1-1",
+                parent_id="lead",
+                type="done",
+                payload={"status": "completed"},
+            ),
+        ]
+
+        loop.run_until_complete(
+            orch._persist_partial_report(job, "exceeded timeout of 5s")
+        )
+
+    partial_path = workspace / PARTIAL_REPORT_FILENAME
+    assert partial_path.exists()
+    assert job.partial_report == partial_path.read_text(encoding="utf-8")
+    assert "Partial Deep Research Report" in job.partial_report
+    assert "not a final research report" in job.partial_report
+    assert "compare realistic deep research workflows" in job.partial_report
+    assert "Sub-agent status counts" in job.partial_report
+    assert "Found two extract-backed sources" in job.partial_report
+    assert "source-a.md" in job.partial_report

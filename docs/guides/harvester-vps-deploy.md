@@ -469,6 +469,15 @@ Expected:
   a small deep query. `mode=standard` is the bounded extract-backed path for
   fast/Haft-ready evidence packets; `mode=deep` keeps the multi-agent
   researcher + critic/fact-checker pipeline.
+  - Deep mode now uses a smaller default completion budget: 2 researchers by
+    default, 3 only for genuinely broad three-branch questions; researchers
+    target 3-4 successful extracts; critic/fact-checker target the highest-value
+    claims/facts instead of expanding the run indefinitely.
+  - If deep mode still exceeds `RESEARCH_TIMEOUT_SEC`, the API returns terminal
+    `status: timeout`, runs one final sub-agent backfill, persists
+    `partial_report.md`, and exposes it as `partial_report` plus `progress` in
+    `GET /research/{job_id}`. This is an inspection artifact, not final
+    evidence: `report` remains null and `citation_integrity` remains null.
 - Gemini 3 tool-calling through Vertex requires protocol care:
   - keep `thoughtSignature` with function calls;
   - return all tool responses for a multi-call model turn as one Vertex user

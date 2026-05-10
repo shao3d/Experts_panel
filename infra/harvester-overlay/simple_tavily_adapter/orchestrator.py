@@ -32,6 +32,7 @@ from events import Event, normalize_acp_update
 logger = logging.getLogger(__name__)
 
 REPORT_FILENAME = "report.md"
+PARTIAL_REPORT_FILENAME = "partial_report.md"
 LOG_FILENAME = "hermes.log"
 EVENTS_FILENAME = "events.jsonl"
 REPORT_SAVED_MARKER = "REPORT_SAVED:"
@@ -51,6 +52,9 @@ DEFAULT_MAX_REPORT_CHARS_BY_MODE: dict[str, int] = {
     "deep": 20000,
 }
 CITATION_REPAIR_MAX_URLS = 8
+PARTIAL_REPORT_MAX_SUBAGENTS = 12
+PARTIAL_REPORT_MAX_EXTRACTS = 30
+PARTIAL_REPORT_SNIPPET_CHARS = 1800
 
 CitationRepairer = Callable[[str, Path], Awaitable[bool]]
 
@@ -136,7 +140,7 @@ MODE — DEEP RESEARCH.
 
 INSTRUCTIONS — use the `{DEEP_RESEARCH_SKILL}` skill. It runs a
 two-round pipeline:
-  Round 1: delegate_task([researchers...])  — 2–3 researchers in parallel
+  Round 1: delegate_task([researchers...])  — usually 2 researchers in parallel
   Round 2: delegate_task([critic, fact-checker])  — with the
            researchers' findings handed in as context
 Then you (the lead) synthesise a cited report.
@@ -144,6 +148,17 @@ Then you (the lead) synthesise a cited report.
 Do NOT try to answer the question yourself between rounds; your only
 job is to read each round's JSON, decide what context the next round
 needs, and fire the next delegate_task.
+
+TIME BUDGET — prefer a complete final `./report.md` over over-broad
+research that times out. Default budget:
+- 2 researchers. Use 3 only when the user asks for a broad comparison
+  with three clearly independent branches.
+- Each researcher should target 3–4 successful extracts, not 6+.
+- The critic should target the top 2–3 contestable claims.
+- The fact-checker should verify the top 3 facts/dates/numbers.
+- Exactly two delegate_task rounds. No third round.
+- If budget runs short, write caveats in `./report.md` instead of
+  launching more work.
 
 CRITICAL — when building the `context` string for EVERY sub-agent
 task in EVERY delegate_task call, the FIRST line of context must be:
@@ -214,6 +229,7 @@ class Job:
     finished_at: datetime | None = None
     duration_sec: float | None = None
     report: str | None = None
+    partial_report: str | None = None
     error: str | None = None
     citation_integrity: dict[str, Any] | None = None
 
@@ -548,9 +564,20 @@ class Orchestrator:
             except asyncio.TimeoutError:
                 prompt_task.cancel()
                 job.error = f"exceeded timeout of {self._timeout}s"
+                try:
+                    await self._backfill_subagents(job, session.session_id)
+                except Exception:
+                    logger.debug("timeout backfill failed", exc_info=True)
+                await self._persist_partial_report(job, job.error)
+                payload: dict[str, Any] = {
+                    "status": "timeout",
+                    "error": job.error,
+                }
+                if job.partial_report is not None:
+                    payload["partial_report_bytes"] = len(job.partial_report)
                 await self._emit(job, Event.now(
                     job_id=job_id, agent_id="lead", type="done",
-                    payload={"status": "timeout", "error": job.error},
+                    payload=payload,
                 ))
                 job.status = JobStatus.timeout
                 await self._notify(job)
@@ -819,6 +846,23 @@ class Orchestrator:
         job.status = JobStatus.failed
         await self._notify(job)
 
+    async def _persist_partial_report(self, job: Job, reason: str) -> None:
+        """Persist a mechanical partial artifact for timed-out deep jobs.
+
+        This deliberately does not call an LLM. It only packages already
+        observed events, sub-agent summaries, and extract artifacts so callers
+        can inspect useful progress instead of receiving an empty timeout.
+        """
+        if job.workspace_path is None:
+            return
+        partial = _build_partial_report(job, reason)
+        path = job.workspace_path / PARTIAL_REPORT_FILENAME
+        try:
+            path.write_text(partial, encoding="utf-8")
+            job.partial_report = partial
+        except Exception:
+            logger.debug("failed to persist partial report for %s", job.id, exc_info=True)
+
     async def _complete_with_report(
         self,
         job: Job,
@@ -976,6 +1020,187 @@ class Orchestrator:
         ))
         job.status = JobStatus.failed
         await self._notify(job)
+
+
+def _build_partial_report(job: Job, reason: str) -> str:
+    """Build a non-LLM partial report from already persisted job state."""
+    lines: list[str] = [
+        "# Partial Deep Research Report",
+        "",
+        f"- Job ID: `{job.id}`",
+        f"- Status: `{job.status.value}`",
+        f"- Reason: {reason}",
+        f"- Mode: `{job.mode}`",
+        f"- Query: {job.query}",
+        "",
+        "> This is a partial progress artifact, not a final research report. "
+        "Use it to inspect what was already gathered before timeout.",
+        "",
+        "## Progress",
+    ]
+
+    delegate_calls = _delegate_tool_call_events(job.events)
+    subagents = _subagent_summaries(job.events)
+    extracts = _extract_artifact_summaries(job.workspace_path)
+    status_counts: dict[str, int] = {}
+    for sub in subagents:
+        status = str(sub.get("status") or "unknown")
+        status_counts[status] = status_counts.get(status, 0) + 1
+
+    lines.extend([
+        f"- Events observed: {len(job.events)}",
+        f"- Delegate rounds observed: {len(delegate_calls)}",
+        f"- Sub-agents observed: {len(subagents)}",
+        f"- Sub-agent status counts: {json.dumps(status_counts, ensure_ascii=False)}",
+        f"- Extract files saved: {len(extracts)}",
+    ])
+
+    artifact_sizes = _partial_artifact_sizes(job.workspace_path)
+    if artifact_sizes:
+        lines.append(
+            f"- Workspace artifacts: {json.dumps(artifact_sizes, ensure_ascii=False)}"
+        )
+
+    if delegate_calls:
+        lines.extend(["", "## Delegate Rounds"])
+        for i, ev in enumerate(delegate_calls, start=1):
+            title = str((ev.payload or {}).get("title") or "delegate task")
+            preview = _clip_text(str((ev.payload or {}).get("preview") or ""), 500)
+            lines.append(f"### Round {i}: {title}")
+            if preview:
+                lines.append(preview)
+
+    if subagents:
+        lines.extend(["", "## Sub-Agent Results"])
+        for sub in subagents[:PARTIAL_REPORT_MAX_SUBAGENTS]:
+            lines.append(
+                f"### {sub['agent_id']} — {sub.get('status') or 'unknown'}"
+            )
+            goal = sub.get("goal")
+            if goal:
+                lines.append(f"- Goal: {_clip_text(str(goal), 500)}")
+            note = sub.get("note") or sub.get("error")
+            if note:
+                lines.append(f"- Note: {_clip_text(str(note), 500)}")
+            text = sub.get("message")
+            if text:
+                lines.append("")
+                lines.append(_clip_text(str(text), PARTIAL_REPORT_SNIPPET_CHARS))
+        if len(subagents) > PARTIAL_REPORT_MAX_SUBAGENTS:
+            lines.append(
+                f"\n... {len(subagents) - PARTIAL_REPORT_MAX_SUBAGENTS} more sub-agents omitted."
+            )
+
+    if extracts:
+        lines.extend(["", "## Extract Artifacts"])
+        for item in extracts[:PARTIAL_REPORT_MAX_EXTRACTS]:
+            title = item["title"] or "(no title)"
+            lines.append(f"- `{item['name']}` ({item['bytes']} bytes): {title}")
+        if len(extracts) > PARTIAL_REPORT_MAX_EXTRACTS:
+            lines.append(
+                f"- ... {len(extracts) - PARTIAL_REPORT_MAX_EXTRACTS} more extract files omitted."
+            )
+
+    lines.extend([
+        "",
+        "## Caveats",
+        "- This artifact is assembled mechanically from intermediate state.",
+        "- It has no final synthesis and no final citation integrity verdict.",
+        "- Treat source claims as leads until a completed `report.md` exists.",
+        "",
+    ])
+    return "\n".join(lines)
+
+
+def _delegate_tool_call_events(events: list[Event]) -> list[Event]:
+    out: list[Event] = []
+    for ev in events:
+        if ev.type != "tool_call" or ev.agent_id != "lead":
+            continue
+        title = str((ev.payload or {}).get("title") or "").lower()
+        if "delegate" in title and "task" in title:
+            out.append(ev)
+    return out
+
+
+def _subagent_summaries(events: list[Event]) -> list[dict[str, Any]]:
+    by_id: dict[str, dict[str, Any]] = {}
+    order: list[str] = []
+
+    def ensure(agent_id: str) -> dict[str, Any]:
+        if agent_id not in by_id:
+            by_id[agent_id] = {"agent_id": agent_id}
+            order.append(agent_id)
+        return by_id[agent_id]
+
+    for ev in events:
+        if ev.parent_id != "lead":
+            continue
+        sub = ensure(ev.agent_id)
+        payload = ev.payload or {}
+        if ev.type == "spawn":
+            sub["goal"] = payload.get("goal") or sub.get("goal")
+        elif ev.type == "message":
+            text = payload.get("text")
+            if text:
+                existing = str(sub.get("message") or "")
+                sub["message"] = f"{existing}\n\n{text}".strip() if existing else str(text)
+        elif ev.type == "done":
+            sub["status"] = payload.get("status")
+            sub["error"] = payload.get("error")
+            sub["note"] = payload.get("note")
+
+    return [by_id[agent_id] for agent_id in order]
+
+
+def _extract_artifact_summaries(workspace_path: Path | None) -> list[dict[str, Any]]:
+    if workspace_path is None:
+        return []
+    extracts_dir = workspace_path / "extracts"
+    if not extracts_dir.exists():
+        return []
+    out: list[dict[str, Any]] = []
+    for path in sorted(extracts_dir.glob("*.md")):
+        try:
+            title = _first_nonempty_line(path)
+            out.append({
+                "name": path.name,
+                "bytes": path.stat().st_size,
+                "title": _clip_text(title, 160),
+            })
+        except Exception:
+            continue
+    return out
+
+
+def _partial_artifact_sizes(workspace_path: Path | None) -> dict[str, int]:
+    if workspace_path is None:
+        return {}
+    out: dict[str, int] = {}
+    for name in ("plan.md", "notes.md", REPORT_FILENAME, PARTIAL_REPORT_FILENAME, LOG_FILENAME):
+        path = workspace_path / name
+        try:
+            if path.exists():
+                out[name] = path.stat().st_size
+        except Exception:
+            pass
+    return out
+
+
+def _first_nonempty_line(path: Path) -> str:
+    with path.open("r", encoding="utf-8", errors="replace") as f:
+        for line in f:
+            stripped = line.strip()
+            if stripped:
+                return stripped
+    return ""
+
+
+def _clip_text(text: str, limit: int) -> str:
+    text = text.strip()
+    if len(text) <= limit:
+        return text
+    return text[: max(0, limit - 20)].rstrip() + "\n...[truncated]"
 
 
 def _is_delegate_function_name(name: Any) -> bool:
