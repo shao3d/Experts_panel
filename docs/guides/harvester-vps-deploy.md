@@ -406,7 +406,7 @@ Broader live battle-test report:
   missing/source-ID-only URLs and markdown-wrapped URL edge cases. Standard-mode
   finalization also runs a bounded citation repair pass: if the report cites an
   unextracted URL, the adapter tries to extract it before marking the job
-  degraded.
+  degraded. This now applies to completed `standard` and `deep` reports.
 
 ## Public Exposure Check
 
@@ -443,7 +443,8 @@ Expected:
   by an extract file. Events may show `partial: N URLs verified by extracts, M
   cited without extract files`.
   - The current overlay/live adapter enforces this at final-report time:
-    URLs in `report.md` without a matching `./extracts/<id>.md` are labeled
+    URLs in `report.md` without a matching `./extracts/<id>.md` first go
+    through a bounded repair pass; unrepaired URLs are labeled
     `search_only_unverified`, surfaced in `citation_integrity`, and mark the
     completed job as degraded.
   - Treat degraded citation integrity as a research-quality warning, not an
@@ -473,6 +474,11 @@ Expected:
     default, 3 only for genuinely broad three-branch questions; researchers
     target 3-4 successful extracts; critic/fact-checker target the highest-value
     claims/facts instead of expanding the run indefinitely.
+  - Deep Round 2 templates now explicitly allow only the searcharvester
+    `search.py` / `extract.py` scripts plus basic file readers
+    (`grep`, `head`, `sed`, `cat`, `ls`) and forbid imagined tools or internal
+    service probes such as `google_search`, `read_file`, `skill_view`, `curl`,
+    `wget`, `netstat`, `ss`, and direct `http://searxng:*` calls.
   - If deep mode still exceeds `RESEARCH_TIMEOUT_SEC`, the API returns terminal
     `status: timeout`, runs one final sub-agent backfill, persists
     `partial_report.md`, and exposes it as `partial_report` plus `progress` in

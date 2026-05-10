@@ -558,18 +558,32 @@ Remaining issues found:
   - `https://www.hetzner.com/cloud`
   - `https://cloud.google.com/blog/products/serverless/whats-new-in-cloud-run-at-next-26`
 
+Follow-up hardening applied after this dogfood:
+
+- Round 2 critic/fact-checker templates now have an explicit allowlist:
+  `search.py`, `extract.py`, `grep`, `head`, `sed`, `cat`, and `ls ./extracts`.
+- Round 2 templates explicitly forbid the failure modes observed in the smoke:
+  `google_search`, `skill_view`, `read_file`, `curl`, `wget`, `netstat`, `ss`,
+  and direct probes of `http://searxng:*`.
+- Completed deep reports now use the same bounded citation repair pass as
+  standard reports: extractable report URLs are saved into `./extracts/` before
+  citation integrity is finalized.
+
+Verification:
+
+```text
+local orchestrator/mode tests: 16 passed
+VPS container tests: 26 passed
+VPS health: ok
+```
+
 Conclusion:
 
 `mode=deep` is now usable as an explicit long-running `Дипресёрчер` path for a
-single request, but not yet strict-research clean. The next high-value hardening
-is not more timeout handling; it is:
-
-1. tighten critic/fact-checker tool instructions so Round 2 does not burn time
-   on imaginary tools or wrong paths;
-2. extend bounded citation repair to completed deep reports, or clearly decide
-   that deep keeps degraded citation labels without repair;
-3. improve progress telemetry for live delegate sub-agents when ACP does not
-   include `raw_input`.
+single request, but still needs another live dogfood after Round 2 tool
+discipline and deep citation repair. The remaining high-value hardening is
+progress telemetry for live delegate sub-agents when ACP does not include
+`raw_input`.
 
 ## Verdict
 
@@ -594,15 +608,18 @@ The VPS deployment is operational, but not yet "strict research grade".
 - Five realistic global `web_researcher` pre-Haft dogfood scenarios proved that
   Harvester itself can complete realistic standard-mode jobs, including one
   degraded-citation case that was surfaced instead of hidden.
-- Standard-mode citation repair can now recover extractable report URLs before
-  marking a job degraded; this was proved in the live container against
-  `https://playwright.dev/docs/ci`.
+- Citation repair can now recover extractable report URLs before marking a job
+  degraded; standard-mode repair was proved in the live container against
+  `https://playwright.dev/docs/ci`, and deep-mode repair is covered by the VPS
+  container test suite.
 - Parallel `mode=deep` stress testing produced terminal `timeout` statuses on
   all three heavy scenarios; the stack stayed healthy, but no final report or
   citation integrity was available.
 - Deep timeout handling now produces inspectable `progress` and
   `partial_report.md` without pretending the job completed.
 - Deep skill defaults are now budgeted to preserve time for final synthesis.
+- Deep Round 2 now has explicit tool-discipline rules to avoid burning budget
+  on imagined tools or internal service probes.
 - Partial URL grounding was a repeated, not theoretical, issue before
   final-report citation hardening.
 - Before hardening, completed jobs did not always produce a physical

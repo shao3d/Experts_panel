@@ -174,6 +174,58 @@ def test_standard_finalize_repairs_unverified_report_citations(tmp_path):
     assert done.payload["citation_integrity"] == job.citation_integrity
 
 
+def test_deep_finalize_also_repairs_unverified_report_citations(tmp_path):
+    repaired_url = "https://example.com/deep-later-extracted"
+
+    async def repairer(url, workspace):
+        assert url == repaired_url
+        extracts_dir = workspace / "extracts"
+        extracts_dir.mkdir(parents=True, exist_ok=True)
+        extract_id = hashlib.md5(url.encode("utf-8")).hexdigest()[:16]
+        (extracts_dir / f"{extract_id}.md").write_text("deep repaired source", encoding="utf-8")
+        return True
+
+    with _event_loop() as loop:
+        orch = Orchestrator(
+            hermes_bin="hermes",
+            skills=["searcharvester-deep-research"],
+            jobs_dir=tmp_path,
+            env={},
+            timeout_sec=5,
+            citation_repairer=repairer,
+        )
+        workspace = tmp_path / "job"
+        workspace.mkdir()
+        (workspace / "report.md").write_text(
+            "# Deep final report\n\nClaim [1].\n\n"
+            f"## References\n[1] Later extracted - {repaired_url}\n",
+            encoding="utf-8",
+        )
+        job = Job(
+            id="job",
+            query="q",
+            mode="deep",
+            status=JobStatus.running,
+            workspace_path=workspace,
+        )
+
+        loop.run_until_complete(orch._finalize_success(job))
+
+    assert job.status == JobStatus.completed
+    assert job.error is None
+    assert job.citation_integrity == {
+        "total_urls": 1,
+        "verified_urls": 1,
+        "unverified_urls": 0,
+        "unverified": [],
+        "repaired_urls": [repaired_url],
+    }
+    assert "search_only_unverified" not in job.report
+    done = [event for event in job.events if event.type == "done"][-1]
+    assert "degraded" not in done.payload
+    assert done.payload["citation_integrity"] == job.citation_integrity
+
+
 def test_finalize_normalizes_markdown_backtick_urls(tmp_path):
     verified_url = "https://example.com/verified"
 

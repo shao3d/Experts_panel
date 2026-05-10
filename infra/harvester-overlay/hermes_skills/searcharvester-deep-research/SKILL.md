@@ -8,7 +8,7 @@ description: >
   a cited report at ./report.md. Use for "research", "deep research", "report
   with sources", comparisons with citations, anything needing grounded
   multi-source evidence.
-version: 2.4.0
+version: 2.5.0
 author: Searcharvester
 license: MIT
 metadata:
@@ -259,6 +259,23 @@ scripts (extract saves to `./extracts/<id>.md`; use grep/head to read
 specific sections). You can ALSO `cat ./extracts/<id>.md` to re-read
 any extract the researchers already pulled — the workspace is shared.
 
+Allowed terminal commands:
+- `python3 /opt/data/skills/searcharvester-search/scripts/search.py --query "<query>" --max-results <n>`
+- `python3 /opt/data/skills/searcharvester-extract/scripts/extract.py --url "<url>"`
+- `grep -ni "<keyword>" ./extracts/<id>.md`
+- `head -200 ./extracts/<id>.md`
+- `sed -n 'START,ENDp' ./extracts/<id>.md`
+- `cat ./extracts/<id>.md`
+- `ls ./extracts`
+
+Forbidden commands/tools:
+- Do not use `google_search`, `skill_view`, `read_file`, or any other
+  imagined tool name as a shell command.
+- Do not use `curl`, `wget`, `netstat`, `ss`, or direct probes of internal
+  services such as `http://searxng:*`.
+- If a command fails twice, stop retrying that path and report the limitation
+  in your verdict instead of burning the time budget.
+
 HARD RULE: Your FIRST action is a search.py call targeting a
 SPECIFIC researcher claim. For each claim in <RESEARCHER_SUMMARY>,
 ask yourself: "what would falsify this?" and search for THAT.
@@ -313,6 +330,23 @@ FACTS TO VERIFY (derived from round-1 researcher findings):
 
 TOOLS: Same as researcher (extract saves to `./extracts/<id>.md`; use
 `grep -ni '<fact>'` to locate the exact mention).
+
+Allowed terminal commands:
+- `python3 /opt/data/skills/searcharvester-search/scripts/search.py --query "<query>" --max-results <n>`
+- `python3 /opt/data/skills/searcharvester-extract/scripts/extract.py --url "<url>"`
+- `grep -ni "<keyword>" ./extracts/<id>.md`
+- `head -200 ./extracts/<id>.md`
+- `sed -n 'START,ENDp' ./extracts/<id>.md`
+- `cat ./extracts/<id>.md`
+- `ls ./extracts`
+
+Forbidden commands/tools:
+- Do not use `google_search`, `skill_view`, `read_file`, or any other
+  imagined tool name as a shell command.
+- Do not use `curl`, `wget`, `netstat`, `ss`, or direct probes of internal
+  services such as `http://searxng:*`.
+- If a command fails twice, stop retrying that path and mark the fact
+  tentative/unverifiable instead of burning the time budget.
 
 HARD RULE: For each fact, run ≥2 searches from DIFFERENT angles, and
 extract from ≥2 DIFFERENT DOMAINS. A single-domain confirmation is not

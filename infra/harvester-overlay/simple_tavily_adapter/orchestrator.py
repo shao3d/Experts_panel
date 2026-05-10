@@ -160,6 +160,12 @@ research that times out. Default budget:
 - If budget runs short, write caveats in `./report.md` instead of
   launching more work.
 
+ROUND 2 TOOL DISCIPLINE — critic/fact-checker must use only the
+searcharvester shell scripts and basic file readers described in the skill.
+Do not invent tools or probe internal services. Forbidden examples:
+`google_search`, `skill_view`, `read_file`, `curl`, `wget`, `netstat`, `ss`,
+and direct calls to `http://searxng:*`.
+
 CRITICAL — when building the `context` string for EVERY sub-agent
 task in EVERY delegate_task call, the FIRST line of context must be:
 
@@ -931,7 +937,6 @@ class Orchestrator:
     ) -> dict[str, list[str]]:
         if (
             not self._citation_repair_enabled
-            or job.mode != "standard"
             or job.workspace_path is None
         ):
             return {}

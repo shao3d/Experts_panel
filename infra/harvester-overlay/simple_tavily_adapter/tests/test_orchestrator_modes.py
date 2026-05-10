@@ -61,6 +61,9 @@ def test_deep_prompt_preserves_two_round_delegate_pipeline():
     assert "TIME BUDGET" in suffix
     assert "2 researchers" in suffix
     assert "No third round" in suffix
+    assert "ROUND 2 TOOL DISCIPLINE" in suffix
+    assert "google_search" in suffix
+    assert "http://searxng" in suffix
     assert "Write the final report in Russian" in suffix
 
 
@@ -77,11 +80,14 @@ def test_deep_skill_has_default_completion_budget():
     skill_path = next(path for path in candidates if path.exists())
     skill = skill_path.read_text(encoding="utf-8")
 
-    assert "version: 2.4.0" in skill
+    assert "version: 2.5.0" in skill
     assert "Default time budget" in skill
     assert "Use 2 researchers" in skill
     assert "Each researcher targets 3–4 successful extracts" in skill
     assert "The fact-checker verifies the top 3 facts" in skill
+    assert "Allowed terminal commands" in skill
+    assert "Forbidden commands/tools" in skill
+    assert "Do not use `google_search`, `skill_view`, `read_file`" in skill
 
 
 def test_skills_are_filtered_by_mode():
