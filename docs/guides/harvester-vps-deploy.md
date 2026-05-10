@@ -403,7 +403,10 @@ Broader live battle-test report:
 - 5 additional production `mode=standard` pre-Haft scenarios
 - verdict: infra and Vertex proxy passed; `mode=standard` is usable for
   extract-backed pre-Haft packets, with citation-contract hardening now catching
-  missing/source-ID-only URLs and markdown-wrapped URL edge cases.
+  missing/source-ID-only URLs and markdown-wrapped URL edge cases. Standard-mode
+  finalization also runs a bounded citation repair pass: if the report cites an
+  unextracted URL, the adapter tries to extract it before marking the job
+  degraded.
 
 ## Public Exposure Check
 

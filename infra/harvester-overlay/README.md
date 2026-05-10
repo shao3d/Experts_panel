@@ -39,8 +39,12 @@ report fallbacks.
 
 Final reports also get citation-integrity enforcement. URLs in `report.md` are
 checked against saved `./extracts/<id>.md` artifacts. URLs without a matching
-extract are labeled `search_only_unverified`, reported in `citation_integrity`,
-and mark the completed job as degraded rather than silently passing as evidence.
+extract first go through a bounded standard-mode repair pass: the adapter tries
+to extract the missing report URLs itself, saves successful extracts back under
+`./extracts/`, and then re-runs citation verification. URLs that still cannot be
+extracted are labeled `search_only_unverified`, reported in
+`citation_integrity`, and mark the completed job as degraded rather than
+silently passing as evidence.
 
 See:
 

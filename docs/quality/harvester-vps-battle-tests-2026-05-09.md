@@ -343,6 +343,66 @@ return while Harvester was still `running`; it waited until the final
 `completed` status. It also confirmed that degraded citation integrity remains
 visible to the parent chat instead of being silently treated as clean evidence.
 
+## Follow-Up: Standard Citation Repair Pass
+
+The previous smoke still showed an important quality gap: Harvester can finish
+as `completed degraded` when the report cites useful URLs that were discovered
+but not saved under `./extracts/`. The concrete example was:
+
+```text
+job_id: 1742d985c60e4301
+status: completed
+error: citation contract degraded - unverified citations: 2
+unverified:
+- https://playwright.dev/docs/trace-viewer
+- https://playwright.dev/docs/ci
+```
+
+Root cause:
+
+- the final report cited Playwright docs URLs;
+- those exact URLs were not present as saved extract artifacts;
+- the adapter correctly labeled them `search_only_unverified`, but this still
+  made the packet weaker than needed when the URLs were extractable.
+
+Hardening added:
+
+- standard-mode finalization now runs a bounded citation repair pass before
+  declaring degraded citation integrity;
+- for each unverified report URL, the adapter tries to call its own `/extract`
+  endpoint, save the resulting markdown into `./extracts/<id>.md`, and then
+  re-run citation verification;
+- repaired URLs are reported in `citation_integrity.repaired_urls`;
+- URLs that still fail extraction remain `search_only_unverified` and keep the
+  job degraded.
+
+Production verification:
+
+```text
+synthetic repair smoke:
+input report URL: https://playwright.dev/docs/ci
+status: completed
+error: null
+citation_integrity: 1/1 verified
+repaired_urls: ["https://playwright.dev/docs/ci"]
+search_only_unverified marker: false
+```
+
+Live standard research smoke after deployment:
+
+```text
+query: Playwright CI vs Trace Viewer for solo-developer UI validation
+job_id: 8e7c366e1ff746f9
+status: completed
+duration_sec: 143.598987
+error: null
+citation_integrity: 3/3 verified
+```
+
+In the live research smoke, the agent extracted the Playwright docs itself, so
+the repair pass was not needed. The synthetic in-container smoke proves the
+repair path directly.
+
 ## Verdict
 
 The VPS deployment is operational, but not yet "strict research grade".
@@ -366,6 +426,9 @@ The VPS deployment is operational, but not yet "strict research grade".
 - Five realistic global `web_researcher` pre-Haft dogfood scenarios proved that
   Harvester itself can complete realistic standard-mode jobs, including one
   degraded-citation case that was surfaced instead of hidden.
+- Standard-mode citation repair can now recover extractable report URLs before
+  marking a job degraded; this was proved in the live container against
+  `https://playwright.dev/docs/ci`.
 - Partial URL grounding was a repeated, not theoretical, issue before
   final-report citation hardening.
 - Before hardening, completed jobs did not always produce a physical
@@ -373,8 +436,9 @@ The VPS deployment is operational, but not yet "strict research grade".
 
 **Риск:**
 
-- Final reports may still contain search-only URLs, but the adapter now labels
-  them `search_only_unverified`; product surfaces must make that warning visible.
+- Final reports may still contain search-only URLs when repair extraction fails,
+  but the adapter now labels them `search_only_unverified`; product surfaces
+  must make that warning visible.
 - Global subagents can still violate workflow discipline unless their
   instructions enforce terminal Harvester status before final delivery.
 - `mode=deep` can exceed a normal interactive waiting budget.

@@ -20,6 +20,7 @@ import json
 import logging
 import os
 import uuid
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
@@ -49,6 +50,9 @@ DEFAULT_MAX_REPORT_CHARS_BY_MODE: dict[str, int] = {
     "standard": 6000,
     "deep": 20000,
 }
+CITATION_REPAIR_MAX_URLS = 8
+
+CitationRepairer = Callable[[str, Path], Awaitable[bool]]
 
 def _today_utc() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -233,6 +237,8 @@ class Orchestrator:
         adapter_url_for_hermes: str = "http://localhost:8000",
         timeout_sec: int = 600,
         hermes_home: str | None = None,
+        citation_repair_enabled: bool = True,
+        citation_repairer: CitationRepairer | None = None,
     ) -> None:
         """
         hermes_bin: path to `hermes` executable (must be in $PATH of this process).
@@ -251,6 +257,8 @@ class Orchestrator:
         self._adapter_url = adapter_url_for_hermes
         self._timeout = timeout_sec
         self._hermes_home = hermes_home or os.environ.get("HERMES_HOME", "/opt/data")
+        self._citation_repair_enabled = citation_repair_enabled
+        self._citation_repairer = citation_repairer or self._extract_url_to_workspace
         self._jobs: dict[str, Job] = {}
         self._lock = asyncio.Lock()
 
@@ -820,9 +828,17 @@ class Orchestrator:
         notes: list[str] | None = None,
     ) -> None:
         notes = list(notes or [])
+        repair_result = await self._repair_unverified_citations(job, report)
         job.report, job.citation_integrity = _enforce_citation_contract(
             report, job.workspace_path
         )
+        if repair_result:
+            repaired = repair_result.get("repaired", [])
+            failed = repair_result.get("failed", [])
+            if repaired:
+                job.citation_integrity["repaired_urls"] = repaired
+            if failed:
+                job.citation_integrity["repair_failed_urls"] = failed
         if job.citation_integrity and job.citation_integrity["unverified_urls"] > 0:
             notes.append(
                 f"{CITATION_DEGRADED_PREFIX}: "
@@ -865,6 +881,80 @@ class Orchestrator:
         ))
         job.status = JobStatus.completed
         await self._notify(job)
+
+    async def _repair_unverified_citations(
+        self, job: Job, report: str
+    ) -> dict[str, list[str]]:
+        if (
+            not self._citation_repair_enabled
+            or job.mode != "standard"
+            or job.workspace_path is None
+        ):
+            return {}
+
+        _, initial = _enforce_citation_contract(report, job.workspace_path)
+        unverified = list(initial.get("unverified") or [])
+        if not unverified:
+            return {}
+
+        repaired: list[str] = []
+        failed: list[str] = []
+        for url in unverified[:CITATION_REPAIR_MAX_URLS]:
+            try:
+                ok = await self._citation_repairer(url, job.workspace_path)
+            except Exception:
+                logger.debug("citation repair failed for %s", url, exc_info=True)
+                ok = False
+            if ok:
+                repaired.append(url)
+            else:
+                failed.append(url)
+
+        if len(unverified) > CITATION_REPAIR_MAX_URLS:
+            failed.extend(unverified[CITATION_REPAIR_MAX_URLS:])
+        return {"repaired": repaired, "failed": failed}
+
+    async def _extract_url_to_workspace(self, url: str, workspace_path: Path) -> bool:
+        import aiohttp
+
+        extract_dir = workspace_path / "extracts"
+        extract_dir.mkdir(parents=True, exist_ok=True)
+        base = self._adapter_url.rstrip("/")
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    f"{base}/extract",
+                    json={"url": url, "size": "f"},
+                    timeout=aiohttp.ClientTimeout(total=90),
+                ) as resp:
+                    if resp.status != 200:
+                        return False
+                    first = await resp.json()
+
+                extract_id = first.get("id")
+                if not isinstance(extract_id, str) or not extract_id:
+                    return False
+
+                total_pages = int((first.get("pages") or {}).get("total") or 1)
+                parts = [str(first.get("content") or "")]
+                for page in range(2, total_pages + 1):
+                    async with session.get(
+                        f"{base}/extract/{extract_id}/{page}",
+                        timeout=aiohttp.ClientTimeout(total=60),
+                    ) as resp:
+                        if resp.status != 200:
+                            return False
+                        data = await resp.json()
+                    parts.append(str(data.get("content") or ""))
+        except Exception:
+            logger.debug("citation repair extraction request failed for %s", url, exc_info=True)
+            return False
+
+        content = "".join(parts).strip()
+        if not content:
+            return False
+        (extract_dir / f"{extract_id}.md").write_text(content, encoding="utf-8")
+        return True
 
     async def _notify(self, job: Job) -> None:
         """Wake the SSE subscriber after a terminal state change — without
