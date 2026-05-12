@@ -69,10 +69,6 @@
     *   **О чём:** Отчёт BDD/product dogfood для cross-repo `panex` runner: установка user-level shim, `panex doctor`, production `panex ask` и `panex expand` из `/private/tmp`, Fly.io defaults, token-safety и explicit local/debug boundary.
     *   **Пример команды:** *"Покажи выводы AND-24 portable runner dogfood по Панэксу."*
 
-*   **📄 `docs/quality/harvester-vps-battle-tests-2026-05-09.md`**
-    *   **О чём:** Боевые тесты Harvester/Searcharvester на InterServer VPS: 5 live `/research` сценариев, latency, Vertex proxy stability, partial citation grounding, `report.md` artifact gap, strict citation live smoke и первый чистый `mode=standard` VPS smoke без `delegate_task`.
-    *   **Пример команды:** *"Покажи выводы боевых тестов Harvester на VPS."*
-
 ---
 
 ## 🛠️ 3. Инструкции (Действия): `docs/guides/`
@@ -89,14 +85,6 @@
 *   **📄 `panex-usage.md`**
     *   **О чём:** Быстрая человеческая памятка по Панэксу: help-триггеры, artifact-first workflow через `--save --receipt-json`, `panex read`, `panex cleanup`, `panex guide`, `panex ask`, `panex expand`, `panex doctor`, выбор экспертов/групп, raw `source_bundle`, production/local boundaries, external links и комментарии.
     *   **Пример команды:** *"Напомни по `docs/guides/panex-usage.md`, как правильно пользоваться Панэксом."*
-
-*   **📄 `research-channels.md`**
-    *   **О чём:** Человеческая модель четырёх research-режимов для Codex workflow: `Панэкс` для Experts Panel, `Вебсёрчер` для быстрого внешнего обзора, `Вебсёрчер под Хафт` как decision-grade packet с обязательным Harvester standard по ключевым источникам, и `Дипресёрчер` как explicit-only Harvester deep с мультиагентами/критикой/fact-checking.
-    *   **Пример команды:** *"Напомни по `docs/guides/research-channels.md`, чем отличаются Панэкс, Вебсёрчер, Вебсёрчер под Хафт и Дипресёрчер."*
-
-*   **📄 `harvester-vps-deploy.md`**
-    *   **О чём:** Операционный runbook по текущему Harvester/Searcharvester VPS sidecar: InterServer host, Docker Compose topology, repo-local overlay `infra/harvester-overlay/`, private localhost exposure, Vertex AI proxy вместо LiteLLM, `POST /research` modes `standard`/`deep`, secrets boundary, bootstrap/update команды, smoke-тесты `/search`, `/extract`, `/research`, known edge cases и security notes.
-    *   **Пример команды:** *"Перед правками или восстановлением Harvester на VPS перечитай `docs/guides/harvester-vps-deploy.md`."*
 
 *   **📄 `drift-analysis.md`**
     *   **О чём:** Как запускать анализ дрифта тем (смена контекста в комментариях) и интерпретировать результаты.
