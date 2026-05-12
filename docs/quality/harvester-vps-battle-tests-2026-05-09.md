@@ -856,6 +856,28 @@ Hermes hooks doctor:
   all hooks healthy
 ```
 
+### Live Standard Dogfood After Deployment
+
+Three production VPS `mode=standard` jobs were run sequentially after the
+alternate-source retry deploy. The goal was to test natural behavior under
+realistic prompts, not to force a synthetic replacement.
+
+| Scenario | Job ID | Status | Duration | Citation integrity | Repair behavior |
+|---|---:|---:|---:|---|---|
+| Blocked/practitioner source stress | `7581349ad4e84a0f` | completed | `110.3s` | `4/4` verified | no repair needed |
+| Search API vendor comparison | `1e956b5c7eaf4410` | completed | `66.2s` | `7/7` verified | `repaired_urls=1`, no replacement |
+| Russian MCP/agent adoption | `99f4d913a23b4300` | completed | `64.3s` | `4/4` verified | no repair needed |
+
+Interpretation:
+
+- The deployed standard path is healthy after the change.
+- Exact-URL citation repair was exercised naturally once and produced a fully
+  verified report.
+- `replaced_urls` did not appear in these three natural scenarios. That means
+  the alternate-source branch remains mostly a safety net for harder-to-fetch
+  sources; deterministic coverage is provided by the container test suite.
+- No scenario leaked unrepaired search-only links into normal references.
+
 ## Verdict
 
 The VPS deployment is operational, but not yet "strict research grade".
@@ -912,6 +934,9 @@ The VPS deployment is operational, but not yet "strict research grade".
 - Failed exact-URL extracts can now be repaired by an alternate-source retry,
   but only if `/search` returns a candidate that can be extracted successfully.
   Otherwise the report remains degraded and visibly marked.
+- Natural standard-mode dogfood after the deploy did not trigger `replaced_urls`;
+  treat replacement quality as proven by deterministic tests but still needing
+  more organic evidence from future degraded-source cases.
 - Global subagents can still violate workflow discipline unless their
   instructions enforce terminal Harvester status before final delivery.
 - `mode=deep` can still exceed a normal interactive waiting budget, especially
@@ -932,6 +957,6 @@ Continue hardening before broader product use:
 2. Consider optional `round1.md` / `critic_factcheck.md` artifacts if
    `partial_report.md` is useful but too coarse.
 3. Keep `mode=deep` reserved for explicit deep-research requests.
-4. For extraction/citation quality, collect a few real degraded reports after
-   alternate-source retry and compare whether `replaced_urls` reduces visible
-   citation degradation without introducing weaker substitute sources.
+4. For extraction/citation quality, keep collecting organic degraded-source
+   cases and compare whether future `replaced_urls` reduce visible citation
+   degradation without introducing weaker substitute sources.
