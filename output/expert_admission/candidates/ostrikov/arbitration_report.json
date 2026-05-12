@@ -1,0 +1,90 @@
+{
+  "schema_version": "candidate_semantic_arbitration.v0.1",
+  "created_at": "2026-05-10",
+  "candidate_id": "ostrikov",
+  "display_name": "Ostrikov",
+  "recommended_verdict": "accept",
+  "decision_mode": "llm_semantic_arbitration_over_passport_and_matrix_report",
+  "not_an_admission_decision": true,
+  "summary": {
+    "short_rationale": "Ostrikov is high-signal but overlap-heavy around agentic development. His value is complementary depth: AI-first development process, PRD-to-agent workflows, agent loops, skills, context compaction, and practical architecture teardown.",
+    "strongest_argument_for": "The passport contains concrete, reusable operator patterns such as AI-optimized PRDs, simple REPL/agent loops, 3-level context compaction, and SKILL.md abstraction.",
+    "strongest_argument_against": "The accepted roster already has strong agentic workflow coverage, especially Glebkudr, Refat, Neuraldeep, AI Architect, and Ilia.",
+    "confidence": "medium_high"
+  },
+  "evidence": {
+    "passport": "output/expert_admission/semantic_passports/ostrikov/output/ostrikov_semantic_passport.normalized.json",
+    "candidate_report": "output/expert_admission/candidates/ostrikov/candidate_impact_report.md",
+    "knowledge_matrix": "output/expert_admission/knowledge_matrix/knowledge_matrix.json"
+  },
+  "run": {
+    "post_count_seen": 68,
+    "comment_count_seen": 1188,
+    "max_comments_per_post": null,
+    "vertex_input_tokens": 191845,
+    "vertex_output_tokens": 10117,
+    "finish_reason": "STOP",
+    "normalized_passport_valid": true,
+    "matrix_export_incomplete": false
+  },
+  "deterministic_preflight": {
+    "recommendation": "promising_but_probe_or_taxonomy_review",
+    "candidate_cells": 4,
+    "fills_gap": 0,
+    "adds_adjacent_viewpoint": 1,
+    "likely_duplicate": 1,
+    "needs_probe": 2,
+    "exact_overlaps": 1,
+    "related_overlaps": 1,
+    "clean_gap_count": 0
+  },
+  "accepted_basis_cells": [
+    {
+      "cell_id": "coding_agents/agentic_dev_process/design_agentic_dev_workflow",
+      "classification": "adds_adjacent_viewpoint",
+      "interpretation": "primary admission basis as AI-first development-process depth"
+    },
+    {
+      "cell_id": "agent_ops/multi_agent_orchestration/design_agentic_dev_workflow",
+      "classification": "likely_duplicate",
+      "interpretation": "accepted only as overlap/depth against Glebkudr and the dense agent_ops rollup"
+    }
+  ],
+  "probe_or_supporting_cells": [
+    "ai_engineering_infra/rag_architecture/design_rag_knowledge_base",
+    "business_adoption/human_ai_workflow/build_human_ai_workflow"
+  ],
+  "routing_contract": {
+    "good_fit": [
+      "AI-optimized PRD structure for coding agents",
+      "AI-first development process",
+      "agent loops, skills, context compaction, and tool execution architecture",
+      "simple agent architectures versus overcomplicated graph frameworks",
+      "hackathon and open-source coding-agent architecture lessons"
+    ],
+    "poor_fit": [
+      "foundational ML or model training",
+      "neutral broad model comparison",
+      "enterprise governance and security policy",
+      "source of record for RAG architecture",
+      "beginner non-technical product leadership"
+    ]
+  },
+  "risk_notes": [
+    "Compact corpus: 68 posts, though comments are active.",
+    "Some source depth may live in external videos rather than the text corpus.",
+    "Admission increases density in the agentic workflow cluster.",
+    "Needs routing caveat to avoid duplicate routing against Glebkudr, Refat, Neuraldeep, AI Architect, and Ilia."
+  ],
+  "recommended_manifest_caveat": "accepted as complementary/depth expert for AI-first development process and practical agent architecture; avoid counting agent_ops overlap as a new gap",
+  "recommended_followup_probe": {
+    "probe_needed_before_manual_admission": false,
+    "probe_useful_before_production_routing": true,
+    "probe_shape": [
+      "2 PRD-to-agent workflow queries",
+      "2 agent architecture / context compaction queries",
+      "1 overlap query against Glebkudr",
+      "1 RAG query where Ostrikov should remain supporting"
+    ]
+  }
+}

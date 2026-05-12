@@ -1,0 +1,1393 @@
+{
+  "schema_version": "expert_value_passport.v1.1",
+  "passport_meta": {
+    "schema_version": "expert_value_passport.v1.1",
+    "expert_id": "etechlead",
+    "display_name": "Etechlead",
+    "channel_username": "@etechlead",
+    "model_assumed": "gemini-3.1-pro-preview",
+    "prompt_version": "semantic-passport-prompt.v1",
+    "generated_at": "2026-05-12T09:08:01.647058+00:00"
+  },
+  "corpus_audit": {
+    "post_count_seen": 189,
+    "comment_count_seen": 2778,
+    "date_range": {
+      "first_post": "2024-04-07 05:23:50.000000",
+      "last_post": "2026-05-01 06:55:07.000000"
+    },
+    "language_mix": [
+      "ru"
+    ],
+    "material_limitations": [
+      "Only a subset of comments is visible in the packet"
+    ],
+    "author_vs_community_boundary": "Clear boundary. The author actively engages in comments, providing deep technical follow-ups and clarifications, which are treated as expert voice when authored by 'Этихлид' or 'Unknown' where context clearly indicates the author."
+  },
+  "source_ref_index_used": [
+    {
+      "source_ref": "P0141",
+      "source_kind": "expert_post",
+      "post_id": 4711,
+      "telegram_message_id": 228,
+      "created_at": "2025-08-06 15:11:07.000000",
+      "why_used": "Signature insight on delegating 'leaves' to AI while controlling the 'trunk' (architecture)."
+    },
+    {
+      "source_ref": "P0159",
+      "source_kind": "expert_post",
+      "post_id": 4729,
+      "telegram_message_id": 263,
+      "created_at": "2025-09-21 18:20:24.000000",
+      "why_used": "Insight on how AI changes developer skill requirements towards architecture and SDLC."
+    },
+    {
+      "source_ref": "P0098",
+      "source_kind": "expert_post",
+      "post_id": 4666,
+      "telegram_message_id": 147,
+      "created_at": "2025-03-30 07:11:34.000000",
+      "why_used": "Practical pattern for using Repomix to load entire projects into Gemini 2.5 Pro MAX."
+    },
+    {
+      "source_ref": "P0117",
+      "source_kind": "expert_post",
+      "post_id": 4685,
+      "telegram_message_id": 183,
+      "created_at": "2025-05-10 05:47:17.000000",
+      "why_used": "Discussion on Memory Bank methodology and context management."
+    },
+    {
+      "source_ref": "P0091",
+      "source_kind": "expert_post",
+      "post_id": 4659,
+      "telegram_message_id": 136,
+      "created_at": "2025-03-11 16:47:37.000000",
+      "why_used": "Comprehensive overview of MCP (Model Context Protocol)."
+    },
+    {
+      "source_ref": "P0092",
+      "source_kind": "expert_post",
+      "post_id": 4660,
+      "telegram_message_id": 137,
+      "created_at": "2025-03-11 16:49:14.000000",
+      "why_used": "Practical pattern for using Supergateway to convert stdio MCP servers to SSE."
+    },
+    {
+      "source_ref": "P0094",
+      "source_kind": "expert_post",
+      "post_id": 4662,
+      "telegram_message_id": 139,
+      "created_at": "2025-03-14 02:24:19.000000",
+      "why_used": "Best practices for MCP implementation, security, and context management."
+    },
+    {
+      "source_ref": "P0086",
+      "source_kind": "expert_post",
+      "post_id": 4654,
+      "telegram_message_id": 128,
+      "created_at": "2025-02-24 20:26:18.000000",
+      "why_used": "Analysis of Claude 3.7 Sonnet capabilities."
+    },
+    {
+      "source_ref": "P0126",
+      "source_kind": "expert_post",
+      "post_id": 4696,
+      "telegram_message_id": 206,
+      "created_at": "2025-05-27 06:22:03.000000",
+      "why_used": "Review of Claude 4 and its positioning against other models."
+    },
+    {
+      "source_ref": "P0151",
+      "source_kind": "expert_post",
+      "post_id": 4721,
+      "telegram_message_id": 248,
+      "created_at": "2025-09-15 23:02:06.000000",
+      "why_used": "Review of Codex + GPT-5 for complex refactoring and reasoning."
+    },
+    {
+      "source_ref": "P0177",
+      "source_kind": "expert_post",
+      "post_id": 4747,
+      "telegram_message_id": 288,
+      "created_at": "2026-02-10 19:20:39.000000",
+      "why_used": "Vibe-review comparing GPT-5.3 Codex, Opus 4.6, and GPT-5.2."
+    },
+    {
+      "source_ref": "P0096",
+      "source_kind": "expert_post",
+      "post_id": 4664,
+      "telegram_message_id": 143,
+      "created_at": "2025-03-27 20:37:49.000000",
+      "why_used": "Analysis of Gemini 2.5 Pro Experimental and its 1M context window."
+    },
+    {
+      "source_ref": "P0100",
+      "source_kind": "expert_post",
+      "post_id": 4668,
+      "telegram_message_id": 149,
+      "created_at": "2025-04-01 07:13:16.000000",
+      "why_used": "Practical impressions of Gemini 2.5 Pro in Cursor."
+    },
+    {
+      "source_ref": "P0133",
+      "source_kind": "expert_post",
+      "post_id": 4703,
+      "telegram_message_id": 218,
+      "created_at": "2025-06-18 04:51:18.000000",
+      "why_used": "Critique of Cursor's pricing changes and dynamic limits."
+    },
+    {
+      "source_ref": "P0134",
+      "source_kind": "expert_post",
+      "post_id": 4704,
+      "telegram_message_id": 219,
+      "created_at": "2025-07-07 05:54:39.000000",
+      "why_used": "Forecast on AI coding tool pricing and the $100-200/mo standard."
+    },
+    {
+      "source_ref": "P0136",
+      "source_kind": "expert_post",
+      "post_id": 4706,
+      "telegram_message_id": 221,
+      "created_at": "2025-07-18 07:15:33.000000",
+      "why_used": "Review of Claude Code CLI and its advantages over Cursor."
+    },
+    {
+      "source_ref": "P0137",
+      "source_kind": "expert_post",
+      "post_id": 4707,
+      "telegram_message_id": 222,
+      "created_at": "2025-07-18 07:15:43.000000",
+      "why_used": "Disadvantages of Claude Code and workarounds."
+    },
+    {
+      "source_ref": "P0183",
+      "source_kind": "expert_post",
+      "post_id": 7310,
+      "telegram_message_id": 295,
+      "created_at": "2026-03-10 16:43:09.000000",
+      "why_used": "Review of GPT-5.4 as the current SOTA for development."
+    },
+    {
+      "source_ref": "P0188",
+      "source_kind": "expert_post",
+      "post_id": 9781,
+      "telegram_message_id": 304,
+      "created_at": "2026-04-27 16:46:57.000000",
+      "why_used": "Philosophical stance on how AI validates classic engineering principles (Clean Code, TDD)."
+    },
+    {
+      "source_ref": "P0060",
+      "source_kind": "expert_post",
+      "post_id": 4628,
+      "telegram_message_id": 91,
+      "created_at": "2024-12-24 21:50:13.000000",
+      "why_used": "Early 2025 guide on choosing AI IDEs (Cursor)."
+    },
+    {
+      "source_ref": "P0061",
+      "source_kind": "expert_post",
+      "post_id": 4629,
+      "telegram_message_id": 92,
+      "created_at": "2024-12-24 22:31:21.000000",
+      "why_used": "Comparison of Cursor vs Copilot vs Aider/Cline."
+    },
+    {
+      "source_ref": "P0064",
+      "source_kind": "expert_post",
+      "post_id": 4632,
+      "telegram_message_id": 96,
+      "created_at": "2024-12-28 00:37:00.000000",
+      "why_used": "Analysis of local vs cloud models and context window economics."
+    },
+    {
+      "source_ref": "P0065",
+      "source_kind": "expert_post",
+      "post_id": 4633,
+      "telegram_message_id": 97,
+      "created_at": "2024-12-31 08:18:46.000000",
+      "why_used": "Solutions for context limits and outdated code in AI dev."
+    },
+    {
+      "source_ref": "P0066",
+      "source_kind": "expert_post",
+      "post_id": 4634,
+      "telegram_message_id": 98,
+      "created_at": "2024-12-31 08:19:04.000000",
+      "why_used": "Handling AI hallucinations, styling issues, and project comprehension."
+    },
+    {
+      "source_ref": "P0081",
+      "source_kind": "expert_post",
+      "post_id": 4649,
+      "telegram_message_id": 122,
+      "created_at": "2025-02-02 03:06:42.000000",
+      "why_used": "Notes on o3-mini-high in Cursor."
+    },
+    {
+      "source_ref": "P0128",
+      "source_kind": "expert_post",
+      "post_id": 4698,
+      "telegram_message_id": 212,
+      "created_at": "2025-06-05 16:40:57.000000",
+      "why_used": "Pros and cons of background agents."
+    },
+    {
+      "source_ref": "P0129",
+      "source_kind": "expert_post",
+      "post_id": 4699,
+      "telegram_message_id": 213,
+      "created_at": "2025-06-05 16:41:14.000000",
+      "why_used": "Comparison of background agents (Jules, Codex, Cursor, Copilot)."
+    },
+    {
+      "source_ref": "P0142",
+      "source_kind": "expert_post",
+      "post_id": 4712,
+      "telegram_message_id": 229,
+      "created_at": "2025-08-10 08:38:35.000000",
+      "why_used": "Breakdown of relevant benchmarks for AI coding."
+    },
+    {
+      "source_ref": "P0144",
+      "source_kind": "expert_post",
+      "post_id": 4714,
+      "telegram_message_id": 231,
+      "created_at": "2025-08-11 06:53:58.000000",
+      "why_used": "Opinion on GPT-5 and its ecosystem problems."
+    },
+    {
+      "source_ref": "P0148",
+      "source_kind": "expert_post",
+      "post_id": 4718,
+      "telegram_message_id": 242,
+      "created_at": "2025-08-22 06:00:12.000000",
+      "why_used": "Review of Qoder IDE."
+    },
+    {
+      "source_ref": "P0152",
+      "source_kind": "expert_post",
+      "post_id": 4722,
+      "telegram_message_id": 249,
+      "created_at": "2025-09-15 23:02:16.000000",
+      "why_used": "Review of Codex + GPT-5 limitations."
+    },
+    {
+      "source_ref": "P0164",
+      "source_kind": "expert_post",
+      "post_id": 4734,
+      "telegram_message_id": 272,
+      "created_at": "2025-10-10 08:40:30.000000",
+      "why_used": "Levels of AI adoption in development v2."
+    },
+    {
+      "source_ref": "P0167",
+      "source_kind": "expert_post",
+      "post_id": 4737,
+      "telegram_message_id": 277,
+      "created_at": "2025-12-01 13:49:45.000000",
+      "why_used": "Vibe-review of GPT 5.1, Gemini 3 Pro, Opus 4.5."
+    },
+    {
+      "source_ref": "P0168",
+      "source_kind": "expert_post",
+      "post_id": 4738,
+      "telegram_message_id": 278,
+      "created_at": "2025-12-01 13:50:00.000000",
+      "why_used": "Part 2 of vibe-review of GPT 5.1, Gemini 3 Pro, Opus 4.5."
+    },
+    {
+      "source_ref": "P0171",
+      "source_kind": "expert_post",
+      "post_id": 4685,
+      "telegram_message_id": 281,
+      "created_at": "2025-12-24 19:23:39.000000",
+      "why_used": "Psychological aspects of AI coding (Euphoria)."
+    },
+    {
+      "source_ref": "P0172",
+      "source_kind": "expert_post",
+      "post_id": 4686,
+      "telegram_message_id": 282,
+      "created_at": "2026-01-22 16:54:28.000000",
+      "why_used": "Satirical take on the evolution of AI coding tools."
+    },
+    {
+      "source_ref": "P0174",
+      "source_kind": "expert_post",
+      "post_id": 4688,
+      "telegram_message_id": 285,
+      "created_at": "2026-02-04 20:52:25.000000",
+      "why_used": "Guidelines on how to properly debate AI agents (specifying model, version, agent, reasoning level)."
+    },
+    {
+      "source_ref": "P0176",
+      "source_kind": "expert_post",
+      "post_id": 4690,
+      "telegram_message_id": 287,
+      "created_at": "2026-02-10 14:19:16.000000",
+      "why_used": "Criteria for evaluating AI agents."
+    },
+    {
+      "source_ref": "P0178",
+      "source_kind": "expert_post",
+      "post_id": 4692,
+      "telegram_message_id": 290,
+      "created_at": "2026-02-10 19:20:56.000000",
+      "why_used": "Review of GPT-5.2 and team agents."
+    },
+    {
+      "source_ref": "P0185",
+      "source_kind": "expert_post",
+      "post_id": 8067,
+      "telegram_message_id": 298,
+      "created_at": "2026-03-31 20:42:14.000000",
+      "why_used": "Analysis of why AI coding doesn't immediately translate to successful products."
+    },
+    {
+      "source_ref": "P0187",
+      "source_kind": "expert_post",
+      "post_id": 9780,
+      "telegram_message_id": 303,
+      "created_at": "2026-04-25 08:41:43.000000",
+      "why_used": "Part 2 of product vs program analysis, disposable software."
+    },
+    {
+      "source_ref": "P0189",
+      "source_kind": "expert_post",
+      "post_id": 9782,
+      "telegram_message_id": 306,
+      "created_at": "2026-05-01 06:55:07.000000",
+      "why_used": "Discussion on AI coding interviews and changing hiring formats."
+    }
+  ],
+  "executive_summary": {
+    "one_sentence_positioning": "A highly pragmatic, deep-diving tech lead who rigorously tests AI coding tools, models, and agentic workflows on real-world production tasks, filtering out marketing hype to provide actionable engineering strategies.",
+    "strongest_system_value": "Exceptional decision value and practical specificity in comparing LLMs (Claude, GPT-5, Gemini) and AI IDEs/Agents (Cursor, Claude Code, Codex) for software development, including deep architectural and context-management insights.",
+    "weakest_system_value": "Low coverage of AI outside of software engineering (e.g., creative multimodal generation, general business adoption outside of R&D).",
+    "best_fit_queries": [
+      "choose_ai_coding_tool",
+      "compare_models_for_task",
+      "design_agentic_dev_workflow",
+      "learn_ai_assisted_development",
+      "debug_agent_failure"
+    ],
+    "poor_fit_queries": [
+      "multimodal_generation",
+      "financial_modeling",
+      "plan_ai_product_feature"
+    ],
+    "confidence": 0.95
+  },
+  "expert_positioning": {
+    "primary_role": "Deep Practitioner & Tech Lead",
+    "audience": [
+      "Senior Developers",
+      "Tech Leads",
+      "AI-assisted coders",
+      "Engineering Managers"
+    ],
+    "voice": [
+      "Pragmatic",
+      "Analytical",
+      "Slightly sarcastic",
+      "Fatherly/Mentoring",
+      "Anti-hype"
+    ],
+    "worldview": [
+      "AI is an amplifier of engineering skills, not a replacement for architecture and SDLC fundamentals.",
+      "Marketing benchmarks are mostly useless; real-world testing on complex codebases is required.",
+      "Context engineering and proper task decomposition are the critical bottlenecks in current AI development.",
+      "The role of a developer is shifting towards an AI-manager/architect who orchestrates agents."
+    ],
+    "distinctive_angle": "Evaluates AI tools strictly through the lens of a senior engineer maintaining large, complex codebases, focusing on context limits, tool use, architectural drift, and the economics of token usage.",
+    "recurring_formats": [
+      "Model/Tool Reviews (Pros/Cons/Verdict)",
+      "Vibe-reviews",
+      "Deep dives into specific technologies (MCP, Context, Agents)",
+      "Philosophical/Career reflections on the evolving SDLC"
+    ],
+    "evidence_refs": [
+      "P0141",
+      "P0159",
+      "P0174",
+      "P0176",
+      "P0188"
+    ]
+  },
+  "knowledge_domains": [
+    {
+      "domain_id": "coding_agents",
+      "domain_name": "AI Coding IDEs and Agents",
+      "subdomain_ids": [
+        "cursor_windsurf_copilot",
+        "claude_code_workflows",
+        "codex_workflows",
+        "local_agent_setup"
+      ],
+      "query_intent_ids": [
+        "choose_ai_coding_tool",
+        "design_agentic_dev_workflow"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "unique",
+      "what_the_expert_knows": [
+        "Intimate knowledge of Cursor, Windsurf, Claude Code, and Codex CLI capabilities, pricing, and hidden limits.",
+        "How to bypass IDE limitations using custom MCP servers and context engineering.",
+        "The exact strengths and weaknesses of different agentic modes (e.g., Cursor Background Agent vs Claude Code subagents)."
+      ],
+      "how_they_reason": [
+        "Compares tools based on real-world refactoring, context retention, and tool-use reliability rather than marketing claims.",
+        "Evaluates the unit economics of AI tools (e.g., API vs Subscription, token limits)."
+      ],
+      "missing_or_weak_subtopics": [
+        "Non-coding AI agents (e.g., customer support, sales agents)"
+      ],
+      "evidence_refs": [
+        "P0060",
+        "P0061",
+        "P0133",
+        "P0136",
+        "P0137",
+        "P0148",
+        "P0151",
+        "P0152"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "domain_id": "model_landscape",
+      "domain_name": "LLM Models for Development",
+      "subdomain_ids": [
+        "model_comparison",
+        "model_release_analysis",
+        "reasoning_control"
+      ],
+      "query_intent_ids": [
+        "compare_models_for_task"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "Detailed performance characteristics of Claude (3.5/3.7/4/4.5/4.6), GPT-5 family, and Gemini (2.5/3 Pro) on coding tasks.",
+        "How reasoning levels (e.g., high vs xhigh) affect model output, latency, and hallucination rates.",
+        "The difference between a model's theoretical context window and its 'honest' effective context."
+      ],
+      "how_they_reason": [
+        "Assigns specific models to specific tasks (e.g., Gemini for long context/architecture, Claude for agentic tool use, GPT-5 for deep reasoning/refactoring).",
+        "Tracks model degradation and 'lazy' tool use over time."
+      ],
+      "missing_or_weak_subtopics": [
+        "Open-source/local models (mentioned but not deeply analyzed as they lag behind frontier models)"
+      ],
+      "evidence_refs": [
+        "P0064",
+        "P0086",
+        "P0096",
+        "P0100",
+        "P0126",
+        "P0142",
+        "P0144",
+        "P0167",
+        "P0168",
+        "P0177",
+        "P0178",
+        "P0183"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "domain_id": "agent_ops",
+      "domain_name": "Agent Operations and Context Engineering",
+      "subdomain_ids": [
+        "mcp_tooling",
+        "context_compression",
+        "knowledge_base_design",
+        "multi_agent_orchestration"
+      ],
+      "query_intent_ids": [
+        "design_agentic_dev_workflow",
+        "debug_agent_failure",
+        "design_rag_knowledge_base"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "unique",
+      "what_the_expert_knows": [
+        "How to build and deploy MCP (Model Context Protocol) servers using stdio and SSE.",
+        "Techniques for context compression, such as using Repomix to pack repositories or maintaining a 'Memory Bank' in markdown.",
+        "How to orchestrate subagents in Claude Code to save context and parallelize tasks."
+      ],
+      "how_they_reason": [
+        "Views context as the most precious and limiting resource in current AI dev.",
+        "Prefers deterministic context gathering (e.g., explicit markdown files) over naive RAG for codebases."
+      ],
+      "missing_or_weak_subtopics": [],
+      "evidence_refs": [
+        "P0091",
+        "P0092",
+        "P0094",
+        "P0098",
+        "P0117",
+        "P0128",
+        "P0129"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "domain_id": "ai_engineering_infra",
+      "domain_name": "SDLC and Architecture in the AI Era",
+      "subdomain_ids": [
+        "agentic_dev_process",
+        "code_review_testing",
+        "human_ai_workflow"
+      ],
+      "query_intent_ids": [
+        "build_human_ai_workflow",
+        "learn_ai_assisted_development"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "practical",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "How AI shifts the developer's role from writing code to architecture, specification, and review.",
+        "The necessity of classic engineering practices (TDD, CI/CD, modularity) to safely leverage AI agents.",
+        "The concept of delegating 'leaves' (isolated modules) to AI while controlling the 'trunk' (core architecture)."
+      ],
+      "how_they_reason": [
+        "Believes AI amplifies existing processes: it scales good architecture but also scales technical debt if the foundation is poor.",
+        "Advocates for Spec-Driven Development (SDD) as the primary interface between human and AI."
+      ],
+      "missing_or_weak_subtopics": [],
+      "evidence_refs": [
+        "P0141",
+        "P0159",
+        "P0185",
+        "P0187",
+        "P0188"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "value_dimensions": [
+    {
+      "dimension_id": "insight_density",
+      "score_0_5": 5,
+      "rationale": "Posts are packed with highly specific, actionable insights derived from direct experimentation with frontier models and tools.",
+      "evidence_refs": [
+        "P0136",
+        "P0141",
+        "P0177",
+        "P0183"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "practical_specificity",
+      "score_0_5": 5,
+      "rationale": "Provides exact commands, configuration snippets (e.g., mcp.json), and workflow steps (e.g., Repomix usage, Memory Bank setup).",
+      "evidence_refs": [
+        "P0092",
+        "P0098",
+        "P0152"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "evidence_quality",
+      "score_0_5": 5,
+      "rationale": "Claims are consistently backed by personal testing on real, complex codebases (e.g., 350k+ token projects), not just synthetic benchmarks.",
+      "evidence_refs": [
+        "P0096",
+        "P0100",
+        "P0151"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "decision_value",
+      "score_0_5": 5,
+      "rationale": "Offers clear, comparative verdicts on which tool/model to use for specific tasks (e.g., 'Use Gemini for long context, Claude for agentic tasks, GPT-5 for deep reasoning').",
+      "evidence_refs": [
+        "P0126",
+        "P0167",
+        "P0177",
+        "P0183"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "anti_hype_signal",
+      "score_0_5": 5,
+      "rationale": "Regularly debunks marketing claims (e.g., 'unlimited' Cursor plans, AGI hype) and highlights the messy reality of AI coding (hallucinations, context degradation, 'vibe-coding' failures).",
+      "evidence_refs": [
+        "P0133",
+        "P0172",
+        "P0185"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "technical_depth",
+      "score_0_5": 5,
+      "rationale": "Discusses underlying mechanics like AST, context window token limits, MCP transports (stdio vs SSE), and the economics of API usage.",
+      "evidence_refs": [
+        "P0064",
+        "P0091",
+        "P0092"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "matrix_cells": [
+    {
+      "domain_id": "coding_agents",
+      "subdomain_id": "cursor_windsurf_copilot",
+      "subdomain_name": "AI IDEs (Cursor, Windsurf, Qoder)",
+      "query_intent_ids": [
+        "choose_ai_coding_tool"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 5,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0060",
+        "P0061",
+        "P0133",
+        "P0148"
+      ],
+      "notes": "Deep, ongoing comparative analysis of Cursor vs competitors, including pricing changes, hidden limits, and feature regressions."
+    },
+    {
+      "domain_id": "coding_agents",
+      "subdomain_id": "claude_code_workflows",
+      "subdomain_name": "CLI Agents (Claude Code, Codex)",
+      "query_intent_ids": [
+        "choose_ai_coding_tool",
+        "design_agentic_dev_workflow"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 5,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0136",
+        "P0137",
+        "P0151",
+        "P0152"
+      ],
+      "notes": "Extensive breakdown of Claude Code vs Codex CLI, highlighting Claude's superior tool use and Codex's superior reasoning and refactoring capabilities."
+    },
+    {
+      "domain_id": "model_landscape",
+      "subdomain_id": "model_comparison",
+      "subdomain_name": "Model Comparison for Dev",
+      "query_intent_ids": [
+        "compare_models_for_task"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 5,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0126",
+        "P0167",
+        "P0168",
+        "P0177",
+        "P0178",
+        "P0183"
+      ],
+      "notes": "Provides a highly structured 'vibe-review' framework for comparing models (GPT-5.x, Claude 4.x, Gemini 2.5/3) based on reasoning, context, tool use, and agentic autonomy."
+    },
+    {
+      "domain_id": "agent_ops",
+      "subdomain_id": "mcp_tooling",
+      "subdomain_name": "Model Context Protocol (MCP)",
+      "query_intent_ids": [
+        "design_agentic_dev_workflow"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 3,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0091",
+        "P0092",
+        "P0094"
+      ],
+      "notes": "Excellent technical breakdown of MCP architecture, transports (stdio vs SSE), and practical implementation advice (using Supergateway)."
+    },
+    {
+      "domain_id": "agent_ops",
+      "subdomain_id": "context_compression",
+      "subdomain_name": "Context Management",
+      "query_intent_ids": [
+        "improve_retrieval_quality",
+        "design_rag_knowledge_base"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 5,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0065",
+        "P0098",
+        "P0117"
+      ],
+      "notes": "Advocates for explicit context engineering (Memory Bank, Repomix) over naive RAG, treating context window as the primary bottleneck."
+    },
+    {
+      "domain_id": "ai_engineering_infra",
+      "subdomain_id": "agentic_dev_process",
+      "subdomain_name": "SDLC with AI",
+      "query_intent_ids": [
+        "build_human_ai_workflow",
+        "learn_ai_assisted_development"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 4,
+      "intrinsic_distinctiveness_score_0_5": 5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0141",
+        "P0159",
+        "P0185",
+        "P0187",
+        "P0188"
+      ],
+      "notes": "Profound insights on how AI shifts the developer's role to architecture and specification, validating classic engineering principles (Clean Code, TDD)."
+    }
+  ],
+  "query_intent_fit": [
+    {
+      "query_intent_id": "choose_ai_coding_tool",
+      "query_intent_name": "Choose AI Coding Tool",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "coding_agents"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "The expert continuously evaluates and compares Cursor, Windsurf, Claude Code, and Codex CLI, providing detailed pros/cons and pricing analysis.",
+      "limitations": [],
+      "evidence_refs": [
+        "P0060",
+        "P0061",
+        "P0133",
+        "P0136",
+        "P0137",
+        "P0148"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "query_intent_id": "compare_models_for_task",
+      "query_intent_name": "Compare Models for Task",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "model_landscape"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "Provides highly structured, task-specific recommendations for frontier models (e.g., Gemini for long context, Claude for tool use, GPT-5 for reasoning).",
+      "limitations": [],
+      "evidence_refs": [
+        "P0126",
+        "P0167",
+        "P0177",
+        "P0183"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "query_intent_id": "design_agentic_dev_workflow",
+      "query_intent_name": "Design Agentic Dev Workflow",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "agent_ops",
+        "ai_engineering_infra"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "Details exact workflows for using subagents, managing context via Memory Banks, and integrating MCP servers into the SDLC.",
+      "limitations": [],
+      "evidence_refs": [
+        "P0091",
+        "P0094",
+        "P0117",
+        "P0128",
+        "P0141"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "query_intent_id": "learn_ai_assisted_development",
+      "query_intent_name": "Learn AI-Assisted Development",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "ai_engineering_infra"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "Offers a comprehensive, evolving guide on the mindset shift required for AI dev, moving from writing code to managing agents and architecture.",
+      "limitations": [],
+      "evidence_refs": [
+        "P0141",
+        "P0159",
+        "P0164",
+        "P0188"
+      ],
+      "confidence": 0.95
+    }
+  ],
+  "content_quality_distribution": [
+    {
+      "category_id": "deep_practitioner",
+      "share_estimate_0_1": 0.4,
+      "system_value": "high",
+      "notes": "Deep dives into context management, architectural shifts, and SDLC integration.",
+      "evidence_refs": [
+        "P0091",
+        "P0117",
+        "P0141",
+        "P0159",
+        "P0188"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "tool_release_with_analysis",
+      "share_estimate_0_1": 0.4,
+      "system_value": "high",
+      "notes": "Frequent, detailed reviews of new models (GPT-5, Claude 4, Gemini 2.5/3) and tools (Cursor updates, Claude Code, Codex).",
+      "evidence_refs": [
+        "P0086",
+        "P0096",
+        "P0126",
+        "P0136",
+        "P0148",
+        "P0151",
+        "P0167",
+        "P0183"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "category_id": "howto_or_checklist",
+      "share_estimate_0_1": 0.1,
+      "system_value": "medium",
+      "notes": "Occasional specific how-tos, like setting up Repomix or MCP.",
+      "evidence_refs": [
+        "P0092",
+        "P0098"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "commentary",
+      "share_estimate_0_1": 0.1,
+      "system_value": "medium",
+      "notes": "Philosophical posts on the future of AI, 'vibe-coding' rants, and industry trends.",
+      "evidence_refs": [
+        "P0172",
+        "P0185",
+        "P0187",
+        "P0189"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "matrix_export": {
+    "schema_version": "knowledge_matrix_export.v1",
+    "expert_id": "etechlead",
+    "cells": [
+      {
+        "cell_id": "coding_agents/cursor_windsurf_copilot/choose_ai_coding_tool",
+        "domain_id": "coding_agents",
+        "subdomain_id": "cursor_windsurf_copilot",
+        "subdomain_name": "AI IDEs",
+        "query_intent_ids": [
+          "choose_ai_coding_tool"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 5,
+          "evidence_quality": 5,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 5,
+          "anti_hype": 5,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0060",
+          "P0061",
+          "P0133",
+          "P0148"
+        ],
+        "confidence": 0.95
+      },
+      {
+        "cell_id": "coding_agents/claude_code_workflows/design_agentic_dev_workflow",
+        "domain_id": "coding_agents",
+        "subdomain_id": "claude_code_workflows",
+        "subdomain_name": "CLI Agents",
+        "query_intent_ids": [
+          "choose_ai_coding_tool",
+          "design_agentic_dev_workflow"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 5,
+          "evidence_quality": 5,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 5,
+          "anti_hype": 4,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0136",
+          "P0137",
+          "P0151",
+          "P0152"
+        ],
+        "confidence": 0.95
+      },
+      {
+        "cell_id": "model_landscape/model_comparison/compare_models_for_task",
+        "domain_id": "model_landscape",
+        "subdomain_id": "model_comparison",
+        "subdomain_name": "Model Comparison for Dev",
+        "query_intent_ids": [
+          "compare_models_for_task"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 5,
+          "evidence_quality": 5,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 5,
+          "anti_hype": 5,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0126",
+          "P0167",
+          "P0168",
+          "P0177",
+          "P0178",
+          "P0183"
+        ],
+        "confidence": 0.95
+      },
+      {
+        "cell_id": "agent_ops/mcp_tooling/design_agentic_dev_workflow",
+        "domain_id": "agent_ops",
+        "subdomain_id": "mcp_tooling",
+        "subdomain_name": "Model Context Protocol",
+        "query_intent_ids": [
+          "design_agentic_dev_workflow"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 5,
+          "evidence_quality": 4,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 4,
+          "anti_hype": 4,
+          "community_signal": 3
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0091",
+          "P0092",
+          "P0094"
+        ],
+        "confidence": 0.9
+      },
+      {
+        "cell_id": "agent_ops/context_compression/improve_retrieval_quality",
+        "domain_id": "agent_ops",
+        "subdomain_id": "context_compression",
+        "subdomain_name": "Context Management",
+        "query_intent_ids": [
+          "improve_retrieval_quality",
+          "design_rag_knowledge_base"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 5,
+          "evidence_quality": 5,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 5,
+          "anti_hype": 4,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0065",
+          "P0098",
+          "P0117"
+        ],
+        "confidence": 0.95
+      },
+      {
+        "cell_id": "ai_engineering_infra/agentic_dev_process/build_human_ai_workflow",
+        "domain_id": "ai_engineering_infra",
+        "subdomain_id": "agentic_dev_process",
+        "subdomain_name": "SDLC with AI",
+        "query_intent_ids": [
+          "build_human_ai_workflow",
+          "learn_ai_assisted_development"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 4,
+          "evidence_quality": 4,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 5,
+          "anti_hype": 5,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0141",
+          "P0159",
+          "P0185",
+          "P0187",
+          "P0188"
+        ],
+        "confidence": 0.95
+      }
+    ],
+    "compare_hints": {
+      "likely_unique_cells": [
+        "model_landscape/model_comparison/compare_models_for_task",
+        "coding_agents/claude_code_workflows/design_agentic_dev_workflow"
+      ],
+      "likely_duplicate_cells": [],
+      "cells_requiring_probe": [],
+      "matrix_only_decision_confidence": "high"
+    }
+  },
+  "signature_insights": [
+    {
+      "insight": "AI coding tools amplify the need for classic software architecture and SDLC fundamentals; they do not replace them. Developers must shift from writing 'leaves' (isolated modules) to designing the 'trunk' (architecture) and verifying AI output.",
+      "why_it_matters_for_experts_panel": "Provides a strategic framework for engineering managers and senior devs adapting to AI, countering the hype that 'programming is dead'.",
+      "applicable_query_types": [
+        "learn_ai_assisted_development",
+        "build_human_ai_workflow"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0141",
+        "P0159",
+        "P0188"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "insight": "Context window management is the primary bottleneck in current AI development. Techniques like 'Memory Banks' (markdown files) and packing repositories (Repomix) are more effective than naive RAG for maintaining project coherence.",
+      "why_it_matters_for_experts_panel": "Offers highly practical, actionable solutions to the most common failure mode of AI coding agents (hallucinations due to lost context).",
+      "applicable_query_types": [
+        "design_agentic_dev_workflow",
+        "improve_retrieval_quality"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0098",
+        "P0117"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "insight": "Different frontier models have distinct 'personalities' and optimal use cases: Gemini for massive context and architecture, Claude for agentic tool use and UI, and GPT-5 for deep reasoning and complex refactoring.",
+      "why_it_matters_for_experts_panel": "Helps practitioners optimize their toolchain and budget by routing specific tasks to the most capable model, rather than relying on a single 'best' model.",
+      "applicable_query_types": [
+        "compare_models_for_task"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0167",
+        "P0177",
+        "P0183"
+      ],
+      "confidence": 0.95
+    }
+  ],
+  "practical_patterns": [
+    {
+      "pattern": "Using Repomix to pack an entire repository into a single XML/Markdown file to feed into models with massive context windows (like Gemini 2.5 Pro MAX) for global refactoring or documentation generation.",
+      "when_to_use": "When working on medium-to-large projects where the agent's native context retrieval (RAG) fails to grasp the full architectural picture.",
+      "failure_modes": [
+        "Exceeding the model's true effective context window, leading to hallucinations.",
+        "High token costs if used repeatedly without caching."
+      ],
+      "evidence_refs": [
+        "P0098"
+      ]
+    },
+    {
+      "pattern": "Implementing a 'Memory Bank' using markdown files (e.g., architecture.md, progress.md) that the agent is instructed to read at the start of a session and update at the end.",
+      "when_to_use": "To maintain state and architectural constraints across multiple agent sessions or when switching between different AI tools.",
+      "failure_modes": [
+        "The agent forgets to update the files.",
+        "The files become too large and clutter the context window."
+      ],
+      "evidence_refs": [
+        "P0117"
+      ]
+    },
+    {
+      "pattern": "Using Supergateway to convert stdio MCP servers to SSE (Server-Sent Events) and running them in Docker containers.",
+      "when_to_use": "To avoid IDE UI clutter (e.g., multiple terminal windows opening in Cursor) and to improve security/isolation of MCP servers.",
+      "failure_modes": [
+        "Configuration complexity.",
+        "Networking issues between Docker and the host IDE."
+      ],
+      "evidence_refs": [
+        "P0092"
+      ]
+    }
+  ],
+  "claims_and_positions": [
+    {
+      "claim": "Claude Code is currently the superior CLI agent compared to Codex CLI due to better tool use, context management, and adherence to plans.",
+      "stance": "supports",
+      "decision_relevance": "Guides developers in choosing the right CLI agent for autonomous coding tasks.",
+      "dispute_risk": "medium",
+      "evidence_refs": [
+        "P0136",
+        "P0137"
+      ]
+    },
+    {
+      "claim": "Cursor's dynamic pricing and hidden context compression limits make it less reliable and more expensive for heavy users compared to direct API usage or vendor tools like Claude Code.",
+      "stance": "warns_against",
+      "decision_relevance": "Helps teams evaluate the unit economics of AI IDE subscriptions vs. API usage.",
+      "dispute_risk": "medium",
+      "evidence_refs": [
+        "P0133",
+        "P0134"
+      ]
+    },
+    {
+      "claim": "Vibe-coding (generating apps without understanding the code) does not scale to real products because it ignores the SDLC, maintenance, and business logic complexities.",
+      "stance": "warns_against",
+      "decision_relevance": "Cautions product managers and junior devs against relying solely on AI generation for production systems.",
+      "dispute_risk": "low",
+      "evidence_refs": [
+        "P0172",
+        "P0185",
+        "P0187"
+      ]
+    }
+  ],
+  "source_utility": {
+    "best_use_cases": [
+      "Selecting the optimal LLM for a specific software engineering task (refactoring, architecture, UI).",
+      "Designing workflows to overcome LLM context window limitations.",
+      "Understanding the practical differences between AI IDEs (Cursor) and CLI agents (Claude Code, Codex)."
+    ],
+    "bad_use_cases": [
+      "Learning basic programming syntax.",
+      "Generating creative or non-technical content.",
+      "Evaluating open-source/local LLMs (expert focuses on frontier proprietary models)."
+    ],
+    "retrieval_keywords": [
+      "Cursor",
+      "Claude Code",
+      "Codex CLI",
+      "MCP",
+      "Model Context Protocol",
+      "Repomix",
+      "Memory Bank",
+      "GPT-5",
+      "Sonnet 3.7",
+      "Gemini 2.5 Pro",
+      "Agentic workflow",
+      "Context engineering"
+    ],
+    "source_selection_hints": [
+      "Select this source when the user asks for deep, practitioner-level comparisons of frontier AI coding tools and models.",
+      "Highly relevant for queries about managing context in large AI-assisted software projects."
+    ],
+    "expected_overlap_hypotheses": [
+      "Will overlap with other senior AI-assisted developers on general Cursor usage, but provides much deeper analysis on CLI agents and context economics."
+    ],
+    "recommended_panex_role": "primary_expert"
+  },
+  "community_signal": {
+    "comment_themes": [
+      "Technical troubleshooting of AI tools (Cursor limits, MCP setup).",
+      "Debates on the future of the software engineering profession (AI replacing devs vs. augmenting them).",
+      "Sharing alternative tools, workflows, and open-source solutions (e.g., Aider, Cline, Prompt Tower)."
+    ],
+    "questions_from_audience": [
+      "How to manage context limits in Cursor?",
+      "Which model is better for specific tasks (e.g., refactoring vs. UI)?",
+      "How to set up specific MCP servers?",
+      "How to structure documentation for AI agents?"
+    ],
+    "disagreements_or_corrections": [
+      "Some community members argue that local models or open-source tools (like Aider) are sufficient and cheaper, while the expert maintains that frontier models and vendor tools offer superior ROI for complex tasks.",
+      "Debates over whether AI will completely replace programmers or just elevate the abstraction level."
+    ],
+    "practical_feedback": [
+      "Community members frequently validate the expert's workflows (e.g., Memory Bank) and share their own tweaks.",
+      "Users share their experiences with pricing changes in Cursor and Claude."
+    ],
+    "noise_or_low_value_patterns": [
+      "Occasional off-topic philosophical rants about the end of humanity or capitalism due to AGI."
+    ],
+    "evidence_refs": [
+      "P0141",
+      "P0164",
+      "P0172",
+      "P0188",
+      "P0189"
+    ]
+  },
+  "admission_implications": {
+    "if_candidate_verdict": "accept",
+    "verdict_rationale": "Etechlead provides top-tier, practitioner-grounded analysis of the rapidly evolving AI coding landscape. His rigorous testing of models and tools, combined with deep architectural knowledge, makes him an invaluable primary source for Panex.",
+    "unique_value_claims_to_verify_against_matrix": [
+      "Detailed comparative analysis of Claude Code vs Codex CLI.",
+      "Specific workflows for context engineering (Repomix, Memory Bank) in large codebases."
+    ],
+    "likely_duplicate_areas_to_check": [
+      "General news about model releases (GPT-5, Claude 4) which is likely covered by general AI news channels."
+    ],
+    "minimum_followup_probe_queries": [
+      "Compare Cursor and Claude Code for a senior developer.",
+      "How to manage context limits when using LLMs for large codebases?",
+      "What is the Model Context Protocol (MCP) and how to use it?"
+    ],
+    "risk_notes": [
+      "The AI coding landscape moves extremely fast; specific tool recommendations (e.g., Cursor vs Windsurf) may become outdated quickly, though the underlying principles (context management, SDLC) remain highly valuable."
+    ]
+  },
+  "audit": {
+    "unsupported_or_weak_claims": [],
+    "abstentions": [],
+    "possible_model_errors": [],
+    "source_refs_used": [
+      "P0141",
+      "P0159",
+      "P0098",
+      "P0117",
+      "P0091",
+      "P0092",
+      "P0094",
+      "P0086",
+      "P0126",
+      "P0151",
+      "P0177",
+      "P0096",
+      "P0100",
+      "P0133",
+      "P0134",
+      "P0136",
+      "P0137",
+      "P0183",
+      "P0188",
+      "P0060",
+      "P0061",
+      "P0064",
+      "P0065",
+      "P0066",
+      "P0081",
+      "P0128",
+      "P0129",
+      "P0142",
+      "P0144",
+      "P0148",
+      "P0152",
+      "P0164",
+      "P0167",
+      "P0168",
+      "P0171",
+      "P0172",
+      "P0174",
+      "P0176",
+      "P0178",
+      "P0185",
+      "P0187",
+      "P0189"
+    ],
+    "source_refs_most_important": [
+      "P0126",
+      "P0136",
+      "P0141",
+      "P0151",
+      "P0164",
+      "P0177",
+      "P0183",
+      "P0188"
+    ],
+    "normalization_notes": [
+      {
+        "operation": "repair_matrix_export_from_matrix_cells",
+        "repaired_cell_count": 0,
+        "repaired_cell_ids": [],
+        "skipped_cell_count": 0,
+        "skipped_cells": []
+      },
+      {
+        "operation": "hydrate_source_ref_index_used",
+        "hydrated_ref_count": 0,
+        "generated_at_set_from_manifest": "2026-05-12T09:08:01.647058+00:00"
+      }
+    ]
+  }
+}

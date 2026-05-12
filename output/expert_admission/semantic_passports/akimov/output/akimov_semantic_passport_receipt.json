@@ -1,0 +1,76 @@
+{
+  "created_at": "2026-05-10T17:29:25.273122+00:00",
+  "packet_dir": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/akimov/input",
+  "prompt_path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/akimov/input/akimov_vertex_prompt.md",
+  "model": "gemini-3.1-pro-preview",
+  "project_id": "project-05d8e46e-231b-43f9-8e1",
+  "location": "global",
+  "count_tokens": {
+    "started_at": "2026-05-10T17:29:19.041948+00:00",
+    "finished_at": "2026-05-10T17:29:25.262355+00:00",
+    "response": {
+      "totalTokens": 809797,
+      "totalBillableCharacters": 1861330,
+      "promptTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 809797
+        }
+      ]
+    }
+  },
+  "generate": {
+    "started_at": "2026-05-10T17:29:25.273164+00:00",
+    "finished_at": "2026-05-10T17:31:58.099927+00:00",
+    "generation_config": {
+      "temperature": 0.1,
+      "candidateCount": 1,
+      "maxOutputTokens": 65536,
+      "responseMimeType": "application/json"
+    },
+    "usage_metadata": {
+      "promptTokenCount": 809797,
+      "candidatesTokenCount": 9974,
+      "totalTokenCount": 824752,
+      "trafficType": "ON_DEMAND",
+      "promptTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 809797
+        }
+      ],
+      "candidatesTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 9974
+        }
+      ],
+      "thoughtsTokenCount": 4981
+    },
+    "model_version": "gemini-3.1-pro-preview",
+    "finish_reason": "STOP",
+    "text_chars": 30077,
+    "json_parse_error": null,
+    "validation": {
+      "missing_required_top_level_keys": [],
+      "known_source_ref_count": 4588,
+      "used_source_ref_count": 19,
+      "source_ref_index_used_count": 19,
+      "unknown_source_refs": [],
+      "unknown_source_ref_count": 0,
+      "refs_missing_from_source_ref_index_used": [],
+      "refs_missing_from_source_ref_index_used_count": 0,
+      "matrix_cell_count": 3,
+      "matrix_export_cell_count": 2,
+      "matrix_export_incomplete": false,
+      "missing_matrix_export_cells": [],
+      "missing_matrix_export_cell_count": 0,
+      "bad_matrix_relative_novelty_values": [],
+      "passport_generated_at": "2026-05-10T17:28:36.990957+00:00",
+      "expected_generated_at": "2026-05-10T17:28:36.990957+00:00",
+      "generated_at_matches_expected": true,
+      "valid_basic_contract": true
+    }
+  },
+  "status": "generated"
+}

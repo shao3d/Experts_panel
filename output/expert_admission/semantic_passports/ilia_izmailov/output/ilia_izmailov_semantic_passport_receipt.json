@@ -1,0 +1,76 @@
+{
+  "created_at": "2026-05-10T00:30:03.790086+00:00",
+  "packet_dir": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/ilia_izmailov/input",
+  "prompt_path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/ilia_izmailov/input/ilia_izmailov_vertex_prompt.md",
+  "model": "gemini-3.1-pro-preview",
+  "project_id": "project-05d8e46e-231b-43f9-8e1",
+  "location": "global",
+  "count_tokens": {
+    "started_at": "2026-05-10T00:30:01.353187+00:00",
+    "finished_at": "2026-05-10T00:30:03.789187+00:00",
+    "response": {
+      "totalTokens": 337054,
+      "totalBillableCharacters": 692445,
+      "promptTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 337054
+        }
+      ]
+    }
+  },
+  "generate": {
+    "started_at": "2026-05-10T00:30:03.790134+00:00",
+    "finished_at": "2026-05-10T00:31:45.884300+00:00",
+    "generation_config": {
+      "temperature": 0.1,
+      "candidateCount": 1,
+      "maxOutputTokens": 65536,
+      "responseMimeType": "application/json"
+    },
+    "usage_metadata": {
+      "promptTokenCount": 337054,
+      "candidatesTokenCount": 11860,
+      "totalTokenCount": 351958,
+      "trafficType": "ON_DEMAND",
+      "promptTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 337054
+        }
+      ],
+      "candidatesTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 11860
+        }
+      ],
+      "thoughtsTokenCount": 3044
+    },
+    "model_version": "gemini-3.1-pro-preview",
+    "finish_reason": "STOP",
+    "text_chars": 35528,
+    "json_parse_error": null,
+    "validation": {
+      "missing_required_top_level_keys": [],
+      "known_source_ref_count": 2454,
+      "used_source_ref_count": 27,
+      "source_ref_index_used_count": 24,
+      "unknown_source_refs": [],
+      "unknown_source_ref_count": 0,
+      "refs_missing_from_source_ref_index_used": [
+        "P0082",
+        "P0103",
+        "P0127"
+      ],
+      "refs_missing_from_source_ref_index_used_count": 3,
+      "matrix_export_cell_count": 3,
+      "bad_matrix_relative_novelty_values": [],
+      "passport_generated_at": "2026-05-10T00:29:31.186988+00:00",
+      "expected_generated_at": "2026-05-10T00:29:31.186988+00:00",
+      "generated_at_matches_expected": true,
+      "valid_basic_contract": false
+    }
+  },
+  "status": "generated"
+}

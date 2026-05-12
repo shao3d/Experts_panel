@@ -1,0 +1,361 @@
+{
+  "channel_username": "etechlead",
+  "coverage": {
+    "agent_ops": 98,
+    "ai_engineering_infra": 12,
+    "ai_product_pm": 43,
+    "ai_ux_workflow": 22,
+    "business_adoption": 57,
+    "coding_agents": 106,
+    "creative_multimodal": 6,
+    "evals_quality": 33,
+    "general_ai_news": 0,
+    "model_landscape": 118,
+    "rag_retrieval_knowledge": 6,
+    "security_privacy_governance": 23
+  },
+  "coverage_strength": {
+    "agent_ops": "strong",
+    "ai_engineering_infra": "medium",
+    "ai_product_pm": "strong",
+    "ai_ux_workflow": "medium",
+    "business_adoption": "strong",
+    "coding_agents": "strong",
+    "creative_multimodal": "thin",
+    "evals_quality": "medium",
+    "general_ai_news": "none",
+    "model_landscape": "strong",
+    "rag_retrieval_knowledge": "thin",
+    "security_privacy_governance": "medium"
+  },
+  "date_range": {
+    "first_post": "2024-04-07",
+    "last_post": "2026-05-01"
+  },
+  "depth_profile": {
+    "announcement_or_news": 10,
+    "architecture_analysis": 16,
+    "benchmark_or_eval": 33,
+    "case_study": 13,
+    "howto_or_checklist": 47,
+    "low_signal": 18,
+    "practitioner_experience": 58,
+    "tool_release": 1
+  },
+  "display_name": "Etechlead",
+  "embedding_count": 185,
+  "embedding_coverage_ratio": 1.0,
+  "expert_id": "etechlead",
+  "fts_count": 185,
+  "metadata_coverage_ratio": 0.9082,
+  "metadata_valid_count": 178,
+  "post_count": 196,
+  "representative_posts": [
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "evals_quality",
+        "ai_product_pm",
+        "ai_ux_workflow",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-27",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "*Нет, вы **посмотрите*е](https://x.com/unclebobmartin/status/2046206145597972849)* на этого еретика, о чём он вообще?* > Признайте: ИИ с лёгкостью уделает вас в кодинге. Нет такой задачи, на которую у вас ушёл бы день, а ИИ не сделал бы её за пять минут. > Всё кончено. Код будете писать не вы. Да-да, я знаю. Смирите...",
+      "reason": "coding_agents, evals_quality, ai_product_pm; depth=benchmark_or_eval",
+      "telegram_message_id": 304
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "evals_quality",
+        "ai_product_pm",
+        "ai_engineering_infra",
+        "model_landscape"
+      ],
+      "created_at": "2026-03-30",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "А я всё-таки принял эстафету коммитов от [Тимура](https://t.me/the_ai_architect/268)! Пути эволюции воистину неисповедимы, и вот мы здесь, меряемся не вполне привычными вещами - количеством коммитов. Эстафета застала меня во время пересборки своей инфраструктуры для перевода на полноценный GitOps и AgentOps, и к ком...",
+      "reason": "coding_agents, agent_ops, evals_quality; depth=benchmark_or_eval",
+      "telegram_message_id": 297
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "evals_quality",
+        "business_adoption",
+        "ai_ux_workflow",
+        "security_privacy_governance",
+        "model_landscape"
+      ],
+      "created_at": "2026-02-10",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "**Критерии оценки ИИ-агентов** Мы окончательно вошли в **пост-бенчмарк эру**, и формальные бенчи LLM/агентов дают всё меньше ценности. Так что у меня выработались субъективные, *вайб*-метрики (пусть даже некоторые и выведены из численных/качественных показателей). Методика простая: есть ряд отложенных типовых проект...",
+      "reason": "coding_agents, agent_ops, evals_quality; depth=benchmark_or_eval",
+      "telegram_message_id": 287
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "evals_quality",
+        "ai_product_pm",
+        "model_landscape",
+        "creative_multimodal"
+      ],
+      "created_at": "2025-12-01",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "**Вайб-обзор на GPT 5.1 / Gemini 3 Pro / Opus 4.5 (2/2)** **Gemini 3 Pro** Модель перед выпуском хайпили так, что казалось, будто у всех сотрудников Google есть KPI на то, чтобы твитнуть нечто загадочное про выход то Gemini, то про что-то с цифрой 3, то про будущие фантастические возможности. Конкретно у меня было м...",
+      "reason": "coding_agents, agent_ops, evals_quality; depth=benchmark_or_eval",
+      "telegram_message_id": 278
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "rag_retrieval_knowledge",
+        "model_landscape"
+      ],
+      "created_at": "2026-01-22",
+      "depth_label": "practitioner_experience",
+      "excerpt": "**Отецкая нотация испорченным вайбкодерам (1/2)** Когда я стал ИИ-кодером в 2024м, сеньоры часто доводили меня до слёз своими нудными воспоминаниями о том, как трудно им было джунами, как им приходилось писать код руками, сразу в прод, без подсветки, в vi, на удалённом терминале, на монохромном выпуклом дисплее, в к...",
+      "reason": "coding_agents, agent_ops, rag_retrieval_knowledge; depth=practitioner_experience",
+      "telegram_message_id": 282
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "evals_quality",
+        "ai_ux_workflow",
+        "model_landscape"
+      ],
+      "created_at": "2026-02-10",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "**Вайб-обзор на GPT-5.3 Codex, Opus 4.6, и (бонус) GPT-5.2 (1/2)** Тееек, потестил новые модели от OpenAI и Anthropic. Надо сказать, что сравнивать модели становится всё нетривиальнее и дольше, потому что способности подрастают у них у всех, и отличий в качестве исполнения чисто технических задач становится всё мень...",
+      "reason": "coding_agents, evals_quality, ai_ux_workflow; depth=benchmark_or_eval",
+      "telegram_message_id": 288
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "evals_quality",
+        "ai_product_pm",
+        "business_adoption"
+      ],
+      "created_at": "2025-12-03",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "**AI в SDLC - люди, процессы и организации** **[анонс]** Так, народ, я обычно тут пишу про технические штуки, но ведь все мы понимаем, что в профессии разработчика (и айтишников в целом) на самом деле очень много того самого человеческого фактора, про который всегда нужно помнить. По мере того, как за прошедший год...",
+      "reason": "coding_agents, agent_ops, evals_quality; depth=benchmark_or_eval",
+      "telegram_message_id": 279
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "evals_quality",
+        "ai_product_pm",
+        "business_adoption",
+        "ai_ux_workflow",
+        "model_landscape"
+      ],
+      "created_at": "2025-12-01",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "**Вайб-обзор на GPT 5.1 / Gemini 3 Pro / Opus 4.5 (1/2)** Даа, ноябрь выдался весьма урожайным на новые модели. Перебивая один другого, ведущие вендоры выпустили по флагманской модели (некоторые даже по нескольку). Провел с каждой из них достаточно времени, чтобы теперь поделиться мнением :) Будем считать это *вайб-...",
+      "reason": "coding_agents, agent_ops, evals_quality; depth=benchmark_or_eval",
+      "telegram_message_id": 277
+    }
+  ],
+  "runtime_readiness": {
+    "embeddings_ready": true,
+    "fts_ready": true,
+    "metadata_advisory_ready": true,
+    "text_posts_ready": true
+  },
+  "text_post_count": 185,
+  "top_concepts": [
+    {
+      "count": 18,
+      "value": "Software Development"
+    },
+    {
+      "count": 15,
+      "value": "Agentic Workflow"
+    },
+    {
+      "count": 14,
+      "value": "AI Agents"
+    },
+    {
+      "count": 14,
+      "value": "Automation"
+    },
+    {
+      "count": 13,
+      "value": "Context Window"
+    },
+    {
+      "count": 10,
+      "value": "Reasoning"
+    },
+    {
+      "count": 10,
+      "value": "LLM"
+    },
+    {
+      "count": 9,
+      "value": "Productivity"
+    },
+    {
+      "count": 9,
+      "value": "Software Engineering"
+    },
+    {
+      "count": 8,
+      "value": "Context Management"
+    },
+    {
+      "count": 8,
+      "value": "Artificial Intelligence"
+    },
+    {
+      "count": 8,
+      "value": "Code Refactoring"
+    }
+  ],
+  "top_keywords": [
+    {
+      "count": 66,
+      "value": "development"
+    },
+    {
+      "count": 65,
+      "value": "разработка"
+    },
+    {
+      "count": 52,
+      "value": "llm"
+    },
+    {
+      "count": 51,
+      "value": "code"
+    },
+    {
+      "count": 48,
+      "value": "context"
+    },
+    {
+      "count": 47,
+      "value": "claude"
+    },
+    {
+      "count": 45,
+      "value": "cursor"
+    },
+    {
+      "count": 36,
+      "value": "агенты"
+    },
+    {
+      "count": 35,
+      "value": "agents"
+    },
+    {
+      "count": 33,
+      "value": "контекст"
+    },
+    {
+      "count": 32,
+      "value": "coding"
+    },
+    {
+      "count": 29,
+      "value": "интеллект"
+    },
+    {
+      "count": 28,
+      "value": "искусственный"
+    },
+    {
+      "count": 26,
+      "value": "model"
+    },
+    {
+      "count": 25,
+      "value": "agent"
+    },
+    {
+      "count": 23,
+      "value": "chatgpt"
+    },
+    {
+      "count": 22,
+      "value": "кодинг"
+    },
+    {
+      "count": 22,
+      "value": "codex"
+    },
+    {
+      "count": 21,
+      "value": "рефакторинг"
+    },
+    {
+      "count": 21,
+      "value": "refactoring"
+    }
+  ],
+  "top_primary_topics": [
+    {
+      "count": 24,
+      "value": "AI Agents"
+    },
+    {
+      "count": 23,
+      "value": "AI Development"
+    },
+    {
+      "count": 9,
+      "value": "LLM Evaluation"
+    },
+    {
+      "count": 5,
+      "value": "Artificial Intelligence"
+    },
+    {
+      "count": 4,
+      "value": "AI Coding Agents"
+    },
+    {
+      "count": 4,
+      "value": "LLM Development"
+    },
+    {
+      "count": 4,
+      "value": "Cursor IDE"
+    },
+    {
+      "count": 3,
+      "value": "AI Coding"
+    },
+    {
+      "count": 2,
+      "value": "AI Safety"
+    },
+    {
+      "count": 2,
+      "value": "LLM Review"
+    },
+    {
+      "count": 2,
+      "value": "OpenAI Codex"
+    },
+    {
+      "count": 2,
+      "value": "Software Engineering"
+    }
+  ],
+  "warnings": []
+}

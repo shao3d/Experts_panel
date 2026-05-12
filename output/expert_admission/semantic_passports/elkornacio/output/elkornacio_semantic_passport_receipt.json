@@ -1,0 +1,96 @@
+{
+  "created_at": "2026-05-10T19:16:35.659698+00:00",
+  "packet_dir": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/elkornacio/input",
+  "prompt_path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/elkornacio/input/elkornacio_vertex_prompt.md",
+  "model": "gemini-3.1-pro-preview",
+  "project_id": "project-05d8e46e-231b-43f9-8e1",
+  "location": "global",
+  "count_tokens": {
+    "started_at": "2026-05-10T19:16:31.711560+00:00",
+    "finished_at": "2026-05-10T19:16:35.658040+00:00",
+    "response": {
+      "totalTokens": 898163,
+      "totalBillableCharacters": 1911974,
+      "promptTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 898163
+        }
+      ]
+    }
+  },
+  "generate": {
+    "started_at": "2026-05-10T19:16:35.659746+00:00",
+    "finished_at": "2026-05-10T19:18:35.479927+00:00",
+    "generation_config": {
+      "temperature": 0.1,
+      "candidateCount": 1,
+      "maxOutputTokens": 65536,
+      "responseMimeType": "application/json"
+    },
+    "usage_metadata": {
+      "promptTokenCount": 898163,
+      "candidatesTokenCount": 10550,
+      "totalTokenCount": 911637,
+      "trafficType": "ON_DEMAND",
+      "promptTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 898163
+        }
+      ],
+      "candidatesTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 10550
+        }
+      ],
+      "thoughtsTokenCount": 2924
+    },
+    "model_version": "gemini-3.1-pro-preview",
+    "finish_reason": "STOP",
+    "text_chars": 31483,
+    "json_parse_error": null,
+    "validation": {
+      "missing_required_top_level_keys": [],
+      "known_source_ref_count": 6025,
+      "used_source_ref_count": 25,
+      "source_ref_index_used_count": 20,
+      "unknown_source_refs": [],
+      "unknown_source_ref_count": 0,
+      "refs_missing_from_source_ref_index_used": [
+        "P0251",
+        "P0258.C0021",
+        "P0277.C0075",
+        "P0288",
+        "P0348.C0001"
+      ],
+      "refs_missing_from_source_ref_index_used_count": 5,
+      "matrix_cell_count": 3,
+      "matrix_export_cell_count": 3,
+      "matrix_export_incomplete": true,
+      "missing_matrix_export_cells": [
+        {
+          "cell_id": "agent_ops/mcp_tooling/design_agentic_dev_workflow",
+          "domain_id": "agent_ops",
+          "subdomain_id": "mcp_tooling",
+          "query_intent_ids": [
+            "design_agentic_dev_workflow",
+            "manage_security_privacy_governance"
+          ],
+          "recommended_matrix_weight": "strong",
+          "evidence_refs": [
+            "P0388.C0032"
+          ]
+        }
+      ],
+      "missing_matrix_export_cell_count": 1,
+      "bad_matrix_relative_novelty_values": [],
+      "passport_generated_at": "2026-05-10T19:15:55.475281+00:00",
+      "expected_generated_at": "2026-05-10T19:15:55.475281+00:00",
+      "generated_at_matches_expected": true,
+      "valid_basic_contract": false
+    }
+  },
+  "status": "generated"
+}

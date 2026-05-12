@@ -1,0 +1,1038 @@
+{
+  "schema_version": "expert_value_passport.v1.1",
+  "passport_meta": {
+    "schema_version": "expert_value_passport.v1.1",
+    "expert_id": "neuraldeep",
+    "display_name": "Neuraldeep",
+    "channel_username": "@neuraldeep",
+    "model_assumed": "gemini-3.1-pro-preview",
+    "prompt_version": "semantic-passport-prompt.v1",
+    "generated_at": "2026-05-09T23:49:48.141769+00:00"
+  },
+  "corpus_audit": {
+    "post_count_seen": 506,
+    "comment_count_seen": 5807,
+    "date_range": {
+      "first_post": "2025-01-04 15:28:46.000000",
+      "last_post": "2026-05-04 05:41:12.000000"
+    },
+    "language_mix": [
+      "ru",
+      "en"
+    ],
+    "material_limitations": [],
+    "author_vs_community_boundary": "clear"
+  },
+  "source_ref_index_used": [
+    {
+      "source_ref": "P0220",
+      "source_kind": "expert_post",
+      "post_id": 647,
+      "telegram_message_id": 1606,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-09-08 09:13:17.000000",
+      "why_used": "Defines SGR (Schema-Guided Reasoning) as SO + CoT."
+    },
+    {
+      "source_ref": "P0133",
+      "source_kind": "expert_post",
+      "post_id": 557,
+      "telegram_message_id": 1468,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-05-30 13:51:18.000000",
+      "why_used": "Critique of MCP for enterprise production, advocating for REST API + Structured Output."
+    },
+    {
+      "source_ref": "P0455",
+      "source_kind": "expert_post",
+      "post_id": 7998,
+      "telegram_message_id": 2019,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-03-28 20:47:19.000000",
+      "why_used": "Explains the hardware modification process for RTX 4090 48GB."
+    },
+    {
+      "source_ref": "P0236",
+      "source_kind": "expert_post",
+      "post_id": 561,
+      "telegram_message_id": 1474,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-09-25 15:55:57.000000",
+      "why_used": "Details the cost (2.5M RUB) and rationale for building a local inference cluster with 4090 48GB cards."
+    },
+    {
+      "source_ref": "P0181",
+      "source_kind": "expert_post",
+      "post_id": 608,
+      "telegram_message_id": 1547,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-07-25 16:04:59.000000",
+      "why_used": "Argues that vibe coding requires deep engineering expertise to be effective."
+    },
+    {
+      "source_ref": "P0450",
+      "source_kind": "expert_post",
+      "post_id": 7993,
+      "telegram_message_id": 2009,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-03-28 07:54:55.000000",
+      "why_used": "Lists the foundational skills (Linux, Docker, DBs, TCP/IP) required before using AI coding tools."
+    },
+    {
+      "source_ref": "P0104",
+      "source_kind": "expert_post",
+      "post_id": 528,
+      "telegram_message_id": 1427,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-05-04 15:23:42.000000",
+      "why_used": "Explains error inheritance in RAG systems using Lusser's law."
+    },
+    {
+      "source_ref": "P0225",
+      "source_kind": "expert_post",
+      "post_id": 652,
+      "telegram_message_id": 1611,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-09-12 00:19:47.000000",
+      "why_used": "Introduces the SearXNG Tavily adapter for free local web search in agent pipelines."
+    },
+    {
+      "source_ref": "P0262",
+      "source_kind": "expert_post",
+      "post_id": 702,
+      "telegram_message_id": 1675,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-10-22 09:23:40.000000",
+      "why_used": "Announces sgr-agent-core 0.3.0 release and its features."
+    },
+    {
+      "source_ref": "P0364",
+      "source_kind": "expert_post",
+      "post_id": 3264,
+      "telegram_message_id": 1868,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-20 08:51:10.000000",
+      "why_used": "Details LocalDesk updates and the Tool Name Pattern (Action + Object + Clarification)."
+    },
+    {
+      "source_ref": "P0465",
+      "source_kind": "expert_post",
+      "post_id": 8101,
+      "telegram_message_id": 2036,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-03 20:55:36.000000",
+      "why_used": "Introduces CodeDash for managing Claude Code and Codex CLI sessions."
+    },
+    {
+      "source_ref": "P0506",
+      "source_kind": "expert_post",
+      "post_id": 9845,
+      "telegram_message_id": 2117,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-05-04 05:41:12.000000",
+      "why_used": "Deep dive into vLLM + LiteLLM + Codex CLI integration issues, FlashAttention 3 requirements, and routing."
+    },
+    {
+      "source_ref": "P0471",
+      "source_kind": "expert_post",
+      "post_id": 8107,
+      "telegram_message_id": 2047,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-07 07:04:47.000000",
+      "why_used": "Explains the 4 layers of Tool Calling (HTTP, Chat Template, Constrained Decoding, Parser)."
+    },
+    {
+      "source_ref": "P0035",
+      "source_kind": "expert_post",
+      "post_id": 457,
+      "telegram_message_id": 1308,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-02-08 11:38:59.000000",
+      "why_used": "Demonstrates complex RAG architecture for technical documentation using CoT and SO."
+    },
+    {
+      "source_ref": "P0316",
+      "source_kind": "expert_post",
+      "post_id": 2045,
+      "telegram_message_id": 1758,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-30 19:19:09.000000",
+      "why_used": "Provides a comprehensive list of best practices and tools for RAG."
+    },
+    {
+      "source_ref": "P0190",
+      "source_kind": "expert_post",
+      "post_id": 617,
+      "telegram_message_id": 1559,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-06 11:34:41.000000",
+      "why_used": "Discusses the inability to run gpt-oss models on RTX 4090 via vLLM due to FlashAttention 3."
+    },
+    {
+      "source_ref": "P0284",
+      "source_kind": "expert_post",
+      "post_id": 737,
+      "telegram_message_id": 1713,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-06 13:00:40.000000",
+      "why_used": "Introduces the SGR File-First agent approach."
+    },
+    {
+      "source_ref": "P0434",
+      "source_kind": "expert_post",
+      "post_id": 7382,
+      "telegram_message_id": 1987,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-03-13 08:09:20.000000",
+      "why_used": "Introduces openapi-to-cli as an alternative to massive MCP tool contexts."
+    },
+    {
+      "source_ref": "P0449",
+      "source_kind": "expert_post",
+      "post_id": 7992,
+      "telegram_message_id": 2008,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-03-25 09:46:06.000000",
+      "why_used": "Announces NeuralDeep Hub for RU-segment AI skills and MCPs."
+    },
+    {
+      "source_ref": "P0070",
+      "source_kind": "expert_post",
+      "post_id": 494,
+      "telegram_message_id": 1366,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-03-29 07:28:28.000000",
+      "why_used": "Detailed economic breakdown of Cloud API vs RunPod vs On-premise hardware."
+    },
+    {
+      "source_ref": "P0265",
+      "source_kind": "expert_post",
+      "post_id": 705,
+      "telegram_message_id": 1680,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-10-23 11:53:34.000000",
+      "why_used": "Identifies a critical security flaw in LiteLLM leaking metadata to OpenAI."
+    },
+    {
+      "source_ref": "P0380",
+      "source_kind": "expert_post",
+      "post_id": 4457,
+      "telegram_message_id": 1889,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-03 10:52:49.000000",
+      "why_used": "Details security vulnerabilities and patches for local AI agents (Topsha)."
+    }
+  ],
+  "executive_summary": {
+    "one_sentence_positioning": "A highly technical Head of AI and open-source builder who bridges the gap between local LLM infrastructure, advanced agentic architectures (SGR), and practical enterprise deployment.",
+    "strongest_system_value": "Provides exceptionally deep, hands-on engineering insights into local LLM deployment (vLLM, hardware sizing), agentic frameworks (SGR, ReAct), and the exact mechanics of Tool Calling and Structured Output.",
+    "weakest_system_value": "Content is highly technical and fast-moving, often focusing on bleeding-edge open-source tools and custom workarounds that may become obsolete as official frameworks update.",
+    "best_fit_queries": [
+      "How to build an agentic RAG system using local models?",
+      "What is Schema-Guided Reasoning (SGR) and how does it compare to Function Calling?",
+      "How to optimize vLLM and LiteLLM for local inference on consumer GPUs like RTX 4090?",
+      "What are the security risks of deploying local AI agents and how to mitigate them?"
+    ],
+    "poor_fit_queries": [
+      "Basic introductions to ChatGPT for non-technical users.",
+      "High-level marketing strategies for AI products.",
+      "No-code/Low-code AI bot builders for beginners."
+    ],
+    "confidence": 0.95
+  },
+  "expert_positioning": {
+    "primary_role": "Deep Practitioner / Head of AI",
+    "audience": [
+      "AI Engineers",
+      "MLOps Specialists",
+      "CTOs",
+      "Backend Developers"
+    ],
+    "voice": [
+      "Technical",
+      "Pragmatic",
+      "Hands-on",
+      "Skeptical of hype"
+    ],
+    "worldview": [
+      "Local inference and open-source models are essential for enterprise security and cost control.",
+      "Vibe coding requires deep foundational engineering knowledge to be safe and effective.",
+      "Agentic architectures must be deterministic and observable (via SGR and Structured Output) to work in production.",
+      "Hardware ownership (on-premise) is often more economically viable than cloud APIs at scale."
+    ],
+    "distinctive_angle": "Combines deep hardware/DevOps knowledge with cutting-edge LLM agent architecture, actively building and open-sourcing the tools he discusses.",
+    "recurring_formats": [
+      "Technical deep dives with code snippets",
+      "Hardware and inference cost breakdowns",
+      "Open-source project releases and updates",
+      "Post-mortems of AI system failures and security vulnerabilities"
+    ],
+    "evidence_refs": [
+      "P0220",
+      "P0450",
+      "P0506",
+      "P0070",
+      "P0380"
+    ]
+  },
+  "knowledge_domains": [
+    {
+      "domain_id": "ai_engineering_infra",
+      "domain_name": "AI Engineering & Infrastructure",
+      "subdomain_ids": [
+        "local_agent_setup",
+        "inference_cost_latency",
+        "deployment_observability"
+      ],
+      "query_intent_ids": [
+        "optimize_inference_cost_latency",
+        "manage_security_privacy_governance"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "unique",
+      "what_the_expert_knows": [
+        "How to optimize vLLM and LiteLLM for local inference.",
+        "The exact hardware requirements and economics of running 32B-120B models on consumer GPUs (e.g., modded RTX 4090 48GB).",
+        "How to debug and patch inference engines (e.g., bypassing FlashAttention 3 requirements, fixing LiteLLM metadata leaks).",
+        "Security vulnerabilities in local agents (prompt injection, symlink escapes, DoS via math functions)."
+      ],
+      "how_they_reason": [
+        "Calculates exact ROI and token throughput to justify hardware purchases over cloud APIs.",
+        "Dives into the source code of inference engines to understand and fix bottlenecks rather than waiting for official patches."
+      ],
+      "missing_or_weak_subtopics": [
+        "Cloud-native managed services (AWS Bedrock, Azure OpenAI) as he strongly prefers on-premise."
+      ],
+      "evidence_refs": [
+        "P0070",
+        "P0236",
+        "P0455",
+        "P0506",
+        "P0265",
+        "P0380"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "domain_id": "agent_ops",
+      "domain_name": "Agent Operations & Architecture",
+      "subdomain_ids": [
+        "agentic_dev_process",
+        "tool_calling_hooks_skills",
+        "mcp_tooling"
+      ],
+      "query_intent_ids": [
+        "design_agentic_dev_workflow",
+        "debug_agent_failure"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "unique",
+      "what_the_expert_knows": [
+        "The mechanics of Schema-Guided Reasoning (SGR) and how it outperforms native Function Calling for models <32B.",
+        "The 4 layers of Tool Calling (HTTP, Chat Template, Constrained Decoding, Parser).",
+        "The limitations of MCP (Model Context Protocol) in enterprise environments (token consumption, statefulness).",
+        "How to build CLI wrappers (openapi-to-cli) to save context window space instead of using massive MCP tool definitions."
+      ],
+      "how_they_reason": [
+        "Prefers deterministic, observable pipelines (Structured Output) over black-box LLM tool calling.",
+        "Evaluates agent architectures based on their ability to be monitored, debugged, and run on local hardware."
+      ],
+      "missing_or_weak_subtopics": [],
+      "evidence_refs": [
+        "P0220",
+        "P0133",
+        "P0471",
+        "P0434",
+        "P0262"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "domain_id": "rag_retrieval_knowledge",
+      "domain_name": "RAG & Retrieval Knowledge",
+      "subdomain_ids": [
+        "rag_architecture",
+        "hybrid_retrieval",
+        "knowledge_base_design"
+      ],
+      "query_intent_ids": [
+        "design_rag_knowledge_base",
+        "improve_retrieval_quality"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "practical",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "How to build Agentic RAG systems that outperform naive RAG.",
+        "The mathematical reality of error inheritance in sequential RAG pipelines (Lusser's law).",
+        "Best practices for chunking, embedding models (FRIDA, bge-m3), and rerankers.",
+        "How to use SearXNG as a local, free alternative to Tavily for web search in RAG."
+      ],
+      "how_they_reason": [
+        "Views RAG as a sequence of probabilities where errors multiply, necessitating rigorous benchmarking.",
+        "Advocates for hybrid search and dynamic agentic routing over static vector retrieval."
+      ],
+      "missing_or_weak_subtopics": [
+        "Deep theoretical NLP/embedding mathematics (focuses more on applied engineering)."
+      ],
+      "evidence_refs": [
+        "P0035",
+        "P0104",
+        "P0316",
+        "P0225"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "domain_id": "prompt_engineering",
+      "domain_name": "Prompt Engineering & AI Coding",
+      "subdomain_ids": [
+        "claude_code_workflows",
+        "cursor_windsurf_copilot"
+      ],
+      "query_intent_ids": [
+        "choose_ai_coding_tool",
+        "learn_ai_assisted_development"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "How to effectively use Cursor, Claude Code, and Codex CLI for 'vibe coding'.",
+        "The necessity of foundational DevOps/Linux/DB knowledge to successfully guide AI coding tools.",
+        "How to structure project documentation (e.g., CLAUDE.md, AGENTS.md) to maintain LLM context.",
+        "How to build custom dashboards (CodeDash) to manage multiple AI coding sessions."
+      ],
+      "how_they_reason": [
+        "Believes AI accelerates expertise but does not replace it; the developer shifts from writing code to architecting and reviewing.",
+        "Emphasizes that 'vibe coding' without engineering fundamentals leads to unmaintainable, broken systems."
+      ],
+      "missing_or_weak_subtopics": [],
+      "evidence_refs": [
+        "P0181",
+        "P0450",
+        "P0126",
+        "P0465"
+      ],
+      "confidence": 0.95
+    }
+  ],
+  "value_dimensions": [
+    {
+      "dimension_id": "insight_density",
+      "score_0_5": 5,
+      "rationale": "Posts are packed with technical depth, architectural breakdowns, and novel engineering solutions (e.g., SGR, 4 layers of tool calling).",
+      "evidence_refs": [
+        "P0471",
+        "P0220",
+        "P0506"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "practical_specificity",
+      "score_0_5": 5,
+      "rationale": "Provides exact hardware specs, pricing, Docker commands, JSON schemas, and links to his own open-source repositories.",
+      "evidence_refs": [
+        "P0070",
+        "P0236",
+        "P0225",
+        "P0380"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "evidence_quality",
+      "score_0_5": 5,
+      "rationale": "Claims are backed by personal benchmarks, production deployments, and open-source code that the community actively uses and forks.",
+      "evidence_refs": [
+        "P0262",
+        "P0364",
+        "P0465"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "anti_hype_signal",
+      "score_0_5": 5,
+      "rationale": "Actively debunks AI hype, such as the idea that 'vibe coding' replaces engineers, or that MCP is a silver bullet for enterprise.",
+      "evidence_refs": [
+        "P0133",
+        "P0181",
+        "P0450"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "technical_depth",
+      "score_0_5": 5,
+      "rationale": "Dives into the source code of vLLM, LiteLLM, and models to patch bugs, understand token masking (xgrammar), and optimize inference.",
+      "evidence_refs": [
+        "P0506",
+        "P0265",
+        "P0471"
+      ],
+      "confidence": 0.95
+    }
+  ],
+  "matrix_cells": [
+    {
+      "domain_id": "ai_engineering_infra",
+      "subdomain_id": "local_hardware",
+      "subdomain_name": "Local Hardware Economics",
+      "query_intent_ids": [
+        "optimize_inference_cost_latency"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 5,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0070",
+        "P0236",
+        "P0455"
+      ],
+      "notes": "Provides exact calculations for ROI on local hardware (e.g., 2x RTX 4090 48GB) vs Cloud APIs, including reballing details."
+    },
+    {
+      "domain_id": "agent_ops",
+      "subdomain_id": "architecture",
+      "subdomain_name": "Agent Architecture (SGR vs FC)",
+      "query_intent_ids": [
+        "design_agentic_dev_workflow"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 5,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0220",
+        "P0204",
+        "P0471"
+      ],
+      "notes": "Deeply analyzes Schema-Guided Reasoning (SO + CoT) as a superior alternative to native Function Calling for models <32B."
+    },
+    {
+      "domain_id": "agent_ops",
+      "subdomain_id": "mcp_tooling",
+      "subdomain_name": "MCP Limitations & Alternatives",
+      "query_intent_ids": [
+        "design_agentic_dev_workflow"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0133",
+        "P0434"
+      ],
+      "notes": "Critiques MCP for enterprise due to token bloat and statefulness; offers openapi-to-cli as a context-saving alternative."
+    },
+    {
+      "domain_id": "ai_engineering_infra",
+      "subdomain_id": "deployment_observability",
+      "subdomain_name": "Inference Engine Debugging",
+      "query_intent_ids": [
+        "manage_security_privacy_governance"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 5,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0506",
+        "P0265",
+        "P0380"
+      ],
+      "notes": "Identifies critical bugs in vLLM (FlashAttention 3 requirements) and LiteLLM (metadata leaks to OpenAI), providing patches."
+    },
+    {
+      "domain_id": "prompt_engineering",
+      "subdomain_id": "agentic_dev_process",
+      "subdomain_name": "Vibe Coding Realities",
+      "query_intent_ids": [
+        "learn_ai_assisted_development"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 5,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0181",
+        "P0450",
+        "P0126"
+      ],
+      "notes": "Argues that AI coding tools accelerate expertise but do not replace it; requires strong DevOps/architecture fundamentals."
+    }
+  ],
+  "query_intent_fit": [
+    {
+      "query_intent_id": "design_agentic_dev_workflow",
+      "query_intent_name": "Design Agentic Dev Workflow",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "agent_ops",
+        "prompt_engineering"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "Provides end-to-end frameworks (sgr-agent-core), architectural patterns (SGR vs FC), and tooling (CodeDash, openapi-to-cli) for building agents.",
+      "limitations": [],
+      "evidence_refs": [
+        "P0262",
+        "P0434",
+        "P0465"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "query_intent_id": "optimize_inference_cost_latency",
+      "query_intent_name": "Optimize Inference Cost & Latency",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "ai_engineering_infra"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "Offers precise calculations on hardware ROI, vLLM optimization, and the economics of running local models vs cloud APIs.",
+      "limitations": [],
+      "evidence_refs": [
+        "P0070",
+        "P0236",
+        "P0506"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "query_intent_id": "manage_security_privacy_governance",
+      "query_intent_name": "Manage Security, Privacy & Governance",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "ai_engineering_infra"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "Discovers and patches real-world vulnerabilities in AI infrastructure (e.g., LiteLLM leaks, agent prompt injections).",
+      "limitations": [],
+      "evidence_refs": [
+        "P0265",
+        "P0380"
+      ],
+      "confidence": 0.95
+    }
+  ],
+  "content_quality_distribution": [
+    {
+      "category_id": "deep_practitioner",
+      "share_estimate_0_1": 0.4,
+      "system_value": "unique",
+      "notes": "Highly technical deep dives into inference engines, agent architectures, and hardware.",
+      "evidence_refs": [
+        "P0471",
+        "P0506",
+        "P0220"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "tool_release_with_analysis",
+      "share_estimate_0_1": 0.3,
+      "system_value": "high",
+      "notes": "Constantly releases open-source tools (sgr-agent-core, LocalDesk, CodeDash) with explanations of the underlying engineering.",
+      "evidence_refs": [
+        "P0262",
+        "P0364",
+        "P0465",
+        "P0434"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "architecture_analysis",
+      "share_estimate_0_1": 0.2,
+      "system_value": "high",
+      "notes": "Analyzes the pros and cons of different AI architectures (e.g., MCP vs REST, SGR vs FC).",
+      "evidence_refs": [
+        "P0133",
+        "P0204"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "commentary",
+      "share_estimate_0_1": 0.1,
+      "system_value": "medium",
+      "notes": "Occasional commentary on AI trends, market shifts, and community events.",
+      "evidence_refs": [
+        "P0439",
+        "P0186"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "matrix_export": {
+    "schema_version": "knowledge_matrix_export.v1",
+    "expert_id": "neuraldeep",
+    "cells": [
+      {
+        "cell_id": "ai_engineering_infra/local_hardware/optimize_inference_cost_latency",
+        "domain_id": "ai_engineering_infra",
+        "subdomain_id": "local_hardware",
+        "subdomain_name": "Local Hardware Economics",
+        "query_intent_ids": [
+          "optimize_inference_cost_latency"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 5,
+          "evidence_quality": 5,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 5,
+          "anti_hype": 4,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0070",
+          "P0236",
+          "P0455"
+        ],
+        "confidence": 0.95
+      },
+      {
+        "cell_id": "agent_ops/architecture/design_agentic_dev_workflow",
+        "domain_id": "agent_ops",
+        "subdomain_id": "architecture",
+        "subdomain_name": "Agent Architecture (SGR vs FC)",
+        "query_intent_ids": [
+          "design_agentic_dev_workflow"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 5,
+          "evidence_quality": 5,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 5,
+          "anti_hype": 5,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0220",
+          "P0204",
+          "P0471"
+        ],
+        "confidence": 0.95
+      },
+      {
+        "cell_id": "ai_engineering_infra/deployment_observability/manage_security_privacy_governance",
+        "domain_id": "ai_engineering_infra",
+        "subdomain_id": "deployment_observability",
+        "subdomain_name": "Inference Engine Debugging",
+        "query_intent_ids": [
+          "manage_security_privacy_governance"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 5,
+          "evidence_quality": 5,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 5,
+          "anti_hype": 4,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0506",
+          "P0265",
+          "P0380"
+        ],
+        "confidence": 0.95
+      }
+    ],
+    "compare_hints": {
+      "likely_unique_cells": [
+        "ai_engineering_infra/deployment_observability/manage_security_privacy_governance",
+        "agent_ops/architecture/design_agentic_dev_workflow"
+      ],
+      "likely_duplicate_cells": [],
+      "cells_requiring_probe": [],
+      "matrix_only_decision_confidence": "high"
+    }
+  },
+  "signature_insights": [
+    {
+      "insight": "Schema-Guided Reasoning (SGR) is superior to native Function Calling for models under 32B parameters because it forces the model to output a structured reasoning chain (SO + CoT) before selecting a tool, drastically reducing hallucinations and formatting errors.",
+      "why_it_matters_for_experts_panel": "Provides a concrete architectural pattern for building reliable agents on cheaper, local hardware.",
+      "applicable_query_types": [
+        "design_agentic_dev_workflow"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0220",
+        "P0204"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "insight": "MCP (Model Context Protocol) is currently best suited for consumer applications. In enterprise production, it suffers from token bloat and statefulness issues, making REST API + Structured Output a more reliable choice.",
+      "why_it_matters_for_experts_panel": "Offers a critical, anti-hype perspective on a trending technology, backed by production experience.",
+      "applicable_query_types": [
+        "design_agentic_dev_workflow"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0133"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "insight": "Vibe coding does not replace software engineers; it accelerates them. Successful AI coding requires deep foundational knowledge in DevOps, databases, and system architecture to guide the LLM and fix its inevitable mistakes.",
+      "why_it_matters_for_experts_panel": "Cuts through the hype of 'AI replacing programmers' and defines the actual skill shift required (from code writer to AI director).",
+      "applicable_query_types": [
+        "learn_ai_assisted_development"
+      ],
+      "novelty_level": "useful_packaging",
+      "evidence_refs": [
+        "P0181",
+        "P0450"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "insight": "For local LLM inference, a setup with 2x RTX 4090 (48GB modded) offers the best ROI, allowing the execution of 32B-120B models at high speeds (150 t/s) for a fraction of the cost of enterprise GPUs like the A6000 or A100.",
+      "why_it_matters_for_experts_panel": "Provides highly specific, actionable hardware advice for teams looking to build on-premise AI infrastructure.",
+      "applicable_query_types": [
+        "optimize_inference_cost_latency"
+      ],
+      "novelty_level": "rare",
+      "evidence_refs": [
+        "P0236",
+        "P0455"
+      ],
+      "confidence": 0.95
+    }
+  ],
+  "practical_patterns": [
+    {
+      "pattern": "Using xgrammar with vLLM for Structured Output",
+      "when_to_use": "When you need strict JSON schema adherence from local models without sacrificing inference speed.",
+      "failure_modes": [
+        "Can break reasoning models (like Qwen3) if the <think> tags are stripped or mishandled by the schema enforcer."
+      ],
+      "evidence_refs": [
+        "P0471",
+        "P0275"
+      ]
+    },
+    {
+      "pattern": "Converting OpenAPI specs to CLI tools (openapi-to-cli)",
+      "when_to_use": "When an agent needs access to hundreds of API endpoints (e.g., GitHub API) but providing them all as MCP tools would exhaust the context window.",
+      "failure_modes": [
+        "Requires the agent to be capable of executing shell commands and parsing CLI output."
+      ],
+      "evidence_refs": [
+        "P0434"
+      ]
+    },
+    {
+      "pattern": "Using SearXNG as a local Tavily alternative",
+      "when_to_use": "When developing deep research agents and needing to avoid high API costs from commercial search providers.",
+      "failure_modes": [
+        "Can be IP-banned by Google/Bing if not configured with proper rotation or if hit with too many requests."
+      ],
+      "evidence_refs": [
+        "P0225"
+      ]
+    }
+  ],
+  "claims_and_positions": [
+    {
+      "claim": "Naive RAG is dead; Agentic RAG is the necessary evolution for complex enterprise tasks.",
+      "stance": "supports",
+      "decision_relevance": "Guides architectural choices for knowledge retrieval systems.",
+      "dispute_risk": "medium",
+      "evidence_refs": [
+        "P0244"
+      ]
+    },
+    {
+      "claim": "LiteLLM proxy leaked sensitive metadata (including IPs and session IDs) to OpenAI when preview features were enabled.",
+      "stance": "warns_against",
+      "decision_relevance": "Critical security warning for teams using LiteLLM in production.",
+      "dispute_risk": "low",
+      "evidence_refs": [
+        "P0265"
+      ]
+    }
+  ],
+  "source_utility": {
+    "best_use_cases": [
+      "Designing local LLM infrastructure and hardware setups.",
+      "Building agentic workflows using SGR and open-source models.",
+      "Debugging inference engines (vLLM) and proxy layers (LiteLLM)."
+    ],
+    "bad_use_cases": [
+      "Basic prompt engineering for non-technical users.",
+      "Cloud-only managed AI services (AWS, Azure)."
+    ],
+    "retrieval_keywords": [
+      "SGR",
+      "Schema-Guided Reasoning",
+      "vLLM",
+      "RTX 4090 48GB",
+      "Agentic RAG",
+      "LiteLLM",
+      "Cursor",
+      "Claude Code",
+      "Structured Output"
+    ],
+    "source_selection_hints": [
+      "Select when the user needs deep technical implementation details for local AI agents.",
+      "Select when the user is deciding between Function Calling and Structured Output for open-source models."
+    ],
+    "expected_overlap_hypotheses": [
+      "Will overlap with @llm_under_hood (Rinat Abdullin) on SGR and ERC challenges.",
+      "Will overlap with @dealerAI on model benchmarking and guardrails."
+    ],
+    "recommended_panex_role": "primary_expert"
+  },
+  "community_signal": {
+    "comment_themes": [
+      "Hardware setup questions (GPUs, VRAM, cooling).",
+      "Troubleshooting open-source repos (sgr-agent-core, LocalDesk).",
+      "Debates on the viability of MCP vs REST.",
+      "Discussions on the future of software engineering (vibe coding)."
+    ],
+    "questions_from_audience": [
+      "How to run specific models on limited hardware?",
+      "Why use SGR instead of native Function Calling?",
+      "How to fix specific bugs in the provided GitHub repos?"
+    ],
+    "disagreements_or_corrections": [
+      "Some users argue that MCP is fine and the issues are just early-stage bugs.",
+      "Debates on whether 'vibe coding' actually saves time for complex enterprise legacy code."
+    ],
+    "practical_feedback": [
+      "Users actively fork his repos, submit PRs, and report bugs (e.g., UI issues in LocalDesk, Docker setup problems)."
+    ],
+    "noise_or_low_value_patterns": [
+      "Occasional off-topic banter, memes, and inside jokes with other channel authors."
+    ],
+    "evidence_refs": [
+      "P0133",
+      "P0284",
+      "P0364",
+      "P0471"
+    ]
+  },
+  "admission_implications": {
+    "if_candidate_verdict": "accept",
+    "verdict_rationale": "The expert provides exceptionally high-quality, deep-practitioner content. He builds the tools he talks about, shares the source code, benchmarks the results, and openly discusses failures and security risks. His insights on local LLM deployment and SGR are highly valuable.",
+    "unique_value_claims_to_verify_against_matrix": [
+      "The specific hardware economics of reballed RTX 4090 48GB cards.",
+      "The 4-layer breakdown of Tool Calling mechanics."
+    ],
+    "likely_duplicate_areas_to_check": [
+      "SGR concepts (likely overlaps with Rinat Abdullin)."
+    ],
+    "minimum_followup_probe_queries": [
+      "Compare SGR implementation details between @neuraldeep and @llm_under_hood."
+    ],
+    "risk_notes": [
+      "Content is highly technical and fast-moving; specific bug fixes (e.g., vLLM FlashAttention 3) may become outdated quickly."
+    ]
+  },
+  "audit": {
+    "unsupported_or_weak_claims": [],
+    "abstentions": [],
+    "possible_model_errors": [],
+    "source_refs_used": [
+      "P0220",
+      "P0133",
+      "P0455",
+      "P0236",
+      "P0181",
+      "P0450",
+      "P0104",
+      "P0225",
+      "P0262",
+      "P0364",
+      "P0465",
+      "P0506",
+      "P0471",
+      "P0035",
+      "P0316",
+      "P0190",
+      "P0284",
+      "P0434",
+      "P0449",
+      "P0070",
+      "P0265",
+      "P0380"
+    ],
+    "source_refs_most_important": [
+      "P0220",
+      "P0133",
+      "P0506",
+      "P0471",
+      "P0070",
+      "P0236",
+      "P0450"
+    ]
+  }
+}

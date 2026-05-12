@@ -1,0 +1,893 @@
+{
+  "schema_version": "expert_value_passport.v1.1",
+  "passport_meta": {
+    "schema_version": "expert_value_passport.v1.1",
+    "expert_id": "akimov",
+    "display_name": "Akimov",
+    "channel_username": "@ai_product",
+    "model_assumed": "gemini-3.1-pro-preview",
+    "prompt_version": "semantic-passport-prompt.v1",
+    "generated_at": "2026-05-10T17:28:36.990957+00:00"
+  },
+  "corpus_audit": {
+    "post_count_seen": 794,
+    "comment_count_seen": 3794,
+    "date_range": {
+      "first_post": "2025-01-01 00:46:46.000000",
+      "last_post": "2026-05-04 07:32:43.000000"
+    },
+    "language_mix": [
+      "ru",
+      "en"
+    ],
+    "material_limitations": [],
+    "author_vs_community_boundary": "Clear distinction. The author posts detailed analyses, news with personal commentary, and case studies. The community engages heavily in the comments, sharing their own test results, debating tool pricing, and discussing real-world implementation challenges."
+  },
+  "source_ref_index_used": [
+    {
+      "source_ref": "P0052",
+      "source_kind": "expert_post",
+      "post_id": 1540,
+      "telegram_message_id": 1063,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-02-10T14:38:11.000000",
+      "why_used": "Demonstrates early analysis of Cursor Agent capabilities."
+    },
+    {
+      "source_ref": "P0137.C0006",
+      "source_kind": "community_comment",
+      "post_id": 1629,
+      "telegram_message_id": 1215,
+      "comment_id": 9200,
+      "telegram_comment_id": 4405,
+      "created_at": "2025-04-16T11:57:35.000000",
+      "why_used": "Community discussion highlighting the importance of vendor agnosticism."
+    },
+    {
+      "source_ref": "P0159",
+      "source_kind": "expert_post",
+      "post_id": 1560,
+      "telegram_message_id": 1029,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-04-30T17:23:34.000000",
+      "why_used": "Details the diff-fenced editing pattern for precise code changes."
+    },
+    {
+      "source_ref": "P0234",
+      "source_kind": "expert_post",
+      "post_id": 1736,
+      "telegram_message_id": 1347,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-06-12T14:40:54.000000",
+      "why_used": "Outlines the levels of AI transformation in business."
+    },
+    {
+      "source_ref": "P0278",
+      "source_kind": "expert_post",
+      "post_id": 1781,
+      "telegram_message_id": 1408,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-07-10T16:14:26.000000",
+      "why_used": "Analyzes pricing and limits of AI IDEs like Cursor and Claude Code."
+    },
+    {
+      "source_ref": "P0281",
+      "source_kind": "expert_post",
+      "post_id": 1784,
+      "telegram_message_id": 1412,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-07-14T20:16:34.000000",
+      "why_used": "Provides an optimal setup for vibe coding using multiple tools."
+    },
+    {
+      "source_ref": "P0338",
+      "source_kind": "expert_post",
+      "post_id": 1842,
+      "telegram_message_id": 1481,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-19T21:25:44.000000",
+      "why_used": "Compares Russian ASR models with specific WER metrics."
+    },
+    {
+      "source_ref": "P0421",
+      "source_kind": "expert_post",
+      "post_id": 1935,
+      "telegram_message_id": 1600,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-10-15T11:08:38.000000",
+      "why_used": "Discusses hardware for local LLMs, comparing Mac Studio to Nvidia."
+    },
+    {
+      "source_ref": "P0452",
+      "source_kind": "expert_post",
+      "post_id": 1966,
+      "telegram_message_id": 1644,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-06T14:38:30.000000",
+      "why_used": "Explains why AI projects fail due to poor data and legacy processes."
+    },
+    {
+      "source_ref": "P0485",
+      "source_kind": "expert_post",
+      "post_id": 1999,
+      "telegram_message_id": 1685,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-19T17:21:14.000000",
+      "why_used": "Case study on training a Cyprus Greek ASR model from scratch."
+    },
+    {
+      "source_ref": "P0502",
+      "source_kind": "expert_post",
+      "post_id": 2024,
+      "telegram_message_id": 1742,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-27T08:27:32.000000",
+      "why_used": "Analyzes hardware costs and efficiency (TPU vs Nvidia vs AMD)."
+    },
+    {
+      "source_ref": "P0562",
+      "source_kind": "expert_post",
+      "post_id": 2711,
+      "telegram_message_id": 1837,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-12-24T10:34:41.000000",
+      "why_used": "Discusses the evolution from vibe coding to agentic engineering."
+    },
+    {
+      "source_ref": "P0573",
+      "source_kind": "expert_post",
+      "post_id": 3186,
+      "telegram_message_id": 1854,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-09T17:10:54.000000",
+      "why_used": "Case study on rewriting 100k lines of Java to Rust using AI."
+    },
+    {
+      "source_ref": "P0575",
+      "source_kind": "expert_post",
+      "post_id": 3188,
+      "telegram_message_id": 1856,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-12T16:18:49.000000",
+      "why_used": "Details the workflow for large AI coding projects and context management."
+    },
+    {
+      "source_ref": "P0607",
+      "source_kind": "expert_post",
+      "post_id": 4434,
+      "telegram_message_id": 1895,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-30T16:52:56.000000",
+      "why_used": "Compares AGENTS.md vs Skills for context management."
+    },
+    {
+      "source_ref": "P0661",
+      "source_kind": "expert_post",
+      "post_id": 5379,
+      "telegram_message_id": 1970,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-25T11:52:26.000000",
+      "why_used": "Case study on building a Cyprus tax calculator with AI."
+    },
+    {
+      "source_ref": "P0664",
+      "source_kind": "expert_post",
+      "post_id": 5468,
+      "telegram_message_id": 1973,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-27T10:22:08.000000",
+      "why_used": "Argues that engineering practices eat vibe coding for breakfast."
+    },
+    {
+      "source_ref": "P0691",
+      "source_kind": "expert_post",
+      "post_id": 7278,
+      "telegram_message_id": 1990,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-03-10T13:20:21.000000",
+      "why_used": "Outlines 5 AI value models for business reinvention."
+    },
+    {
+      "source_ref": "P0779",
+      "source_kind": "expert_post",
+      "post_id": 9746,
+      "telegram_message_id": 2137,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-23T17:49:10.000000",
+      "why_used": "Presents an OCR + LLM pipeline for document parsing."
+    }
+  ],
+  "executive_summary": {
+    "one_sentence_positioning": "A deep practitioner and AI product manager who bridges the gap between raw AI capabilities and real-world business/development workflows, specializing in agentic coding, AI transformation, and multimodal model evaluation.",
+    "strongest_system_value": "Provides hands-on, battle-tested frameworks for agentic engineering (e.g., using AGENTS.md, diff-fenced editing) and enterprise AI transformation, backed by personal case studies like rewriting 100k lines of code or building custom ASR models.",
+    "weakest_system_value": "Lacks deep theoretical ML math or low-level model training mechanics, focusing instead on applied usage, fine-tuning, and API/MCP integrations.",
+    "best_fit_queries": [
+      "design_agentic_dev_workflow",
+      "choose_ai_coding_tool",
+      "plan_ai_product_feature",
+      "assess_ai_tool_business_adoption",
+      "build_human_ai_workflow"
+    ],
+    "poor_fit_queries": [
+      "train_foundation_model_from_scratch",
+      "optimize_gpu_kernel_code"
+    ],
+    "confidence": 0.95
+  },
+  "expert_positioning": {
+    "primary_role": "AI Product Manager & Agentic Engineer",
+    "audience": [
+      "Product Managers",
+      "Software Engineers",
+      "Founders",
+      "AI Enthusiasts"
+    ],
+    "voice": [
+      "Pragmatic",
+      "Analytical",
+      "Anti-hype",
+      "Hands-on"
+    ],
+    "worldview": [
+      "AI is a tool that requires architectural thinking and engineering discipline, not just prompting.",
+      "Vendor lock-in is dangerous; rely on open standards like MCP and agnostic tools.",
+      "AI transformation fails due to bad data and legacy processes, not bad models."
+    ],
+    "distinctive_angle": "Tests tools on real personal and client projects (e.g., Cyprus tax calculator, GTFS transport routing, local Greek ASR) rather than just repeating press releases.",
+    "evidence_refs": [
+      "P0485",
+      "P0573",
+      "P0661"
+    ]
+  },
+  "knowledge_domains": [
+    {
+      "domain_id": "coding_agents",
+      "domain_name": "AI Coding Agents & IDEs",
+      "subdomain_ids": [
+        "cursor_windsurf_copilot",
+        "claude_code_workflows",
+        "agentic_dev_process"
+      ],
+      "query_intent_ids": [
+        "choose_ai_coding_tool",
+        "design_agentic_dev_workflow"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "How to orchestrate multiple AI agents for large-scale refactoring.",
+        "The limitations of 'vibe coding' and the necessity of agentic engineering (tests, linters, modular context).",
+        "Pricing, limits, and practical trade-offs between Cursor, Claude Code, Codex, and Windsurf."
+      ],
+      "how_they_reason": [
+        "Evaluates tools based on real-world project completion (e.g., rewriting 100k lines of Java to Rust).",
+        "Prioritizes context management (AGENTS.md) over complex tool configurations."
+      ],
+      "missing_or_weak_subtopics": [
+        "Low-level compiler optimization for AI-generated code."
+      ],
+      "evidence_refs": [
+        "P0052",
+        "P0278",
+        "P0281",
+        "P0575",
+        "P0607",
+        "P0664"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "domain_id": "ai_product_pm",
+      "domain_name": "AI Product Management & Business Transformation",
+      "subdomain_ids": [
+        "ai_product_strategy",
+        "adoption_roadmaps",
+        "roi_business_cases"
+      ],
+      "query_intent_ids": [
+        "plan_ai_product_feature",
+        "assess_ai_tool_business_adoption"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "Why 95% of enterprise AI projects fail (data quality, legacy processes).",
+        "How to structure AI adoption in a company (from individual chat access to custom agent development).",
+        "The shift from B2B SaaS to AI-driven services (Autopilots vs Copilots)."
+      ],
+      "how_they_reason": [
+        "Focuses on process redesign rather than just layering AI over broken legacy systems.",
+        "Advocates for empowering employees to build their own simple agents before investing in mega-projects."
+      ],
+      "missing_or_weak_subtopics": [
+        "Deep legal/compliance frameworks for enterprise AI."
+      ],
+      "evidence_refs": [
+        "P0234",
+        "P0452",
+        "P0691"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "domain_id": "creative_multimodal",
+      "domain_name": "Multimodal AI (Audio, Video, OCR)",
+      "subdomain_ids": [
+        "multimodal_generation",
+        "rag_architecture"
+      ],
+      "query_intent_ids": [
+        "design_rag_knowledge_base",
+        "compare_models_for_task"
+      ],
+      "coverage_level": "moderate",
+      "depth_level": "practical",
+      "system_value": "medium",
+      "what_the_expert_knows": [
+        "How to build an OCR + LLM pipeline for complex document parsing.",
+        "The current state of STT/TTS models (Whisper, GigaAM, ElevenLabs, Inworld).",
+        "How to train a custom ASR model for low-resource languages (e.g., Cyprus Greek)."
+      ],
+      "how_they_reason": [
+        "Relies on empirical testing (e.g., comparing WER across Russian ASR models).",
+        "Prefers combining specialized tools (classic OCR + LLM) over relying on a single VLLM for complex tasks."
+      ],
+      "missing_or_weak_subtopics": [
+        "Advanced 3D generation techniques."
+      ],
+      "evidence_refs": [
+        "P0338",
+        "P0485",
+        "P0779"
+      ],
+      "confidence": 0.85
+    }
+  ],
+  "value_dimensions": [
+    {
+      "dimension_id": "insight_density",
+      "score_0_5": 4.5,
+      "rationale": "High signal-to-noise ratio. Posts frequently distill complex updates into actionable takeaways and share hard-earned lessons from personal projects.",
+      "evidence_refs": [
+        "P0575",
+        "P0664"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "dimension_id": "practical_specificity",
+      "score_0_5": 5.0,
+      "rationale": "Provides exact workflows, architectural setups (like AGENTS.md), and pricing comparisons for tools.",
+      "evidence_refs": [
+        "P0159",
+        "P0607",
+        "P0779"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "evidence_quality",
+      "score_0_5": 4.5,
+      "rationale": "Claims are backed by personal case studies (Cyprus tax calculator, GTFS Rust rewrite) and reputable benchmarks (LMSYS, Artificial Analysis).",
+      "evidence_refs": [
+        "P0485",
+        "P0573",
+        "P0661"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "dimension_id": "decision_value",
+      "score_0_5": 4.5,
+      "rationale": "Excellent resource for deciding which AI IDE to use, how to structure an AI team, or which model to deploy for specific tasks.",
+      "evidence_refs": [
+        "P0278",
+        "P0281"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "dimension_id": "anti_hype_signal",
+      "score_0_5": 4.5,
+      "rationale": "Regularly calls out marketing fluff, emphasizes that 'vibe coding' fails in production without engineering discipline, and highlights why enterprise AI projects fail.",
+      "evidence_refs": [
+        "P0452",
+        "P0664"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "matrix_cells": [
+    {
+      "domain_id": "coding_agents",
+      "subdomain_id": "agentic_dev_process",
+      "subdomain_name": "Agentic Engineering Workflows",
+      "query_intent_ids": [
+        "design_agentic_dev_workflow"
+      ],
+      "depth_score_0_5": 5.0,
+      "practicality_score_0_5": 5.0,
+      "intrinsic_distinctiveness_score_0_5": 4.5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4.5,
+      "source_utility_score_0_5": 5.0,
+      "comment_signal_score_0_5": 4.0,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0562",
+        "P0575",
+        "P0607",
+        "P0664"
+      ],
+      "notes": "Provides a definitive stance on moving from 'vibe coding' to structured agentic engineering using AGENTS.md, tests, and modular context."
+    },
+    {
+      "domain_id": "ai_product_pm",
+      "subdomain_id": "adoption_roadmaps",
+      "subdomain_name": "Enterprise AI Transformation",
+      "query_intent_ids": [
+        "assess_ai_tool_business_adoption"
+      ],
+      "depth_score_0_5": 4.5,
+      "practicality_score_0_5": 4.5,
+      "intrinsic_distinctiveness_score_0_5": 4.0,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4.0,
+      "source_utility_score_0_5": 4.5,
+      "comment_signal_score_0_5": 3.5,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0234",
+        "P0452",
+        "P0691"
+      ],
+      "notes": "Strong frameworks for why AI projects fail (data/processes) and how to structure adoption (from chat access to custom agents)."
+    },
+    {
+      "domain_id": "rag_retrieval_knowledge",
+      "subdomain_id": "hybrid_retrieval",
+      "subdomain_name": "Document Parsing Pipelines",
+      "query_intent_ids": [
+        "design_rag_knowledge_base"
+      ],
+      "depth_score_0_5": 4.0,
+      "practicality_score_0_5": 4.5,
+      "intrinsic_distinctiveness_score_0_5": 3.5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4.0,
+      "source_utility_score_0_5": 4.0,
+      "comment_signal_score_0_5": 3.0,
+      "recommended_matrix_weight": "normal",
+      "evidence_refs": [
+        "P0779"
+      ],
+      "notes": "Advocates for a classic OCR + LLM pipeline over pure VLLMs to avoid unverifiable hallucinations in document parsing."
+    }
+  ],
+  "query_intent_fit": [
+    {
+      "query_intent_id": "design_agentic_dev_workflow",
+      "query_intent_name": "Design Agentic Dev Workflow",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "coding_agents"
+      ],
+      "source_utility_score_0_5": 5.0,
+      "why": "The expert provides detailed, battle-tested workflows for managing context, using AGENTS.md, and orchestrating multiple models for large-scale refactoring.",
+      "limitations": [],
+      "evidence_refs": [
+        "P0575",
+        "P0607",
+        "P0664"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "query_intent_id": "choose_ai_coding_tool",
+      "query_intent_name": "Choose AI Coding Tool",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "coding_agents"
+      ],
+      "source_utility_score_0_5": 4.5,
+      "why": "Regularly compares pricing, limits, and capabilities of Cursor, Claude Code, Codex, Windsurf, and Lovable.",
+      "limitations": [
+        "Pricing and limits change rapidly, so specific numbers may age quickly."
+      ],
+      "evidence_refs": [
+        "P0278",
+        "P0281"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "query_intent_id": "assess_ai_tool_business_adoption",
+      "query_intent_name": "Assess AI Tool Business Adoption",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "ai_product_pm"
+      ],
+      "source_utility_score_0_5": 4.5,
+      "why": "Provides clear frameworks for why enterprise AI fails (legacy processes, bad data) and how to structure adoption.",
+      "limitations": [],
+      "evidence_refs": [
+        "P0234",
+        "P0452",
+        "P0691"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "content_quality_distribution": [
+    {
+      "category_id": "deep_practitioner",
+      "share_estimate_0_1": 0.3,
+      "system_value": "high",
+      "notes": "Detailed breakdowns of personal projects (tax calculator, GTFS rewrite, ASR training) and agentic workflows.",
+      "evidence_refs": [
+        "P0485",
+        "P0573",
+        "P0661"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "tool_release_with_analysis",
+      "share_estimate_0_1": 0.3,
+      "system_value": "medium",
+      "notes": "Frequent updates on new models (OpenAI, Anthropic, Google, DeepSeek) with commentary on pricing and benchmarks.",
+      "evidence_refs": [
+        "P0278",
+        "P0338"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "howto_or_checklist",
+      "share_estimate_0_1": 0.15,
+      "system_value": "high",
+      "notes": "Actionable advice on setting up context for AI agents and structuring enterprise AI adoption.",
+      "evidence_refs": [
+        "P0575",
+        "P0607"
+      ],
+      "confidence": 0.85
+    },
+    {
+      "category_id": "case_study",
+      "share_estimate_0_1": 0.15,
+      "system_value": "high",
+      "notes": "Summaries of external case studies (e.g., OpenAI's internal engineering practices) and personal client work.",
+      "evidence_refs": [
+        "P0452",
+        "P0691"
+      ],
+      "confidence": 0.85
+    },
+    {
+      "category_id": "commentary",
+      "share_estimate_0_1": 0.1,
+      "system_value": "low",
+      "notes": "General thoughts on the future of AI and market dynamics.",
+      "evidence_refs": [
+        "P0137.C0006"
+      ],
+      "confidence": 0.8
+    }
+  ],
+  "matrix_export": {
+    "schema_version": "knowledge_matrix_export.v1",
+    "expert_id": "akimov",
+    "cells": [
+      {
+        "cell_id": "coding_agents/agentic_dev_process/design_agentic_dev_workflow",
+        "domain_id": "coding_agents",
+        "subdomain_id": "agentic_dev_process",
+        "subdomain_name": "Agentic Engineering Workflows",
+        "query_intent_ids": [
+          "design_agentic_dev_workflow"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5.0,
+          "practicality": 5.0,
+          "evidence_quality": 4.5,
+          "source_utility": 5.0,
+          "intrinsic_distinctiveness": 4.5,
+          "anti_hype": 4.5,
+          "community_signal": 4.0
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0562",
+          "P0575",
+          "P0607",
+          "P0664"
+        ],
+        "confidence": 0.95
+      },
+      {
+        "cell_id": "ai_product_pm/adoption_roadmaps/assess_ai_tool_business_adoption",
+        "domain_id": "ai_product_pm",
+        "subdomain_id": "adoption_roadmaps",
+        "subdomain_name": "Enterprise AI Transformation",
+        "query_intent_ids": [
+          "assess_ai_tool_business_adoption"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 4.5,
+          "practicality": 4.5,
+          "evidence_quality": 4.0,
+          "source_utility": 4.5,
+          "intrinsic_distinctiveness": 4.0,
+          "anti_hype": 4.5,
+          "community_signal": 3.5
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0234",
+          "P0452",
+          "P0691"
+        ],
+        "confidence": 0.9
+      }
+    ],
+    "compare_hints": {
+      "likely_unique_cells": [
+        "coding_agents/agentic_dev_process/design_agentic_dev_workflow"
+      ],
+      "likely_duplicate_cells": [],
+      "cells_requiring_probe": [],
+      "matrix_only_decision_confidence": "medium"
+    }
+  },
+  "signature_insights": [
+    {
+      "insight": "Vibe coding is insufficient for production; agentic engineering (architecture, tests, modular context via AGENTS.md) is required.",
+      "why_it_matters_for_experts_panel": "Provides a mature, anti-hype perspective on AI-assisted development, moving beyond simple prompting to robust software engineering practices.",
+      "applicable_query_types": [
+        "design_agentic_dev_workflow"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0562",
+        "P0664",
+        "P0575"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "insight": "AI transformation fails due to legacy processes and poor data quality, not model limitations.",
+      "why_it_matters_for_experts_panel": "Offers a pragmatic framework for enterprise AI adoption, emphasizing process redesign over simply buying AI licenses.",
+      "applicable_query_types": [
+        "assess_ai_tool_business_adoption"
+      ],
+      "novelty_level": "useful_packaging",
+      "evidence_refs": [
+        "P0452",
+        "P0691"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "insight": "Vendor agnosticism is critical; rely on open standards (MCP) and modular tools rather than locking into a single AI IDE or model.",
+      "why_it_matters_for_experts_panel": "Guides developers to build flexible AI workflows that can adapt to the rapidly changing model landscape.",
+      "applicable_query_types": [
+        "choose_ai_coding_tool"
+      ],
+      "novelty_level": "useful_packaging",
+      "evidence_refs": [
+        "P0137.C0006",
+        "P0664"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "practical_patterns": [
+    {
+      "pattern": "Using AGENTS.md and modular documentation instead of massive system prompts.",
+      "when_to_use": "When managing context for AI coding agents in large repositories.",
+      "failure_modes": [
+        "Putting too much information in a single file causes the agent to lose focus."
+      ],
+      "evidence_refs": [
+        "P0575",
+        "P0607"
+      ]
+    },
+    {
+      "pattern": "Diff-fenced editing for precise code changes.",
+      "when_to_use": "When instructing an AI agent to modify specific sections of a file without rewriting the entire file.",
+      "failure_modes": [
+        "Without semantic markers, the agent may overwrite or delete unintended code."
+      ],
+      "evidence_refs": [
+        "P0159"
+      ]
+    },
+    {
+      "pattern": "OCR + LLM pipeline for document parsing.",
+      "when_to_use": "When extracting structured data from complex PDFs or scanned documents.",
+      "failure_modes": [
+        "Relying purely on VLLMs can lead to unverifiable hallucinations."
+      ],
+      "evidence_refs": [
+        "P0779"
+      ]
+    }
+  ],
+  "claims_and_positions": [
+    {
+      "claim": "Cursor is becoming too expensive and restrictive, making Claude Code combined with agnostic tools a better setup for heavy users.",
+      "stance": "supports",
+      "decision_relevance": "Helps developers choose cost-effective and flexible AI coding environments.",
+      "dispute_risk": "medium",
+      "evidence_refs": [
+        "P0278",
+        "P0281"
+      ]
+    },
+    {
+      "claim": "Local models are highly capable for specific tasks but require proper hardware (Mac Studio or Nvidia).",
+      "stance": "supports",
+      "decision_relevance": "Guides hardware purchasing decisions for local AI deployment.",
+      "dispute_risk": "low",
+      "evidence_refs": [
+        "P0421",
+        "P0502"
+      ]
+    }
+  ],
+  "source_utility": {
+    "best_use_cases": [
+      "Designing robust workflows for AI-assisted software engineering.",
+      "Evaluating the ROI and implementation strategy for enterprise AI.",
+      "Comparing pricing, limits, and practical utility of AI coding tools (Cursor, Claude Code, Codex)."
+    ],
+    "bad_use_cases": [
+      "Deep technical tutorials on training foundation models from scratch.",
+      "Low-level GPU optimization techniques."
+    ],
+    "retrieval_keywords": [
+      "agentic engineering",
+      "vibe coding",
+      "AGENTS.md",
+      "MCP",
+      "Cursor",
+      "Claude Code",
+      "AI transformation",
+      "OCR pipeline"
+    ],
+    "source_selection_hints": [
+      "Select this source when the user needs practical, battle-tested advice on moving from simple prompting to building reliable software with AI agents.",
+      "Select this source for insights on enterprise AI adoption and overcoming organizational resistance."
+    ],
+    "expected_overlap_hypotheses": [
+      "Likely overlaps with other AI engineering practitioners on topics like Cursor vs Claude Code.",
+      "May overlap with AI product managers on enterprise adoption frameworks."
+    ],
+    "recommended_panex_role": "primary_expert"
+  },
+  "community_signal": {
+    "comment_themes": [
+      "Debates over tool pricing and limits (Cursor vs Claude Code).",
+      "Discussions on the effectiveness of local models vs cloud APIs.",
+      "Sharing real-world failures and successes of AI implementation."
+    ],
+    "questions_from_audience": [
+      "How to bypass regional restrictions for AI tools?",
+      "Which local model is best for specific tasks (e.g., coding, ASR)?",
+      "How to manage context effectively in large codebases?"
+    ],
+    "disagreements_or_corrections": [
+      "Some community members strongly disagree with the expert's assessment of specific tools (e.g., defending Cursor against Claude Code).",
+      "Debates over the true ROI of AI in enterprise settings."
+    ],
+    "practical_feedback": [
+      "Users share their own prompt engineering techniques and tool setups.",
+      "Feedback on the expert's personal projects (e.g., Cyprus tax calculator)."
+    ],
+    "noise_or_low_value_patterns": [
+      "Occasional off-topic banter or complaints about vendor pricing."
+    ],
+    "evidence_refs": [
+      "P0137.C0006",
+      "P0278",
+      "P0452"
+    ]
+  },
+  "admission_implications": {
+    "if_candidate_verdict": "accept",
+    "verdict_rationale": "The expert provides high-value, practical insights into agentic engineering and enterprise AI transformation, backed by personal case studies and a pragmatic, anti-hype worldview.",
+    "unique_value_claims_to_verify_against_matrix": [
+      "Specific workflows for managing context in large codebases using AGENTS.md.",
+      "Frameworks for enterprise AI adoption focusing on process redesign."
+    ],
+    "likely_duplicate_areas_to_check": [
+      "General news updates on model releases (OpenAI, Anthropic, Google)."
+    ],
+    "minimum_followup_probe_queries": [
+      "Compare Akimov's agentic engineering workflows with other AI development experts in the matrix."
+    ],
+    "risk_notes": [
+      "Pricing and tool limit information ages quickly; ensure retrieval systems prioritize the most recent posts."
+    ]
+  },
+  "audit": {
+    "unsupported_or_weak_claims": [],
+    "abstentions": [],
+    "possible_model_errors": [],
+    "source_refs_used": [
+      "P0052",
+      "P0137.C0006",
+      "P0159",
+      "P0234",
+      "P0278",
+      "P0281",
+      "P0338",
+      "P0421",
+      "P0452",
+      "P0485",
+      "P0502",
+      "P0562",
+      "P0573",
+      "P0575",
+      "P0607",
+      "P0661",
+      "P0664",
+      "P0691",
+      "P0779"
+    ],
+    "source_refs_most_important": [
+      "P0562",
+      "P0575",
+      "P0607",
+      "P0664",
+      "P0234",
+      "P0452",
+      "P0691"
+    ],
+    "normalization_notes": [
+      {
+        "operation": "repair_matrix_export_from_matrix_cells",
+        "repaired_cell_count": 0,
+        "repaired_cell_ids": [],
+        "skipped_cell_count": 0,
+        "skipped_cells": []
+      },
+      {
+        "operation": "hydrate_source_ref_index_used",
+        "hydrated_ref_count": 0,
+        "generated_at_set_from_manifest": "2026-05-10T17:28:36.990957+00:00"
+      }
+    ]
+  }
+}

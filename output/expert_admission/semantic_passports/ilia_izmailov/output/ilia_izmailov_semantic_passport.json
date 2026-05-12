@@ -1,0 +1,1048 @@
+{
+  "schema_version": "expert_value_passport.v1.1",
+  "passport_meta": {
+    "schema_version": "expert_value_passport.v1.1",
+    "expert_id": "ilia_izmailov",
+    "display_name": "Ilia Izmailov",
+    "channel_username": "@ilia_izmailov",
+    "model_assumed": "gemini-3.1-pro-preview",
+    "prompt_version": "semantic-passport-prompt.v1",
+    "generated_at": "2026-05-10T00:29:31.186988+00:00"
+  },
+  "corpus_audit": {
+    "post_count_seen": 173,
+    "comment_count_seen": 2281,
+    "date_range": {
+      "first_post": "2025-05-27 08:06:23.000000",
+      "last_post": "2026-05-03 10:30:02.000000"
+    },
+    "language_mix": [
+      "ru"
+    ],
+    "material_limitations": [],
+    "author_vs_community_boundary": "clear"
+  },
+  "source_ref_index_used": [
+    {
+      "source_ref": "P0010",
+      "source_kind": "expert_post",
+      "post_id": 3295,
+      "telegram_message_id": 24,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-06-09 15:01:47.000000",
+      "why_used": "Evidence of using AI (Claude) for legal disputes."
+    },
+    {
+      "source_ref": "P0012",
+      "source_kind": "expert_post",
+      "post_id": 3297,
+      "telegram_message_id": 26,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-06-13 10:32:16.000000",
+      "why_used": "Evidence of rapid MVP creation using Cursor and AI tools."
+    },
+    {
+      "source_ref": "P0023",
+      "source_kind": "expert_post",
+      "post_id": 3311,
+      "telegram_message_id": 44,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-07-17 11:02:49.000000",
+      "why_used": "Discussion on Cursor pricing and token limits."
+    },
+    {
+      "source_ref": "P0030",
+      "source_kind": "expert_post",
+      "post_id": 3318,
+      "telegram_message_id": 51,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-13 19:03:35.000000",
+      "why_used": "Expert published a foundational article on vibe-coding on Habr."
+    },
+    {
+      "source_ref": "P0034",
+      "source_kind": "expert_post",
+      "post_id": 3322,
+      "telegram_message_id": 56,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-20 15:56:27.000000",
+      "why_used": "Experience with Replit limits and debugging issues."
+    },
+    {
+      "source_ref": "P0068",
+      "source_kind": "expert_post",
+      "post_id": 3356,
+      "telegram_message_id": 94,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-03 14:59:30.000000",
+      "why_used": "Practical advice on paying for foreign AI services."
+    },
+    {
+      "source_ref": "P0069",
+      "source_kind": "expert_post",
+      "post_id": 3357,
+      "telegram_message_id": 95,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-07 14:51:56.000000",
+      "why_used": "Product management case study: doubling conversion via positioning changes."
+    },
+    {
+      "source_ref": "P0074",
+      "source_kind": "expert_post",
+      "post_id": 3362,
+      "telegram_message_id": 102,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-25 08:32:30.000000",
+      "why_used": "Comparison of Claude Code vs Cursor and Opus 4.5 evaluation."
+    },
+    {
+      "source_ref": "P0074.C0019",
+      "source_kind": "community_comment",
+      "post_id": 3362,
+      "telegram_message_id": null,
+      "comment_id": 32894,
+      "telegram_comment_id": 2440,
+      "created_at": "2025-12-21 09:46:52.000000",
+      "why_used": "Expert explains cost efficiency of Claude Code vs Cursor."
+    },
+    {
+      "source_ref": "P0076",
+      "source_kind": "expert_post",
+      "post_id": 3364,
+      "telegram_message_id": 105,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-30 12:56:15.000000",
+      "why_used": "Detailed breakdown of Claude Code plugins and custom AJTBD plugin creation."
+    },
+    {
+      "source_ref": "P0084",
+      "source_kind": "expert_post",
+      "post_id": 3372,
+      "telegram_message_id": 114,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-12-19 20:25:54.000000",
+      "why_used": "Rapid product validation using AI (AURA, Boost)."
+    },
+    {
+      "source_ref": "P0089",
+      "source_kind": "expert_post",
+      "post_id": 3377,
+      "telegram_message_id": 123,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-12-30 10:54:01.000000",
+      "why_used": "Practical tip: running Claude Code in terminal to avoid Cursor crashes with multiple agents."
+    },
+    {
+      "source_ref": "P0104",
+      "source_kind": "expert_post",
+      "post_id": 3392,
+      "telegram_message_id": 140,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-18 20:47:37.000000",
+      "why_used": "Using AI for deep product idea validation and market analysis."
+    },
+    {
+      "source_ref": "P0117",
+      "source_kind": "expert_post",
+      "post_id": 3405,
+      "telegram_message_id": 154,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-25 12:41:25.000000",
+      "why_used": "Creation and workflow of the /deep-thinking plugin for Claude Code."
+    },
+    {
+      "source_ref": "P0118",
+      "source_kind": "expert_post",
+      "post_id": 3406,
+      "telegram_message_id": 155,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-27 08:02:29.000000",
+      "why_used": "Expert's step-by-step workflow for new features in Claude Code."
+    },
+    {
+      "source_ref": "P0126",
+      "source_kind": "expert_post",
+      "post_id": 4518,
+      "telegram_message_id": 166,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-08 12:32:38.000000",
+      "why_used": "Introduction to Agent Teams in Claude Code."
+    },
+    {
+      "source_ref": "P0132",
+      "source_kind": "expert_post",
+      "post_id": 5298,
+      "telegram_message_id": 173,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-17 12:39:37.000000",
+      "why_used": "Highly detailed breakdown of the /team-feature plugin with 4 levels of review and pre-code risk analysis."
+    },
+    {
+      "source_ref": "P0133",
+      "source_kind": "expert_post",
+      "post_id": 5335,
+      "telegram_message_id": 174,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-20 09:14:25.000000",
+      "why_used": "Creation of the /expert-arena plugin for debating AI experts."
+    },
+    {
+      "source_ref": "P0140",
+      "source_kind": "expert_post",
+      "post_id": 5488,
+      "telegram_message_id": 182,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-03-03 06:12:43.000000",
+      "why_used": "Evaluation of Codex 5.3 vs Claude Code."
+    },
+    {
+      "source_ref": "P0142",
+      "source_kind": "expert_post",
+      "post_id": 5667,
+      "telegram_message_id": 184,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-03-03 12:16:48.000000",
+      "why_used": "Discussion on Claude limits and token consumption by Agent Teams."
+    },
+    {
+      "source_ref": "P0145",
+      "source_kind": "expert_post",
+      "post_id": 7230,
+      "telegram_message_id": 188,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-03-05 11:45:57.000000",
+      "why_used": "Account bans by Anthropic due to heavy Agent Teams usage."
+    },
+    {
+      "source_ref": "P0158",
+      "source_kind": "expert_post",
+      "post_id": 8078,
+      "telegram_message_id": 201,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-08 06:33:37.000000",
+      "why_used": "Evaluation of GLM 5.1 for agentic tasks."
+    },
+    {
+      "source_ref": "P0160",
+      "source_kind": "expert_post",
+      "post_id": 9545,
+      "telegram_message_id": 203,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-09 15:10:00.000000",
+      "why_used": "Best practices for managing token consumption and context windows in Claude Code."
+    },
+    {
+      "source_ref": "P0162",
+      "source_kind": "expert_post",
+      "post_id": 9547,
+      "telegram_message_id": 205,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-10 05:50:00.000000",
+      "why_used": "Warning about Russian hosting providers blocking Telegram bot APIs."
+    }
+  ],
+  "executive_summary": {
+    "one_sentence_positioning": "A deep practitioner of 'vibe-coding' and AI-assisted product management, offering highly specific, battle-tested workflows for Claude Code Agent Teams and rapid MVP validation.",
+    "strongest_system_value": "Provides exceptional, ready-to-use architectural patterns and custom plugins for Claude Code (e.g., multi-agent review pipelines, deep-thinking frameworks) backed by real-world deployment experience.",
+    "weakest_system_value": "Lacks deep traditional software engineering fundamentals (e.g., low-level security, complex manual infrastructure scaling), relying entirely on AI to bridge technical gaps.",
+    "best_fit_queries": [
+      "How to set up multi-agent workflows in Claude Code?",
+      "What are the best practices for managing token limits in AI IDEs?",
+      "How to validate product ideas rapidly using AI and AJTBD?",
+      "Claude Code vs Cursor for large projects"
+    ],
+    "poor_fit_queries": [
+      "How to manually optimize PostgreSQL queries for high load?",
+      "Best practices for manual Kubernetes cluster orchestration",
+      "Low-level cybersecurity auditing without AI"
+    ],
+    "confidence": 0.95
+  },
+  "expert_positioning": {
+    "primary_role": "AI Product Builder & Vibe-Coding Pioneer",
+    "audience": [
+      "Founders",
+      "Product Managers",
+      "Indie Hackers",
+      "AI-assisted Developers"
+    ],
+    "voice": [
+      "Practical",
+      "Enthusiastic",
+      "Transparent",
+      "Iterative"
+    ],
+    "worldview": [
+      "AI has eliminated coding as a bottleneck; the new bottleneck is product decision-making.",
+      "Traditional development teams are often slower and more expensive than a single skilled 'vibe-coder'.",
+      "Rapid iteration and market validation trump perfect initial architecture."
+    ],
+    "distinctive_angle": "Combines Ivan Zamesin's Advanced Jobs To Be Done (AJTBD) methodology with advanced multi-agent Claude Code workflows to build and validate products at unprecedented speeds.",
+    "recurring_formats": [
+      "Tool reviews (Claude Code, Cursor, Codex, GLM)",
+      "Workflow breakdowns (step-by-step agent pipelines)",
+      "Product metrics sharing (CAC, ARPU, conversion rates)",
+      "Custom GitHub plugin releases"
+    ],
+    "evidence_refs": [
+      "P0012",
+      "P0069",
+      "P0076",
+      "P0084",
+      "P0132"
+    ]
+  },
+  "knowledge_domains": [
+    {
+      "domain_id": "coding_agents",
+      "domain_name": "AI Coding Agents & IDEs",
+      "subdomain_ids": [
+        "claude_code_workflows",
+        "cursor_windsurf_copilot",
+        "agentic_dev_process"
+      ],
+      "query_intent_ids": [
+        "choose_ai_coding_tool",
+        "learn_ai_assisted_development"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "unique",
+      "what_the_expert_knows": [
+        "Intimate knowledge of Claude Code's terminal capabilities, plugin architecture, and Agent Teams.",
+        "Cost and limit management strategies across Cursor, Claude Code, and Codex.",
+        "How to bypass IDE crashes by running agents directly in terminal (e.g., iTerm)."
+      ],
+      "how_they_reason": [
+        "Evaluates tools based on context window management, token cost, and autonomy rather than just benchmark scores.",
+        "Prefers tools that allow deep customization (plugins/hooks) over rigid out-of-the-box solutions."
+      ],
+      "missing_or_weak_subtopics": [
+        "Manual code refactoring",
+        "Traditional CI/CD pipelines without AI"
+      ],
+      "evidence_refs": [
+        "P0074",
+        "P0074.C0019",
+        "P0089",
+        "P0140",
+        "P0160"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "domain_id": "agent_ops",
+      "domain_name": "Agent Operations & Orchestration",
+      "subdomain_ids": [
+        "multi_agent_orchestration",
+        "mcp_tooling",
+        "code_review_testing"
+      ],
+      "query_intent_ids": [
+        "design_agentic_dev_workflow",
+        "build_ai_dev_eval"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "How to build multi-tier agent review systems (e.g., Coder -> Smoke test -> Convention check -> 3 parallel reviewers -> Tech Lead).",
+        "How to implement pre-code risk analysis using sub-agents.",
+        "How to write custom Claude Code plugins (Commands, Agents, Skills, Hooks, MCP Servers)."
+      ],
+      "how_they_reason": [
+        "Believes in isolating tasks to specific sub-agents to save context window and improve output quality.",
+        "Uses 'Gold Standards' (reference files) to force agents to adhere to project conventions."
+      ],
+      "missing_or_weak_subtopics": [
+        "Enterprise-grade security auditing of agent outputs"
+      ],
+      "evidence_refs": [
+        "P0076",
+        "P0117",
+        "P0126",
+        "P0127",
+        "P0132",
+        "P0133"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "domain_id": "ai_product_pm",
+      "domain_name": "AI Product Management & Strategy",
+      "subdomain_ids": [
+        "ai_product_strategy",
+        "pm_workflow",
+        "adoption_roadmaps"
+      ],
+      "query_intent_ids": [
+        "plan_ai_product_feature",
+        "build_human_ai_workflow"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "practical",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "How to apply Advanced Jobs To Be Done (AJTBD) using AI to validate ideas rapidly.",
+        "How to automate user interview analysis and extract insights/segments using AI.",
+        "How to A/B test pricing and positioning to double conversion rates."
+      ],
+      "how_they_reason": [
+        "Prioritizes speed to market and user feedback over perfect initial code.",
+        "Uses AI to simulate expert debates (/expert-arena) to refine product decisions before building."
+      ],
+      "missing_or_weak_subtopics": [
+        "Hardware product management",
+        "Deep financial modeling"
+      ],
+      "evidence_refs": [
+        "P0069",
+        "P0084",
+        "P0104",
+        "P0133"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "value_dimensions": [
+    {
+      "dimension_id": "insight_density",
+      "score_0_5": 4,
+      "rationale": "High density of actionable insights, particularly regarding specific AI tool limitations, token management, and custom plugin architectures.",
+      "evidence_refs": [
+        "P0076",
+        "P0132",
+        "P0160"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "dimension_id": "practical_specificity",
+      "score_0_5": 5,
+      "rationale": "Provides exact GitHub repository links, step-by-step workflows, and detailed architectural breakdowns of his multi-agent systems.",
+      "evidence_refs": [
+        "P0076",
+        "P0117",
+        "P0132"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "evidence_quality",
+      "score_0_5": 4,
+      "rationale": "Claims are backed by personal deployment experience, real-world metrics (e.g., ARPU, conversion rates), and open-source code.",
+      "evidence_refs": [
+        "P0069",
+        "P0132"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "dimension_id": "decision_value",
+      "score_0_5": 5,
+      "rationale": "Extremely valuable for teams deciding between Cursor and Claude Code, or figuring out how to structure agentic dev workflows to avoid token bankruptcy.",
+      "evidence_refs": [
+        "P0074.C0019",
+        "P0140",
+        "P0160"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "source_utility_for_panex",
+      "score_0_5": 5,
+      "rationale": "A primary source for 'vibe-coding' methodologies, Claude Code plugin development, and practical AI PM.",
+      "evidence_refs": [
+        "P0076",
+        "P0132"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "anti_hype_signal",
+      "score_0_5": 3,
+      "rationale": "While highly enthusiastic about AI (sometimes bordering on hype), he grounds it in real limitations (e.g., token costs, IDE crashes, model degradation).",
+      "evidence_refs": [
+        "P0089",
+        "P0142",
+        "P0160"
+      ],
+      "confidence": 0.85
+    }
+  ],
+  "matrix_cells": [
+    {
+      "domain_id": "coding_agents",
+      "subdomain_id": "claude_code_workflows",
+      "subdomain_name": "Claude Code Workflows & Plugins",
+      "query_intent_ids": [
+        "design_agentic_dev_workflow",
+        "choose_ai_coding_tool"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0076",
+        "P0117",
+        "P0118",
+        "P0126",
+        "P0132"
+      ],
+      "notes": "Exceptional depth in building custom Claude Code plugins, managing Agent Teams, and structuring multi-tier code review pipelines."
+    },
+    {
+      "domain_id": "coding_agents",
+      "subdomain_id": "cursor_windsurf_copilot",
+      "subdomain_name": "Cursor & Alternative IDEs",
+      "query_intent_ids": [
+        "choose_ai_coding_tool"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 4,
+      "intrinsic_distinctiveness_score_0_5": 3,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 4,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0023",
+        "P0074",
+        "P0074.C0019",
+        "P0089"
+      ],
+      "notes": "Strong comparative analysis of Cursor vs Claude Code, specifically regarding token limits, pricing, and stability under heavy agent loads."
+    },
+    {
+      "domain_id": "ai_product_pm",
+      "subdomain_id": "pm_workflow",
+      "subdomain_name": "AI-Assisted PM Workflows",
+      "query_intent_ids": [
+        "plan_ai_product_feature",
+        "build_human_ai_workflow"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 4,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 4,
+      "comment_signal_score_0_5": 3,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0069",
+        "P0084",
+        "P0104",
+        "P0133"
+      ],
+      "notes": "Integrates AJTBD methodology with AI for rapid idea validation, landing page generation, and automated interview analysis."
+    },
+    {
+      "domain_id": "model_landscape",
+      "subdomain_id": "model_comparison",
+      "subdomain_name": "Model Comparison for Coding",
+      "query_intent_ids": [
+        "compare_models_for_task"
+      ],
+      "depth_score_0_5": 3,
+      "practicality_score_0_5": 4,
+      "intrinsic_distinctiveness_score_0_5": 3,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 3,
+      "source_utility_score_0_5": 3,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "normal",
+      "evidence_refs": [
+        "P0074",
+        "P0140",
+        "P0158"
+      ],
+      "notes": "Frequent, practical evaluations of new models (Opus 4.5/4.7, Codex 5.3, GLM 5.1, Kimi K2.6) specifically for agentic coding tasks."
+    }
+  ],
+  "query_intent_fit": [
+    {
+      "query_intent_id": "design_agentic_dev_workflow",
+      "query_intent_name": "Design Agentic Dev Workflow",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "coding_agents",
+        "agent_ops"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "Provides exact architectures for multi-agent teams (e.g., 4-level review pipelines, pre-code risk analysis) and custom Claude Code plugins.",
+      "limitations": [
+        "Heavily biased towards Claude Code and Anthropic's ecosystem."
+      ],
+      "evidence_refs": [
+        "P0076",
+        "P0117",
+        "P0132"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "query_intent_id": "choose_ai_coding_tool",
+      "query_intent_name": "Choose AI Coding Tool",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "coding_agents"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "Offers deep, cost-based and stability-based comparisons between Cursor, Claude Code, Replit, and Codex.",
+      "limitations": [],
+      "evidence_refs": [
+        "P0023",
+        "P0034",
+        "P0074.C0019",
+        "P0089"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "query_intent_id": "plan_ai_product_feature",
+      "query_intent_name": "Plan AI Product Feature",
+      "fit_role": "supporting",
+      "best_domain_ids": [
+        "ai_product_pm"
+      ],
+      "source_utility_score_0_5": 4,
+      "why": "Shares practical workflows for using AI to validate ideas, analyze competitors, and simulate expert debates before writing code.",
+      "limitations": [
+        "Relies heavily on Ivan Zamesin's specific AJTBD framework."
+      ],
+      "evidence_refs": [
+        "P0084",
+        "P0104",
+        "P0133"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "content_quality_distribution": [
+    {
+      "category_id": "deep_practitioner",
+      "share_estimate_0_1": 0.35,
+      "system_value": "high",
+      "notes": "Detailed breakdowns of custom plugins, agent architectures, and token management.",
+      "evidence_refs": [
+        "P0076",
+        "P0132",
+        "P0160"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "howto_or_checklist",
+      "share_estimate_0_1": 0.2,
+      "system_value": "high",
+      "notes": "Step-by-step guides on workflows (e.g., /deep-thinking -> /feature-dev -> plan mode).",
+      "evidence_refs": [
+        "P0118",
+        "P0160"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "case_study",
+      "share_estimate_0_1": 0.2,
+      "system_value": "medium",
+      "notes": "Business metrics, A/B testing results, and MVP build timelines.",
+      "evidence_refs": [
+        "P0012",
+        "P0069"
+      ],
+      "confidence": 0.85
+    },
+    {
+      "category_id": "tool_release_with_analysis",
+      "share_estimate_0_1": 0.15,
+      "system_value": "medium",
+      "notes": "Reviews of new models (Opus 4.7, GLM 5.1) and IDE updates.",
+      "evidence_refs": [
+        "P0140",
+        "P0158"
+      ],
+      "confidence": 0.85
+    },
+    {
+      "category_id": "commentary",
+      "share_estimate_0_1": 0.1,
+      "system_value": "low",
+      "notes": "General thoughts on AI replacing developers, market trends.",
+      "evidence_refs": [
+        "P0082",
+        "P0103"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "matrix_export": {
+    "schema_version": "knowledge_matrix_export.v1",
+    "expert_id": "ilia_izmailov",
+    "cells": [
+      {
+        "cell_id": "coding_agents/claude_code_workflows/design_agentic_dev_workflow",
+        "domain_id": "coding_agents",
+        "subdomain_id": "claude_code_workflows",
+        "subdomain_name": "Claude Code Workflows",
+        "query_intent_ids": [
+          "design_agentic_dev_workflow"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 5,
+          "evidence_quality": 4,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 5,
+          "anti_hype": 3,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0076",
+          "P0117",
+          "P0126",
+          "P0127",
+          "P0132"
+        ],
+        "confidence": 0.95
+      },
+      {
+        "cell_id": "coding_agents/cursor_windsurf_copilot/choose_ai_coding_tool",
+        "domain_id": "coding_agents",
+        "subdomain_id": "cursor_windsurf_copilot",
+        "subdomain_name": "Cursor & Alternative IDEs",
+        "query_intent_ids": [
+          "choose_ai_coding_tool"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "practical",
+        "source_role": "primary",
+        "scores": {
+          "depth": 4,
+          "practicality": 5,
+          "evidence_quality": 4,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 4,
+          "anti_hype": 4,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0023",
+          "P0074.C0019",
+          "P0089",
+          "P0140",
+          "P0160"
+        ],
+        "confidence": 0.9
+      },
+      {
+        "cell_id": "ai_product_pm/pm_workflow/plan_ai_product_feature",
+        "domain_id": "ai_product_pm",
+        "subdomain_id": "pm_workflow",
+        "subdomain_name": "PM Workflow",
+        "query_intent_ids": [
+          "plan_ai_product_feature"
+        ],
+        "coverage_level": "moderate",
+        "depth_level": "practical",
+        "source_role": "supporting",
+        "scores": {
+          "depth": 4,
+          "practicality": 4,
+          "evidence_quality": 4,
+          "source_utility": 4,
+          "intrinsic_distinctiveness": 4,
+          "anti_hype": 3,
+          "community_signal": 3
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [
+          "Tied specifically to AJTBD methodology."
+        ],
+        "evidence_refs": [
+          "P0069",
+          "P0084",
+          "P0104",
+          "P0133"
+        ],
+        "confidence": 0.9
+      }
+    ],
+    "compare_hints": {
+      "likely_unique_cells": [
+        "coding_agents/claude_code_workflows/design_agentic_dev_workflow"
+      ],
+      "likely_duplicate_cells": [],
+      "cells_requiring_probe": [
+        "ai_product_pm/pm_workflow/plan_ai_product_feature"
+      ],
+      "matrix_only_decision_confidence": "medium"
+    }
+  },
+  "signature_insights": [
+    {
+      "insight": "Claude Code's Agent Teams allow for complex, multi-tier autonomous workflows (e.g., pre-code risk analysis, parallel reviewers, tech lead validation) that surpass single-agent IDE capabilities like Cursor.",
+      "why_it_matters_for_experts_panel": "Provides a highly advanced, ready-to-use architectural pattern for scaling AI-assisted development beyond simple autocomplete or single-file edits.",
+      "applicable_query_types": [
+        "design_agentic_dev_workflow"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0126",
+        "P0127",
+        "P0132"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "insight": "Running multiple AI agents simultaneously in Cursor can cause the IDE to crash; running Claude Code directly in the terminal (e.g., iTerm) resolves this and allows for massive parallelization.",
+      "why_it_matters_for_experts_panel": "A highly practical troubleshooting tip for developers pushing the limits of AI IDEs.",
+      "applicable_query_types": [
+        "debug_agent_failure",
+        "choose_ai_coding_tool"
+      ],
+      "novelty_level": "useful_packaging",
+      "evidence_refs": [
+        "P0089"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "insight": "Token consumption in Claude Code scales non-linearly with context window size. To optimize costs, developers should open new chats for new tasks, use sub-agents to keep the main context clean, and avoid coding during peak US hours.",
+      "why_it_matters_for_experts_panel": "Directly addresses the primary pain point of vibe-coding (high API/subscription costs) with actionable mitigation strategies.",
+      "applicable_query_types": [
+        "optimize_inference_cost_latency",
+        "learn_ai_assisted_development"
+      ],
+      "novelty_level": "useful_packaging",
+      "evidence_refs": [
+        "P0160"
+      ],
+      "confidence": 0.95
+    }
+  ],
+  "practical_patterns": [
+    {
+      "pattern": "The '/deep-thinking -> /feature-dev -> plan mode' workflow in Claude Code.",
+      "when_to_use": "When starting a new feature where the exact implementation details are unclear.",
+      "failure_modes": [
+        "Consumes a massive amount of tokens if not managed properly."
+      ],
+      "evidence_refs": [
+        "P0117",
+        "P0118"
+      ]
+    },
+    {
+      "pattern": "Pre-code risk analysis using sub-agents.",
+      "when_to_use": "Before writing code for complex features, to identify edge cases and security flaws.",
+      "failure_modes": [
+        "Agents may hallucinate risks that are irrelevant to the specific tech stack."
+      ],
+      "evidence_refs": [
+        "P0132"
+      ]
+    },
+    {
+      "pattern": "Using AI to simulate expert debates (/expert-arena) for product decisions.",
+      "when_to_use": "When facing a strategic or architectural dilemma with multiple valid approaches.",
+      "failure_modes": [
+        "Requires high-tier models (like Opus) to generate meaningful, non-generic debates."
+      ],
+      "evidence_refs": [
+        "P0133"
+      ]
+    }
+  ],
+  "claims_and_positions": [
+    {
+      "claim": "Claude Code is superior to Cursor for complex projects due to its plugin architecture, Agent Teams, and more predictable cost structure (if managed correctly).",
+      "stance": "supports",
+      "decision_relevance": "Crucial for teams deciding which AI coding tool to adopt as their primary IDE/assistant.",
+      "dispute_risk": "medium",
+      "evidence_refs": [
+        "P0074.C0019",
+        "P0076",
+        "P0132"
+      ]
+    },
+    {
+      "claim": "Russian hosting providers are blocking Telegram bot APIs, making it necessary to use foreign servers or proxies.",
+      "stance": "warns_against",
+      "decision_relevance": "Important infrastructure warning for developers building Telegram bots in CIS.",
+      "dispute_risk": "low",
+      "evidence_refs": [
+        "P0162"
+      ]
+    },
+    {
+      "claim": "GLM 5.1 is highly capable for agentic tasks, rivaling Sonnet 4.6 but at a fraction of the cost.",
+      "stance": "supports",
+      "decision_relevance": "Useful for developers looking to reduce API costs without sacrificing reasoning quality.",
+      "dispute_risk": "medium",
+      "evidence_refs": [
+        "P0158"
+      ]
+    }
+  ],
+  "source_utility": {
+    "best_use_cases": [
+      "Designing advanced multi-agent workflows in Claude Code.",
+      "Managing token limits and costs in AI-assisted development.",
+      "Rapidly validating product ideas using AI and AJTBD."
+    ],
+    "bad_use_cases": [
+      "Deep backend infrastructure optimization without AI.",
+      "Manual cybersecurity auditing.",
+      "Traditional CI/CD pipeline setup."
+    ],
+    "retrieval_keywords": [
+      "vibe-coding",
+      "Claude Code",
+      "Agent Teams",
+      "Cursor limits",
+      "AJTBD",
+      "subagents",
+      "MCP",
+      "token management"
+    ],
+    "source_selection_hints": [
+      "Select when the user asks about scaling AI coding beyond simple autocomplete.",
+      "Select when the user needs practical examples of Claude Code plugins.",
+      "Select when the user is struggling with high costs in Cursor or Claude."
+    ],
+    "expected_overlap_hypotheses": [
+      "High overlap with Ivan Zamesin (@zamesin) on product management and AJTBD topics.",
+      "Moderate overlap with other 'vibe-coding' advocates regarding basic Cursor usage."
+    ],
+    "recommended_panex_role": "primary_expert"
+  },
+  "community_signal": {
+    "comment_themes": [
+      "Requests for invites (Sora 2, Comet, Makers community).",
+      "Discussions on bypassing regional restrictions (VPNs, foreign cards).",
+      "Debates on the cost-effectiveness of Cursor vs Claude Code vs Codex.",
+      "Skepticism vs enthusiasm regarding AI replacing traditional developers."
+    ],
+    "questions_from_audience": [
+      "How to manage token limits in Cursor/Claude?",
+      "Which VPNs work for specific AI services?",
+      "How to set up Claude Code plugins?"
+    ],
+    "disagreements_or_corrections": [
+      "Some community members argue that Cursor is still superior to Claude Code for certain workflows.",
+      "Debates on the ethics of exploiting 'free' educational tiers of AI services."
+    ],
+    "practical_feedback": [
+      "Community members frequently share alternative tools (e.g., OpenCode, Kiro, Droid) and payment workarounds (e.g., Bybit, 5kart)."
+    ],
+    "noise_or_low_value_patterns": [
+      "High volume of 'give me a code/invite' comments.",
+      "Basic tech support questions (e.g., 'how to turn on VPN')."
+    ],
+    "evidence_refs": [
+      "P0023",
+      "P0068",
+      "P0074",
+      "P0142",
+      "P0145"
+    ]
+  },
+  "admission_implications": {
+    "if_candidate_verdict": "accept",
+    "verdict_rationale": "Ilia Izmailov provides exceptionally deep, practical, and source-backed insights into advanced AI-assisted development ('vibe-coding'). His custom plugins, multi-agent architectures, and transparent discussions on costs/limits make him a highly valuable primary source for agentic dev workflows.",
+    "unique_value_claims_to_verify_against_matrix": [
+      "Specific architecture of the /team-feature plugin (4-level review, pre-code risk analysis).",
+      "Cost comparison and token management strategies between Cursor and Claude Code."
+    ],
+    "likely_duplicate_areas_to_check": [
+      "General AJTBD product management advice (likely duplicates Ivan Zamesin)."
+    ],
+    "minimum_followup_probe_queries": [
+      "Compare Claude Code Agent Teams with Cursor's multi-agent capabilities.",
+      "What are the best practices for managing token costs in AI IDEs?"
+    ],
+    "risk_notes": [
+      "Some workflows rely on exploiting temporary pricing loopholes or educational tiers, which may become obsolete quickly.",
+      "Heavily biased towards the Anthropic ecosystem."
+    ]
+  },
+  "audit": {
+    "unsupported_or_weak_claims": [
+      "Claims about GLM 5.1 and Kimi K2.6 being superior to DeepSeek V4 are based on personal anecdotal testing rather than rigorous benchmarks."
+    ],
+    "abstentions": [],
+    "possible_model_errors": [],
+    "source_refs_used": [
+      "P0010",
+      "P0012",
+      "P0023",
+      "P0030",
+      "P0034",
+      "P0068",
+      "P0069",
+      "P0074",
+      "P0074.C0019",
+      "P0076",
+      "P0084",
+      "P0089",
+      "P0104",
+      "P0117",
+      "P0118",
+      "P0126",
+      "P0127",
+      "P0132",
+      "P0133",
+      "P0140",
+      "P0142",
+      "P0145",
+      "P0158",
+      "P0160",
+      "P0162"
+    ],
+    "source_refs_most_important": [
+      "P0076",
+      "P0132",
+      "P0160",
+      "P0074.C0019",
+      "P0126"
+    ]
+  }
+}

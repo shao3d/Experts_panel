@@ -1,0 +1,944 @@
+{
+  "schema_version": "expert_value_passport.v1.1",
+  "passport_meta": {
+    "schema_version": "expert_value_passport.v1.1",
+    "expert_id": "glebkudr",
+    "display_name": "Glebkudr",
+    "channel_username": "@gleb_pro_ai",
+    "model_assumed": "gemini-3.1-pro-preview",
+    "prompt_version": "semantic-passport-prompt.v1",
+    "generated_at": "2026-05-10T15:54:47.777434+00:00"
+  },
+  "corpus_audit": {
+    "post_count_seen": 464,
+    "comment_count_seen": 6601,
+    "date_range": {
+      "first_post": "2025-05-02 10:43:52.000000",
+      "last_post": "2026-05-04 08:48:00.000000"
+    },
+    "language_mix": [
+      "ru"
+    ],
+    "material_limitations": [],
+    "author_vs_community_boundary": "Clear boundary. The author writes posts, while a highly active community of practitioners (often building their own tools) discusses and debates in the comments."
+  },
+  "source_ref_index_used": [
+    {
+      "source_ref": "P0001",
+      "source_kind": "expert_post",
+      "post_id": 4752,
+      "telegram_message_id": 3,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-05-02 10:43:52.000000",
+      "why_used": "Expert's stance on Go vs Python for AI coding."
+    },
+    {
+      "source_ref": "P0002",
+      "source_kind": "expert_post",
+      "post_id": 4753,
+      "telegram_message_id": 4,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-05-02 12:01:02.000000",
+      "why_used": "Expert's pattern for managing context in Cursor."
+    },
+    {
+      "source_ref": "P0012",
+      "source_kind": "expert_post",
+      "post_id": 4763,
+      "telegram_message_id": 18,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-05-07 12:52:01.000000",
+      "why_used": "Expert's critique of Cursor/Windsurf context management and introduction of the Shotgun concept."
+    },
+    {
+      "source_ref": "P0017",
+      "source_kind": "expert_post",
+      "post_id": 4768,
+      "telegram_message_id": 24,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-05-10 22:53:50.000000",
+      "why_used": "Release of the Shotgun tool for one-shot vibecoding."
+    },
+    {
+      "source_ref": "P0040",
+      "source_kind": "expert_post",
+      "post_id": 4795,
+      "telegram_message_id": 63,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-05-27 15:19:24.000000",
+      "why_used": "Expert's stance on using existing libraries to save LLM context."
+    },
+    {
+      "source_ref": "P0051",
+      "source_kind": "expert_post",
+      "post_id": 4810,
+      "telegram_message_id": 79,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-05-05 12:28:01.000000",
+      "why_used": "Detailed explanation of the Shotgun method and multi-agent roles."
+    },
+    {
+      "source_ref": "P0062",
+      "source_kind": "expert_post",
+      "post_id": 4821,
+      "telegram_message_id": 90,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-06-26 11:24:07.000000",
+      "why_used": "Expert's philosophy on Context Engineering vs Prompt Engineering."
+    },
+    {
+      "source_ref": "P0088",
+      "source_kind": "expert_post",
+      "post_id": 4847,
+      "telegram_message_id": 116,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-01 16:52:14.000000",
+      "why_used": "Expert's stance on keeping architecture files out of the repo to avoid context pollution."
+    },
+    {
+      "source_ref": "P0109",
+      "source_kind": "expert_post",
+      "post_id": 4868,
+      "telegram_message_id": 137,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-11 17:53:25.000000",
+      "why_used": "Expert's preference for MongoDB over SQL for indie hacking."
+    },
+    {
+      "source_ref": "P0125",
+      "source_kind": "expert_post",
+      "post_id": 4884,
+      "telegram_message_id": 153,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-18 12:11:19.000000",
+      "why_used": "Analysis of agent orchestration methods (autonomous vs dispatcher vs deterministic)."
+    },
+    {
+      "source_ref": "P0128",
+      "source_kind": "expert_post",
+      "post_id": 4887,
+      "telegram_message_id": 156,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-19 08:34:58.000000",
+      "why_used": "Algorithm for debugging complex issues using Gemini 1M context and GPT-5."
+    },
+    {
+      "source_ref": "P0154",
+      "source_kind": "expert_post",
+      "post_id": 4913,
+      "telegram_message_id": 185,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-09-01 16:33:03.000000",
+      "why_used": "Expert's claim that traditional product management is dead, replaced by AI-empowered producers."
+    },
+    {
+      "source_ref": "P0213",
+      "source_kind": "expert_post",
+      "post_id": 4972,
+      "telegram_message_id": 254,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-10-08 17:03:44.000000",
+      "why_used": "Detailed comparison of GPT-5 and Codex for different coding tasks."
+    },
+    {
+      "source_ref": "P0246",
+      "source_kind": "expert_post",
+      "post_id": 5005,
+      "telegram_message_id": 292,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-14 11:25:50.000000",
+      "why_used": "Evaluation of OCR models (Qwen3 VL, Gemini 2.5 Flash, GLM 4.5 VL, PaddleOCR)."
+    },
+    {
+      "source_ref": "P0362",
+      "source_kind": "expert_post",
+      "post_id": 5480,
+      "telegram_message_id": 434,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-28 16:22:52.000000",
+      "why_used": "Critique of the 'Ralph Loop' (macaque-coding) and importance of proper task formulation."
+    },
+    {
+      "source_ref": "P0418",
+      "source_kind": "expert_post",
+      "post_id": 8068,
+      "telegram_message_id": 498,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-03-30 09:24:07.000000",
+      "why_used": "Expert's stance on Specification Driven Development (SDD) and code as the single source of truth."
+    },
+    {
+      "source_ref": "P0457",
+      "source_kind": "expert_post",
+      "post_id": 9800,
+      "telegram_message_id": 539,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-29 10:28:59.000000",
+      "why_used": "Expert's TDD pipeline using agent-critics to validate tests before implementation."
+    }
+  ],
+  "executive_summary": {
+    "one_sentence_positioning": "A deep practitioner and tool builder who pioneers advanced 'context engineering' and multi-agent workflows for large-scale AI-assisted software development.",
+    "strongest_system_value": "Provides highly practical, battle-tested architectural patterns for managing LLM context in large codebases (e.g., the 'Shotgun' method) and rigorous evaluations of frontier models for specific coding and OCR tasks.",
+    "weakest_system_value": "Can be dismissive of alternative workflows (e.g., traditional IDE-based 'vibecoding' or certain open-source frameworks like DSPy), presenting his own custom-built tools as the primary solution.",
+    "best_fit_queries": [
+      "design_agentic_dev_workflow",
+      "compare_models_for_task",
+      "optimize_inference_cost_latency",
+      "build_ai_dev_eval"
+    ],
+    "poor_fit_queries": [
+      "learn_ai_assisted_development"
+    ],
+    "confidence": 0.95
+  },
+  "expert_positioning": {
+    "primary_role": "AI Engineering Practitioner & Tool Builder",
+    "audience": [
+      "Senior Developers",
+      "AI Engineers",
+      "Indie Hackers",
+      "CTOs"
+    ],
+    "voice": [
+      "Confident",
+      "Pragmatic",
+      "Cynical yet enthusiastic",
+      "Direct"
+    ],
+    "worldview": [
+      "Context engineering is the true science of AI development; prompt engineering is just the surface.",
+      "Traditional product management is dead; the future belongs to AI-empowered 'producers' who build hands-on.",
+      "Code is the ultimate source of truth; documentation and specs are ephemeral artifacts.",
+      "Large context windows are useless without proper attention management and semantic compression."
+    ],
+    "distinctive_angle": "Rejects naive 'vibecoding' in favor of rigorous 'context engineering', building custom tools (Shotgun) to compress repository semantics into JSON for one-shot prompting.",
+    "recurring_formats": [
+      "Tool releases and updates",
+      "Model benchmarking and rants",
+      "Workflow breakdowns (e.g., TDD with agents)",
+      "Philosophical takes on the future of IT roles"
+    ],
+    "evidence_refs": [
+      "P0012",
+      "P0062",
+      "P0154",
+      "P0418"
+    ]
+  },
+  "knowledge_domains": [
+    {
+      "domain_id": "agent_ops",
+      "domain_name": "Agent Operations & Orchestration",
+      "subdomain_ids": [
+        "multi_agent_orchestration",
+        "agentic_dev_process"
+      ],
+      "query_intent_ids": [
+        "design_agentic_dev_workflow",
+        "debug_agent_failure"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "unique",
+      "what_the_expert_knows": [
+        "How to orchestrate multi-agent systems using deterministic pipelines rather than autonomous routing.",
+        "How to compress large repository contexts into semantic JSON maps to bypass LLM attention bottlenecks.",
+        "How to implement TDD with agents by using a critic-agent to validate tests before implementation."
+      ],
+      "how_they_reason": [
+        "Prefers strict, deterministic routing between agents over autonomous decision-making to avoid infinite loops and debugging hell.",
+        "Treats LLMs as stateless 'spirits' that require perfectly crafted context for every single request."
+      ],
+      "missing_or_weak_subtopics": [
+        "Enterprise-grade security and compliance in agent orchestration."
+      ],
+      "evidence_refs": [
+        "P0051",
+        "P0125",
+        "P0457"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "domain_id": "coding_agents",
+      "domain_name": "AI Coding Tools & Workflows",
+      "subdomain_ids": [
+        "cursor_windsurf_copilot",
+        "claude_code_workflows",
+        "code_review_testing"
+      ],
+      "query_intent_ids": [
+        "choose_ai_coding_tool",
+        "compare_models_for_task"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "The specific strengths and weaknesses of GPT-5, Codex, Claude Code, and Gemini 3 Pro for coding tasks.",
+        "How to bypass IDE context limits by using custom CLI tools and API integrations.",
+        "The limitations of the 'Ralph Loop' (macaque-coding) and why iterative prompting fails without proper task decomposition."
+      ],
+      "how_they_reason": [
+        "Evaluates models based on their ability to handle high-complexity, highly-coupled features in large codebases, not just toy examples.",
+        "Believes that if an agent fails after 1-2 tries, the prompt/context is fundamentally flawed, and brute-forcing retries is a waste of tokens."
+      ],
+      "missing_or_weak_subtopics": [],
+      "evidence_refs": [
+        "P0213",
+        "P0362",
+        "P0431"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "domain_id": "ai_engineering_infra",
+      "domain_name": "AI Engineering & Infrastructure",
+      "subdomain_ids": [
+        "inference_cost_latency",
+        "model_comparison"
+      ],
+      "query_intent_ids": [
+        "optimize_inference_cost_latency",
+        "compare_models_for_task"
+      ],
+      "coverage_level": "moderate",
+      "depth_level": "practical",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "How to optimize token usage by dynamically managing context (e.g., telling reviewer agents to drop irrelevant files).",
+        "The performance characteristics of various OCR models (PaddleOCR, Qwen3 VL, Gemini Flash) on complex documents.",
+        "The trade-offs between local GPU inference and cloud APIs for specific tasks like OCR and embedding generation."
+      ],
+      "how_they_reason": [
+        "Highly cost-conscious; constantly measures token usage and seeks ways to compress context without losing semantic value.",
+        "Prefers API usage for general LLMs but advocates for local/VPS GPU deployments for specialized tasks like OCR to save costs at scale."
+      ],
+      "missing_or_weak_subtopics": [
+        "Deep hardware-level optimization (CUDA/Metal programming is mentioned as an experiment, not core expertise)."
+      ],
+      "evidence_refs": [
+        "P0152",
+        "P0246",
+        "P0433"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "domain_id": "ai_product_pm",
+      "domain_name": "AI Product Management & Strategy",
+      "subdomain_ids": [
+        "ai_product_strategy",
+        "pm_workflow"
+      ],
+      "query_intent_ids": [
+        "plan_ai_product_feature"
+      ],
+      "coverage_level": "moderate",
+      "depth_level": "practical",
+      "system_value": "medium",
+      "what_the_expert_knows": [
+        "How AI shifts the bottleneck from coding to product discovery and marketing.",
+        "Why traditional PM roles are obsolete in the face of AI-empowered 'producers'."
+      ],
+      "how_they_reason": [
+        "Views AI as a leverage multiplier that eliminates the need for large teams, making the solo 'producer' the most viable business model for indie hackers."
+      ],
+      "missing_or_weak_subtopics": [
+        "Enterprise product management scaling."
+      ],
+      "evidence_refs": [
+        "P0154",
+        "P0378"
+      ],
+      "confidence": 0.85
+    }
+  ],
+  "value_dimensions": [
+    {
+      "dimension_id": "insight_density",
+      "score_0_5": 5,
+      "rationale": "Consistently provides deep, non-obvious insights into how LLMs process context, the failures of naive agent loops, and the architectural shifts required for AI coding.",
+      "evidence_refs": [
+        "P0062",
+        "P0088",
+        "P0362"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "practical_specificity",
+      "score_0_5": 5,
+      "rationale": "Shares exact workflows, prompt structures, token counts, and tool configurations (e.g., Shotgun, TDD pipelines).",
+      "evidence_refs": [
+        "P0051",
+        "P0128",
+        "P0457"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "evidence_quality",
+      "score_0_5": 4,
+      "rationale": "Claims are backed by personal experience building complex tools (Shotgun) and spending thousands of dollars on API tokens, though some claims are anecdotal.",
+      "evidence_refs": [
+        "P0152",
+        "P0283"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "dimension_id": "anti_hype_signal",
+      "score_0_5": 5,
+      "rationale": "Actively debunks 'vibecoding' myths, criticizes popular tools like Cursor when they fail on large repos, and calls out the 'Ralph Loop' as inefficient macaque-coding.",
+      "evidence_refs": [
+        "P0075",
+        "P0362",
+        "P0411"
+      ],
+      "confidence": 0.95
+    }
+  ],
+  "matrix_cells": [
+    {
+      "domain_id": "agent_ops",
+      "subdomain_id": "multi_agent_orchestration",
+      "subdomain_name": "Multi-Agent Orchestration",
+      "query_intent_ids": [
+        "design_agentic_dev_workflow"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0051",
+        "P0125",
+        "P0457"
+      ],
+      "notes": "Expert provides a highly distinctive, deterministic approach to multi-agent orchestration, rejecting autonomous routing in favor of strict pipelines and context compression."
+    },
+    {
+      "domain_id": "coding_agents",
+      "subdomain_id": "cursor_windsurf_copilot",
+      "subdomain_name": "IDE-based AI Coding",
+      "query_intent_ids": [
+        "choose_ai_coding_tool"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 4,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 4,
+      "comment_signal_score_0_5": 5,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0012",
+        "P0213",
+        "P0234"
+      ],
+      "notes": "Strong critiques of IDE context management limitations, advocating for external context preparation before feeding into IDEs."
+    },
+    {
+      "domain_id": "prompt_engineering",
+      "subdomain_id": "context_compression",
+      "subdomain_name": "Context Compression & Engineering",
+      "query_intent_ids": [
+        "optimize_inference_cost_latency"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 5,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0062",
+        "P0088",
+        "P0152"
+      ],
+      "notes": "The expert's core thesis: context engineering is the true science. Provides exact methods for compressing repos into JSON maps to save tokens and improve LLM focus."
+    },
+    {
+      "domain_id": "ai_engineering_infra",
+      "subdomain_id": "model_comparison",
+      "subdomain_name": "Model Comparison for Coding & OCR",
+      "query_intent_ids": [
+        "compare_models_for_task"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 4,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0213",
+        "P0246",
+        "P0363"
+      ],
+      "notes": "Detailed, task-specific comparisons of GPT-5, Codex, Claude Code, Gemini 3 Pro, and various OCR models (PaddleOCR, Qwen VL)."
+    }
+  ],
+  "query_intent_fit": [
+    {
+      "query_intent_id": "design_agentic_dev_workflow",
+      "query_intent_name": "Design Agentic Dev Workflow",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "agent_ops",
+        "prompt_engineering"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "The expert has built custom agentic workflows (Shotgun) and shares detailed pipelines, including TDD with agent-critics and deterministic routing.",
+      "limitations": [
+        "Highly opinionated against autonomous agents; favors strict deterministic pipelines."
+      ],
+      "evidence_refs": [
+        "P0051",
+        "P0125",
+        "P0457"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "query_intent_id": "optimize_inference_cost_latency",
+      "query_intent_name": "Optimize Inference Cost & Latency",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "prompt_engineering",
+        "ai_engineering_infra"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "Provides concrete strategies for reducing token usage by 50%+ through dynamic context pruning and repository summarization.",
+      "limitations": [],
+      "evidence_refs": [
+        "P0152",
+        "P0088"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "query_intent_id": "compare_models_for_task",
+      "query_intent_name": "Compare Models for Task",
+      "fit_role": "supporting",
+      "best_domain_ids": [
+        "ai_engineering_infra",
+        "coding_agents"
+      ],
+      "source_utility_score_0_5": 4,
+      "why": "Offers strong, opinionated comparisons of frontier models for coding and OCR, based on heavy daily usage.",
+      "limitations": [
+        "Comparisons are based on personal workflow (Shotgun) rather than standardized benchmarks."
+      ],
+      "evidence_refs": [
+        "P0213",
+        "P0246"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "content_quality_distribution": [
+    {
+      "category_id": "deep_practitioner",
+      "share_estimate_0_1": 0.4,
+      "system_value": "unique",
+      "notes": "Deep dives into context engineering, agent orchestration, and debugging LLM pipelines.",
+      "evidence_refs": [
+        "P0062",
+        "P0125",
+        "P0128",
+        "P0152"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "tool_release_with_analysis",
+      "share_estimate_0_1": 0.2,
+      "system_value": "high",
+      "notes": "Releases of his own tools (Shotgun, SotaOCR) accompanied by architectural explanations.",
+      "evidence_refs": [
+        "P0017",
+        "P0087",
+        "P0441"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "commentary",
+      "share_estimate_0_1": 0.3,
+      "system_value": "medium",
+      "notes": "Opinions on the state of the industry, product management, and model updates.",
+      "evidence_refs": [
+        "P0154",
+        "P0233",
+        "P0378"
+      ],
+      "confidence": 0.85
+    },
+    {
+      "category_id": "low_signal",
+      "share_estimate_0_1": 0.1,
+      "system_value": "low",
+      "notes": "Memes, short updates, and promotional posts for courses.",
+      "evidence_refs": [
+        "P0035",
+        "P0083",
+        "P0284"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "matrix_export": {
+    "schema_version": "knowledge_matrix_export.v1",
+    "expert_id": "glebkudr",
+    "cells": [
+      {
+        "cell_id": "agent_ops/multi_agent_orchestration/design_agentic_dev_workflow",
+        "domain_id": "agent_ops",
+        "subdomain_id": "multi_agent_orchestration",
+        "subdomain_name": "Multi-Agent Orchestration",
+        "query_intent_ids": [
+          "design_agentic_dev_workflow"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 5,
+          "evidence_quality": 4,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 5,
+          "anti_hype": 5,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0051",
+          "P0125",
+          "P0457"
+        ],
+        "confidence": 0.95
+      },
+      {
+        "cell_id": "prompt_engineering/context_compression/optimize_inference_cost_latency",
+        "domain_id": "prompt_engineering",
+        "subdomain_id": "context_compression",
+        "subdomain_name": "Context Compression & Engineering",
+        "query_intent_ids": [
+          "optimize_inference_cost_latency"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 5,
+          "evidence_quality": 5,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 5,
+          "anti_hype": 4,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0062",
+          "P0088",
+          "P0152"
+        ],
+        "confidence": 0.95
+      }
+    ],
+    "compare_hints": {
+      "likely_unique_cells": [
+        "prompt_engineering/context_compression/optimize_inference_cost_latency"
+      ],
+      "likely_duplicate_cells": [],
+      "cells_requiring_probe": [
+        "agent_ops/multi_agent_orchestration/design_agentic_dev_workflow"
+      ],
+      "matrix_only_decision_confidence": "medium"
+    }
+  },
+  "signature_insights": [
+    {
+      "insight": "Context engineering is more critical than prompt engineering. Compressing a repository into a semantic JSON map yields better results than naive RAG or dumping raw files into a 1M token window.",
+      "why_it_matters_for_experts_panel": "Provides a highly actionable, architectural approach to bypassing LLM attention bottlenecks in large codebases.",
+      "applicable_query_types": [
+        "design_agentic_dev_workflow",
+        "optimize_inference_cost_latency"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0062",
+        "P0087",
+        "P0088"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "insight": "Deterministic agent routing is superior to autonomous agent decision-making. Allowing agents to decide who to call next leads to infinite loops and debugging nightmares.",
+      "why_it_matters_for_experts_panel": "Offers a strong anti-hype perspective on multi-agent systems, favoring strict pipelines over autonomous swarms.",
+      "applicable_query_types": [
+        "design_agentic_dev_workflow"
+      ],
+      "novelty_level": "useful_packaging",
+      "evidence_refs": [
+        "P0125"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "insight": "Code is the only reliable source of truth. Architectural specifications should be ephemeral, generated from the code when needed, rather than maintained as separate artifacts that inevitably drift.",
+      "why_it_matters_for_experts_panel": "Challenges the traditional Specification Driven Development (SDD) approach, adapting it for AI workflows where LLMs can instantly reverse-engineer specs from code.",
+      "applicable_query_types": [
+        "design_agentic_dev_workflow"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0088",
+        "P0418"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "insight": "The 'Ralph Loop' (running an agent repeatedly until it succeeds) is 'macaque-coding'. If an agent fails after 1-2 tries, the prompt or context is fundamentally flawed and needs human refactoring.",
+      "why_it_matters_for_experts_panel": "Provides a critical reality check on popular 'autonomous coding' methodologies, emphasizing the need for precise task decomposition.",
+      "applicable_query_types": [
+        "debug_agent_failure",
+        "design_agentic_dev_workflow"
+      ],
+      "novelty_level": "useful_packaging",
+      "evidence_refs": [
+        "P0362"
+      ],
+      "confidence": 0.95
+    }
+  ],
+  "practical_patterns": [
+    {
+      "pattern": "TDD with Agent-Critics: Write tests -> Run Critic Agent to validate tests -> Implement code -> Run tests.",
+      "when_to_use": "When building complex features to prevent regressions and ensure the LLM doesn't just write code to pass flawed tests.",
+      "failure_modes": [
+        "LLMs may write tautological tests (assert true) if not strictly prompted or reviewed by a critic agent."
+      ],
+      "evidence_refs": [
+        "P0059",
+        "P0457"
+      ]
+    },
+    {
+      "pattern": "Dynamic Context Pruning: Instruct the reviewer agent to explicitly state which files are no longer needed in the context window before returning a task for rework.",
+      "when_to_use": "During long, multi-turn agentic coding sessions to prevent context overflow and reduce token costs.",
+      "failure_modes": [
+        "Reviewer agent might accidentally drop a file that is still needed for a subsequent fix."
+      ],
+      "evidence_refs": [
+        "P0152"
+      ]
+    },
+    {
+      "pattern": "Two-Step Numerical Evaluation: 1) Ask the LLM to write an essay analyzing the input based on criteria. 2) Ask the LLM to output a numerical score based on the essay.",
+      "when_to_use": "When you need a reliable numerical score from an LLM (e.g., evaluating text quality), as LLMs struggle to output accurate numbers directly.",
+      "failure_modes": [
+        "Takes more tokens and time than a single prompt."
+      ],
+      "evidence_refs": [
+        "P0216"
+      ]
+    }
+  ],
+  "claims_and_positions": [
+    {
+      "claim": "Go is superior to Python for AI-generated backends due to strict typing and built-in garbage collection, which prevents LLMs from making silent runtime errors.",
+      "stance": "supports",
+      "decision_relevance": "Useful for teams deciding on a tech stack for AI-assisted development.",
+      "dispute_risk": "medium",
+      "evidence_refs": [
+        "P0001",
+        "P0041"
+      ]
+    },
+    {
+      "claim": "MongoDB is better than SQL for indie hacking with AI, as it avoids the complexity of database migrations which LLMs struggle to manage safely.",
+      "stance": "supports",
+      "decision_relevance": "Relevant for rapid prototyping and MVP development workflows.",
+      "dispute_risk": "medium",
+      "evidence_refs": [
+        "P0109"
+      ]
+    },
+    {
+      "claim": "Traditional Product Management is dead; the future is the 'Producer' who uses AI to do marketing, design, and coding hands-on.",
+      "stance": "warns_against",
+      "decision_relevance": "Provocative stance on team composition and hiring in the AI era.",
+      "dispute_risk": "high",
+      "evidence_refs": [
+        "P0154"
+      ]
+    }
+  ],
+  "source_utility": {
+    "best_use_cases": [
+      "Designing deterministic multi-agent pipelines.",
+      "Strategies for compressing and managing LLM context in large codebases.",
+      "Practical debugging of LLM coding failures.",
+      "Choosing OCR models for complex document parsing."
+    ],
+    "bad_use_cases": [
+      "Learning basic prompt engineering.",
+      "Autonomous, non-deterministic agent swarms.",
+      "Enterprise compliance and security."
+    ],
+    "retrieval_keywords": [
+      "Shotgun",
+      "Context engineering",
+      "Agent orchestration",
+      "Vibecoding",
+      "TDD with agents",
+      "Context compression"
+    ],
+    "source_selection_hints": [
+      "Select when the user is struggling with IDE context limits (Cursor/Windsurf) on large projects.",
+      "Select when the user wants to build a deterministic agent pipeline rather than an autonomous swarm."
+    ],
+    "expected_overlap_hypotheses": [
+      "Will overlap with other pragmatic AI coding practitioners (e.g., Simon Willison) on the value of small tools and explicit context."
+    ],
+    "recommended_panex_role": "primary_expert"
+  },
+  "community_signal": {
+    "comment_themes": [
+      "Tool comparisons (Cursor vs Claude Code vs Windsurf vs Codex).",
+      "Struggles with LLM context limits and token costs.",
+      "Debates on the best tech stack for AI coding (Go vs Python, SQL vs NoSQL).",
+      "Requests for access to the expert's tools (ShotgunPro, SotaOCR)."
+    ],
+    "questions_from_audience": [
+      "How to manage context in large repositories?",
+      "Which model is currently best for coding/OCR?",
+      "How to debug agent loops that get stuck?"
+    ],
+    "disagreements_or_corrections": [
+      "Some community members defend traditional IDEs (IntelliJ) or specific frameworks (LangChain, DSPy) that the expert criticizes.",
+      "Debates over whether 'vibecoding' is a sustainable practice for production software."
+    ],
+    "practical_feedback": [
+      "Users confirm that the expert's 'Shotgun' method (compressing context) works better than relying on IDE native RAG.",
+      "Users share their own workarounds for API limits and model downgrades."
+    ],
+    "noise_or_low_value_patterns": [
+      "Jokes about 'vibecoding', memes, and complaints about API costs/bans."
+    ],
+    "evidence_refs": [
+      "P0012",
+      "P0073",
+      "P0125",
+      "P0234"
+    ]
+  },
+  "admission_implications": {
+    "if_candidate_verdict": "accept",
+    "verdict_rationale": "Glebkudr is a highly active, deep practitioner building his own tools to solve the exact problems (context limits, agent orchestration) that plague current AI-assisted development. His insights on 'context engineering' vs 'prompt engineering' are highly valuable.",
+    "unique_value_claims_to_verify_against_matrix": [
+      "The 'Shotgun' method of compressing repository architecture into JSON for one-shot prompting.",
+      "Dynamic context pruning via reviewer agents."
+    ],
+    "likely_duplicate_areas_to_check": [
+      "General model comparisons (GPT-5 vs Claude).",
+      "Basic prompt engineering tips."
+    ],
+    "minimum_followup_probe_queries": [
+      "Compare Glebkudr's deterministic agent pipeline approach with autonomous frameworks like AutoGen or CrewAI."
+    ],
+    "risk_notes": [
+      "Highly opinionated; dismisses certain popular tools (e.g., DSPy, LangChain) as 'garbage' which might alienate some users.",
+      "Some claims about future job market shifts (e.g., death of PMs) are speculative."
+    ]
+  },
+  "audit": {
+    "unsupported_or_weak_claims": [
+      "Claims about GPT-5.x and Gemini 3.x capabilities are based on his personal usage and beta access, which may not reflect final public release metrics."
+    ],
+    "abstentions": [],
+    "possible_model_errors": [],
+    "source_refs_used": [
+      "P0001",
+      "P0002",
+      "P0012",
+      "P0017",
+      "P0040",
+      "P0041",
+      "P0051",
+      "P0059",
+      "P0062",
+      "P0073",
+      "P0075",
+      "P0081",
+      "P0087",
+      "P0088",
+      "P0109",
+      "P0125",
+      "P0128",
+      "P0152",
+      "P0154",
+      "P0213",
+      "P0216",
+      "P0233",
+      "P0234",
+      "P0245",
+      "P0246",
+      "P0252",
+      "P0270",
+      "P0362",
+      "P0363",
+      "P0378",
+      "P0411",
+      "P0418",
+      "P0431",
+      "P0433",
+      "P0457"
+    ],
+    "source_refs_most_important": [
+      "P0012",
+      "P0051",
+      "P0062",
+      "P0088",
+      "P0125",
+      "P0152",
+      "P0362",
+      "P0418",
+      "P0457"
+    ]
+  }
+}

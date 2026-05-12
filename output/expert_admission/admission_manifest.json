@@ -1,0 +1,181 @@
+{
+  "schema_version": "expert_admission_manifest.v0.1",
+  "updated_at": "2026-05-10",
+  "purpose": "SSOT for which semantic passports are part of the accepted Experts Panel knowledge matrix.",
+  "accepted_verdicts": [
+    "accept",
+    "limited_scope"
+  ],
+  "experts": [
+    {
+      "expert_id": "ai_architect",
+      "display_name": "AI Architect",
+      "verdict": "accept",
+      "include_in_knowledge_matrix": true,
+      "passport_path": "output/expert_admission/semantic_passports/ai_architect/output/ai_architect_semantic_passport.normalized.json",
+      "admission_report": "output/expert_admission/candidates/ai_architect/admission_report.json",
+      "decision_basis": "current_roster_seed_backfilled_semantic_review",
+      "routing_caveat": "accepted as structured CLI-agent / context-engineering workflow seed expert; strong fit for agentic development process and AI coding tool choice, avoid routing for non-technical AI adoption"
+    },
+    {
+      "expert_id": "ai_grabli",
+      "display_name": "Tech_AI_grabli",
+      "verdict": "accept",
+      "include_in_knowledge_matrix": true,
+      "passport_path": "output/expert_admission/semantic_passports/ai_grabli/output/ai_grabli_semantic_passport.normalized.json",
+      "admission_report": "output/expert_admission/candidates/ai_grabli/admission_report.json",
+      "decision_basis": "manual_human_review",
+      "routing_caveat": "accepted for retrieval-quality / embedding-less RAG and practical AI-engineering failure analysis; coding-agent coverage overlaps existing experts, avoid broad duplicate routing"
+    },
+    {
+      "expert_id": "akimov",
+      "display_name": "Akimov",
+      "verdict": "accept",
+      "include_in_knowledge_matrix": true,
+      "passport_path": "output/expert_admission/semantic_passports/akimov/output/akimov_semantic_passport.normalized.json",
+      "admission_report": "output/expert_admission/candidates/akimov/admission_report.json",
+      "decision_basis": "manual_human_review",
+      "routing_caveat": "accepted for enterprise AI adoption roadmaps and practical AI-product/process transformation; agentic coding workflow overlaps existing experts, avoid broad duplicate routing"
+    },
+    {
+      "expert_id": "air_ai",
+      "display_name": "Air",
+      "verdict": "accept",
+      "include_in_knowledge_matrix": true,
+      "passport_path": "output/expert_admission/semantic_passports/air_ai/output/air_ai_semantic_passport.normalized.json",
+      "admission_report": "output/expert_admission/candidates/air_ai/admission_report.json",
+      "decision_basis": "current_roster_seed_backfilled_semantic_review",
+      "routing_caveat": "accepted as prompt-engineering and business-workflow seed expert; strong fit for model-specific prompting, reasoning control, financial modeling, and legal/RAG workflows, avoid routing for local-LLM or low-level infrastructure questions"
+    },
+    {
+      "expert_id": "doronin",
+      "display_name": "Doronin",
+      "verdict": "accept",
+      "include_in_knowledge_matrix": true,
+      "passport_path": "output/expert_admission/semantic_passports/doronin/doronin_semantic_passport.normalized.json",
+      "admission_report": "output/expert_admission/candidates/doronin/admission_report.json",
+      "decision_basis": "manual_human_review",
+      "routing_caveat": "accepted as disciplined AI-assisted development / Claude Code workflow / custom MCP and temporal-agent-memory depth expert; overlap-heavy with coding-agent and RAG cells, avoid broad duplicate routing"
+    },
+    {
+      "expert_id": "elkornacio",
+      "display_name": "Elkornacio",
+      "verdict": "accept",
+      "include_in_knowledge_matrix": true,
+      "passport_path": "output/expert_admission/semantic_passports/elkornacio/output/elkornacio_semantic_passport.normalized.json",
+      "admission_report": "output/expert_admission/candidates/elkornacio/admission_report.json",
+      "decision_basis": "manual_human_review",
+      "routing_caveat": "accepted as advanced AI coding tool/harness depth expert; overlap-heavy with no clean matrix gaps, avoid broad duplicate routing"
+    },
+    {
+      "expert_id": "etechlead",
+      "display_name": "Etechlead",
+      "verdict": "accept",
+      "include_in_knowledge_matrix": true,
+      "passport_path": "output/expert_admission/semantic_passports/etechlead/output/etechlead_semantic_passport.normalized.json",
+      "admission_report": "output/expert_admission/candidates/etechlead/admission_report.json",
+      "decision_basis": "manual_human_review",
+      "routing_caveat": "accepted as senior AI-assisted software engineering / frontier model comparison / context-management expert; overlap-heavy with AI coding tool-choice and MCP cells, avoid routing for non-technical business adoption, creative/multimodal, or beginner no-code automation"
+    },
+    {
+      "expert_id": "glebkudr",
+      "display_name": "Glebkudr",
+      "verdict": "accept",
+      "include_in_knowledge_matrix": true,
+      "passport_path": "output/expert_admission/semantic_passports/glebkudr/output/glebkudr_semantic_passport.normalized.json",
+      "admission_report": "output/expert_admission/candidates/glebkudr/admission_report.json",
+      "decision_basis": "manual_human_review",
+      "routing_caveat": "accepted as context-engineering and deterministic-agent-workflow depth expert; avoid treating broad agent_ops overlap as a new gap"
+    },
+    {
+      "expert_id": "ilia_izmailov",
+      "display_name": "Ilia Izmailov",
+      "verdict": "accept",
+      "include_in_knowledge_matrix": true,
+      "passport_path": "output/expert_admission/semantic_passports/ilia_izmailov/output/ilia_izmailov_semantic_passport.normalized.json",
+      "admission_report": "output/expert_admission/candidates/ilia_izmailov/admission_report.json",
+      "decision_basis": "manual_human_review",
+      "routing_caveat": "accepted for Claude Code workflows, agent teams, AI product-builder practice, and tool-choice comparison; product/PM cell remains probe-worthy, avoid routing as a general backend/security expert"
+    },
+    {
+      "expert_id": "kornish",
+      "display_name": "Kornishev",
+      "verdict": "accept",
+      "include_in_knowledge_matrix": true,
+      "passport_path": "output/expert_admission/semantic_passports/kornish/output/kornish_semantic_passport.normalized.json",
+      "admission_report": "output/expert_admission/candidates/kornish/admission_report.json",
+      "decision_basis": "manual_human_review",
+      "routing_caveat": "accepted as AI product management / AI product strategy / corporate R&D and AI prototyping expert; legacy/offline post_metadata is missing but runtime FTS/embedding retrieval is unaffected; overlap-heavy with product/adoption and coding-agent cells, avoid routing for deep ML engineering, infra, or senior software-engineering model comparison"
+    },
+    {
+      "expert_id": "llm_under_hood",
+      "display_name": "Rinat",
+      "verdict": "accept",
+      "include_in_knowledge_matrix": true,
+      "passport_path": "output/expert_admission/semantic_passports/llm_under_hood/output/llm_under_hood_semantic_passport.normalized.json",
+      "admission_report": "output/expert_admission/candidates/llm_under_hood/admission_report.json",
+      "decision_basis": "manual_human_review",
+      "routing_caveat": "accepted as SGR, AI reliability/evals, and engineering-harness depth expert; strong framework skepticism, avoid routing as generic LangChain/MCP tutorial source"
+    },
+    {
+      "expert_id": "neuraldeep",
+      "display_name": "Neuraldeep",
+      "verdict": "accept",
+      "include_in_knowledge_matrix": true,
+      "passport_path": "output/expert_admission/semantic_passports/neuraldeep/output/neuraldeep_semantic_passport.normalized.json",
+      "admission_report": "output/expert_admission/candidates/neuraldeep/admission_report.json",
+      "decision_basis": "current_roster_seed_backfilled_semantic_review",
+      "routing_caveat": "accepted as local-LLM infrastructure, SGR/agent-architecture, and inference-debugging seed expert; strong technical fit, avoid beginner/no-code or broad business-adoption routing"
+    },
+    {
+      "expert_id": "ostrikov",
+      "display_name": "Ostrikov",
+      "verdict": "accept",
+      "include_in_knowledge_matrix": true,
+      "passport_path": "output/expert_admission/semantic_passports/ostrikov/output/ostrikov_semantic_passport.normalized.json",
+      "admission_report": "output/expert_admission/candidates/ostrikov/admission_report.json",
+      "decision_basis": "manual_human_review",
+      "routing_caveat": "accepted as complementary/depth expert for AI-first development process and practical agent architecture; avoid counting agent_ops overlap as a new gap"
+    },
+    {
+      "expert_id": "pashazloy",
+      "display_name": "PashaZloy",
+      "verdict": "accept",
+      "include_in_knowledge_matrix": true,
+      "passport_path": "output/expert_admission/semantic_passports/pashazloy/output/pashazloy_semantic_passport.normalized.json",
+      "admission_report": "output/expert_admission/candidates/pashazloy/admission_report.json",
+      "decision_basis": "manual_human_review",
+      "routing_caveat": "accepted as local-LLM and open-source agent-tooling depth expert; heavy overlap with Neuraldeep, avoid broad duplicate routing"
+    },
+    {
+      "expert_id": "polyakov",
+      "display_name": "Polyakov",
+      "verdict": "accept",
+      "include_in_knowledge_matrix": true,
+      "passport_path": "output/expert_admission/semantic_passports/polyakov/output/polyakov_semantic_passport.normalized.json",
+      "admission_report": "output/expert_admission/candidates/polyakov/admission_report.json",
+      "decision_basis": "manual_human_review",
+      "routing_caveat": "accepted as complementary/depth expert, not primarily as a new-gap expert"
+    },
+    {
+      "expert_id": "refat",
+      "display_name": "Refat (Tech & AI)",
+      "verdict": "accept",
+      "include_in_knowledge_matrix": true,
+      "passport_path": "output/expert_admission/semantic_passports/refat/output/refat_semantic_passport.normalized.json",
+      "admission_report": "output/expert_admission/candidates/refat/admission_report.json",
+      "decision_basis": "current_roster_seed_backfilled_semantic_review",
+      "routing_caveat": "accepted as pragmatic AI-engineering, file-first knowledge-base, and Claude Code workflow seed expert; eval/observability cells are useful but probe-worthy, avoid routing for foundational ML theory"
+    },
+    {
+      "expert_id": "silicbag",
+      "display_name": "SilicBag",
+      "verdict": "accept",
+      "include_in_knowledge_matrix": true,
+      "passport_path": "output/expert_admission/semantic_passports/silicbag/output/silicbag_semantic_passport.normalized.json",
+      "admission_report": "output/expert_admission/candidates/silicbag/admission_report.json",
+      "decision_basis": "manual_human_review",
+      "routing_caveat": "accepted as accessible AI automation / non-programmer workflow / community-grounded business adoption expert; overlap-heavy with agent workflow, prompt-engineering, and RAG cells, avoid routing for deep architecture, local-LLM infra, or generic model news"
+    }
+  ]
+}

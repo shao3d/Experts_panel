@@ -1,0 +1,1421 @@
+{
+  "schema_version": "expert_value_passport.v1.1",
+  "passport_meta": {
+    "schema_version": "expert_value_passport.v1.1",
+    "expert_id": "polyakov",
+    "display_name": "Polyakov",
+    "channel_username": "@countwithsasha",
+    "model_assumed": "gemini-3.1-pro-preview",
+    "prompt_version": "semantic-passport-prompt.v1",
+    "generated_at": "2026-05-10T00:39:39.908119+00:00"
+  },
+  "corpus_audit": {
+    "post_count_seen": 261,
+    "comment_count_seen": 2952,
+    "date_range": {
+      "first_post": "2024-06-26 07:54:04.000000",
+      "last_post": "2026-05-04 06:35:20.000000"
+    },
+    "language_mix": [
+      "ru"
+    ],
+    "material_limitations": [],
+    "author_vs_community_boundary": "Clear boundary. The expert writes detailed, structured technical posts and replies in comments. The community actively engages, shares alternative tools, debates architectural choices (e.g., SGR vs ReAct, MCP vs Skills), and provides deep technical additions (e.g., vLLM internals)."
+  },
+  "source_ref_index_used": [
+    {
+      "source_ref": "P0039",
+      "source_kind": "expert_post",
+      "post_id": 3466,
+      "telegram_message_id": 82,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2024-11-05 16:12:56.000000",
+      "why_used": "Evidence of early adoption and practical use of Cursor for automated bot creation."
+    },
+    {
+      "source_ref": "P0050",
+      "source_kind": "expert_post",
+      "post_id": 3477,
+      "telegram_message_id": 98,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2024-12-09 19:55:50.000000",
+      "why_used": "Evidence of using generative AI (Kling, Midjourney) for commercial video advertising."
+    },
+    {
+      "source_ref": "P0057",
+      "source_kind": "expert_post",
+      "post_id": 3494,
+      "telegram_message_id": 115,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2024-12-28 10:51:59.000000",
+      "why_used": "Demonstrates fine-tuning LLMs for automating Yandex.Direct minus-phrases."
+    },
+    {
+      "source_ref": "P0086",
+      "source_kind": "expert_post",
+      "post_id": 3535,
+      "telegram_message_id": 223,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-04-01 20:50:13.000000",
+      "why_used": "Shows the economic impact of using AI for generating promotional pages."
+    },
+    {
+      "source_ref": "P0091",
+      "source_kind": "expert_post",
+      "post_id": 3540,
+      "telegram_message_id": 242,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-04-28 17:59:07.000000",
+      "why_used": "Detailed guide on RKN compliance and personal data handling for websites."
+    },
+    {
+      "source_ref": "P0096",
+      "source_kind": "expert_post",
+      "post_id": 3545,
+      "telegram_message_id": 251,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-05-27 17:35:03.000000",
+      "why_used": "Expert background: 20 years in IT, 10+ in advertising, Python/C++ developer."
+    },
+    {
+      "source_ref": "P0098",
+      "source_kind": "expert_post",
+      "post_id": 3547,
+      "telegram_message_id": 256,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-06-04 16:32:21.000000",
+      "why_used": "Analysis of OpenAI Codex Desktop and its capabilities."
+    },
+    {
+      "source_ref": "P0105",
+      "source_kind": "expert_post",
+      "post_id": 3554,
+      "telegram_message_id": 280,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-06-28 18:09:41.000000",
+      "why_used": "Practical breakdown of generating commercial video with Veo3, including costs and failure rates."
+    },
+    {
+      "source_ref": "P0109",
+      "source_kind": "expert_post",
+      "post_id": 3558,
+      "telegram_message_id": 291,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-17 12:21:29.000000",
+      "why_used": "Detailed comparison of Claude Code vs Cursor, highlighting sub-agents and context management."
+    },
+    {
+      "source_ref": "P0112",
+      "source_kind": "expert_post",
+      "post_id": 3562,
+      "telegram_message_id": 298,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-09-07 15:59:59.000000",
+      "why_used": "Analysis of LLM hallucinations and the use of logprobs to detect uncertainty."
+    },
+    {
+      "source_ref": "P0118",
+      "source_kind": "expert_post",
+      "post_id": 3573,
+      "telegram_message_id": 320,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-10-14 17:03:57.000000",
+      "why_used": "Deep dive into the SGR (Schema-Guided Reasoning) pattern vs standard Function Calling."
+    },
+    {
+      "source_ref": "P0118.C0005",
+      "source_kind": "community_comment",
+      "post_id": 3573,
+      "telegram_message_id": 320,
+      "comment_id": 34386,
+      "telegram_comment_id": 1151,
+      "created_at": "2025-10-22 11:38:49.000000",
+      "why_used": "Community debate on whether SGR is an architecture or just a prompt pattern."
+    },
+    {
+      "source_ref": "P0119",
+      "source_kind": "expert_post",
+      "post_id": 3574,
+      "telegram_message_id": 321,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-10-20 19:29:31.000000",
+      "why_used": "Explanation of Claude Skills vs MCP and token optimization."
+    },
+    {
+      "source_ref": "P0123",
+      "source_kind": "expert_post",
+      "post_id": 3579,
+      "telegram_message_id": 333,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-10-30 10:47:00.000000",
+      "why_used": "Critical analysis of decentralized GPU networks (Cocoon) and TEE vulnerabilities."
+    },
+    {
+      "source_ref": "P0126",
+      "source_kind": "expert_post",
+      "post_id": 3582,
+      "telegram_message_id": 339,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-14 19:51:28.000000",
+      "why_used": "Discussion on 'shitcoding' (vibe-coding) and how AI lowers the barrier to entry for non-developers."
+    },
+    {
+      "source_ref": "P0149",
+      "source_kind": "expert_post",
+      "post_id": 3613,
+      "telegram_message_id": 393,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-09 13:24:12.000000",
+      "why_used": "Practical setup guide for using iTerm2 with Claude Code."
+    },
+    {
+      "source_ref": "P0151",
+      "source_kind": "expert_post",
+      "post_id": 3615,
+      "telegram_message_id": 397,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-11 07:22:11.000000",
+      "why_used": "Analysis of Enterprise RAG Challenge 3 and prompt overfitting in production."
+    },
+    {
+      "source_ref": "P0156",
+      "source_kind": "expert_post",
+      "post_id": 3620,
+      "telegram_message_id": 410,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-16 07:17:01.000000",
+      "why_used": "Detailed breakdown of 4 methods for sorting data with LLMs, highlighting TrueSkill."
+    },
+    {
+      "source_ref": "P0160",
+      "source_kind": "expert_post",
+      "post_id": 3625,
+      "telegram_message_id": 420,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-21 07:26:01.000000",
+      "why_used": "Hack for using Gemini CLI with --yolo flag for free web scraping."
+    },
+    {
+      "source_ref": "P0162",
+      "source_kind": "expert_post",
+      "post_id": 3628,
+      "telegram_message_id": 423,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-22 12:15:43.000000",
+      "why_used": "Creation of a custom Claude Skill for Yandex Wordstat to automate marketing analysis."
+    },
+    {
+      "source_ref": "P0165",
+      "source_kind": "expert_post",
+      "post_id": 3631,
+      "telegram_message_id": 434,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-25 19:29:27.000000",
+      "why_used": "Security analysis of YOLO mode in Claude Code and prompt injection risks."
+    },
+    {
+      "source_ref": "P0167",
+      "source_kind": "expert_post",
+      "post_id": 3633,
+      "telegram_message_id": 442,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-27 12:17:45.000000",
+      "why_used": "Development of an SSH skill for Claude to fix production bugs autonomously."
+    },
+    {
+      "source_ref": "P0168",
+      "source_kind": "expert_post",
+      "post_id": 3634,
+      "telegram_message_id": 443,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-28 06:54:01.000000",
+      "why_used": "Security warning regarding moltbot and WhatsApp session hijacking via prompt injection."
+    },
+    {
+      "source_ref": "P0172",
+      "source_kind": "expert_post",
+      "post_id": 4460,
+      "telegram_message_id": 452,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-02 09:48:49.000000",
+      "why_used": "Insights on using GPT-5.2 in Codex CLI for code review and managing token limits."
+    },
+    {
+      "source_ref": "P0173",
+      "source_kind": "expert_post",
+      "post_id": 4461,
+      "telegram_message_id": 453,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-03 06:12:01.000000",
+      "why_used": "Comparison of Codex Desktop vs Claude Cowork for office automation tasks."
+    },
+    {
+      "source_ref": "P0174",
+      "source_kind": "expert_post",
+      "post_id": 4483,
+      "telegram_message_id": 457,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-04 06:10:24.000000",
+      "why_used": "Introduction of the multi-agent pattern: Claude writes code, Codex reviews it."
+    },
+    {
+      "source_ref": "P0186",
+      "source_kind": "expert_post",
+      "post_id": 5118,
+      "telegram_message_id": 487,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-16 06:05:28.000000",
+      "why_used": "Advanced marketing automation: auditing Yandex.Direct campaigns via Claude Skills."
+    },
+    {
+      "source_ref": "P0188",
+      "source_kind": "expert_post",
+      "post_id": 7401,
+      "telegram_message_id": 525,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-03-06 16:22:02.000000",
+      "why_used": "Testing open-source models (Qwen, GLM) on real business tasks via ValeDesk."
+    },
+    {
+      "source_ref": "P0188.C0006",
+      "source_kind": "community_comment",
+      "post_id": 7401,
+      "telegram_message_id": 525,
+      "comment_id": 54542,
+      "telegram_comment_id": 2764,
+      "created_at": "2026-02-19 12:09:48.000000",
+      "why_used": "Community insight on the actual hardware costs (GPUs) required for local LLM inference."
+    },
+    {
+      "source_ref": "P0199",
+      "source_kind": "expert_post",
+      "post_id": 7240,
+      "telegram_message_id": 517,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-03-03 15:41:42.000000",
+      "why_used": "Creation of a Yandex.Metrika skill for Claude to automate traffic audits."
+    },
+    {
+      "source_ref": "P0203",
+      "source_kind": "expert_post",
+      "post_id": 7402,
+      "telegram_message_id": 526,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-03-06 16:22:03.000000",
+      "why_used": "Critique of monolithic AGENTS.md files and advocacy for modular context management."
+    },
+    {
+      "source_ref": "P0209",
+      "source_kind": "expert_post",
+      "post_id": 7408,
+      "telegram_message_id": 535,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-03-15 12:40:20.000000",
+      "why_used": "Analysis of the economics of 1M token context windows and prompt caching in Claude."
+    },
+    {
+      "source_ref": "P0210",
+      "source_kind": "expert_post",
+      "post_id": 7409,
+      "telegram_message_id": 541,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-03-16 17:21:08.000000",
+      "why_used": "Architectural shift from using multiple skills to using specialized sub-agents in OpenClaw."
+    },
+    {
+      "source_ref": "P0230",
+      "source_kind": "expert_post",
+      "post_id": 8132,
+      "telegram_message_id": 574,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-07 06:03:01.000000",
+      "why_used": "Deep technical breakdown of how Tool Calling works across HTTP, Chat Templates, and Parsers."
+    },
+    {
+      "source_ref": "P0230.C0002",
+      "source_kind": "community_comment",
+      "post_id": 8132,
+      "telegram_message_id": 574,
+      "comment_id": 90305,
+      "telegram_comment_id": 4765,
+      "created_at": "2026-04-07 06:21:46.000000",
+      "why_used": "Community member (Valerii Kovalskii) explaining the exact mechanics of tool calling in vLLM."
+    },
+    {
+      "source_ref": "P0231",
+      "source_kind": "expert_post",
+      "post_id": 8133,
+      "telegram_message_id": 575,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-07 07:34:44.000000",
+      "why_used": "Strategy for using RAG to dynamically load tools and save context tokens."
+    },
+    {
+      "source_ref": "P0240",
+      "source_kind": "expert_post",
+      "post_id": 9682,
+      "telegram_message_id": 587,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-19 06:39:23.000000",
+      "why_used": "Analysis of 'Prior Prejudice' in LLMs, proving models are biased toward their own generated code."
+    },
+    {
+      "source_ref": "P0241",
+      "source_kind": "expert_post",
+      "post_id": 9683,
+      "telegram_message_id": 588,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-16 06:05:14.000000",
+      "why_used": "Comparison of desktop applications for AI coding (Lovable, Codex App, Claude Desktop)."
+    },
+    {
+      "source_ref": "P0242",
+      "source_kind": "expert_post",
+      "post_id": 9684,
+      "telegram_message_id": 589,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-17 06:02:01.000000",
+      "why_used": "Review of the Mastra agent framework and its benefits for observability over pure Python scripts."
+    },
+    {
+      "source_ref": "P0248",
+      "source_kind": "expert_post",
+      "post_id": 9860,
+      "telegram_message_id": 611,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-23 09:09:59.000000",
+      "why_used": "Comprehensive guide on the anatomy of a Claude Skill (SKILL.md, scripts, config, assets)."
+    },
+    {
+      "source_ref": "P0250",
+      "source_kind": "expert_post",
+      "post_id": 9862,
+      "telegram_message_id": 613,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-25 07:53:22.000000",
+      "why_used": "Post-mortem analysis of Anthropic's agent degradation, emphasizing the need to treat AI agents as unstable system components."
+    },
+    {
+      "source_ref": "P0131",
+      "source_kind": "expert_post",
+      "post_id": 3590,
+      "telegram_message_id": 349,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-12-13 18:37:40.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0140",
+      "source_kind": "expert_post",
+      "post_id": 3602,
+      "telegram_message_id": 373,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-12-29 18:38:13.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0247",
+      "source_kind": "expert_post",
+      "post_id": 9859,
+      "telegram_message_id": 606,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-22 11:43:40.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0253",
+      "source_kind": "expert_post",
+      "post_id": 9865,
+      "telegram_message_id": 616,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-27 06:28:18.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    }
+  ],
+  "executive_summary": {
+    "one_sentence_positioning": "A deep-practitioner channel focused on building, deploying, and optimizing AI agents (Claude Code, Codex, OpenClaw) and integrating them into real-world business and marketing workflows.",
+    "strongest_system_value": "Exceptional practical depth in AI agent architectures, custom Claude Skills development, token optimization, and applied AI for marketing/SEO automation.",
+    "weakest_system_value": "Less focus on foundational model training or theoretical ML research outside of applied fine-tuning for specific business tasks.",
+    "best_fit_queries": [
+      "design_agentic_dev_workflow",
+      "build_human_ai_workflow",
+      "optimize_inference_cost_latency",
+      "manage_security_privacy_governance"
+    ],
+    "poor_fit_queries": [
+      "learn_basic_python",
+      "train_foundation_model"
+    ],
+    "confidence": 0.95
+  },
+  "expert_positioning": {
+    "primary_role": "AI Integration Architect & Marketing Automation Expert",
+    "audience": [
+      "AI Engineers",
+      "Product Managers",
+      "Marketers",
+      "Founders"
+    ],
+    "voice": [
+      "Technical",
+      "Pragmatic",
+      "Analytical",
+      "Skeptical of hype"
+    ],
+    "worldview": [
+      "AI should solve real business problems, not just generate text",
+      "Local models and open-source frameworks are crucial for privacy and cost-efficiency",
+      "The barrier to coding has dropped, shifting value to product thinking and architecture",
+      "AI agents are unstable system components; workflows must be designed for failure and fallback"
+    ],
+    "distinctive_angle": "Combines 20 years of IT and 10+ years of advertising experience to build highly specific, ROI-driven AI tools (e.g., Yandex.Direct minus-phrase automation, custom Claude Skills).",
+    "recurring_formats": [
+      "Technical tutorials",
+      "Tool reviews (Claude Code, Codex, Lovable)",
+      "Open-source skill releases",
+      "Business case breakdowns"
+    ],
+    "evidence_refs": [
+      "P0096",
+      "P0057",
+      "P0126",
+      "P0188",
+      "P0250"
+    ]
+  },
+  "knowledge_domains": [
+    {
+      "domain_id": "agent_ops",
+      "domain_name": "Agent Operations & Architecture",
+      "subdomain_ids": [
+        "claude_code_workflows",
+        "codex_workflows",
+        "agentic_dev_process",
+        "mcp_tooling",
+        "multi_agent_orchestration",
+        "tool_calling_hooks_skills"
+      ],
+      "query_intent_ids": [
+        "design_agentic_dev_workflow",
+        "debug_agent_failure"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "unique",
+      "what_the_expert_knows": [
+        "How to build and optimize custom Claude Skills (SKILL.md, scripts, config, assets).",
+        "The exact mechanics of tool calling across HTTP, Chat Templates, and Parsers.",
+        "How to orchestrate multi-agent workflows (e.g., Claude writes, Codex reviews).",
+        "How to manage context windows and token costs effectively (e.g., RAG for tools, caching)."
+      ],
+      "how_they_reason": [
+        "Prefers modular, dynamic context loading over monolithic AGENTS.md files.",
+        "Treats AI agents as unstable components that require strict guardrails, fallbacks, and external memory.",
+        "Values practical business impact (time/cost saved) over theoretical model benchmarks."
+      ],
+      "missing_or_weak_subtopics": [
+        "Deep reinforcement learning theory",
+        "Pre-training foundation models"
+      ],
+      "evidence_refs": [
+        "P0119",
+        "P0167",
+        "P0174",
+        "P0210",
+        "P0230",
+        "P0242",
+        "P0248"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "domain_id": "coding_agents",
+      "domain_name": "AI Coding Assistants",
+      "subdomain_ids": [
+        "claude_code_workflows",
+        "codex_workflows",
+        "cursor_windsurf_copilot"
+      ],
+      "query_intent_ids": [
+        "choose_ai_coding_tool",
+        "learn_ai_assisted_development"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "Strengths and weaknesses of Claude Code, OpenAI Codex, Cursor, and Lovable.",
+        "How to set up local environments (iTerm2, Agent Deck) for optimal AI coding.",
+        "How to bypass regional restrictions and manage API limits for coding agents."
+      ],
+      "how_they_reason": [
+        "Evaluates tools based on their ability to handle complex refactoring vs. simple generation.",
+        "Believes 'vibe-coding' lowers the barrier to entry but requires strong architectural oversight."
+      ],
+      "missing_or_weak_subtopics": [],
+      "evidence_refs": [
+        "P0039",
+        "P0098",
+        "P0149",
+        "P0172",
+        "P0173",
+        "P0241"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "domain_id": "ai_product_pm",
+      "domain_name": "AI in Marketing & Product Management",
+      "subdomain_ids": [
+        "ai_product_strategy",
+        "pm_workflow",
+        "roi_business_cases"
+      ],
+      "query_intent_ids": [
+        "plan_ai_product_feature",
+        "assess_ai_tool_business_adoption"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "practical",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "How to automate Yandex.Direct minus-phrases using fine-tuned LLMs.",
+        "How to build Claude Skills for Yandex Wordstat and Metrika to automate SEO/marketing audits.",
+        "The ROI of replacing human operators with AI voice agents (e.g., ElevenLabs)."
+      ],
+      "how_they_reason": [
+        "Focuses on automating tedious, high-volume marketing tasks rather than replacing creative strategy.",
+        "Calculates exact token costs and compares them against human labor costs."
+      ],
+      "missing_or_weak_subtopics": [
+        "B2C consumer app growth strategies"
+      ],
+      "evidence_refs": [
+        "P0057",
+        "P0086",
+        "P0162",
+        "P0186",
+        "P0199"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "domain_id": "security_privacy_governance",
+      "domain_name": "Security, Privacy & Governance",
+      "subdomain_ids": [
+        "security_privacy_controls",
+        "governance_risk",
+        "local_agent_setup"
+      ],
+      "query_intent_ids": [
+        "manage_security_privacy_governance"
+      ],
+      "coverage_level": "moderate",
+      "depth_level": "practical",
+      "system_value": "medium",
+      "what_the_expert_knows": [
+        "How to comply with Russian RKN (Roskomnadzor) regulations regarding personal data and AI.",
+        "The risks of prompt injections in AI agents (e.g., YOLO mode in Claude Code, moltbot vulnerabilities).",
+        "How to deploy local open-source models (GLM, Qwen) to keep data within a corporate perimeter."
+      ],
+      "how_they_reason": [
+        "Prioritizes practical security (e.g., sandboxing, hooks) over theoretical risks.",
+        "Views local models as essential for enterprise privacy, despite their current reasoning limitations compared to cloud SOTA models."
+      ],
+      "missing_or_weak_subtopics": [
+        "Enterprise-grade red teaming"
+      ],
+      "evidence_refs": [
+        "P0091",
+        "P0165",
+        "P0168",
+        "P0188"
+      ],
+      "confidence": 0.85
+    }
+  ],
+  "value_dimensions": [
+    {
+      "dimension_id": "insight_density",
+      "score_0_5": 5,
+      "rationale": "Consistently delivers deep, non-obvious insights into how AI tools actually work under the hood (e.g., tool calling mechanics, SGR vs ReAct, token caching).",
+      "evidence_refs": [
+        "P0118",
+        "P0209",
+        "P0230",
+        "P0240"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "practical_specificity",
+      "score_0_5": 5,
+      "rationale": "Provides actual code, GitHub repositories, configuration files, and step-by-step guides for almost every concept discussed.",
+      "evidence_refs": [
+        "P0162",
+        "P0167",
+        "P0199",
+        "P0248"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "evidence_quality",
+      "score_0_5": 5,
+      "rationale": "Claims are backed by real-world testing, cost calculations, and direct comparisons of models on specific business tasks.",
+      "evidence_refs": [
+        "P0105",
+        "P0151",
+        "P0156",
+        "P0173"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "dimension_id": "decision_value",
+      "score_0_5": 5,
+      "rationale": "Offers clear, actionable advice on tool selection, architecture design, and cost optimization for AI development.",
+      "evidence_refs": [
+        "P0162",
+        "P0174",
+        "P0242",
+        "P0250"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "dimension_id": "anti_hype_signal",
+      "score_0_5": 4,
+      "rationale": "Regularly debunks AI hype, pointing out the flaws, costs, and unreliability of tools like Sora, OpenClaw, and various SaaS wrappers.",
+      "evidence_refs": [
+        "P0105",
+        "P0123",
+        "P0168",
+        "P0250"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "matrix_cells": [
+    {
+      "domain_id": "agent_ops",
+      "subdomain_id": "tool_calling_hooks_skills",
+      "subdomain_name": "Tool Calling & Skills Architecture",
+      "query_intent_ids": [
+        "design_agentic_dev_workflow"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 5,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0119",
+        "P0167",
+        "P0230",
+        "P0248"
+      ],
+      "notes": "Exceptional breakdown of Claude Skills vs MCP, including the exact mechanics of tool calling across HTTP, Chat Templates, and Parsers."
+    },
+    {
+      "domain_id": "coding_agents",
+      "subdomain_id": "claude_code_workflows",
+      "subdomain_name": "Claude Code Workflows",
+      "query_intent_ids": [
+        "learn_ai_assisted_development",
+        "choose_ai_coding_tool"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 5,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0109",
+        "P0149",
+        "P0174",
+        "P0241"
+      ],
+      "notes": "Deep practical experience with Claude Code, including setting up iTerm2, managing context, and using sub-agents."
+    },
+    {
+      "domain_id": "coding_agents",
+      "subdomain_id": "codex_workflows",
+      "subdomain_name": "OpenAI Codex Workflows",
+      "query_intent_ids": [
+        "learn_ai_assisted_development",
+        "choose_ai_coding_tool"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 4,
+      "comment_signal_score_0_5": 3,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0098",
+        "P0172",
+        "P0173"
+      ],
+      "notes": "Valuable insights on using Codex for code review and managing its token consumption."
+    },
+    {
+      "domain_id": "ai_product_pm",
+      "subdomain_id": "ai_product_strategy",
+      "subdomain_name": "AI in Marketing & SEO",
+      "query_intent_ids": [
+        "plan_ai_product_feature"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 4,
+      "comment_signal_score_0_5": 3,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0057",
+        "P0162",
+        "P0186",
+        "P0199"
+      ],
+      "notes": "Unique intersection of AI agent development and deep marketing/SEO expertise (Yandex.Direct, Wordstat, Metrika)."
+    },
+    {
+      "domain_id": "evals_quality",
+      "subdomain_id": "llm_evals",
+      "subdomain_name": "LLM Evaluation & Sorting",
+      "query_intent_ids": [
+        "build_ai_dev_eval"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 4,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 4,
+      "comment_signal_score_0_5": 2,
+      "recommended_matrix_weight": "normal",
+      "evidence_refs": [
+        "P0112",
+        "P0156",
+        "P0240"
+      ],
+      "notes": "Strong analysis of LLM sorting methods (TrueSkill) and biases (Prior Prejudice in LLM-as-a-Judge)."
+    }
+  ],
+  "query_intent_fit": [
+    {
+      "query_intent_id": "design_agentic_dev_workflow",
+      "query_intent_name": "Design Agentic Development Workflow",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "agent_ops",
+        "coding_agents"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "The expert provides comprehensive, code-backed guides on building agent workflows, managing context, and creating custom skills.",
+      "limitations": [],
+      "evidence_refs": [
+        "P0119",
+        "P0167",
+        "P0174",
+        "P0210",
+        "P0242",
+        "P0248"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "query_intent_id": "choose_ai_coding_tool",
+      "query_intent_name": "Choose AI Coding Tool",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "coding_agents"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "Offers detailed, ongoing comparisons of Claude Code, Codex, Cursor, and Lovable based on real-world usage and token costs.",
+      "limitations": [],
+      "evidence_refs": [
+        "P0098",
+        "P0109",
+        "P0172",
+        "P0173",
+        "P0241"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "query_intent_id": "optimize_inference_cost_latency",
+      "query_intent_name": "Optimize Inference Cost & Latency",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "agent_ops"
+      ],
+      "source_utility_score_0_5": 4.5,
+      "why": "Frequently analyzes token consumption, caching strategies, and the economics of different API tiers and local models.",
+      "limitations": [
+        "Focuses more on API costs than low-level hardware optimization."
+      ],
+      "evidence_refs": [
+        "P0119",
+        "P0209",
+        "P0231"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "query_intent_id": "manage_security_privacy_governance",
+      "query_intent_name": "Manage Security, Privacy & Governance",
+      "fit_role": "supporting",
+      "best_domain_ids": [
+        "security_privacy_governance"
+      ],
+      "source_utility_score_0_5": 4,
+      "why": "Provides practical advice on RKN compliance in Russia and tests prompt injection vulnerabilities in AI agents.",
+      "limitations": [
+        "Security analysis is practical but not at the level of a dedicated cybersecurity researcher."
+      ],
+      "evidence_refs": [
+        "P0091",
+        "P0165",
+        "P0168"
+      ],
+      "confidence": 0.85
+    }
+  ],
+  "content_quality_distribution": [
+    {
+      "category_id": "deep_practitioner",
+      "share_estimate_0_1": 0.4,
+      "system_value": "high",
+      "notes": "Deep dives into agent architectures, tool calling mechanics, and token optimization.",
+      "evidence_refs": [
+        "P0118",
+        "P0230",
+        "P0248",
+        "P0250"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "howto_or_checklist",
+      "share_estimate_0_1": 0.3,
+      "system_value": "high",
+      "notes": "Step-by-step guides for setting up tools, creating skills, and configuring environments.",
+      "evidence_refs": [
+        "P0091",
+        "P0149",
+        "P0162",
+        "P0199"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "tool_release_with_analysis",
+      "share_estimate_0_1": 0.2,
+      "system_value": "high",
+      "notes": "Reviews of new tools (Codex, Lovable, Veo3) with practical tests and cost breakdowns.",
+      "evidence_refs": [
+        "P0098",
+        "P0105",
+        "P0173",
+        "P0241"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "commentary",
+      "share_estimate_0_1": 0.1,
+      "system_value": "medium",
+      "notes": "Opinions on industry trends, AI economics, and the future of coding.",
+      "evidence_refs": [
+        "P0126",
+        "P0131",
+        "P0253"
+      ],
+      "confidence": 0.85
+    }
+  ],
+  "matrix_export": {
+    "schema_version": "knowledge_matrix_export.v1",
+    "expert_id": "polyakov",
+    "cells": [
+      {
+        "cell_id": "agent_ops/tool_calling_hooks_skills/design_agentic_dev_workflow",
+        "domain_id": "agent_ops",
+        "subdomain_id": "tool_calling_hooks_skills",
+        "subdomain_name": "Tool Calling & Skills Architecture",
+        "query_intent_ids": [
+          "design_agentic_dev_workflow"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 5,
+          "evidence_quality": 5,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 5,
+          "anti_hype": 4,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0119",
+          "P0167",
+          "P0230",
+          "P0248"
+        ],
+        "confidence": 0.95
+      },
+      {
+        "cell_id": "coding_agents/claude_code_workflows/learn_ai_assisted_development",
+        "domain_id": "coding_agents",
+        "subdomain_id": "claude_code_workflows",
+        "subdomain_name": "Claude Code Workflows",
+        "query_intent_ids": [
+          "learn_ai_assisted_development",
+          "choose_ai_coding_tool"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 5,
+          "evidence_quality": 5,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 4,
+          "anti_hype": 4,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0109",
+          "P0149",
+          "P0174",
+          "P0241"
+        ],
+        "confidence": 0.95
+      },
+      {
+        "cell_id": "ai_product_pm/ai_product_strategy/plan_ai_product_feature",
+        "domain_id": "ai_product_pm",
+        "subdomain_id": "ai_product_strategy",
+        "subdomain_name": "AI in Marketing & SEO",
+        "query_intent_ids": [
+          "plan_ai_product_feature"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "practical",
+        "source_role": "primary",
+        "scores": {
+          "depth": 4,
+          "practicality": 5,
+          "evidence_quality": 4,
+          "source_utility": 4,
+          "intrinsic_distinctiveness": 5,
+          "anti_hype": 4,
+          "community_signal": 3
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0057",
+          "P0162",
+          "P0186",
+          "P0199"
+        ],
+        "confidence": 0.9
+      },
+      {
+        "cell_id": "coding_agents/codex_workflows/learn_ai_assisted_development",
+        "domain_id": "coding_agents",
+        "subdomain_id": "codex_workflows",
+        "subdomain_name": "OpenAI Codex Workflows",
+        "query_intent_ids": [
+          "learn_ai_assisted_development",
+          "choose_ai_coding_tool"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "practical",
+        "source_role": "primary",
+        "scores": {
+          "depth": 4.0,
+          "practicality": 5.0,
+          "evidence_quality": 4.0,
+          "source_utility": 4.0,
+          "intrinsic_distinctiveness": 4.0,
+          "anti_hype": 0.0,
+          "community_signal": 3.0
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [
+          "Deterministically repaired from matrix_cells because matrix_export omitted this matrix-worthy cell."
+        ],
+        "evidence_refs": [
+          "P0098",
+          "P0172",
+          "P0173"
+        ],
+        "derived_from": "matrix_cells",
+        "repair_reason": "matrix_export_omitted_strong_or_signature_cell"
+      }
+    ],
+    "compare_hints": {
+      "likely_unique_cells": [
+        "ai_product_pm/ai_product_strategy/plan_ai_product_feature"
+      ],
+      "likely_duplicate_cells": [],
+      "cells_requiring_probe": [
+        "agent_ops/tool_calling_hooks_skills/design_agentic_dev_workflow"
+      ],
+      "matrix_only_decision_confidence": "medium"
+    }
+  },
+  "signature_insights": [
+    {
+      "insight": "SGR (Schema-Guided Reasoning) forces models to choose a tool via structured output, eliminating the 'fork' where small models fail to call tools, making it a distinct agent architecture rather than just a prompt pattern.",
+      "why_it_matters_for_experts_panel": "Provides a robust architectural pattern for building reliable agents, especially when using smaller or local models.",
+      "applicable_query_types": [
+        "design_agentic_dev_workflow"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0118",
+        "P0118.C0005"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "insight": "Claude Skills (markdown instructions loaded on demand) save massive amounts of context tokens compared to MCPs, which load all tool schemas upfront and bloat the context window.",
+      "why_it_matters_for_experts_panel": "Crucial for optimizing token costs and context window efficiency in agentic workflows.",
+      "applicable_query_types": [
+        "optimize_inference_cost_latency",
+        "design_agentic_dev_workflow"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0119",
+        "P0231"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "insight": "LLMs fail at bulk sorting due to positional bias. Using TrueSkill batch comparisons yields much higher correlation with real-world quality/virality.",
+      "why_it_matters_for_experts_panel": "Provides a mathematically sound method for using LLMs to evaluate and sort large datasets.",
+      "applicable_query_types": [
+        "build_ai_dev_eval"
+      ],
+      "novelty_level": "useful_packaging",
+      "evidence_refs": [
+        "P0156"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "insight": "Models of the same family (e.g., Claude reviewing Claude) exhibit 'Prior Prejudice' and will approve flawed code because they recognize their own generation patterns. Cross-model review is essential.",
+      "why_it_matters_for_experts_panel": "Fundamental principle for designing reliable AI code review pipelines.",
+      "applicable_query_types": [
+        "design_agentic_dev_workflow",
+        "build_ai_dev_eval"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0174",
+        "P0240"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "insight": "Large universal AGENTS.md files are an anti-pattern that wastes tokens. Context should be modular, using skills and nested rules to load only what is necessary.",
+      "why_it_matters_for_experts_panel": "Best practice for managing context in AI coding assistants like Cursor and Claude Code.",
+      "applicable_query_types": [
+        "design_agentic_dev_workflow",
+        "optimize_inference_cost_latency"
+      ],
+      "novelty_level": "useful_packaging",
+      "evidence_refs": [
+        "P0203"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "practical_patterns": [
+    {
+      "pattern": "Codex Review Pattern",
+      "when_to_use": "When using Claude Code for implementation, to catch security and logic flaws that Claude might miss due to self-preference bias.",
+      "failure_modes": [
+        "Using models from the same family for both generation and review leads to missed bugs."
+      ],
+      "evidence_refs": [
+        "P0174",
+        "P0240"
+      ]
+    },
+    {
+      "pattern": "Agentic Web Scraping with Gemini CLI",
+      "when_to_use": "When needing to scrape websites that block standard bots, utilizing Google's infrastructure for high success rates.",
+      "failure_modes": [
+        "Using the `--yolo` flag poses severe security risks if the scraped page contains prompt injections."
+      ],
+      "evidence_refs": [
+        "P0160"
+      ]
+    },
+    {
+      "pattern": "Local Agent Memory via Files",
+      "when_to_use": "When an agent needs to remember specific client rules or corrections without fine-tuning or bloating the main context window.",
+      "failure_modes": [
+        "Relying on the LLM's internal context window, which gets compacted and loses details over long sessions."
+      ],
+      "evidence_refs": [
+        "P0140",
+        "P0250"
+      ]
+    }
+  ],
+  "claims_and_positions": [
+    {
+      "claim": "Vibe-coding lowers the barrier to entry, shifting value from writing code to product management and architecture.",
+      "stance": "supports",
+      "decision_relevance": "Guides hiring and skill development strategies in the AI era.",
+      "dispute_risk": "medium",
+      "evidence_refs": [
+        "P0126",
+        "P0131"
+      ]
+    },
+    {
+      "claim": "Local LLMs are essential for enterprise privacy but currently lag behind SOTA cloud models in complex reasoning tasks.",
+      "stance": "mixed",
+      "decision_relevance": "Helps enterprises decide between cloud APIs and on-premise deployments.",
+      "dispute_risk": "low",
+      "evidence_refs": [
+        "P0188",
+        "P0188.C0006"
+      ]
+    },
+    {
+      "claim": "AI agents are unstable system components; workflows must be designed for failure, fallback, and external memory.",
+      "stance": "supports",
+      "decision_relevance": "Crucial for designing robust production systems using LLMs.",
+      "dispute_risk": "low",
+      "evidence_refs": [
+        "P0250"
+      ]
+    }
+  ],
+  "source_utility": {
+    "best_use_cases": [
+      "Building custom Claude Skills",
+      "Setting up local AI agents (OpenClaw, ZeroClaw)",
+      "Automating marketing and SEO tasks with AI",
+      "Comparing AI coding assistants and managing token costs"
+    ],
+    "bad_use_cases": [
+      "Training foundation models from scratch",
+      "Basic Python tutorials"
+    ],
+    "retrieval_keywords": [
+      "Claude Code",
+      "Codex",
+      "OpenClaw",
+      "MCP",
+      "Claude Skills",
+      "Yandex.Direct",
+      "Wordstat",
+      "Vibe-coding",
+      "SGR",
+      "TrueSkill"
+    ],
+    "source_selection_hints": [
+      "Select when the user needs practical, code-level advice on integrating AI agents into business workflows.",
+      "Select when the user is struggling with token costs or context window management in Claude or OpenAI."
+    ],
+    "expected_overlap_hypotheses": [
+      "Likely overlaps with other AI coding channels (e.g., @neuraldeep, @evilfreelancer) on topics like MCP and local models."
+    ],
+    "recommended_panex_role": "primary_expert"
+  },
+  "community_signal": {
+    "comment_themes": [
+      "Technical troubleshooting of AI tools (Claude Code, OpenClaw)",
+      "Sharing alternative open-source tools and scripts",
+      "Debating architectural patterns (SGR vs ReAct, MCP vs Skills)",
+      "Discussing AI costs, API limits, and subscription bans"
+    ],
+    "questions_from_audience": [
+      "How to bypass regional blocks for AI tools?",
+      "Which local model is best for coding?",
+      "How to optimize token usage in Claude Code?"
+    ],
+    "disagreements_or_corrections": [
+      "Debates on whether SGR is just a prompt pattern or a distinct agent architecture (P0118.C0005).",
+      "Discussions on the exact mechanics of tool calling in vLLM vs API (P0230.C0002)."
+    ],
+    "practical_feedback": [
+      "Community members frequently test the expert's GitHub repos and provide PRs or bug reports.",
+      "Users share their own hardware setups and cost calculations for local LLMs."
+    ],
+    "noise_or_low_value_patterns": [
+      "Occasional off-topic banter or requests for free subscription invites."
+    ],
+    "evidence_refs": [
+      "P0118.C0005",
+      "P0230.C0002",
+      "P0188.C0006"
+    ]
+  },
+  "admission_implications": {
+    "if_candidate_verdict": "accept",
+    "verdict_rationale": "Polyakov provides exceptionally deep, practitioner-level insights into AI agent architectures, custom skill development, and marketing automation. His content is highly technical, evidence-based, and directly applicable to AI-assisted development.",
+    "unique_value_claims_to_verify_against_matrix": [
+      "Integration of AI agents with Russian marketing tools (Yandex.Direct, Wordstat, Metrika)."
+    ],
+    "likely_duplicate_areas_to_check": [
+      "General comparisons of Claude vs ChatGPT.",
+      "Basic explanations of RAG."
+    ],
+    "minimum_followup_probe_queries": [
+      "How does Polyakov's approach to Claude Skills compare to standard MCP implementations?"
+    ],
+    "risk_notes": [
+      "Some advice involves 'gray area' workarounds (e.g., bypassing regional blocks, using undocumented APIs), which may not be suitable for strict enterprise environments."
+    ]
+  },
+  "audit": {
+    "unsupported_or_weak_claims": [],
+    "abstentions": [],
+    "possible_model_errors": [],
+    "source_refs_used": [
+      "P0039",
+      "P0050",
+      "P0057",
+      "P0086",
+      "P0091",
+      "P0096",
+      "P0098",
+      "P0105",
+      "P0109",
+      "P0112",
+      "P0118",
+      "P0118.C0005",
+      "P0119",
+      "P0123",
+      "P0126",
+      "P0131",
+      "P0140",
+      "P0149",
+      "P0151",
+      "P0156",
+      "P0160",
+      "P0162",
+      "P0165",
+      "P0167",
+      "P0168",
+      "P0172",
+      "P0173",
+      "P0174",
+      "P0186",
+      "P0188",
+      "P0188.C0006",
+      "P0199",
+      "P0203",
+      "P0209",
+      "P0210",
+      "P0230",
+      "P0230.C0002",
+      "P0231",
+      "P0240",
+      "P0241",
+      "P0242",
+      "P0247",
+      "P0248",
+      "P0250",
+      "P0253"
+    ],
+    "source_refs_most_important": [
+      "P0096",
+      "P0118",
+      "P0119",
+      "P0156",
+      "P0162",
+      "P0174",
+      "P0230",
+      "P0240",
+      "P0250"
+    ],
+    "normalization_notes": [
+      {
+        "operation": "repair_matrix_export_from_matrix_cells",
+        "repaired_cell_count": 1,
+        "repaired_cell_ids": [
+          "coding_agents/codex_workflows/learn_ai_assisted_development"
+        ],
+        "skipped_cell_count": 0,
+        "skipped_cells": []
+      },
+      {
+        "operation": "hydrate_source_ref_index_used",
+        "hydrated_ref_count": 4,
+        "generated_at_set_from_manifest": "2026-05-10T00:39:39.908119+00:00"
+      }
+    ]
+  }
+}

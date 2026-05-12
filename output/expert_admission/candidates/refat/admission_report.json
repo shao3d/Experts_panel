@@ -1,0 +1,47 @@
+{
+  "schema_version": "candidate_admission_report.v0.1",
+  "created_at": "2026-05-12",
+  "candidate_id": "refat",
+  "display_name": "Refat (Tech & AI)",
+  "channel_username": null,
+  "verdict": "accept",
+  "decision_mode": "current_roster_seed_backfilled_semantic_review",
+  "based_on": {
+    "semantic_passport": "output/expert_admission/semantic_passports/refat/output/refat_semantic_passport.normalized.json",
+    "knowledge_matrix_after_backfill": "output/expert_admission/knowledge_matrix/knowledge_matrix.md"
+  },
+  "preflight_summary": {
+    "status": "not_rerun_seed_backfill",
+    "reason": "Backfill records the accepted seed rationale; it does not re-run admission."
+  },
+  "accepted_cells": [
+    {
+      "cell_id": "agent_ops/claude_code_workflows/design_agentic_dev_workflow",
+      "classification": "seed_primary_value",
+      "admission_interpretation": "practical_claude_code_workflow_and_context_management"
+    },
+    {
+      "cell_id": "rag_retrieval_knowledge/knowledge_base_design/design_rag_knowledge_base",
+      "classification": "seed_primary_value",
+      "admission_interpretation": "file_first_knowledge_base_design_and_anti_hype_rag_comparison"
+    },
+    {
+      "cell_id": "ai_engineering_infra/llm_evals/build_ai_dev_eval",
+      "classification": "supporting",
+      "admission_interpretation": "applied_ai_eval_principles"
+    },
+    {
+      "cell_id": "ai_engineering_infra/deployment_observability/build_ai_dev_eval",
+      "classification": "supporting",
+      "admission_interpretation": "ai_observability_and_tracing"
+    }
+  ],
+  "taxonomy_updates": [],
+  "routing_notes": [
+    "Strong fit for pragmatic AI engineering, Claude Code workflow, file-first knowledge bases, and context management.",
+    "Supporting fit for AI observability, tracing, and eval principles.",
+    "Avoid foundational ML theory or model-training routing."
+  ],
+  "recommended_manifest_caveat": "accepted as pragmatic AI-engineering, file-first knowledge-base, and Claude Code workflow seed expert; eval/observability cells are useful but probe-worthy, avoid routing for foundational ML theory",
+  "next_action": "keep_as_accepted_seed_expert_with_manifest_routing_caveat"
+}

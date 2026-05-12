@@ -1,0 +1,47 @@
+{
+  "schema_version": "candidate_admission_report.v0.1",
+  "created_at": "2026-05-12",
+  "candidate_id": "ai_architect",
+  "display_name": "AI Architect",
+  "channel_username": null,
+  "verdict": "accept",
+  "decision_mode": "current_roster_seed_backfilled_semantic_review",
+  "based_on": {
+    "semantic_passport": "output/expert_admission/semantic_passports/ai_architect/output/ai_architect_semantic_passport.normalized.json",
+    "knowledge_matrix_after_backfill": "output/expert_admission/knowledge_matrix/knowledge_matrix.md"
+  },
+  "preflight_summary": {
+    "status": "not_rerun_seed_backfill",
+    "reason": "Backfill records the accepted seed rationale; it does not re-run admission."
+  },
+  "accepted_cells": [
+    {
+      "cell_id": "agent_ops/agentic_dev_process/design_agentic_dev_workflow",
+      "classification": "seed_primary_value",
+      "admission_interpretation": "structured_agentic_development_process_and_context_engineering"
+    },
+    {
+      "cell_id": "coding_agents/claude_code_workflows/choose_ai_coding_tool",
+      "classification": "seed_supporting_value",
+      "admission_interpretation": "practical_claude_code_tool_choice_source"
+    },
+    {
+      "cell_id": "coding_agents/codex_workflows/choose_ai_coding_tool",
+      "classification": "seed_supporting_value",
+      "admission_interpretation": "practical_codex_cli_tool_choice_source"
+    },
+    {
+      "cell_id": "security_privacy_governance/security_privacy_controls/manage_security_privacy_governance",
+      "classification": "supporting",
+      "admission_interpretation": "supporting_security_privacy_controls_for_ai_coding_workflows"
+    }
+  ],
+  "taxonomy_updates": [],
+  "routing_notes": [
+    "Strong fit for structured CLI-agent workflows, context engineering, deterministic feedback loops, and AI coding tool choice.",
+    "Supporting fit for security/privacy constraints in AI-assisted coding.",
+    "Avoid routing for non-technical AI adoption or general AI news."
+  ],
+  "recommended_manifest_caveat": "accepted as structured CLI-agent / context-engineering workflow seed expert; strong fit for agentic development process and AI coding tool choice, avoid routing for non-technical AI adoption",
+  "next_action": "keep_as_accepted_seed_expert_with_manifest_routing_caveat"
+}

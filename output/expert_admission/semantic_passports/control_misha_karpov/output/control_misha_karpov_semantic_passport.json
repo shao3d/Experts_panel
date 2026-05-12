@@ -1,0 +1,1072 @@
+{
+  "schema_version": "expert_value_passport.v1.1",
+  "passport_meta": {
+    "schema_version": "expert_value_passport.v1.1",
+    "expert_id": "control_misha_karpov",
+    "display_name": "Миша Карпов — AI, продукты и рост ⛳",
+    "channel_username": "@unknown_misha_karpov",
+    "model_assumed": "gemini-3.1-pro-preview",
+    "prompt_version": "semantic-passport-prompt.v1",
+    "generated_at": "2026-05-10T10:58:19.455127+00:00"
+  },
+  "corpus_audit": {
+    "post_count_seen": 174,
+    "comment_count_seen": 0,
+    "date_range": {
+      "first_post": "2020-10-12T11:49:45",
+      "last_post": "2026-05-07T18:39:23"
+    },
+    "language_mix": [
+      "ru"
+    ],
+    "material_limitations": [
+      "No community comments available in the corpus to assess audience resonance or pushback."
+    ],
+    "author_vs_community_boundary": "Clear. Only expert posts are present."
+  },
+  "source_ref_index_used": [
+    {
+      "source_ref": "P0004",
+      "source_kind": "expert_post",
+      "post_id": 4,
+      "telegram_message_id": 9,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2020-10-16T09:42:49",
+      "why_used": "Management philosophy (oxygen mask analogy)."
+    },
+    {
+      "source_ref": "P0036",
+      "source_kind": "expert_post",
+      "post_id": 36,
+      "telegram_message_id": 65,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2023-12-08T16:06:16",
+      "why_used": "Background in Yandex, VK, Skyeng; hiring standards."
+    },
+    {
+      "source_ref": "P0038",
+      "source_kind": "expert_post",
+      "post_id": 38,
+      "telegram_message_id": 67,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2023-12-19T10:48:34",
+      "why_used": "Soft skills and negotiation tactics."
+    },
+    {
+      "source_ref": "P0049",
+      "source_kind": "expert_post",
+      "post_id": 49,
+      "telegram_message_id": 84,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2024-01-31T17:20:51",
+      "why_used": "C-level soft skills and managing up."
+    },
+    {
+      "source_ref": "P0058",
+      "source_kind": "expert_post",
+      "post_id": 58,
+      "telegram_message_id": 100,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2024-04-01T16:47:21",
+      "why_used": "Negotiation frameworks (Chris Voss)."
+    },
+    {
+      "source_ref": "P0081",
+      "source_kind": "expert_post",
+      "post_id": 81,
+      "telegram_message_id": 138,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2024-09-03T17:16:14",
+      "why_used": "Applying product management outside IT."
+    },
+    {
+      "source_ref": "P0082",
+      "source_kind": "expert_post",
+      "post_id": 82,
+      "telegram_message_id": 139,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2024-09-12T17:54:01",
+      "why_used": "CPO skills matrix and career transition advice."
+    },
+    {
+      "source_ref": "P0086",
+      "source_kind": "expert_post",
+      "post_id": 86,
+      "telegram_message_id": 144,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2024-10-02T11:29:36",
+      "why_used": "Personal and team OKR planning, calendar blocking."
+    },
+    {
+      "source_ref": "P0095",
+      "source_kind": "expert_post",
+      "post_id": 95,
+      "telegram_message_id": 159,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2024-12-25T10:55:10",
+      "why_used": "JTBD and Customer Discovery for B2B AI startup."
+    },
+    {
+      "source_ref": "P0099",
+      "source_kind": "expert_post",
+      "post_id": 99,
+      "telegram_message_id": 165,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-03-13T12:48:19",
+      "why_used": "B2B networking etiquette in Dubai."
+    },
+    {
+      "source_ref": "P0103",
+      "source_kind": "expert_post",
+      "post_id": 103,
+      "telegram_message_id": 171,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-04-23T15:35:38",
+      "why_used": "Paper-based productivity and focus routines."
+    },
+    {
+      "source_ref": "P0114",
+      "source_kind": "expert_post",
+      "post_id": 114,
+      "telegram_message_id": 182,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-14T10:26:08",
+      "why_used": "Shame Driven Development (SDD) concept."
+    },
+    {
+      "source_ref": "P0115",
+      "source_kind": "expert_post",
+      "post_id": 115,
+      "telegram_message_id": 183,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-19T16:24:01",
+      "why_used": "AI tribes, managing AI developers, loss of illusion of control."
+    },
+    {
+      "source_ref": "P0126",
+      "source_kind": "expert_post",
+      "post_id": 126,
+      "telegram_message_id": 199,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-26T13:23:37",
+      "why_used": "n8n Telegram bot for personal knowledge management."
+    },
+    {
+      "source_ref": "P0129",
+      "source_kind": "expert_post",
+      "post_id": 129,
+      "telegram_message_id": 202,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-28T13:19:52",
+      "why_used": "Focus management, tracking hours vs goals."
+    },
+    {
+      "source_ref": "P0136",
+      "source_kind": "expert_post",
+      "post_id": 136,
+      "telegram_message_id": 217,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-12T17:49:40",
+      "why_used": "Claude Code workflows, parallel agents, verification loops."
+    },
+    {
+      "source_ref": "P0140",
+      "source_kind": "expert_post",
+      "post_id": 140,
+      "telegram_message_id": 223,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-22T18:44:59",
+      "why_used": "Builder PM concept, Cursor workflows for non-technical PMs."
+    },
+    {
+      "source_ref": "P0143",
+      "source_kind": "expert_post",
+      "post_id": 143,
+      "telegram_message_id": 226,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-28T15:28:04",
+      "why_used": "Autonomous AI agents, management of AI teams, agent degradation."
+    },
+    {
+      "source_ref": "P0144",
+      "source_kind": "expert_post",
+      "post_id": 144,
+      "telegram_message_id": 227,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-30T13:02:17",
+      "why_used": "Anti-hype AI news format."
+    },
+    {
+      "source_ref": "P0148",
+      "source_kind": "expert_post",
+      "post_id": 148,
+      "telegram_message_id": 231,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-10T11:48:20",
+      "why_used": "AI Chief of Staff, calendar management via AI."
+    },
+    {
+      "source_ref": "P0151",
+      "source_kind": "expert_post",
+      "post_id": 151,
+      "telegram_message_id": 234,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-18T14:42:45",
+      "why_used": "Building a personal AI team (PM, scout, creator, designer)."
+    },
+    {
+      "source_ref": "P0155",
+      "source_kind": "expert_post",
+      "post_id": 155,
+      "telegram_message_id": 238,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-03-02T17:31:23",
+      "why_used": "Testing vibe-coded apps via AI."
+    },
+    {
+      "source_ref": "P0158",
+      "source_kind": "expert_post",
+      "post_id": 158,
+      "telegram_message_id": 241,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-03-06T08:59:37",
+      "why_used": "AI tool for brainstorming and Devil's Advocate."
+    },
+    {
+      "source_ref": "P0169",
+      "source_kind": "expert_post",
+      "post_id": 169,
+      "telegram_message_id": 254,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-17T13:45:21",
+      "why_used": "Metrics hierarchy, KPI alignment across departments."
+    },
+    {
+      "source_ref": "P0171",
+      "source_kind": "expert_post",
+      "post_id": 171,
+      "telegram_message_id": 256,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-22T14:14:47",
+      "why_used": "The loop of AI building AI, self-improving systems."
+    },
+    {
+      "source_ref": "P0173",
+      "source_kind": "expert_post",
+      "post_id": 173,
+      "telegram_message_id": 258,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-05-06T12:58:01",
+      "why_used": "Agentic mindset, transition from vibe coding to AI workflows."
+    },
+    {
+      "source_ref": "P0174",
+      "source_kind": "expert_post",
+      "post_id": 174,
+      "telegram_message_id": 259,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-05-07T18:39:23",
+      "why_used": "Backlog as an experiment factory via Conductor and AI agents."
+    }
+  ],
+  "executive_summary": {
+    "one_sentence_positioning": "A serial entrepreneur and ex-CPO who provides highly practical, practitioner-level frameworks for transitioning from traditional product management to AI-assisted 'vibe coding' and autonomous agentic workflows.",
+    "strongest_system_value": "Exceptional depth in practical AI-assisted development (Cursor, n8n, Lovable) and the organizational shift towards 'Builder PMs' and AI-agent orchestration.",
+    "weakest_system_value": "Lacks deep technical ML/architecture insights, focusing entirely on the application layer, no-code/low-code tools, and management of AI agents.",
+    "best_fit_queries": [
+      "learn_ai_assisted_development",
+      "design_agentic_dev_workflow",
+      "build_human_ai_workflow",
+      "plan_ai_product_feature"
+    ],
+    "poor_fit_queries": [
+      "compare_models_for_task",
+      "optimize_inference_cost_latency",
+      "design_rag_knowledge_base"
+    ],
+    "confidence": 0.95
+  },
+  "expert_positioning": {
+    "primary_role": "AI-Assisted Development Practitioner & C-Level Executive",
+    "audience": [
+      "Product Managers",
+      "CPOs",
+      "Founders",
+      "Tech Leaders"
+    ],
+    "voice": [
+      "Energetic",
+      "Practical",
+      "Structured",
+      "Forward-looking"
+    ],
+    "worldview": [
+      "AI agents are transitioning from tools to employees, requiring a shift in management mindset.",
+      "Product managers must evolve into 'Builder PMs' capable of executing code via AI.",
+      "Speed of experimentation (100 MVPs a year) beats perfect planning.",
+      "Backlogs should be experiment factories driven by AI, not graveyards of ideas."
+    ],
+    "distinctive_angle": "Combines deep C-level product management experience (ex-Yandex, VK, Skyeng) with hands-on, cutting-edge AI vibe coding and agent orchestration.",
+    "recurring_formats": [
+      "Step-by-step tool tutorials (Cursor, n8n)",
+      "Top-3 lists and frameworks",
+      "Anti-hype AI news digests",
+      "Reflections on management and soft skills"
+    ],
+    "evidence_refs": [
+      "P0036",
+      "P0140",
+      "P0144",
+      "P0173",
+      "P0174"
+    ]
+  },
+  "knowledge_domains": [
+    {
+      "domain_id": "coding_agents",
+      "domain_name": "AI-Assisted Coding & Vibe Coding",
+      "subdomain_ids": [
+        "cursor_windsurf_copilot",
+        "agentic_dev_process"
+      ],
+      "query_intent_ids": [
+        "learn_ai_assisted_development",
+        "choose_ai_coding_tool"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "How to build web and mobile apps from scratch using Cursor, Replit, and Lovable without traditional coding skills.",
+        "How to set up automated testing for vibe-coded applications.",
+        "How to use Claude Code for parallel agent workflows and verification loops."
+      ],
+      "how_they_reason": [
+        "Prioritizes speed and iteration over perfect architecture ('Shame Driven Development').",
+        "Views AI as a co-founder/CTO rather than just an autocomplete tool."
+      ],
+      "missing_or_weak_subtopics": [
+        "Deep backend architecture",
+        "Security and governance of AI-generated code"
+      ],
+      "evidence_refs": [
+        "P0115",
+        "P0136",
+        "P0140",
+        "P0155"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "domain_id": "agent_ops",
+      "domain_name": "AI Agent Orchestration & Workflows",
+      "subdomain_ids": [
+        "multi_agent_orchestration",
+        "local_agent_setup",
+        "mcp_tooling"
+      ],
+      "query_intent_ids": [
+        "design_agentic_dev_workflow",
+        "build_human_ai_workflow"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "How to build and manage a team of specialized AI agents (PM, scout, creator, designer).",
+        "How to use Conductor to turn a backlog into an autonomous experiment factory.",
+        "The management challenges of AI agents (e.g., agents 'slacking off' and needing AI managers)."
+      ],
+      "how_they_reason": [
+        "Treats AI agents as employees requiring management, clear roles, and orchestration, rather than simple scripts.",
+        "Believes the bottleneck is no longer hiring engineers, but rewiring human brains to manage digital teams."
+      ],
+      "missing_or_weak_subtopics": [
+        "Enterprise-grade agent security",
+        "Complex RAG integration for agents"
+      ],
+      "evidence_refs": [
+        "P0143",
+        "P0151",
+        "P0173",
+        "P0174"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "domain_id": "ai_product_pm",
+      "domain_name": "AI Product Management & Strategy",
+      "subdomain_ids": [
+        "ai_product_strategy",
+        "pm_workflow",
+        "human_ai_workflow"
+      ],
+      "query_intent_ids": [
+        "plan_ai_product_feature",
+        "build_human_ai_workflow"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "How the PM role is evolving into a 'Builder PM' who executes code via AI.",
+        "How to set up an 'AI Chief of Staff' for personal and team productivity.",
+        "Frameworks for CPO skills, metrics hierarchy, and cross-departmental KPI alignment."
+      ],
+      "how_they_reason": [
+        "Combines traditional C-level product strategy (metrics, OKRs) with aggressive AI automation.",
+        "Advocates for the 'loop' where AI helps build the next version of the AI product."
+      ],
+      "missing_or_weak_subtopics": [
+        "Hardware product management",
+        "Deep financial modeling for AI inference"
+      ],
+      "evidence_refs": [
+        "P0082",
+        "P0140",
+        "P0148",
+        "P0169",
+        "P0171"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "value_dimensions": [
+    {
+      "dimension_id": "practical_specificity",
+      "score_0_5": 5,
+      "rationale": "Consistently shares exact tools (Cursor, n8n, Lovable, Conductor), workflows, and even downloadable n8n templates for immediate use.",
+      "evidence_refs": [
+        "P0126",
+        "P0140",
+        "P0151",
+        "P0174"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "insight_density",
+      "score_0_5": 4,
+      "rationale": "High density of actionable frameworks, especially regarding the shift to 'Builder PMs' and managing AI agents as employees.",
+      "evidence_refs": [
+        "P0140",
+        "P0143",
+        "P0171",
+        "P0174"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "dimension_id": "decision_value",
+      "score_0_5": 4,
+      "rationale": "Provides strong heuristics for deciding when to use AI agents, how to structure metrics, and how to transition PM roles.",
+      "evidence_refs": [
+        "P0140",
+        "P0169",
+        "P0173"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "dimension_id": "anti_hype_signal",
+      "score_0_5": 4,
+      "rationale": "Runs an 'Anti-hype AI' digest that filters out noise, focusing on what actually works in production (e.g., noting that 95% of autonomous agents failed without an AI manager).",
+      "evidence_refs": [
+        "P0143",
+        "P0144",
+        "P0147"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "matrix_cells": [
+    {
+      "domain_id": "coding_agents",
+      "subdomain_id": "cursor_windsurf_copilot",
+      "subdomain_name": "Cursor & Vibe Coding Workflows",
+      "query_intent_ids": [
+        "learn_ai_assisted_development",
+        "design_agentic_dev_workflow"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 0,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0115",
+        "P0140",
+        "P0155"
+      ],
+      "notes": "Excellent source for non-technical PMs and founders learning to build apps using Cursor, Replit, and Lovable."
+    },
+    {
+      "domain_id": "agent_ops",
+      "subdomain_id": "multi_agent_orchestration",
+      "subdomain_name": "Multi-Agent Teams & Orchestration",
+      "query_intent_ids": [
+        "design_agentic_dev_workflow",
+        "build_human_ai_workflow"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 4,
+      "intrinsic_distinctiveness_score_0_5": 5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 0,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0136",
+        "P0143",
+        "P0151",
+        "P0174"
+      ],
+      "notes": "Signature insights on treating AI agents as employees, including the necessity of 'AI managers' to prevent agent degradation, and using Conductor for backlog execution."
+    },
+    {
+      "domain_id": "ai_product_pm",
+      "subdomain_id": "pm_workflow",
+      "subdomain_name": "Builder PM & AI Productivity",
+      "query_intent_ids": [
+        "plan_ai_product_feature",
+        "build_human_ai_workflow"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 4,
+      "comment_signal_score_0_5": 0,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0126",
+        "P0140",
+        "P0148"
+      ],
+      "notes": "Strong practical advice on the evolution of the PM role to include code execution via AI, and setting up personal AI Chiefs of Staff."
+    },
+    {
+      "domain_id": "ai_product_pm",
+      "subdomain_id": "ai_product_strategy",
+      "subdomain_name": "CPO Strategy & Metrics",
+      "query_intent_ids": [
+        "plan_ai_product_feature"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 4,
+      "intrinsic_distinctiveness_score_0_5": 3,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 4,
+      "comment_signal_score_0_5": 0,
+      "recommended_matrix_weight": "normal",
+      "evidence_refs": [
+        "P0082",
+        "P0169"
+      ],
+      "notes": "Solid, battle-tested frameworks for CPO skills, metrics hierarchy, and cross-departmental alignment from his time at Skyeng/VK."
+    }
+  ],
+  "query_intent_fit": [
+    {
+      "query_intent_id": "learn_ai_assisted_development",
+      "query_intent_name": "Learn AI-Assisted Development",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "coding_agents"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "Provides step-by-step guidance, tool stacks (Cursor, Lovable, Replit), and mindset shifts for non-technical people to start building apps.",
+      "limitations": [
+        "Focuses on rapid prototyping and MVP building rather than enterprise-grade scalable architecture."
+      ],
+      "evidence_refs": [
+        "P0140",
+        "P0155"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "query_intent_id": "design_agentic_dev_workflow",
+      "query_intent_name": "Design Agentic Dev Workflow",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "agent_ops"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "Shares cutting-edge workflows using Claude Code, Conductor, and multi-agent orchestration to automate backlog execution.",
+      "limitations": [],
+      "evidence_refs": [
+        "P0136",
+        "P0143",
+        "P0174"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "query_intent_id": "build_human_ai_workflow",
+      "query_intent_name": "Build Human-AI Workflow",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "ai_product_pm",
+        "agent_ops"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "Deeply explores the integration of AI agents as 'employees' (AI Chief of Staff, AI PMs, AI researchers) into daily human workflows.",
+      "limitations": [],
+      "evidence_refs": [
+        "P0148",
+        "P0151",
+        "P0173"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "query_intent_id": "plan_ai_product_feature",
+      "query_intent_name": "Plan AI Product Feature",
+      "fit_role": "supporting",
+      "best_domain_ids": [
+        "ai_product_pm"
+      ],
+      "source_utility_score_0_5": 4,
+      "why": "Offers strong CPO-level frameworks for metrics and strategy, combined with rapid AI prototyping.",
+      "limitations": [
+        "More focused on the execution/building phase than deep user research for AI specifically."
+      ],
+      "evidence_refs": [
+        "P0082",
+        "P0169"
+      ],
+      "confidence": 0.85
+    }
+  ],
+  "content_quality_distribution": [
+    {
+      "category_id": "deep_practitioner",
+      "share_estimate_0_1": 0.35,
+      "system_value": "high",
+      "notes": "Detailed breakdowns of agent orchestration, Cursor workflows, and CPO management frameworks.",
+      "evidence_refs": [
+        "P0136",
+        "P0140",
+        "P0143",
+        "P0169",
+        "P0174"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "howto_or_checklist",
+      "share_estimate_0_1": 0.25,
+      "system_value": "high",
+      "notes": "Frequent sharing of tool stacks, n8n templates, and step-by-step guides for vibe coding.",
+      "evidence_refs": [
+        "P0126",
+        "P0148",
+        "P0155",
+        "P0158"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "announcement_or_news",
+      "share_estimate_0_1": 0.25,
+      "system_value": "medium",
+      "notes": "Promotes his AI Product Club, ProductCamp, and shares 'Anti-hype AI' news digests.",
+      "evidence_refs": [
+        "P0144",
+        "P0147",
+        "P0150"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "commentary",
+      "share_estimate_0_1": 0.15,
+      "system_value": "medium",
+      "notes": "Reflections on leadership, soft skills, and startup culture.",
+      "evidence_refs": [
+        "P0004",
+        "P0038",
+        "P0049",
+        "P0103"
+      ],
+      "confidence": 0.85
+    }
+  ],
+  "matrix_export": {
+    "schema_version": "knowledge_matrix_export.v1",
+    "expert_id": "control_misha_karpov",
+    "cells": [
+      {
+        "cell_id": "coding_agents/cursor_windsurf_copilot/learn_ai_assisted_development",
+        "domain_id": "coding_agents",
+        "subdomain_id": "cursor_windsurf_copilot",
+        "subdomain_name": "Cursor & Vibe Coding Workflows",
+        "query_intent_ids": [
+          "learn_ai_assisted_development"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 4,
+          "practicality": 5,
+          "evidence_quality": 4,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 4,
+          "anti_hype": 4,
+          "community_signal": 0
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [
+          "Focuses on rapid MVP creation rather than enterprise architecture."
+        ],
+        "evidence_refs": [
+          "P0115",
+          "P0140",
+          "P0155"
+        ],
+        "confidence": 0.95
+      },
+      {
+        "cell_id": "agent_ops/multi_agent_orchestration/design_agentic_dev_workflow",
+        "domain_id": "agent_ops",
+        "subdomain_id": "multi_agent_orchestration",
+        "subdomain_name": "Multi-Agent Teams & Orchestration",
+        "query_intent_ids": [
+          "design_agentic_dev_workflow"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 4,
+          "practicality": 4,
+          "evidence_quality": 4,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 5,
+          "anti_hype": 4,
+          "community_signal": 0
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0136",
+          "P0143",
+          "P0151",
+          "P0174"
+        ],
+        "confidence": 0.95
+      },
+      {
+        "cell_id": "ai_product_pm/pm_workflow/build_human_ai_workflow",
+        "domain_id": "ai_product_pm",
+        "subdomain_id": "pm_workflow",
+        "subdomain_name": "Builder PM & AI Productivity",
+        "query_intent_ids": [
+          "build_human_ai_workflow"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 4,
+          "practicality": 5,
+          "evidence_quality": 4,
+          "source_utility": 4,
+          "intrinsic_distinctiveness": 4,
+          "anti_hype": 4,
+          "community_signal": 0
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0126",
+          "P0140",
+          "P0148"
+        ],
+        "confidence": 0.9
+      },
+      {
+        "cell_id": "ai_product_pm/ai_product_strategy/plan_ai_product_feature",
+        "domain_id": "ai_product_pm",
+        "subdomain_id": "ai_product_strategy",
+        "subdomain_name": "CPO Strategy & Metrics",
+        "query_intent_ids": [
+          "plan_ai_product_feature"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "practical",
+        "source_role": "supporting",
+        "scores": {
+          "depth": 4,
+          "practicality": 4,
+          "evidence_quality": 4,
+          "source_utility": 4,
+          "intrinsic_distinctiveness": 3,
+          "anti_hype": 3,
+          "community_signal": 0
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0082",
+          "P0169"
+        ],
+        "confidence": 0.9
+      }
+    ],
+    "compare_hints": {
+      "likely_unique_cells": [
+        "agent_ops/multi_agent_orchestration/design_agentic_dev_workflow"
+      ],
+      "likely_duplicate_cells": [
+        "ai_product_pm/ai_product_strategy/plan_ai_product_feature"
+      ],
+      "cells_requiring_probe": [
+        "coding_agents/cursor_windsurf_copilot/learn_ai_assisted_development"
+      ],
+      "matrix_only_decision_confidence": "high"
+    }
+  },
+  "signature_insights": [
+    {
+      "insight": "The product backlog should transition from a 'graveyard of ideas' to an 'experiment factory' where AI agents (via tools like Conductor) autonomously test, build, and iterate on ideas.",
+      "why_it_matters_for_experts_panel": "Provides a paradigm shift in how PMs and founders should view task management in the age of autonomous AI agents.",
+      "applicable_query_types": [
+        "design_agentic_dev_workflow",
+        "plan_ai_product_feature"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0174"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "insight": "AI agents degrade without management. When deploying a swarm of agents to build software, 'slacking off' occurs, necessitating the creation of 'AI Manager' roles to coordinate and push the worker agents.",
+      "why_it_matters_for_experts_panel": "Highlights a critical, non-obvious failure mode in multi-agent orchestration and offers a structural solution.",
+      "applicable_query_types": [
+        "design_agentic_dev_workflow"
+      ],
+      "novelty_level": "rare",
+      "evidence_refs": [
+        "P0143"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "insight": "The role of the Product Manager is evolving into the 'Builder PM', who uses AI tools (Cursor, Claude) to execute code, submit PRs, and bypass the traditional engineering bottleneck.",
+      "why_it_matters_for_experts_panel": "Signals a major shift in PM skill requirements and provides a practical pipeline for non-technical PMs to start shipping code.",
+      "applicable_query_types": [
+        "learn_ai_assisted_development",
+        "build_human_ai_workflow"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0140"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "insight": "Shame Driven Development (SDD): Shipping extremely raw, embarrassing MVPs forces the team to rapidly fix and polish the product due to the immediate discomfort of public exposure.",
+      "why_it_matters_for_experts_panel": "A highly practical, psychological hack for overcoming perfectionism and accelerating time-to-market.",
+      "applicable_query_types": [
+        "plan_ai_product_feature"
+      ],
+      "novelty_level": "useful_packaging",
+      "evidence_refs": [
+        "P0114"
+      ],
+      "confidence": 0.85
+    }
+  ],
+  "practical_patterns": [
+    {
+      "pattern": "AI Chief of Staff via n8n and Telegram",
+      "when_to_use": "When needing to automate personal knowledge management, calendar tracking, and focus alignment.",
+      "failure_modes": [
+        "Over-engineering the automation instead of keeping it simple."
+      ],
+      "evidence_refs": [
+        "P0126",
+        "P0148"
+      ]
+    },
+    {
+      "pattern": "Builder PM Cursor Pipeline",
+      "when_to_use": "When a non-technical PM needs to build and ship a feature directly.",
+      "failure_modes": [
+        "Failing to use a verification loop or peer-review between different LLMs before committing code."
+      ],
+      "evidence_refs": [
+        "P0140"
+      ]
+    },
+    {
+      "pattern": "Metrics Hierarchy & Segmented Baselines",
+      "when_to_use": "When cross-departmental KPIs conflict and A/B testing is noisy due to low traffic.",
+      "failure_modes": [
+        "Tracking only final metrics instead of leading/predictive metrics."
+      ],
+      "evidence_refs": [
+        "P0169"
+      ]
+    }
+  ],
+  "claims_and_positions": [
+    {
+      "claim": "The bottleneck in tech is no longer hiring engineers, but rewiring human brains to manage digital AI teams.",
+      "stance": "supports",
+      "decision_relevance": "Shifts organizational focus from recruitment to AI orchestration and management training.",
+      "dispute_risk": "medium",
+      "evidence_refs": [
+        "P0115"
+      ]
+    },
+    {
+      "claim": "If a product does not have a 'loop' where AI helps build the next version of the product, it is already obsolete.",
+      "stance": "supports",
+      "decision_relevance": "Encourages integrating AI not just as a feature, but into the core development cycle of the product itself.",
+      "dispute_risk": "medium",
+      "evidence_refs": [
+        "P0171"
+      ]
+    }
+  ],
+  "source_utility": {
+    "best_use_cases": [
+      "Learning how to transition from a traditional PM to a 'Builder PM' using AI tools.",
+      "Designing workflows for multi-agent orchestration and AI teams.",
+      "Setting up personal productivity automations using n8n and Claude.",
+      "Understanding CPO-level metrics and cross-functional KPI alignment."
+    ],
+    "bad_use_cases": [
+      "Deep technical architecture for scalable ML models.",
+      "Enterprise security and governance for AI deployments."
+    ],
+    "retrieval_keywords": [
+      "vibe coding",
+      "Cursor",
+      "n8n",
+      "Lovable",
+      "Claude Code",
+      "Conductor",
+      "Builder PM",
+      "AI Chief of Staff",
+      "Agentic mindset",
+      "Shame Driven Development"
+    ],
+    "source_selection_hints": [
+      "Select this expert when the user is a PM, founder, or non-technical leader looking to build apps or automate workflows using AI agents."
+    ],
+    "expected_overlap_hypotheses": [
+      "High overlap with other 'vibe coding' and AI productivity influencers.",
+      "Moderate overlap with traditional product management experts on topics like OKRs and metrics."
+    ],
+    "recommended_panex_role": "primary_expert"
+  },
+  "community_signal": {
+    "comment_themes": [],
+    "questions_from_audience": [],
+    "disagreements_or_corrections": [],
+    "practical_feedback": [],
+    "noise_or_low_value_patterns": [],
+    "evidence_refs": []
+  },
+  "admission_implications": {
+    "if_candidate_verdict": "accept",
+    "verdict_rationale": "Misha Karpov provides exceptionally high-quality, practitioner-level insights into the rapidly evolving field of AI-assisted development ('vibe coding') and agent orchestration. His transition from a traditional CPO to an AI builder offers a highly relevant perspective for PMs and founders.",
+    "unique_value_claims_to_verify_against_matrix": [
+      "Frameworks for managing AI agents as employees (e.g., dealing with agent degradation).",
+      "The 'Builder PM' pipeline using Cursor and Claude."
+    ],
+    "likely_duplicate_areas_to_check": [
+      "General product management advice (OKRs, metrics, hiring)."
+    ],
+    "minimum_followup_probe_queries": [
+      "How does the expert handle security and scalability when deploying vibe-coded applications to production?"
+    ],
+    "risk_notes": [
+      "He frequently promotes his own paid courses and events (AI Product Club, ProductCamp), which introduces some commercial bias, though he consistently provides free, actionable value alongside the promotions."
+    ]
+  },
+  "audit": {
+    "unsupported_or_weak_claims": [],
+    "abstentions": [
+      "Community signal could not be evaluated as no comments were included in the corpus."
+    ],
+    "possible_model_errors": [],
+    "source_refs_used": [
+      "P0004",
+      "P0036",
+      "P0038",
+      "P0049",
+      "P0058",
+      "P0081",
+      "P0082",
+      "P0086",
+      "P0095",
+      "P0099",
+      "P0103",
+      "P0114",
+      "P0115",
+      "P0126",
+      "P0129",
+      "P0136",
+      "P0140",
+      "P0143",
+      "P0144",
+      "P0147",
+      "P0148",
+      "P0150",
+      "P0151",
+      "P0155",
+      "P0158",
+      "P0169",
+      "P0171",
+      "P0173",
+      "P0174"
+    ],
+    "source_refs_most_important": [
+      "P0140",
+      "P0143",
+      "P0171",
+      "P0173",
+      "P0174"
+    ]
+  }
+}

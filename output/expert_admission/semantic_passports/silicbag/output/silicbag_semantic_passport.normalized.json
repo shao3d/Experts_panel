@@ -1,0 +1,1498 @@
+{
+  "schema_version": "expert_value_passport.v1.1",
+  "passport_meta": {
+    "schema_version": "expert_value_passport.v1.1",
+    "expert_id": "silicbag",
+    "display_name": "SilicBag",
+    "channel_username": "@prompt_design",
+    "model_assumed": "gemini-3.1-pro-preview",
+    "prompt_version": "semantic-passport-prompt.v1",
+    "generated_at": "2026-05-12T07:59:34.046813+00:00"
+  },
+  "corpus_audit": {
+    "post_count_seen": 876,
+    "comment_count_seen": 4692,
+    "date_range": {
+      "first_post": "2023-02-10 11:59:47.000000",
+      "last_post": "2026-05-02 09:29:30.000000"
+    },
+    "language_mix": [
+      "ru",
+      "en"
+    ],
+    "material_limitations": [
+      "Some technical guides are referenced as external links (Teletype, Google Docs, GitHub) and their full content is not available in the corpus."
+    ],
+    "author_vs_community_boundary": "Clear boundary. The expert posts detailed guides, news, and reflections. The community actively engages, asks technical questions, shares their own setups, and participates in offline/online events."
+  },
+  "source_ref_index_used": [
+    {
+      "source_ref": "P0011",
+      "source_kind": "expert_post",
+      "post_id": 5743,
+      "telegram_message_id": 92,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2023-03-28 14:20:13.000000",
+      "why_used": "Basic prompt engineering principles."
+    },
+    {
+      "source_ref": "P0034",
+      "source_kind": "expert_post",
+      "post_id": 6144,
+      "telegram_message_id": 612,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2024-02-08 16:31:38.000000",
+      "why_used": "Personal RAG project 'Ягода Поминика'."
+    },
+    {
+      "source_ref": "P0046",
+      "source_kind": "expert_post",
+      "post_id": 6454,
+      "telegram_message_id": 1055,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2024-10-30 20:17:38.000000",
+      "why_used": "Hardware integration with Claude Computer Use."
+    },
+    {
+      "source_ref": "P0047",
+      "source_kind": "expert_post",
+      "post_id": 6469,
+      "telegram_message_id": 1071,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2024-11-21 08:51:14.000000",
+      "why_used": "TETRIX memecoin AI agent."
+    },
+    {
+      "source_ref": "P0088",
+      "source_kind": "expert_post",
+      "post_id": 6546,
+      "telegram_message_id": 1163,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-02-11 17:59:32.000000",
+      "why_used": "LLM math limitations and tool usage."
+    },
+    {
+      "source_ref": "P0091",
+      "source_kind": "expert_post",
+      "post_id": 6549,
+      "telegram_message_id": 1167,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-02-13 11:47:00.000000",
+      "why_used": "Vibe-coding vs traditional programming."
+    },
+    {
+      "source_ref": "P0117",
+      "source_kind": "expert_post",
+      "post_id": 6576,
+      "telegram_message_id": 1202,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-02-27 09:32:17.000000",
+      "why_used": "Deep Research prompt structure for ADHD."
+    },
+    {
+      "source_ref": "P0154",
+      "source_kind": "expert_post",
+      "post_id": 6613,
+      "telegram_message_id": 1244,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-03-13 11:06:21.000000",
+      "why_used": "Monetization strategies for AI agents."
+    },
+    {
+      "source_ref": "P0155",
+      "source_kind": "expert_post",
+      "post_id": 6614,
+      "telegram_message_id": 1245,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-03-13 14:31:40.000000",
+      "why_used": "NotebookLM usage guide."
+    },
+    {
+      "source_ref": "P0159",
+      "source_kind": "expert_post",
+      "post_id": 6618,
+      "telegram_message_id": 1252,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-03-14 15:35:53.000000",
+      "why_used": "Perplexity usage guide."
+    },
+    {
+      "source_ref": "P0169",
+      "source_kind": "expert_post",
+      "post_id": 6628,
+      "telegram_message_id": 1263,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-03-19 11:31:53.000000",
+      "why_used": "Phases of learning AI agents."
+    },
+    {
+      "source_ref": "P0200",
+      "source_kind": "expert_post",
+      "post_id": 6659,
+      "telegram_message_id": 1303,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-04-04 17:31:02.000000",
+      "why_used": "Finding ideas for AI agents."
+    },
+    {
+      "source_ref": "P0267",
+      "source_kind": "expert_post",
+      "post_id": 6727,
+      "telegram_message_id": 1396,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-05-19 16:57:56.000000",
+      "why_used": "n8n beginner guide and MVP approach."
+    },
+    {
+      "source_ref": "P0312",
+      "source_kind": "expert_post",
+      "post_id": 6772,
+      "telegram_message_id": 1452,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-06-09 18:15:29.000000",
+      "why_used": "Difference between automation and AI agents."
+    },
+    {
+      "source_ref": "P0319",
+      "source_kind": "expert_post",
+      "post_id": 6779,
+      "telegram_message_id": 1459,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-06-11 17:13:23.000000",
+      "why_used": "11 niches to earn on n8n."
+    },
+    {
+      "source_ref": "P0323",
+      "source_kind": "expert_post",
+      "post_id": 6784,
+      "telegram_message_id": 1463,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-06-15 16:53:45.000000",
+      "why_used": "NotebookLM personal use cases."
+    },
+    {
+      "source_ref": "P0330",
+      "source_kind": "expert_post",
+      "post_id": 6791,
+      "telegram_message_id": 1471,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-06-20 17:17:05.000000",
+      "why_used": "Perplexity prompt types and model selection."
+    },
+    {
+      "source_ref": "P0336",
+      "source_kind": "expert_post",
+      "post_id": 6798,
+      "telegram_message_id": 1480,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-06-23 20:59:04.000000",
+      "why_used": "Deep Research comparison across models."
+    },
+    {
+      "source_ref": "P0344",
+      "source_kind": "expert_post",
+      "post_id": 6806,
+      "telegram_message_id": 1491,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-06-30 13:07:44.000000",
+      "why_used": "Defense of vibe-coding and n8n."
+    },
+    {
+      "source_ref": "P0364",
+      "source_kind": "expert_post",
+      "post_id": 6826,
+      "telegram_message_id": 1511,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-07-18 10:45:39.000000",
+      "why_used": "Preparing documents for RAG and NotebookLM."
+    },
+    {
+      "source_ref": "P0366",
+      "source_kind": "expert_post",
+      "post_id": 6828,
+      "telegram_message_id": 1513,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-07-21 14:27:01.000000",
+      "why_used": "Explanation of RAG."
+    },
+    {
+      "source_ref": "P0367",
+      "source_kind": "expert_post",
+      "post_id": 6829,
+      "telegram_message_id": 1514,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-07-21 18:29:15.000000",
+      "why_used": "5 practical RAG use cases."
+    },
+    {
+      "source_ref": "P0379",
+      "source_kind": "expert_post",
+      "post_id": 6841,
+      "telegram_message_id": 1527,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-07-29 15:22:30.000000",
+      "why_used": "JSON prompting technique."
+    },
+    {
+      "source_ref": "P0450",
+      "source_kind": "expert_post",
+      "post_id": 6912,
+      "telegram_message_id": 1612,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-09-16 17:48:03.000000",
+      "why_used": "How to master n8n from scratch."
+    },
+    {
+      "source_ref": "P0461",
+      "source_kind": "expert_post",
+      "post_id": 6923,
+      "telegram_message_id": 1628,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-09-22 19:29:59.000000",
+      "why_used": "Phase 1 and 2 of n8n projects (research problem, don't reinvent)."
+    },
+    {
+      "source_ref": "P0496",
+      "source_kind": "expert_post",
+      "post_id": 6958,
+      "telegram_message_id": 1675,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-10-09 18:23:05.000000",
+      "why_used": "AI wrappers are dead, focus on unique data + AI + product."
+    },
+    {
+      "source_ref": "P0536",
+      "source_kind": "expert_post",
+      "post_id": 7000,
+      "telegram_message_id": 1720,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-11 15:31:22.000000",
+      "why_used": "Choosing the best model via OpenRouter."
+    },
+    {
+      "source_ref": "P0606",
+      "source_kind": "expert_post",
+      "post_id": 7071,
+      "telegram_message_id": 1808,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-12-16 13:49:10.000000",
+      "why_used": "How Spaces work in Perplexity and system prompt hierarchy."
+    },
+    {
+      "source_ref": "P0663",
+      "source_kind": "expert_post",
+      "post_id": 7129,
+      "telegram_message_id": 1877,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-26 19:09:01.000000",
+      "why_used": "OpenClaw guide."
+    },
+    {
+      "source_ref": "P0682",
+      "source_kind": "expert_post",
+      "post_id": 7148,
+      "telegram_message_id": 1908,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-06 14:18:03.000000",
+      "why_used": "OpenClaw guide for non-tech users."
+    },
+    {
+      "source_ref": "P0698",
+      "source_kind": "expert_post",
+      "post_id": 7164,
+      "telegram_message_id": 1925,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-15 16:55:49.000000",
+      "why_used": "OpenClaw 145-page manual."
+    },
+    {
+      "source_ref": "P0721",
+      "source_kind": "expert_post",
+      "post_id": 7187,
+      "telegram_message_id": 1951,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-23 16:22:35.000000",
+      "why_used": "OpenClaw skills playbook."
+    },
+    {
+      "source_ref": "P0762",
+      "source_kind": "expert_post",
+      "post_id": 7423,
+      "telegram_message_id": 1992,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-03-07 18:25:08.000000",
+      "why_used": "Community building as the main skill in the AI era."
+    },
+    {
+      "source_ref": "P0822",
+      "source_kind": "expert_post",
+      "post_id": 9581,
+      "telegram_message_id": 2075,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-12 08:58:42.000000",
+      "why_used": "Karpathy's two camps of AI users."
+    },
+    {
+      "source_ref": "P0828",
+      "source_kind": "expert_post",
+      "post_id": 9587,
+      "telegram_message_id": 2081,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-13 14:46:15.000000",
+      "why_used": "4 camps of AI users based on channel research."
+    },
+    {
+      "source_ref": "P0873",
+      "source_kind": "expert_post",
+      "post_id": 9905,
+      "telegram_message_id": 2135,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-30 11:36:42.000000",
+      "why_used": "What to do in AI chaos (focus on expertise, slow down, use AI to amplify)."
+    },
+    {
+      "source_ref": "P0036",
+      "source_kind": "expert_post",
+      "post_id": 6169,
+      "telegram_message_id": 649,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2024-02-24 12:56:39.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0043",
+      "source_kind": "expert_post",
+      "post_id": 6421,
+      "telegram_message_id": 995,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2024-09-11 16:48:47.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0055",
+      "source_kind": "expert_post",
+      "post_id": 6510,
+      "telegram_message_id": 1116,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-01-14 15:29:55.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0059",
+      "source_kind": "expert_post",
+      "post_id": 6514,
+      "telegram_message_id": 1121,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-01-23 17:07:40.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0070",
+      "source_kind": "expert_post",
+      "post_id": 6525,
+      "telegram_message_id": 1132,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-01-29 12:27:57.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0075",
+      "source_kind": "expert_post",
+      "post_id": 6532,
+      "telegram_message_id": 1139,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-02-01 15:52:23.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0110",
+      "source_kind": "expert_post",
+      "post_id": 6569,
+      "telegram_message_id": 1195,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-02-26 08:34:30.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0160",
+      "source_kind": "expert_post",
+      "post_id": 6619,
+      "telegram_message_id": 1253,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-03-14 16:14:07.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0201",
+      "source_kind": "expert_post",
+      "post_id": 6660,
+      "telegram_message_id": 1304,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-04-06 16:32:50.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0291",
+      "source_kind": "expert_post",
+      "post_id": 6752,
+      "telegram_message_id": 1425,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-05-29 17:11:22.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0355",
+      "source_kind": "expert_post",
+      "post_id": 6817,
+      "telegram_message_id": 1502,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-07-07 13:41:02.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0443",
+      "source_kind": "expert_post",
+      "post_id": 6905,
+      "telegram_message_id": 1599,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-09-10 18:15:46.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0470",
+      "source_kind": "expert_post",
+      "post_id": 6932,
+      "telegram_message_id": 1640,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-09-26 16:33:40.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0486",
+      "source_kind": "expert_post",
+      "post_id": 6948,
+      "telegram_message_id": 1661,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-10-04 17:43:47.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0545",
+      "source_kind": "expert_post",
+      "post_id": 7009,
+      "telegram_message_id": 1731,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-16 15:58:46.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0576",
+      "source_kind": "expert_post",
+      "post_id": 7040,
+      "telegram_message_id": 1767,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-27 12:57:00.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0591",
+      "source_kind": "expert_post",
+      "post_id": 7055,
+      "telegram_message_id": 1786,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-12-09 15:32:21.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0640",
+      "source_kind": "expert_post",
+      "post_id": 7105,
+      "telegram_message_id": 1845,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-11 13:02:39.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0695",
+      "source_kind": "expert_post",
+      "post_id": 7161,
+      "telegram_message_id": 1922,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-12 15:09:41.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0701",
+      "source_kind": "expert_post",
+      "post_id": 7167,
+      "telegram_message_id": 1930,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-16 18:53:19.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0703",
+      "source_kind": "expert_post",
+      "post_id": 7169,
+      "telegram_message_id": 1933,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-17 15:56:16.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    }
+  ],
+  "executive_summary": {
+    "one_sentence_positioning": "A highly practical, community-driven AI evangelist and 'vibe-coder' who translates complex AI agent workflows and tools into actionable business and personal productivity strategies.",
+    "strongest_system_value": "Exceptional ability to break down complex AI agent architectures (n8n, OpenClaw, Claude Code) into step-by-step, accessible guides for non-programmers, backed by real-world testing and community feedback.",
+    "weakest_system_value": "Relies heavily on external links (Teletype, GitHub, Google Docs) for full technical implementations, meaning some deep technical value is stored outside the immediate Telegram corpus.",
+    "best_fit_queries": [
+      "How to start building AI agents with n8n?",
+      "What are the best use cases for NotebookLM and Perplexity?",
+      "How to monetize AI automation skills?",
+      "How to structure JSON prompts for LLMs?",
+      "How to set up OpenClaw locally?"
+    ],
+    "poor_fit_queries": [
+      "Deep mathematical explanations of transformer architectures",
+      "Enterprise-grade secure deployment of custom LLMs from scratch",
+      "Traditional software engineering without AI assistance"
+    ],
+    "confidence": 4.8
+  },
+  "expert_positioning": {
+    "primary_role": "AI Automation Practitioner & Community Builder",
+    "audience": [
+      "Non-programmers wanting to build AI agents",
+      "Solo-entrepreneurs and marketers",
+      "Vibe-coders",
+      "People with ADHD looking for productivity hacks",
+      "Small business owners looking to automate routines"
+    ],
+    "voice": [
+      "Enthusiastic",
+      "Pragmatic",
+      "Slightly cynical about corporate hype",
+      "Community-focused",
+      "Accessible"
+    ],
+    "worldview": [
+      "AI is an exoskeleton for the brain, not a replacement for human expertise.",
+      "Vibe-coding (using AI to write code without being a developer) is the future of software creation.",
+      "Building a community is the most future-proof skill in the AI era.",
+      "AI wrappers are dead; value lies in combining AI with unique data and product functionality."
+    ],
+    "distinctive_angle": "Combines deep, hands-on experimentation with AI agents (n8n, OpenClaw) with a strong focus on ADHD-friendly productivity and community-driven learning.",
+    "recurring_formats": [
+      "Step-by-step guides (often linked to Teletype)",
+      "Tool comparisons (ChatGPT vs Gemini vs Claude vs Perplexity)",
+      "Community mastermind summaries",
+      "Hardware experiments (Raspberry Pi, robots, EcoFlow)",
+      "JSON prompt templates"
+    ],
+    "evidence_refs": [
+      "P0091",
+      "P0169",
+      "P0344",
+      "P0450",
+      "P0762",
+      "P0873"
+    ]
+  },
+  "knowledge_domains": [
+    {
+      "domain_id": "agent_ops",
+      "domain_name": "AI Agents & Automation",
+      "subdomain_ids": [
+        "agentic_dev_process",
+        "local_agent_setup",
+        "mcp_tooling",
+        "multi_agent_orchestration"
+      ],
+      "query_intent_ids": [
+        "design_agentic_dev_workflow",
+        "learn_ai_assisted_development"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "practical",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "How to build and deploy agents using n8n, OpenClaw, and Claude Code.",
+        "The difference between simple automation and autonomous agents.",
+        "How to use Model Context Protocol (MCP) to connect agents to external tools.",
+        "How to monetize AI automation services (11 niches for n8n)."
+      ],
+      "how_they_reason": [
+        "Advocates for starting with a single micro-task before building complex multi-agent systems.",
+        "Believes in 'human-in-the-loop' for validation before full autonomy.",
+        "Emphasizes understanding the business problem before opening the automation tool."
+      ],
+      "missing_or_weak_subtopics": [
+        "Enterprise-grade security and compliance for agent deployment."
+      ],
+      "evidence_refs": [
+        "P0154",
+        "P0169",
+        "P0267",
+        "P0312",
+        "P0319",
+        "P0450",
+        "P0461",
+        "P0663",
+        "P0682",
+        "P0698",
+        "P0721"
+      ],
+      "confidence": 4.9
+    },
+    {
+      "domain_id": "rag_retrieval_knowledge",
+      "domain_name": "RAG & Knowledge Retrieval",
+      "subdomain_ids": [
+        "knowledge_base_design",
+        "context_compression"
+      ],
+      "query_intent_ids": [
+        "design_rag_knowledge_base",
+        "improve_retrieval_quality"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "practical",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "How to prepare documents for RAG (preferring Markdown/TXT over PDF).",
+        "How to use NotebookLM for deep research, podcast generation, and personal knowledge management.",
+        "How to use Perplexity Spaces and Deep Research effectively.",
+        "How to build personal memory systems ('Ягода Поминика')."
+      ],
+      "how_they_reason": [
+        "Treats RAG as a 'memory' layer rather than just internet access.",
+        "Advises explicitly describing images and tables in text before vectorization to prevent data loss.",
+        "Uses multiple LLMs in tandem (e.g., Gemini for Deep Research, Perplexity for fact-checking)."
+      ],
+      "missing_or_weak_subtopics": [
+        "Deep mathematical mechanics of vector embeddings and chunking algorithms."
+      ],
+      "evidence_refs": [
+        "P0034",
+        "P0036",
+        "P0155",
+        "P0159",
+        "P0323",
+        "P0330",
+        "P0336",
+        "P0364",
+        "P0366",
+        "P0367",
+        "P0606"
+      ],
+      "confidence": 4.8
+    },
+    {
+      "domain_id": "prompt_engineering",
+      "domain_name": "Prompt Engineering",
+      "subdomain_ids": [
+        "model_specific_formatting",
+        "reasoning_control"
+      ],
+      "query_intent_ids": [
+        "learn_ai_assisted_development"
+      ],
+      "coverage_level": "moderate",
+      "depth_level": "practical",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "How to structure prompts using JSON for strict adherence to instructions.",
+        "How to write system prompts for specific agent roles.",
+        "How to use 'Chain of Thought' and step-by-step reasoning."
+      ],
+      "how_they_reason": [
+        "Believes JSON prompting is superior because LLMs are trained on code and structured data.",
+        "Argues that domain expertise is more important than prompt engineering skills.",
+        "Recommends using AI to write prompts for AI."
+      ],
+      "missing_or_weak_subtopics": [
+        "Programmatic prompt optimization (DSPy)."
+      ],
+      "evidence_refs": [
+        "P0011",
+        "P0117",
+        "P0379"
+      ],
+      "confidence": 4.7
+    },
+    {
+      "domain_id": "business_adoption",
+      "domain_name": "Business Adoption & Monetization",
+      "subdomain_ids": [
+        "roi_business_cases",
+        "adoption_roadmaps"
+      ],
+      "query_intent_ids": [
+        "assess_ai_tool_business_adoption"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "practical",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "How to monetize n8n and AI automation (11 specific niches).",
+        "Why AI wrapper startups fail and how to build defensible AI products.",
+        "How to sell AI solutions to businesses by focusing on pain points rather than AI terminology."
+      ],
+      "how_they_reason": [
+        "Believes the value is in unique data + AI capabilities + product orchestration.",
+        "Advises against selling 'AI magic' and instead selling 'boring, working tools that solve Excel/CRM problems'.",
+        "Sees community building as the ultimate moat against AI disruption."
+      ],
+      "missing_or_weak_subtopics": [
+        "Enterprise-scale financial modeling for AI deployment."
+      ],
+      "evidence_refs": [
+        "P0154",
+        "P0319",
+        "P0461",
+        "P0496",
+        "P0762"
+      ],
+      "confidence": 4.8
+    }
+  ],
+  "value_dimensions": [
+    {
+      "dimension_id": "practical_specificity",
+      "score_0_5": 5,
+      "rationale": "The expert consistently provides exact prompts, JSON structures, GitHub links, and step-by-step guides for setting up tools like n8n, OpenClaw, and NotebookLM.",
+      "evidence_refs": [
+        "P0117",
+        "P0267",
+        "P0364",
+        "P0379",
+        "P0450"
+      ],
+      "confidence": 4.9
+    },
+    {
+      "dimension_id": "insight_density",
+      "score_0_5": 4,
+      "rationale": "High density of actionable insights, though occasionally diluted by community announcements, offline event promos, and hardware tinkering.",
+      "evidence_refs": [
+        "P0169",
+        "P0200",
+        "P0312",
+        "P0496"
+      ],
+      "confidence": 4.7
+    },
+    {
+      "dimension_id": "anti_hype_signal",
+      "score_0_5": 4,
+      "rationale": "Actively calls out 'info-gypsies', warns against building fragile AI wrappers, and emphasizes solving real business problems over chasing the latest model release.",
+      "evidence_refs": [
+        "P0344",
+        "P0461",
+        "P0496",
+        "P0873"
+      ],
+      "confidence": 4.8
+    },
+    {
+      "dimension_id": "community_resonance",
+      "score_0_5": 5,
+      "rationale": "The channel has a highly active community (@prompt_chat), runs a 'Research Mastermind', hosts offline events, and the expert frequently incorporates community feedback and projects into posts.",
+      "evidence_refs": [
+        "P0047",
+        "P0055",
+        "P0762"
+      ],
+      "confidence": 5.0
+    }
+  ],
+  "matrix_cells": [
+    {
+      "domain_id": "agent_ops",
+      "subdomain_id": "agentic_dev_process",
+      "subdomain_name": "Agentic Development Process",
+      "query_intent_ids": [
+        "design_agentic_dev_workflow",
+        "learn_ai_assisted_development"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0169",
+        "P0267",
+        "P0450",
+        "P0461"
+      ],
+      "notes": "Excellent step-by-step frameworks for beginners to learn n8n and agent orchestration, emphasizing problem research before node-wiring."
+    },
+    {
+      "domain_id": "rag_retrieval_knowledge",
+      "subdomain_id": "knowledge_base_design",
+      "subdomain_name": "Knowledge Base Design",
+      "query_intent_ids": [
+        "design_rag_knowledge_base",
+        "improve_retrieval_quality"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 3,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0034",
+        "P0036",
+        "P0155",
+        "P0364",
+        "P0366",
+        "P0367"
+      ],
+      "notes": "Provides highly practical rules for formatting documents for RAG (e.g., avoiding PDFs, describing images in text, using lists instead of complex tables)."
+    },
+    {
+      "domain_id": "prompt_engineering",
+      "subdomain_id": "model_specific_formatting",
+      "subdomain_name": "Model Specific Formatting",
+      "query_intent_ids": [
+        "learn_ai_assisted_development"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 4,
+      "comment_signal_score_0_5": 3,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0379"
+      ],
+      "notes": "Signature insight on using JSON formatting for prompts to eliminate ambiguity and align with how LLMs are trained on structured data."
+    },
+    {
+      "domain_id": "business_adoption",
+      "subdomain_id": "roi_business_cases",
+      "subdomain_name": "ROI & Business Cases",
+      "query_intent_ids": [
+        "assess_ai_tool_business_adoption"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 4,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 4,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0154",
+        "P0319",
+        "P0496"
+      ],
+      "notes": "Breaks down specific monetization models for AI automation (e.g., 11 niches for n8n) and explains why AI wrappers fail without unique data."
+    }
+  ],
+  "query_intent_fit": [
+    {
+      "query_intent_id": "learn_ai_assisted_development",
+      "query_intent_name": "Learn AI-Assisted Development",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "agent_ops",
+        "prompt_engineering"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "The expert explicitly targets 'vibe-coders' and non-programmers, providing phased learning plans, tool recommendations, and mindset shifts required to build software using AI.",
+      "limitations": [
+        "Focuses more on low-code/no-code (n8n) and AI IDEs (Claude Code, Cursor) rather than traditional software engineering fundamentals."
+      ],
+      "evidence_refs": [
+        "P0091",
+        "P0169",
+        "P0267",
+        "P0450"
+      ],
+      "confidence": 4.9
+    },
+    {
+      "query_intent_id": "design_agentic_dev_workflow",
+      "query_intent_name": "Design Agentic Dev Workflow",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "agent_ops"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "Provides extensive coverage of n8n, OpenClaw, and Claude Code, including how to structure workflows, handle errors, and avoid common beginner mistakes.",
+      "limitations": [],
+      "evidence_refs": [
+        "P0267",
+        "P0450",
+        "P0461",
+        "P0663",
+        "P0682",
+        "P0698",
+        "P0721"
+      ],
+      "confidence": 4.8
+    },
+    {
+      "query_intent_id": "design_rag_knowledge_base",
+      "query_intent_name": "Design RAG Knowledge Base",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "rag_retrieval_knowledge"
+      ],
+      "source_utility_score_0_5": 4,
+      "why": "Offers highly practical advice on formatting documents for RAG and using tools like NotebookLM and Perplexity Spaces.",
+      "limitations": [
+        "Less focus on the backend vector database architecture (e.g., Qdrant, Pinecone) and more on the data preparation and prompt side."
+      ],
+      "evidence_refs": [
+        "P0034",
+        "P0155",
+        "P0364",
+        "P0366",
+        "P0367"
+      ],
+      "confidence": 4.7
+    }
+  ],
+  "content_quality_distribution": [
+    {
+      "category_id": "howto_or_checklist",
+      "share_estimate_0_1": 0.35,
+      "system_value": "high",
+      "notes": "Frequent step-by-step guides for n8n, prompt engineering, and tool setup.",
+      "evidence_refs": [
+        "P0011",
+        "P0155",
+        "P0159",
+        "P0267",
+        "P0364",
+        "P0450"
+      ],
+      "confidence": 4.8
+    },
+    {
+      "category_id": "deep_practitioner",
+      "share_estimate_0_1": 0.25,
+      "system_value": "high",
+      "notes": "Deep dives into agent architecture, JSON prompting, and business monetization.",
+      "evidence_refs": [
+        "P0154",
+        "P0312",
+        "P0319",
+        "P0379",
+        "P0461",
+        "P0496"
+      ],
+      "confidence": 4.7
+    },
+    {
+      "category_id": "announcement_or_news",
+      "share_estimate_0_1": 0.25,
+      "system_value": "medium",
+      "notes": "Regular updates on new models (GPT-5, Claude 4.6, Gemini 3) and tools.",
+      "evidence_refs": [
+        "P0046",
+        "P0059"
+      ],
+      "confidence": 4.8
+    },
+    {
+      "category_id": "commentary",
+      "share_estimate_0_1": 0.15,
+      "system_value": "low",
+      "notes": "Reflections on the AI market, community building, and personal anecdotes.",
+      "evidence_refs": [
+        "P0762",
+        "P0873"
+      ],
+      "confidence": 4.5
+    }
+  ],
+  "matrix_export": {
+    "schema_version": "knowledge_matrix_export.v1",
+    "expert_id": "silicbag",
+    "cells": [
+      {
+        "cell_id": "agent_ops/agentic_dev_process/design_agentic_dev_workflow",
+        "domain_id": "agent_ops",
+        "subdomain_id": "agentic_dev_process",
+        "subdomain_name": "Agentic Development Process",
+        "query_intent_ids": [
+          "design_agentic_dev_workflow"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "practical",
+        "source_role": "primary",
+        "scores": {
+          "depth": 4,
+          "practicality": 5,
+          "evidence_quality": 4,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 4,
+          "anti_hype": 4,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0169",
+          "P0267",
+          "P0450",
+          "P0461"
+        ],
+        "confidence": 4.8
+      },
+      {
+        "cell_id": "prompt_engineering/model_specific_formatting/learn_ai_assisted_development",
+        "domain_id": "prompt_engineering",
+        "subdomain_id": "model_specific_formatting",
+        "subdomain_name": "Model Specific Formatting",
+        "query_intent_ids": [
+          "learn_ai_assisted_development"
+        ],
+        "coverage_level": "moderate",
+        "depth_level": "practical",
+        "source_role": "primary",
+        "scores": {
+          "depth": 4,
+          "practicality": 5,
+          "evidence_quality": 4,
+          "source_utility": 4,
+          "intrinsic_distinctiveness": 5,
+          "anti_hype": 3,
+          "community_signal": 3
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0379"
+        ],
+        "confidence": 4.7
+      },
+      {
+        "cell_id": "rag_retrieval_knowledge/knowledge_base_design/design_rag_knowledge_base",
+        "domain_id": "rag_retrieval_knowledge",
+        "subdomain_id": "knowledge_base_design",
+        "subdomain_name": "Knowledge Base Design",
+        "query_intent_ids": [
+          "design_rag_knowledge_base"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "practical",
+        "source_role": "primary",
+        "scores": {
+          "depth": 4,
+          "practicality": 5,
+          "evidence_quality": 4,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 4,
+          "anti_hype": 4,
+          "community_signal": 3
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0364",
+          "P0366",
+          "P0367"
+        ],
+        "confidence": 4.8
+      },
+      {
+        "cell_id": "business_adoption/roi_business_cases/assess_ai_tool_business_adoption",
+        "domain_id": "business_adoption",
+        "subdomain_id": "roi_business_cases",
+        "subdomain_name": "ROI & Business Cases",
+        "query_intent_ids": [
+          "assess_ai_tool_business_adoption"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "practical",
+        "source_role": "primary",
+        "scores": {
+          "depth": 4,
+          "practicality": 4,
+          "evidence_quality": 4,
+          "source_utility": 4,
+          "intrinsic_distinctiveness": 4,
+          "anti_hype": 5,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0154",
+          "P0319",
+          "P0496"
+        ],
+        "confidence": 4.8
+      }
+    ],
+    "compare_hints": {
+      "likely_unique_cells": [
+        "prompt_engineering/model_specific_formatting/learn_ai_assisted_development"
+      ],
+      "likely_duplicate_cells": [],
+      "cells_requiring_probe": [
+        "agent_ops/agentic_dev_process/design_agentic_dev_workflow"
+      ],
+      "matrix_only_decision_confidence": "medium"
+    }
+  },
+  "signature_insights": [
+    {
+      "insight": "JSON prompting is superior to natural language for LLMs because models are trained on code and structured data, eliminating ambiguity.",
+      "why_it_matters_for_experts_panel": "Provides a highly actionable, structural approach to prompt engineering that moves beyond vague natural language instructions.",
+      "applicable_query_types": [
+        "learn_ai_assisted_development"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0379"
+      ],
+      "confidence": 4.8
+    },
+    {
+      "insight": "AI wrapper startups are dead; defensible AI products require a combination of ready-made AI capabilities, unique proprietary data, and specific product orchestration.",
+      "why_it_matters_for_experts_panel": "Offers a sobering, strategic framework for evaluating AI business ideas, cutting through the hype of building thin layers over OpenAI APIs.",
+      "applicable_query_types": [
+        "assess_ai_tool_business_adoption"
+      ],
+      "novelty_level": "useful_packaging",
+      "evidence_refs": [
+        "P0496"
+      ],
+      "confidence": 4.7
+    },
+    {
+      "insight": "When building AI agents in n8n, start by researching the human problem for 2-3 days, define the 20% of cases causing 80% of the pain, and map the logic before touching any nodes.",
+      "why_it_matters_for_experts_panel": "Prevents beginners from getting lost in tool features and focuses them on solving actual business problems.",
+      "applicable_query_types": [
+        "design_agentic_dev_workflow"
+      ],
+      "novelty_level": "useful_packaging",
+      "evidence_refs": [
+        "P0461"
+      ],
+      "confidence": 4.9
+    },
+    {
+      "insight": "For RAG to work effectively, documents must be pre-processed: avoid PDFs, describe images in text, use simple lists instead of complex tables, and ensure every paragraph has standalone context.",
+      "why_it_matters_for_experts_panel": "Solves common retrieval failures by addressing the root cause: poor data formatting before vectorization.",
+      "applicable_query_types": [
+        "design_rag_knowledge_base",
+        "improve_retrieval_quality"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0364"
+      ],
+      "confidence": 4.8
+    }
+  ],
+  "practical_patterns": [
+    {
+      "pattern": "Using Perplexity for Deep Research fact-checking: Generate a long report in Gemini, then feed it to Perplexity to verify claims, score them out of 10, and provide citations.",
+      "when_to_use": "When validating long-form AI-generated research reports to prevent hallucinations.",
+      "failure_modes": [
+        "Perplexity might still hallucinate citations if not strictly prompted."
+      ],
+      "evidence_refs": [
+        "P0355"
+      ]
+    },
+    {
+      "pattern": "Using JSON format for prompts: Define 'task', 'topic', 'audience', and 'output_format' as JSON keys instead of writing a conversational prompt.",
+      "when_to_use": "When you need strict adherence to instructions and predictable output formats from an LLM.",
+      "failure_modes": [
+        "Overcomplicating simple queries where natural language would suffice."
+      ],
+      "evidence_refs": [
+        "P0379"
+      ]
+    },
+    {
+      "pattern": "The 6-step n8n beginner framework: 1. Read docs, 2. Think in algorithms, 3. Structure data, 4. Refine working workflows, 5. Learn the ecosystem (APIs/Webhooks), 6. Remove chaos (naming/notes).",
+      "when_to_use": "When onboarding a non-programmer to n8n automation.",
+      "failure_modes": [
+        "Skipping error handling, leading to brittle workflows in production."
+      ],
+      "evidence_refs": [
+        "P0450"
+      ]
+    }
+  ],
+  "claims_and_positions": [
+    {
+      "claim": "Vibe-coding (using AI to write code without deep programming knowledge) is a legitimate and powerful way to build software, despite pushback from traditional developers.",
+      "stance": "supports",
+      "decision_relevance": "Encourages non-technical users to adopt AI coding tools (Cursor, Claude Code) for rapid prototyping.",
+      "dispute_risk": "high",
+      "evidence_refs": [
+        "P0091",
+        "P0344"
+      ]
+    },
+    {
+      "claim": "Building a community is the most future-proof skill in the AI era, as AI cannot replicate human connection and trust.",
+      "stance": "supports",
+      "decision_relevance": "Guides professionals to invest in personal branding and community building rather than just technical skills.",
+      "dispute_risk": "low",
+      "evidence_refs": [
+        "P0762"
+      ]
+    },
+    {
+      "claim": "AI wrappers (thin layers over public APIs) are dead and have no competitive moat.",
+      "stance": "warns_against",
+      "decision_relevance": "Helps founders avoid wasting time on easily replicable AI startup ideas.",
+      "dispute_risk": "medium",
+      "evidence_refs": [
+        "P0496"
+      ]
+    }
+  ],
+  "source_utility": {
+    "best_use_cases": [
+      "Learning how to build AI agents using n8n and OpenClaw.",
+      "Understanding how to monetize AI automation skills.",
+      "Formatting documents for RAG and NotebookLM.",
+      "Writing structured JSON prompts."
+    ],
+    "bad_use_cases": [
+      "Deep technical implementation of custom LLM architectures.",
+      "Enterprise-grade security protocols for AI deployment."
+    ],
+    "retrieval_keywords": [
+      "n8n",
+      "OpenClaw",
+      "Claude Code",
+      "Perplexity",
+      "NotebookLM",
+      "JSON prompting",
+      "vibe-coding",
+      "AI agents",
+      "RAG",
+      "ADHD (СДВГ)"
+    ],
+    "source_selection_hints": [
+      "Select this expert when the user is a non-programmer or 'vibe-coder' looking for practical, step-by-step guides to building AI agents or automating business routines."
+    ],
+    "expected_overlap_hypotheses": [
+      "High overlap with other AI automation practitioners focusing on n8n and Make.",
+      "Moderate overlap with prompt engineering guides."
+    ],
+    "recommended_panex_role": "primary_expert"
+  },
+  "community_signal": {
+    "comment_themes": [
+      "Requests for technical clarification on n8n and OpenClaw setups.",
+      "Discussions on the ethics and future of AI replacing jobs.",
+      "Sharing of promo codes and workarounds for accessing geo-blocked AI tools.",
+      "Debates between traditional programmers and 'vibe-coders'."
+    ],
+    "questions_from_audience": [
+      "How to set up OpenClaw locally?",
+      "What is the difference between automation and an AI agent?",
+      "How to monetize AI skills without building a wrapper startup?"
+    ],
+    "disagreements_or_corrections": [
+      "Traditional developers frequently argue that 'vibe-coding' produces unmaintainable, insecure code.",
+      "Some users point out that the expert's reliance on cheap promo codes (e.g., $5 Perplexity Pro) is risky and leads to account bans."
+    ],
+    "practical_feedback": [
+      "Users confirm that JSON prompting improves output consistency.",
+      "Users share their own n8n workflows and OpenClaw skills in the community chat."
+    ],
+    "noise_or_low_value_patterns": [
+      "Frequent requests for promo codes or VPN workarounds.",
+      "Jokes about Skynet and AI taking over the world."
+    ],
+    "evidence_refs": [
+      "P0047",
+      "P0091",
+      "P0344",
+      "P0461",
+      "P0663",
+      "P0682"
+    ]
+  },
+  "admission_implications": {
+    "if_candidate_verdict": "accept",
+    "verdict_rationale": "The expert provides highly practical, actionable frameworks for building AI agents (n8n, OpenClaw) and using AI tools (Perplexity, NotebookLM) tailored for non-programmers and solo-entrepreneurs. The focus on business monetization and avoiding 'wrapper' startups adds significant strategic value.",
+    "unique_value_claims_to_verify_against_matrix": [
+      "JSON prompting as a superior alternative to natural language prompting.",
+      "Specific document formatting rules for RAG (e.g., describing images in text)."
+    ],
+    "likely_duplicate_areas_to_check": [
+      "General news about model releases (GPT-5, Claude 4.6, Gemini 3).",
+      "Basic n8n webhook setups."
+    ],
+    "minimum_followup_probe_queries": [
+      "Compare JSON prompting to XML prompting for Claude models.",
+      "What are the specific security risks of deploying OpenClaw locally?"
+    ],
+    "risk_notes": [
+      "The expert frequently relies on external links (Teletype, Google Docs) for full technical guides, meaning some depth might be lost if those links break.",
+      "Promotes the use of gray-market promo codes (e.g., Plati.market), which may lead to account bans for users."
+    ]
+  },
+  "audit": {
+    "unsupported_or_weak_claims": [
+      "Claims about specific future model releases (e.g., GPT-5.4, Claude 5) are often based on Twitter rumors rather than official sources."
+    ],
+    "abstentions": [],
+    "possible_model_errors": [],
+    "source_refs_used": [
+      "P0011",
+      "P0034",
+      "P0036",
+      "P0043",
+      "P0046",
+      "P0047",
+      "P0055",
+      "P0059",
+      "P0070",
+      "P0075",
+      "P0088",
+      "P0091",
+      "P0110",
+      "P0117",
+      "P0154",
+      "P0155",
+      "P0159",
+      "P0160",
+      "P0169",
+      "P0200",
+      "P0201",
+      "P0267",
+      "P0291",
+      "P0312",
+      "P0319",
+      "P0323",
+      "P0330",
+      "P0336",
+      "P0344",
+      "P0355",
+      "P0364",
+      "P0366",
+      "P0367",
+      "P0379",
+      "P0443",
+      "P0450",
+      "P0461",
+      "P0470",
+      "P0486",
+      "P0496",
+      "P0536",
+      "P0545",
+      "P0576",
+      "P0591",
+      "P0606",
+      "P0640",
+      "P0663",
+      "P0682",
+      "P0695",
+      "P0698",
+      "P0701",
+      "P0703",
+      "P0721",
+      "P0762",
+      "P0822",
+      "P0828",
+      "P0873"
+    ],
+    "source_refs_most_important": [
+      "P0154",
+      "P0169",
+      "P0267",
+      "P0312",
+      "P0364",
+      "P0379",
+      "P0450",
+      "P0461",
+      "P0496"
+    ],
+    "normalization_notes": [
+      {
+        "operation": "repair_matrix_export_from_matrix_cells",
+        "repaired_cell_count": 0,
+        "repaired_cell_ids": [],
+        "skipped_cell_count": 0,
+        "skipped_cells": []
+      },
+      {
+        "operation": "hydrate_source_ref_index_used",
+        "hydrated_ref_count": 21,
+        "generated_at_set_from_manifest": "2026-05-12T07:59:34.046813+00:00"
+      }
+    ]
+  }
+}

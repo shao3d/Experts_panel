@@ -1,0 +1,29 @@
+{
+  "missing_required_top_level_keys": [],
+  "known_source_ref_count": 2158,
+  "used_source_ref_count": 44,
+  "source_ref_index_used_count": 36,
+  "unknown_source_refs": [],
+  "unknown_source_ref_count": 0,
+  "refs_missing_from_source_ref_index_used": [
+    "P0014",
+    "P0033",
+    "P0100",
+    "P0126",
+    "P0131",
+    "P0169",
+    "P0261.C0009",
+    "P0273"
+  ],
+  "refs_missing_from_source_ref_index_used_count": 8,
+  "matrix_cell_count": 4,
+  "matrix_export_cell_count": 4,
+  "matrix_export_incomplete": false,
+  "missing_matrix_export_cells": [],
+  "missing_matrix_export_cell_count": 0,
+  "bad_matrix_relative_novelty_values": [],
+  "passport_generated_at": "2026-05-12T09:21:58.203206+00:00",
+  "expected_generated_at": "2026-05-12T09:21:58.203206+00:00",
+  "generated_at_matches_expected": true,
+  "valid_basic_contract": false
+}

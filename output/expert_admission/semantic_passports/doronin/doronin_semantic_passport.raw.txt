@@ -1,0 +1,1177 @@
+{
+  "schema_version": "expert_value_passport.v1.1",
+  "passport_meta": {
+    "schema_version": "expert_value_passport.v1.1",
+    "expert_id": "doronin",
+    "display_name": "Doronin",
+    "channel_username": "@kdoronin_blog",
+    "model_assumed": "gemini-3.1-pro-preview",
+    "prompt_version": "semantic-passport-prompt.v1",
+    "generated_at": "2026-05-10T19:38:39.900250+00:00"
+  },
+  "corpus_audit": {
+    "post_count_seen": 687,
+    "comment_count_seen": 4026,
+    "date_range": {
+      "first_post": "2024-06-11 15:58:34.000000",
+      "last_post": "2026-05-04 05:17:57.000000"
+    },
+    "language_mix": [
+      "ru",
+      "en"
+    ],
+    "material_limitations": [],
+    "author_vs_community_boundary": "Clear distinction. The author writes detailed practical posts, while the community actively discusses tools, shares alternative solutions, and asks clarifying questions in the comments."
+  },
+  "source_ref_index_used": [
+    {
+      "source_ref": "P0046",
+      "source_kind": "expert_post",
+      "post_id": 3682,
+      "telegram_message_id": 58,
+      "created_at": "2024-07-26 19:08:02.000000",
+      "why_used": "Comparison of LLaMA 3.1 and DeepSeek Coder V2."
+    },
+    {
+      "source_ref": "P0071",
+      "source_kind": "expert_post",
+      "post_id": 3709,
+      "telegram_message_id": 90,
+      "created_at": "2024-08-21 19:05:27.000000",
+      "why_used": "Analysis of Cursor Pro and codebase indexing."
+    },
+    {
+      "source_ref": "P0085",
+      "source_kind": "expert_post",
+      "post_id": 3723,
+      "telegram_message_id": 106,
+      "created_at": "2024-09-04 19:41:18.000000",
+      "why_used": "Comparison of Cursor and Zed."
+    },
+    {
+      "source_ref": "P0118",
+      "source_kind": "expert_post",
+      "post_id": 3756,
+      "telegram_message_id": 144,
+      "created_at": "2024-10-07 20:15:24.000000",
+      "why_used": "Detailed AI-coding pipeline including BDD, MVP, UML, and Unit tests."
+    },
+    {
+      "source_ref": "P0171",
+      "source_kind": "expert_post",
+      "post_id": 3829,
+      "telegram_message_id": 252,
+      "created_at": "2024-11-29 21:06:43.000000",
+      "why_used": "Analysis of Claude MCP release and its capabilities."
+    },
+    {
+      "source_ref": "P0241",
+      "source_kind": "expert_post",
+      "post_id": 3941,
+      "telegram_message_id": 457,
+      "created_at": "2025-02-06 20:29:42.000000",
+      "why_used": "Review of Rivet for no-code AI agents."
+    },
+    {
+      "source_ref": "P0260",
+      "source_kind": "expert_post",
+      "post_id": 3977,
+      "telegram_message_id": 512,
+      "created_at": "2025-02-25 19:48:23.000000",
+      "why_used": "Detailed comparison between Windsurf and Cursor."
+    },
+    {
+      "source_ref": "P0261",
+      "source_kind": "expert_post",
+      "post_id": 3978,
+      "telegram_message_id": 513,
+      "created_at": "2025-02-26 20:26:43.000000",
+      "why_used": "Usage of Cursor Rules and TDD."
+    },
+    {
+      "source_ref": "P0273",
+      "source_kind": "expert_post",
+      "post_id": 3995,
+      "telegram_message_id": 548,
+      "created_at": "2025-03-10 23:43:49.000000",
+      "why_used": "Development of a custom Telegram MCP server."
+    },
+    {
+      "source_ref": "P0288",
+      "source_kind": "expert_post",
+      "post_id": 4020,
+      "telegram_message_id": 578,
+      "created_at": "2025-03-23 22:03:11.000000",
+      "why_used": "Concepts of AI Agent memory management."
+    },
+    {
+      "source_ref": "P0293",
+      "source_kind": "expert_post",
+      "post_id": 4025,
+      "telegram_message_id": 602,
+      "created_at": "2025-03-28 21:23:58.000000",
+      "why_used": "Review of Cursor Talk to Figma MCP."
+    },
+    {
+      "source_ref": "P0331",
+      "source_kind": "expert_post",
+      "post_id": 4081,
+      "telegram_message_id": 673,
+      "created_at": "2025-05-09 00:02:16.000000",
+      "why_used": "Critique of vibe-coding vs structured AI-coding."
+    },
+    {
+      "source_ref": "P0336",
+      "source_kind": "expert_post",
+      "post_id": 4083,
+      "telegram_message_id": 681,
+      "created_at": "2025-05-10 21:34:30.000000",
+      "why_used": "Further critique of vibe-coding and the necessity of architectural planning."
+    },
+    {
+      "source_ref": "P0340",
+      "source_kind": "expert_post",
+      "post_id": 4087,
+      "telegram_message_id": 692,
+      "created_at": "2025-05-15 00:04:35.000000",
+      "why_used": "Implementing BDD with Cursor."
+    },
+    {
+      "source_ref": "P0347",
+      "source_kind": "expert_post",
+      "post_id": 4103,
+      "telegram_message_id": 710,
+      "created_at": "2025-05-21 22:22:24.000000",
+      "why_used": "Critique of bloated MCP servers and advocacy for custom, narrow MCPs."
+    },
+    {
+      "source_ref": "P0350",
+      "source_kind": "expert_post",
+      "post_id": 4106,
+      "telegram_message_id": 713,
+      "created_at": "2025-05-25 00:30:53.000000",
+      "why_used": "Rewriting the Figma MCP server using Claude Sonnet 4."
+    },
+    {
+      "source_ref": "P0362",
+      "source_kind": "expert_post",
+      "post_id": 4130,
+      "telegram_message_id": 746,
+      "created_at": "2025-06-05 22:38:44.000000",
+      "why_used": "Using threats in Cursor rules to enforce strict adherence to instructions."
+    },
+    {
+      "source_ref": "P0372",
+      "source_kind": "expert_post",
+      "post_id": 4148,
+      "telegram_message_id": 774,
+      "created_at": "2025-06-15 23:54:43.000000",
+      "why_used": "Architecture of Cursor rules (navigator, steps, documentation)."
+    },
+    {
+      "source_ref": "P0388",
+      "source_kind": "expert_post",
+      "post_id": 4170,
+      "telegram_message_id": 798,
+      "created_at": "2025-07-01 20:40:43.000000",
+      "why_used": "Creating an interviewer rule for Cursor to prevent vague prompts."
+    },
+    {
+      "source_ref": "P0390",
+      "source_kind": "expert_post",
+      "post_id": 4172,
+      "telegram_message_id": 800,
+      "created_at": "2025-07-03 10:35:19.000000",
+      "why_used": "Analysis of Cursor's pay-as-you-go limits and pricing changes."
+    },
+    {
+      "source_ref": "P0394",
+      "source_kind": "expert_post",
+      "post_id": 4176,
+      "telegram_message_id": 808,
+      "created_at": "2025-07-07 21:30:29.000000",
+      "why_used": "Integration of Roo Code with Claude Code to bypass API token costs."
+    },
+    {
+      "source_ref": "P0396",
+      "source_kind": "expert_post",
+      "post_id": 4178,
+      "telegram_message_id": 810,
+      "created_at": "2025-07-09 22:25:17.000000",
+      "why_used": "Review of the official Claude Code extension for VS Code."
+    },
+    {
+      "source_ref": "P0414",
+      "source_kind": "expert_post",
+      "post_id": 4200,
+      "telegram_message_id": 867,
+      "created_at": "2025-07-27 22:46:11.000000",
+      "why_used": "Introduction to Graphiti for temporal knowledge graphs."
+    },
+    {
+      "source_ref": "P0460",
+      "source_kind": "expert_post",
+      "post_id": 4253,
+      "telegram_message_id": 944,
+      "created_at": "2025-09-11 23:38:55.000000",
+      "why_used": "Review of Codex CLI from OpenAI."
+    },
+    {
+      "source_ref": "P0479",
+      "source_kind": "expert_post",
+      "post_id": 4280,
+      "telegram_message_id": 985,
+      "created_at": "2025-09-30 21:21:04.000000",
+      "why_used": "Update on Claude Code VS Code extension bringing CLI tools to the UI."
+    },
+    {
+      "source_ref": "P0487",
+      "source_kind": "expert_post",
+      "post_id": 4296,
+      "telegram_message_id": 1001,
+      "created_at": "2025-10-08 21:25:07.000000",
+      "why_used": "Critique of AI agents taking too much control without asking permissions."
+    },
+    {
+      "source_ref": "P0511",
+      "source_kind": "expert_post",
+      "post_id": 4326,
+      "telegram_message_id": 1032,
+      "created_at": "2025-10-31 20:46:46.000000",
+      "why_used": "Review of Claude Code Skills repositories."
+    },
+    {
+      "source_ref": "P0527",
+      "source_kind": "expert_post",
+      "post_id": 4349,
+      "telegram_message_id": 1057,
+      "created_at": "2025-11-16 22:38:40.000000",
+      "why_used": "Comparison of Claude Code Skills vs MCP tools for context economy."
+    },
+    {
+      "source_ref": "P0538",
+      "source_kind": "expert_post",
+      "post_id": 4360,
+      "telegram_message_id": 1081,
+      "created_at": "2025-11-27 19:51:16.000000",
+      "why_used": "Review of Claude Opus 4.5 and its advanced tool calling capabilities."
+    },
+    {
+      "source_ref": "P0561",
+      "source_kind": "expert_post",
+      "post_id": 4385,
+      "telegram_message_id": 1113,
+      "created_at": "2025-12-20 22:01:16.000000",
+      "why_used": "Using Langfuse for observability with local models."
+    },
+    {
+      "source_ref": "P0567",
+      "source_kind": "expert_post",
+      "post_id": 4391,
+      "telegram_message_id": 1121,
+      "created_at": "2025-12-26 20:33:47.000000",
+      "why_used": "Expert's migration path from Cursor to Claude Code."
+    },
+    {
+      "source_ref": "P0574",
+      "source_kind": "expert_post",
+      "post_id": 4398,
+      "telegram_message_id": 1128,
+      "created_at": "2026-01-02 23:22:40.000000",
+      "why_used": "Introduction to Hindsight for AI agent memory."
+    },
+    {
+      "source_ref": "P0582",
+      "source_kind": "expert_post",
+      "post_id": 4406,
+      "telegram_message_id": 1141,
+      "created_at": "2026-01-10 20:41:48.000000",
+      "why_used": "Comparison of Graphiti and Hindsight."
+    },
+    {
+      "source_ref": "P0584",
+      "source_kind": "expert_post",
+      "post_id": 4408,
+      "telegram_message_id": 1143,
+      "created_at": "2026-01-13 00:14:19.000000",
+      "why_used": "Review of Claude Cowork."
+    },
+    {
+      "source_ref": "P0593",
+      "source_kind": "expert_post",
+      "post_id": 4417,
+      "telegram_message_id": 1153,
+      "created_at": "2026-01-22 21:18:23.000000",
+      "why_used": "Review of Vibe Kanban as an alternative to Auto Claude."
+    },
+    {
+      "source_ref": "P0608",
+      "source_kind": "expert_post",
+      "post_id": 4506,
+      "telegram_message_id": 1169,
+      "created_at": "2026-02-07 21:27:52.000000",
+      "why_used": "Analysis of a paper using temporal graphs for stock trading."
+    },
+    {
+      "source_ref": "P0633",
+      "source_kind": "expert_post",
+      "post_id": 7294,
+      "telegram_message_id": 1204,
+      "created_at": "2026-03-06 20:12:34.000000",
+      "why_used": "Best practices for keeping Agents.md files small and focused."
+    },
+    {
+      "source_ref": "P0651",
+      "source_kind": "expert_post",
+      "post_id": 7961,
+      "telegram_message_id": 1231,
+      "created_at": "2026-03-25 10:46:02.000000",
+      "why_used": "Importance of documentation and context in AI projects."
+    },
+    {
+      "source_ref": "P0676",
+      "source_kind": "expert_post",
+      "post_id": 9762,
+      "telegram_message_id": 1260,
+      "created_at": "2026-04-21 18:46:55.000000",
+      "why_used": "Anti-vibe coding part 1: Business perspective on code as a liability."
+    },
+    {
+      "source_ref": "P0677",
+      "source_kind": "expert_post",
+      "post_id": 9763,
+      "telegram_message_id": 1261,
+      "created_at": "2026-04-23 19:00:27.000000",
+      "why_used": "Anti-vibe coding part 2: Developer perspective on fragile systems."
+    }
+  ],
+  "executive_summary": {
+    "one_sentence_positioning": "A deep practitioner and AI engineer who rigorously tests, builds, and critiques AI coding tools, agentic workflows, and multimodal generation models, advocating for structured engineering over hype-driven 'vibe-coding'.",
+    "strongest_system_value": "Provides highly specific, battle-tested workflows and custom code (e.g., MCP servers, Cursor rules, temporal graph memory implementations) for building robust AI-assisted development pipelines.",
+    "weakest_system_value": "Occasionally dives into niche personal experiments (e.g., analyzing his own sports data or generating highly specific memes) that may not generalize to broad enterprise use cases.",
+    "best_fit_queries": [
+      "How to set up Claude Code with custom MCP servers and Skills?",
+      "What are the best practices for avoiding unmaintainable code when using AI IDEs like Cursor?",
+      "How to implement temporal graph memory for AI agents using Graphiti or Hindsight?",
+      "Which AI video generation model (Kling, Veo3, Sora) is best for consistent, controllable output?"
+    ],
+    "poor_fit_queries": [
+      "Basic introductions to what ChatGPT is.",
+      "How to write a simple prompt for a blog post.",
+      "Non-technical overviews of AI trends without practical implementation details."
+    ],
+    "confidence": 0.95
+  },
+  "expert_positioning": {
+    "primary_role": "AI Engineer & Agentic Workflow Architect",
+    "audience": [
+      "Software Developers",
+      "AI Engineers",
+      "Tech Leads",
+      "Founders building AI products"
+    ],
+    "voice": [
+      "Analytical",
+      "Pragmatic",
+      "Slightly ironic/sarcastic regarding AI hype",
+      "Detail-oriented"
+    ],
+    "worldview": [
+      "AI is a powerful tool for professionals, not a magic wand that replaces engineering discipline.",
+      "'Vibe-coding' leads to unmaintainable legacy code; strict rules, BDD, and architecture are essential.",
+      "Open-source models and self-hosted solutions provide necessary control and cost-efficiency over closed corporate APIs.",
+      "Agentic memory (temporal graphs) and precise tool-calling (MCP/Skills) are the keys to the next level of AI autonomy."
+    ],
+    "distinctive_angle": "Combines deep technical implementation (writing custom MCP servers in Python/Go, configuring vLLM) with a strong anti-hype philosophy, actively debunking marketing claims of major AI vendors through rigorous testing.",
+    "recurring_formats": [
+      "Tool comparisons (e.g., Cursor vs. Claude Code, Kling vs. Veo3)",
+      "Step-by-step technical guides (e.g., setting up MCP servers, training LoRAs)",
+      "GitHub repository releases of custom scripts and tools",
+      "Critiques of 'vibe-coding' and AI hype"
+    ],
+    "evidence_refs": [
+      "P0331",
+      "P0336",
+      "P0567",
+      "P0676",
+      "P0677"
+    ]
+  },
+  "knowledge_domains": [
+    {
+      "domain_id": "coding_agents",
+      "domain_name": "AI Coding IDEs & CLI Agents",
+      "subdomain_ids": [
+        "claude_code_workflows",
+        "cursor_windsurf_copilot",
+        "agentic_dev_process",
+        "code_review_testing"
+      ],
+      "query_intent_ids": [
+        "choose_ai_coding_tool",
+        "design_agentic_dev_workflow",
+        "learn_ai_assisted_development"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "unique",
+      "what_the_expert_knows": [
+        "The exact limitations and strengths of Cursor, Claude Code, Roo Code, Windsurf, and Codex CLI.",
+        "How to configure `.cursorrules` and `CLAUDE.md` to enforce BDD and architectural constraints.",
+        "How to bypass API costs by routing IDEs through alternative providers (e.g., OpenRouter, local models).",
+        "The dangers of 'vibe-coding' and how it leads to exponential technical debt."
+      ],
+      "how_they_reason": [
+        "Tests tools on real-world, multi-file projects rather than simple 'hello world' scripts.",
+        "Evaluates tools based on context management, tool-calling reliability, and cost-efficiency.",
+        "Prefers CLI tools (Claude Code) over GUI IDEs (Cursor) when they offer better context control and lower token burn."
+      ],
+      "missing_or_weak_subtopics": [
+        "Enterprise-scale deployment of these tools across large teams (mostly focuses on solopreneur/small team setups)."
+      ],
+      "evidence_refs": [
+        "P0118",
+        "P0260",
+        "P0261",
+        "P0331",
+        "P0340",
+        "P0362",
+        "P0372",
+        "P0390",
+        "P0394",
+        "P0460",
+        "P0567",
+        "P0676",
+        "P0677"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "domain_id": "agent_ops",
+      "domain_name": "Agentic Operations & Memory",
+      "subdomain_ids": [
+        "mcp_tooling",
+        "multi_agent_orchestration",
+        "tool_calling_hooks_skills",
+        "knowledge_base_design"
+      ],
+      "query_intent_ids": [
+        "design_agentic_dev_workflow",
+        "design_rag_knowledge_base"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "How to build custom MCP (Model Context Protocol) servers in Python and Go.",
+        "The difference between MCP tools and Claude Code Skills, and how to use Skills to save context window space.",
+        "How to implement temporal graph memory using Graphiti and Hindsight.",
+        "How to use Langfuse for observability when running local models."
+      ],
+      "how_they_reason": [
+        "Believes MCP servers should be narrow and task-specific to avoid polluting the LLM's context window.",
+        "Prefers temporal graphs over simple vector RAG for tracking entity relationships and state changes over time.",
+        "Advocates for strict deterministic hooks to control agent behavior and prevent infinite loops."
+      ],
+      "missing_or_weak_subtopics": [],
+      "evidence_refs": [
+        "P0171",
+        "P0273",
+        "P0288",
+        "P0293",
+        "P0347",
+        "P0350",
+        "P0414",
+        "P0511",
+        "P0527",
+        "P0561",
+        "P0574",
+        "P0582",
+        "P0608"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "domain_id": "creative_multimodal",
+      "domain_name": "AI Video & Image Generation",
+      "subdomain_ids": [
+        "multimodal_generation",
+        "model_comparison"
+      ],
+      "query_intent_ids": [
+        "compare_models_for_task"
+      ],
+      "coverage_level": "moderate",
+      "depth_level": "practical",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "How to train LoRAs for Flux using platforms like fal.ai with small datasets (18-300 photos).",
+        "The specific strengths and weaknesses of Kling, Veo3, Sora, and Runway for video generation.",
+        "How to use inpainting and reference-to-video features to maintain character consistency."
+      ],
+      "how_they_reason": [
+        "Evaluates models based on prompt adherence, physics simulation, and cost per generation.",
+        "Combines multiple tools (e.g., generating an image in Flux, animating it in Kling, lipsyncing in HeyGen) to achieve production-ready results."
+      ],
+      "missing_or_weak_subtopics": [
+        "Deep technical architecture of diffusion models (focuses more on practical usage and API integration)."
+      ],
+      "evidence_refs": [
+        "P0151",
+        "P0157"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "value_dimensions": [
+    {
+      "dimension_id": "insight_density",
+      "score_0_5": 4.5,
+      "rationale": "Posts are highly concentrated with technical insights, specific tool configurations, and architectural philosophies. Very little fluff.",
+      "evidence_refs": [
+        "P0118",
+        "P0372",
+        "P0677"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "practical_specificity",
+      "score_0_5": 5.0,
+      "rationale": "Consistently provides exact prompts, configuration JSONs, CLI commands, and links to his own GitHub repositories containing custom scripts and MCP servers.",
+      "evidence_refs": [
+        "P0273",
+        "P0350",
+        "P0388"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "anti_hype_signal",
+      "score_0_5": 5.0,
+      "rationale": "Actively debunks marketing claims from major AI companies (e.g., OpenAI, Google, Cursor) and heavily criticizes the 'vibe-coding' trend as a path to unmaintainable legacy code.",
+      "evidence_refs": [
+        "P0331",
+        "P0336",
+        "P0676",
+        "P0677"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "technical_depth",
+      "score_0_5": 4.5,
+      "rationale": "Writes custom Python/Go servers, configures local LLMs via vLLM, implements temporal graphs in Neo4j, and deeply understands context window management.",
+      "evidence_refs": [
+        "P0273",
+        "P0350",
+        "P0414",
+        "P0561"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "dimension_id": "decision_value",
+      "score_0_5": 4.5,
+      "rationale": "Provides clear, actionable frameworks for choosing between AI IDEs, structuring agentic workflows, and deciding when to use specific memory architectures.",
+      "evidence_refs": [
+        "P0260",
+        "P0567",
+        "P0582"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "matrix_cells": [
+    {
+      "domain_id": "coding_agents",
+      "subdomain_id": "claude_code_workflows",
+      "subdomain_name": "Claude Code Workflows",
+      "query_intent_ids": [
+        "design_agentic_dev_workflow",
+        "choose_ai_coding_tool"
+      ],
+      "depth_score_0_5": 5.0,
+      "practicality_score_0_5": 5.0,
+      "intrinsic_distinctiveness_score_0_5": 4.5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 5.0,
+      "source_utility_score_0_5": 5.0,
+      "comment_signal_score_0_5": 4.0,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0394",
+        "P0396",
+        "P0479",
+        "P0511",
+        "P0527",
+        "P0538",
+        "P0567"
+      ],
+      "notes": "Expert has fully migrated to Claude Code as his primary IDE, providing deep insights into using Skills, Hooks, and managing context efficiently compared to GUI-based IDEs."
+    },
+    {
+      "domain_id": "coding_agents",
+      "subdomain_id": "agentic_dev_process",
+      "subdomain_name": "Agentic Development Process",
+      "query_intent_ids": [
+        "design_agentic_dev_workflow"
+      ],
+      "depth_score_0_5": 5.0,
+      "practicality_score_0_5": 4.5,
+      "intrinsic_distinctiveness_score_0_5": 5.0,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4.5,
+      "source_utility_score_0_5": 5.0,
+      "comment_signal_score_0_5": 4.5,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0118",
+        "P0261",
+        "P0331",
+        "P0336",
+        "P0340",
+        "P0362",
+        "P0372",
+        "P0676",
+        "P0677"
+      ],
+      "notes": "Strong philosophical and practical stance against 'vibe-coding'. Advocates for BDD, strict architectural planning, and using `.cursorrules` or `CLAUDE.md` to enforce deterministic constraints on AI agents."
+    },
+    {
+      "domain_id": "agent_ops",
+      "subdomain_id": "mcp_tooling",
+      "subdomain_name": "MCP Tooling",
+      "query_intent_ids": [
+        "build_human_ai_workflow"
+      ],
+      "depth_score_0_5": 4.5,
+      "practicality_score_0_5": 5.0,
+      "intrinsic_distinctiveness_score_0_5": 4.5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 5.0,
+      "source_utility_score_0_5": 4.5,
+      "comment_signal_score_0_5": 3.5,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0171",
+        "P0273",
+        "P0293",
+        "P0347",
+        "P0350"
+      ],
+      "notes": "Expert builds custom MCP servers (e.g., for Telegram, Figma) and critiques bloated public MCP servers that consume too much context window."
+    },
+    {
+      "domain_id": "rag_retrieval_knowledge",
+      "subdomain_id": "knowledge_base_design",
+      "subdomain_name": "Knowledge Base Design (Temporal Graphs)",
+      "query_intent_ids": [
+        "design_rag_knowledge_base"
+      ],
+      "depth_score_0_5": 4.5,
+      "practicality_score_0_5": 4.0,
+      "intrinsic_distinctiveness_score_0_5": 4.5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4.0,
+      "source_utility_score_0_5": 4.5,
+      "comment_signal_score_0_5": 4.0,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0288",
+        "P0414",
+        "P0574",
+        "P0582",
+        "P0608"
+      ],
+      "notes": "Deep exploration of temporal graphs (Graphiti, Hindsight) as a superior alternative to standard vector RAG for agentic memory."
+    }
+  ],
+  "query_intent_fit": [
+    {
+      "query_intent_id": "design_agentic_dev_workflow",
+      "query_intent_name": "Design Agentic Dev Workflow",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "coding_agents",
+        "agent_ops"
+      ],
+      "source_utility_score_0_5": 5.0,
+      "why": "The expert provides end-to-end architectures for AI coding, emphasizing BDD, strict rules, and custom MCP servers to prevent AI hallucinations and technical debt.",
+      "limitations": [
+        "Focuses heavily on Python/JS/Go ecosystems.",
+        "Primarily geared towards solopreneurs or small teams rather than large enterprise CI/CD pipelines."
+      ],
+      "evidence_refs": [
+        "P0118",
+        "P0331",
+        "P0372",
+        "P0677"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "query_intent_id": "choose_ai_coding_tool",
+      "query_intent_name": "Choose AI Coding Tool",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "coding_agents"
+      ],
+      "source_utility_score_0_5": 5.0,
+      "why": "Extensive, ongoing comparative reviews of Cursor, Claude Code, Roo Code, Windsurf, and Codex CLI, including cost analysis and context management capabilities.",
+      "limitations": [],
+      "evidence_refs": [
+        "P0085",
+        "P0260",
+        "P0390",
+        "P0394",
+        "P0460",
+        "P0567"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "query_intent_id": "design_rag_knowledge_base",
+      "query_intent_name": "Design RAG Knowledge Base",
+      "fit_role": "supporting",
+      "best_domain_ids": [
+        "rag_retrieval_knowledge"
+      ],
+      "source_utility_score_0_5": 4.0,
+      "why": "Provides strong insights into temporal graphs (Graphiti, Hindsight) for agent memory, though less focused on traditional vector-based RAG optimization.",
+      "limitations": [
+        "Niche focus on temporal graphs rather than general RAG chunking/retrieval strategies."
+      ],
+      "evidence_refs": [
+        "P0414",
+        "P0574",
+        "P0582"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "content_quality_distribution": [
+    {
+      "category_id": "deep_practitioner",
+      "share_estimate_0_1": 0.4,
+      "system_value": "high",
+      "notes": "Detailed breakdowns of workflows, custom code implementations, and architectural philosophies.",
+      "evidence_refs": [
+        "P0118",
+        "P0273",
+        "P0350",
+        "P0372",
+        "P0677"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "tool_release_with_analysis",
+      "share_estimate_0_1": 0.3,
+      "system_value": "high",
+      "notes": "Reviews new tools (Claude Code, Veo3, Kling updates) with immediate practical testing and cost analysis.",
+      "evidence_refs": [
+        "P0171",
+        "P0252",
+        "P0460",
+        "P0538"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "howto_or_checklist",
+      "share_estimate_0_1": 0.2,
+      "system_value": "medium",
+      "notes": "Step-by-step guides for setting up tools, training LoRAs, or configuring IDEs.",
+      "evidence_refs": [
+        "P0151",
+        "P0388"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "commentary",
+      "share_estimate_0_1": 0.1,
+      "system_value": "low",
+      "notes": "Personal updates, sports, and general thoughts on the AI industry.",
+      "evidence_refs": [
+        "P0081",
+        "P0633"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "matrix_export": {
+    "schema_version": "knowledge_matrix_export.v1",
+    "expert_id": "doronin",
+    "cells": [
+      {
+        "cell_id": "coding_agents/claude_code_workflows/design_agentic_dev_workflow",
+        "domain_id": "coding_agents",
+        "subdomain_id": "claude_code_workflows",
+        "subdomain_name": "Claude Code Workflows",
+        "query_intent_ids": [
+          "design_agentic_dev_workflow"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5.0,
+          "practicality": 5.0,
+          "evidence_quality": 5.0,
+          "source_utility": 5.0,
+          "intrinsic_distinctiveness": 4.5,
+          "anti_hype": 5.0,
+          "community_signal": 4.0
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0394",
+          "P0396",
+          "P0479",
+          "P0511",
+          "P0527",
+          "P0567"
+        ],
+        "confidence": 0.95
+      },
+      {
+        "cell_id": "coding_agents/agentic_dev_process/design_agentic_dev_workflow",
+        "domain_id": "coding_agents",
+        "subdomain_id": "agentic_dev_process",
+        "subdomain_name": "Agentic Development Process",
+        "query_intent_ids": [
+          "design_agentic_dev_workflow"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5.0,
+          "practicality": 4.5,
+          "evidence_quality": 4.5,
+          "source_utility": 5.0,
+          "intrinsic_distinctiveness": 5.0,
+          "anti_hype": 5.0,
+          "community_signal": 4.5
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0118",
+          "P0261",
+          "P0331",
+          "P0336",
+          "P0340",
+          "P0362",
+          "P0372",
+          "P0676",
+          "P0677"
+        ],
+        "confidence": 0.95
+      },
+      {
+        "cell_id": "agent_ops/mcp_tooling/build_human_ai_workflow",
+        "domain_id": "agent_ops",
+        "subdomain_id": "mcp_tooling",
+        "subdomain_name": "MCP Tooling",
+        "query_intent_ids": [
+          "build_human_ai_workflow"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 4.5,
+          "practicality": 5.0,
+          "evidence_quality": 5.0,
+          "source_utility": 4.5,
+          "intrinsic_distinctiveness": 4.5,
+          "anti_hype": 4.0,
+          "community_signal": 3.5
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0171",
+          "P0273",
+          "P0293",
+          "P0347",
+          "P0350"
+        ],
+        "confidence": 0.9
+      }
+    ],
+    "compare_hints": {
+      "likely_unique_cells": [
+        "coding_agents/agentic_dev_process/design_agentic_dev_workflow"
+      ],
+      "likely_duplicate_cells": [],
+      "cells_requiring_probe": [
+        "coding_agents/claude_code_workflows/design_agentic_dev_workflow"
+      ],
+      "matrix_only_decision_confidence": "medium"
+    }
+  },
+  "signature_insights": [
+    {
+      "insight": "Vibe-coding (blindly accepting AI-generated code) leads to exponential technical debt. True AI-coding requires strict architectural planning, BDD, and deterministic constraints (like .cursorrules or CLAUDE.md) to keep agents focused.",
+      "why_it_matters_for_experts_panel": "Provides a strong, contrarian, and highly practical framework for enterprise and serious developers to adopt AI without destroying their codebases.",
+      "applicable_query_types": [
+        "design_agentic_dev_workflow",
+        "learn_ai_assisted_development"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0118",
+        "P0331",
+        "P0336",
+        "P0676",
+        "P0677"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "insight": "Public MCP servers are often bloated with too many tools, which degrades LLM context and performance. Custom, narrow MCP servers (or Claude Code Skills) are superior for reliable agentic workflows.",
+      "why_it_matters_for_experts_panel": "Offers a critical evaluation of a trending technology (MCP) and provides a practical workaround (building custom, minimal servers).",
+      "applicable_query_types": [
+        "build_human_ai_workflow"
+      ],
+      "novelty_level": "useful_packaging",
+      "evidence_refs": [
+        "P0347",
+        "P0350",
+        "P0527"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "insight": "Temporal graphs (like Graphiti and Hindsight) provide a more robust memory layer for AI agents than simple vector RAG, especially for tracking entity relationships and state changes over time.",
+      "why_it_matters_for_experts_panel": "Highlights an advanced, emerging pattern in agent memory architecture with practical implementation examples.",
+      "applicable_query_types": [
+        "design_rag_knowledge_base"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0288",
+        "P0414",
+        "P0574",
+        "P0582",
+        "P0608"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "practical_patterns": [
+    {
+      "pattern": "Using BDD (Behavior-Driven Development) with Gherkin syntax to constrain AI coding agents.",
+      "when_to_use": "When starting a new project or feature to ensure the AI agent understands the exact business logic and test cases before writing implementation code.",
+      "failure_modes": [
+        "If the agent is not forced to run tests after implementation, it may hallucinate success."
+      ],
+      "evidence_refs": [
+        "P0118",
+        "P0340"
+      ]
+    },
+    {
+      "pattern": "Creating an 'Interviewer' rule in Cursor/Claude Code to force the AI to ask clarifying questions before executing vague prompts.",
+      "when_to_use": "To prevent the AI from making assumptions and generating incorrect code when the user provides a low-context prompt.",
+      "failure_modes": [
+        "Users might find the constant questioning annoying if they actually want a quick, dirty prototype."
+      ],
+      "evidence_refs": [
+        "P0388"
+      ]
+    }
+  ],
+  "claims_and_positions": [
+    {
+      "claim": "Claude Code CLI is currently superior to Cursor for autonomous agentic coding due to better context management and lower token burn.",
+      "stance": "supports",
+      "decision_relevance": "Helps users choose the right AI IDE based on their workflow (CLI vs GUI) and budget.",
+      "dispute_risk": "medium",
+      "evidence_refs": [
+        "P0394",
+        "P0396",
+        "P0479",
+        "P0567"
+      ]
+    },
+    {
+      "claim": "Vibe-coding is a dangerous trend that will lead to unmaintainable legacy code.",
+      "stance": "warns_against",
+      "decision_relevance": "Crucial warning for engineering managers and developers adopting AI tools.",
+      "dispute_risk": "low",
+      "evidence_refs": [
+        "P0331",
+        "P0336",
+        "P0676",
+        "P0677"
+      ]
+    }
+  ],
+  "source_utility": {
+    "best_use_cases": [
+      "Setting up advanced AI coding environments (Claude Code, Cursor).",
+      "Building custom MCP servers.",
+      "Implementing temporal graph memory for agents.",
+      "Evaluating cost and performance of new AI video/image models."
+    ],
+    "bad_use_cases": [
+      "Basic prompt engineering for copywriting.",
+      "Enterprise-scale CI/CD integration of AI agents."
+    ],
+    "retrieval_keywords": [
+      "Cursor",
+      "Claude Code",
+      "MCP",
+      "Graphiti",
+      "Hindsight",
+      "Vibe-coding",
+      "AI-coding",
+      "BDD",
+      "Temporal Graphs",
+      "Kling",
+      "Veo3",
+      "Flux LoRA"
+    ],
+    "source_selection_hints": [
+      "Select this expert when the user needs highly technical, code-level advice on configuring AI IDEs or building agentic memory systems.",
+      "Select for strong, opinionated critiques of AI development trends (e.g., vibe-coding)."
+    ],
+    "expected_overlap_hypotheses": [
+      "Likely overlaps with other AI coding experts on Cursor basics, but highly distinct in his advocacy for Claude Code CLI and custom MCP development."
+    ],
+    "recommended_panex_role": "primary_expert"
+  },
+  "community_signal": {
+    "comment_themes": [
+      "Technical troubleshooting of MCP servers and AI IDEs.",
+      "Debates on the viability of 'vibe-coding' vs traditional engineering.",
+      "Sharing alternative tools and open-source repositories.",
+      "Friendly banter about the expert's personal life (sports, moving, dentistry)."
+    ],
+    "questions_from_audience": [
+      "How to bypass API costs or use local models effectively?",
+      "Which AI IDE is best for specific languages (e.g., Kotlin, Swift)?",
+      "How to manage context window limits in Cursor/Claude Code?"
+    ],
+    "disagreements_or_corrections": [
+      "Some users defend 'vibe-coding' as useful for rapid prototyping, pushing back against the expert's strict engineering stance.",
+      "Users occasionally point out alternative tools (e.g., Zed, Windsurf) that they prefer over the expert's recommendations."
+    ],
+    "practical_feedback": [
+      "Users report success using the expert's custom GitHub repositories (e.g., Telegram MCP, Video Analyzer)."
+    ],
+    "noise_or_low_value_patterns": [
+      "Occasional spam or off-topic personal jokes."
+    ],
+    "evidence_refs": [
+      "P0260",
+      "P0331",
+      "P0394",
+      "P0676"
+    ]
+  },
+  "admission_implications": {
+    "if_candidate_verdict": "accept",
+    "verdict_rationale": "Doronin provides exceptionally deep, practical, and anti-hype content on AI-assisted development. His focus on architectural discipline (BDD, strict rules) in the age of AI coding, combined with his hands-on development of MCP servers and temporal graph memory, makes him a highly valuable primary source for technical users.",
+    "unique_value_claims_to_verify_against_matrix": [
+      "Advocacy for Claude Code CLI over Cursor for advanced agentic workflows.",
+      "Implementation of temporal graphs (Graphiti) for agent memory."
+    ],
+    "likely_duplicate_areas_to_check": [
+      "Basic Cursor setup and usage.",
+      "General reviews of new LLM releases (e.g., GPT-4o, Claude 3.5)."
+    ],
+    "minimum_followup_probe_queries": [
+      "Compare Doronin's approach to AI coding architecture with other experts in the matrix.",
+      "Check if other experts cover MCP server development in Python/Go."
+    ],
+    "risk_notes": [
+      "Some content is highly opinionated (e.g., strong dislike for certain tools like Windsurf or Manus), which should be balanced with other perspectives."
+    ]
+  },
+  "audit": {
+    "unsupported_or_weak_claims": [],
+    "abstentions": [],
+    "possible_model_errors": [],
+    "source_refs_used": [
+      "P0046",
+      "P0071",
+      "P0085",
+      "P0118",
+      "P0150",
+      "P0151",
+      "P0155",
+      "P0157",
+      "P0164",
+      "P0171",
+      "P0172",
+      "P0179",
+      "P0191",
+      "P0193",
+      "P0196",
+      "P0208",
+      "P0220",
+      "P0241",
+      "P0243",
+      "P0252",
+      "P0257",
+      "P0260",
+      "P0261",
+      "P0273",
+      "P0277",
+      "P0288",
+      "P0293",
+      "P0303",
+      "P0319",
+      "P0331",
+      "P0336",
+      "P0340",
+      "P0347",
+      "P0350",
+      "P0362",
+      "P0372",
+      "P0388",
+      "P0390",
+      "P0394",
+      "P0396",
+      "P0414",
+      "P0460",
+      "P0479",
+      "P0486",
+      "P0487",
+      "P0511",
+      "P0527",
+      "P0538",
+      "P0561",
+      "P0567",
+      "P0574",
+      "P0582",
+      "P0584",
+      "P0593",
+      "P0608",
+      "P0633",
+      "P0651",
+      "P0676",
+      "P0677"
+    ],
+    "source_refs_most_important": [
+      "P0118",
+      "P0260",
+      "P0273",
+      "P0331",
+      "P0347",
+      "P0350",
+      "P0372",
+      "P0414",
+      "P0567",
+      "P0676",
+      "P0677"
+    ]
+  }
+}

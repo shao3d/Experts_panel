@@ -1,0 +1,344 @@
+{
+  "channel_username": "elkornacio",
+  "coverage": {
+    "agent_ops": 111,
+    "ai_engineering_infra": 16,
+    "ai_product_pm": 43,
+    "ai_ux_workflow": 21,
+    "business_adoption": 41,
+    "coding_agents": 117,
+    "creative_multimodal": 10,
+    "evals_quality": 20,
+    "general_ai_news": 1,
+    "model_landscape": 190,
+    "rag_retrieval_knowledge": 13,
+    "security_privacy_governance": 10
+  },
+  "coverage_strength": {
+    "agent_ops": "strong",
+    "ai_engineering_infra": "thin",
+    "ai_product_pm": "medium",
+    "ai_ux_workflow": "medium",
+    "business_adoption": "medium",
+    "coding_agents": "strong",
+    "creative_multimodal": "thin",
+    "evals_quality": "medium",
+    "general_ai_news": "thin",
+    "model_landscape": "strong",
+    "rag_retrieval_knowledge": "thin",
+    "security_privacy_governance": "thin"
+  },
+  "date_range": {
+    "first_post": "2025-01-10",
+    "last_post": "2026-05-01"
+  },
+  "depth_profile": {
+    "announcement_or_news": 68,
+    "architecture_analysis": 46,
+    "benchmark_or_eval": 20,
+    "case_study": 31,
+    "howto_or_checklist": 140,
+    "low_signal": 99,
+    "practitioner_experience": 32,
+    "tool_release": 29
+  },
+  "display_name": "Elkornacio",
+  "embedding_count": 445,
+  "embedding_coverage_ratio": 1.0,
+  "expert_id": "elkornacio",
+  "fts_count": 445,
+  "metadata_coverage_ratio": 0.9226,
+  "metadata_valid_count": 429,
+  "post_count": 465,
+  "representative_posts": [
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "evals_quality",
+        "ai_product_pm",
+        "ai_engineering_infra",
+        "model_landscape"
+      ],
+      "created_at": "2026-02-21",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "в общем, [OpenAI добрались рассказать](https://openai.com/index/harness-engineering/) (февраль 2026...) как они научились писать весь код только через агентов. если вы ещё не в подобном режиме, то вам могут пригодиться их наблюдения, выделил самое сочное. кратко: - в ai-only dev, вы больше не \"пишите код\", вы строит...",
+      "reason": "agent_ops, evals_quality, ai_product_pm; depth=benchmark_or_eval",
+      "telegram_message_id": 536
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "evals_quality",
+        "business_adoption",
+        "ai_engineering_infra",
+        "model_landscape"
+      ],
+      "created_at": "2026-02-15",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "решил пошерить пачку небольших лайфхаков в работе с агентами, в основном про скрипты. думаю, опытным чувакам 90% из этого покажется прописными истинами, но, возможно, кто-то почерпнёт что-то полезное для себя. сохраняйте, шерьте, кайфуйте 🙂 1. не юзайте TUI в VSCode/Cursor для Claude Code / Codex / etc. мерцания инт...",
+      "reason": "coding_agents, agent_ops, evals_quality; depth=benchmark_or_eval",
+      "telegram_message_id": 529
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "business_adoption",
+        "ai_ux_workflow",
+        "model_landscape"
+      ],
+      "created_at": "2026-05-01",
+      "depth_label": "practitioner_experience",
+      "excerpt": "блин, жутко сложно совмещать перелёты чуть ли не еженедельно, подготовку к свадьбе и жуткий загруз на остальных фронтах, сорри что снова чутка выпал. но про это я давно хотел запостить, и, наконец, руки дошли. я уже [писал выше](https://t.me/elkornacio/545), что сейчас ИИ-разработка в стадии лютейшего внедрения, чер...",
+      "reason": "coding_agents, agent_ops, business_adoption; depth=practitioner_experience",
+      "telegram_message_id": 560
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "model_landscape",
+        "creative_multimodal"
+      ],
+      "created_at": "2026-02-20",
+      "depth_label": "architecture_analysis",
+      "excerpt": "заметил, что даже в около-ИИ тусах не все шарят за разницу между UI/harness/model. мне кажется, ситуация ещё усугубляется дегенеративным неймингом (Composer в Composer, Codex в Codex в Codex, вот этот вот весь адок). оч коротко, и с упрощением (опустим мультимодальности, и прочие ньюансы): модель - это буквально LLM...",
+      "reason": "coding_agents, model_landscape, creative_multimodal; depth=architecture_analysis",
+      "telegram_message_id": 533
+    },
+    {
+      "coverage_labels": [
+        "business_adoption"
+      ],
+      "created_at": "2026-02-20",
+      "depth_label": "case_study",
+      "excerpt": "стоп, подождите, а вы не пропустили прошлый пост про [AI Hard Fork](https://entropy-x-stratoplan.com/?utm_source=elcor)? если вдруг, то вот: ребята из Стратоплана (где я выступал) сколлабились с ребятами из Entropy Talk (где я тоже выступал), и отказаться было нереально - я 25 февраля (среда) залечу на панельку в [A...",
+      "reason": "business_adoption; depth=case_study",
+      "telegram_message_id": 534
+    },
+    {
+      "coverage_labels": [
+        "business_adoption"
+      ],
+      "created_at": "2026-02-15",
+      "depth_label": "case_study",
+      "excerpt": "я с начала года планировал не участвовать в конфах, но узнав, что ребята из Стратоплана (где я выступал) сколлабились с ребятами из Entropy Talk (где я тоже выступал), отказаться было нереально - я 25 февраля (среда через неделю) залечу на панельку в [AI Hard Fork](https://entropy-x-stratoplan.com/?utm_source=elcor)...",
+      "reason": "business_adoption; depth=case_study",
+      "telegram_message_id": 530
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "ai_product_pm",
+        "ai_ux_workflow"
+      ],
+      "created_at": "2026-04-15",
+      "depth_label": "practitioner_experience",
+      "excerpt": "ну и раз я давно молчал, то надо бы поделиться чем-нибудь полезным! очень много в последний год было разговоров про гипер-кастомизацию. дескать, теперь можно продукты адаптировать даже под очень небольших клиентов, потому что стоимость доработок копеечная, благодаря ИИ-кодингу. где-то здесь правда висел в воздухе во...",
+      "reason": "coding_agents, agent_ops, ai_product_pm; depth=practitioner_experience",
+      "telegram_message_id": 546
+    },
+    {
+      "coverage_labels": [
+        "business_adoption",
+        "model_landscape"
+      ],
+      "created_at": "2026-02-26",
+      "depth_label": "practitioner_experience",
+      "excerpt": "вот вам ещё размышление, [по следам YC-видео про \"compound startup\"](https://t.me/elkornacio/531), но чутка с другого ракурса. представьте, что вы можете заменить любой кусок вашего бизнеса, с потерей 50% качества, но он станет бесконечно масштабируем. вот есть у вас техподдержка. вы щёлкаете пальцами, unsatisfactio...",
+      "reason": "business_adoption, model_landscape; depth=practitioner_experience",
+      "telegram_message_id": 540
+    }
+  ],
+  "runtime_readiness": {
+    "embeddings_ready": true,
+    "fts_ready": true,
+    "metadata_advisory_ready": true,
+    "text_posts_ready": true
+  },
+  "text_post_count": 445,
+  "top_concepts": [
+    {
+      "count": 31,
+      "value": "AI Agents"
+    },
+    {
+      "count": 28,
+      "value": "LLM"
+    },
+    {
+      "count": 23,
+      "value": "Benchmarking"
+    },
+    {
+      "count": 19,
+      "value": "Prompt Engineering"
+    },
+    {
+      "count": 18,
+      "value": "Software Development"
+    },
+    {
+      "count": 17,
+      "value": "Artificial Intelligence"
+    },
+    {
+      "count": 17,
+      "value": "Automation"
+    },
+    {
+      "count": 13,
+      "value": "Context Window"
+    },
+    {
+      "count": 11,
+      "value": "API"
+    },
+    {
+      "count": 8,
+      "value": "Software Engineering"
+    },
+    {
+      "count": 7,
+      "value": "Inference"
+    },
+    {
+      "count": 7,
+      "value": "Generative AI"
+    }
+  ],
+  "top_keywords": [
+    {
+      "count": 92,
+      "value": "llm"
+    },
+    {
+      "count": 71,
+      "value": "cursor"
+    },
+    {
+      "count": 67,
+      "value": "разработка"
+    },
+    {
+      "count": 62,
+      "value": "development"
+    },
+    {
+      "count": 56,
+      "value": "интеллект"
+    },
+    {
+      "count": 55,
+      "value": "искусственный"
+    },
+    {
+      "count": 53,
+      "value": "agents"
+    },
+    {
+      "count": 49,
+      "value": "model"
+    },
+    {
+      "count": 49,
+      "value": "code"
+    },
+    {
+      "count": 49,
+      "value": "модель"
+    },
+    {
+      "count": 48,
+      "value": "openai"
+    },
+    {
+      "count": 44,
+      "value": "claude"
+    },
+    {
+      "count": 41,
+      "value": "агенты"
+    },
+    {
+      "count": 37,
+      "value": "модели"
+    },
+    {
+      "count": 32,
+      "value": "нейросети"
+    },
+    {
+      "count": 31,
+      "value": "gemini"
+    },
+    {
+      "count": 28,
+      "value": "context"
+    },
+    {
+      "count": 28,
+      "value": "coding"
+    },
+    {
+      "count": 28,
+      "value": "models"
+    },
+    {
+      "count": 28,
+      "value": "генерация"
+    }
+  ],
+  "top_primary_topics": [
+    {
+      "count": 34,
+      "value": "AI Agents"
+    },
+    {
+      "count": 34,
+      "value": "AI Development"
+    },
+    {
+      "count": 13,
+      "value": "LLM Benchmarking"
+    },
+    {
+      "count": 13,
+      "value": "LLM"
+    },
+    {
+      "count": 12,
+      "value": "Generative AI"
+    },
+    {
+      "count": 11,
+      "value": "Artificial Intelligence"
+    },
+    {
+      "count": 8,
+      "value": "AI Coding"
+    },
+    {
+      "count": 7,
+      "value": "Software Development"
+    },
+    {
+      "count": 6,
+      "value": "LLM Evaluation"
+    },
+    {
+      "count": 6,
+      "value": "AI Models"
+    },
+    {
+      "count": 6,
+      "value": "Social Media"
+    },
+    {
+      "count": 5,
+      "value": "LLM Inference"
+    }
+  ],
+  "warnings": []
+}

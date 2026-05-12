@@ -1,0 +1,1020 @@
+{
+  "schema_version": "expert_value_passport.v1.1",
+  "passport_meta": {
+    "schema_version": "expert_value_passport.v1.1",
+    "expert_id": "elkornacio",
+    "display_name": "Elkornacio",
+    "channel_username": "@elkornacio",
+    "model_assumed": "gemini-3.1-pro-preview",
+    "prompt_version": "semantic-passport-prompt.v1",
+    "generated_at": "2026-05-10T19:15:55.475281+00:00"
+  },
+  "corpus_audit": {
+    "post_count_seen": 449,
+    "comment_count_seen": 5576,
+    "date_range": {
+      "first_post": "2025-01-10 13:49:00.000000",
+      "last_post": "2026-05-01 11:16:46.000000"
+    },
+    "language_mix": [
+      "ru",
+      "en"
+    ],
+    "material_limitations": [],
+    "author_vs_community_boundary": "strictly_maintained"
+  },
+  "source_ref_index_used": [
+    {
+      "source_ref": "P0026",
+      "source_kind": "expert_post",
+      "post_id": 2755,
+      "telegram_message_id": 36,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-01-13 13:16:22.000000",
+      "why_used": "Expert background, 15 years in dev, CTO/CEO experience, voice definition."
+    },
+    {
+      "source_ref": "P0103",
+      "source_kind": "expert_post",
+      "post_id": 2842,
+      "telegram_message_id": 141,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-02-07 13:16:42.000000",
+      "why_used": "Analysis of Cerebras inference speed."
+    },
+    {
+      "source_ref": "P0122",
+      "source_kind": "expert_post",
+      "post_id": 2862,
+      "telegram_message_id": 172,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-02-22 10:43:32.000000",
+      "why_used": "Signature insight: AI doesn't know what it doesn't know."
+    },
+    {
+      "source_ref": "P0277.C0003",
+      "source_kind": "community_comment",
+      "post_id": 3020,
+      "telegram_message_id": 354,
+      "comment_id": 28641,
+      "telegram_comment_id": 1768,
+      "created_at": "2025-08-16 12:06:04.000000",
+      "why_used": "Community debate on AI code quality and replacing developers."
+    },
+    {
+      "source_ref": "P0315.C0016",
+      "source_kind": "community_comment",
+      "post_id": 3058,
+      "telegram_message_id": 404,
+      "comment_id": 27591,
+      "telegram_comment_id": 6032,
+      "created_at": "2025-10-07 20:11:12.000000",
+      "why_used": "Expert comment on Cerebras quantization issues with Qwen."
+    },
+    {
+      "source_ref": "P0348.C0028",
+      "source_kind": "community_comment",
+      "post_id": 3091,
+      "telegram_message_id": 441,
+      "comment_id": 26735,
+      "telegram_comment_id": 11580,
+      "created_at": "2025-11-20 13:19:16.000000",
+      "why_used": "Community workaround for Google Antigravity geo-blocking."
+    },
+    {
+      "source_ref": "P0362",
+      "source_kind": "expert_post",
+      "post_id": 3106,
+      "telegram_message_id": 462,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-12-05 00:14:03.000000",
+      "why_used": "Comparison of instruction following between Anthropic and OpenAI/Google."
+    },
+    {
+      "source_ref": "P0365",
+      "source_kind": "expert_post",
+      "post_id": 3109,
+      "telegram_message_id": 466,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-12-06 21:52:42.000000",
+      "why_used": "Comparison of GPT-5.1-codex-max-high and Sonnet-4.5-thinking."
+    },
+    {
+      "source_ref": "P0382",
+      "source_kind": "expert_post",
+      "post_id": 3127,
+      "telegram_message_id": 484,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-12-19 14:58:52.000000",
+      "why_used": "Critique of MCP and advocacy for guaranteed workflows via bash scripts."
+    },
+    {
+      "source_ref": "P0383",
+      "source_kind": "expert_post",
+      "post_id": 3127,
+      "telegram_message_id": 484,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-12-19 14:58:52.000000",
+      "why_used": "Practical pattern for smart actions and nested workflows."
+    },
+    {
+      "source_ref": "P0388.C0032",
+      "source_kind": "community_comment",
+      "post_id": 3129,
+      "telegram_message_id": 486,
+      "comment_id": 25751,
+      "telegram_comment_id": 15481,
+      "created_at": "2025-12-25 20:36:00.000000",
+      "why_used": "Expert critique of MCP security, RBAC, and design flaws."
+    },
+    {
+      "source_ref": "P0396.C0016",
+      "source_kind": "community_comment",
+      "post_id": 3220,
+      "telegram_message_id": 500,
+      "comment_id": 30652,
+      "telegram_comment_id": 16238,
+      "created_at": "2026-01-08 19:54:39.000000",
+      "why_used": "Community pattern: Opus for planning, GPT-5.2 for review."
+    },
+    {
+      "source_ref": "P0402",
+      "source_kind": "expert_post",
+      "post_id": 3226,
+      "telegram_message_id": 506,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-24 11:43:06.000000",
+      "why_used": "Prediction on Anthropic losing ground to OpenAI and Google."
+    },
+    {
+      "source_ref": "P0405.C0016",
+      "source_kind": "community_comment",
+      "post_id": 3229,
+      "telegram_message_id": 509,
+      "comment_id": 30257,
+      "telegram_comment_id": 18110,
+      "created_at": "2026-01-27 22:00:48.000000",
+      "why_used": "Expert pattern: Opus 4.5 in Cursor, GPT-5.2/Codex in Trae."
+    },
+    {
+      "source_ref": "P0407",
+      "source_kind": "expert_post",
+      "post_id": 4478,
+      "telegram_message_id": 514,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-05 16:10:00.000000",
+      "why_used": "Insight on AI improving code quality and testing culture."
+    },
+    {
+      "source_ref": "P0425",
+      "source_kind": "expert_post",
+      "post_id": 5322,
+      "telegram_message_id": 531,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-18 13:57:01.000000",
+      "why_used": "Analysis of compound startups and AI scaling economics."
+    },
+    {
+      "source_ref": "P0427",
+      "source_kind": "expert_post",
+      "post_id": 5324,
+      "telegram_message_id": 533,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-20 12:21:55.000000",
+      "why_used": "Explanation of Model vs Harness vs UI in AI coding tools."
+    },
+    {
+      "source_ref": "P0432",
+      "source_kind": "expert_post",
+      "post_id": 5387,
+      "telegram_message_id": 539,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-26 10:45:46.000000",
+      "why_used": "Signature insight: Code is no longer for humans, it's an artifact for AI."
+    },
+    {
+      "source_ref": "P0439",
+      "source_kind": "expert_post",
+      "post_id": 9624,
+      "telegram_message_id": 546,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-15 16:50:00.000000",
+      "why_used": "Practical pattern: Hyper-customization via git branches."
+    },
+    {
+      "source_ref": "P0440",
+      "source_kind": "expert_post",
+      "post_id": 9625,
+      "telegram_message_id": 547,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-15 16:50:00.000000",
+      "why_used": "Merge flow and testing for hyper-customization."
+    },
+    {
+      "source_ref": "P0251",
+      "source_kind": "expert_post",
+      "post_id": 2994,
+      "telegram_message_id": 326,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-07-27 19:58:49.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0258.C0021",
+      "source_kind": "community_comment",
+      "post_id": 3001,
+      "telegram_message_id": 333,
+      "comment_id": 28952,
+      "telegram_comment_id": 701,
+      "created_at": "2025-08-03 13:37:53.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0277.C0075",
+      "source_kind": "community_comment",
+      "post_id": 3020,
+      "telegram_message_id": 354,
+      "comment_id": 28569,
+      "telegram_comment_id": 1865,
+      "created_at": "2025-08-16 13:26:10.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0288",
+      "source_kind": "expert_post",
+      "post_id": 3031,
+      "telegram_message_id": 365,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-09-06 13:08:40.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0348.C0001",
+      "source_kind": "community_comment",
+      "post_id": 3091,
+      "telegram_message_id": 441,
+      "comment_id": 26763,
+      "telegram_comment_id": 11492,
+      "created_at": "2025-11-19 23:23:59.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    }
+  ],
+  "executive_summary": {
+    "one_sentence_positioning": "A highly technical, unapologetic CTO-level practitioner sharing deep, hands-on workflows for AI-assisted coding, agent orchestration, and frontier model evaluation.",
+    "strongest_system_value": "Provides exceptionally detailed, battle-tested workflows for AI coding agents (Cursor, Claude Code, Codex CLI), including custom rules, bash-script orchestration, and architectural adaptations for AI.",
+    "weakest_system_value": "Heavy reliance on profanity and 'shitposting' tone may require filtering for enterprise contexts, and some hardware/crypto tangents dilute the core AI engineering focus.",
+    "best_fit_queries": [
+      "How to set up guaranteed workflows for AI coding agents",
+      "Comparison of Cursor, Claude Code, and Codex CLI",
+      "Best practices for managing context and technical debt with AI",
+      "Evaluating GPT-5.x vs Claude 4.x vs Gemini 3 for development"
+    ],
+    "poor_fit_queries": [
+      "Basic introduction to ChatGPT for non-technical users",
+      "Prompt engineering for creative writing",
+      "No-code website builders"
+    ],
+    "confidence": 0.95
+  },
+  "expert_positioning": {
+    "primary_role": "Deep Practitioner & AI Engineering Architect",
+    "audience": [
+      "Senior Developers",
+      "CTOs",
+      "AI Engineers",
+      "Tech Leads"
+    ],
+    "voice": [
+      "Informal",
+      "Profane",
+      "Highly technical",
+      "Opinionated",
+      "Analytical"
+    ],
+    "worldview": [
+      "AI will replace 95% of current developer tasks, shifting the role to architecture and orchestration.",
+      "Code is becoming an artifact for AI, not humans; human readability is secondary.",
+      "Deterministic workflows (bash scripts) are superior to overengineered AI protocols like MCP.",
+      "The market is moving from 'AI as a tool' to 'AI-first business models'."
+    ],
+    "distinctive_angle": "Combines C-level business pragmatism with deep, hands-on reverse-engineering of AI coding tools, focusing on 'guaranteed workflows' rather than naive prompt engineering.",
+    "recurring_formats": [
+      "Tool teardowns (Model vs Harness vs UI)",
+      "Workflow blueprints (Plan-and-implement, Git-branch hyper-customization)",
+      "Model benchmarking against real-world tasks",
+      "Philosophical rants on the future of software engineering"
+    ],
+    "evidence_refs": [
+      "P0026",
+      "P0427",
+      "P0432",
+      "P0439"
+    ]
+  },
+  "knowledge_domains": [
+    {
+      "domain_id": "coding_agents",
+      "domain_name": "AI Coding Agents & IDEs",
+      "subdomain_ids": [
+        "cursor_windsurf_copilot",
+        "claude_code_workflows",
+        "codex_workflows"
+      ],
+      "query_intent_ids": [
+        "choose_ai_coding_tool",
+        "learn_ai_assisted_development"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "unique",
+      "what_the_expert_knows": [
+        "The architectural differences between Model, Harness, and UI in AI coding tools.",
+        "How to bypass limitations in Cursor, Claude Code, and Codex CLI.",
+        "The exact strengths and weaknesses of Anthropic's instruction following vs OpenAI's reasoning in coding tasks."
+      ],
+      "how_they_reason": [
+        "Tests tools on massive, real-world legacy codebases, not toy examples.",
+        "Evaluates tools based on their ability to handle technical debt and maintain context over long sessions."
+      ],
+      "missing_or_weak_subtopics": [
+        "Beginner-friendly setup guides for non-developers."
+      ],
+      "evidence_refs": [
+        "P0362",
+        "P0427",
+        "P0402"
+      ],
+      "confidence": 0.98
+    },
+    {
+      "domain_id": "agent_ops",
+      "domain_name": "Agent Operations & Workflows",
+      "subdomain_ids": [
+        "agentic_dev_process",
+        "mcp_tooling",
+        "multi_agent_orchestration"
+      ],
+      "query_intent_ids": [
+        "design_agentic_dev_workflow",
+        "debug_agent_failure"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "How to build guaranteed, deterministic workflows using bash scripts instead of relying on LLM autonomy.",
+        "The security and design flaws of the Model Context Protocol (MCP).",
+        "How to use Git branching strategies for hyper-customization of SaaS products via AI."
+      ],
+      "how_they_reason": [
+        "Prefers strict, programmatic guardrails over natural language prompting to ensure agent reliability.",
+        "Views MCP as an overengineered wrapper that introduces security risks (e.g., lack of RBAC)."
+      ],
+      "missing_or_weak_subtopics": [],
+      "evidence_refs": [
+        "P0382",
+        "P0383",
+        "P0388.C0032",
+        "P0439",
+        "P0440"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "domain_id": "model_landscape",
+      "domain_name": "Frontier Model Landscape",
+      "subdomain_ids": [
+        "model_comparison",
+        "inference_cost_latency"
+      ],
+      "query_intent_ids": [
+        "compare_models_for_task",
+        "optimize_inference_cost_latency"
+      ],
+      "coverage_level": "moderate",
+      "depth_level": "practical",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "Real-world performance differences between GPT-5.x, Claude 4.x, Gemini 3, and Chinese models (Qwen, DeepSeek).",
+        "The impact of inference hardware (e.g., Cerebras) on agent workflows."
+      ],
+      "how_they_reason": [
+        "Ignores synthetic benchmarks in favor of day-to-day coding performance and context retention.",
+        "Tracks the economic viability of models (API cost vs Subscription limits)."
+      ],
+      "missing_or_weak_subtopics": [
+        "Deep mathematical understanding of model architectures (focuses on applied usage)."
+      ],
+      "evidence_refs": [
+        "P0103",
+        "P0315.C0016",
+        "P0365"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "value_dimensions": [
+    {
+      "dimension_id": "insight_density",
+      "score_0_5": 5,
+      "rationale": "Posts are packed with highly specific, non-obvious insights derived from hundreds of hours of hands-on experimentation with frontier tools.",
+      "evidence_refs": [
+        "P0427",
+        "P0432",
+        "P0388.C0032"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "practical_specificity",
+      "score_0_5": 5,
+      "rationale": "Provides exact workflows, architectural patterns (e.g., Git branching for AI), and configuration advice for tools like Cursor and Claude Code.",
+      "evidence_refs": [
+        "P0383",
+        "P0439",
+        "P0440"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "anti_hype_signal",
+      "score_0_5": 4,
+      "rationale": "Regularly calls out marketing BS (e.g., OpenAI's Agent Builder, MCP hype), though occasionally gets swept up in the excitement of new model releases.",
+      "evidence_refs": [
+        "P0388.C0032",
+        "P0402"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "dimension_id": "technical_depth",
+      "score_0_5": 5,
+      "rationale": "Understands the underlying mechanics of AI IDEs (Harness vs Model), inference hardware (Cerebras), and complex software architecture.",
+      "evidence_refs": [
+        "P0427",
+        "P0103",
+        "P0251"
+      ],
+      "confidence": 0.95
+    }
+  ],
+  "matrix_cells": [
+    {
+      "domain_id": "coding_agents",
+      "subdomain_id": "cursor_windsurf_copilot",
+      "subdomain_name": "Cursor & IDE Agents",
+      "query_intent_ids": [
+        "choose_ai_coding_tool",
+        "learn_ai_assisted_development"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 5,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0427",
+        "P0405.C0016"
+      ],
+      "notes": "Exceptional breakdown of how IDEs separate UI, Harness, and Models, and how to exploit this for better coding."
+    },
+    {
+      "domain_id": "agent_ops",
+      "subdomain_id": "agentic_dev_process",
+      "subdomain_name": "Agentic Development Workflows",
+      "query_intent_ids": [
+        "design_agentic_dev_workflow"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0382",
+        "P0383",
+        "P0439",
+        "P0440"
+      ],
+      "notes": "Provides a literal playbook for hyper-customization using Git branches and automated PR merging via agents."
+    },
+    {
+      "domain_id": "agent_ops",
+      "subdomain_id": "mcp_tooling",
+      "subdomain_name": "Model Context Protocol (MCP)",
+      "query_intent_ids": [
+        "design_agentic_dev_workflow",
+        "manage_security_privacy_governance"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 4,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 4,
+      "comment_signal_score_0_5": 3,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0388.C0032"
+      ],
+      "notes": "Strong critique of MCP's lack of RBAC and security, advocating for bash scripts instead."
+    }
+  ],
+  "query_intent_fit": [
+    {
+      "query_intent_id": "design_agentic_dev_workflow",
+      "query_intent_name": "Design Agentic Dev Workflow",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "agent_ops",
+        "coding_agents"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "The expert provides end-to-end, battle-tested workflows for managing AI agents in complex codebases.",
+      "limitations": [
+        "Workflows are highly technical and require strong Git/Bash knowledge."
+      ],
+      "evidence_refs": [
+        "P0383",
+        "P0439"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "query_intent_id": "choose_ai_coding_tool",
+      "query_intent_name": "Choose AI Coding Tool",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "coding_agents",
+        "model_landscape"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "Constantly evaluates the bleeding edge of coding tools (Cursor, Claude Code, Codex CLI, Antigravity) and models.",
+      "limitations": [],
+      "evidence_refs": [
+        "P0427",
+        "P0362"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "query_intent_id": "manage_security_privacy_governance",
+      "query_intent_name": "Manage Security, Privacy, Governance",
+      "fit_role": "supporting",
+      "best_domain_ids": [
+        "agent_ops"
+      ],
+      "source_utility_score_0_5": 3,
+      "why": "Provides specific critiques on the security flaws of MCP, but does not focus broadly on enterprise governance.",
+      "limitations": [
+        "Focuses only on the security of agent tooling (MCP), not general AI governance."
+      ],
+      "evidence_refs": [
+        "P0388.C0032"
+      ],
+      "confidence": 0.85
+    }
+  ],
+  "content_quality_distribution": [
+    {
+      "category_id": "deep_practitioner",
+      "share_estimate_0_1": 0.4,
+      "system_value": "unique",
+      "notes": "Detailed workflows, architectural insights, and tool teardowns.",
+      "evidence_refs": [
+        "P0427",
+        "P0439",
+        "P0383"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "architecture_analysis",
+      "share_estimate_0_1": 0.2,
+      "system_value": "high",
+      "notes": "Analysis of how AI changes software architecture (e.g., code is for AI, not humans).",
+      "evidence_refs": [
+        "P0432"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "tool_release_with_analysis",
+      "share_estimate_0_1": 0.2,
+      "system_value": "medium",
+      "notes": "Reviews of new models and IDEs.",
+      "evidence_refs": [
+        "P0362",
+        "P0365"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "commentary",
+      "share_estimate_0_1": 0.2,
+      "system_value": "low",
+      "notes": "General thoughts on AI economics, startups, and shitposting.",
+      "evidence_refs": [
+        "P0425",
+        "P0026"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "matrix_export": {
+    "schema_version": "knowledge_matrix_export.v1",
+    "expert_id": "elkornacio",
+    "cells": [
+      {
+        "cell_id": "coding_agents/cursor_windsurf_copilot/choose_ai_coding_tool",
+        "domain_id": "coding_agents",
+        "subdomain_id": "cursor_windsurf_copilot",
+        "subdomain_name": "Cursor & IDE Agents",
+        "query_intent_ids": [
+          "choose_ai_coding_tool"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 5,
+          "evidence_quality": 5,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 5,
+          "anti_hype": 4,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0427",
+          "P0405.C0016"
+        ],
+        "confidence": 0.95
+      },
+      {
+        "cell_id": "agent_ops/agentic_dev_process/design_agentic_dev_workflow",
+        "domain_id": "agent_ops",
+        "subdomain_id": "agentic_dev_process",
+        "subdomain_name": "Agentic Development Workflows",
+        "query_intent_ids": [
+          "design_agentic_dev_workflow"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 5,
+          "evidence_quality": 4,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 5,
+          "anti_hype": 4,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0382",
+          "P0383",
+          "P0439",
+          "P0440"
+        ],
+        "confidence": 0.95
+      },
+      {
+        "cell_id": "agent_ops/mcp_tooling/manage_security_privacy_governance",
+        "domain_id": "agent_ops",
+        "subdomain_id": "mcp_tooling",
+        "subdomain_name": "Model Context Protocol (MCP)",
+        "query_intent_ids": [
+          "manage_security_privacy_governance"
+        ],
+        "coverage_level": "moderate",
+        "depth_level": "practical",
+        "source_role": "supporting",
+        "scores": {
+          "depth": 4,
+          "practicality": 4,
+          "evidence_quality": 4,
+          "source_utility": 4,
+          "intrinsic_distinctiveness": 4,
+          "anti_hype": 5,
+          "community_signal": 3
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [
+          "Focuses strictly on the technical security flaws of MCP."
+        ],
+        "evidence_refs": [
+          "P0388.C0032"
+        ],
+        "confidence": 0.9
+      },
+      {
+        "cell_id": "agent_ops/mcp_tooling/design_agentic_dev_workflow",
+        "domain_id": "agent_ops",
+        "subdomain_id": "mcp_tooling",
+        "subdomain_name": "Model Context Protocol (MCP)",
+        "query_intent_ids": [
+          "design_agentic_dev_workflow",
+          "manage_security_privacy_governance"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "practical",
+        "source_role": "primary",
+        "scores": {
+          "depth": 4.0,
+          "practicality": 4.0,
+          "evidence_quality": 4.0,
+          "source_utility": 4.0,
+          "intrinsic_distinctiveness": 4.0,
+          "anti_hype": 0.0,
+          "community_signal": 3.0
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [
+          "Deterministically repaired from matrix_cells because matrix_export omitted this matrix-worthy cell."
+        ],
+        "evidence_refs": [
+          "P0388.C0032"
+        ],
+        "derived_from": "matrix_cells",
+        "repair_reason": "matrix_export_omitted_strong_or_signature_cell"
+      }
+    ],
+    "compare_hints": {
+      "likely_unique_cells": [
+        "agent_ops/agentic_dev_process/design_agentic_dev_workflow"
+      ],
+      "likely_duplicate_cells": [],
+      "cells_requiring_probe": [
+        "coding_agents/cursor_windsurf_copilot/choose_ai_coding_tool"
+      ],
+      "matrix_only_decision_confidence": "medium"
+    }
+  },
+  "signature_insights": [
+    {
+      "insight": "AI doesn't know what it doesn't know. It will hallucinate data rather than use search tools unless explicitly forced to do so.",
+      "why_it_matters_for_experts_panel": "Crucial for designing reliable agent workflows; highlights the need for deterministic guardrails.",
+      "applicable_query_types": [
+        "design_agentic_dev_workflow",
+        "debug_agent_failure"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0122"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "insight": "Code is no longer written for humans; it is an artifact for AI. Human readability is secondary to AI maintainability.",
+      "why_it_matters_for_experts_panel": "Represents a paradigm shift in software architecture and code review processes.",
+      "applicable_query_types": [
+        "learn_ai_assisted_development"
+      ],
+      "novelty_level": "rare",
+      "evidence_refs": [
+        "P0432"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "insight": "The Model Context Protocol (MCP) is an overengineered, insecure wrapper. Simple bash scripts provide better, more secure, and deterministic workflows for agents.",
+      "why_it_matters_for_experts_panel": "Provides a contrarian, highly practical alternative to the current industry hype around MCP.",
+      "applicable_query_types": [
+        "design_agentic_dev_workflow",
+        "manage_security_privacy_governance"
+      ],
+      "novelty_level": "rare",
+      "evidence_refs": [
+        "P0382",
+        "P0388.C0032"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "insight": "AI coding tools consist of three layers: Model, Harness, and UI. Native harnesses (e.g., OpenAI models in Codex CLI) perform significantly better than mixed setups (e.g., OpenAI models in Cursor).",
+      "why_it_matters_for_experts_panel": "Helps users understand why the same model performs differently across various IDEs and CLI tools.",
+      "applicable_query_types": [
+        "choose_ai_coding_tool"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0427"
+      ],
+      "confidence": 0.95
+    }
+  ],
+  "practical_patterns": [
+    {
+      "pattern": "Hyper-customization via Git Branches",
+      "when_to_use": "When maintaining multiple highly customized versions of a SaaS product for different clients.",
+      "failure_modes": [
+        "Requires automated PR generation and agent-driven merging to scale beyond a few branches."
+      ],
+      "evidence_refs": [
+        "P0439",
+        "P0440"
+      ]
+    },
+    {
+      "pattern": "Deterministic Workflows via Bash Scripts",
+      "when_to_use": "When you need an AI agent to follow a strict sequence of actions (e.g., build, test, deploy) without hallucinating steps.",
+      "failure_modes": [
+        "Agents may still fail if the script output (stdout) doesn't provide clear guidance on how to fix errors."
+      ],
+      "evidence_refs": [
+        "P0383"
+      ]
+    }
+  ],
+  "claims_and_positions": [
+    {
+      "claim": "Anthropic models (Claude) have superior instruction following compared to OpenAI and Google models.",
+      "stance": "supports",
+      "decision_relevance": "Guides model selection for complex, multi-step agentic tasks.",
+      "dispute_risk": "medium",
+      "evidence_refs": [
+        "P0362"
+      ]
+    },
+    {
+      "claim": "Cursor is losing its edge because it relies on non-native harnesses for models, leading to degraded performance compared to native tools like Codex CLI or Claude Code.",
+      "stance": "supports",
+      "decision_relevance": "Influences IDE/tooling recommendations for advanced developers.",
+      "dispute_risk": "high",
+      "evidence_refs": [
+        "P0427"
+      ]
+    },
+    {
+      "claim": "Cerebras provides magical inference speed, but their hardware limitations force them to quantize models, reducing quality.",
+      "stance": "mixed",
+      "decision_relevance": "Important context for users considering Cerebras for agent workflows.",
+      "dispute_risk": "low",
+      "evidence_refs": [
+        "P0103",
+        "P0315.C0016"
+      ]
+    }
+  ],
+  "source_utility": {
+    "best_use_cases": [
+      "Advanced AI coding workflows",
+      "Tool and IDE comparisons (Cursor vs Claude Code vs Codex CLI)",
+      "Architectural shifts in software engineering due to AI"
+    ],
+    "bad_use_cases": [
+      "Basic prompt engineering",
+      "Non-technical AI adoption"
+    ],
+    "retrieval_keywords": [
+      "Cursor",
+      "Claude Code",
+      "Codex CLI",
+      "MCP",
+      "Agentic workflows",
+      "SDD",
+      "Harness"
+    ],
+    "source_selection_hints": [
+      "Select when the user needs deep, technical, and contrarian advice on setting up AI coding agents."
+    ],
+    "expected_overlap_hypotheses": [
+      "Will overlap with other AI coding experts on basic Cursor usage, but highly distinct in workflow orchestration and harness analysis."
+    ],
+    "recommended_panex_role": "primary_expert"
+  },
+  "community_signal": {
+    "comment_themes": [
+      "Debates on AI replacing developers vs augmenting them.",
+      "Sharing workarounds for geo-blocking (e.g., Google Antigravity).",
+      "Comparing personal experiences with different models (Opus vs GPT-5.x vs Gemini)."
+    ],
+    "questions_from_audience": [
+      "How to set up local models for privacy?",
+      "Which model is currently best for coding?",
+      "How to bypass API limits and geo-restrictions?"
+    ],
+    "disagreements_or_corrections": [
+      "Community members frequently debate the expert's claim that 'code is no longer for humans', arguing that maintainability and human review are still critical.",
+      "Disagreements on whether Cursor is actually losing its edge."
+    ],
+    "practical_feedback": [
+      "Users share their own workflows (e.g., using Opus for planning and GPT-5.2 for review)."
+    ],
+    "noise_or_low_value_patterns": [
+      "Occasional off-topic political or philosophical debates.",
+      "Spam/bot comments."
+    ],
+    "evidence_refs": [
+      "P0277.C0003",
+      "P0348.C0001",
+      "P0348.C0028",
+      "P0396.C0016",
+      "P0405.C0016"
+    ]
+  },
+  "admission_implications": {
+    "if_candidate_verdict": "accept",
+    "verdict_rationale": "Elkornacio provides exceptionally deep, practical, and often contrarian insights into AI-assisted development. His breakdown of Model vs Harness vs UI, and his deterministic bash-script workflows, are highly valuable for advanced practitioners.",
+    "unique_value_claims_to_verify_against_matrix": [
+      "The distinction between Model, Harness, and UI in AI coding tools.",
+      "The use of Git branches for hyper-customization via AI agents."
+    ],
+    "likely_duplicate_areas_to_check": [
+      "General Cursor tips and tricks.",
+      "Basic model benchmark comparisons."
+    ],
+    "minimum_followup_probe_queries": [
+      "Compare Cursor, Claude Code, and Codex CLI for enterprise development.",
+      "What are the security risks of the Model Context Protocol (MCP)?"
+    ],
+    "risk_notes": [
+      "Heavy use of profanity and informal language may require filtering for enterprise outputs.",
+      "Some claims about future models (GPT-5.x, Claude 4.x) are based on the corpus timeline (2025-2026) and must be contextualized properly."
+    ]
+  },
+  "audit": {
+    "unsupported_or_weak_claims": [
+      "Claims about specific future model capabilities (e.g., GPT-5.5, Claude 4.7) are treated as factual within the corpus but represent future state relative to 2024."
+    ],
+    "abstentions": [],
+    "possible_model_errors": [],
+    "source_refs_used": [
+      "P0026",
+      "P0103",
+      "P0122",
+      "P0251",
+      "P0258.C0021",
+      "P0277.C0003",
+      "P0277.C0075",
+      "P0288",
+      "P0315.C0016",
+      "P0348.C0001",
+      "P0348.C0028",
+      "P0362",
+      "P0365",
+      "P0382",
+      "P0383",
+      "P0388.C0032",
+      "P0396.C0016",
+      "P0402",
+      "P0405.C0016",
+      "P0407",
+      "P0425",
+      "P0427",
+      "P0432",
+      "P0439",
+      "P0440"
+    ],
+    "source_refs_most_important": [
+      "P0427",
+      "P0432",
+      "P0382",
+      "P0439",
+      "P0122"
+    ],
+    "normalization_notes": [
+      {
+        "operation": "repair_matrix_export_from_matrix_cells",
+        "repaired_cell_count": 1,
+        "repaired_cell_ids": [
+          "agent_ops/mcp_tooling/design_agentic_dev_workflow"
+        ],
+        "skipped_cell_count": 0,
+        "skipped_cells": []
+      },
+      {
+        "operation": "hydrate_source_ref_index_used",
+        "hydrated_ref_count": 5,
+        "generated_at_set_from_manifest": "2026-05-10T19:15:55.475281+00:00"
+      }
+    ]
+  }
+}

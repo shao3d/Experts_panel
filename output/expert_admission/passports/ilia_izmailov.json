@@ -1,0 +1,337 @@
+{
+  "channel_username": "ilia_izmailov",
+  "coverage": {
+    "agent_ops": 31,
+    "ai_engineering_infra": 4,
+    "ai_product_pm": 39,
+    "ai_ux_workflow": 6,
+    "business_adoption": 23,
+    "coding_agents": 68,
+    "creative_multimodal": 1,
+    "evals_quality": 3,
+    "general_ai_news": 4,
+    "model_landscape": 68,
+    "rag_retrieval_knowledge": 2,
+    "security_privacy_governance": 7
+  },
+  "coverage_strength": {
+    "agent_ops": "medium",
+    "ai_engineering_infra": "thin",
+    "ai_product_pm": "medium",
+    "ai_ux_workflow": "thin",
+    "business_adoption": "medium",
+    "coding_agents": "strong",
+    "creative_multimodal": "thin",
+    "evals_quality": "thin",
+    "general_ai_news": "thin",
+    "model_landscape": "strong",
+    "rag_retrieval_knowledge": "thin",
+    "security_privacy_governance": "thin"
+  },
+  "date_range": {
+    "first_post": "2025-05-27",
+    "last_post": "2026-05-03"
+  },
+  "depth_profile": {
+    "announcement_or_news": 35,
+    "architecture_analysis": 12,
+    "benchmark_or_eval": 3,
+    "case_study": 14,
+    "howto_or_checklist": 51,
+    "low_signal": 34,
+    "practitioner_experience": 24,
+    "tool_release": 3
+  },
+  "display_name": "Ilia Izmailov",
+  "embedding_count": 171,
+  "embedding_coverage_ratio": 1.0,
+  "expert_id": "ilia_izmailov",
+  "fts_count": 171,
+  "metadata_coverage_ratio": 0.8239,
+  "metadata_valid_count": 145,
+  "post_count": 176,
+  "representative_posts": [
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "evals_quality",
+        "ai_product_pm",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-28",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "**Расширяем команду ****AURA**A](https://cpo.aura-framework.ru/)** ** В приоритете ищем волшебника, который сможет [построить систему оптимизации агентских пайплайнов](https://zamesin.ru/jobs/vacancy/ai-eval-engineer) Если ты просто очень жоска вайбкодишь и уже билдил что-то большое, то можешь откликнуться вот [сюда...",
+      "reason": "coding_agents, agent_ops, evals_quality; depth=benchmark_or_eval",
+      "telegram_message_id": 215
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "ai_product_pm",
+        "business_adoption"
+      ],
+      "created_at": "2026-04-08",
+      "depth_label": "case_study",
+      "excerpt": "Вайб-кодинг вайб-кодингом, но как AI используют в реально больших продуктах? В Москве на следующей неделе пройдёт конференция [Product Focus Club 2026](https://productfocus.ru/club?utm_source=&utm_medium=comm&utm_campaign=pf26&utm_content=izmaylov) (если кто-то не в Москве, то есть и онлайн доступ, но сами понимаете...",
+      "reason": "coding_agents, ai_product_pm, business_adoption; depth=case_study",
+      "telegram_message_id": 202
+    },
+    {
+      "coverage_labels": [
+        "rag_retrieval_knowledge",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-07",
+      "depth_label": "architecture_analysis",
+      "excerpt": "Карпатый на днях опубликовал LLM Wiki — альтернативу RAG для базы знаний LLM в этом подходе строит структурированный набор взаимосвязанных markdown-файлов, с которым в дальнейшем будет работать вместо обращения к сырым источникам. В архитектуре 3 слоя: — исходные документы — вики (которую пишет LLM) — схема (файл, о...",
+      "reason": "rag_retrieval_knowledge, model_landscape; depth=architecture_analysis",
+      "telegram_message_id": 200
+    },
+    {
+      "coverage_labels": [
+        "security_privacy_governance"
+      ],
+      "created_at": "2026-03-24",
+      "depth_label": "howto_or_checklist",
+      "excerpt": "Вчера поймал непредвиденный цифровой детокс Вместо вылета в Казань в 8 утра я, спустя 5 переносов рейса, вылетел в 9 вечера Почти всё время глушился мобильный интернет — работали только сервисы Яндекса и МАКСимально безопасный мессенджер, который ловит даже на парковке С вайфаев всё работало нормально, но 5 часов по...",
+      "reason": "security_privacy_governance; depth=howto_or_checklist",
+      "telegram_message_id": 196
+    },
+    {
+      "coverage_labels": [
+        "evals_quality",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-24",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "Вышел новый DeepSeek V4 — третий обновившийся китаец за последние три недели Потестил Pro версию, выглядит сильно слабее Kimi K2.6 или GLM 5.1 Бенчмарки, как всегда у всех китайцев, на уровне опуса, но дипсик на моих задачах показал себя не лучше Gemini 3 Flash",
+      "reason": "evals_quality, model_landscape; depth=benchmark_or_eval",
+      "telegram_message_id": 212
+    },
+    {
+      "coverage_labels": [
+        "coding_agents"
+      ],
+      "created_at": "2026-03-04",
+      "depth_label": "case_study",
+      "excerpt": "Недавно открыли продажи на следующий поток Boost – за 4 дня разобрали больше половины мест Если кто-то хочет за неделю с лёгкостью влететь в вайб-кодинг, то Ваня, я и 7 кураторов (жоских вайб-кодеров) можем провести за ручку Ещё несколько дней, скорее всего, будут свободные места Стартуем 20 марта Вся информация [ту...",
+      "reason": "coding_agents; depth=case_study",
+      "telegram_message_id": 186
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-09",
+      "depth_label": "practitioner_experience",
+      "excerpt": "Все больше людей в последнее время ругаются на лимиты в Claude Code, так что вот вам база по грамотному управлению расходом токенов. Когда мы пишем любое сообщение клоду, он читает его + весь прошлый диалог, а потом генерирует ответ. Таким образом, 30е сообщение в чате может быть в 30 раз дороже по токенам, чем перв...",
+      "reason": "coding_agents, agent_ops, model_landscape; depth=practitioner_experience",
+      "telegram_message_id": 203
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "ai_product_pm",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-01",
+      "depth_label": "architecture_analysis",
+      "excerpt": "На днях код Claude Code слили в публичный доступ Чем это может быть полезно? Как минимум, можно подёргать полезные паттерны в свои продукты Я как раз недавно сделал плагин [repo-scout](https://github.com/izmailovilya/ilia-izmailov-plugins), который изучает внешний проект и ищет что оттуда может улучшить мой продукт...",
+      "reason": "coding_agents, ai_product_pm, model_landscape; depth=architecture_analysis",
+      "telegram_message_id": 197
+    }
+  ],
+  "runtime_readiness": {
+    "embeddings_ready": true,
+    "fts_ready": true,
+    "metadata_advisory_ready": true,
+    "text_posts_ready": true
+  },
+  "text_post_count": 171,
+  "top_concepts": [
+    {
+      "count": 13,
+      "value": "Prompt Engineering"
+    },
+    {
+      "count": 10,
+      "value": "Automation"
+    },
+    {
+      "count": 9,
+      "value": "Software Development"
+    },
+    {
+      "count": 8,
+      "value": "Artificial Intelligence"
+    },
+    {
+      "count": 6,
+      "value": "MVP"
+    },
+    {
+      "count": 5,
+      "value": "LLM"
+    },
+    {
+      "count": 5,
+      "value": "Generative AI"
+    },
+    {
+      "count": 5,
+      "value": "Product Development"
+    },
+    {
+      "count": 4,
+      "value": "Multi-agent systems"
+    },
+    {
+      "count": 4,
+      "value": "Subscription"
+    },
+    {
+      "count": 4,
+      "value": "Conversion Rate"
+    },
+    {
+      "count": 3,
+      "value": "Access Control"
+    }
+  ],
+  "top_keywords": [
+    {
+      "count": 40,
+      "value": "development"
+    },
+    {
+      "count": 38,
+      "value": "разработка"
+    },
+    {
+      "count": 35,
+      "value": "claude"
+    },
+    {
+      "count": 29,
+      "value": "code"
+    },
+    {
+      "count": 20,
+      "value": "coding"
+    },
+    {
+      "count": 20,
+      "value": "нейросети"
+    },
+    {
+      "count": 20,
+      "value": "neural"
+    },
+    {
+      "count": 16,
+      "value": "llm"
+    },
+    {
+      "count": 14,
+      "value": "бот"
+    },
+    {
+      "count": 14,
+      "value": "product"
+    },
+    {
+      "count": 13,
+      "value": "networks"
+    },
+    {
+      "count": 13,
+      "value": "bot"
+    },
+    {
+      "count": 13,
+      "value": "cursor"
+    },
+    {
+      "count": 12,
+      "value": "подписка"
+    },
+    {
+      "count": 11,
+      "value": "клод"
+    },
+    {
+      "count": 11,
+      "value": "нейросеть"
+    },
+    {
+      "count": 11,
+      "value": "автоматизация"
+    },
+    {
+      "count": 11,
+      "value": "automation"
+    },
+    {
+      "count": 11,
+      "value": "subscription"
+    },
+    {
+      "count": 11,
+      "value": "искусственный"
+    }
+  ],
+  "top_primary_topics": [
+    {
+      "count": 12,
+      "value": "AI Agents"
+    },
+    {
+      "count": 12,
+      "value": "AI Development"
+    },
+    {
+      "count": 5,
+      "value": "Web Development"
+    },
+    {
+      "count": 5,
+      "value": "Software Development"
+    },
+    {
+      "count": 5,
+      "value": "Product Development"
+    },
+    {
+      "count": 4,
+      "value": "Product Management"
+    },
+    {
+      "count": 3,
+      "value": "Generative AI"
+    },
+    {
+      "count": 3,
+      "value": "Startup Development"
+    },
+    {
+      "count": 2,
+      "value": "AI Coding Tools"
+    },
+    {
+      "count": 2,
+      "value": "AI Coding"
+    },
+    {
+      "count": 2,
+      "value": "Claude Code"
+    },
+    {
+      "count": 2,
+      "value": "E-commerce"
+    }
+  ],
+  "warnings": []
+}

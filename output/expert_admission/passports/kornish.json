@@ -1,0 +1,174 @@
+{
+  "channel_username": "NGI_ru",
+  "coverage": {
+    "agent_ops": 119,
+    "ai_engineering_infra": 15,
+    "ai_product_pm": 265,
+    "ai_ux_workflow": 77,
+    "business_adoption": 165,
+    "coding_agents": 103,
+    "creative_multimodal": 30,
+    "evals_quality": 44,
+    "general_ai_news": 1,
+    "model_landscape": 270,
+    "rag_retrieval_knowledge": 24,
+    "security_privacy_governance": 70
+  },
+  "coverage_strength": {
+    "agent_ops": "strong",
+    "ai_engineering_infra": "thin",
+    "ai_product_pm": "strong",
+    "ai_ux_workflow": "strong",
+    "business_adoption": "strong",
+    "coding_agents": "strong",
+    "creative_multimodal": "medium",
+    "evals_quality": "medium",
+    "general_ai_news": "thin",
+    "model_landscape": "strong",
+    "rag_retrieval_knowledge": "medium",
+    "security_privacy_governance": "strong"
+  },
+  "date_range": {
+    "first_post": "2024-05-08",
+    "last_post": "2026-05-02"
+  },
+  "depth_profile": {
+    "announcement_or_news": 21,
+    "architecture_analysis": 32,
+    "benchmark_or_eval": 44,
+    "case_study": 145,
+    "howto_or_checklist": 75,
+    "low_signal": 34,
+    "practitioner_experience": 133,
+    "tool_release": 3
+  },
+  "display_name": "Kornishev",
+  "embedding_count": 468,
+  "embedding_coverage_ratio": 1.0,
+  "expert_id": "kornish",
+  "fts_count": 468,
+  "metadata_coverage_ratio": 0.0,
+  "metadata_valid_count": 0,
+  "post_count": 487,
+  "representative_posts": [
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "evals_quality",
+        "rag_retrieval_knowledge",
+        "ai_product_pm",
+        "business_adoption",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-24",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "**Как пивот в AI‑агентов и смена бизнес‑модели вытащили Perplexity к $450M+ ARR. Разбор кейса** В прошлом посте я сравнивал функционал 3 агентских ИИ, которыми пользуюсь сейчас, отдельно выделяя Perplexity. Сегодня, как и обещал, разбираю что команда стартапа сделала на уровне стратегии и бизнес‑модели - и почему эт...",
+      "reason": "agent_ops, evals_quality, rag_retrieval_knowledge; depth=benchmark_or_eval",
+      "telegram_message_id": 612
+    },
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "ai_product_pm",
+        "ai_ux_workflow",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-30",
+      "depth_label": "case_study",
+      "excerpt": "**Как избавиться от AI FOMO: мой подход к ознакомлению с кейсами, новостями и новыми инструментами ** AI-сфера развивается с такой скоростью, что попытка уследить за всем превращается в полноценную работу. Раньше я старался пробовать больше новых инструментов, читать каждую статью из рассылки, тестировать каждую мод...",
+      "reason": "agent_ops, ai_product_pm, ai_ux_workflow; depth=case_study",
+      "telegram_message_id": 614
+    },
+    {
+      "coverage_labels": [
+        "ai_product_pm",
+        "security_privacy_governance",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-28",
+      "depth_label": "case_study",
+      "excerpt": "**Локальные модели для простых смертных: что выбрать, если у вас нет супер-компьютера** В последнее время вижу у людей рост интереса к локальным моделям. Часто ко мне приходят клиенты, у которых уже что-то развернуто в локальном контуре через OpenWebUI - они либо хотят улучшений, либо целятся в масштабирование, но с...",
+      "reason": "ai_product_pm, security_privacy_governance, model_landscape; depth=case_study",
+      "telegram_message_id": 613
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "ai_product_pm",
+        "business_adoption",
+        "ai_ux_workflow",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-17",
+      "depth_label": "case_study",
+      "excerpt": "**Google и Perplexity радуют свежими релизами ** Редко пишу про конкретные новости и релизы, но сегодня захотелось, так как пользуюсь обоими продуктами. ** Perplexity Personal Computer **По сути это аналог OpenClaw, только обёрнутый в сторону бизнес-кейсов. Схема та же: ставите агента на свою машину, и он доступен о...",
+      "reason": "coding_agents, agent_ops, ai_product_pm; depth=case_study",
+      "telegram_message_id": 609
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "ai_product_pm",
+        "business_adoption",
+        "model_landscape",
+        "creative_multimodal"
+      ],
+      "created_at": "2026-03-13",
+      "depth_label": "practitioner_experience",
+      "excerpt": "**Ревью Lenny's Pass** **- лучшей подписки для старта в AI (и экономии $1000)** Почти год назад я уже [писал](https://t.me/NGI_ru/231) про Lenny's Pass. Недавно я ревьюил свои подписки, и заглянул посмотреть что изменилось. Да, часть классных штук уехала в более дорогой тариф, но сейчас это по-прежнему лучшая точка...",
+      "reason": "coding_agents, agent_ops, ai_product_pm; depth=practitioner_experience",
+      "telegram_message_id": 592
+    },
+    {
+      "coverage_labels": [
+        "ai_product_pm"
+      ],
+      "created_at": "2026-04-21",
+      "depth_label": "case_study",
+      "excerpt": "**Как AI помог вернуть нам $1000+ и наказать Spirit Airlines: Perplexity как персональный юрист ** На этот Новый год мы с женой решили слетать отдохнуть в Доминикану. Все было супер, пока не настало время лететь обратно. В итоге наш перелет с 1 пересадкой общей длительностью 6 часов превратился в **ад с 3 пересадкам...",
+      "reason": "ai_product_pm; depth=case_study",
+      "telegram_message_id": 610
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "rag_retrieval_knowledge",
+        "ai_product_pm"
+      ],
+      "created_at": "2026-04-09",
+      "depth_label": "case_study",
+      "excerpt": "**Метод управления знаниями без RAG от Андрея Карпатого** С появлением AI, одной из задач, которую пытаются решить многие люди и компании стала организация базы знаний и работы с ними. В 2023 году крутым подходом считался RAG и с тех пор многие используют и внедряют именно его. Вроде все просто: мы кормим ИИ какие-т...",
+      "reason": "coding_agents, agent_ops, rag_retrieval_knowledge; depth=case_study",
+      "telegram_message_id": 606
+    },
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "ai_product_pm",
+        "ai_ux_workflow",
+        "model_landscape"
+      ],
+      "created_at": "2026-03-30",
+      "depth_label": "case_study",
+      "excerpt": "**Я ошибался насчёт Comet - переосмысление спустя несколько месяцев** Пару месяцев назад я уже [писал](https://t.me/NGI_ru/430) про Comet. Мои претензии тогда: медленно, нет кроссплатформенности, и вообще - Google скоро всех закопает. С тех пор браузер обновили и появились версии на Android и iOS. Я решил попробоват...",
+      "reason": "agent_ops, ai_product_pm, ai_ux_workflow; depth=case_study",
+      "telegram_message_id": 602
+    }
+  ],
+  "runtime_readiness": {
+    "embeddings_ready": true,
+    "fts_ready": true,
+    "metadata_advisory_ready": false,
+    "text_posts_ready": true
+  },
+  "text_post_count": 468,
+  "top_concepts": [],
+  "top_keywords": [],
+  "top_primary_topics": [],
+  "warnings": [
+    "kornish: no valid post_metadata; coverage is text-only"
+  ]
+}

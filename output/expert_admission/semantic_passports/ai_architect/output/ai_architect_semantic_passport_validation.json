@@ -1,0 +1,16 @@
+{
+  "missing_required_top_level_keys": [],
+  "known_source_ref_count": 4093,
+  "used_source_ref_count": 27,
+  "source_ref_index_used_count": 27,
+  "unknown_source_refs": [],
+  "unknown_source_ref_count": 0,
+  "refs_missing_from_source_ref_index_used": [],
+  "refs_missing_from_source_ref_index_used_count": 0,
+  "matrix_export_cell_count": 4,
+  "bad_matrix_relative_novelty_values": [],
+  "passport_generated_at": "2026-05-09T21:45:35.833423+00:00",
+  "expected_generated_at": "2026-05-09T21:45:35.833423+00:00",
+  "generated_at_matches_expected": true,
+  "valid_basic_contract": true
+}

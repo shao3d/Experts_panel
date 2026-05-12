@@ -1,0 +1,988 @@
+{
+  "schema_version": "expert_value_passport.v1.1",
+  "passport_meta": {
+    "schema_version": "expert_value_passport.v1.1",
+    "expert_id": "llm_under_hood",
+    "display_name": "Rinat",
+    "channel_username": "@llm_under_hood",
+    "model_assumed": "gemini-3.1-pro-preview",
+    "prompt_version": "semantic-passport-prompt.v1",
+    "generated_at": "2026-05-10T19:01:01.792898+00:00"
+  },
+  "corpus_audit": {
+    "post_count_seen": 321,
+    "comment_count_seen": 5410,
+    "date_range": {
+      "first_post": "2025-01-03 13:14:02.000000",
+      "last_post": "2026-05-03 20:03:24.000000"
+    },
+    "language_mix": [
+      "ru",
+      "en"
+    ],
+    "material_limitations": [],
+    "author_vs_community_boundary": "Strictly maintained. The expert (Rinat) authors the posts, providing deep architectural and engineering insights. The community is highly active, technical, and contributes their own benchmarks, code snippets, and implementation experiences in the comments."
+  },
+  "source_ref_index_used": [
+    {
+      "source_ref": "P0130",
+      "source_kind": "expert_post",
+      "post_id": 2583,
+      "telegram_message_id": 620,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-07-23 12:14:12.000000",
+      "why_used": "Defines Schema-Guided Reasoning (SGR) and its benefits over standard CoT."
+    },
+    {
+      "source_ref": "P0045",
+      "source_kind": "expert_post",
+      "post_id": 2498,
+      "telegram_message_id": 522,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-03-06 15:25:12.000000",
+      "why_used": "Establishes the principle that RAG Generation quality is bottlenecked by Retrieval quality."
+    },
+    {
+      "source_ref": "P0097",
+      "source_kind": "expert_post",
+      "post_id": 2550,
+      "telegram_message_id": 581,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-05-24 17:11:39.000000",
+      "why_used": "Explains the limitations of vibe-coding on older, complex projects."
+    },
+    {
+      "source_ref": "P0099",
+      "source_kind": "expert_post",
+      "post_id": 2552,
+      "telegram_message_id": 583,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-05-26 10:46:06.000000",
+      "why_used": "Reinforces that AI coding on large projects requires architectural oversight, not vibe-coding."
+    },
+    {
+      "source_ref": "P0123",
+      "source_kind": "expert_post",
+      "post_id": 2570,
+      "telegram_message_id": 601,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-06-28 13:05:38.000000",
+      "why_used": "Introduces the concept that 'Quality is a trajectory' and requires evals."
+    },
+    {
+      "source_ref": "P0076",
+      "source_kind": "expert_post",
+      "post_id": 2529,
+      "telegram_message_id": 556,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-04-22 10:09:29.000000",
+      "why_used": "Emphasizes starting AI projects with evals and treating AI as reliability engineering."
+    },
+    {
+      "source_ref": "P0144",
+      "source_kind": "expert_post",
+      "post_id": 2597,
+      "telegram_message_id": 637,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-20 15:14:35.000000",
+      "why_used": "Demonstrates that small local models (Qwen 4B) can perform complex agent tasks using SGR."
+    },
+    {
+      "source_ref": "P0091",
+      "source_kind": "expert_post",
+      "post_id": 2544,
+      "telegram_message_id": 573,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-05-20 11:44:34.000000",
+      "why_used": "Compares OpenAI Codex with Claude Code and highlights the value of parallel agent tasks."
+    },
+    {
+      "source_ref": "P0156",
+      "source_kind": "expert_post",
+      "post_id": 2609,
+      "telegram_message_id": 650,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-09-02 15:42:55.000000",
+      "why_used": "Shows practical use of Codex for platform development and refactoring."
+    },
+    {
+      "source_ref": "P0187",
+      "source_kind": "expert_post",
+      "post_id": 2640,
+      "telegram_message_id": 681,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-10-23 11:24:09.000000",
+      "why_used": "Connects Domain-Driven Design (DDD) with AI engineering."
+    },
+    {
+      "source_ref": "P0157",
+      "source_kind": "expert_post",
+      "post_id": 2611,
+      "telegram_message_id": 652,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-09-08 15:46:42.000000",
+      "why_used": "Details the 'Hail Mary' project rescue, focusing on establishing ground truth and evals."
+    },
+    {
+      "source_ref": "P0160",
+      "source_kind": "expert_post",
+      "post_id": 2613,
+      "telegram_message_id": 654,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-09-11 16:17:29.000000",
+      "why_used": "Shows the use of strategic error maps (heatmaps) to guide SGR improvements."
+    },
+    {
+      "source_ref": "P0162",
+      "source_kind": "expert_post",
+      "post_id": 2615,
+      "telegram_message_id": 656,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-09-13 19:53:27.000000",
+      "why_used": "Concludes the 'Hail Mary' project, showing a jump from 60% to 99.7% accuracy using SGR and evals."
+    },
+    {
+      "source_ref": "P0149",
+      "source_kind": "expert_post",
+      "post_id": 2602,
+      "telegram_message_id": 643,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-24 17:17:55.000000",
+      "why_used": "Community insight (Valerii Kovalskii) comparing SGR vs Tool Calling for reliability."
+    },
+    {
+      "source_ref": "P0107",
+      "source_kind": "expert_post",
+      "post_id": 2560,
+      "telegram_message_id": 591,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-06-11 09:10:08.000000",
+      "why_used": "Criticizes MCP (Model Context Protocol) as a flawed concept for reliable enterprise AI."
+    },
+    {
+      "source_ref": "P0098",
+      "source_kind": "expert_post",
+      "post_id": 2551,
+      "telegram_message_id": 582,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-05-25 10:41:15.000000",
+      "why_used": "Details the Engineering Harness setup (AGENTS.md, docs/) for AI coding."
+    },
+    {
+      "source_ref": "P0232",
+      "source_kind": "expert_post",
+      "post_id": 3234,
+      "telegram_message_id": 730,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-14 13:43:55.000000",
+      "why_used": "Demonstrates an autonomous feedback loop where Codex writes code to pass a test suite."
+    },
+    {
+      "source_ref": "P0266",
+      "source_kind": "expert_post",
+      "post_id": 7345,
+      "telegram_message_id": 764,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-03-04 14:23:47.000000",
+      "why_used": "Shows rapid generation of an MCP server using Codex and RFC documents."
+    },
+    {
+      "source_ref": "P0004",
+      "source_kind": "expert_post",
+      "post_id": 2457,
+      "telegram_message_id": 479,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-01-07 16:29:26.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0083",
+      "source_kind": "expert_post",
+      "post_id": 2536,
+      "telegram_message_id": 564,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-05-08 10:16:56.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0181",
+      "source_kind": "expert_post",
+      "post_id": 2634,
+      "telegram_message_id": 675,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-10-08 15:25:37.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    }
+  ],
+  "executive_summary": {
+    "one_sentence_positioning": "A deep practitioner and community leader who advocates for treating AI development as reliability engineering, pioneering Schema-Guided Reasoning (SGR) and rigorous evaluation frameworks over hype-driven 'vibe coding'.",
+    "strongest_system_value": "Exceptional depth in architecting reliable, production-grade AI systems using Schema-Guided Reasoning (SGR), structured outputs, and continuous evaluation loops (evals), backed by real-world enterprise case studies and community-driven benchmarks.",
+    "weakest_system_value": "May be overly dismissive of certain emerging standards (like MCP or LangChain) in favor of custom, bare-bones implementations, which might not align with teams looking for off-the-shelf framework adoption.",
+    "best_fit_queries": [
+      "How to design reliable agentic workflows using Structured Outputs?",
+      "What is Schema-Guided Reasoning (SGR) and how to implement it?",
+      "How to set up an engineering harness and feedback loops for AI coding?",
+      "How to evaluate and benchmark RAG systems in enterprise environments?"
+    ],
+    "poor_fit_queries": [
+      "How to build agents using LangChain or LangGraph?",
+      "What is the best way to use MCP for autonomous agents?",
+      "How to fine-tune models for creative writing?"
+    ],
+    "confidence": 4.9
+  },
+  "expert_positioning": {
+    "primary_role": "AI Systems Architect & Community Leader",
+    "audience": [
+      "Senior Software Engineers",
+      "AI/ML Engineers",
+      "CTOs",
+      "Product Managers in Enterprise IT"
+    ],
+    "voice": [
+      "Pragmatic",
+      "Engineering-focused",
+      "Anti-hype",
+      "Hands-on",
+      "Analytical"
+    ],
+    "worldview": [
+      "AI development is reliability engineering, not capability engineering.",
+      "Quality is a trajectory that requires rigorous evals and feedback loops.",
+      "Vibe coding is for prototypes; real projects require an engineering harness.",
+      "Constrained decoding (Structured Outputs) is essential for predictable LLM behavior."
+    ],
+    "distinctive_angle": "Pioneered and evangelizes 'Schema-Guided Reasoning' (SGR) as a superior alternative to standard CoT or Tool Calling for enterprise reliability, heavily utilizing community-driven benchmarks (ERC, PAC) to prove architectural superiority.",
+    "recurring_formats": [
+      "Case study breakdowns (e.g., 'Hail Mary' project rescue)",
+      "Benchmark announcements and analyses (ERC, PAC)",
+      "Architectural deep-dives (SGR, Engineering Harness)",
+      "Community Q&A and poll analyses"
+    ],
+    "evidence_refs": [
+      "P0130",
+      "P0123",
+      "P0097",
+      "P0157"
+    ]
+  },
+  "knowledge_domains": [
+    {
+      "domain_id": "agent_ops",
+      "domain_name": "Agentic Operations and Architecture",
+      "subdomain_ids": [
+        "agentic_dev_process",
+        "reasoning_control",
+        "multi_agent_orchestration"
+      ],
+      "query_intent_ids": [
+        "design_agentic_dev_workflow",
+        "build_human_ai_workflow"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "unique",
+      "what_the_expert_knows": [
+        "How to implement Schema-Guided Reasoning (SGR) using Pydantic and Structured Outputs to control LLM thought processes.",
+        "How to build an 'Engineering Harness' (AGENTS.md, docs/, tests) to manage AI coding agents like Codex and Claude Code.",
+        "The limitations of autonomous agents without strict evaluation loops and constrained decoding.",
+        "How to use Domain-Driven Design (DDD) principles to structure context for LLMs."
+      ],
+      "how_they_reason": [
+        "Prioritizes deterministic control flow and automated validation over LLM autonomy.",
+        "Believes that complex reasoning should be broken down into typed, schema-defined steps rather than free-text CoT.",
+        "Views AI coding as a process requiring a 'Human in the loop' acting as an architect/reviewer, not a hands-off process."
+      ],
+      "missing_or_weak_subtopics": [
+        "Heavy reliance on custom implementations rather than popular frameworks like LangChain or AutoGen."
+      ],
+      "evidence_refs": [
+        "P0130",
+        "P0098",
+        "P0187",
+        "P0266"
+      ],
+      "confidence": 5.0
+    },
+    {
+      "domain_id": "evals_quality",
+      "domain_name": "Evaluations and Quality Assurance",
+      "subdomain_ids": [
+        "llm_evals",
+        "quality_gates",
+        "regression_harness"
+      ],
+      "query_intent_ids": [
+        "build_ai_dev_eval"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "How to build strategic error maps (heatmaps) to visualize and prioritize pipeline failures.",
+        "The necessity of establishing a Ground Truth (GT) dataset before attempting to improve an LLM pipeline.",
+        "How to separate the 'Eval Team' (breakers) from the 'SGR Team' (builders) to ensure objective quality control.",
+        "Why LLM-as-a-judge is often inferior to deterministic schema validation for intermediate reasoning steps."
+      ],
+      "how_they_reason": [
+        "Quality is a trajectory: it's not about the initial score, but the ability to systematically measure and improve it.",
+        "If a project cannot be easily and quickly tested, it should not be undertaken."
+      ],
+      "missing_or_weak_subtopics": [],
+      "evidence_refs": [
+        "P0123",
+        "P0076",
+        "P0157",
+        "P0160"
+      ],
+      "confidence": 5.0
+    },
+    {
+      "domain_id": "rag_retrieval_knowledge",
+      "domain_name": "RAG and Retrieval Systems",
+      "subdomain_ids": [
+        "rag_architecture",
+        "hybrid_retrieval"
+      ],
+      "query_intent_ids": [
+        "design_rag_knowledge_base",
+        "improve_retrieval_quality"
+      ],
+      "coverage_level": "moderate",
+      "depth_level": "practical",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "That Generation quality (G-score) is strictly bottlenecked by Retrieval quality (R-score).",
+        "How to extract structured data from complex enterprise PDFs using VLM parsing and SGR.",
+        "The limitations of pure vector search in enterprise contexts and the need for hybrid or schema-based retrieval."
+      ],
+      "how_they_reason": [
+        "Retrieval must be highly precise; feeding garbage to the LLM guarantees hallucinations.",
+        "Prefers structured data extraction and exact citations over fuzzy semantic search for enterprise compliance."
+      ],
+      "missing_or_weak_subtopics": [
+        "Deep dive into specific vector database tuning."
+      ],
+      "evidence_refs": [
+        "P0045",
+        "P0162"
+      ],
+      "confidence": 4.8
+    }
+  ],
+  "value_dimensions": [
+    {
+      "dimension_id": "insight_density",
+      "score_0_5": 5,
+      "rationale": "Posts are highly concentrated with architectural insights, benchmark results, and practical methodologies (like SGR and Engineering Harness) derived from real-world enterprise projects.",
+      "evidence_refs": [
+        "P0130",
+        "P0157",
+        "P0232"
+      ],
+      "confidence": 5.0
+    },
+    {
+      "dimension_id": "practical_specificity",
+      "score_0_5": 5,
+      "rationale": "Provides exact methodologies (e.g., how to structure AGENTS.md, how to build error heatmaps, how to use Pydantic for SGR) and shares open-source code for agent architectures.",
+      "evidence_refs": [
+        "P0098",
+        "P0160",
+        "P0266"
+      ],
+      "confidence": 5.0
+    },
+    {
+      "dimension_id": "evidence_quality",
+      "score_0_5": 5,
+      "rationale": "Claims are backed by extensive community benchmarking (ERC1-3, PAC1), live production case studies (the 'Hail Mary' project), and measurable metrics (R-score vs G-score).",
+      "evidence_refs": [
+        "P0045",
+        "P0162",
+        "P0144"
+      ],
+      "confidence": 5.0
+    },
+    {
+      "dimension_id": "anti_hype_signal",
+      "score_0_5": 5,
+      "rationale": "Actively debunks 'vibe coding' for large projects, criticizes over-hyped protocols like MCP, and insists on rigorous testing and reliability engineering over blind trust in LLM autonomy.",
+      "evidence_refs": [
+        "P0097",
+        "P0107",
+        "P0123"
+      ],
+      "confidence": 5.0
+    }
+  ],
+  "matrix_cells": [
+    {
+      "domain_id": "agent_ops",
+      "subdomain_id": "reasoning_control",
+      "subdomain_name": "Schema-Guided Reasoning (SGR)",
+      "query_intent_ids": [
+        "design_agentic_dev_workflow"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 5,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0130",
+        "P0149"
+      ],
+      "notes": "The expert is the primary pioneer and evangelist of Schema-Guided Reasoning (SGR), a method using constrained decoding to force LLMs through explicit, typed reasoning steps."
+    },
+    {
+      "domain_id": "evals_quality",
+      "subdomain_id": "llm_evals",
+      "subdomain_name": "Continuous Evaluation and Feedback Loops",
+      "query_intent_ids": [
+        "build_ai_dev_eval"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 5,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0076",
+        "P0123",
+        "P0157",
+        "P0160"
+      ],
+      "notes": "Strong emphasis on 'Quality is a trajectory'. Provides concrete methods for building Ground Truth datasets and using heatmaps to guide pipeline improvements."
+    },
+    {
+      "domain_id": "agent_ops",
+      "subdomain_id": "agentic_dev_process",
+      "subdomain_name": "Engineering Harness for AI Coding",
+      "query_intent_ids": [
+        "learn_ai_assisted_development"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 5,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0097",
+        "P0098",
+        "P0099",
+        "P0232"
+      ],
+      "notes": "Rejects 'vibe coding' for enterprise. Advocates for an 'Engineering Harness' (AGENTS.md, strict docs, automated test loops) to keep AI coding agents (Codex, Claude Code) productive and safe."
+    },
+    {
+      "domain_id": "rag_retrieval_knowledge",
+      "subdomain_id": "rag_architecture",
+      "subdomain_name": "RAG Performance Bottlenecks",
+      "query_intent_ids": [
+        "improve_retrieval_quality"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 4,
+      "intrinsic_distinctiveness_score_0_5": 3,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 5,
+      "source_utility_score_0_5": 4,
+      "comment_signal_score_0_5": 3,
+      "recommended_matrix_weight": "normal",
+      "evidence_refs": [
+        "P0045"
+      ],
+      "notes": "Empirical proof from community benchmarks that Generation score is strictly capped by Retrieval score."
+    }
+  ],
+  "query_intent_fit": [
+    {
+      "query_intent_id": "design_agentic_dev_workflow",
+      "query_intent_name": "Design Agentic Development Workflow",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "agent_ops"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "The expert provides end-to-end methodologies (SGR, Engineering Harness, Feedback Loops) for building reliable agentic workflows, backed by extensive benchmarking.",
+      "limitations": [
+        "Avoids popular frameworks like LangChain/LangGraph, preferring custom implementations."
+      ],
+      "evidence_refs": [
+        "P0130",
+        "P0098",
+        "P0232"
+      ],
+      "confidence": 5.0
+    },
+    {
+      "query_intent_id": "build_ai_dev_eval",
+      "query_intent_name": "Build AI Development Evals",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "evals_quality"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "Expert strongly advocates for evals-first development, providing practical examples of Ground Truth creation, error heatmaps, and continuous calibration.",
+      "limitations": [],
+      "evidence_refs": [
+        "P0076",
+        "P0123",
+        "P0157",
+        "P0160"
+      ],
+      "confidence": 5.0
+    },
+    {
+      "query_intent_id": "learn_ai_assisted_development",
+      "query_intent_name": "Learn AI-Assisted Development",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "agent_ops"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "Offers highly practical advice on moving from 'vibe coding' to structured AI coding using tools like Codex and Claude Code within a strict engineering harness.",
+      "limitations": [],
+      "evidence_refs": [
+        "P0097",
+        "P0098",
+        "P0099"
+      ],
+      "confidence": 5.0
+    }
+  ],
+  "content_quality_distribution": [
+    {
+      "category_id": "deep_practitioner",
+      "share_estimate_0_1": 0.4,
+      "system_value": "unique",
+      "notes": "Deep architectural insights into SGR, agent orchestration, and reliability engineering.",
+      "evidence_refs": [
+        "P0130",
+        "P0098",
+        "P0187"
+      ],
+      "confidence": 5.0
+    },
+    {
+      "category_id": "case_study",
+      "share_estimate_0_1": 0.3,
+      "system_value": "high",
+      "notes": "Detailed breakdowns of real-world projects, such as the 'Hail Mary' rescue project and legacy code migration.",
+      "evidence_refs": [
+        "P0157",
+        "P0160",
+        "P0162"
+      ],
+      "confidence": 5.0
+    },
+    {
+      "category_id": "benchmark_or_eval",
+      "share_estimate_0_1": 0.2,
+      "system_value": "high",
+      "notes": "Regular updates on community benchmarks (ERC, PAC) and model performance in business contexts.",
+      "evidence_refs": [
+        "P0045",
+        "P0144"
+      ],
+      "confidence": 5.0
+    },
+    {
+      "category_id": "commentary",
+      "share_estimate_0_1": 0.1,
+      "system_value": "medium",
+      "notes": "Opinions on industry trends, such as the shift from capability to reliability engineering, and critiques of tools like MCP.",
+      "evidence_refs": [
+        "P0107",
+        "P0123"
+      ],
+      "confidence": 4.5
+    }
+  ],
+  "matrix_export": {
+    "schema_version": "knowledge_matrix_export.v1",
+    "expert_id": "llm_under_hood",
+    "cells": [
+      {
+        "cell_id": "agent_ops/reasoning_control/design_agentic_dev_workflow",
+        "domain_id": "agent_ops",
+        "subdomain_id": "reasoning_control",
+        "subdomain_name": "Schema-Guided Reasoning (SGR)",
+        "query_intent_ids": [
+          "design_agentic_dev_workflow"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 5,
+          "evidence_quality": 5,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 5,
+          "anti_hype": 5,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0130",
+          "P0149"
+        ],
+        "confidence": 5.0
+      },
+      {
+        "cell_id": "evals_quality/llm_evals/build_ai_dev_eval",
+        "domain_id": "evals_quality",
+        "subdomain_id": "llm_evals",
+        "subdomain_name": "Continuous Evaluation and Feedback Loops",
+        "query_intent_ids": [
+          "build_ai_dev_eval"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 5,
+          "evidence_quality": 5,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 4,
+          "anti_hype": 5,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0076",
+          "P0123",
+          "P0157",
+          "P0160"
+        ],
+        "confidence": 5.0
+      },
+      {
+        "cell_id": "agent_ops/agentic_dev_process/learn_ai_assisted_development",
+        "domain_id": "agent_ops",
+        "subdomain_id": "agentic_dev_process",
+        "subdomain_name": "Engineering Harness for AI Coding",
+        "query_intent_ids": [
+          "learn_ai_assisted_development"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 5,
+          "evidence_quality": 5,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 4,
+          "anti_hype": 5,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0097",
+          "P0098",
+          "P0099",
+          "P0232"
+        ],
+        "confidence": 5.0
+      }
+    ],
+    "compare_hints": {
+      "likely_unique_cells": [
+        "agent_ops/reasoning_control/design_agentic_dev_workflow"
+      ],
+      "likely_duplicate_cells": [],
+      "cells_requiring_probe": [],
+      "matrix_only_decision_confidence": "high"
+    }
+  },
+  "signature_insights": [
+    {
+      "insight": "Schema-Guided Reasoning (SGR) is superior to standard Tool Calling for enterprise reliability because it forces the LLM to follow explicit, typed reasoning steps via constrained decoding, making the process transparent and testable.",
+      "why_it_matters_for_experts_panel": "Provides a concrete, architectural alternative to black-box agent frameworks, highly relevant for enterprise AI deployment.",
+      "applicable_query_types": [
+        "design_agentic_dev_workflow"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0130",
+        "P0149"
+      ],
+      "confidence": 5.0
+    },
+    {
+      "insight": "AI development is reliability engineering, not capability engineering. Quality is a trajectory that requires starting with evals, establishing Ground Truth, and using feedback loops (like error heatmaps) to iteratively improve.",
+      "why_it_matters_for_experts_panel": "Shifts the focus from prompt hacking to rigorous software engineering practices, essential for production AI.",
+      "applicable_query_types": [
+        "build_ai_dev_eval"
+      ],
+      "novelty_level": "useful_packaging",
+      "evidence_refs": [
+        "P0123",
+        "P0076",
+        "P0157"
+      ],
+      "confidence": 5.0
+    },
+    {
+      "insight": "Vibe coding works for prototypes, but large or legacy projects require an 'Engineering Harness' (AGENTS.md, strict docs, automated test loops) to keep AI coding agents productive and prevent them from generating unmaintainable code.",
+      "why_it_matters_for_experts_panel": "Offers a pragmatic, scalable approach to AI-assisted development beyond simple scripts.",
+      "applicable_query_types": [
+        "learn_ai_assisted_development"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0097",
+        "P0098",
+        "P0099"
+      ],
+      "confidence": 5.0
+    },
+    {
+      "insight": "In RAG systems, Generation quality (G-score) is strictly bottlenecked by Retrieval quality (R-score). If retrieval pulls garbage, the LLM will hallucinate.",
+      "why_it_matters_for_experts_panel": "Provides empirical proof (from ERC benchmarks) of where to focus optimization efforts in RAG pipelines.",
+      "applicable_query_types": [
+        "improve_retrieval_quality"
+      ],
+      "novelty_level": "useful_packaging",
+      "evidence_refs": [
+        "P0045"
+      ],
+      "confidence": 5.0
+    }
+  ],
+  "practical_patterns": [
+    {
+      "pattern": "Schema-Guided Reasoning (SGR)",
+      "when_to_use": "When you need predictable, multi-step reasoning from an LLM, especially for data extraction, compliance checks, or complex routing.",
+      "failure_modes": [
+        "Requires models that support Structured Outputs (constrained decoding).",
+        "Overly complex schemas can cause parsing errors or timeouts in some APIs."
+      ],
+      "evidence_refs": [
+        "P0130"
+      ]
+    },
+    {
+      "pattern": "Engineering Harness for AI Coding",
+      "when_to_use": "When using autonomous coding agents (like Codex or Claude Code) on large or legacy codebases.",
+      "failure_modes": [
+        "Agents may ignore instructions if the context window is overwhelmed.",
+        "Requires upfront investment in documentation (AGENTS.md) and automated test suites."
+      ],
+      "evidence_refs": [
+        "P0098",
+        "P0232"
+      ]
+    },
+    {
+      "pattern": "Strategic Error Maps (Heatmaps) for Evals",
+      "when_to_use": "When iteratively improving an LLM pipeline (e.g., data extraction) to visualize which fields or documents are failing against Ground Truth.",
+      "failure_modes": [
+        "Requires a high-quality, manually verified Ground Truth dataset.",
+        "Can lead to overfitting if the test dataset is not diverse enough."
+      ],
+      "evidence_refs": [
+        "P0157",
+        "P0160"
+      ]
+    }
+  ],
+  "claims_and_positions": [
+    {
+      "claim": "Schema-Guided Reasoning (SGR) is more reliable and testable than standard Tool Calling for enterprise AI agents.",
+      "stance": "supports",
+      "decision_relevance": "Guides architectural choices for agentic workflows, favoring structured outputs over autonomous tool use.",
+      "dispute_risk": "medium",
+      "evidence_refs": [
+        "P0149",
+        "P0130"
+      ]
+    },
+    {
+      "claim": "The Model Context Protocol (MCP) is fundamentally flawed for reliable enterprise use because it introduces too many degrees of freedom and is difficult to test.",
+      "stance": "warns_against",
+      "decision_relevance": "Advises against adopting MCP for production systems requiring high reliability.",
+      "dispute_risk": "high",
+      "evidence_refs": [
+        "P0107"
+      ]
+    },
+    {
+      "claim": "Local models (even as small as 4B-8B parameters) can perform at SOTA levels if guided by SGR and constrained decoding.",
+      "stance": "supports",
+      "decision_relevance": "Encourages the use of smaller, cheaper, privacy-preserving local models for specific enterprise tasks.",
+      "dispute_risk": "medium",
+      "evidence_refs": [
+        "P0144"
+      ]
+    }
+  ],
+  "source_utility": {
+    "best_use_cases": [
+      "Designing enterprise-grade, reliable AI agent architectures.",
+      "Implementing Schema-Guided Reasoning (SGR) with Structured Outputs.",
+      "Setting up evaluation frameworks and feedback loops for AI pipelines.",
+      "Establishing engineering practices for AI-assisted coding on large projects."
+    ],
+    "bad_use_cases": [
+      "Learning how to use LangChain, LangGraph, or AutoGen (expert actively avoids them).",
+      "Prompt engineering for creative writing or open-ended chat.",
+      "Fine-tuning models (expert prefers prompt/schema engineering and RAG)."
+    ],
+    "retrieval_keywords": [
+      "Schema-Guided Reasoning",
+      "SGR",
+      "Structured Outputs",
+      "Engineering Harness",
+      "Enterprise RAG Challenge",
+      "ERC",
+      "Evals",
+      "Feedback Loop",
+      "Vibe coding",
+      "Domain-Driven Design",
+      "DDD"
+    ],
+    "source_selection_hints": [
+      "Select when the user needs highly pragmatic, production-tested advice on making LLMs reliable.",
+      "Select when the user is struggling with agent hallucinations and needs a structured architectural approach."
+    ],
+    "expected_overlap_hypotheses": [
+      "May overlap with experts discussing Structured Outputs or Pydantic for LLMs.",
+      "May overlap with experts discussing AI coding tools like Cursor or Codex."
+    ],
+    "recommended_panex_role": "primary_expert"
+  },
+  "community_signal": {
+    "comment_themes": [
+      "High engagement with the Enterprise RAG Challenge (ERC) and Personal Agent Challenge (PAC).",
+      "Discussions on running local models (Qwen, Llama, Gemma) and hardware requirements (VRAM, GPUs).",
+      "Debates on SGR vs. Tool Calling and the limitations of frameworks like LangChain.",
+      "Sharing experiences and struggles with AI coding tools (Cursor, Codex, Claude Code)."
+    ],
+    "questions_from_audience": [
+      "How to implement SGR in languages other than Python?",
+      "How to handle context window limits in long-running agents?",
+      "How to evaluate agents automatically without relying on LLM-as-a-judge?"
+    ],
+    "disagreements_or_corrections": [
+      "Some community members defend Tool Calling and frameworks like LangGraph against the expert's preference for SGR and custom code.",
+      "Debates on whether 'vibe coding' is truly dead or just evolving."
+    ],
+    "practical_feedback": [
+      "Community members actively fork and improve the expert's open-source agent templates.",
+      "Users report significant accuracy improvements when switching to SGR in their own projects."
+    ],
+    "noise_or_low_value_patterns": [
+      "Occasional off-topic hardware troubleshooting questions."
+    ],
+    "evidence_refs": [
+      "P0149",
+      "P0181",
+      "P0232",
+      "P0266"
+    ]
+  },
+  "admission_implications": {
+    "if_candidate_verdict": "accept",
+    "verdict_rationale": "The expert provides exceptionally deep, practical, and battle-tested insights into AI engineering. The focus on reliability, evals, and Schema-Guided Reasoning (SGR) offers a highly valuable, anti-hype perspective that is crucial for enterprise AI adoption.",
+    "unique_value_claims_to_verify_against_matrix": [
+      "Pioneering and formalizing Schema-Guided Reasoning (SGR) as a distinct architectural pattern."
+    ],
+    "likely_duplicate_areas_to_check": [
+      "General RAG architecture advice.",
+      "Basic usage of Structured Outputs."
+    ],
+    "minimum_followup_probe_queries": [
+      "Compare SGR with standard Tool Calling for agent reliability.",
+      "How to set up an engineering harness for AI coding agents."
+    ],
+    "risk_notes": [
+      "Strong bias against popular frameworks (LangChain, MCP) might alienate users looking for standard tutorials, but this is framed as a deliberate architectural choice."
+    ]
+  },
+  "audit": {
+    "unsupported_or_weak_claims": [],
+    "abstentions": [],
+    "possible_model_errors": [],
+    "source_refs_used": [
+      "P0130",
+      "P0045",
+      "P0083",
+      "P0097",
+      "P0099",
+      "P0123",
+      "P0076",
+      "P0004",
+      "P0144",
+      "P0091",
+      "P0156",
+      "P0187",
+      "P0157",
+      "P0160",
+      "P0162",
+      "P0149",
+      "P0107",
+      "P0098",
+      "P0232",
+      "P0266"
+    ],
+    "source_refs_most_important": [
+      "P0130",
+      "P0123",
+      "P0098",
+      "P0157",
+      "P0149"
+    ],
+    "normalization_notes": [
+      {
+        "operation": "repair_matrix_export_from_matrix_cells",
+        "repaired_cell_count": 0,
+        "repaired_cell_ids": [],
+        "skipped_cell_count": 0,
+        "skipped_cells": []
+      },
+      {
+        "operation": "hydrate_source_ref_index_used",
+        "hydrated_ref_count": 3,
+        "generated_at_set_from_manifest": "2026-05-10T19:01:01.792898+00:00"
+      }
+    ]
+  }
+}

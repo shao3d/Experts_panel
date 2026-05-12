@@ -1,0 +1,348 @@
+{
+  "channel_username": "countwithsasha",
+  "coverage": {
+    "agent_ops": 147,
+    "ai_engineering_infra": 16,
+    "ai_product_pm": 47,
+    "ai_ux_workflow": 23,
+    "business_adoption": 92,
+    "coding_agents": 94,
+    "creative_multimodal": 13,
+    "evals_quality": 31,
+    "general_ai_news": 2,
+    "model_landscape": 201,
+    "rag_retrieval_knowledge": 20,
+    "security_privacy_governance": 47
+  },
+  "coverage_strength": {
+    "agent_ops": "strong",
+    "ai_engineering_infra": "medium",
+    "ai_product_pm": "strong",
+    "ai_ux_workflow": "medium",
+    "business_adoption": "strong",
+    "coding_agents": "strong",
+    "creative_multimodal": "medium",
+    "evals_quality": "medium",
+    "general_ai_news": "thin",
+    "model_landscape": "strong",
+    "rag_retrieval_knowledge": "medium",
+    "security_privacy_governance": "strong"
+  },
+  "date_range": {
+    "first_post": "2024-06-26",
+    "last_post": "2026-05-04"
+  },
+  "depth_profile": {
+    "announcement_or_news": 8,
+    "architecture_analysis": 13,
+    "benchmark_or_eval": 30,
+    "case_study": 132,
+    "howto_or_checklist": 32,
+    "low_signal": 55,
+    "practitioner_experience": 40,
+    "tool_release": 0
+  },
+  "display_name": "Polyakov",
+  "embedding_count": 261,
+  "embedding_coverage_ratio": 1.0,
+  "expert_id": "polyakov",
+  "fts_count": 261,
+  "metadata_coverage_ratio": 0.6452,
+  "metadata_valid_count": 200,
+  "post_count": 310,
+  "representative_posts": [
+    {
+      "coverage_labels": [
+        "evals_quality",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-15",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "**Почему Claude не должен проверять код Claude (подставить сюда любого** **провайдера LLM)** Короче кажется можно ставить точку в обсуждениях оценок, которые модели ставят самим себе. И точка будет в виде пейпера Prior Prejudice (ACL 2026, UIUC). Ссылка: https://uiuc-conversational-ai-lab.github.io/prior-prejudice/...",
+      "reason": "evals_quality, model_landscape; depth=benchmark_or_eval",
+      "telegram_message_id": 587
+    },
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "business_adoption",
+        "ai_ux_workflow",
+        "model_landscape"
+      ],
+      "created_at": "2026-05-04",
+      "depth_label": "case_study",
+      "excerpt": "**GigaChat как сердце агента: подключить получилось, пользоваться нет** На прошлой неделе я писал, что Алиса [пока больше похожа на воркфлоу:](https://t.me/countwithsasha/626) сценарий есть, а нормальной работы с нечеткими задачами нет. Я уже тогда захотел чекнуть Гигачат, тормозил гемор с ротацией API ключей. Вчера...",
+      "reason": "agent_ops, business_adoption, ai_ux_workflow; depth=case_study",
+      "telegram_message_id": 633
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "model_landscape"
+      ],
+      "created_at": "2026-05-02",
+      "depth_label": "case_study",
+      "excerpt": "**У Codex появились питомцы: новая жизнь скрепки в кодинг-агентах** OpenAI добавила в Codex «питомцев» — маленькие анимации, которые живут поверх окон и показывают, что агент сейчас делает. 🐣 К**ак включить ** В Codex пишете: /`pet ` Или открываете S`ettings → Appearance → Pets.` По умолчанию там уже есть 8 встроенн...",
+      "reason": "coding_agents, agent_ops, model_landscape; depth=case_study",
+      "telegram_message_id": 629
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "business_adoption",
+        "security_privacy_governance",
+        "model_landscape"
+      ],
+      "created_at": "2026-05-01",
+      "depth_label": "case_study",
+      "excerpt": "**Manus внезапно стал нормальным инструментом для ежедневного рисёрча** Год назад я [писал про Manus](https://t.me/countwithsasha/235) как про крутую идею, но не рабочий инструмент. За год сервис не стал прям идеальным. Кредиты всё ещё списываются мутно, результат всё ещё надо проверять. Но Manus уже не выглядит про...",
+      "reason": "coding_agents, agent_ops, business_adoption; depth=case_study",
+      "telegram_message_id": 628
+    },
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "ai_product_pm",
+        "ai_ux_workflow"
+      ],
+      "created_at": "2026-04-30",
+      "depth_label": "case_study",
+      "excerpt": "**Алиса прислала пуш: у нас агенты. Я сразу отправил её в барбершоп ** У Яндекса уже где-то полгода висел [анонс закрытой беты ИИ-агентов.](https://3dnews.ru/1131494/alisa-ai-poluchila-iiagentov-kotorie-broniruyut-uslugi-ishchut-skidki-i-provodyat-issledovaniya-po-zadaniyu-polzovatelya) Сегодня Алиса в приложении пр...",
+      "reason": "agent_ops, ai_product_pm, ai_ux_workflow; depth=case_study",
+      "telegram_message_id": 626
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "model_landscape",
+        "creative_multimodal"
+      ],
+      "created_at": "2026-04-30",
+      "depth_label": "case_study",
+      "excerpt": "**Сохраняемые посты апреля: топ-3 по пересылкам** Традиционный дайджест интересных постов за месяц. Измеряю контент процентом пересылок от просмотров: сколько людей унесли пост себе или коллеге. В апреле 33 поста, 80 234 просмотра, 2 897 пересылок. Просмотры выросли почти на 50%, а пересылки просели. 🥉 Т**ретье мест...",
+      "reason": "coding_agents, agent_ops, model_landscape; depth=case_study",
+      "telegram_message_id": 625
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "ai_product_pm",
+        "business_adoption",
+        "security_privacy_governance",
+        "ai_engineering_infra",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-27",
+      "depth_label": "case_study",
+      "excerpt": "**Эра дешёвого кода: какие сервисы сейчас пилить** Вчера цитировал пост коллеги про рост объёмов кода: пишется куча, до продукта доходит почти ничего. Ценность простого SaaS, где магия была в коде и интерфейсе, снижается. 🎯 Д**ано ** В* 2017 я на коленке собрал сервис по импорту товаров из фидов в маркетплейс ВК, сс...",
+      "reason": "coding_agents, agent_ops, ai_product_pm; depth=case_study",
+      "telegram_message_id": 616
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-29",
+      "depth_label": "case_study",
+      "excerpt": "**Как оживить битые Cowork-сессии Claude после переезда аккаунта ** После бана Claude я продолжил пересадку мозгов между аккаунтами. С Claude Code App всё было относительно просто: перенёс локальные индексы — сессии появились. С Cowork оказалось веселее. Там сессия — это не один файл, а связка из индекса, рабочей па...",
+      "reason": "coding_agents, agent_ops, model_landscape; depth=case_study",
+      "telegram_message_id": 624
+    }
+  ],
+  "runtime_readiness": {
+    "embeddings_ready": true,
+    "fts_ready": true,
+    "metadata_advisory_ready": true,
+    "text_posts_ready": true
+  },
+  "text_post_count": 261,
+  "top_concepts": [
+    {
+      "count": 26,
+      "value": "Prompt Engineering"
+    },
+    {
+      "count": 25,
+      "value": "Automation"
+    },
+    {
+      "count": 17,
+      "value": "LLM"
+    },
+    {
+      "count": 14,
+      "value": "AI Agents"
+    },
+    {
+      "count": 11,
+      "value": "API"
+    },
+    {
+      "count": 10,
+      "value": "Generative AI"
+    },
+    {
+      "count": 7,
+      "value": "Data Privacy"
+    },
+    {
+      "count": 7,
+      "value": "Fine-tuning"
+    },
+    {
+      "count": 6,
+      "value": "Data Analysis"
+    },
+    {
+      "count": 6,
+      "value": "API Integration"
+    },
+    {
+      "count": 6,
+      "value": "Prompt Injection"
+    },
+    {
+      "count": 6,
+      "value": "Advertising"
+    }
+  ],
+  "top_keywords": [
+    {
+      "count": 64,
+      "value": "claude"
+    },
+    {
+      "count": 55,
+      "value": "llm"
+    },
+    {
+      "count": 40,
+      "value": "code"
+    },
+    {
+      "count": 39,
+      "value": "api"
+    },
+    {
+      "count": 38,
+      "value": "openai"
+    },
+    {
+      "count": 37,
+      "value": "prompt"
+    },
+    {
+      "count": 36,
+      "value": "автоматизация"
+    },
+    {
+      "count": 35,
+      "value": "automation"
+    },
+    {
+      "count": 32,
+      "value": "chatgpt"
+    },
+    {
+      "count": 30,
+      "value": "промпт"
+    },
+    {
+      "count": 29,
+      "value": "разработка"
+    },
+    {
+      "count": 29,
+      "value": "development"
+    },
+    {
+      "count": 29,
+      "value": "generation"
+    },
+    {
+      "count": 25,
+      "value": "search"
+    },
+    {
+      "count": 24,
+      "value": "yandex"
+    },
+    {
+      "count": 24,
+      "value": "модели"
+    },
+    {
+      "count": 23,
+      "value": "advertising"
+    },
+    {
+      "count": 22,
+      "value": "agent"
+    },
+    {
+      "count": 22,
+      "value": "data"
+    },
+    {
+      "count": 22,
+      "value": "генерация"
+    }
+  ],
+  "top_primary_topics": [
+    {
+      "count": 19,
+      "value": "AI Agents"
+    },
+    {
+      "count": 6,
+      "value": "AI Automation"
+    },
+    {
+      "count": 6,
+      "value": "Generative AI"
+    },
+    {
+      "count": 6,
+      "value": "AI Coding"
+    },
+    {
+      "count": 5,
+      "value": "AI Development"
+    },
+    {
+      "count": 4,
+      "value": "AI Implementation"
+    },
+    {
+      "count": 4,
+      "value": "Web Scraping"
+    },
+    {
+      "count": 4,
+      "value": "AI Search"
+    },
+    {
+      "count": 4,
+      "value": "Video Generation"
+    },
+    {
+      "count": 3,
+      "value": "Data Analytics"
+    },
+    {
+      "count": 3,
+      "value": "Claude Code"
+    },
+    {
+      "count": 3,
+      "value": "AI Video Generation"
+    }
+  ],
+  "warnings": []
+}

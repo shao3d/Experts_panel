@@ -1,0 +1,328 @@
+{
+  "channel_username": "gleb_pro_ai",
+  "coverage": {
+    "agent_ops": 116,
+    "ai_engineering_infra": 19,
+    "ai_product_pm": 31,
+    "ai_ux_workflow": 9,
+    "business_adoption": 34,
+    "coding_agents": 129,
+    "creative_multimodal": 1,
+    "evals_quality": 7,
+    "general_ai_news": 10,
+    "model_landscape": 127,
+    "rag_retrieval_knowledge": 11,
+    "security_privacy_governance": 7
+  },
+  "coverage_strength": {
+    "agent_ops": "strong",
+    "ai_engineering_infra": "medium",
+    "ai_product_pm": "medium",
+    "ai_ux_workflow": "thin",
+    "business_adoption": "medium",
+    "coding_agents": "strong",
+    "creative_multimodal": "thin",
+    "evals_quality": "thin",
+    "general_ai_news": "thin",
+    "model_landscape": "strong",
+    "rag_retrieval_knowledge": "thin",
+    "security_privacy_governance": "thin"
+  },
+  "date_range": {
+    "first_post": "2025-05-02",
+    "last_post": "2026-05-04"
+  },
+  "depth_profile": {
+    "announcement_or_news": 80,
+    "architecture_analysis": 52,
+    "benchmark_or_eval": 7,
+    "case_study": 16,
+    "howto_or_checklist": 170,
+    "low_signal": 100,
+    "practitioner_experience": 39,
+    "tool_release": 8
+  },
+  "display_name": "Glebkudr",
+  "embedding_count": 455,
+  "embedding_coverage_ratio": 1.0,
+  "expert_id": "glebkudr",
+  "fts_count": 455,
+  "metadata_coverage_ratio": 0.7712,
+  "metadata_valid_count": 364,
+  "post_count": 472,
+  "representative_posts": [
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops"
+      ],
+      "created_at": "2026-04-24",
+      "depth_label": "case_study",
+      "excerpt": "🚀 Серия соревнований по МЛ и научный проект ! Денежный призовой фонд больше 150 000 р и будет расти ! Кому интересен МЛ/RL или математика или пазлы или роботы. Приглашаем Вас принять участие в серии челленджей и развитии научного опен-соурс проекта. Соревнование организуется совместно с учеными лаборатории интеллект...",
+      "reason": "coding_agents, agent_ops; depth=case_study",
+      "telegram_message_id": 528
+    },
+    {
+      "coverage_labels": [
+        "ai_engineering_infra"
+      ],
+      "created_at": "2026-04-28",
+      "depth_label": "practitioner_experience",
+      "excerpt": "Помню, [Валера](http://t.me/neuraldeep) говорил мне, что предпочитает кодить из-под терминала прямо на проде. Год назад это было. Я тогда думаю — фига гик, я вообще не из таких. И вот, кажется я познал этот дзен 😁 Из-под терминала нет, но кодекс у меня в прод/околопрод средах пасется значительно чаще чем в локалке....",
+      "reason": "ai_engineering_infra; depth=practitioner_experience",
+      "telegram_message_id": 538
+    },
+    {
+      "coverage_labels": [
+        "model_landscape"
+      ],
+      "created_at": "2026-04-24",
+      "depth_label": "practitioner_experience",
+      "excerpt": "Я знаю, я вас задолбал OCR-ами, но вы посмотрите, какая красота 🙂 Новая модель, какая — не скажу, секрет. Прекрасно справляется с рукописным вводом. Для этой модельки выцыганил у @evilfreelancer карточку 4090 на 48гб. Хотя я вам скажу, наверняка заведется и на 24, буду еще это выяснять. В проде пока нет, мб туда доб...",
+      "reason": "model_landscape; depth=practitioner_experience",
+      "telegram_message_id": 531
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "business_adoption"
+      ],
+      "created_at": "2026-04-28",
+      "depth_label": "howto_or_checklist",
+      "excerpt": "Последнее время взял курс на оптимизацию подписок и каких-то левых затрат. Докладываюсь. 1) полный клон сайта из webflow и экспорт его пятым кулифай контейнером на дешманский vps -> 1 час работы, экономия 20 баксов в месяц. 2) переезд другого сайта вторым контейнером на другой дешманский vps -> экономия 60 баксов в...",
+      "reason": "coding_agents, business_adoption; depth=howto_or_checklist",
+      "telegram_message_id": 537
+    },
+    {
+      "coverage_labels": [
+        "ai_product_pm"
+      ],
+      "created_at": "2026-04-27",
+      "depth_label": "howto_or_checklist",
+      "excerpt": "Сначала лэндинг, потом онбординг, потом пэйволл, и только потом можно делать продукт, товарищи. Так и только так 🙂 Это не значит, что в таком состоянии его нужно релизить или даже проверять (эпоха получения сигнала только лишь с лэнда кмк прошла). Это значит, что мыслить нужно воронкой продажи, и она вам сильно помо...",
+      "reason": "ai_product_pm; depth=howto_or_checklist",
+      "telegram_message_id": 534
+    },
+    {
+      "coverage_labels": [
+        "ai_ux_workflow",
+        "ai_engineering_infra"
+      ],
+      "created_at": "2026-04-27",
+      "depth_label": "howto_or_checklist",
+      "excerpt": "**Сделал для SotaOCR возможность развертывания на своем сервере** — Никаких проблем с персоналкой, все у вас в контуре — Еще дешевле за объем, вплоть до 0.1р за страницу — удобный UX операторов + работа по АПИ внутри вашей сети — Помогу в запуске и развертывании нужных для вас моделей Модели кайф, я почти не встреча...",
+      "reason": "ai_ux_workflow, ai_engineering_infra; depth=howto_or_checklist",
+      "telegram_message_id": 532
+    },
+    {
+      "coverage_labels": [
+        "model_landscape"
+      ],
+      "created_at": "2026-04-23",
+      "depth_label": "architecture_analysis",
+      "excerpt": "Я знаю, вы обожаете OCR модельки прямо как я 😁 А выходят они не реже, чем LLM, так-то. Фиг уследишь. Поэтому что? Правильно. Новая SOTA каждый день. На этот раз в рейтинге вылез I[nfinity Parser 2 ](https://huggingface.co/infly/Infinity-Parser2-Pro) Хорошо — полный оупенсорс, можно юзать для коммерции. Плохо — модел...",
+      "reason": "model_landscape; depth=architecture_analysis",
+      "telegram_message_id": 525
+    },
+    {
+      "coverage_labels": [
+        "model_landscape"
+      ],
+      "created_at": "2026-04-14",
+      "depth_label": "architecture_analysis",
+      "excerpt": "Короче я распробовал 5.4 pro. Это та моделька, которая доступна только в вебе на подписках за 100+ баксов. Что делаю: 1) Кидаю ей зип файлики с репозиторием (как раньше склееные тексты в шотгане). Пишу — вот код, вот задача, поработай с ним, дай измененные файлы. Она их ловит, шуршит долго-долго, и пуляется файликам...",
+      "reason": "model_landscape; depth=architecture_analysis",
+      "telegram_message_id": 512
+    }
+  ],
+  "runtime_readiness": {
+    "embeddings_ready": true,
+    "fts_ready": true,
+    "metadata_advisory_ready": true,
+    "text_posts_ready": true
+  },
+  "text_post_count": 455,
+  "top_concepts": [
+    {
+      "count": 54,
+      "value": "Prompt Engineering"
+    },
+    {
+      "count": 28,
+      "value": "Context Window"
+    },
+    {
+      "count": 22,
+      "value": "Debugging"
+    },
+    {
+      "count": 22,
+      "value": "Software Development"
+    },
+    {
+      "count": 19,
+      "value": "LLM"
+    },
+    {
+      "count": 16,
+      "value": "AI Agents"
+    },
+    {
+      "count": 16,
+      "value": "Code Generation"
+    },
+    {
+      "count": 14,
+      "value": "Automation"
+    },
+    {
+      "count": 14,
+      "value": "Software Architecture"
+    },
+    {
+      "count": 9,
+      "value": "Code Review"
+    },
+    {
+      "count": 8,
+      "value": "Authentication"
+    },
+    {
+      "count": 7,
+      "value": "Computer Vision"
+    }
+  ],
+  "top_keywords": [
+    {
+      "count": 95,
+      "value": "llm"
+    },
+    {
+      "count": 78,
+      "value": "разработка"
+    },
+    {
+      "count": 78,
+      "value": "development"
+    },
+    {
+      "count": 63,
+      "value": "prompt"
+    },
+    {
+      "count": 60,
+      "value": "code"
+    },
+    {
+      "count": 58,
+      "value": "coding"
+    },
+    {
+      "count": 55,
+      "value": "промпт"
+    },
+    {
+      "count": 52,
+      "value": "context"
+    },
+    {
+      "count": 45,
+      "value": "контекст"
+    },
+    {
+      "count": 39,
+      "value": "кодинг"
+    },
+    {
+      "count": 38,
+      "value": "модель"
+    },
+    {
+      "count": 38,
+      "value": "cursor"
+    },
+    {
+      "count": 37,
+      "value": "код"
+    },
+    {
+      "count": 36,
+      "value": "model"
+    },
+    {
+      "count": 33,
+      "value": "агенты"
+    },
+    {
+      "count": 33,
+      "value": "agents"
+    },
+    {
+      "count": 32,
+      "value": "neural"
+    },
+    {
+      "count": 32,
+      "value": "shotgun"
+    },
+    {
+      "count": 31,
+      "value": "gemini"
+    },
+    {
+      "count": 31,
+      "value": "ллм"
+    }
+  ],
+  "top_primary_topics": [
+    {
+      "count": 26,
+      "value": "AI Agents"
+    },
+    {
+      "count": 23,
+      "value": "AI Development"
+    },
+    {
+      "count": 21,
+      "value": "Software Development"
+    },
+    {
+      "count": 17,
+      "value": "AI Coding"
+    },
+    {
+      "count": 16,
+      "value": "Prompt Engineering"
+    },
+    {
+      "count": 9,
+      "value": "LLM Evaluation"
+    },
+    {
+      "count": 8,
+      "value": "LLM Optimization"
+    },
+    {
+      "count": 6,
+      "value": "LLM"
+    },
+    {
+      "count": 5,
+      "value": "OCR"
+    },
+    {
+      "count": 5,
+      "value": "LLM Development"
+    },
+    {
+      "count": 5,
+      "value": "LLM Integration"
+    },
+    {
+      "count": 4,
+      "value": "LLM API"
+    }
+  ],
+  "warnings": []
+}

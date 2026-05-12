@@ -1,0 +1,346 @@
+{
+  "channel_username": "llm_under_hood",
+  "coverage": {
+    "agent_ops": 143,
+    "ai_engineering_infra": 39,
+    "ai_product_pm": 69,
+    "ai_ux_workflow": 14,
+    "business_adoption": 129,
+    "coding_agents": 73,
+    "creative_multimodal": 4,
+    "evals_quality": 79,
+    "general_ai_news": 0,
+    "model_landscape": 218,
+    "rag_retrieval_knowledge": 57,
+    "security_privacy_governance": 34
+  },
+  "coverage_strength": {
+    "agent_ops": "strong",
+    "ai_engineering_infra": "medium",
+    "ai_product_pm": "strong",
+    "ai_ux_workflow": "medium",
+    "business_adoption": "strong",
+    "coding_agents": "strong",
+    "creative_multimodal": "thin",
+    "evals_quality": "strong",
+    "general_ai_news": "none",
+    "model_landscape": "strong",
+    "rag_retrieval_knowledge": "strong",
+    "security_privacy_governance": "medium"
+  },
+  "date_range": {
+    "first_post": "2025-01-03",
+    "last_post": "2026-05-03"
+  },
+  "depth_profile": {
+    "announcement_or_news": 28,
+    "architecture_analysis": 46,
+    "benchmark_or_eval": 78,
+    "case_study": 60,
+    "howto_or_checklist": 53,
+    "low_signal": 10,
+    "practitioner_experience": 39,
+    "tool_release": 7
+  },
+  "display_name": "Rinat",
+  "embedding_count": 321,
+  "embedding_coverage_ratio": 1.0,
+  "expert_id": "llm_under_hood",
+  "fts_count": 321,
+  "metadata_coverage_ratio": 0.8287,
+  "metadata_valid_count": 266,
+  "post_count": 321,
+  "representative_posts": [
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "evals_quality",
+        "business_adoption",
+        "security_privacy_governance"
+      ],
+      "created_at": "2026-04-29",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "**У меня есть гипотеза:** **cамый нудный и денежный слой AI-автоматизации на агентах в бизнесе сейчас не в чатботах, а в Excel/Google Sheets** Не в смысле \"сделайте мне красивую табличку\", а в смысле: - один отдел выгружает кривую таблицу - второй отдел руками приводит ее к другому формату - где-то рядом лежат прави...",
+      "reason": "agent_ops, evals_quality, business_adoption; depth=benchmark_or_eval",
+      "telegram_message_id": 825
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "evals_quality",
+        "ai_product_pm",
+        "business_adoption",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-17",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "**AI Ops или еще одна история про то, как AI выручает lean команды** В команде BitGN за платформу и техническое составляющую отвечаю пока только я. И, как выяснилось, интерес к открытой среде для тестирования и разработки надежных AI агентов сильно выше того, что ожидали. Во время соревнования в среднем запускали по...",
+      "reason": "coding_agents, agent_ops, evals_quality; depth=benchmark_or_eval",
+      "telegram_message_id": 812
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "ai_product_pm",
+        "business_adoption",
+        "ai_engineering_infra"
+      ],
+      "created_at": "2026-04-30",
+      "depth_label": "practitioner_experience",
+      "excerpt": "**У YCombinator заметно поменялось видение AI-стартапов** Весной их [Request For Startups](https://www.ycombinator.com/rfs) звучал как “AI-native компании могут быстрее делать дорогую работу”. > RFS == “*Мы видим индустрию изнутри, и вот в такие компании мы бы с радостью вложили много денег*” Отсюда был приоритет на...",
+      "reason": "coding_agents, agent_ops, ai_product_pm; depth=practitioner_experience",
+      "telegram_message_id": 826
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "rag_retrieval_knowledge",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-05",
+      "depth_label": "howto_or_checklist",
+      "excerpt": "**Karpathy написал классный gist про использование LLM для ведения баз знаний**: [LLM wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) Это отчасти совпадает с тем, как я использую OpenAI Codex для персонального ассистента ([Personal OS v2](https://t.me/llm_under_hood/750)), но есть и различия...",
+      "reason": "coding_agents, agent_ops, rag_retrieval_knowledge; depth=howto_or_checklist",
+      "telegram_message_id": 792
+    },
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "evals_quality"
+      ],
+      "created_at": "2026-04-11",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "**Основная часть конкурса BitGN PAC1 завершена**! Всем спасибо за участие! 20 хабам и больше 800 инженеров в 80 городов. Громче всех выступили Москва, Уфа и Вена. А суммарная нагрузка на сервера превысила в пике ERC3 раз в 20. Я был готов ко всему - что упремся в CPU, оперативку или диск. Но вы с таким энтузиазмом в...",
+      "reason": "agent_ops, evals_quality; depth=benchmark_or_eval",
+      "telegram_message_id": 806
+    },
+    {
+      "coverage_labels": [
+        "evals_quality"
+      ],
+      "created_at": "2026-04-11",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "Bitgn/Pac1-PROD - соревнование закрыто! Результаты в стриме через полчаса. **Оценки ваших ранов появятся примерно тогда же ** **Бенчмарк теперь в открытом режиме**, должен показывать ошибки и оценки на новых ранах. Ваш, @llm_under_hood 🤗",
+      "reason": "evals_quality; depth=benchmark_or_eval",
+      "telegram_message_id": 803
+    },
+    {
+      "coverage_labels": [
+        "evals_quality",
+        "security_privacy_governance"
+      ],
+      "created_at": "2026-04-11",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "**Утечка данных про BitGN/PAC1-PROD ** Спасибо Daniel за подсказку, что названия задач продовского бенчмарка торчали наружу (runtimes были закрыты). Я это дело прикрыл. Вряд ли много людей это видели. Но, чтобы было честнее - вот всем список типов задач, которые будут в проде: *• Knowledge ops: keep working knowledg...",
+      "reason": "evals_quality, security_privacy_governance; depth=benchmark_or_eval",
+      "telegram_message_id": 798
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "ai_product_pm",
+        "business_adoption",
+        "model_landscape"
+      ],
+      "created_at": "2026-05-03",
+      "depth_label": "case_study",
+      "excerpt": "**OpenCode + GPT 5.5 - ну не используйте вы субагентов!** В комментариях к [посту про эксперимент с рефакторингом](https://t.me/llm_under_hood/828) кода разными агентами, чаще всего просили запустить OpenCode + GPT 5.5. Запустил в режиме High на том же коммите с тем же промптом: > Scan through the repository on a hi...",
+      "reason": "coding_agents, agent_ops, ai_product_pm; depth=case_study",
+      "telegram_message_id": 829
+    }
+  ],
+  "runtime_readiness": {
+    "embeddings_ready": true,
+    "fts_ready": true,
+    "metadata_advisory_ready": true,
+    "text_posts_ready": true
+  },
+  "text_post_count": 321,
+  "top_concepts": [
+    {
+      "count": 25,
+      "value": "Prompt Engineering"
+    },
+    {
+      "count": 21,
+      "value": "Benchmarking"
+    },
+    {
+      "count": 21,
+      "value": "Reasoning"
+    },
+    {
+      "count": 18,
+      "value": "LLM"
+    },
+    {
+      "count": 15,
+      "value": "Software Development"
+    },
+    {
+      "count": 15,
+      "value": "AI Agents"
+    },
+    {
+      "count": 14,
+      "value": "RAG"
+    },
+    {
+      "count": 13,
+      "value": "Chain of Thought"
+    },
+    {
+      "count": 12,
+      "value": "Structured Output"
+    },
+    {
+      "count": 12,
+      "value": "Structured Outputs"
+    },
+    {
+      "count": 11,
+      "value": "Evaluation"
+    },
+    {
+      "count": 10,
+      "value": "Agentic Workflow"
+    }
+  ],
+  "top_keywords": [
+    {
+      "count": 148,
+      "value": "llm"
+    },
+    {
+      "count": 71,
+      "value": "rag"
+    },
+    {
+      "count": 71,
+      "value": "reasoning"
+    },
+    {
+      "count": 69,
+      "value": "агенты"
+    },
+    {
+      "count": 69,
+      "value": "agents"
+    },
+    {
+      "count": 50,
+      "value": "models"
+    },
+    {
+      "count": 49,
+      "value": "разработка"
+    },
+    {
+      "count": 45,
+      "value": "бенчмарк"
+    },
+    {
+      "count": 42,
+      "value": "language"
+    },
+    {
+      "count": 42,
+      "value": "sgr"
+    },
+    {
+      "count": 41,
+      "value": "benchmark"
+    },
+    {
+      "count": 40,
+      "value": "openai"
+    },
+    {
+      "count": 39,
+      "value": "модели"
+    },
+    {
+      "count": 38,
+      "value": "prompt"
+    },
+    {
+      "count": 37,
+      "value": "development"
+    },
+    {
+      "count": 36,
+      "value": "large"
+    },
+    {
+      "count": 36,
+      "value": "enterprise"
+    },
+    {
+      "count": 35,
+      "value": "structured"
+    },
+    {
+      "count": 34,
+      "value": "промпт"
+    },
+    {
+      "count": 33,
+      "value": "code"
+    }
+  ],
+  "top_primary_topics": [
+    {
+      "count": 35,
+      "value": "AI Agents"
+    },
+    {
+      "count": 27,
+      "value": "LLM Benchmarking"
+    },
+    {
+      "count": 14,
+      "value": "AI Coding"
+    },
+    {
+      "count": 14,
+      "value": "Enterprise RAG"
+    },
+    {
+      "count": 6,
+      "value": "Prompt Engineering"
+    },
+    {
+      "count": 6,
+      "value": "Schema-Guided Reasoning"
+    },
+    {
+      "count": 6,
+      "value": "RAG"
+    },
+    {
+      "count": 6,
+      "value": "LLM Engineering"
+    },
+    {
+      "count": 5,
+      "value": "Autonomous Agents"
+    },
+    {
+      "count": 5,
+      "value": "LLM Reasoning"
+    },
+    {
+      "count": 5,
+      "value": "LLM Optimization"
+    },
+    {
+      "count": 4,
+      "value": "Structured Outputs"
+    }
+  ],
+  "warnings": []
+}

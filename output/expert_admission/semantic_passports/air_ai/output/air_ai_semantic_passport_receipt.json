@@ -1,0 +1,74 @@
+{
+  "created_at": "2026-05-09T21:29:42.260077+00:00",
+  "packet_dir": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/air_ai/input",
+  "prompt_path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/air_ai/input/air_ai_vertex_prompt.md",
+  "model": "gemini-3.1-pro-preview",
+  "project_id": "project-05d8e46e-231b-43f9-8e1",
+  "location": "global",
+  "count_tokens": {
+    "started_at": "2026-05-09T21:29:29.923990+00:00",
+    "finished_at": "2026-05-09T21:29:42.259437+00:00",
+    "response": {
+      "totalTokens": 293895,
+      "totalBillableCharacters": 704367,
+      "promptTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 293895
+        }
+      ]
+    }
+  },
+  "generate": {
+    "started_at": "2026-05-09T21:29:42.260134+00:00",
+    "finished_at": "2026-05-09T21:31:35.634570+00:00",
+    "generation_config": {
+      "temperature": 0.1,
+      "candidateCount": 1,
+      "maxOutputTokens": 65536,
+      "responseMimeType": "application/json"
+    },
+    "usage_metadata": {
+      "promptTokenCount": 293895,
+      "candidatesTokenCount": 9840,
+      "totalTokenCount": 306900,
+      "trafficType": "ON_DEMAND",
+      "promptTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 293895
+        }
+      ],
+      "candidatesTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 9840
+        }
+      ],
+      "thoughtsTokenCount": 3165
+    },
+    "model_version": "gemini-3.1-pro-preview",
+    "finish_reason": "STOP",
+    "text_chars": 30010,
+    "json_parse_error": null,
+    "validation": {
+      "missing_required_top_level_keys": [],
+      "known_source_ref_count": 1509,
+      "used_source_ref_count": 20,
+      "source_ref_index_used_count": 19,
+      "unknown_source_refs": [],
+      "unknown_source_ref_count": 0,
+      "refs_missing_from_source_ref_index_used": [
+        "P0067"
+      ],
+      "refs_missing_from_source_ref_index_used_count": 1,
+      "matrix_export_cell_count": 2,
+      "bad_matrix_relative_novelty_values": [],
+      "passport_generated_at": "2026-05-09T21:28:57.130086+00:00",
+      "expected_generated_at": "2026-05-09T21:28:57.130086+00:00",
+      "generated_at_matches_expected": true,
+      "valid_basic_contract": false
+    }
+  },
+  "status": "generated"
+}

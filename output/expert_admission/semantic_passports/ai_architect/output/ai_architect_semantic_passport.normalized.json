@@ -1,0 +1,1108 @@
+{
+  "schema_version": "expert_value_passport.v1.1",
+  "passport_meta": {
+    "schema_version": "expert_value_passport.v1.1",
+    "expert_id": "ai_architect",
+    "display_name": "AI Architect",
+    "channel_username": "@the_ai_architect",
+    "model_assumed": "gemini-3.1-pro-preview",
+    "prompt_version": "semantic-passport-prompt.v1",
+    "generated_at": "2026-05-09T21:45:35.833423+00:00"
+  },
+  "corpus_audit": {
+    "post_count_seen": 227,
+    "comment_count_seen": 3866,
+    "date_range": {
+      "first_post": "2025-01-06 18:19:59.000000",
+      "last_post": "2026-05-03 09:13:15.000000"
+    },
+    "language_mix": [
+      "ru",
+      "en"
+    ],
+    "material_limitations": [],
+    "author_vs_community_boundary": "clear"
+  },
+  "source_ref_index_used": [
+    {
+      "source_ref": "P0053",
+      "source_kind": "expert_post",
+      "post_id": 236,
+      "telegram_message_id": 93,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-06-04 10:01:01.000000",
+      "why_used": "Details the expert's initial workflow using Cursor and AI Studio."
+    },
+    {
+      "source_ref": "P0054",
+      "source_kind": "expert_post",
+      "post_id": 237,
+      "telegram_message_id": 94,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-06-05 08:17:04.000000",
+      "why_used": "Highlights security risks of blind vibe-coding (leaking secrets)."
+    },
+    {
+      "source_ref": "P0056",
+      "source_kind": "expert_post",
+      "post_id": 239,
+      "telegram_message_id": 96,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-06-13 15:06:22.000000",
+      "why_used": "Introduces the core 'Plan & Act' methodology."
+    },
+    {
+      "source_ref": "P0061",
+      "source_kind": "expert_post",
+      "post_id": 244,
+      "telegram_message_id": 101,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-07-02 17:08:29.000000",
+      "why_used": "Discusses the transition from GUI IDEs to CLI agents and the concept of AI Coding."
+    },
+    {
+      "source_ref": "P0061.C0032",
+      "source_kind": "community_comment",
+      "post_id": 244,
+      "telegram_message_id": 101,
+      "comment_id": 1750,
+      "telegram_comment_id": 454,
+      "created_at": "2025-07-02 15:41:27.000000",
+      "why_used": "Expert explains why Cursor is inferior to CLI tools due to context manipulation."
+    },
+    {
+      "source_ref": "P0062",
+      "source_kind": "expert_post",
+      "post_id": 245,
+      "telegram_message_id": 102,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-07-07 08:09:01.000000",
+      "why_used": "Explains Context Engineering and how to manage context windows effectively."
+    },
+    {
+      "source_ref": "P0068",
+      "source_kind": "expert_post",
+      "post_id": 251,
+      "telegram_message_id": 108,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-07-28 08:11:01.000000",
+      "why_used": "Details the importance of documentation and rules (AGENTS.md) for AI agents."
+    },
+    {
+      "source_ref": "P0077",
+      "source_kind": "expert_post",
+      "post_id": 260,
+      "telegram_message_id": 117,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-11 08:44:01.000000",
+      "why_used": "Explains the 'Memory Bank' concept and feedback loops to save money on tokens."
+    },
+    {
+      "source_ref": "P0084",
+      "source_kind": "expert_post",
+      "post_id": 267,
+      "telegram_message_id": 126,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-18 08:34:01.000000",
+      "why_used": "Analyzes the security flaws in AI-generated code."
+    },
+    {
+      "source_ref": "P0085",
+      "source_kind": "expert_post",
+      "post_id": 268,
+      "telegram_message_id": 128,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-18 16:50:43.000000",
+      "why_used": "Provides rules for digital hygiene and automated security checks (SAST/SCA) in AI coding."
+    },
+    {
+      "source_ref": "P0093",
+      "source_kind": "expert_post",
+      "post_id": 276,
+      "telegram_message_id": 136,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-27 08:11:01.000000",
+      "why_used": "Summarizes insights on security, subscription models cutting quality, and context limits."
+    },
+    {
+      "source_ref": "P0099",
+      "source_kind": "expert_post",
+      "post_id": 282,
+      "telegram_message_id": 142,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-09-03 08:46:01.000000",
+      "why_used": "Deep dive into the 'Memory Bank' concept to solve agent amnesia."
+    },
+    {
+      "source_ref": "P0100",
+      "source_kind": "expert_post",
+      "post_id": 283,
+      "telegram_message_id": 143,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-09-03 16:10:47.000000",
+      "why_used": "Warns about MCP servers consuming massive amounts of context tokens."
+    },
+    {
+      "source_ref": "P0102",
+      "source_kind": "expert_post",
+      "post_id": 285,
+      "telegram_message_id": 145,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-09-04 16:13:01.000000",
+      "why_used": "Case study of a complex migration using AI agents in layers."
+    },
+    {
+      "source_ref": "P0105",
+      "source_kind": "expert_post",
+      "post_id": 288,
+      "telegram_message_id": 148,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-09-15 08:55:46.000000",
+      "why_used": "Discusses how to combat AI overengineering using strict rules and subagents."
+    },
+    {
+      "source_ref": "P0108",
+      "source_kind": "expert_post",
+      "post_id": 291,
+      "telegram_message_id": 151,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-10-06 15:59:48.000000",
+      "why_used": "Explains the mature 'Plan & Act' setup using Codex for planning and Claude Code for execution."
+    },
+    {
+      "source_ref": "P0120",
+      "source_kind": "expert_post",
+      "post_id": 690,
+      "telegram_message_id": 163,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-10-28 09:57:25.000000",
+      "why_used": "Demonstrates the use of a feedback loop with Stripe CLI for automated testing."
+    },
+    {
+      "source_ref": "P0122",
+      "source_kind": "expert_post",
+      "post_id": 729,
+      "telegram_message_id": 165,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-05 17:03:39.000000",
+      "why_used": "Discusses programmatic tool calling as a superior alternative to heavy MCP servers."
+    },
+    {
+      "source_ref": "P0123",
+      "source_kind": "expert_post",
+      "post_id": 730,
+      "telegram_message_id": 166,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-10 14:01:36.000000",
+      "why_used": "Explains how to delegate tasks to headless CLI agents to save context."
+    },
+    {
+      "source_ref": "P0124",
+      "source_kind": "expert_post",
+      "post_id": 731,
+      "telegram_message_id": 167,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-12 15:22:42.000000",
+      "why_used": "Tutorial on using subagents in Claude Code."
+    },
+    {
+      "source_ref": "P0133",
+      "source_kind": "expert_post",
+      "post_id": 2010,
+      "telegram_message_id": 180,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-27 14:06:32.000000",
+      "why_used": "Shows how to use tools like 'knip' to clean up dead code generated by AI."
+    },
+    {
+      "source_ref": "P0140",
+      "source_kind": "expert_post",
+      "post_id": 2393,
+      "telegram_message_id": 190,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-12-10 16:54:42.000000",
+      "why_used": "Provides a bash script to suppress test output and save context tokens."
+    },
+    {
+      "source_ref": "P0159.C0035",
+      "source_kind": "community_comment",
+      "post_id": 3159,
+      "telegram_message_id": 211,
+      "comment_id": 29722,
+      "telegram_comment_id": 4451,
+      "created_at": "2026-01-14 10:23:49.000000",
+      "why_used": "Community member highlights the difficulty of AI coding in strict languages like Rust compared to JS/Python."
+    },
+    {
+      "source_ref": "P0170",
+      "source_kind": "expert_post",
+      "post_id": 3170,
+      "telegram_message_id": 225,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-24 12:40:05.000000",
+      "why_used": "Philosophical shift: developers must become architects and reviewers, not just code translators."
+    },
+    {
+      "source_ref": "P0175",
+      "source_kind": "expert_post",
+      "post_id": 4425,
+      "telegram_message_id": 231,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-31 14:40:35.000000",
+      "why_used": "Expert defends Codex CLI and GPT-5.2, arguing that Cursor degrades model performance."
+    },
+    {
+      "source_ref": "P0186",
+      "source_kind": "expert_post",
+      "post_id": 4491,
+      "telegram_message_id": 244,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-10 20:17:44.000000",
+      "why_used": "Compares GPT-5.3 Codex (executor), Opus 4.6 (vibe-generalist), and GPT-5.2 (engineer/planner)."
+    },
+    {
+      "source_ref": "P0209",
+      "source_kind": "expert_post",
+      "post_id": 8023,
+      "telegram_message_id": 275,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-06 07:55:41.000000",
+      "why_used": "Calculates the ROI of AI coding: $90 and 1 day vs $533 and 3 days for a manual developer."
+    }
+  ],
+  "executive_summary": {
+    "one_sentence_positioning": "A deep practitioner and advocate of CLI-based AI coding agents who transforms chaotic 'vibe coding' into a structured, production-ready software development lifecycle (SDLC) using context engineering and deterministic feedback loops.",
+    "strongest_system_value": "Provides highly specific, battle-tested architectural patterns (Plan & Act, Memory Bank, programmatic tool calling) for managing context windows and orchestrating multiple AI agents in complex codebases.",
+    "weakest_system_value": "Focuses almost exclusively on the mechanics of AI-assisted coding and CLI tools, offering little value for general AI news, multimodal generation, or non-technical AI adoption.",
+    "best_fit_queries": [
+      "design_agentic_dev_workflow",
+      "choose_ai_coding_tool",
+      "learn_ai_assisted_development",
+      "optimize_inference_cost_latency"
+    ],
+    "poor_fit_queries": [
+      "compare_models_for_task"
+    ],
+    "confidence": 4.8
+  },
+  "expert_positioning": {
+    "primary_role": "AI Architect & Deep Practitioner",
+    "audience": [
+      "Software Engineers",
+      "Tech Leads",
+      "CTOs",
+      "Founders"
+    ],
+    "voice": [
+      "Pragmatic",
+      "Technical",
+      "Direct",
+      "Anti-hype"
+    ],
+    "worldview": [
+      "AI will not replace developers, but developers using AI will replace those who don't.",
+      "Blind 'vibe coding' leads to technical debt and security risks; structured SDLC is mandatory.",
+      "CLI agents (Claude Code, Codex CLI) are vastly superior to GUI IDEs (Cursor) for complex projects.",
+      "Context management (Memory Banks, suppressing logs) is the most critical skill in AI coding."
+    ],
+    "distinctive_angle": "Rejects the popular 'Cursor + Vibe Coding' trend in favor of a rigorous 'Plan & Act' methodology using CLI agents, explicit memory banks, and automated feedback loops.",
+    "recurring_formats": [
+      "Workflow breakdowns (Plan & Act)",
+      "Tool reviews and comparisons (Claude Code vs Codex CLI)",
+      "Practical tutorials (bash scripts, CLI commands)",
+      "Security and architecture warnings"
+    ],
+    "evidence_refs": [
+      "P0056",
+      "P0061",
+      "P0085",
+      "P0099",
+      "P0108",
+      "P0170"
+    ]
+  },
+  "knowledge_domains": [
+    {
+      "domain_id": "agent_ops",
+      "domain_name": "Agent Operations & Workflows",
+      "subdomain_ids": [
+        "agentic_dev_process",
+        "multi_agent_orchestration",
+        "tool_calling_hooks_skills"
+      ],
+      "query_intent_ids": [
+        "design_agentic_dev_workflow",
+        "build_human_ai_workflow"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "unique",
+      "what_the_expert_knows": [
+        "How to orchestrate multiple CLI agents (Planner, Generator, Evaluator) using the 'Plan & Act' methodology.",
+        "How to manage agent context windows using 'Memory Banks' (AGENTS.md, CLAUDE.md) to prevent amnesia and hallucination.",
+        "How to use programmatic tool calling (writing temporary scripts) instead of heavy MCP servers to save context tokens.",
+        "How to set up deterministic feedback loops (linters, type-checkers, tests) for agents to self-correct."
+      ],
+      "how_they_reason": [
+        "Prioritizes context economy: always looks for ways to reduce token usage (e.g., suppressing test outputs, using headless subagents).",
+        "Advocates for strict separation of concerns: planning must be done by reasoning models (GPT-5.2 High, Opus 4.6) before execution by coding models (Codex 5.3, Sonnet 4.5).",
+        "Believes in 'Human-in-the-loop' for architecture and review, but full automation for code generation and linting."
+      ],
+      "missing_or_weak_subtopics": [
+        "No-code/Low-code agent builders",
+        "Non-coding agent workflows (e.g., customer support agents)"
+      ],
+      "evidence_refs": [
+        "P0056",
+        "P0062",
+        "P0077",
+        "P0099",
+        "P0108",
+        "P0122",
+        "P0140"
+      ],
+      "confidence": 4.9
+    },
+    {
+      "domain_id": "coding_agents",
+      "domain_name": "AI Coding Tools & IDEs",
+      "subdomain_ids": [
+        "claude_code_workflows",
+        "codex_workflows",
+        "cursor_windsurf_copilot"
+      ],
+      "query_intent_ids": [
+        "choose_ai_coding_tool",
+        "learn_ai_assisted_development"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "Deep technical differences between Claude Code, Codex CLI, OpenCode, and Antigravity.",
+        "Why GUI tools like Cursor degrade model performance through hidden context manipulation and token saving.",
+        "How to configure and use Claude Code skills, subagents, and hooks.",
+        "How to run headless CLI agents to delegate research tasks and save main thread context."
+      ],
+      "how_they_reason": [
+        "Evaluates tools based on transparency, context control, and adherence to instructions rather than UI convenience.",
+        "Prefers CLI tools because they allow for custom bash scripting, piping, and integration into existing CI/CD pipelines."
+      ],
+      "missing_or_weak_subtopics": [
+        "In-depth tutorials on GUI IDEs (Cursor, Windsurf) since he actively avoids them."
+      ],
+      "evidence_refs": [
+        "P0061",
+        "P0061.C0032",
+        "P0123",
+        "P0124",
+        "P0175",
+        "P0186"
+      ],
+      "confidence": 4.8
+    },
+    {
+      "domain_id": "security_privacy_governance",
+      "domain_name": "Security & Governance in AI",
+      "subdomain_ids": [
+        "security_privacy_controls",
+        "quality_gates"
+      ],
+      "query_intent_ids": [
+        "manage_security_privacy_governance"
+      ],
+      "coverage_level": "moderate",
+      "depth_level": "practical",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "AI agents frequently generate vulnerable code (e.g., XSS) and leak secrets (.env files) if not strictly controlled.",
+        "How to implement automated security gates (gitleaks, SAST, SCA) as pre-commit hooks to block agent mistakes.",
+        "The necessity of manual code review for AI-generated code in production environments."
+      ],
+      "how_they_reason": [
+        "Treats AI agents like enthusiastic but reckless junior developers who need strict guardrails and automated supervision."
+      ],
+      "missing_or_weak_subtopics": [
+        "Enterprise compliance frameworks (SOC2, HIPAA) regarding AI.",
+        "Deep dive into specific cryptographic implementations."
+      ],
+      "evidence_refs": [
+        "P0054",
+        "P0084",
+        "P0085"
+      ],
+      "confidence": 4.5
+    }
+  ],
+  "value_dimensions": [
+    {
+      "dimension_id": "practical_specificity",
+      "score_0_5": 5,
+      "rationale": "Provides exact bash scripts (e.g., run_silent.sh), CLI commands, folder structures (.memory-bank/), and configuration snippets for tools like Claude Code and Codex CLI.",
+      "evidence_refs": [
+        "P0077",
+        "P0123",
+        "P0140"
+      ],
+      "confidence": 4.9
+    },
+    {
+      "dimension_id": "insight_density",
+      "score_0_5": 4.5,
+      "rationale": "Posts are highly concentrated with architectural insights, workflow optimizations, and critical evaluations of AI tools, avoiding generic fluff.",
+      "evidence_refs": [
+        "P0062",
+        "P0099",
+        "P0122",
+        "P0170"
+      ],
+      "confidence": 4.8
+    },
+    {
+      "dimension_id": "anti_hype_signal",
+      "score_0_5": 5,
+      "rationale": "Actively debunks the 'vibe coding' hype, emphasizing that AI coding requires strict SDLC, testing, documentation, and security checks. Criticizes popular tools like Cursor for hidden flaws.",
+      "evidence_refs": [
+        "P0054",
+        "P0085",
+        "P0093",
+        "P0175"
+      ],
+      "confidence": 4.9
+    },
+    {
+      "dimension_id": "technical_depth",
+      "score_0_5": 4.5,
+      "rationale": "Deeply understands context window mechanics, token economics, MCP server overhead, and the differences between reasoning and execution models.",
+      "evidence_refs": [
+        "P0062",
+        "P0100",
+        "P0122",
+        "P0140"
+      ],
+      "confidence": 4.7
+    },
+    {
+      "dimension_id": "decision_value",
+      "score_0_5": 4.5,
+      "rationale": "Provides clear frameworks for deciding when to use which model (e.g., GPT-5.2 for planning, Codex 5.3 for execution) and how to structure a project for AI.",
+      "evidence_refs": [
+        "P0056",
+        "P0108",
+        "P0186"
+      ],
+      "confidence": 4.6
+    }
+  ],
+  "matrix_cells": [
+    {
+      "domain_id": "agent_ops",
+      "subdomain_id": "agentic_dev_process",
+      "subdomain_name": "Agentic Development Process",
+      "query_intent_ids": [
+        "design_agentic_dev_workflow"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 4.5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4.5,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0056",
+        "P0077",
+        "P0099",
+        "P0108",
+        "P0140"
+      ],
+      "notes": "The 'Plan & Act' workflow and 'Memory Bank' context engineering are the core pillars of this expert's value."
+    },
+    {
+      "domain_id": "coding_agents",
+      "subdomain_id": "claude_code_workflows",
+      "subdomain_name": "Claude Code Workflows",
+      "query_intent_ids": [
+        "choose_ai_coding_tool",
+        "learn_ai_assisted_development"
+      ],
+      "depth_score_0_5": 4.5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 4.5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0124",
+        "P0133"
+      ],
+      "notes": "Detailed instructions on using subagents, skills, and hooks in Claude Code."
+    },
+    {
+      "domain_id": "coding_agents",
+      "subdomain_id": "codex_workflows",
+      "subdomain_name": "Codex CLI Workflows",
+      "query_intent_ids": [
+        "choose_ai_coding_tool",
+        "learn_ai_assisted_development"
+      ],
+      "depth_score_0_5": 4.5,
+      "practicality_score_0_5": 4.5,
+      "intrinsic_distinctiveness_score_0_5": 4.5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 4.5,
+      "comment_signal_score_0_5": 4.5,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0175",
+        "P0186"
+      ],
+      "notes": "Strong advocacy for Codex CLI over GUI tools, detailing how to use GPT-5.x models effectively."
+    },
+    {
+      "domain_id": "security_privacy_governance",
+      "subdomain_id": "security_privacy_controls",
+      "subdomain_name": "Security Controls in AI Coding",
+      "query_intent_ids": [
+        "manage_security_privacy_governance"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 4.5,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4.5,
+      "source_utility_score_0_5": 4,
+      "comment_signal_score_0_5": 3,
+      "recommended_matrix_weight": "normal",
+      "evidence_refs": [
+        "P0054",
+        "P0084",
+        "P0085"
+      ],
+      "notes": "Practical advice on implementing SAST, SCA, and gitleaks to prevent AI agents from committing vulnerable code or secrets."
+    }
+  ],
+  "query_intent_fit": [
+    {
+      "query_intent_id": "design_agentic_dev_workflow",
+      "query_intent_name": "Design Agentic Dev Workflow",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "agent_ops"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "The expert provides a complete, end-to-end methodology (Plan & Act) for orchestrating agents, managing context, and setting up feedback loops.",
+      "limitations": [
+        "Focuses heavily on CLI tools; less applicable for teams strictly using GUI IDEs like Cursor."
+      ],
+      "evidence_refs": [
+        "P0056",
+        "P0077",
+        "P0108"
+      ],
+      "confidence": 4.9
+    },
+    {
+      "query_intent_id": "choose_ai_coding_tool",
+      "query_intent_name": "Choose AI Coding Tool",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "coding_agents"
+      ],
+      "source_utility_score_0_5": 4.5,
+      "why": "Offers detailed comparisons between Claude Code, Codex CLI, OpenCode, and Cursor, highlighting the technical pros and cons of each.",
+      "limitations": [],
+      "evidence_refs": [
+        "P0061",
+        "P0175",
+        "P0186"
+      ],
+      "confidence": 4.8
+    },
+    {
+      "query_intent_id": "optimize_inference_cost_latency",
+      "query_intent_name": "Optimize Inference Cost and Latency",
+      "fit_role": "supporting",
+      "best_domain_ids": [
+        "agent_ops"
+      ],
+      "source_utility_score_0_5": 4,
+      "why": "Provides specific tactics to reduce token usage, such as suppressing test outputs, avoiding heavy MCP servers, and using headless subagents.",
+      "limitations": [
+        "Focuses on token economy in coding agents, not general LLM inference optimization."
+      ],
+      "evidence_refs": [
+        "P0100",
+        "P0122",
+        "P0140"
+      ],
+      "confidence": 4.5
+    }
+  ],
+  "content_quality_distribution": [
+    {
+      "category_id": "deep_practitioner",
+      "share_estimate_0_1": 0.4,
+      "system_value": "high",
+      "notes": "Detailed breakdowns of workflows, context management, and tool orchestration.",
+      "evidence_refs": [
+        "P0056",
+        "P0062",
+        "P0077",
+        "P0099",
+        "P0108"
+      ],
+      "confidence": 4.8
+    },
+    {
+      "category_id": "howto_or_checklist",
+      "share_estimate_0_1": 0.3,
+      "system_value": "high",
+      "notes": "Actionable guides on setting up tools, writing rules, and configuring feedback loops.",
+      "evidence_refs": [
+        "P0085",
+        "P0123",
+        "P0124",
+        "P0140"
+      ],
+      "confidence": 4.7
+    },
+    {
+      "category_id": "tool_release_with_analysis",
+      "share_estimate_0_1": 0.2,
+      "system_value": "medium",
+      "notes": "Reviews of new models (GPT-5.x, Claude 4.x) and tools (Antigravity, OpenCode) with practical testing.",
+      "evidence_refs": [
+        "P0175",
+        "P0186"
+      ],
+      "confidence": 4.5
+    },
+    {
+      "category_id": "commentary",
+      "share_estimate_0_1": 0.1,
+      "system_value": "low",
+      "notes": "Opinions on the future of developers, market trends, and responses to other bloggers.",
+      "evidence_refs": [
+        "P0170",
+        "P0209"
+      ],
+      "confidence": 4.5
+    }
+  ],
+  "matrix_export": {
+    "schema_version": "knowledge_matrix_export.v1",
+    "expert_id": "ai_architect",
+    "cells": [
+      {
+        "cell_id": "agent_ops/agentic_dev_process/design_agentic_dev_workflow",
+        "domain_id": "agent_ops",
+        "subdomain_id": "agentic_dev_process",
+        "subdomain_name": "Agentic Development Process",
+        "query_intent_ids": [
+          "design_agentic_dev_workflow"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 5,
+          "evidence_quality": 4.5,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 4.5,
+          "anti_hype": 5,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0056",
+          "P0077",
+          "P0099",
+          "P0108"
+        ],
+        "confidence": 4.9
+      },
+      {
+        "cell_id": "coding_agents/claude_code_workflows/choose_ai_coding_tool",
+        "domain_id": "coding_agents",
+        "subdomain_id": "claude_code_workflows",
+        "subdomain_name": "Claude Code Workflows",
+        "query_intent_ids": [
+          "choose_ai_coding_tool",
+          "learn_ai_assisted_development"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 4.5,
+          "practicality": 5,
+          "evidence_quality": 4,
+          "source_utility": 4.5,
+          "intrinsic_distinctiveness": 4,
+          "anti_hype": 4,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0124",
+          "P0133"
+        ],
+        "confidence": 4.8
+      },
+      {
+        "cell_id": "coding_agents/codex_workflows/choose_ai_coding_tool",
+        "domain_id": "coding_agents",
+        "subdomain_id": "codex_workflows",
+        "subdomain_name": "Codex CLI Workflows",
+        "query_intent_ids": [
+          "choose_ai_coding_tool",
+          "learn_ai_assisted_development"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 4.5,
+          "practicality": 4.5,
+          "evidence_quality": 4,
+          "source_utility": 4.5,
+          "intrinsic_distinctiveness": 4.5,
+          "anti_hype": 4.5,
+          "community_signal": 4.5
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0175",
+          "P0186"
+        ],
+        "confidence": 4.8
+      },
+      {
+        "cell_id": "security_privacy_governance/security_privacy_controls/manage_security_privacy_governance",
+        "domain_id": "security_privacy_governance",
+        "subdomain_id": "security_privacy_controls",
+        "subdomain_name": "Security Controls in AI Coding",
+        "query_intent_ids": [
+          "manage_security_privacy_governance"
+        ],
+        "coverage_level": "moderate",
+        "depth_level": "practical",
+        "source_role": "supporting",
+        "scores": {
+          "depth": 4,
+          "practicality": 4.5,
+          "evidence_quality": 4.5,
+          "source_utility": 4,
+          "intrinsic_distinctiveness": 4,
+          "anti_hype": 5,
+          "community_signal": 3
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0054",
+          "P0084",
+          "P0085"
+        ],
+        "confidence": 4.5
+      }
+    ],
+    "compare_hints": {
+      "likely_unique_cells": [
+        "agent_ops/agentic_dev_process/design_agentic_dev_workflow"
+      ],
+      "likely_duplicate_cells": [],
+      "cells_requiring_probe": [],
+      "matrix_only_decision_confidence": "high"
+    }
+  },
+  "signature_insights": [
+    {
+      "insight": "The 'Plan & Act' workflow separates reasoning from execution: use a high-reasoning model (e.g., GPT-5.2 High) to create a detailed implementation plan, then use a coding model (e.g., Codex 5.3) to execute it.",
+      "why_it_matters_for_experts_panel": "Provides a structured, scalable alternative to chaotic 'vibe coding', reducing token waste and improving code quality.",
+      "applicable_query_types": [
+        "design_agentic_dev_workflow"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0056",
+        "P0108"
+      ],
+      "confidence": 4.9
+    },
+    {
+      "insight": "Context Engineering via 'Memory Banks' (AGENTS.md, CLAUDE.md) is essential to prevent AI agents from hallucinating or forgetting project architecture.",
+      "why_it_matters_for_experts_panel": "Solves the common problem of AI 'amnesia' across different chat sessions.",
+      "applicable_query_types": [
+        "design_agentic_dev_workflow",
+        "design_rag_knowledge_base"
+      ],
+      "novelty_level": "useful_packaging",
+      "evidence_refs": [
+        "P0068",
+        "P0077",
+        "P0099"
+      ],
+      "confidence": 4.8
+    },
+    {
+      "insight": "Programmatic tool calling (having the AI write and execute temporary scripts) is far more token-efficient than using heavy MCP servers.",
+      "why_it_matters_for_experts_panel": "Offers a practical solution to the problem of context window exhaustion and high API costs.",
+      "applicable_query_types": [
+        "optimize_inference_cost_latency",
+        "design_agentic_dev_workflow"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0100",
+        "P0122"
+      ],
+      "confidence": 4.7
+    },
+    {
+      "insight": "GUI IDEs like Cursor degrade model performance by manipulating context to save costs; CLI agents (Claude Code, Codex CLI) offer better control and model fidelity.",
+      "why_it_matters_for_experts_panel": "Challenges the mainstream popularity of Cursor, offering a technical rationale for preferring CLI tools.",
+      "applicable_query_types": [
+        "choose_ai_coding_tool"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0061",
+        "P0061.C0032",
+        "P0175"
+      ],
+      "confidence": 4.6
+    }
+  ],
+  "practical_patterns": [
+    {
+      "pattern": "Suppressing test output in feedback loops using a bash wrapper (`run_silent.sh`).",
+      "when_to_use": "When running automated tests in an AI agent loop to prevent the context window from filling up with 'TEST PASSED' logs.",
+      "failure_modes": [
+        "If the wrapper suppresses actual error details needed for debugging."
+      ],
+      "evidence_refs": [
+        "P0140"
+      ]
+    },
+    {
+      "pattern": "Delegating research tasks to headless CLI subagents.",
+      "when_to_use": "When you need the AI to explore a codebase or documentation without polluting the main chat's context window.",
+      "failure_modes": [
+        "If the subagent's output exceeds the headless mode response limits (mitigated by having the subagent write to a file)."
+      ],
+      "evidence_refs": [
+        "P0123"
+      ]
+    },
+    {
+      "pattern": "Using `knip` (or similar tools) to clean up dead code after an AI coding session.",
+      "when_to_use": "To remove unused types, interfaces, or functions left behind by iterative AI code generation.",
+      "failure_modes": [
+        "False positives from the tool deleting actually used code (requires manual review or strict type-checking afterward)."
+      ],
+      "evidence_refs": [
+        "P0133"
+      ]
+    }
+  ],
+  "claims_and_positions": [
+    {
+      "claim": "Cursor degrades the quality of GPT models by manipulating context to save on API costs.",
+      "stance": "warns_against",
+      "decision_relevance": "Crucial for teams deciding between GUI IDEs and CLI agents for AI coding.",
+      "dispute_risk": "high",
+      "evidence_refs": [
+        "P0061",
+        "P0061.C0032",
+        "P0175"
+      ]
+    },
+    {
+      "claim": "AI coding agents generate insecure code (e.g., XSS) regardless of model size, requiring automated SAST/SCA checks.",
+      "stance": "supports",
+      "decision_relevance": "Highlights the necessity of integrating security gates into AI development workflows.",
+      "dispute_risk": "low",
+      "evidence_refs": [
+        "P0084",
+        "P0085"
+      ]
+    },
+    {
+      "claim": "The role of a developer is shifting from writing code to acting as an architect and reviewer.",
+      "stance": "supports",
+      "decision_relevance": "Informs hiring, training, and team structure strategies in the AI era.",
+      "dispute_risk": "medium",
+      "evidence_refs": [
+        "P0170"
+      ]
+    }
+  ],
+  "source_utility": {
+    "best_use_cases": [
+      "Designing advanced, CLI-based agentic workflows for software development.",
+      "Managing context windows and token costs in AI coding.",
+      "Setting up automated feedback loops (testing, linting) for AI agents."
+    ],
+    "bad_use_cases": [
+      "Learning how to use GUI-based AI IDEs like Cursor or Windsurf.",
+      "General AI news or non-coding AI applications."
+    ],
+    "retrieval_keywords": [
+      "Plan & Act",
+      "Memory Bank",
+      "Claude Code",
+      "Codex CLI",
+      "Context Engineering",
+      "Feedback Loop",
+      "Subagents",
+      "Programmatic Tool Calling"
+    ],
+    "source_selection_hints": [
+      "Select this expert when the user asks about scaling AI coding beyond simple scripts, managing context limits, or orchestrating multiple agents in a CLI environment."
+    ],
+    "expected_overlap_hypotheses": [
+      "Will overlap with other AI coding experts on general model comparisons (e.g., Claude vs GPT).",
+      "Will overlap with DevOps experts on CI/CD and testing integration."
+    ],
+    "recommended_panex_role": "primary_expert"
+  },
+  "community_signal": {
+    "comment_themes": [
+      "Debates over the effectiveness of Cursor vs CLI tools (Claude Code, Codex CLI).",
+      "Sharing alternative tools and scripts (e.g., OpenCode, Cline, custom bash wrappers).",
+      "Discussions on the difficulty of AI coding in strict languages like Rust compared to JS/Python.",
+      "Concerns about the cost of tokens and strategies for acquiring cheaper API access."
+    ],
+    "questions_from_audience": [
+      "How to manage context when the project grows too large?",
+      "Which model is currently best for specific tasks (planning vs execution)?",
+      "How to set up specific tools (e.g., agent-browser, local models)?"
+    ],
+    "disagreements_or_corrections": [
+      "Some community members strongly defend Cursor, arguing that its UI benefits outweigh the context manipulation issues.",
+      "Debates on whether 'vibe coding' is a legitimate paradigm or just a recipe for technical debt."
+    ],
+    "practical_feedback": [
+      "Users confirm that the 'Plan & Act' methodology significantly reduces hallucinations.",
+      "Users share their own implementations of Memory Banks and subagent orchestration."
+    ],
+    "noise_or_low_value_patterns": [
+      "Frequent requests for links to buy cheap/shared accounts.",
+      "Jokes and memes about 'vibe coding' and AI taking jobs."
+    ],
+    "evidence_refs": [
+      "P0061.C0032",
+      "P0159.C0035",
+      "P0175",
+      "P0186"
+    ]
+  },
+  "admission_implications": {
+    "if_candidate_verdict": "accept",
+    "verdict_rationale": "The expert provides highly specific, actionable, and advanced methodologies for AI-assisted software engineering. His focus on CLI tools, context engineering, and structured SDLC offers a strong counter-narrative to the mainstream 'vibe coding' hype, making him a highly valuable primary source for technical workflows.",
+    "unique_value_claims_to_verify_against_matrix": [
+      "The 'Plan & Act' workflow as a distinct methodology.",
+      "The specific critique of Cursor's context handling compared to Codex CLI."
+    ],
+    "likely_duplicate_areas_to_check": [
+      "General comparisons of LLM coding capabilities (Claude vs GPT)."
+    ],
+    "minimum_followup_probe_queries": [
+      "Compare CLI-based AI coding agents (Claude Code, Codex CLI) with GUI IDEs (Cursor, Windsurf).",
+      "How to implement a Memory Bank for AI coding agents."
+    ],
+    "risk_notes": [
+      "The expert sells courses and workshops, which may introduce some bias, though he freely shares the core methodologies in his posts."
+    ]
+  },
+  "audit": {
+    "unsupported_or_weak_claims": [],
+    "abstentions": [],
+    "possible_model_errors": [],
+    "source_refs_used": [
+      "P0053",
+      "P0054",
+      "P0056",
+      "P0061",
+      "P0061.C0032",
+      "P0062",
+      "P0068",
+      "P0077",
+      "P0084",
+      "P0085",
+      "P0093",
+      "P0099",
+      "P0100",
+      "P0108",
+      "P0120",
+      "P0122",
+      "P0123",
+      "P0124",
+      "P0133",
+      "P0140",
+      "P0159.C0035",
+      "P0170",
+      "P0175",
+      "P0186",
+      "P0209"
+    ],
+    "source_refs_most_important": [
+      "P0056",
+      "P0062",
+      "P0077",
+      "P0099",
+      "P0108",
+      "P0122",
+      "P0175"
+    ],
+    "normalization_notes": [
+      {
+        "operation": "repair_matrix_export_from_matrix_cells",
+        "repaired_cell_count": 0,
+        "repaired_cell_ids": [],
+        "skipped_cell_count": 0,
+        "skipped_cells": []
+      },
+      {
+        "operation": "hydrate_source_ref_index_used",
+        "hydrated_ref_count": 0,
+        "generated_at_set_from_manifest": "2026-05-09T21:45:35.833423+00:00"
+      }
+    ]
+  }
+}

@@ -1,0 +1,1185 @@
+{
+  "schema_version": "expert_value_passport.v1.1",
+  "passport_meta": {
+    "schema_version": "expert_value_passport.v1.1",
+    "expert_id": "ai_grabli",
+    "display_name": "Tech_AI_grabli",
+    "channel_username": "@oestick",
+    "model_assumed": "gemini-3.1-pro-preview",
+    "prompt_version": "semantic-passport-prompt.v1",
+    "generated_at": "2026-05-10T17:12:36.997764+00:00"
+  },
+  "corpus_audit": {
+    "post_count_seen": 355,
+    "comment_count_seen": 2650,
+    "date_range": {
+      "first_post": "2024-01-10 03:55:21.000000",
+      "last_post": "2026-05-01 07:38:45.000000"
+    },
+    "language_mix": [
+      "ru",
+      "en"
+    ],
+    "material_limitations": [
+      "Only a subset of posts provided in the prompt corpus"
+    ],
+    "author_vs_community_boundary": "Clear boundary. The author frequently engages in comments under the name 'AI и грабли', clarifying technical details and debating approaches with a highly technical audience."
+  },
+  "source_ref_index_used": [
+    {
+      "source_ref": "P0091",
+      "source_kind": "expert_post",
+      "post_id": 2163,
+      "telegram_message_id": 154,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2024-08-24 19:35:49.000000",
+      "why_used": "Evidence of anti-hype stance regarding AI wrapper startups."
+    },
+    {
+      "source_ref": "P0161",
+      "source_kind": "expert_post",
+      "post_id": 2233,
+      "telegram_message_id": 234,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2024-11-29 19:48:01.000000",
+      "why_used": "Evidence of self-reflective voice and sharing failures."
+    },
+    {
+      "source_ref": "P0167",
+      "source_kind": "expert_post",
+      "post_id": 2239,
+      "telegram_message_id": 241,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2024-12-08 17:11:58.000000",
+      "why_used": "Evidence of practical pattern: using Google Sheets as an AI frontend."
+    },
+    {
+      "source_ref": "P0168",
+      "source_kind": "expert_post",
+      "post_id": 2240,
+      "telegram_message_id": 242,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2024-12-09 17:25:09.000000",
+      "why_used": "Evidence of practical specificity: providing Nginx configs for LLM proxies."
+    },
+    {
+      "source_ref": "P0174",
+      "source_kind": "expert_post",
+      "post_id": 2246,
+      "telegram_message_id": 250,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2024-12-14 21:14:11.000000",
+      "why_used": "Evidence of AI product management and pivoting the CommuniCare project."
+    },
+    {
+      "source_ref": "P0187",
+      "source_kind": "expert_post",
+      "post_id": 2259,
+      "telegram_message_id": 265,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-01-09 08:38:00.000000",
+      "why_used": "Evidence of Custom Chain of Thought pattern."
+    },
+    {
+      "source_ref": "P0203",
+      "source_kind": "expert_post",
+      "post_id": 2275,
+      "telegram_message_id": 285,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-02-13 11:05:18.000000",
+      "why_used": "Evidence of deep knowledge in Structured Output and logprobs."
+    },
+    {
+      "source_ref": "P0239",
+      "source_kind": "expert_post",
+      "post_id": 2311,
+      "telegram_message_id": 341,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-05-20 14:44:12.000000",
+      "why_used": "Evidence of practical pattern: using git diff to prime LLM context."
+    },
+    {
+      "source_ref": "P0245",
+      "source_kind": "expert_post",
+      "post_id": 2317,
+      "telegram_message_id": 352,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-06-05 12:53:59.000000",
+      "why_used": "Evidence of spec-driven development (vibe-coding without vibe-coding)."
+    },
+    {
+      "source_ref": "P0253",
+      "source_kind": "expert_post",
+      "post_id": 2325,
+      "telegram_message_id": 360,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-07-01 12:07:01.000000",
+      "why_used": "Evidence of AI project management methodology (splitting research and integration)."
+    },
+    {
+      "source_ref": "P0254",
+      "source_kind": "expert_post",
+      "post_id": 2326,
+      "telegram_message_id": 362,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-07-02 13:33:42.000000",
+      "why_used": "Evidence of undocumented hack to feed PDFs to Gemini via OpenAI-compatible API."
+    },
+    {
+      "source_ref": "P0255",
+      "source_kind": "expert_post",
+      "post_id": 2327,
+      "telegram_message_id": 363,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-07-02 18:40:18.000000",
+      "why_used": "Evidence of deep understanding of Gemini's native PDF processing limitations."
+    },
+    {
+      "source_ref": "P0259",
+      "source_kind": "expert_post",
+      "post_id": 2331,
+      "telegram_message_id": 369,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-07-15 11:28:42.000000",
+      "why_used": "Evidence of expertise in LLM evaluation pipelines and tools."
+    },
+    {
+      "source_ref": "P0261",
+      "source_kind": "expert_post",
+      "post_id": 2333,
+      "telegram_message_id": 372,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-07-20 11:43:51.000000",
+      "why_used": "Evidence of anti-hype stance, debunking a study claiming AI makes developers slower."
+    },
+    {
+      "source_ref": "P0280",
+      "source_kind": "expert_post",
+      "post_id": 2352,
+      "telegram_message_id": 397,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-25 09:41:00.000000",
+      "why_used": "Evidence of signature insight: RAG without embeddings."
+    },
+    {
+      "source_ref": "P0280.C0004",
+      "source_kind": "community_comment",
+      "post_id": 2352,
+      "telegram_message_id": 397,
+      "comment_id": 12845,
+      "telegram_comment_id": 1853,
+      "created_at": "2025-08-25 09:05:30.000000",
+      "why_used": "Evidence of community resonance and technical debate on RAG."
+    },
+    {
+      "source_ref": "P0289",
+      "source_kind": "expert_post",
+      "post_id": 2361,
+      "telegram_message_id": 406,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-09-15 20:35:26.000000",
+      "why_used": "Evidence of deep knowledge in MCP and subagents configuration."
+    },
+    {
+      "source_ref": "P0289.C0001",
+      "source_kind": "community_comment",
+      "post_id": 2361,
+      "telegram_message_id": 406,
+      "comment_id": 12619,
+      "telegram_comment_id": 2086,
+      "created_at": "2025-09-15 18:37:27.000000",
+      "why_used": "Evidence of community adding value to MCP discussions."
+    },
+    {
+      "source_ref": "P0299",
+      "source_kind": "expert_post",
+      "post_id": 2371,
+      "telegram_message_id": 421,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-02 05:49:23.000000",
+      "why_used": "Evidence of stance on AI coding as a management/architectural skill."
+    },
+    {
+      "source_ref": "P0300",
+      "source_kind": "expert_post",
+      "post_id": 2372,
+      "telegram_message_id": 422,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-05 15:43:32.000000",
+      "why_used": "Evidence of signature insight: using logprobs for LLM classification."
+    },
+    {
+      "source_ref": "P0300.C0016",
+      "source_kind": "community_comment",
+      "post_id": 2372,
+      "telegram_message_id": 422,
+      "comment_id": 12416,
+      "telegram_comment_id": 2469,
+      "created_at": "2025-11-05 15:15:47.000000",
+      "why_used": "Evidence of high-level technical community engagement regarding logprobs."
+    },
+    {
+      "source_ref": "P0316",
+      "source_kind": "expert_post",
+      "post_id": 2699,
+      "telegram_message_id": 445,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-12-23 07:10:37.000000",
+      "why_used": "Evidence of expert's tool preferences (Claude Code, Codex, Gemini, Granola)."
+    },
+    {
+      "source_ref": "P0324",
+      "source_kind": "expert_post",
+      "post_id": 3181,
+      "telegram_message_id": 455,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-27 11:23:26.000000",
+      "why_used": "Evidence of practical setup for mobile coding agents using OpenCode."
+    },
+    {
+      "source_ref": "P0333",
+      "source_kind": "expert_post",
+      "post_id": 5305,
+      "telegram_message_id": 465,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-18 13:30:55.000000",
+      "why_used": "Evidence of comparing coding agents (Codex, Claude Code, OpenCode)."
+    },
+    {
+      "source_ref": "P0337",
+      "source_kind": "expert_post",
+      "post_id": 7259,
+      "telegram_message_id": 473,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-03-12 08:24:56.000000",
+      "why_used": "Evidence of RFC-based flow and continuous agent training."
+    },
+    {
+      "source_ref": "P0338",
+      "source_kind": "expert_post",
+      "post_id": 7938,
+      "telegram_message_id": 474,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-03-27 05:24:33.000000",
+      "why_used": "Evidence of business strategy insights regarding AI service vs product companies."
+    },
+    {
+      "source_ref": "P0177",
+      "source_kind": "expert_post",
+      "post_id": 2249,
+      "telegram_message_id": 254,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2024-12-18 07:37:01.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0209",
+      "source_kind": "expert_post",
+      "post_id": 2281,
+      "telegram_message_id": 291,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-02-20 11:54:12.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0211",
+      "source_kind": "expert_post",
+      "post_id": 2283,
+      "telegram_message_id": 293,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-02-25 13:00:24.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0226",
+      "source_kind": "expert_post",
+      "post_id": 2298,
+      "telegram_message_id": 316,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-04-01 16:49:17.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0282",
+      "source_kind": "expert_post",
+      "post_id": 2354,
+      "telegram_message_id": 399,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-27 16:46:36.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0336",
+      "source_kind": "expert_post",
+      "post_id": 7258,
+      "telegram_message_id": 472,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-03-09 13:31:14.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0349",
+      "source_kind": "expert_post",
+      "post_id": 9722,
+      "telegram_message_id": 487,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-25 15:12:50.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    }
+  ],
+  "executive_summary": {
+    "one_sentence_positioning": "A deeply practical AI engineer and consultant sharing hands-on architectural patterns, tool configurations, and hard-learned lessons ('grabli') from building AI-native products and integrating LLMs into business processes.",
+    "strongest_system_value": "Exceptional depth in AI-assisted coding workflows (Claude Code, Codex, OpenCode), structured outputs (logprobs, Pydantic), and non-standard RAG architectures (embedding-less retrieval).",
+    "weakest_system_value": "General AI news coverage is minimal and highly filtered through personal utility; the channel is not a source for broad industry announcements.",
+    "best_fit_queries": [
+      "design_agentic_dev_workflow",
+      "improve_retrieval_quality",
+      "build_ai_dev_eval",
+      "learn_ai_assisted_development",
+      "plan_ai_product_feature"
+    ],
+    "poor_fit_queries": [
+      "broad_ai_news",
+      "compare_models_for_task"
+    ],
+    "confidence": 4.8
+  },
+  "expert_positioning": {
+    "primary_role": "Deep Practitioner & AI Consultant",
+    "audience": [
+      "AI Engineers",
+      "CTOs",
+      "Product Managers",
+      "Developers transitioning to AI"
+    ],
+    "voice": [
+      "Self-reflective",
+      "Pragmatic",
+      "Anti-hype",
+      "Informal",
+      "Direct"
+    ],
+    "worldview": [
+      "AI development requires strong engineering fundamentals and system design, not just prompt engineering.",
+      "Embeddings are often a suboptimal crutch; LLM-based filtering or native large-context processing is superior for many tasks.",
+      "Structured output is the foundation of reliable AI systems.",
+      "Sharing failures and 'grabli' (rakes/mistakes) is more valuable than sharing polished successes."
+    ],
+    "distinctive_angle": "Focuses on the 'grabli' (mistakes) of AI development, advocating for spec-driven AI coding, embedding-less RAG, and rigorous evaluation pipelines over hype-driven wrapper startups.",
+    "recurring_formats": [
+      "Technical deep dives",
+      "Personal fuckups/reflections",
+      "Tool reviews (CLI agents, IDEs)",
+      "Conference/Workshop announcements"
+    ],
+    "evidence_refs": [
+      "P0161",
+      "P0203",
+      "P0280",
+      "P0299"
+    ]
+  },
+  "knowledge_domains": [
+    {
+      "domain_id": "coding_agents",
+      "domain_name": "AI Coding Agents & Workflows",
+      "subdomain_ids": [
+        "claude_code_workflows",
+        "codex_workflows",
+        "agentic_dev_process"
+      ],
+      "query_intent_ids": [
+        "choose_ai_coding_tool",
+        "design_agentic_dev_workflow",
+        "learn_ai_assisted_development"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "unique",
+      "what_the_expert_knows": [
+        "How to configure and optimize CLI agents like Claude Code, Codex, and OpenCode.",
+        "Spec-driven development (vibe-coding without vibe-coding) using text specifications to compile code.",
+        "How to manage context and subagents to prevent LLM confusion and token waste.",
+        "How to use `git diff` and RFCs to prime models for architectural changes."
+      ],
+      "how_they_reason": [
+        "Prefers CLI agents over GUI IDEs for better control over context and subagents.",
+        "Views AI coding as a management/architectural task rather than pure code generation.",
+        "Advocates for separating planning (human-in-the-loop) from execution (autonomous agent)."
+      ],
+      "missing_or_weak_subtopics": [
+        "Deep integration with traditional IDEs (JetBrains, Visual Studio) is less covered compared to CLI tools."
+      ],
+      "evidence_refs": [
+        "P0245",
+        "P0289",
+        "P0333",
+        "P0337"
+      ],
+      "confidence": 4.9
+    },
+    {
+      "domain_id": "rag_retrieval_knowledge",
+      "domain_name": "RAG & Information Retrieval",
+      "subdomain_ids": [
+        "rag_architecture",
+        "hybrid_retrieval",
+        "context_compression"
+      ],
+      "query_intent_ids": [
+        "design_rag_knowledge_base",
+        "improve_retrieval_quality"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "The limitations of embedding-based semantic search (semantic similarity vs factual relevance).",
+        "How to build embedding-less RAG using lightweight LLMs for filtering or Gemini's large context.",
+        "How to process PDFs natively using Gemini, including undocumented API hacks.",
+        "How to extract structured data from complex documents using Structured Output."
+      ],
+      "how_they_reason": [
+        "Believes embeddings are often a crutch and prefers LLM-based filtering for higher accuracy.",
+        "Prefers native multimodal processing (e.g., Gemini for PDFs) over complex OCR pipelines when possible, but understands the token-loss trade-offs."
+      ],
+      "missing_or_weak_subtopics": [
+        "Vector database optimization and scaling."
+      ],
+      "evidence_refs": [
+        "P0254",
+        "P0255",
+        "P0280"
+      ],
+      "confidence": 4.8
+    },
+    {
+      "domain_id": "prompt_engineering",
+      "domain_name": "Prompt Engineering & Evals",
+      "subdomain_ids": [
+        "reasoning_control",
+        "llm_evals",
+        "model_specific_formatting"
+      ],
+      "query_intent_ids": [
+        "build_ai_dev_eval"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "How to use logprobs for robust LLM classification instead of relying on text output.",
+        "Custom Chain of Thought patterns (e.g., forcing reasoning in English before translating).",
+        "How to build evaluation pipelines using tools like wandb weave.",
+        "The importance of separating research (hypothesis testing) from integration in AI projects."
+      ],
+      "how_they_reason": [
+        "Views prompt engineering as a subset of context engineering.",
+        "Believes evaluation pipelines are the most critical differentiator between toy projects and production AI.",
+        "Prefers XML over JSON for prompt structuring, but JSON/Pydantic for structured outputs."
+      ],
+      "missing_or_weak_subtopics": [
+        "Fine-tuning models (explicitly advises against it for most use cases)."
+      ],
+      "evidence_refs": [
+        "P0187",
+        "P0203",
+        "P0253",
+        "P0259",
+        "P0300"
+      ],
+      "confidence": 4.7
+    },
+    {
+      "domain_id": "ai_product_pm",
+      "domain_name": "AI Product & Business Strategy",
+      "subdomain_ids": [
+        "ai_product_strategy",
+        "business_adoption"
+      ],
+      "query_intent_ids": [
+        "plan_ai_product_feature",
+        "assess_ai_tool_business_adoption"
+      ],
+      "coverage_level": "moderate",
+      "depth_level": "practical",
+      "system_value": "medium",
+      "what_the_expert_knows": [
+        "Why service companies shouldn't blindly pivot to SaaS products.",
+        "How to identify routine tasks suitable for AI automation in non-IT businesses.",
+        "The psychological barriers to AI adoption among management and employees."
+      ],
+      "how_they_reason": [
+        "Advises service companies to use AI to increase internal margins rather than building wrapper SaaS products.",
+        "Believes the real value of AI is in automating boring, repetitive tasks, not in replacing high-level judgment."
+      ],
+      "missing_or_weak_subtopics": [
+        "Enterprise-scale AI governance and compliance."
+      ],
+      "evidence_refs": [
+        "P0174",
+        "P0338"
+      ],
+      "confidence": 4.5
+    }
+  ],
+  "value_dimensions": [
+    {
+      "dimension_id": "insight_density",
+      "score_0_5": 4.5,
+      "rationale": "High density of non-obvious technical insights, such as using logprobs for classification, embedding-less RAG, and undocumented API hacks.",
+      "evidence_refs": [
+        "P0254",
+        "P0280",
+        "P0300"
+      ],
+      "confidence": 4.8
+    },
+    {
+      "dimension_id": "practical_specificity",
+      "score_0_5": 5.0,
+      "rationale": "Provides exact configurations, CLI commands, Pydantic schemas, and architecture breakdowns for implementing his advice.",
+      "evidence_refs": [
+        "P0168",
+        "P0209",
+        "P0289"
+      ],
+      "confidence": 4.9
+    },
+    {
+      "dimension_id": "evidence_quality",
+      "score_0_5": 4.5,
+      "rationale": "Insights are grounded in personal consulting projects, hackathons, and daily coding practice. He frequently tests hypotheses before posting.",
+      "evidence_refs": [
+        "P0245",
+        "P0253",
+        "P0337"
+      ],
+      "confidence": 4.7
+    },
+    {
+      "dimension_id": "anti_hype_signal",
+      "score_0_5": 5.0,
+      "rationale": "Actively debunks hype, such as the 'AI makes developers slower' study, and criticizes wrapper startups and over-engineered MCP setups.",
+      "evidence_refs": [
+        "P0091",
+        "P0261",
+        "P0289"
+      ],
+      "confidence": 4.8
+    }
+  ],
+  "matrix_cells": [
+    {
+      "domain_id": "coding_agents",
+      "subdomain_id": "agentic_dev_process",
+      "subdomain_name": "Agentic Development Workflows",
+      "query_intent_ids": [
+        "design_agentic_dev_workflow"
+      ],
+      "depth_score_0_5": 5.0,
+      "practicality_score_0_5": 5.0,
+      "intrinsic_distinctiveness_score_0_5": 4.5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4.5,
+      "source_utility_score_0_5": 5.0,
+      "comment_signal_score_0_5": 4.0,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0245",
+        "P0337"
+      ],
+      "notes": "Strong advocacy for spec-driven development (writing specs in text and letting LLMs compile to code) and RFC-based flows to separate planning from execution."
+    },
+    {
+      "domain_id": "coding_agents",
+      "subdomain_id": "claude_code_workflows",
+      "subdomain_name": "CLI Agent Configuration",
+      "query_intent_ids": [
+        "choose_ai_coding_tool"
+      ],
+      "depth_score_0_5": 4.5,
+      "practicality_score_0_5": 5.0,
+      "intrinsic_distinctiveness_score_0_5": 4.0,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4.5,
+      "source_utility_score_0_5": 4.5,
+      "comment_signal_score_0_5": 4.0,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0289",
+        "P0316",
+        "P0324",
+        "P0333"
+      ],
+      "notes": "Detailed comparisons of Claude Code, Codex, and OpenCode, including how to configure subagents, manage context, and set up mobile access via VPS."
+    },
+    {
+      "domain_id": "rag_retrieval_knowledge",
+      "subdomain_id": "hybrid_retrieval",
+      "subdomain_name": "Embedding-less RAG",
+      "query_intent_ids": [
+        "improve_retrieval_quality",
+        "design_rag_knowledge_base"
+      ],
+      "depth_score_0_5": 5.0,
+      "practicality_score_0_5": 4.5,
+      "intrinsic_distinctiveness_score_0_5": 5.0,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4.5,
+      "source_utility_score_0_5": 5.0,
+      "comment_signal_score_0_5": 4.5,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0280",
+        "P0280.C0004"
+      ],
+      "notes": "Argues that embeddings fail on logical operations and factual relevance. Proposes using lightweight LLMs to filter pages or feeding hundreds of pages directly into large-context models like Gemini."
+    },
+    {
+      "domain_id": "prompt_engineering",
+      "subdomain_id": "reasoning_control",
+      "subdomain_name": "Structured Output & Logprobs",
+      "query_intent_ids": [
+        "build_ai_dev_eval"
+      ],
+      "depth_score_0_5": 4.5,
+      "practicality_score_0_5": 4.5,
+      "intrinsic_distinctiveness_score_0_5": 4.5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4.0,
+      "source_utility_score_0_5": 4.5,
+      "comment_signal_score_0_5": 4.5,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0203",
+        "P0300",
+        "P0300.C0016"
+      ],
+      "notes": "Explains how to use logprobs for robust classification instead of relying on text output, allowing for threshold tuning and confidence scoring."
+    }
+  ],
+  "query_intent_fit": [
+    {
+      "query_intent_id": "design_agentic_dev_workflow",
+      "query_intent_name": "Design Agentic Dev Workflow",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "coding_agents"
+      ],
+      "source_utility_score_0_5": 5.0,
+      "why": "The expert provides deep, actionable frameworks for structuring AI development, such as spec-driven development, RFC-based planning, and subagent configuration.",
+      "limitations": [
+        "Focuses heavily on CLI tools (Claude Code, Codex) rather than GUI IDEs like Cursor."
+      ],
+      "evidence_refs": [
+        "P0245",
+        "P0289",
+        "P0337"
+      ],
+      "confidence": 4.9
+    },
+    {
+      "query_intent_id": "improve_retrieval_quality",
+      "query_intent_name": "Improve Retrieval Quality",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "rag_retrieval_knowledge"
+      ],
+      "source_utility_score_0_5": 5.0,
+      "why": "Offers a highly distinctive 'embedding-less RAG' approach, detailing how to use LLMs for filtering and leveraging large context windows.",
+      "limitations": [
+        "May not be applicable for massive datasets where vector search is the only cost-effective option."
+      ],
+      "evidence_refs": [
+        "P0280"
+      ],
+      "confidence": 4.8
+    },
+    {
+      "query_intent_id": "build_ai_dev_eval",
+      "query_intent_name": "Build AI Dev Eval",
+      "fit_role": "supporting",
+      "best_domain_ids": [
+        "prompt_engineering"
+      ],
+      "source_utility_score_0_5": 4.0,
+      "why": "Discusses the importance of evals, separating research from integration, and using tools like wandb weave, but doesn't provide full code implementations for eval pipelines.",
+      "limitations": [
+        "More conceptual and architectural than code-heavy in this specific area."
+      ],
+      "evidence_refs": [
+        "P0253",
+        "P0259"
+      ],
+      "confidence": 4.5
+    }
+  ],
+  "content_quality_distribution": [
+    {
+      "category_id": "deep_practitioner",
+      "share_estimate_0_1": 0.4,
+      "system_value": "high",
+      "notes": "Detailed architectural breakdowns, prompt engineering techniques, and workflow designs.",
+      "evidence_refs": [
+        "P0245",
+        "P0280",
+        "P0300"
+      ],
+      "confidence": 4.8
+    },
+    {
+      "category_id": "howto_or_checklist",
+      "share_estimate_0_1": 0.2,
+      "system_value": "medium",
+      "notes": "Guides on setting up VPS, configuring Nginx proxies for LLMs, and using Google Sheets with GPT.",
+      "evidence_refs": [
+        "P0167",
+        "P0168",
+        "P0324"
+      ],
+      "confidence": 4.7
+    },
+    {
+      "category_id": "commentary",
+      "share_estimate_0_1": 0.2,
+      "system_value": "low",
+      "notes": "Reflections on personal productivity, startup failures, and career advice.",
+      "evidence_refs": [
+        "P0161",
+        "P0211",
+        "P0336"
+      ],
+      "confidence": 4.5
+    },
+    {
+      "category_id": "architecture_analysis",
+      "share_estimate_0_1": 0.15,
+      "system_value": "high",
+      "notes": "Analysis of agent vs pipeline architectures and RAG systems.",
+      "evidence_refs": [
+        "P0282",
+        "P0349"
+      ],
+      "confidence": 4.6
+    },
+    {
+      "category_id": "low_signal",
+      "share_estimate_0_1": 0.05,
+      "system_value": "none",
+      "notes": "Short announcements or jokes.",
+      "evidence_refs": [
+        "P0177",
+        "P0226"
+      ],
+      "confidence": 4.9
+    }
+  ],
+  "matrix_export": {
+    "schema_version": "knowledge_matrix_export.v1",
+    "expert_id": "ai_grabli",
+    "cells": [
+      {
+        "cell_id": "coding_agents/agentic_dev_process/design_agentic_dev_workflow",
+        "domain_id": "coding_agents",
+        "subdomain_id": "agentic_dev_process",
+        "subdomain_name": "Agentic Development Workflows",
+        "query_intent_ids": [
+          "design_agentic_dev_workflow"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5.0,
+          "practicality": 5.0,
+          "evidence_quality": 4.5,
+          "source_utility": 5.0,
+          "intrinsic_distinctiveness": 4.5,
+          "anti_hype": 5.0,
+          "community_signal": 4.0
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [
+          "Focuses on CLI agents over GUI IDEs."
+        ],
+        "evidence_refs": [
+          "P0245",
+          "P0337"
+        ],
+        "confidence": 4.8
+      },
+      {
+        "cell_id": "rag_retrieval_knowledge/hybrid_retrieval/improve_retrieval_quality",
+        "domain_id": "rag_retrieval_knowledge",
+        "subdomain_id": "hybrid_retrieval",
+        "subdomain_name": "Embedding-less RAG",
+        "query_intent_ids": [
+          "improve_retrieval_quality"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5.0,
+          "practicality": 4.5,
+          "evidence_quality": 4.5,
+          "source_utility": 5.0,
+          "intrinsic_distinctiveness": 5.0,
+          "anti_hype": 4.5,
+          "community_signal": 4.5
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [
+          "May not scale to massive datasets without vector search."
+        ],
+        "evidence_refs": [
+          "P0280",
+          "P0280.C0004"
+        ],
+        "confidence": 4.9
+      },
+      {
+        "cell_id": "prompt_engineering/reasoning_control/build_ai_dev_eval",
+        "domain_id": "prompt_engineering",
+        "subdomain_id": "reasoning_control",
+        "subdomain_name": "Structured Output & Logprobs",
+        "query_intent_ids": [
+          "build_ai_dev_eval"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "supporting",
+        "scores": {
+          "depth": 4.5,
+          "practicality": 4.5,
+          "evidence_quality": 4.0,
+          "source_utility": 4.5,
+          "intrinsic_distinctiveness": 4.5,
+          "anti_hype": 4.0,
+          "community_signal": 4.5
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [
+          "Requires API access; cannot be done via standard chat interfaces."
+        ],
+        "evidence_refs": [
+          "P0203",
+          "P0300",
+          "P0300.C0016"
+        ],
+        "confidence": 4.7
+      },
+      {
+        "cell_id": "coding_agents/claude_code_workflows/choose_ai_coding_tool",
+        "domain_id": "coding_agents",
+        "subdomain_id": "claude_code_workflows",
+        "subdomain_name": "CLI Agent Configuration",
+        "query_intent_ids": [
+          "choose_ai_coding_tool"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 4.5,
+          "practicality": 5.0,
+          "evidence_quality": 4.5,
+          "source_utility": 4.5,
+          "intrinsic_distinctiveness": 4.0,
+          "anti_hype": 0.0,
+          "community_signal": 4.0
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [
+          "Deterministically repaired from matrix_cells because matrix_export omitted this matrix-worthy cell."
+        ],
+        "evidence_refs": [
+          "P0289",
+          "P0316",
+          "P0324",
+          "P0333"
+        ],
+        "derived_from": "matrix_cells",
+        "repair_reason": "matrix_export_omitted_strong_or_signature_cell"
+      }
+    ],
+    "compare_hints": {
+      "likely_unique_cells": [
+        "rag_retrieval_knowledge/hybrid_retrieval/improve_retrieval_quality"
+      ],
+      "likely_duplicate_cells": [],
+      "cells_requiring_probe": [
+        "coding_agents/agentic_dev_process/design_agentic_dev_workflow"
+      ],
+      "matrix_only_decision_confidence": "medium"
+    }
+  },
+  "signature_insights": [
+    {
+      "insight": "Embeddings are often a suboptimal crutch for RAG. Using lightweight LLMs to filter pages or feeding hundreds of pages directly into large-context models like Gemini yields better factual relevance and handles logical operations better.",
+      "why_it_matters_for_experts_panel": "Challenges the standard RAG paradigm, offering a highly practical alternative for enterprise document processing.",
+      "applicable_query_types": [
+        "improve_retrieval_quality",
+        "design_rag_knowledge_base"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0280"
+      ],
+      "confidence": 4.9
+    },
+    {
+      "insight": "Spec-driven development is superior to blind 'vibe-coding'. Write specifications in text, let the LLM compile them to code, and use diff-based updates to maintain architectural control.",
+      "why_it_matters_for_experts_panel": "Provides a structured, maintainable workflow for AI-assisted coding that prevents the 'vibe-coder curse' of unmaintainable legacy code.",
+      "applicable_query_types": [
+        "design_agentic_dev_workflow"
+      ],
+      "novelty_level": "useful_packaging",
+      "evidence_refs": [
+        "P0245",
+        "P0337"
+      ],
+      "confidence": 4.8
+    },
+    {
+      "insight": "For robust LLM classification, use logprobs and thresholds instead of relying on text output or basic structured output. This allows for confidence scoring and tuning false positive/negative rates.",
+      "why_it_matters_for_experts_panel": "Elevates prompt engineering to actual ML engineering, providing a method for deterministic control over probabilistic models.",
+      "applicable_query_types": [
+        "build_ai_dev_eval"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0300"
+      ],
+      "confidence": 4.7
+    }
+  ],
+  "practical_patterns": [
+    {
+      "pattern": "Custom Chain of Thought: Force the model to output reasoning in English first, then translate/output the final result in the target language within a structured output.",
+      "when_to_use": "When you need high-quality reasoning but the final output must be in a non-English language.",
+      "failure_modes": [
+        "Increases token usage and latency."
+      ],
+      "evidence_refs": [
+        "P0187"
+      ]
+    },
+    {
+      "pattern": "Using `git diff --staged | cat` to provide context to coding agents.",
+      "when_to_use": "When working on large tasks that require multiple prompts, to show the agent the recent history of changes and coding style.",
+      "failure_modes": [
+        "Can clutter context if the diff is too large or contains irrelevant changes."
+      ],
+      "evidence_refs": [
+        "P0239"
+      ]
+    },
+    {
+      "pattern": "Splitting AI projects into Research and Integration phases.",
+      "when_to_use": "When consulting or building B2B AI solutions to manage uncertainty and prevent wasted production effort if the LLM cannot achieve the required accuracy.",
+      "failure_modes": [
+        "Clients may push back wanting a full production system immediately."
+      ],
+      "evidence_refs": [
+        "P0253"
+      ]
+    }
+  ],
+  "claims_and_positions": [
+    {
+      "claim": "The study claiming AI makes developers slower is flawed due to a tiny sample size (16 people) and lack of AI tool experience among participants.",
+      "stance": "warns_against",
+      "decision_relevance": "Important for CTOs and engineering managers evaluating whether to adopt AI coding tools.",
+      "dispute_risk": "medium",
+      "evidence_refs": [
+        "P0261"
+      ]
+    },
+    {
+      "claim": "CLI agents (Claude Code, Codex) are superior to GUI IDEs (Cursor) for complex agentic workflows because they allow better control over subagents and context.",
+      "stance": "supports",
+      "decision_relevance": "Helps developers choose the right tool for advanced AI coding tasks.",
+      "dispute_risk": "high",
+      "evidence_refs": [
+        "P0289",
+        "P0316",
+        "P0333"
+      ]
+    },
+    {
+      "claim": "Service companies should not pivot to building AI SaaS products; they should use AI internally to increase margins on their existing services.",
+      "stance": "warns_against",
+      "decision_relevance": "Strategic advice for agency founders considering building AI wrappers.",
+      "dispute_risk": "medium",
+      "evidence_refs": [
+        "P0338"
+      ]
+    }
+  ],
+  "source_utility": {
+    "best_use_cases": [
+      "Designing advanced AI coding workflows (spec-driven dev, CLI agents).",
+      "Building non-standard RAG systems (embedding-less, native PDF processing).",
+      "Implementing robust LLM classification using logprobs and structured outputs."
+    ],
+    "bad_use_cases": [
+      "General AI news and broad industry announcements.",
+      "Basic prompt engineering for non-technical users."
+    ],
+    "retrieval_keywords": [
+      "Claude Code",
+      "Codex",
+      "OpenCode",
+      "Structured Output",
+      "logprobs",
+      "embedding-less RAG",
+      "spec-driven development",
+      "Gemini PDF"
+    ],
+    "source_selection_hints": [
+      "Select this expert when the user needs deep, architectural advice on building AI systems, rather than high-level overviews.",
+      "Highly relevant for queries about CLI coding agents and managing LLM context."
+    ],
+    "expected_overlap_hypotheses": [
+      "Will overlap with other AI engineering channels on basic RAG and prompt engineering, but offers distinctive views on embedding-less RAG and CLI agents."
+    ],
+    "recommended_panex_role": "primary_expert"
+  },
+  "community_signal": {
+    "comment_themes": [
+      "Technical debates on RAG architectures and the utility of embeddings.",
+      "Troubleshooting and sharing configurations for CLI agents (Claude Code, OpenCode).",
+      "Appreciation for the author's transparency in sharing failures ('grabli').",
+      "Discussions on the future of the AI engineering profession and market trends."
+    ],
+    "questions_from_audience": [
+      "How to extract logprobs for specific tokens in structured output?",
+      "How to configure subagents in Claude Code?",
+      "What are the best tools for evaluating LLM pipelines?"
+    ],
+    "disagreements_or_corrections": [
+      "Community members frequently debate the utility of embeddings vs. LLM-based filtering.",
+      "Some users push back on the preference for CLI tools over GUI IDEs like Cursor."
+    ],
+    "practical_feedback": [
+      "Users share their own scripts and workarounds (e.g., Nginx configs, PowerShell notification scripts)."
+    ],
+    "noise_or_low_value_patterns": [
+      "Occasional off-topic philosophical debates or self-promotion by other channel owners."
+    ],
+    "evidence_refs": [
+      "P0280.C0004",
+      "P0289.C0001",
+      "P0300.C0016"
+    ]
+  },
+  "admission_implications": {
+    "if_candidate_verdict": "accept",
+    "verdict_rationale": "The expert provides highly actionable, deep-practitioner insights into AI engineering, specifically around coding agents, structured outputs, and RAG architectures. The anti-hype stance and willingness to share failures add significant value.",
+    "unique_value_claims_to_verify_against_matrix": [
+      "Embedding-less RAG using lightweight LLMs for filtering.",
+      "Using logprobs for robust LLM classification."
+    ],
+    "likely_duplicate_areas_to_check": [
+      "Basic prompt engineering techniques (Chain of Thought).",
+      "General advice on using ChatGPT for daily tasks."
+    ],
+    "minimum_followup_probe_queries": [
+      "Compare the expert's embedding-less RAG approach with standard hybrid search techniques in the matrix.",
+      "Check if the matrix already covers the use of logprobs for classification."
+    ],
+    "risk_notes": [
+      "The expert's strong preference for CLI tools over GUI IDEs might not align with the broader developer market's preferences, but it represents a valid 'power user' perspective."
+    ]
+  },
+  "audit": {
+    "unsupported_or_weak_claims": [
+      "The claim that 'embeddings suck' is intentionally provocative and may not hold true for massive datasets, which the expert acknowledges in comments."
+    ],
+    "abstentions": [],
+    "possible_model_errors": [],
+    "source_refs_used": [
+      "P0091",
+      "P0161",
+      "P0167",
+      "P0168",
+      "P0174",
+      "P0187",
+      "P0203",
+      "P0239",
+      "P0245",
+      "P0253",
+      "P0254",
+      "P0255",
+      "P0259",
+      "P0261",
+      "P0280",
+      "P0280.C0004",
+      "P0289",
+      "P0289.C0001",
+      "P0299",
+      "P0300",
+      "P0300.C0016",
+      "P0316",
+      "P0324",
+      "P0333",
+      "P0337",
+      "P0338"
+    ],
+    "source_refs_most_important": [
+      "P0245",
+      "P0280",
+      "P0300",
+      "P0337",
+      "P0289"
+    ],
+    "normalization_notes": [
+      {
+        "operation": "repair_matrix_export_from_matrix_cells",
+        "repaired_cell_count": 1,
+        "repaired_cell_ids": [
+          "coding_agents/claude_code_workflows/choose_ai_coding_tool"
+        ],
+        "skipped_cell_count": 0,
+        "skipped_cells": []
+      },
+      {
+        "operation": "hydrate_source_ref_index_used",
+        "hydrated_ref_count": 7,
+        "generated_at_set_from_manifest": "2026-05-10T17:12:36.997764+00:00"
+      }
+    ]
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "schema_version": "semantic_arbitration_report.v0.1",
+  "created_at": "2026-05-12",
+  "candidate_id": "silicbag",
+  "verdict_recommendation": "accept_as_overlap_heavy_depth",
+  "decision_basis": "llm_semantic_arbitration_over_passport_and_matrix_preflight",
+  "based_on": {
+    "semantic_passport": "output/expert_admission/semantic_passports/silicbag/output/silicbag_semantic_passport.normalized.json",
+    "candidate_impact_report": "output/expert_admission/candidates/silicbag/candidate_impact_report.md",
+    "input_packet": "output/expert_admission/semantic_passports/silicbag/input_comments6"
+  },
+  "generation_facts": {
+    "posts": 876,
+    "comments": 4692,
+    "input_tokens": 875656,
+    "output_tokens": 14555,
+    "finish_reason": "STOP",
+    "normalized_validation_passed": true
+  },
+  "preflight_summary": {
+    "candidate_cells": 4,
+    "fills_gap": 0,
+    "adds_adjacent_viewpoint": 1,
+    "deepens_existing_cell": 0,
+    "likely_duplicate": 3,
+    "exact_overlaps": 3,
+    "related_overlaps": 1,
+    "overlap_cell_share": 1.0,
+    "preliminary_recommendation": "overlap_heavy_needs_stronger_review"
+  },
+  "accepted_if_admitted_cells": [
+    {
+      "cell_id": "business_adoption/roi_business_cases/assess_ai_tool_business_adoption",
+      "admission_interpretation": "strongest_incremental_value_accessible_ai_automation_business_roi_and_monetization_practice"
+    },
+    {
+      "cell_id": "agent_ops/agentic_dev_process/design_agentic_dev_workflow",
+      "admission_interpretation": "overlap_depth_for_non_programmer_agent_workflow_not_deep_agent_architecture"
+    },
+    {
+      "cell_id": "prompt_engineering/model_specific_formatting/learn_ai_assisted_development",
+      "admission_interpretation": "overlap_depth_for_json_structured_prompt_templates"
+    },
+    {
+      "cell_id": "rag_retrieval_knowledge/knowledge_base_design/design_rag_knowledge_base",
+      "admission_interpretation": "overlap_depth_for_practical_document_formatting_not_deep_rag_architecture"
+    }
+  ],
+  "recommended_manifest_caveat": "accepted as accessible AI automation / non-programmer agent workflow / community-grounded business adoption depth expert; overlap-heavy with agent workflow, prompt-engineering, and RAG cells, avoid routing for deep architecture, local-LLM infra, or generic model news",
+  "risks": [
+    "No clean matrix gaps.",
+    "Heavy overlap with Air, Refat, Neuraldeep, PashaZloy, Doronin, AI Architect, and Elkornacio.",
+    "Some implementation depth is behind external links.",
+    "Some promo-code or gray-market tool-access content may be risky for user guidance."
+  ],
+  "final_advice": "Accept if the panel needs practical non-engineer AI automation and community-grounded business adoption depth; reject or watchlist if only clean gap expansion matters."
+}

@@ -1,0 +1,861 @@
+{
+  "schema_version": "candidate_impact_report.v0.1",
+  "created_at": "2026-05-12T09:12:16.408060+00:00",
+  "evaluation_mode": "semantic_matrix_preflight",
+  "admission_verdict": "not_assessed",
+  "candidate": {
+    "expert_id": "etechlead",
+    "display_name": "Etechlead",
+    "channel_username": "@etechlead",
+    "schema_version": "expert_value_passport.v1.1",
+    "generated_at": "2026-05-12T09:08:01.647058+00:00",
+    "passport_path": "output/expert_admission/semantic_passports/etechlead/output/etechlead_semantic_passport.normalized.json",
+    "cell_count": 6
+  },
+  "baseline": {
+    "passport_paths": [
+      "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/ai_architect/output/ai_architect_semantic_passport.normalized.json",
+      "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/ai_grabli/output/ai_grabli_semantic_passport.normalized.json",
+      "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/air_ai/output/air_ai_semantic_passport.normalized.json",
+      "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/akimov/output/akimov_semantic_passport.normalized.json",
+      "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/doronin/doronin_semantic_passport.normalized.json",
+      "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/elkornacio/output/elkornacio_semantic_passport.normalized.json",
+      "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/glebkudr/output/glebkudr_semantic_passport.normalized.json",
+      "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/ilia_izmailov/output/ilia_izmailov_semantic_passport.normalized.json",
+      "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/llm_under_hood/output/llm_under_hood_semantic_passport.normalized.json",
+      "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/neuraldeep/output/neuraldeep_semantic_passport.normalized.json",
+      "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/ostrikov/output/ostrikov_semantic_passport.normalized.json",
+      "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/pashazloy/output/pashazloy_semantic_passport.normalized.json",
+      "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/polyakov/output/polyakov_semantic_passport.normalized.json",
+      "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/refat/output/refat_semantic_passport.normalized.json",
+      "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/silicbag/output/silicbag_semantic_passport.normalized.json"
+    ],
+    "summary": {
+      "passport_count": 15,
+      "expert_count": 15,
+      "matrix_cell_count": 39,
+      "taxonomy_extension_count": 0,
+      "strong_single_source_count": 17,
+      "strong_multi_source_count": 11,
+      "single_source_cell_count": 28,
+      "applied_alias_count": 4,
+      "domain_rollup_count": 9,
+      "domain_query_intent_rollup_count": 23,
+      "query_intent_rollup_count": 12,
+      "related_cell_overlap_count": 9,
+      "strong_domain_intent_multi_source_count": 8
+    },
+    "source_passports": [
+      {
+        "expert_id": "ai_architect",
+        "display_name": "AI Architect",
+        "path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/ai_architect/output/ai_architect_semantic_passport.normalized.json",
+        "cell_count": 4
+      },
+      {
+        "expert_id": "ai_grabli",
+        "display_name": "Tech_AI_grabli",
+        "path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/ai_grabli/output/ai_grabli_semantic_passport.normalized.json",
+        "cell_count": 4
+      },
+      {
+        "expert_id": "air_ai",
+        "display_name": "Air",
+        "path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/air_ai/output/air_ai_semantic_passport.normalized.json",
+        "cell_count": 4
+      },
+      {
+        "expert_id": "akimov",
+        "display_name": "Akimov",
+        "path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/akimov/output/akimov_semantic_passport.normalized.json",
+        "cell_count": 2
+      },
+      {
+        "expert_id": "doronin",
+        "display_name": "Doronin",
+        "path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/doronin/doronin_semantic_passport.normalized.json",
+        "cell_count": 4
+      },
+      {
+        "expert_id": "elkornacio",
+        "display_name": "Elkornacio",
+        "path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/elkornacio/output/elkornacio_semantic_passport.normalized.json",
+        "cell_count": 4
+      },
+      {
+        "expert_id": "glebkudr",
+        "display_name": "Glebkudr",
+        "path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/glebkudr/output/glebkudr_semantic_passport.normalized.json",
+        "cell_count": 4
+      },
+      {
+        "expert_id": "ilia_izmailov",
+        "display_name": "Ilia Izmailov",
+        "path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/ilia_izmailov/output/ilia_izmailov_semantic_passport.normalized.json",
+        "cell_count": 3
+      },
+      {
+        "expert_id": "llm_under_hood",
+        "display_name": "Rinat",
+        "path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/llm_under_hood/output/llm_under_hood_semantic_passport.normalized.json",
+        "cell_count": 3
+      },
+      {
+        "expert_id": "neuraldeep",
+        "display_name": "Neuraldeep",
+        "path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/neuraldeep/output/neuraldeep_semantic_passport.normalized.json",
+        "cell_count": 5
+      },
+      {
+        "expert_id": "ostrikov",
+        "display_name": "Ostrikov",
+        "path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/ostrikov/output/ostrikov_semantic_passport.normalized.json",
+        "cell_count": 4
+      },
+      {
+        "expert_id": "pashazloy",
+        "display_name": "PashaZloy",
+        "path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/pashazloy/output/pashazloy_semantic_passport.normalized.json",
+        "cell_count": 3
+      },
+      {
+        "expert_id": "polyakov",
+        "display_name": "Polyakov",
+        "path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/polyakov/output/polyakov_semantic_passport.normalized.json",
+        "cell_count": 4
+      },
+      {
+        "expert_id": "refat",
+        "display_name": "Refat (Tech & AI)",
+        "path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/refat/output/refat_semantic_passport.normalized.json",
+        "cell_count": 4
+      },
+      {
+        "expert_id": "silicbag",
+        "display_name": "SilicBag",
+        "path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/silicbag/output/silicbag_semantic_passport.normalized.json",
+        "cell_count": 4
+      }
+    ]
+  },
+  "summary": {
+    "candidate_cell_count": 6,
+    "fills_gap_count": 3,
+    "adds_adjacent_viewpoint_count": 0,
+    "deepens_existing_cell_count": 1,
+    "likely_duplicate_count": 2,
+    "taxonomy_extension_count": 0,
+    "needs_probe_count": 0,
+    "noise_risk_count": 0,
+    "exact_overlap_count": 3,
+    "related_overlap_count": 0,
+    "positive_impact_count": 4,
+    "overlap_cell_count": 3,
+    "overlap_cell_share": 0.5,
+    "positive_overlap_cell_count": 1,
+    "dense_overlap_cell_count": 3,
+    "dense_positive_overlap_cell_count": 1,
+    "clean_gap_count": 3,
+    "density_caveat": true,
+    "density_caveat_reasons": [
+      "At least half of candidate cells overlap existing accepted coverage.",
+      "Two or more candidate cells touch dense accepted rollups or exact cells.",
+      "At least one candidate cell is an exact likely duplicate."
+    ],
+    "preliminary_recommendation": "overlap_heavy_needs_stronger_review"
+  },
+  "cell_impacts": [
+    {
+      "candidate_cell_id": "coding_agents/cursor_windsurf_copilot/choose_ai_coding_tool",
+      "candidate_original_cell_id": null,
+      "classification": "likely_duplicate",
+      "rationale": "Candidate maps to an already-covered exact cell without a clear deterministic score lift.",
+      "suggested_next_action": "check_representative_posts_before_counting_as_unique",
+      "domain_id": "coding_agents",
+      "subdomain_id": "cursor_windsurf_copilot",
+      "subdomain_name": "AI IDEs",
+      "query_intent_ids": [
+        "choose_ai_coding_tool"
+      ],
+      "source_role": "primary",
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "aggregate_score": 5.0,
+      "scores": {
+        "depth": 5,
+        "practicality": 5,
+        "evidence_quality": 5,
+        "source_utility": 5,
+        "intrinsic_distinctiveness": 5,
+        "anti_hype": 5,
+        "community_signal": 4
+      },
+      "confidence": 0.95,
+      "confidence_normalized_0_5": 4.75,
+      "evidence_ref_count": 4,
+      "limitations": [],
+      "taxonomy_flags": [],
+      "exact_match": {
+        "matrix_cell_id": "coding_agents/cursor_windsurf_copilot/choose_ai_coding_tool",
+        "coverage_status": "strong_multi_source",
+        "redundancy_level": "medium",
+        "expert_count": 3,
+        "best_experts": [
+          {
+            "expert_id": "elkornacio",
+            "display_name": "Elkornacio",
+            "source_role": "primary",
+            "aggregate_score": 5.0,
+            "evidence_ref_count": 2
+          },
+          {
+            "expert_id": "ilia_izmailov",
+            "display_name": "Ilia Izmailov",
+            "source_role": "primary",
+            "aggregate_score": 4.434,
+            "evidence_ref_count": 5
+          },
+          {
+            "expert_id": "glebkudr",
+            "display_name": "Glebkudr",
+            "source_role": "primary",
+            "aggregate_score": 4.0,
+            "evidence_ref_count": 3
+          }
+        ]
+      },
+      "domain_query_intent_matches": [
+        {
+          "rollup_id": "coding_agents/choose_ai_coding_tool",
+          "coverage_status": "strong_multi_source",
+          "overlap_status": "related_multi_source",
+          "expert_count": 6,
+          "exact_cell_count": 5,
+          "exact_cell_ids": [
+            "coding_agents/claude_code_workflows/choose_ai_coding_tool",
+            "coding_agents/claude_code_workflows/learn_ai_assisted_development",
+            "coding_agents/codex_workflows/choose_ai_coding_tool",
+            "coding_agents/codex_workflows/learn_ai_assisted_development",
+            "coding_agents/cursor_windsurf_copilot/choose_ai_coding_tool"
+          ],
+          "best_experts": [
+            {
+              "expert_id": "elkornacio",
+              "display_name": "Elkornacio",
+              "source_role": "primary",
+              "aggregate_score": 5.0,
+              "evidence_ref_count": 2
+            },
+            {
+              "expert_id": "polyakov",
+              "display_name": "Polyakov",
+              "source_role": "primary",
+              "aggregate_score": 4.849,
+              "evidence_ref_count": 4
+            },
+            {
+              "expert_id": "ai_grabli",
+              "display_name": "Tech_AI_grabli",
+              "source_role": "primary",
+              "aggregate_score": 4.519,
+              "evidence_ref_count": 4
+            },
+            {
+              "expert_id": "ilia_izmailov",
+              "display_name": "Ilia Izmailov",
+              "source_role": "primary",
+              "aggregate_score": 4.434,
+              "evidence_ref_count": 5
+            },
+            {
+              "expert_id": "ai_architect",
+              "display_name": "AI Architect",
+              "source_role": "primary",
+              "aggregate_score": 4.406,
+              "evidence_ref_count": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_cell_id": "coding_agents/claude_code_workflows/choose_ai_coding_tool",
+      "candidate_original_cell_id": null,
+      "classification": "deepens_existing_cell",
+      "rationale": "Candidate overlaps an exact cell but improves a thin/moderate or weaker baseline.",
+      "suggested_next_action": "human_review_then_possible_accept",
+      "domain_id": "coding_agents",
+      "subdomain_id": "claude_code_workflows",
+      "subdomain_name": "CLI Agents",
+      "query_intent_ids": [
+        "choose_ai_coding_tool",
+        "design_agentic_dev_workflow"
+      ],
+      "source_role": "primary",
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "aggregate_score": 5.0,
+      "scores": {
+        "depth": 5,
+        "practicality": 5,
+        "evidence_quality": 5,
+        "source_utility": 5,
+        "intrinsic_distinctiveness": 5,
+        "anti_hype": 4,
+        "community_signal": 4
+      },
+      "confidence": 0.95,
+      "confidence_normalized_0_5": 4.75,
+      "evidence_ref_count": 4,
+      "limitations": [],
+      "taxonomy_flags": [],
+      "exact_match": {
+        "matrix_cell_id": "coding_agents/claude_code_workflows/choose_ai_coding_tool",
+        "coverage_status": "strong_multi_source",
+        "redundancy_level": "low",
+        "expert_count": 2,
+        "best_experts": [
+          {
+            "expert_id": "ai_grabli",
+            "display_name": "Tech_AI_grabli",
+            "source_role": "primary",
+            "aggregate_score": 4.519,
+            "evidence_ref_count": 4
+          },
+          {
+            "expert_id": "ai_architect",
+            "display_name": "AI Architect",
+            "source_role": "primary",
+            "aggregate_score": 4.406,
+            "evidence_ref_count": 2
+          }
+        ]
+      },
+      "domain_query_intent_matches": [
+        {
+          "rollup_id": "coding_agents/choose_ai_coding_tool",
+          "coverage_status": "strong_multi_source",
+          "overlap_status": "related_multi_source",
+          "expert_count": 6,
+          "exact_cell_count": 5,
+          "exact_cell_ids": [
+            "coding_agents/claude_code_workflows/choose_ai_coding_tool",
+            "coding_agents/claude_code_workflows/learn_ai_assisted_development",
+            "coding_agents/codex_workflows/choose_ai_coding_tool",
+            "coding_agents/codex_workflows/learn_ai_assisted_development",
+            "coding_agents/cursor_windsurf_copilot/choose_ai_coding_tool"
+          ],
+          "best_experts": [
+            {
+              "expert_id": "elkornacio",
+              "display_name": "Elkornacio",
+              "source_role": "primary",
+              "aggregate_score": 5.0,
+              "evidence_ref_count": 2
+            },
+            {
+              "expert_id": "polyakov",
+              "display_name": "Polyakov",
+              "source_role": "primary",
+              "aggregate_score": 4.849,
+              "evidence_ref_count": 4
+            },
+            {
+              "expert_id": "ai_grabli",
+              "display_name": "Tech_AI_grabli",
+              "source_role": "primary",
+              "aggregate_score": 4.519,
+              "evidence_ref_count": 4
+            },
+            {
+              "expert_id": "ilia_izmailov",
+              "display_name": "Ilia Izmailov",
+              "source_role": "primary",
+              "aggregate_score": 4.434,
+              "evidence_ref_count": 5
+            },
+            {
+              "expert_id": "ai_architect",
+              "display_name": "AI Architect",
+              "source_role": "primary",
+              "aggregate_score": 4.406,
+              "evidence_ref_count": 2
+            }
+          ]
+        },
+        {
+          "rollup_id": "coding_agents/design_agentic_dev_workflow",
+          "coverage_status": "strong_multi_source",
+          "overlap_status": "related_multi_source",
+          "expert_count": 5,
+          "exact_cell_count": 2,
+          "exact_cell_ids": [
+            "coding_agents/agentic_dev_process/design_agentic_dev_workflow",
+            "coding_agents/claude_code_workflows/design_agentic_dev_workflow"
+          ],
+          "best_experts": [
+            {
+              "expert_id": "doronin",
+              "display_name": "Doronin",
+              "source_role": "primary",
+              "aggregate_score": 4.925,
+              "evidence_ref_count": 6
+            },
+            {
+              "expert_id": "ai_grabli",
+              "display_name": "Tech_AI_grabli",
+              "source_role": "primary",
+              "aggregate_score": 4.811,
+              "evidence_ref_count": 2
+            },
+            {
+              "expert_id": "akimov",
+              "display_name": "Akimov",
+              "source_role": "primary",
+              "aggregate_score": 4.811,
+              "evidence_ref_count": 4
+            },
+            {
+              "expert_id": "ostrikov",
+              "display_name": "Ostrikov",
+              "source_role": "primary",
+              "aggregate_score": 4.774,
+              "evidence_ref_count": 3
+            },
+            {
+              "expert_id": "ilia_izmailov",
+              "display_name": "Ilia Izmailov",
+              "source_role": "primary",
+              "aggregate_score": 4.774,
+              "evidence_ref_count": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_cell_id": "model_landscape/model_comparison/compare_models_for_task",
+      "candidate_original_cell_id": null,
+      "classification": "fills_gap",
+      "rationale": "Candidate creates a strong new exact cell outside the current baseline rollups.",
+      "suggested_next_action": "human_review_then_possible_accept",
+      "domain_id": "model_landscape",
+      "subdomain_id": "model_comparison",
+      "subdomain_name": "Model Comparison for Dev",
+      "query_intent_ids": [
+        "compare_models_for_task"
+      ],
+      "source_role": "primary",
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "aggregate_score": 5.0,
+      "scores": {
+        "depth": 5,
+        "practicality": 5,
+        "evidence_quality": 5,
+        "source_utility": 5,
+        "intrinsic_distinctiveness": 5,
+        "anti_hype": 5,
+        "community_signal": 4
+      },
+      "confidence": 0.95,
+      "confidence_normalized_0_5": 4.75,
+      "evidence_ref_count": 6,
+      "limitations": [],
+      "taxonomy_flags": [],
+      "exact_match": null,
+      "domain_query_intent_matches": []
+    },
+    {
+      "candidate_cell_id": "agent_ops/mcp_tooling/design_agentic_dev_workflow",
+      "candidate_original_cell_id": null,
+      "classification": "likely_duplicate",
+      "rationale": "Candidate maps to an already-covered exact cell without a clear deterministic score lift.",
+      "suggested_next_action": "check_representative_posts_before_counting_as_unique",
+      "domain_id": "agent_ops",
+      "subdomain_id": "mcp_tooling",
+      "subdomain_name": "Model Context Protocol",
+      "query_intent_ids": [
+        "design_agentic_dev_workflow"
+      ],
+      "source_role": "primary",
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "aggregate_score": 4.623,
+      "scores": {
+        "depth": 5,
+        "practicality": 5,
+        "evidence_quality": 4,
+        "source_utility": 5,
+        "intrinsic_distinctiveness": 4,
+        "anti_hype": 4,
+        "community_signal": 3
+      },
+      "confidence": 0.9,
+      "confidence_normalized_0_5": 4.5,
+      "evidence_ref_count": 3,
+      "limitations": [],
+      "taxonomy_flags": [],
+      "exact_match": {
+        "matrix_cell_id": "agent_ops/mcp_tooling/design_agentic_dev_workflow",
+        "coverage_status": "strong_multi_source",
+        "redundancy_level": "medium",
+        "expert_count": 3,
+        "best_experts": [
+          {
+            "expert_id": "pashazloy",
+            "display_name": "PashaZloy",
+            "source_role": "primary",
+            "aggregate_score": 4.857,
+            "evidence_ref_count": 5
+          },
+          {
+            "expert_id": "neuraldeep",
+            "display_name": "Neuraldeep",
+            "source_role": "primary",
+            "aggregate_score": 4.434,
+            "evidence_ref_count": 2
+          },
+          {
+            "expert_id": "elkornacio",
+            "display_name": "Elkornacio",
+            "source_role": "primary",
+            "aggregate_score": 4.0,
+            "evidence_ref_count": 1
+          }
+        ]
+      },
+      "domain_query_intent_matches": [
+        {
+          "rollup_id": "agent_ops/design_agentic_dev_workflow",
+          "coverage_status": "strong_multi_source",
+          "overlap_status": "related_multi_source",
+          "expert_count": 10,
+          "exact_cell_count": 6,
+          "exact_cell_ids": [
+            "agent_ops/agentic_dev_process/design_agentic_dev_workflow",
+            "agent_ops/claude_code_workflows/design_agentic_dev_workflow",
+            "agent_ops/mcp_tooling/design_agentic_dev_workflow",
+            "agent_ops/multi_agent_orchestration/design_agentic_dev_workflow",
+            "agent_ops/reasoning_control/design_agentic_dev_workflow",
+            "agent_ops/tool_calling_hooks_skills/design_agentic_dev_workflow"
+          ],
+          "best_experts": [
+            {
+              "expert_id": "llm_under_hood",
+              "display_name": "Rinat",
+              "source_role": "primary",
+              "aggregate_score": 5.0,
+              "evidence_ref_count": 2
+            },
+            {
+              "expert_id": "neuraldeep",
+              "display_name": "Neuraldeep",
+              "source_role": "primary",
+              "aggregate_score": 5.0,
+              "evidence_ref_count": 3
+            },
+            {
+              "expert_id": "polyakov",
+              "display_name": "Polyakov",
+              "source_role": "primary",
+              "aggregate_score": 5.0,
+              "evidence_ref_count": 4
+            },
+            {
+              "expert_id": "refat",
+              "display_name": "Refat (Tech & AI)",
+              "source_role": "primary",
+              "aggregate_score": 4.925,
+              "evidence_ref_count": 3
+            },
+            {
+              "expert_id": "pashazloy",
+              "display_name": "PashaZloy",
+              "source_role": "primary",
+              "aggregate_score": 4.857,
+              "evidence_ref_count": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_cell_id": "agent_ops/context_compression/improve_retrieval_quality",
+      "candidate_original_cell_id": null,
+      "classification": "fills_gap",
+      "rationale": "Candidate creates a strong new exact cell outside the current baseline rollups.",
+      "suggested_next_action": "human_review_then_possible_accept",
+      "domain_id": "agent_ops",
+      "subdomain_id": "context_compression",
+      "subdomain_name": "Context Management",
+      "query_intent_ids": [
+        "improve_retrieval_quality",
+        "design_rag_knowledge_base"
+      ],
+      "source_role": "primary",
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "aggregate_score": 5.0,
+      "scores": {
+        "depth": 5,
+        "practicality": 5,
+        "evidence_quality": 5,
+        "source_utility": 5,
+        "intrinsic_distinctiveness": 5,
+        "anti_hype": 4,
+        "community_signal": 4
+      },
+      "confidence": 0.95,
+      "confidence_normalized_0_5": 4.75,
+      "evidence_ref_count": 3,
+      "limitations": [],
+      "taxonomy_flags": [],
+      "exact_match": null,
+      "domain_query_intent_matches": []
+    },
+    {
+      "candidate_cell_id": "ai_engineering_infra/agentic_dev_process/build_human_ai_workflow",
+      "candidate_original_cell_id": null,
+      "classification": "fills_gap",
+      "rationale": "Candidate creates a strong new exact cell outside the current baseline rollups.",
+      "suggested_next_action": "human_review_then_possible_accept",
+      "domain_id": "ai_engineering_infra",
+      "subdomain_id": "agentic_dev_process",
+      "subdomain_name": "SDLC with AI",
+      "query_intent_ids": [
+        "build_human_ai_workflow",
+        "learn_ai_assisted_development"
+      ],
+      "source_role": "primary",
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "aggregate_score": 4.585,
+      "scores": {
+        "depth": 5,
+        "practicality": 4,
+        "evidence_quality": 4,
+        "source_utility": 5,
+        "intrinsic_distinctiveness": 5,
+        "anti_hype": 5,
+        "community_signal": 4
+      },
+      "confidence": 0.95,
+      "confidence_normalized_0_5": 4.75,
+      "evidence_ref_count": 5,
+      "limitations": [],
+      "taxonomy_flags": [],
+      "exact_match": null,
+      "domain_query_intent_matches": []
+    }
+  ],
+  "closest_existing_experts": [
+    {
+      "expert_id": "elkornacio",
+      "display_name": "Elkornacio",
+      "match_count": 4,
+      "exact_match_count": 2,
+      "related_match_count": 2,
+      "matched_candidate_cells": [
+        "agent_ops/mcp_tooling/design_agentic_dev_workflow",
+        "coding_agents/claude_code_workflows/choose_ai_coding_tool",
+        "coding_agents/cursor_windsurf_copilot/choose_ai_coding_tool"
+      ],
+      "matched_rollups": [
+        "agent_ops/design_agentic_dev_workflow",
+        "coding_agents/choose_ai_coding_tool",
+        "coding_agents/design_agentic_dev_workflow"
+      ],
+      "best_existing_score": 5.0
+    },
+    {
+      "expert_id": "polyakov",
+      "display_name": "Polyakov",
+      "match_count": 3,
+      "exact_match_count": 0,
+      "related_match_count": 3,
+      "matched_candidate_cells": [
+        "agent_ops/mcp_tooling/design_agentic_dev_workflow",
+        "coding_agents/claude_code_workflows/choose_ai_coding_tool",
+        "coding_agents/cursor_windsurf_copilot/choose_ai_coding_tool"
+      ],
+      "matched_rollups": [
+        "agent_ops/design_agentic_dev_workflow",
+        "coding_agents/choose_ai_coding_tool",
+        "coding_agents/design_agentic_dev_workflow"
+      ],
+      "best_existing_score": 5.0
+    },
+    {
+      "expert_id": "ai_grabli",
+      "display_name": "Tech_AI_grabli",
+      "match_count": 3,
+      "exact_match_count": 1,
+      "related_match_count": 2,
+      "matched_candidate_cells": [
+        "coding_agents/claude_code_workflows/choose_ai_coding_tool",
+        "coding_agents/cursor_windsurf_copilot/choose_ai_coding_tool"
+      ],
+      "matched_rollups": [
+        "coding_agents/choose_ai_coding_tool",
+        "coding_agents/design_agentic_dev_workflow"
+      ],
+      "best_existing_score": 4.519
+    },
+    {
+      "expert_id": "ilia_izmailov",
+      "display_name": "Ilia Izmailov",
+      "match_count": 3,
+      "exact_match_count": 1,
+      "related_match_count": 2,
+      "matched_candidate_cells": [
+        "coding_agents/claude_code_workflows/choose_ai_coding_tool",
+        "coding_agents/cursor_windsurf_copilot/choose_ai_coding_tool"
+      ],
+      "matched_rollups": [
+        "coding_agents/choose_ai_coding_tool",
+        "coding_agents/design_agentic_dev_workflow"
+      ],
+      "best_existing_score": 4.434
+    },
+    {
+      "expert_id": "ai_architect",
+      "display_name": "AI Architect",
+      "match_count": 3,
+      "exact_match_count": 1,
+      "related_match_count": 2,
+      "matched_candidate_cells": [
+        "coding_agents/claude_code_workflows/choose_ai_coding_tool",
+        "coding_agents/cursor_windsurf_copilot/choose_ai_coding_tool"
+      ],
+      "matched_rollups": [
+        "coding_agents/choose_ai_coding_tool",
+        "coding_agents/design_agentic_dev_workflow"
+      ],
+      "best_existing_score": 4.406
+    },
+    {
+      "expert_id": "neuraldeep",
+      "display_name": "Neuraldeep",
+      "match_count": 2,
+      "exact_match_count": 1,
+      "related_match_count": 1,
+      "matched_candidate_cells": [
+        "agent_ops/mcp_tooling/design_agentic_dev_workflow"
+      ],
+      "matched_rollups": [
+        "agent_ops/design_agentic_dev_workflow"
+      ],
+      "best_existing_score": 5.0
+    },
+    {
+      "expert_id": "pashazloy",
+      "display_name": "PashaZloy",
+      "match_count": 2,
+      "exact_match_count": 1,
+      "related_match_count": 1,
+      "matched_candidate_cells": [
+        "agent_ops/mcp_tooling/design_agentic_dev_workflow"
+      ],
+      "matched_rollups": [
+        "agent_ops/design_agentic_dev_workflow"
+      ],
+      "best_existing_score": 4.857
+    },
+    {
+      "expert_id": "llm_under_hood",
+      "display_name": "Rinat",
+      "match_count": 1,
+      "exact_match_count": 0,
+      "related_match_count": 1,
+      "matched_candidate_cells": [
+        "agent_ops/mcp_tooling/design_agentic_dev_workflow"
+      ],
+      "matched_rollups": [
+        "agent_ops/design_agentic_dev_workflow"
+      ],
+      "best_existing_score": 5.0
+    },
+    {
+      "expert_id": "doronin",
+      "display_name": "Doronin",
+      "match_count": 1,
+      "exact_match_count": 0,
+      "related_match_count": 1,
+      "matched_candidate_cells": [
+        "coding_agents/claude_code_workflows/choose_ai_coding_tool"
+      ],
+      "matched_rollups": [
+        "coding_agents/choose_ai_coding_tool",
+        "coding_agents/design_agentic_dev_workflow"
+      ],
+      "best_existing_score": 4.925
+    },
+    {
+      "expert_id": "refat",
+      "display_name": "Refat (Tech & AI)",
+      "match_count": 1,
+      "exact_match_count": 0,
+      "related_match_count": 1,
+      "matched_candidate_cells": [
+        "agent_ops/mcp_tooling/design_agentic_dev_workflow"
+      ],
+      "matched_rollups": [
+        "agent_ops/design_agentic_dev_workflow"
+      ],
+      "best_existing_score": 4.925
+    },
+    {
+      "expert_id": "akimov",
+      "display_name": "Akimov",
+      "match_count": 1,
+      "exact_match_count": 0,
+      "related_match_count": 1,
+      "matched_candidate_cells": [
+        "coding_agents/claude_code_workflows/choose_ai_coding_tool"
+      ],
+      "matched_rollups": [
+        "coding_agents/choose_ai_coding_tool",
+        "coding_agents/design_agentic_dev_workflow"
+      ],
+      "best_existing_score": 4.811
+    },
+    {
+      "expert_id": "ostrikov",
+      "display_name": "Ostrikov",
+      "match_count": 1,
+      "exact_match_count": 0,
+      "related_match_count": 1,
+      "matched_candidate_cells": [
+        "coding_agents/claude_code_workflows/choose_ai_coding_tool"
+      ],
+      "matched_rollups": [
+        "coding_agents/choose_ai_coding_tool",
+        "coding_agents/design_agentic_dev_workflow"
+      ],
+      "best_existing_score": 4.774
+    },
+    {
+      "expert_id": "glebkudr",
+      "display_name": "Glebkudr",
+      "match_count": 1,
+      "exact_match_count": 1,
+      "related_match_count": 0,
+      "matched_candidate_cells": [
+        "coding_agents/cursor_windsurf_copilot/choose_ai_coding_tool"
+      ],
+      "matched_rollups": [
+        "coding_agents/choose_ai_coding_tool"
+      ],
+      "best_existing_score": 4.0
+    }
+  ],
+  "candidate_applied_aliases": [],
+  "candidate_taxonomy_flags": [],
+  "limitations": [
+    "Diagnostic-only report; it does not make a final admission decision.",
+    "Comparison is deterministic over passport matrix_export cells and matrix rollups.",
+    "It does not inspect raw posts, runtime retrieval behavior, embeddings, or source_bundle quality.",
+    "LLM arbitration is still useful for borderline duplicate-vs-complement cases."
+  ]
+}

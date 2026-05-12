@@ -1,0 +1,434 @@
+{
+  "schema_version": "candidate_impact_report.v0.1",
+  "created_at": "2026-05-10T11:50:07.219189+00:00",
+  "evaluation_mode": "semantic_matrix_preflight",
+  "admission_verdict": "not_assessed",
+  "candidate": {
+    "expert_id": "ai_architect",
+    "display_name": "AI Architect",
+    "channel_username": "@the_ai_architect",
+    "schema_version": "expert_value_passport.v1.1",
+    "generated_at": "2026-05-09T21:45:35.833423+00:00",
+    "passport_path": "output/expert_admission/semantic_passports/ai_architect/output/ai_architect_semantic_passport.normalized.json",
+    "cell_count": 4
+  },
+  "baseline": {
+    "passport_paths": [
+      "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/air_ai/output/air_ai_semantic_passport.normalized.json",
+      "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/ilia_izmailov/output/ilia_izmailov_semantic_passport.normalized.json",
+      "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/neuraldeep/output/neuraldeep_semantic_passport.normalized.json",
+      "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/polyakov/output/polyakov_semantic_passport.normalized.json",
+      "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/refat/output/refat_semantic_passport.normalized.json"
+    ],
+    "summary": {
+      "passport_count": 5,
+      "expert_count": 5,
+      "matrix_cell_count": 13,
+      "taxonomy_extension_count": 0,
+      "strong_single_source_count": 10,
+      "strong_multi_source_count": 1,
+      "single_source_cell_count": 12,
+      "applied_alias_count": 3,
+      "domain_rollup_count": 7,
+      "domain_query_intent_rollup_count": 11,
+      "query_intent_rollup_count": 9,
+      "related_cell_overlap_count": 3,
+      "strong_domain_intent_multi_source_count": 2
+    },
+    "source_passports": [
+      {
+        "expert_id": "air_ai",
+        "display_name": "Air",
+        "path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/air_ai/output/air_ai_semantic_passport.normalized.json",
+        "cell_count": 2
+      },
+      {
+        "expert_id": "ilia_izmailov",
+        "display_name": "Ilia Izmailov",
+        "path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/ilia_izmailov/output/ilia_izmailov_semantic_passport.normalized.json",
+        "cell_count": 3
+      },
+      {
+        "expert_id": "neuraldeep",
+        "display_name": "Neuraldeep",
+        "path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/neuraldeep/output/neuraldeep_semantic_passport.normalized.json",
+        "cell_count": 3
+      },
+      {
+        "expert_id": "polyakov",
+        "display_name": "Polyakov",
+        "path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/polyakov/output/polyakov_semantic_passport.normalized.json",
+        "cell_count": 3
+      },
+      {
+        "expert_id": "refat",
+        "display_name": "Refat (Tech & AI)",
+        "path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/refat/output/refat_semantic_passport.normalized.json",
+        "cell_count": 3
+      }
+    ]
+  },
+  "summary": {
+    "candidate_cell_count": 4,
+    "fills_gap_count": 0,
+    "adds_adjacent_viewpoint_count": 3,
+    "deepens_existing_cell_count": 0,
+    "likely_duplicate_count": 0,
+    "taxonomy_extension_count": 0,
+    "needs_probe_count": 1,
+    "noise_risk_count": 0,
+    "exact_overlap_count": 0,
+    "related_overlap_count": 3,
+    "positive_impact_count": 3,
+    "overlap_cell_count": 3,
+    "overlap_cell_share": 0.75,
+    "positive_overlap_cell_count": 3,
+    "dense_overlap_cell_count": 3,
+    "dense_positive_overlap_cell_count": 3,
+    "clean_gap_count": 0,
+    "density_caveat": true,
+    "density_caveat_reasons": [
+      "At least half of candidate cells overlap existing accepted coverage.",
+      "Two or more candidate cells touch dense accepted rollups or exact cells.",
+      "Multiple positive signals are adjacent/depth signals rather than clean gaps."
+    ],
+    "preliminary_recommendation": "overlap_heavy_needs_stronger_review"
+  },
+  "cell_impacts": [
+    {
+      "candidate_cell_id": "agent_ops/agentic_dev_process/design_agentic_dev_workflow",
+      "candidate_original_cell_id": null,
+      "classification": "adds_adjacent_viewpoint",
+      "rationale": "Candidate adds a new exact cell inside an already-covered domain + query intent area.",
+      "suggested_next_action": "human_review_overlap_or_complement",
+      "domain_id": "agent_ops",
+      "subdomain_id": "agentic_dev_process",
+      "subdomain_name": "Agentic Development Process",
+      "query_intent_ids": [
+        "design_agentic_dev_workflow"
+      ],
+      "source_role": "primary",
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "aggregate_score": 4.811,
+      "scores": {
+        "depth": 5,
+        "practicality": 5,
+        "evidence_quality": 4.5,
+        "source_utility": 5,
+        "intrinsic_distinctiveness": 4.5,
+        "anti_hype": 5,
+        "community_signal": 4
+      },
+      "confidence": 4.9,
+      "confidence_normalized_0_5": 4.9,
+      "evidence_ref_count": 4,
+      "limitations": [],
+      "taxonomy_flags": [],
+      "exact_match": null,
+      "domain_query_intent_matches": [
+        {
+          "rollup_id": "agent_ops/design_agentic_dev_workflow",
+          "coverage_status": "strong_multi_source",
+          "overlap_status": "related_multi_source",
+          "expert_count": 3,
+          "exact_cell_count": 2,
+          "exact_cell_ids": [
+            "agent_ops/claude_code_workflows/design_agentic_dev_workflow",
+            "agent_ops/tool_calling_hooks_skills/design_agentic_dev_workflow"
+          ],
+          "best_experts": [
+            {
+              "expert_id": "neuraldeep",
+              "display_name": "Neuraldeep",
+              "source_role": "primary",
+              "aggregate_score": 5.0,
+              "evidence_ref_count": 3
+            },
+            {
+              "expert_id": "polyakov",
+              "display_name": "Polyakov",
+              "source_role": "primary",
+              "aggregate_score": 5.0,
+              "evidence_ref_count": 4
+            },
+            {
+              "expert_id": "refat",
+              "display_name": "Refat (Tech & AI)",
+              "source_role": "primary",
+              "aggregate_score": 4.925,
+              "evidence_ref_count": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_cell_id": "coding_agents/claude_code_workflows/choose_ai_coding_tool",
+      "candidate_original_cell_id": null,
+      "classification": "adds_adjacent_viewpoint",
+      "rationale": "Candidate adds a new exact cell inside an already-covered domain + query intent area.",
+      "suggested_next_action": "human_review_overlap_or_complement",
+      "domain_id": "coding_agents",
+      "subdomain_id": "claude_code_workflows",
+      "subdomain_name": "Claude Code Workflows",
+      "query_intent_ids": [
+        "choose_ai_coding_tool",
+        "learn_ai_assisted_development"
+      ],
+      "source_role": "primary",
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "aggregate_score": 4.406,
+      "scores": {
+        "depth": 4.5,
+        "practicality": 5,
+        "evidence_quality": 4,
+        "source_utility": 4.5,
+        "intrinsic_distinctiveness": 4,
+        "anti_hype": 4,
+        "community_signal": 4
+      },
+      "confidence": 4.8,
+      "confidence_normalized_0_5": 4.8,
+      "evidence_ref_count": 2,
+      "limitations": [],
+      "taxonomy_flags": [],
+      "exact_match": null,
+      "domain_query_intent_matches": [
+        {
+          "rollup_id": "coding_agents/choose_ai_coding_tool",
+          "coverage_status": "strong_multi_source",
+          "overlap_status": "related_multi_source",
+          "expert_count": 2,
+          "exact_cell_count": 2,
+          "exact_cell_ids": [
+            "coding_agents/claude_code_workflows/learn_ai_assisted_development",
+            "coding_agents/cursor_windsurf_copilot/choose_ai_coding_tool"
+          ],
+          "best_experts": [
+            {
+              "expert_id": "polyakov",
+              "display_name": "Polyakov",
+              "source_role": "primary",
+              "aggregate_score": 4.849,
+              "evidence_ref_count": 4
+            },
+            {
+              "expert_id": "ilia_izmailov",
+              "display_name": "Ilia Izmailov",
+              "source_role": "primary",
+              "aggregate_score": 4.434,
+              "evidence_ref_count": 5
+            }
+          ]
+        },
+        {
+          "rollup_id": "coding_agents/learn_ai_assisted_development",
+          "coverage_status": "strong_single_source",
+          "overlap_status": "single_source",
+          "expert_count": 1,
+          "exact_cell_count": 1,
+          "exact_cell_ids": [
+            "coding_agents/claude_code_workflows/learn_ai_assisted_development"
+          ],
+          "best_experts": [
+            {
+              "expert_id": "polyakov",
+              "display_name": "Polyakov",
+              "source_role": "primary",
+              "aggregate_score": 4.849,
+              "evidence_ref_count": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_cell_id": "coding_agents/codex_workflows/choose_ai_coding_tool",
+      "candidate_original_cell_id": null,
+      "classification": "adds_adjacent_viewpoint",
+      "rationale": "Candidate adds a new exact cell inside an already-covered domain + query intent area.",
+      "suggested_next_action": "human_review_overlap_or_complement",
+      "domain_id": "coding_agents",
+      "subdomain_id": "codex_workflows",
+      "subdomain_name": "Codex CLI Workflows",
+      "query_intent_ids": [
+        "choose_ai_coding_tool",
+        "learn_ai_assisted_development"
+      ],
+      "source_role": "primary",
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "aggregate_score": 4.387,
+      "scores": {
+        "depth": 4.5,
+        "practicality": 4.5,
+        "evidence_quality": 4,
+        "source_utility": 4.5,
+        "intrinsic_distinctiveness": 4.5,
+        "anti_hype": 4.5,
+        "community_signal": 4.5
+      },
+      "confidence": 4.8,
+      "confidence_normalized_0_5": 4.8,
+      "evidence_ref_count": 2,
+      "limitations": [],
+      "taxonomy_flags": [],
+      "exact_match": null,
+      "domain_query_intent_matches": [
+        {
+          "rollup_id": "coding_agents/choose_ai_coding_tool",
+          "coverage_status": "strong_multi_source",
+          "overlap_status": "related_multi_source",
+          "expert_count": 2,
+          "exact_cell_count": 2,
+          "exact_cell_ids": [
+            "coding_agents/claude_code_workflows/learn_ai_assisted_development",
+            "coding_agents/cursor_windsurf_copilot/choose_ai_coding_tool"
+          ],
+          "best_experts": [
+            {
+              "expert_id": "polyakov",
+              "display_name": "Polyakov",
+              "source_role": "primary",
+              "aggregate_score": 4.849,
+              "evidence_ref_count": 4
+            },
+            {
+              "expert_id": "ilia_izmailov",
+              "display_name": "Ilia Izmailov",
+              "source_role": "primary",
+              "aggregate_score": 4.434,
+              "evidence_ref_count": 5
+            }
+          ]
+        },
+        {
+          "rollup_id": "coding_agents/learn_ai_assisted_development",
+          "coverage_status": "strong_single_source",
+          "overlap_status": "single_source",
+          "expert_count": 1,
+          "exact_cell_count": 1,
+          "exact_cell_ids": [
+            "coding_agents/claude_code_workflows/learn_ai_assisted_development"
+          ],
+          "best_experts": [
+            {
+              "expert_id": "polyakov",
+              "display_name": "Polyakov",
+              "source_role": "primary",
+              "aggregate_score": 4.849,
+              "evidence_ref_count": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_cell_id": "security_privacy_governance/security_privacy_controls/manage_security_privacy_governance",
+      "candidate_original_cell_id": null,
+      "classification": "needs_probe",
+      "rationale": "Candidate creates a new area, but deterministic strength is not high enough.",
+      "suggested_next_action": "run_deeper_candidate_probe",
+      "domain_id": "security_privacy_governance",
+      "subdomain_id": "security_privacy_controls",
+      "subdomain_name": "Security Controls in AI Coding",
+      "query_intent_ids": [
+        "manage_security_privacy_governance"
+      ],
+      "source_role": "supporting",
+      "coverage_level": "moderate",
+      "depth_level": "practical",
+      "aggregate_score": 4.208,
+      "scores": {
+        "depth": 4,
+        "practicality": 4.5,
+        "evidence_quality": 4.5,
+        "source_utility": 4,
+        "intrinsic_distinctiveness": 4,
+        "anti_hype": 5,
+        "community_signal": 3
+      },
+      "confidence": 4.5,
+      "confidence_normalized_0_5": 4.5,
+      "evidence_ref_count": 3,
+      "limitations": [],
+      "taxonomy_flags": [],
+      "exact_match": null,
+      "domain_query_intent_matches": []
+    }
+  ],
+  "closest_existing_experts": [
+    {
+      "expert_id": "polyakov",
+      "display_name": "Polyakov",
+      "match_count": 3,
+      "exact_match_count": 0,
+      "related_match_count": 3,
+      "matched_candidate_cells": [
+        "agent_ops/agentic_dev_process/design_agentic_dev_workflow",
+        "coding_agents/claude_code_workflows/choose_ai_coding_tool",
+        "coding_agents/codex_workflows/choose_ai_coding_tool"
+      ],
+      "matched_rollups": [
+        "agent_ops/design_agentic_dev_workflow",
+        "coding_agents/choose_ai_coding_tool",
+        "coding_agents/learn_ai_assisted_development"
+      ],
+      "best_existing_score": 5.0
+    },
+    {
+      "expert_id": "ilia_izmailov",
+      "display_name": "Ilia Izmailov",
+      "match_count": 2,
+      "exact_match_count": 0,
+      "related_match_count": 2,
+      "matched_candidate_cells": [
+        "coding_agents/claude_code_workflows/choose_ai_coding_tool",
+        "coding_agents/codex_workflows/choose_ai_coding_tool"
+      ],
+      "matched_rollups": [
+        "coding_agents/choose_ai_coding_tool",
+        "coding_agents/learn_ai_assisted_development"
+      ],
+      "best_existing_score": 4.434
+    },
+    {
+      "expert_id": "neuraldeep",
+      "display_name": "Neuraldeep",
+      "match_count": 1,
+      "exact_match_count": 0,
+      "related_match_count": 1,
+      "matched_candidate_cells": [
+        "agent_ops/agentic_dev_process/design_agentic_dev_workflow"
+      ],
+      "matched_rollups": [
+        "agent_ops/design_agentic_dev_workflow"
+      ],
+      "best_existing_score": 5.0
+    },
+    {
+      "expert_id": "refat",
+      "display_name": "Refat (Tech & AI)",
+      "match_count": 1,
+      "exact_match_count": 0,
+      "related_match_count": 1,
+      "matched_candidate_cells": [
+        "agent_ops/agentic_dev_process/design_agentic_dev_workflow"
+      ],
+      "matched_rollups": [
+        "agent_ops/design_agentic_dev_workflow"
+      ],
+      "best_existing_score": 4.925
+    }
+  ],
+  "candidate_applied_aliases": [],
+  "candidate_taxonomy_flags": [],
+  "limitations": [
+    "Diagnostic-only report; it does not make a final admission decision.",
+    "Comparison is deterministic over passport matrix_export cells and matrix rollups.",
+    "It does not inspect raw posts, runtime retrieval behavior, embeddings, or source_bundle quality.",
+    "LLM arbitration is still useful for borderline duplicate-vs-complement cases."
+  ]
+}

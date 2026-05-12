@@ -1,0 +1,98 @@
+{
+  "created_at": "2026-05-12T08:07:03.191594+00:00",
+  "packet_dir": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/silicbag/input_comments6",
+  "prompt_path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/silicbag/input_comments6/silicbag_vertex_prompt.md",
+  "model": "gemini-3.1-pro-preview",
+  "project_id": "project-05d8e46e-231b-43f9-8e1",
+  "location": "global",
+  "count_tokens": {
+    "started_at": "2026-05-12T08:06:59.727528+00:00",
+    "finished_at": "2026-05-12T08:07:03.190491+00:00",
+    "response": {
+      "totalTokens": 875656,
+      "totalBillableCharacters": 1876728,
+      "promptTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 875656
+        }
+      ]
+    }
+  },
+  "generate": {
+    "started_at": "2026-05-12T08:07:03.191641+00:00",
+    "finished_at": "2026-05-12T08:09:55.127697+00:00",
+    "generation_config": {
+      "temperature": 0.1,
+      "candidateCount": 1,
+      "maxOutputTokens": 65536,
+      "responseMimeType": "application/json"
+    },
+    "usage_metadata": {
+      "promptTokenCount": 875656,
+      "candidatesTokenCount": 14555,
+      "totalTokenCount": 893095,
+      "trafficType": "ON_DEMAND",
+      "promptTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 875656
+        }
+      ],
+      "candidatesTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 14555
+        }
+      ],
+      "thoughtsTokenCount": 2884
+    },
+    "model_version": "gemini-3.1-pro-preview",
+    "finish_reason": "STOP",
+    "text_chars": 42651,
+    "json_parse_error": null,
+    "validation": {
+      "missing_required_top_level_keys": [],
+      "known_source_ref_count": 5568,
+      "used_source_ref_count": 57,
+      "source_ref_index_used_count": 36,
+      "unknown_source_refs": [],
+      "unknown_source_ref_count": 0,
+      "refs_missing_from_source_ref_index_used": [
+        "P0036",
+        "P0043",
+        "P0055",
+        "P0059",
+        "P0070",
+        "P0075",
+        "P0110",
+        "P0160",
+        "P0201",
+        "P0291",
+        "P0355",
+        "P0443",
+        "P0470",
+        "P0486",
+        "P0545",
+        "P0576",
+        "P0591",
+        "P0640",
+        "P0695",
+        "P0701",
+        "P0703"
+      ],
+      "refs_missing_from_source_ref_index_used_count": 21,
+      "matrix_cell_count": 4,
+      "matrix_export_cell_count": 4,
+      "matrix_export_incomplete": false,
+      "missing_matrix_export_cells": [],
+      "missing_matrix_export_cell_count": 0,
+      "bad_matrix_relative_novelty_values": [],
+      "passport_generated_at": "2026-05-12T07:59:34.046813+00:00",
+      "expected_generated_at": "2026-05-12T07:59:34.046813+00:00",
+      "generated_at_matches_expected": true,
+      "valid_basic_contract": false
+    }
+  },
+  "status": "generated"
+}

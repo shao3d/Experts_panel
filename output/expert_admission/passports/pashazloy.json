@@ -1,0 +1,166 @@
+{
+  "channel_username": "evilfreelancer",
+  "coverage": {
+    "agent_ops": 121,
+    "ai_engineering_infra": 28,
+    "ai_product_pm": 24,
+    "ai_ux_workflow": 4,
+    "business_adoption": 25,
+    "coding_agents": 63,
+    "creative_multimodal": 12,
+    "evals_quality": 23,
+    "general_ai_news": 4,
+    "model_landscape": 192,
+    "rag_retrieval_knowledge": 34,
+    "security_privacy_governance": 10
+  },
+  "coverage_strength": {
+    "agent_ops": "strong",
+    "ai_engineering_infra": "medium",
+    "ai_product_pm": "medium",
+    "ai_ux_workflow": "thin",
+    "business_adoption": "medium",
+    "coding_agents": "strong",
+    "creative_multimodal": "thin",
+    "evals_quality": "medium",
+    "general_ai_news": "thin",
+    "model_landscape": "strong",
+    "rag_retrieval_knowledge": "medium",
+    "security_privacy_governance": "thin"
+  },
+  "date_range": {
+    "first_post": "2022-05-05",
+    "last_post": "2026-05-03"
+  },
+  "depth_profile": {
+    "announcement_or_news": 70,
+    "architecture_analysis": 26,
+    "benchmark_or_eval": 23,
+    "case_study": 29,
+    "howto_or_checklist": 113,
+    "low_signal": 75,
+    "practitioner_experience": 57,
+    "tool_release": 16
+  },
+  "display_name": "PashaZloy",
+  "embedding_count": 393,
+  "embedding_coverage_ratio": 1.0,
+  "expert_id": "pashazloy",
+  "fts_count": 393,
+  "metadata_coverage_ratio": 0.0,
+  "metadata_valid_count": 0,
+  "post_count": 409,
+  "representative_posts": [
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "evals_quality"
+      ],
+      "created_at": "2026-04-09",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "Обучение [ruGPT3XL-8k](https://huggingface.co/evilfreelancer/ruGPT3XL-8k) на ризонинг и агентных датасетах продолжается и судя по eval_loss на 500 шаге тренировка прошла свой предел точности, дальше походу начался оверфит. Чепоинты эти я уже скопировал в отдельную папку, они нарезаны на шарды из-за особенностей FSDP...",
+      "reason": "agent_ops, evals_quality; depth=benchmark_or_eval",
+      "telegram_message_id": 1642
+    },
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "evals_quality",
+        "ai_product_pm",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-04",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "**Тестирование GigaChat 3.1 10B на агентных бенчмарках** Обычно я не пишу про новые модели, тем более отечественные, но совсем недавно состоялся [релиз](https://t.me/gigadev_channel/65) моделей семейства GigaChat 3.1 от команды Сбера. В линейке вышли две модели, на 702B и 10B параметров, обе построены как MoE и обе,...",
+      "reason": "agent_ops, evals_quality, ai_product_pm; depth=benchmark_or_eval",
+      "telegram_message_id": 1627
+    },
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "rag_retrieval_knowledge",
+        "model_landscape"
+      ],
+      "created_at": "2026-05-03",
+      "depth_label": "case_study",
+      "excerpt": "Похоже зря я критиковал облачные модельки от Сбера, так как после экспериментов с [gpt2giga](https://github.com/ai-forever/gpt2giga) и [litellm](https://github.com/BerriAI/litellm) мне удалось заставить модели GigaChat-2 доступные по API работать в качестве сердца агентной системы. В качестве harness взял [Hermes](h...",
+      "reason": "agent_ops, rag_retrieval_knowledge, model_landscape; depth=case_study",
+      "telegram_message_id": 1664
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-16",
+      "depth_label": "case_study",
+      "excerpt": "**CLI Creator Skill** Тут ребятки из openai вчера релизнули новый curated skill — [CLI Creator](https://github.com/openai/skills/blob/main/skills/.curated/cli-creator/SKILL.md) Skill уже добавлен в Codex App Он позволяет создать cli + skill для вашей рутины из имеющихся: API docs, OpenAPI JSON, SDK docs, curl exampl...",
+      "reason": "coding_agents, agent_ops, model_landscape; depth=case_study",
+      "telegram_message_id": 1649
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "ai_engineering_infra",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-07",
+      "depth_label": "architecture_analysis",
+      "excerpt": "**Как работает tool calling в vLLM** Валерий @neuraldeep и Александр @countwithsasha подняли тему ([тыц](https://t.me/neuraldeep/2047) и [тыц](https://t.me/countwithsasha/574)) о том, как tool calling работает на стороне inference-движка, давайте разберём это на примере vLLM - одного из топовых движков для реализаци...",
+      "reason": "coding_agents, agent_ops, ai_engineering_infra; depth=architecture_analysis",
+      "telegram_message_id": 1636
+    },
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "ai_product_pm",
+        "business_adoption",
+        "ai_engineering_infra"
+      ],
+      "created_at": "2026-04-15",
+      "depth_label": "howto_or_checklist",
+      "excerpt": "**Скилов много, оркестрации мало** Последнее время только и слышу у себя в информационном пузыре разговоры про skills. Сделайте skill на ревью, skill на деплой, skill на парсинг, skill на тесты, skill на документацию. Идея в целом годная, под небольшую задачу пилим небольшой skill с понятным триггером, коротким `SKI...",
+      "reason": "agent_ops, ai_product_pm, business_adoption; depth=howto_or_checklist",
+      "telegram_message_id": 1648
+    },
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "rag_retrieval_knowledge",
+        "model_landscape",
+        "creative_multimodal"
+      ],
+      "created_at": "2026-05-02",
+      "depth_label": "announcement_or_news",
+      "excerpt": "**Расширение каталога на ****Hub NeuralDeep**p](https://hub.neuraldeep.ru/) Сегодня вместе с Валерием (@neuraldeep) добавили новых моделей в публичный API проекта NeuralDeep. Базовый URL для запросов api.neuraldeep.ru (OpenAI-совместимо, Bearer с ключом). Ключ можно получить после регистрации на hub.neuraldeep.ru. И...",
+      "reason": "agent_ops, rag_retrieval_knowledge, model_landscape; depth=announcement_or_news",
+      "telegram_message_id": 1663
+    },
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-14",
+      "depth_label": "case_study",
+      "excerpt": "У**тром тесты, вечером код** Продолжаю делать заметки на полях о тонкостях работы с кодовыми агентами. Почему я так много внимания уделяю методологиям [BDD](https://en.wikipedia.org/wiki/Behavior-driven_development) и [TDD](https://en.wikipedia.org/wiki/Test-driven_development), и всегда пишу, что [тесты важны](http...",
+      "reason": "agent_ops, model_landscape; depth=case_study",
+      "telegram_message_id": 1646
+    }
+  ],
+  "runtime_readiness": {
+    "embeddings_ready": true,
+    "fts_ready": true,
+    "metadata_advisory_ready": false,
+    "text_posts_ready": true
+  },
+  "text_post_count": 393,
+  "top_concepts": [],
+  "top_keywords": [],
+  "top_primary_topics": [],
+  "warnings": [
+    "pashazloy: no valid post_metadata; coverage is text-only"
+  ]
+}

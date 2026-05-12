@@ -1,0 +1,116 @@
+{
+  "schema_version": "candidate_semantic_arbitration.v0.1",
+  "created_at": "2026-05-10",
+  "candidate_id": "akimov",
+  "display_name": "Akimov",
+  "recommended_verdict": "accept_with_routing_caveat",
+  "decision_mode": "llm_semantic_arbitration_over_passport_matrix_report_and_source_spot_checks",
+  "not_an_admission_decision": true,
+  "summary": {
+    "short_rationale": "Akimov has narrow exported matrix signal, but the clean gap is strategically useful: enterprise AI adoption roadmaps and practical process transformation. Coding-agent workflow is a duplicate/supporting area.",
+    "strongest_argument_for": "Source spot checks support grounded adoption frameworks: AI literacy before mega-projects, employee-built assistants, no-code/low-code/custom escalation, data/process readiness, and staged business value models.",
+    "strongest_argument_against": "Only two matrix_export cells are present; one is an exact duplicate in an already dense coding-agent area.",
+    "confidence": "medium_high"
+  },
+  "evidence": {
+    "passport": "output/expert_admission/semantic_passports/akimov/output/akimov_semantic_passport.normalized.json",
+    "candidate_report": "output/expert_admission/candidates/akimov/candidate_impact_report.md",
+    "knowledge_matrix": "output/expert_admission/knowledge_matrix/knowledge_matrix.json",
+    "corpus_manifest": "output/expert_admission/semantic_passports/akimov/input/run_manifest.json",
+    "source_spot_checks": [
+      "P0234",
+      "P0452",
+      "P0691",
+      "P0562",
+      "P0575",
+      "P0607",
+      "P0664"
+    ]
+  },
+  "run": {
+    "post_count_seen": 794,
+    "comment_count_seen": 3794,
+    "max_comments_per_post": null,
+    "date_range": {
+      "first_post": "2025-01-01 00:46:46.000000",
+      "last_post": "2026-05-04 07:32:43.000000"
+    },
+    "vertex_input_tokens": 809797,
+    "vertex_output_tokens": 9974,
+    "vertex_thoughts_tokens": 4981,
+    "finish_reason": "STOP",
+    "normalized_passport_valid": true,
+    "matrix_export_incomplete": false
+  },
+  "deterministic_preflight": {
+    "recommendation": "probe_needed",
+    "candidate_cells": 2,
+    "fills_gap": 1,
+    "adds_adjacent_viewpoint": 0,
+    "deepens_existing_cell": 0,
+    "likely_duplicate": 1,
+    "needs_probe": 0,
+    "exact_overlaps": 1,
+    "related_overlaps": 0,
+    "clean_gap_count": 1,
+    "density_caveat": false
+  },
+  "accepted_basis_cells": [
+    {
+      "cell_id": "ai_product_pm/adoption_roadmaps/assess_ai_tool_business_adoption",
+      "classification": "fills_gap",
+      "interpretation": "clean matrix gap for enterprise AI adoption roadmaps, process readiness, data quality, no-code/low-code/custom escalation, and staged AI value realization"
+    }
+  ],
+  "duplicate_or_supporting_cells": [
+    {
+      "cell_id": "coding_agents/agentic_dev_process/design_agentic_dev_workflow",
+      "nearest_existing": [
+        "ai_grabli",
+        "ostrikov",
+        "ilia_izmailov"
+      ],
+      "interpretation": "already covered as strong multi-source coding-agent workflow coverage"
+    }
+  ],
+  "non_exported_supporting_cells": [
+    {
+      "cell_id": "rag_retrieval_knowledge/hybrid_retrieval/design_rag_knowledge_base",
+      "interpretation": "normal-weight OCR + LLM document parsing pattern; not a primary admission basis"
+    }
+  ],
+  "routing_contract": {
+    "good_fit": [
+      "enterprise AI adoption roadmaps",
+      "failed AI rollout diagnosis",
+      "chat access vs no-code vs low-code vs custom AI development decisions",
+      "data/process readiness before AI automation",
+      "business process redesign and AI literacy",
+      "non-developer AI coding with engineering-practice guardrails"
+    ],
+    "poor_fit": [
+      "low-level ML training",
+      "GPU/kernel optimization",
+      "primary agentic coding workflow routing",
+      "broad model-release news when stable strategy is needed",
+      "local LLM deployment or MCP internals"
+    ]
+  },
+  "risk_notes": [
+    "Only two exported matrix cells.",
+    "One of two exported cells is an exact duplicate in a dense coding-agent area.",
+    "Tool pricing, limits, and vendor recommendations age quickly.",
+    "Adoption-roadmap value should be probed before strong production routing."
+  ],
+  "recommended_manifest_caveat": "accepted for enterprise AI adoption roadmaps and practical AI-product/process transformation; agentic coding workflow overlaps existing experts, avoid broad duplicate routing",
+  "recommended_followup_probe": {
+    "probe_needed_before_manual_admission": false,
+    "probe_useful_before_production_routing": true,
+    "probe_shape": [
+      "2 enterprise AI adoption / failed rollout queries",
+      "1 chat access vs no-code vs low-code vs custom development query",
+      "1 data/process readiness query against Air, Ostrikov, and Polyakov",
+      "1 agentic-coding workflow query where Akimov should be supporting"
+    ]
+  }
+}

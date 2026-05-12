@@ -1,0 +1,342 @@
+{
+  "channel_username": "oestick",
+  "coverage": {
+    "agent_ops": 47,
+    "ai_engineering_infra": 7,
+    "ai_product_pm": 67,
+    "ai_ux_workflow": 19,
+    "business_adoption": 50,
+    "coding_agents": 62,
+    "creative_multimodal": 2,
+    "evals_quality": 16,
+    "general_ai_news": 2,
+    "model_landscape": 147,
+    "rag_retrieval_knowledge": 21,
+    "security_privacy_governance": 9
+  },
+  "coverage_strength": {
+    "agent_ops": "strong",
+    "ai_engineering_infra": "thin",
+    "ai_product_pm": "strong",
+    "ai_ux_workflow": "medium",
+    "business_adoption": "strong",
+    "coding_agents": "strong",
+    "creative_multimodal": "thin",
+    "evals_quality": "medium",
+    "general_ai_news": "thin",
+    "model_landscape": "strong",
+    "rag_retrieval_knowledge": "medium",
+    "security_privacy_governance": "thin"
+  },
+  "date_range": {
+    "first_post": "2024-01-10",
+    "last_post": "2026-05-01"
+  },
+  "depth_profile": {
+    "announcement_or_news": 32,
+    "architecture_analysis": 34,
+    "benchmark_or_eval": 17,
+    "case_study": 55,
+    "howto_or_checklist": 116,
+    "low_signal": 30,
+    "practitioner_experience": 73,
+    "tool_release": 0
+  },
+  "display_name": "Tech_AI_grabli",
+  "embedding_count": 351,
+  "embedding_coverage_ratio": 1.0,
+  "expert_id": "ai_grabli",
+  "fts_count": 351,
+  "metadata_coverage_ratio": 0.9244,
+  "metadata_valid_count": 330,
+  "post_count": 357,
+  "representative_posts": [
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "evals_quality",
+        "security_privacy_governance",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-09",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "Не понимаю, почему так мало пишут про авторисерч Карпаты Мне кажется, самое важное направление года. Первые значимые сигналы до меня дошли еще во время ERC3, когда Леша Остриков дал модельке самой оптимизировать промпт напрямую об евалы А сейчас вот сам Андрей Карпаты выложил рабочий репо, да еще и так, что можно бр...",
+      "reason": "agent_ops, evals_quality, security_privacy_governance; depth=benchmark_or_eval",
+      "telegram_message_id": 484
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "ai_product_pm",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-24",
+      "depth_label": "case_study",
+      "excerpt": "Для меня странно, но один из самых частых кейсов/рекомендаций, за который получаю спасибо – это анализ видео ⠀ На самом деле много для чего используют: - написание постов по мотивам своих/чужих видео - быстрого погружения в область/инструмент - как источник качественных инструкций для LLM (который LLMки, кстати, не...",
+      "reason": "coding_agents, agent_ops, ai_product_pm; depth=case_study",
+      "telegram_message_id": 486
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "ai_engineering_infra",
+        "model_landscape"
+      ],
+      "created_at": "2026-03-29",
+      "depth_label": "case_study",
+      "excerpt": "**Телеграм-дайджест для агента или читаем любимые каналы в метро: два скилла для Claude** Не знаю, что нас ждёт после 1 апреля, но Claude без телеграма точно не оставит. Делал себе скилл для мониторинга AI-каналов — чтобы агент собирал новости за день, пока я работаю и выдавал интересное для экспериментов. И в проце...",
+      "reason": "coding_agents, agent_ops, ai_engineering_infra; depth=case_study",
+      "telegram_message_id": 475
+    },
+    {
+      "coverage_labels": [
+        "ai_product_pm",
+        "business_adoption"
+      ],
+      "created_at": "2026-03-27",
+      "depth_label": "case_study",
+      "excerpt": "Приходит ко мне Вова – владелец компании, которая выстраивает бизнесу отделы продаж. Там и построение скриптов, и обучение, и контроль качества. Говорит, нужно упаковать нашу экспертизу по контролю качества в отдельный продукт и продавать его. В 5-10 раз дешевле, чем наш ручной, зато не теряем клиентов, на которых н...",
+      "reason": "ai_product_pm, business_adoption; depth=case_study",
+      "telegram_message_id": 474
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "rag_retrieval_knowledge",
+        "ai_product_pm",
+        "ai_ux_workflow",
+        "model_landscape"
+      ],
+      "created_at": "2026-02-16",
+      "depth_label": "practitioner_experience",
+      "excerpt": "Сдвиг 2025 → 2026. Забавное наблюдение с моих консультаций: Во второй половине 25го года ко мне стали часто приходить компании с просьбой поревьюить их AI системы. И почти всегда консультация шла по следующему сценарию: 1. Рассказывают/показывают свой сложный комбайн: - Кастомный процессинг pdf в текст - sparse/denc...",
+      "reason": "coding_agents, agent_ops, rag_retrieval_knowledge; depth=practitioner_experience",
+      "telegram_message_id": 463
+    },
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "evals_quality"
+      ],
+      "created_at": "2026-04-06",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "Вероятно, одна из самых интересных вакансий для AI engineer в российском бигтехе (по посту не очевидно, но это Яндекс) Леша – [победитель ERC3,](https://erc.timetoact-group.at/assets/erc3.html#prize) кмк, лучшего на сегодня бенчмарка для кожаных AI билдеров. Мне самому интересно с ним поработать – так что это не рек...",
+      "reason": "agent_ops, evals_quality; depth=benchmark_or_eval",
+      "telegram_message_id": 481
+    },
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "evals_quality"
+      ],
+      "created_at": "2026-04-06",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "**Как стать одним из нас?** Мы отрываем внешний найм и ищем двух ниндзя в нашу безбашенную команду разработки AI-агентов. Все детали проекта не могу раскрыть, но до конца года эффект должен быть на девятки миллионов долларов (ну или меня уволят): **1. Айзек из сериала Кастлвания** Ты умеешь воскрешать агентов, неотл...",
+      "reason": "agent_ops, evals_quality; depth=benchmark_or_eval",
+      "telegram_message_id": 480
+    },
+    {
+      "coverage_labels": [
+        "ai_product_pm"
+      ],
+      "created_at": "2026-05-01",
+      "depth_label": "practitioner_experience",
+      "excerpt": "По мотивам вчерашнего мок-интервью спонтанно собираемся на брейншторм – *во что превратятся собеседования в айтишке* Должно быть супер интересно – у Родиона свой DevTools продукт, а у Макса просто колоссальный опыт работы с технологиями и людьми, которые их строят UPD: [вот ссылочка](https://youtube.com/live/y2NnheH...",
+      "reason": "ai_product_pm; depth=practitioner_experience",
+      "telegram_message_id": 492
+    }
+  ],
+  "runtime_readiness": {
+    "embeddings_ready": true,
+    "fts_ready": true,
+    "metadata_advisory_ready": true,
+    "text_posts_ready": true
+  },
+  "text_post_count": 351,
+  "top_concepts": [
+    {
+      "count": 39,
+      "value": "Prompt Engineering"
+    },
+    {
+      "count": 16,
+      "value": "Automation"
+    },
+    {
+      "count": 16,
+      "value": "LLM"
+    },
+    {
+      "count": 13,
+      "value": "RAG"
+    },
+    {
+      "count": 10,
+      "value": "Software Development"
+    },
+    {
+      "count": 8,
+      "value": "Structured Output"
+    },
+    {
+      "count": 8,
+      "value": "Context Window"
+    },
+    {
+      "count": 7,
+      "value": "Product Management"
+    },
+    {
+      "count": 6,
+      "value": "Embeddings"
+    },
+    {
+      "count": 6,
+      "value": "Networking"
+    },
+    {
+      "count": 6,
+      "value": "Productivity"
+    },
+    {
+      "count": 6,
+      "value": "Marketing"
+    }
+  ],
+  "top_keywords": [
+    {
+      "count": 81,
+      "value": "llm"
+    },
+    {
+      "count": 60,
+      "value": "prompt"
+    },
+    {
+      "count": 54,
+      "value": "промпт"
+    },
+    {
+      "count": 44,
+      "value": "разработка"
+    },
+    {
+      "count": 44,
+      "value": "development"
+    },
+    {
+      "count": 34,
+      "value": "gpt"
+    },
+    {
+      "count": 30,
+      "value": "искусственный"
+    },
+    {
+      "count": 30,
+      "value": "интеллект"
+    },
+    {
+      "count": 26,
+      "value": "code"
+    },
+    {
+      "count": 26,
+      "value": "generation"
+    },
+    {
+      "count": 26,
+      "value": "автоматизация"
+    },
+    {
+      "count": 26,
+      "value": "обучение"
+    },
+    {
+      "count": 24,
+      "value": "context"
+    },
+    {
+      "count": 23,
+      "value": "automation"
+    },
+    {
+      "count": 22,
+      "value": "data"
+    },
+    {
+      "count": 22,
+      "value": "генерация"
+    },
+    {
+      "count": 22,
+      "value": "neural"
+    },
+    {
+      "count": 21,
+      "value": "google"
+    },
+    {
+      "count": 21,
+      "value": "telegram"
+    },
+    {
+      "count": 21,
+      "value": "телеграм"
+    }
+  ],
+  "top_primary_topics": [
+    {
+      "count": 17,
+      "value": "Prompt Engineering"
+    },
+    {
+      "count": 12,
+      "value": "AI Development"
+    },
+    {
+      "count": 10,
+      "value": "AI Agents"
+    },
+    {
+      "count": 7,
+      "value": "Generative AI"
+    },
+    {
+      "count": 6,
+      "value": "Content Strategy"
+    },
+    {
+      "count": 5,
+      "value": "Software Engineering"
+    },
+    {
+      "count": 4,
+      "value": "AI Engineering"
+    },
+    {
+      "count": 4,
+      "value": "AI Coding"
+    },
+    {
+      "count": 4,
+      "value": "Artificial Intelligence"
+    },
+    {
+      "count": 4,
+      "value": "Structured Output"
+    },
+    {
+      "count": 4,
+      "value": "LLM Evaluation"
+    },
+    {
+      "count": 4,
+      "value": "Productivity"
+    }
+  ],
+  "warnings": []
+}

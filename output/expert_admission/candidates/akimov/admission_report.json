@@ -1,0 +1,47 @@
+{
+  "schema_version": "candidate_admission_report.v0.1",
+  "created_at": "2026-05-10",
+  "candidate_id": "akimov",
+  "display_name": "Akimov",
+  "channel_username": "@ai_product",
+  "verdict": "accept",
+  "decision_mode": "manual_human_review",
+  "based_on": {
+    "semantic_passport": "output/expert_admission/semantic_passports/akimov/output/akimov_semantic_passport.normalized.json",
+    "candidate_impact_report": "output/expert_admission/candidates/akimov/candidate_impact_report.md",
+    "semantic_arbitration_report": "output/expert_admission/candidates/akimov/arbitration_report.md",
+    "knowledge_matrix_before_admission": "output/expert_admission/knowledge_matrix/knowledge_matrix.md"
+  },
+  "preflight_summary": {
+    "candidate_cells_from_matrix_export": 2,
+    "fills_gap": 1,
+    "adds_adjacent_viewpoint": 0,
+    "needs_probe": 0,
+    "likely_duplicate": 1,
+    "taxonomy_extensions_after_taxonomy_update": 0,
+    "exact_overlaps": 1,
+    "related_overlaps": 0,
+    "preliminary_recommendation": "probe_needed"
+  },
+  "accepted_cells": [
+    {
+      "cell_id": "ai_product_pm/adoption_roadmaps/assess_ai_tool_business_adoption",
+      "classification": "fills_gap",
+      "admission_interpretation": "accepted_as_primary_clean_enterprise_ai_adoption_gap"
+    },
+    {
+      "cell_id": "coding_agents/agentic_dev_process/design_agentic_dev_workflow",
+      "classification": "likely_duplicate",
+      "admission_interpretation": "accepted_as_overlap_depth_only_not_new_gap"
+    }
+  ],
+  "taxonomy_updates": [],
+  "routing_notes": [
+    "Strong fit for enterprise AI adoption roadmaps, failed AI rollout diagnosis, process/data readiness, and deciding between chat access, no-code, low-code, and custom development.",
+    "Use as supporting source for non-developer AI coding with engineering-practice guardrails.",
+    "Do not route as a primary agentic coding workflow expert by default.",
+    "Agentic coding workflow overlaps AI_Grabli, Ostrikov, and Ilia Izmailov."
+  ],
+  "recommended_manifest_caveat": "accepted for enterprise AI adoption roadmaps and practical AI-product/process transformation; agentic coding workflow overlaps existing experts, avoid broad duplicate routing",
+  "next_action": "proceed_as_accepted_in_semantic_knowledge_matrix_with_enterprise_ai_adoption_routing_caveat"
+}

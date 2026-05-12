@@ -1,0 +1,100 @@
+{
+  "created_at": "2026-05-10T17:13:10.691842+00:00",
+  "packet_dir": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/ai_grabli/input",
+  "prompt_path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/ai_grabli/input/ai_grabli_vertex_prompt.md",
+  "model": "gemini-3.1-pro-preview",
+  "project_id": "project-05d8e46e-231b-43f9-8e1",
+  "location": "global",
+  "count_tokens": {
+    "started_at": "2026-05-10T17:13:07.053425+00:00",
+    "finished_at": "2026-05-10T17:13:10.688415+00:00",
+    "response": {
+      "totalTokens": 539505,
+      "totalBillableCharacters": 1251903,
+      "promptTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 539505
+        }
+      ]
+    }
+  },
+  "generate": {
+    "started_at": "2026-05-10T17:13:10.691881+00:00",
+    "finished_at": "2026-05-10T17:15:54.175352+00:00",
+    "generation_config": {
+      "temperature": 0.1,
+      "candidateCount": 1,
+      "maxOutputTokens": 65536,
+      "responseMimeType": "application/json"
+    },
+    "usage_metadata": {
+      "promptTokenCount": 539505,
+      "candidatesTokenCount": 12361,
+      "totalTokenCount": 555059,
+      "trafficType": "ON_DEMAND",
+      "promptTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 539505
+        }
+      ],
+      "candidatesTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 12361
+        }
+      ],
+      "thoughtsTokenCount": 3193
+    },
+    "model_version": "gemini-3.1-pro-preview",
+    "finish_reason": "STOP",
+    "text_chars": 37997,
+    "json_parse_error": null,
+    "validation": {
+      "missing_required_top_level_keys": [],
+      "known_source_ref_count": 3005,
+      "used_source_ref_count": 33,
+      "source_ref_index_used_count": 26,
+      "unknown_source_refs": [],
+      "unknown_source_ref_count": 0,
+      "refs_missing_from_source_ref_index_used": [
+        "P0177",
+        "P0209",
+        "P0211",
+        "P0226",
+        "P0282",
+        "P0336",
+        "P0349"
+      ],
+      "refs_missing_from_source_ref_index_used_count": 7,
+      "matrix_cell_count": 4,
+      "matrix_export_cell_count": 3,
+      "matrix_export_incomplete": true,
+      "missing_matrix_export_cells": [
+        {
+          "cell_id": "coding_agents/claude_code_workflows/choose_ai_coding_tool",
+          "domain_id": "coding_agents",
+          "subdomain_id": "claude_code_workflows",
+          "query_intent_ids": [
+            "choose_ai_coding_tool"
+          ],
+          "recommended_matrix_weight": "strong",
+          "evidence_refs": [
+            "P0289",
+            "P0316",
+            "P0324",
+            "P0333"
+          ]
+        }
+      ],
+      "missing_matrix_export_cell_count": 1,
+      "bad_matrix_relative_novelty_values": [],
+      "passport_generated_at": "2026-05-10T17:12:36.997764+00:00",
+      "expected_generated_at": "2026-05-10T17:12:36.997764+00:00",
+      "generated_at_matches_expected": true,
+      "valid_basic_contract": false
+    }
+  },
+  "status": "generated"
+}

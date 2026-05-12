@@ -1,0 +1,132 @@
+{
+  "schema_version": "candidate_semantic_arbitration.v0.1",
+  "created_at": "2026-05-10",
+  "candidate_id": "elkornacio",
+  "display_name": "Elkornacio",
+  "recommended_verdict": "limited_scope",
+  "decision_mode": "llm_semantic_arbitration_over_passport_matrix_report_and_source_spot_checks",
+  "not_an_admission_decision": true,
+  "summary": {
+    "short_rationale": "Elkornacio is technically strong but overlap-heavy: no clean matrix gaps, three exact overlaps, and one probe-needed MCP security cell. His best value is limited-scope depth for AI coding tool/harness judgment.",
+    "strongest_argument_for": "The passport and source spot checks show a distinctive advanced lens: Model vs Harness vs UI, native-harness quality, deterministic workflows, Git-branch hyper-customization, and pointed MCP security critique.",
+    "strongest_argument_against": "The current matrix already strongly covers coding-agent tool choice, agentic development workflow, and MCP/tooling; deterministic preflight finds zero clean gaps.",
+    "confidence": "medium_high"
+  },
+  "evidence": {
+    "passport": "output/expert_admission/semantic_passports/elkornacio/output/elkornacio_semantic_passport.normalized.json",
+    "candidate_report": "output/expert_admission/candidates/elkornacio/candidate_impact_report.md",
+    "knowledge_matrix": "output/expert_admission/knowledge_matrix/knowledge_matrix.json",
+    "corpus_manifest": "output/expert_admission/semantic_passports/elkornacio/input/run_manifest.json",
+    "source_spot_checks": [
+      "P0427",
+      "P0382",
+      "P0383",
+      "P0439",
+      "P0388.C0032"
+    ]
+  },
+  "run": {
+    "post_count_seen": 449,
+    "comment_count_seen": 5576,
+    "max_comments_per_post": null,
+    "date_range": {
+      "first_post": "2025-01-10 13:49:00.000000",
+      "last_post": "2026-05-01 11:16:46.000000"
+    },
+    "vertex_input_tokens": 898163,
+    "vertex_output_tokens": 10550,
+    "vertex_thoughts_tokens": 2924,
+    "finish_reason": "STOP",
+    "normalized_passport_valid": true,
+    "matrix_export_incomplete": false,
+    "normalizer_repaired_raw_matrix_export": true
+  },
+  "deterministic_preflight": {
+    "recommendation": "overlap_heavy_needs_stronger_review",
+    "candidate_cells": 4,
+    "fills_gap": 0,
+    "adds_adjacent_viewpoint": 0,
+    "deepens_existing_cell": 1,
+    "likely_duplicate": 2,
+    "needs_probe": 1,
+    "exact_overlaps": 3,
+    "related_overlaps": 0,
+    "clean_gap_count": 0,
+    "density_caveat": true
+  },
+  "accepted_basis_cells": [
+    {
+      "cell_id": "coding_agents/cursor_windsurf_copilot/choose_ai_coding_tool",
+      "classification": "deepens_existing_cell",
+      "interpretation": "limited-scope depth for advanced coding-agent tool choice via model/harness/UI framing and native-harness argument"
+    }
+  ],
+  "duplicate_or_supporting_cells": [
+    {
+      "cell_id": "agent_ops/agentic_dev_process/design_agentic_dev_workflow",
+      "classification": "likely_duplicate",
+      "nearest_existing": [
+        "ai_architect",
+        "llm_under_hood",
+        "neuraldeep",
+        "polyakov",
+        "refat",
+        "pashazloy",
+        "ostrikov"
+      ],
+      "interpretation": "already dense agent-ops workflow coverage"
+    },
+    {
+      "cell_id": "agent_ops/mcp_tooling/design_agentic_dev_workflow",
+      "classification": "likely_duplicate",
+      "nearest_existing": [
+        "pashazloy",
+        "neuraldeep"
+      ],
+      "interpretation": "MCP/tooling workflow already covered; useful contrarian color only"
+    }
+  ],
+  "probe_or_supporting_cells": [
+    {
+      "cell_id": "agent_ops/mcp_tooling/manage_security_privacy_governance",
+      "classification": "needs_probe",
+      "interpretation": "promising MCP security critique, but evidence-thin and not yet a clean governance gap"
+    }
+  ],
+  "routing_contract": {
+    "good_fit": [
+      "model vs harness vs UI in coding agents",
+      "native harness vs mixed harness coding-tool comparisons",
+      "advanced Cursor / Codex / Claude Code tool judgment",
+      "deterministic workflows for AI coding agents",
+      "Git-branch hyper-customization and per-client product variants",
+      "MCP security critique and restricted API / CLI alternatives"
+    ],
+    "poor_fit": [
+      "beginner-friendly AI-assisted coding onboarding",
+      "enterprise-safe executive summaries without tone filtering",
+      "broad AI strategy or business adoption",
+      "primary source for new matrix coverage",
+      "neutral MCP advocacy or generic MCP tutorial",
+      "governance beyond agent-tooling security"
+    ]
+  },
+  "risk_notes": [
+    "No clean matrix gaps.",
+    "Three of four candidate cells overlap exact accepted cells.",
+    "Heavy informal/profane style may require filtering.",
+    "Model and tool comparisons age quickly.",
+    "MCP security cell should be probed before production routing weight is raised."
+  ],
+  "recommended_manifest_caveat": "limited-scope depth for advanced AI coding tool/harness judgment and contrarian agent workflow critique; no clean matrix gaps, avoid broad duplicate routing",
+  "recommended_followup_probe": {
+    "probe_needed_before_manual_admission": true,
+    "probe_useful_before_production_routing": true,
+    "probe_shape": [
+      "2 model/harness/UI comparison queries against Ilia, Glebkudr, AI_Grabli, and Polyakov",
+      "1 hyper-customization / per-client branch workflow query",
+      "1 MCP security query against PashaZloy, Neuraldeep, and Rinat",
+      "1 beginner/general coding-agent query where Elkornacio should not be primary"
+    ]
+  }
+}

@@ -1,0 +1,1115 @@
+{
+  "schema_version": "expert_value_passport.v1.1",
+  "passport_meta": {
+    "schema_version": "expert_value_passport.v1.1",
+    "expert_id": "refat",
+    "display_name": "Refat (Tech & AI)",
+    "channel_username": "@nobilix",
+    "model_assumed": "gemini-3.1-pro-preview",
+    "prompt_version": "semantic-passport-prompt.v1",
+    "generated_at": "2026-05-09T16:24:53.886483+00:00"
+  },
+  "corpus_audit": {
+    "post_count_seen": 146,
+    "comment_count_seen": 2993,
+    "date_range": {
+      "first_post": "2025-03-12 16:34:00.000000",
+      "last_post": "2026-05-02 19:00:59.000000"
+    },
+    "language_mix": [
+      "ru",
+      "en"
+    ],
+    "material_limitations": [],
+    "author_vs_community_boundary": "Clear boundary. The author posts structured, pragmatic insights and weekly digests. The community actively engages in the comments, sharing alternative tools, debating architectural choices (e.g., RAG vs File-first), and providing technical feedback."
+  },
+  "source_ref_index_used": [
+    {
+      "source_ref": "P0020",
+      "source_kind": "expert_post",
+      "post_id": 20,
+      "telegram_message_id": 26,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-03-31 09:02:35.000000",
+      "why_used": "Stance on local GPU vs Cloud API economics."
+    },
+    {
+      "source_ref": "P0022",
+      "source_kind": "expert_post",
+      "post_id": 22,
+      "telegram_message_id": 28,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-04-02 21:45:34.000000",
+      "why_used": "Insight on using standards in development and prompting."
+    },
+    {
+      "source_ref": "P0027",
+      "source_kind": "expert_post",
+      "post_id": 27,
+      "telegram_message_id": 33,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-04-07 19:07:18.000000",
+      "why_used": "Practical pattern for Google Sheets + LLM automation."
+    },
+    {
+      "source_ref": "P0052",
+      "source_kind": "expert_post",
+      "post_id": 52,
+      "telegram_message_id": 59,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-05-02 21:13:24.000000",
+      "why_used": "Anti-hype stance against anthropomorphizing AI."
+    },
+    {
+      "source_ref": "P0056",
+      "source_kind": "expert_post",
+      "post_id": 56,
+      "telegram_message_id": 63,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-05-06 21:38:23.000000",
+      "why_used": "Stance on the decline of fine-tuning."
+    },
+    {
+      "source_ref": "P0107",
+      "source_kind": "expert_post",
+      "post_id": 107,
+      "telegram_message_id": 117,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-06-30 16:55:54.000000",
+      "why_used": "Practical pattern for reverse-designing UI with Cursor."
+    },
+    {
+      "source_ref": "P0108",
+      "source_kind": "expert_post",
+      "post_id": 108,
+      "telegram_message_id": 118,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-07-01 08:06:44.000000",
+      "why_used": "Practical pattern for using Git Worktrees with parallel AI agents."
+    },
+    {
+      "source_ref": "P0135",
+      "source_kind": "expert_post",
+      "post_id": 135,
+      "telegram_message_id": 146,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-21 22:02:59.000000",
+      "why_used": "Insight on Context Rot in LLMs."
+    },
+    {
+      "source_ref": "P0142",
+      "source_kind": "expert_post",
+      "post_id": 142,
+      "telegram_message_id": 153,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-09-03 21:41:12.000000",
+      "why_used": "Deep dive into AI observability and tracing."
+    },
+    {
+      "source_ref": "P0153",
+      "source_kind": "expert_post",
+      "post_id": 153,
+      "telegram_message_id": 164,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-10-02 19:30:50.000000",
+      "why_used": "Practical pattern for using Gemini box_2d for OCR grounding."
+    },
+    {
+      "source_ref": "P0164",
+      "source_kind": "expert_post",
+      "post_id": 164,
+      "telegram_message_id": 178,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-05 19:43:42.000000",
+      "why_used": "Signature insight on File-first approach vs RAG."
+    },
+    {
+      "source_ref": "P0168",
+      "source_kind": "expert_post",
+      "post_id": 168,
+      "telegram_message_id": 182,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-17 16:41:37.000000",
+      "why_used": "Continuation of File-first approach using ugrep."
+    },
+    {
+      "source_ref": "P0168.C0029",
+      "source_kind": "community_comment",
+      "post_id": 168,
+      "telegram_message_id": 182,
+      "comment_id": 12192,
+      "telegram_comment_id": 2259,
+      "created_at": "2025-11-18 09:00:47.000000",
+      "why_used": "Community debate on RAG vs File-first."
+    },
+    {
+      "source_ref": "P0173",
+      "source_kind": "expert_post",
+      "post_id": 173,
+      "telegram_message_id": 187,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-12-02 18:38:32.000000",
+      "why_used": "Using ISO standards in prompts to save tokens and increase determinism."
+    },
+    {
+      "source_ref": "P0200",
+      "source_kind": "expert_post",
+      "post_id": 200,
+      "telegram_message_id": 215,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-02 19:21:36.000000",
+      "why_used": "Signature insight distinguishing vibe coding from AI-assisted engineering."
+    },
+    {
+      "source_ref": "P0210",
+      "source_kind": "expert_post",
+      "post_id": 210,
+      "telegram_message_id": 229,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-24 10:40:10.000000",
+      "why_used": "Analysis of context files (AGENTS.md) and token optimization."
+    },
+    {
+      "source_ref": "P0223",
+      "source_kind": "expert_post",
+      "post_id": 223,
+      "telegram_message_id": 242,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-03 12:45:56.000000",
+      "why_used": "9 principles for AI Evals."
+    },
+    {
+      "source_ref": "P0001",
+      "source_kind": "expert_post",
+      "post_id": 1,
+      "telegram_message_id": 5,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-03-12 16:34:00.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0011",
+      "source_kind": "expert_post",
+      "post_id": 11,
+      "telegram_message_id": 17,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-03-22 17:55:10.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0058",
+      "source_kind": "expert_post",
+      "post_id": 58,
+      "telegram_message_id": 65,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-05-08 20:34:23.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0085",
+      "source_kind": "expert_post",
+      "post_id": 85,
+      "telegram_message_id": 92,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-06-04 22:03:44.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0098",
+      "source_kind": "expert_post",
+      "post_id": 98,
+      "telegram_message_id": 106,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-06-18 21:56:03.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0103",
+      "source_kind": "expert_post",
+      "post_id": 103,
+      "telegram_message_id": 113,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-06-25 22:24:11.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0118",
+      "source_kind": "expert_post",
+      "post_id": 118,
+      "telegram_message_id": 128,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-07-16 20:11:12.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0150",
+      "source_kind": "expert_post",
+      "post_id": 151,
+      "telegram_message_id": 162,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-09-20 21:00:02.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0151",
+      "source_kind": "expert_post",
+      "post_id": 152,
+      "telegram_message_id": 163,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-09-23 11:36:48.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0156",
+      "source_kind": "expert_post",
+      "post_id": 684,
+      "telegram_message_id": 168,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-10-11 16:23:03.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0215",
+      "source_kind": "expert_post",
+      "post_id": 7415,
+      "telegram_message_id": 234,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-03-12 18:39:42.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    }
+  ],
+  "executive_summary": {
+    "one_sentence_positioning": "A highly pragmatic, anti-hype AI engineering practitioner who bridges the gap between high-level AI news and deep technical implementation of agentic workflows, observability, and context management.",
+    "strongest_system_value": "Exceptional practical specificity in designing agentic workflows (Claude Code, Cursor, MCP) and deep architectural insights (File-first vs RAG, Context Rot, AI Observability).",
+    "weakest_system_value": "Less focused on foundational model training or deep mathematical ML theory, leaning heavily towards applied AI engineering and product integration.",
+    "best_fit_queries": [
+      "design_agentic_dev_workflow",
+      "build_ai_dev_eval",
+      "learn_ai_assisted_development",
+      "optimize_inference_cost_latency"
+    ],
+    "poor_fit_queries": [
+      "train_custom_llm_from_scratch",
+      "mathematical_proofs_of_transformer_architecture"
+    ],
+    "confidence": 0.95
+  },
+  "expert_positioning": {
+    "primary_role": "AI Engineering Practitioner & Tech Entrepreneur",
+    "audience": [
+      "Software Engineers",
+      "Tech Founders",
+      "Product Managers",
+      "AI Enthusiasts"
+    ],
+    "voice": [
+      "Pragmatic",
+      "Direct",
+      "Anti-hype",
+      "Hands-on",
+      "Analytical"
+    ],
+    "worldview": [
+      "AI is a powerful tool that amplifies expertise, not a human replacement.",
+      "Engineering fundamentals (standards, observability, security) are more important than ever in the AI era.",
+      "Vibe coding is for prototypes; AI-assisted engineering requires SDLC, review, and ownership.",
+      "Data quality and context engineering trump fine-tuning."
+    ],
+    "distinctive_angle": "Combines weekly comprehensive AI news digests with deep, hands-on technical tutorials on agentic coding, CLI tools, and system architecture.",
+    "recurring_formats": [
+      "Weekly #ReDigest (AI news summaries)",
+      "Deep-dive technical tutorials with code/CLI snippets",
+      "Tool reviews and comparisons (e.g., Cursor vs Claude Code)",
+      "Philosophical/Architectural essays on AI adoption"
+    ],
+    "evidence_refs": [
+      "P0001",
+      "P0011",
+      "P0200",
+      "P0164"
+    ]
+  },
+  "knowledge_domains": [
+    {
+      "domain_id": "agent_ops",
+      "domain_name": "Agent Operations & Workflows",
+      "subdomain_ids": [
+        "claude_code_workflows",
+        "cursor_windsurf_copilot",
+        "agentic_dev_process",
+        "mcp_tooling"
+      ],
+      "query_intent_ids": [
+        "design_agentic_dev_workflow",
+        "choose_ai_coding_tool"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "unique",
+      "what_the_expert_knows": [
+        "How to orchestrate Claude Code and Cursor for complex tasks.",
+        "Implementation and debugging of Model Context Protocol (MCP).",
+        "Using Git Worktrees for parallel AI agent execution.",
+        "Optimizing context files (AGENTS.md, CLAUDE.md) to save tokens and reduce bias."
+      ],
+      "how_they_reason": [
+        "Prefers deterministic tools (CLI, grep, rclone) over probabilistic AI wrappers where possible.",
+        "Advocates for 'File-first' agentic knowledge bases over naive RAG.",
+        "Focuses on token efficiency and context management to prevent 'Context Rot'."
+      ],
+      "missing_or_weak_subtopics": [],
+      "evidence_refs": [
+        "P0108",
+        "P0164",
+        "P0210",
+        "P0168"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "domain_id": "ai_engineering_infra",
+      "domain_name": "AI Engineering & Infrastructure",
+      "subdomain_ids": [
+        "deployment_observability",
+        "inference_cost_latency",
+        "llm_evals"
+      ],
+      "query_intent_ids": [
+        "optimize_inference_cost_latency",
+        "build_ai_dev_eval"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "practical",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "Setting up AI observability using tools like Langfuse.",
+        "Designing AI Evals using binary PASS/FAIL checks and human-in-the-loop.",
+        "Optimizing API costs through prompt caching and context engineering."
+      ],
+      "how_they_reason": [
+        "Believes observability is a basic need, not a luxury, due to the non-deterministic nature of LLMs.",
+        "Prefers simple, custom evals over generic frameworks like RAGAS.",
+        "Values human expert calibration for LLM-as-a-judge systems."
+      ],
+      "missing_or_weak_subtopics": [
+        "Deep infrastructure scaling (e.g., Kubernetes for GPU clusters)"
+      ],
+      "evidence_refs": [
+        "P0142",
+        "P0223",
+        "P0215"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "domain_id": "rag_retrieval_knowledge",
+      "domain_name": "RAG & Knowledge Retrieval",
+      "subdomain_ids": [
+        "rag_architecture",
+        "knowledge_base_design"
+      ],
+      "query_intent_ids": [
+        "design_rag_knowledge_base",
+        "improve_retrieval_quality"
+      ],
+      "coverage_level": "moderate",
+      "depth_level": "practical",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "Limitations of naive RAG and vector databases.",
+        "Using Gemini's box_2d for precise OCR grounding.",
+        "Building file-first knowledge bases using rclone and ugrep."
+      ],
+      "how_they_reason": [
+        "Challenges the default assumption that Vector DBs are always necessary.",
+        "Prefers post-hoc grounding for better context engineering."
+      ],
+      "missing_or_weak_subtopics": [
+        "Advanced chunking algorithms for complex semantic retrieval"
+      ],
+      "evidence_refs": [
+        "P0153",
+        "P0164",
+        "P0168"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "domain_id": "general_ai_news",
+      "domain_name": "General AI News & Trends",
+      "subdomain_ids": [
+        "broad_ai_news",
+        "model_release_analysis"
+      ],
+      "query_intent_ids": [
+        "learn_ai_assisted_development"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "news",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "Weekly updates on model releases, VC funding, and tech giant strategies.",
+        "Market shifts (e.g., Anthropic vs OpenAI, open-source vs proprietary)."
+      ],
+      "how_they_reason": [
+        "Filters noise to provide actionable summaries.",
+        "Connects news to practical implications for developers and founders."
+      ],
+      "missing_or_weak_subtopics": [],
+      "evidence_refs": [
+        "P0011",
+        "P0150",
+        "P0156"
+      ],
+      "confidence": 0.95
+    }
+  ],
+  "value_dimensions": [
+    {
+      "dimension_id": "insight_density",
+      "score_0_5": 4.5,
+      "rationale": "Posts are highly concentrated with actionable advice, specific tool recommendations, and architectural philosophies.",
+      "evidence_refs": [
+        "P0164",
+        "P0200",
+        "P0223"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "practical_specificity",
+      "score_0_5": 5,
+      "rationale": "Provides exact CLI commands, prompt templates, GitHub links, and step-by-step workflows.",
+      "evidence_refs": [
+        "P0022",
+        "P0107",
+        "P0168",
+        "P0173"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "anti_hype_signal",
+      "score_0_5": 5,
+      "rationale": "Actively debunks 'vibe coding', criticizes anthropomorphizing AI, and highlights the limitations of autonomous agents and naive RAG.",
+      "evidence_refs": [
+        "P0052",
+        "P0058",
+        "P0200"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "technical_depth",
+      "score_0_5": 4,
+      "rationale": "Deep dives into CLI tools, MCP, sandboxing, and observability, though avoids extreme low-level ML math.",
+      "evidence_refs": [
+        "P0142",
+        "P0168",
+        "P0210"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "dimension_id": "decision_value",
+      "score_0_5": 4.5,
+      "rationale": "Provides clear frameworks for choosing between tools (e.g., Cursor vs Claude Code, RAG vs File-first, Cloud vs Local GPU).",
+      "evidence_refs": [
+        "P0020",
+        "P0103",
+        "P0164"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "matrix_cells": [
+    {
+      "domain_id": "agent_ops",
+      "subdomain_id": "claude_code_workflows",
+      "subdomain_name": "Claude Code Workflows",
+      "query_intent_ids": [
+        "design_agentic_dev_workflow"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 4.5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 5,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0103",
+        "P0108",
+        "P0210"
+      ],
+      "notes": "Exceptional depth on Claude Code, including Git Worktrees for parallel agents, context file optimization, and subagents."
+    },
+    {
+      "domain_id": "ai_engineering_infra",
+      "subdomain_id": "deployment_observability",
+      "subdomain_name": "AI Observability & Tracing",
+      "query_intent_ids": [
+        "build_ai_dev_eval"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 4.5,
+      "comment_signal_score_0_5": 3.5,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0142",
+        "P0151"
+      ],
+      "notes": "Strong practical advice on using Langfuse and integrating traces directly into coding agents for debugging."
+    },
+    {
+      "domain_id": "rag_retrieval_knowledge",
+      "subdomain_id": "knowledge_base_design",
+      "subdomain_name": "File-First Knowledge Bases",
+      "query_intent_ids": [
+        "design_rag_knowledge_base"
+      ],
+      "depth_score_0_5": 4.5,
+      "practicality_score_0_5": 4.5,
+      "intrinsic_distinctiveness_score_0_5": 5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 4.5,
+      "comment_signal_score_0_5": 4.5,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0164",
+        "P0168"
+      ],
+      "notes": "Highly distinctive 'File-first' approach using rclone and ugrep as an alternative to traditional vector DB RAG."
+    },
+    {
+      "domain_id": "ai_engineering_infra",
+      "subdomain_id": "llm_evals",
+      "subdomain_name": "AI Evals Principles",
+      "query_intent_ids": [
+        "build_ai_dev_eval"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 4.5,
+      "comment_signal_score_0_5": 3,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0223"
+      ],
+      "notes": "9 practical principles for AI evals, emphasizing binary PASS/FAIL, deterministic code checks over LLM-as-a-judge, and human expert calibration."
+    }
+  ],
+  "query_intent_fit": [
+    {
+      "query_intent_id": "design_agentic_dev_workflow",
+      "query_intent_name": "Design Agentic Dev Workflow",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "agent_ops"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "The expert provides end-to-end workflows for using Claude Code, Cursor, and MCP, including advanced techniques like Git Worktrees and context optimization.",
+      "limitations": [],
+      "evidence_refs": [
+        "P0103",
+        "P0108",
+        "P0210"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "query_intent_id": "design_rag_knowledge_base",
+      "query_intent_name": "Design RAG Knowledge Base",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "rag_retrieval_knowledge"
+      ],
+      "source_utility_score_0_5": 4.5,
+      "why": "Offers a highly distinctive 'file-first' alternative to RAG, as well as practical advice on OCR grounding using bounding boxes.",
+      "limitations": [
+        "Less focus on traditional vector DB tuning (e.g., chunking strategies for Pinecone/Milvus)."
+      ],
+      "evidence_refs": [
+        "P0153",
+        "P0164",
+        "P0168"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "query_intent_id": "learn_ai_assisted_development",
+      "query_intent_name": "Learn AI-Assisted Development",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "general_ai_news",
+        "agent_ops"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "Consistently curates the best tools, frameworks, and news, while clearly distinguishing between amateur 'vibe coding' and professional AI-assisted engineering.",
+      "limitations": [],
+      "evidence_refs": [
+        "P0200",
+        "P0156"
+      ],
+      "confidence": 0.95
+    }
+  ],
+  "content_quality_distribution": [
+    {
+      "category_id": "deep_practitioner",
+      "share_estimate_0_1": 0.3,
+      "system_value": "unique",
+      "notes": "Deep dives into architecture, context management, and agentic workflows.",
+      "evidence_refs": [
+        "P0164",
+        "P0168",
+        "P0210",
+        "P0223"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "howto_or_checklist",
+      "share_estimate_0_1": 0.25,
+      "system_value": "high",
+      "notes": "Practical guides with CLI commands, prompts, and tool setups.",
+      "evidence_refs": [
+        "P0027",
+        "P0085",
+        "P0107",
+        "P0173"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "announcement_or_news",
+      "share_estimate_0_1": 0.35,
+      "system_value": "medium",
+      "notes": "Weekly #ReDigest posts summarizing AI news.",
+      "evidence_refs": [
+        "P0011",
+        "P0150",
+        "P0156"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "category_id": "commentary",
+      "share_estimate_0_1": 0.1,
+      "system_value": "high",
+      "notes": "Philosophical or strategic takes on AI adoption, anti-hype posts.",
+      "evidence_refs": [
+        "P0052",
+        "P0058",
+        "P0200"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "matrix_export": {
+    "schema_version": "knowledge_matrix_export.v1",
+    "expert_id": "refat",
+    "cells": [
+      {
+        "cell_id": "agent_ops/claude_code_workflows/design_agentic_dev_workflow",
+        "domain_id": "agent_ops",
+        "subdomain_id": "claude_code_workflows",
+        "subdomain_name": "Claude Code Workflows",
+        "query_intent_ids": [
+          "design_agentic_dev_workflow"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 5,
+          "evidence_quality": 5,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 4.5,
+          "anti_hype": 4,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0103",
+          "P0108",
+          "P0210"
+        ],
+        "confidence": 0.95
+      },
+      {
+        "cell_id": "rag_retrieval_knowledge/knowledge_base_design/design_rag_knowledge_base",
+        "domain_id": "rag_retrieval_knowledge",
+        "subdomain_id": "knowledge_base_design",
+        "subdomain_name": "File-First Knowledge Bases",
+        "query_intent_ids": [
+          "design_rag_knowledge_base"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 4.5,
+          "practicality": 4.5,
+          "evidence_quality": 4,
+          "source_utility": 4.5,
+          "intrinsic_distinctiveness": 5,
+          "anti_hype": 5,
+          "community_signal": 4.5
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0164",
+          "P0168"
+        ],
+        "confidence": 0.9
+      },
+      {
+        "cell_id": "ai_engineering_infra/llm_evals/build_ai_dev_eval",
+        "domain_id": "ai_engineering_infra",
+        "subdomain_id": "llm_evals",
+        "subdomain_name": "AI Evals Principles",
+        "query_intent_ids": [
+          "build_ai_dev_eval"
+        ],
+        "coverage_level": "moderate",
+        "depth_level": "practical",
+        "source_role": "supporting",
+        "scores": {
+          "depth": 4,
+          "practicality": 5,
+          "evidence_quality": 4,
+          "source_utility": 4.5,
+          "intrinsic_distinctiveness": 4,
+          "anti_hype": 5,
+          "community_signal": 3
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0223"
+        ],
+        "confidence": 0.9
+      },
+      {
+        "cell_id": "ai_engineering_infra/deployment_observability/build_ai_dev_eval",
+        "domain_id": "ai_engineering_infra",
+        "subdomain_id": "deployment_observability",
+        "subdomain_name": "AI Observability & Tracing",
+        "query_intent_ids": [
+          "build_ai_dev_eval"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "practical",
+        "source_role": "primary",
+        "scores": {
+          "depth": 4.0,
+          "practicality": 5.0,
+          "evidence_quality": 4.0,
+          "source_utility": 4.5,
+          "intrinsic_distinctiveness": 4.0,
+          "anti_hype": 0.0,
+          "community_signal": 3.5
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [
+          "Deterministically repaired from matrix_cells because matrix_export omitted this matrix-worthy cell."
+        ],
+        "evidence_refs": [
+          "P0142",
+          "P0151"
+        ],
+        "derived_from": "matrix_cells",
+        "repair_reason": "matrix_export_omitted_strong_or_signature_cell"
+      }
+    ],
+    "compare_hints": {
+      "likely_unique_cells": [
+        "rag_retrieval_knowledge/knowledge_base_design/design_rag_knowledge_base"
+      ],
+      "likely_duplicate_cells": [],
+      "cells_requiring_probe": [
+        "agent_ops/claude_code_workflows/design_agentic_dev_workflow"
+      ],
+      "matrix_only_decision_confidence": "medium"
+    }
+  },
+  "signature_insights": [
+    {
+      "insight": "File-first approach (using rclone and ugrep) is often faster, cheaper, and more reliable for agentic knowledge bases than traditional vector DB RAG pipelines.",
+      "why_it_matters_for_experts_panel": "Challenges the industry default of using Vector DBs for everything, offering a highly practical, Unix-philosophy alternative for AI agents.",
+      "applicable_query_types": [
+        "design_rag_knowledge_base"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0164",
+        "P0168"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "insight": "Vibe coding is a local boost for prototypes, whereas AI-assisted engineering is a new production system requiring SDLC, review, and code ownership.",
+      "why_it_matters_for_experts_panel": "Provides a clear, anti-hype framework for understanding the maturity levels of AI adoption in software engineering.",
+      "applicable_query_types": [
+        "learn_ai_assisted_development"
+      ],
+      "novelty_level": "useful_packaging",
+      "evidence_refs": [
+        "P0200"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "insight": "Auto-generated context files (like AGENTS.md via /init) often harm coding agent performance by consuming instruction budget with redundant information.",
+      "why_it_matters_for_experts_panel": "Directly contradicts common 'best practices' pushed by tool creators, backed by academic research and practical experience.",
+      "applicable_query_types": [
+        "design_agentic_dev_workflow"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0210"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "insight": "Using established standards (e.g., ISO 639-1, ISO 8601) in prompts saves output tokens, increases determinism, and simplifies parsing without complex regex.",
+      "why_it_matters_for_experts_panel": "A highly reusable, elegant prompt engineering pattern that leverages the LLM's pre-training data effectively.",
+      "applicable_query_types": [
+        "design_agentic_dev_workflow"
+      ],
+      "novelty_level": "useful_packaging",
+      "evidence_refs": [
+        "P0022",
+        "P0173"
+      ],
+      "confidence": 0.95
+    }
+  ],
+  "practical_patterns": [
+    {
+      "pattern": "Git Worktrees for Parallel Agents",
+      "when_to_use": "When running multiple AI coding agents (e.g., Claude Code) simultaneously on the same repository to test different UI approaches or fix bugs without losing context.",
+      "failure_modes": [
+        "Merge conflicts if agents modify the same files heavily."
+      ],
+      "evidence_refs": [
+        "P0108"
+      ]
+    },
+    {
+      "pattern": "Reverse-design UI with Cursor",
+      "when_to_use": "When building a prototype or MVP and needing a consistent, professional UI without a designer.",
+      "failure_modes": [
+        "Mixing inconsistent design styles (e.g., Material vs Flat) in the reference screenshots."
+      ],
+      "evidence_refs": [
+        "P0107"
+      ]
+    },
+    {
+      "pattern": "Bounding Boxes (box_2d) for OCR Grounding",
+      "when_to_use": "When extracting structured data from documents (invoices, ID cards) and needing visual verification for human-in-the-loop QA.",
+      "failure_modes": [
+        "Using models that don't support spatial tasks well, or leaving 'thinking' mode on which degrades spatial accuracy."
+      ],
+      "evidence_refs": [
+        "P0153"
+      ]
+    }
+  ],
+  "claims_and_positions": [
+    {
+      "claim": "Fine-tuning is becoming a niche solution, largely replaced by long context windows and RAG.",
+      "stance": "supports",
+      "decision_relevance": "Guides architectural decisions away from expensive fine-tuning pipelines toward context engineering.",
+      "dispute_risk": "medium",
+      "evidence_refs": [
+        "P0056",
+        "P0098"
+      ]
+    },
+    {
+      "claim": "Anthropomorphizing AI (e.g., 'hiring an AI colleague') creates false expectations and is harmful.",
+      "stance": "warns_against",
+      "decision_relevance": "Helps set realistic expectations for AI adoption in business.",
+      "dispute_risk": "low",
+      "evidence_refs": [
+        "P0052"
+      ]
+    },
+    {
+      "claim": "Local GPU hosting for foundational LLMs is rarely economically viable compared to Cloud APIs due to rapid model deprecation and TCO.",
+      "stance": "warns_against",
+      "decision_relevance": "Crucial for startups and enterprises deciding between on-prem and cloud AI infrastructure.",
+      "dispute_risk": "medium",
+      "evidence_refs": [
+        "P0020"
+      ]
+    }
+  ],
+  "source_utility": {
+    "best_use_cases": [
+      "Designing workflows for AI coding agents (Claude Code, Cursor).",
+      "Implementing practical, low-overhead alternatives to complex AI infrastructure (e.g., File-first vs RAG).",
+      "Staying updated on the signal-to-noise ratio in AI tooling and model releases."
+    ],
+    "bad_use_cases": [
+      "Deep mathematical theory of machine learning.",
+      "Training foundational models from scratch."
+    ],
+    "retrieval_keywords": [
+      "Claude Code",
+      "Cursor",
+      "Agentic workflows",
+      "File-first RAG",
+      "Context Rot",
+      "AI Observability",
+      "Langfuse",
+      "Mastra",
+      "Vibe coding"
+    ],
+    "source_selection_hints": [
+      "Select this expert when the user needs pragmatic, engineering-focused advice on integrating AI agents into their development workflow.",
+      "Highly relevant for questions about context management and token optimization."
+    ],
+    "expected_overlap_hypotheses": [
+      "Likely overlaps with other AI engineering channels on Cursor/Claude Code basics, but highly distinct in architectural philosophies (e.g., File-first, Context Rot)."
+    ],
+    "recommended_panex_role": "primary_expert"
+  },
+  "community_signal": {
+    "comment_themes": [
+      "Gratitude for high signal-to-noise ratio and lack of 'water' in posts.",
+      "Technical debates on architectural choices (e.g., RAG vs File-first, Vector DBs vs grep).",
+      "Sharing of alternative open-source tools and personal project links."
+    ],
+    "questions_from_audience": [
+      "How to handle specific edge cases in parsing or OCR.",
+      "Requests for invites to closed betas (e.g., Manus, Dia browser).",
+      "Clarifications on CLI commands and tool setups."
+    ],
+    "disagreements_or_corrections": [
+      "Debates on the viability of local LLMs vs Cloud APIs.",
+      "Discussions on whether 'vibe coding' is a derogatory term or a legitimate new paradigm.",
+      "Pushback on the 'File-first' approach from proponents of traditional Vector DBs."
+    ],
+    "practical_feedback": [
+      "Users confirming they successfully implemented the expert's tutorials (e.g., Google Sheets bots, Slidev presentations)."
+    ],
+    "noise_or_low_value_patterns": [
+      "Occasional bot spam or off-topic philosophical rants (e.g., the 'shaman' prompt discussion)."
+    ],
+    "evidence_refs": [
+      "P0168.C0029",
+      "P0200",
+      "P0118"
+    ]
+  },
+  "admission_implications": {
+    "if_candidate_verdict": "accept",
+    "verdict_rationale": "The expert provides exceptionally high-quality, pragmatic, and technically deep content. The anti-hype stance, combined with actionable code/CLI snippets and unique architectural insights (like the file-first approach), makes this a top-tier source for AI-assisted engineering.",
+    "unique_value_claims_to_verify_against_matrix": [
+      "File-first knowledge base architecture using rclone and ugrep as a superior alternative to naive RAG."
+    ],
+    "likely_duplicate_areas_to_check": [
+      "General AI news digests.",
+      "Basic Cursor/Claude Code setup guides."
+    ],
+    "minimum_followup_probe_queries": [
+      "Compare file-first agentic knowledge bases with traditional vector DB RAG.",
+      "What are the best practices for managing context files (AGENTS.md) in Claude Code?"
+    ],
+    "risk_notes": [
+      "The weekly news digests (#ReDigest) are comprehensive but may duplicate news feeds already in the matrix. The core value is in the technical deep dives."
+    ]
+  },
+  "audit": {
+    "unsupported_or_weak_claims": [],
+    "abstentions": [
+      "Did not evaluate the expert's claims on specific model benchmark scores (e.g., SWE-bench) as these change rapidly and are cited from external sources."
+    ],
+    "possible_model_errors": [],
+    "source_refs_used": [
+      "P0020",
+      "P0022",
+      "P0027",
+      "P0052",
+      "P0056",
+      "P0107",
+      "P0108",
+      "P0135",
+      "P0142",
+      "P0153",
+      "P0164",
+      "P0168",
+      "P0168.C0029",
+      "P0173",
+      "P0200",
+      "P0210",
+      "P0223"
+    ],
+    "source_refs_most_important": [
+      "P0164",
+      "P0168",
+      "P0200",
+      "P0210",
+      "P0223"
+    ],
+    "normalization_notes": [
+      {
+        "operation": "repair_matrix_export_from_matrix_cells",
+        "repaired_cell_count": 1,
+        "repaired_cell_ids": [
+          "ai_engineering_infra/deployment_observability/build_ai_dev_eval"
+        ],
+        "skipped_cell_count": 0,
+        "skipped_cells": []
+      },
+      {
+        "operation": "hydrate_source_ref_index_used",
+        "hydrated_ref_count": 11,
+        "generated_at_set_from_manifest": "2026-05-09T16:24:53.886483+00:00"
+      }
+    ]
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "schema_version": "candidate_admission_report.v0.1",
+  "created_at": "2026-05-10",
+  "candidate_id": "ostrikov",
+  "display_name": "Ostrikov",
+  "channel_username": "@aostrikov_ai_agents",
+  "verdict": "accept",
+  "decision_mode": "manual_human_review",
+  "based_on": {
+    "semantic_passport": "output/expert_admission/semantic_passports/ostrikov/output/ostrikov_semantic_passport.normalized.json",
+    "candidate_impact_report": "output/expert_admission/candidates/ostrikov/candidate_impact_report.md",
+    "semantic_arbitration_report": "output/expert_admission/candidates/ostrikov/arbitration_report.md",
+    "knowledge_matrix_before_admission": "output/expert_admission/knowledge_matrix/knowledge_matrix.md"
+  },
+  "preflight_summary": {
+    "candidate_cells": 4,
+    "fills_gap": 0,
+    "adds_adjacent_viewpoint": 1,
+    "needs_probe": 2,
+    "likely_duplicate": 1,
+    "taxonomy_extensions": 0,
+    "exact_overlaps": 1,
+    "related_overlaps": 1,
+    "preliminary_recommendation": "promising_but_probe_or_taxonomy_review"
+  },
+  "accepted_cells": [
+    {
+      "cell_id": "coding_agents/agentic_dev_process/design_agentic_dev_workflow",
+      "classification": "adds_adjacent_viewpoint",
+      "admission_interpretation": "accepted_as_ai_first_development_process_depth"
+    },
+    {
+      "cell_id": "agent_ops/multi_agent_orchestration/design_agentic_dev_workflow",
+      "classification": "likely_duplicate",
+      "admission_interpretation": "accepted_as_overlap_depth_only_against_glebkudr_and_dense_agent_ops_rollup"
+    },
+    {
+      "cell_id": "ai_engineering_infra/rag_architecture/design_rag_knowledge_base",
+      "classification": "needs_probe",
+      "admission_interpretation": "supporting_value_not_primary_admission_basis"
+    },
+    {
+      "cell_id": "business_adoption/human_ai_workflow/build_human_ai_workflow",
+      "classification": "needs_probe",
+      "admission_interpretation": "supporting_ai_fluency_value_not_primary_admission_basis"
+    }
+  ],
+  "routing_notes": [
+    "Strong fit for AI-first development process, PRD-to-agent workflows, practical agent architecture, skills/context compaction, and open-source/hackathon coding-agent lessons.",
+    "Do not count the agent_ops/multi_agent_orchestration overlap as a clean new gap.",
+    "Do not route as a foundational ML/model-training expert.",
+    "Do not treat as source of record for RAG architecture; use RAG material as supporting context."
+  ],
+  "recommended_manifest_caveat": "accepted as complementary/depth expert for AI-first development process and practical agent architecture; avoid counting agent_ops overlap as a new gap",
+  "next_action": "proceed_as_accepted_in_semantic_knowledge_matrix_with_routing_caveat"
+}

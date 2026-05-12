@@ -1,0 +1,57 @@
+{
+  "schema_version": "candidate_admission_report.v0.1",
+  "created_at": "2026-05-10",
+  "candidate_id": "ai_grabli",
+  "display_name": "Tech_AI_grabli",
+  "channel_username": "@oestick",
+  "verdict": "accept",
+  "decision_mode": "manual_human_review",
+  "based_on": {
+    "semantic_passport": "output/expert_admission/semantic_passports/ai_grabli/output/ai_grabli_semantic_passport.normalized.json",
+    "candidate_impact_report": "output/expert_admission/candidates/ai_grabli/candidate_impact_report.md",
+    "semantic_arbitration_report": "output/expert_admission/candidates/ai_grabli/arbitration_report.md",
+    "knowledge_matrix_before_admission": "output/expert_admission/knowledge_matrix/knowledge_matrix.md"
+  },
+  "preflight_summary": {
+    "candidate_cells_from_matrix_export": 4,
+    "fills_gap": 1,
+    "adds_adjacent_viewpoint": 0,
+    "needs_probe": 1,
+    "likely_duplicate": 2,
+    "taxonomy_extensions_after_taxonomy_update": 0,
+    "exact_overlaps": 2,
+    "related_overlaps": 0,
+    "preliminary_recommendation": "overlap_heavy_needs_stronger_review"
+  },
+  "accepted_cells": [
+    {
+      "cell_id": "rag_retrieval_knowledge/hybrid_retrieval/improve_retrieval_quality",
+      "classification": "fills_gap",
+      "admission_interpretation": "accepted_as_primary_clean_retrieval_quality_gap"
+    },
+    {
+      "cell_id": "prompt_engineering/reasoning_control/build_ai_dev_eval",
+      "classification": "needs_probe",
+      "admission_interpretation": "accepted_as_supporting_logprobs_classification_signal_probe_before_broad_routing"
+    },
+    {
+      "cell_id": "coding_agents/agentic_dev_process/design_agentic_dev_workflow",
+      "classification": "likely_duplicate",
+      "admission_interpretation": "accepted_as_overlap_depth_only_not_new_gap"
+    },
+    {
+      "cell_id": "coding_agents/claude_code_workflows/choose_ai_coding_tool",
+      "classification": "likely_duplicate",
+      "admission_interpretation": "accepted_as_overlap_depth_only_not_new_gap"
+    }
+  ],
+  "taxonomy_updates": [],
+  "routing_notes": [
+    "Strong fit for retrieval-quality diagnostics, embedding-less RAG, LLM page filtering, large-context retrieval, and source traceability.",
+    "Use as supporting source for logprobs and threshold-based LLM classification until a targeted probe raises confidence.",
+    "Do not route as a general coding-agent or Claude Code / Codex tool-choice expert by default.",
+    "Coding-agent workflow cells overlap Ostrikov, Ilia Izmailov, AI Architect, Polyakov, and Glebkudr."
+  ],
+  "recommended_manifest_caveat": "accepted for retrieval-quality / embedding-less RAG and practical AI-engineering failure analysis; coding-agent coverage overlaps existing experts, avoid broad duplicate routing",
+  "next_action": "proceed_as_accepted_in_semantic_knowledge_matrix_with_retrieval_quality_routing_caveat"
+}

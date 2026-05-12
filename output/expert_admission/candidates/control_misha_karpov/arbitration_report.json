@@ -1,0 +1,75 @@
+{
+  "schema_version": "candidate_semantic_arbitration.v0.1",
+  "created_at": "2026-05-10",
+  "candidate_id": "control_misha_karpov",
+  "display_name": "Миша Карпов — AI, продукты и рост ⛳",
+  "recommended_verdict": "limited_scope",
+  "decision_mode": "llm_semantic_arbitration_over_passport_and_matrix_report",
+  "not_an_admission_decision": true,
+  "summary": {
+    "short_rationale": "Misha is useful but overlap-heavy. His strongest unique value is PM/founder-facing Builder PM and human-AI workflow framing, not general AI coding or agent architecture.",
+    "strongest_argument_for": "The passport exposes a real clean gap around ai_product_pm/pm_workflow/build_human_ai_workflow for product leaders becoming AI builders.",
+    "strongest_argument_against": "Three of four matrix cells overlap accepted dense areas, with Polyakov as the closest existing expert and one exact likely duplicate.",
+    "confidence": "medium"
+  },
+  "evidence": {
+    "passport": "output/expert_admission/semantic_passports/control_misha_karpov/output/control_misha_karpov_semantic_passport.normalized.json",
+    "candidate_report": "output/expert_admission/candidates/control_misha_karpov/candidate_impact_report.md",
+    "comparison_reports": [
+      "output/expert_admission/candidates/polyakov/candidate_impact_report.md",
+      "output/expert_admission/candidates/ilia_izmailov/candidate_impact_report.md",
+      "output/expert_admission/candidates/ai_architect/candidate_impact_report.md"
+    ]
+  },
+  "deterministic_preflight": {
+    "recommendation": "overlap_heavy_needs_stronger_review",
+    "candidate_cells": 4,
+    "clean_gap_count": 1,
+    "adds_adjacent_viewpoint": 2,
+    "likely_duplicate": 1,
+    "exact_overlaps": 1,
+    "related_overlaps": 2,
+    "dense_overlap_cells": 3
+  },
+  "routing_contract": {
+    "good_fit": [
+      "Builder PM transition",
+      "PM/founder human-AI workflow",
+      "AI team management mindset",
+      "agentic backlog and experiment-factory workflows",
+      "non-technical product leader adoption of AI-assisted building"
+    ],
+    "poor_fit": [
+      "technical AI coding architecture",
+      "tool calling and hooks",
+      "RAG/evals/infrastructure",
+      "inference cost and latency",
+      "production-grade AI security and governance"
+    ],
+    "preferred_existing_experts": {
+      "polyakov": "custom skills, business automation, marketing/SEO automation",
+      "ilia_izmailov": "Claude Code workflows and AI-assisted product validation",
+      "ai_architect_refat_neuraldeep": "technical agentic development, architecture, evals, tool calling, and infrastructure"
+    }
+  },
+  "risk_notes": [
+    "Commercial/course bias is present and should limit broad routing.",
+    "The Telegram export has no comments, so community signal is unavailable.",
+    "The candidate may sound more distinctive than he is because the accepted roster already covers nearby agentic workflow topics.",
+    "The agent-as-employee framing is useful but may become motivational without concrete implementation details."
+  ],
+  "recommended_followup_probe": {
+    "probe_needed_before_production_admission": true,
+    "probe_shape": [
+      "2 PM/founder transition queries",
+      "2 AI agent management workflow queries",
+      "1 technical agentic workflow query where Misha should not dominate",
+      "1 Polyakov/Ilia overlap query"
+    ],
+    "acceptance_threshold": [
+      "Adds selected sources for PM/founder workflow questions.",
+      "Does not dominate technical architecture questions.",
+      "Adds at least one distinct Builder PM or AI team management angle not already supplied by Polyakov or Ilia."
+    ]
+  }
+}

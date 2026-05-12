@@ -1,0 +1,58 @@
+{
+  "missing_required_top_level_keys": [],
+  "known_source_ref_count": 4713,
+  "used_source_ref_count": 60,
+  "source_ref_index_used_count": 40,
+  "unknown_source_refs": [],
+  "unknown_source_ref_count": 0,
+  "refs_missing_from_source_ref_index_used": [
+    "P0081",
+    "P0150",
+    "P0151",
+    "P0155",
+    "P0157",
+    "P0164",
+    "P0172",
+    "P0179",
+    "P0191",
+    "P0193",
+    "P0196",
+    "P0208",
+    "P0220",
+    "P0243",
+    "P0252",
+    "P0257",
+    "P0277",
+    "P0303",
+    "P0319",
+    "P0486"
+  ],
+  "refs_missing_from_source_ref_index_used_count": 20,
+  "matrix_cell_count": 4,
+  "matrix_export_cell_count": 3,
+  "matrix_export_incomplete": true,
+  "missing_matrix_export_cells": [
+    {
+      "cell_id": "rag_retrieval_knowledge/knowledge_base_design/design_rag_knowledge_base",
+      "domain_id": "rag_retrieval_knowledge",
+      "subdomain_id": "knowledge_base_design",
+      "query_intent_ids": [
+        "design_rag_knowledge_base"
+      ],
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0288",
+        "P0414",
+        "P0574",
+        "P0582",
+        "P0608"
+      ]
+    }
+  ],
+  "missing_matrix_export_cell_count": 1,
+  "bad_matrix_relative_novelty_values": [],
+  "passport_generated_at": "2026-05-10T19:38:39.900250+00:00",
+  "expected_generated_at": "2026-05-10T19:38:39.900250+00:00",
+  "generated_at_matches_expected": true,
+  "valid_basic_contract": false
+}

@@ -1,0 +1,441 @@
+{
+  "schema_version": "candidate_impact_report.v0.1",
+  "created_at": "2026-05-10T11:50:07.295130+00:00",
+  "evaluation_mode": "semantic_matrix_preflight",
+  "admission_verdict": "not_assessed",
+  "candidate": {
+    "expert_id": "control_misha_karpov",
+    "display_name": "Миша Карпов — AI, продукты и рост ⛳",
+    "channel_username": "@unknown_misha_karpov",
+    "schema_version": "expert_value_passport.v1.1",
+    "generated_at": "2026-05-10T10:58:19.455127+00:00",
+    "passport_path": "output/expert_admission/semantic_passports/control_misha_karpov/output/control_misha_karpov_semantic_passport.normalized.json",
+    "cell_count": 4
+  },
+  "baseline": {
+    "passport_paths": [
+      "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/ai_architect/output/ai_architect_semantic_passport.normalized.json",
+      "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/air_ai/output/air_ai_semantic_passport.normalized.json",
+      "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/ilia_izmailov/output/ilia_izmailov_semantic_passport.normalized.json",
+      "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/neuraldeep/output/neuraldeep_semantic_passport.normalized.json",
+      "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/polyakov/output/polyakov_semantic_passport.normalized.json",
+      "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/refat/output/refat_semantic_passport.normalized.json"
+    ],
+    "summary": {
+      "passport_count": 6,
+      "expert_count": 6,
+      "matrix_cell_count": 17,
+      "taxonomy_extension_count": 0,
+      "strong_single_source_count": 13,
+      "strong_multi_source_count": 1,
+      "single_source_cell_count": 16,
+      "applied_alias_count": 3,
+      "domain_rollup_count": 8,
+      "domain_query_intent_rollup_count": 12,
+      "query_intent_rollup_count": 9,
+      "related_cell_overlap_count": 4,
+      "strong_domain_intent_multi_source_count": 3
+    },
+    "source_passports": [
+      {
+        "expert_id": "ai_architect",
+        "display_name": "AI Architect",
+        "path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/ai_architect/output/ai_architect_semantic_passport.normalized.json",
+        "cell_count": 4
+      },
+      {
+        "expert_id": "air_ai",
+        "display_name": "Air",
+        "path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/air_ai/output/air_ai_semantic_passport.normalized.json",
+        "cell_count": 2
+      },
+      {
+        "expert_id": "ilia_izmailov",
+        "display_name": "Ilia Izmailov",
+        "path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/ilia_izmailov/output/ilia_izmailov_semantic_passport.normalized.json",
+        "cell_count": 3
+      },
+      {
+        "expert_id": "neuraldeep",
+        "display_name": "Neuraldeep",
+        "path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/neuraldeep/output/neuraldeep_semantic_passport.normalized.json",
+        "cell_count": 3
+      },
+      {
+        "expert_id": "polyakov",
+        "display_name": "Polyakov",
+        "path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/polyakov/output/polyakov_semantic_passport.normalized.json",
+        "cell_count": 3
+      },
+      {
+        "expert_id": "refat",
+        "display_name": "Refat (Tech & AI)",
+        "path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/refat/output/refat_semantic_passport.normalized.json",
+        "cell_count": 3
+      }
+    ]
+  },
+  "summary": {
+    "candidate_cell_count": 4,
+    "fills_gap_count": 1,
+    "adds_adjacent_viewpoint_count": 2,
+    "deepens_existing_cell_count": 0,
+    "likely_duplicate_count": 1,
+    "taxonomy_extension_count": 0,
+    "needs_probe_count": 0,
+    "noise_risk_count": 0,
+    "exact_overlap_count": 1,
+    "related_overlap_count": 2,
+    "positive_impact_count": 3,
+    "overlap_cell_count": 3,
+    "overlap_cell_share": 0.75,
+    "positive_overlap_cell_count": 2,
+    "dense_overlap_cell_count": 3,
+    "dense_positive_overlap_cell_count": 2,
+    "clean_gap_count": 1,
+    "density_caveat": true,
+    "density_caveat_reasons": [
+      "At least half of candidate cells overlap existing accepted coverage.",
+      "Two or more candidate cells touch dense accepted rollups or exact cells.",
+      "At least one candidate cell is an exact likely duplicate.",
+      "Multiple positive signals are adjacent/depth signals rather than clean gaps."
+    ],
+    "preliminary_recommendation": "overlap_heavy_needs_stronger_review"
+  },
+  "cell_impacts": [
+    {
+      "candidate_cell_id": "coding_agents/cursor_windsurf_copilot/learn_ai_assisted_development",
+      "candidate_original_cell_id": null,
+      "classification": "adds_adjacent_viewpoint",
+      "rationale": "Candidate adds a new exact cell inside an already-covered domain + query intent area.",
+      "suggested_next_action": "human_review_overlap_or_complement",
+      "domain_id": "coding_agents",
+      "subdomain_id": "cursor_windsurf_copilot",
+      "subdomain_name": "Cursor & Vibe Coding Workflows",
+      "query_intent_ids": [
+        "learn_ai_assisted_development"
+      ],
+      "source_role": "primary",
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "aggregate_score": 4.434,
+      "scores": {
+        "depth": 4,
+        "practicality": 5,
+        "evidence_quality": 4,
+        "source_utility": 5,
+        "intrinsic_distinctiveness": 4,
+        "anti_hype": 4,
+        "community_signal": 0
+      },
+      "confidence": 0.95,
+      "confidence_normalized_0_5": 4.75,
+      "evidence_ref_count": 3,
+      "limitations": [
+        "Focuses on rapid MVP creation rather than enterprise architecture."
+      ],
+      "taxonomy_flags": [],
+      "exact_match": null,
+      "domain_query_intent_matches": [
+        {
+          "rollup_id": "coding_agents/learn_ai_assisted_development",
+          "coverage_status": "strong_multi_source",
+          "overlap_status": "related_multi_source",
+          "expert_count": 2,
+          "exact_cell_count": 3,
+          "exact_cell_ids": [
+            "coding_agents/claude_code_workflows/choose_ai_coding_tool",
+            "coding_agents/claude_code_workflows/learn_ai_assisted_development",
+            "coding_agents/codex_workflows/choose_ai_coding_tool"
+          ],
+          "best_experts": [
+            {
+              "expert_id": "polyakov",
+              "display_name": "Polyakov",
+              "source_role": "primary",
+              "aggregate_score": 4.849,
+              "evidence_ref_count": 4
+            },
+            {
+              "expert_id": "ai_architect",
+              "display_name": "AI Architect",
+              "source_role": "primary",
+              "aggregate_score": 4.406,
+              "evidence_ref_count": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_cell_id": "agent_ops/multi_agent_orchestration/design_agentic_dev_workflow",
+      "candidate_original_cell_id": null,
+      "classification": "adds_adjacent_viewpoint",
+      "rationale": "Candidate adds a new exact cell inside an already-covered domain + query intent area.",
+      "suggested_next_action": "human_review_overlap_or_complement",
+      "domain_id": "agent_ops",
+      "subdomain_id": "multi_agent_orchestration",
+      "subdomain_name": "Multi-Agent Teams & Orchestration",
+      "query_intent_ids": [
+        "design_agentic_dev_workflow"
+      ],
+      "source_role": "primary",
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "aggregate_score": 4.396,
+      "scores": {
+        "depth": 4,
+        "practicality": 4,
+        "evidence_quality": 4,
+        "source_utility": 5,
+        "intrinsic_distinctiveness": 5,
+        "anti_hype": 4,
+        "community_signal": 0
+      },
+      "confidence": 0.95,
+      "confidence_normalized_0_5": 4.75,
+      "evidence_ref_count": 4,
+      "limitations": [],
+      "taxonomy_flags": [],
+      "exact_match": null,
+      "domain_query_intent_matches": [
+        {
+          "rollup_id": "agent_ops/design_agentic_dev_workflow",
+          "coverage_status": "strong_multi_source",
+          "overlap_status": "related_multi_source",
+          "expert_count": 4,
+          "exact_cell_count": 3,
+          "exact_cell_ids": [
+            "agent_ops/agentic_dev_process/design_agentic_dev_workflow",
+            "agent_ops/claude_code_workflows/design_agentic_dev_workflow",
+            "agent_ops/tool_calling_hooks_skills/design_agentic_dev_workflow"
+          ],
+          "best_experts": [
+            {
+              "expert_id": "neuraldeep",
+              "display_name": "Neuraldeep",
+              "source_role": "primary",
+              "aggregate_score": 5.0,
+              "evidence_ref_count": 3
+            },
+            {
+              "expert_id": "polyakov",
+              "display_name": "Polyakov",
+              "source_role": "primary",
+              "aggregate_score": 5.0,
+              "evidence_ref_count": 4
+            },
+            {
+              "expert_id": "refat",
+              "display_name": "Refat (Tech & AI)",
+              "source_role": "primary",
+              "aggregate_score": 4.925,
+              "evidence_ref_count": 3
+            },
+            {
+              "expert_id": "ai_architect",
+              "display_name": "AI Architect",
+              "source_role": "primary",
+              "aggregate_score": 4.811,
+              "evidence_ref_count": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_cell_id": "ai_product_pm/pm_workflow/build_human_ai_workflow",
+      "candidate_original_cell_id": null,
+      "classification": "fills_gap",
+      "rationale": "Candidate creates a strong new exact cell outside the current baseline rollups.",
+      "suggested_next_action": "human_review_then_possible_accept",
+      "domain_id": "ai_product_pm",
+      "subdomain_id": "pm_workflow",
+      "subdomain_name": "Builder PM & AI Productivity",
+      "query_intent_ids": [
+        "build_human_ai_workflow"
+      ],
+      "source_role": "primary",
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "aggregate_score": 4.189,
+      "scores": {
+        "depth": 4,
+        "practicality": 5,
+        "evidence_quality": 4,
+        "source_utility": 4,
+        "intrinsic_distinctiveness": 4,
+        "anti_hype": 4,
+        "community_signal": 0
+      },
+      "confidence": 0.9,
+      "confidence_normalized_0_5": 4.5,
+      "evidence_ref_count": 3,
+      "limitations": [],
+      "taxonomy_flags": [],
+      "exact_match": null,
+      "domain_query_intent_matches": []
+    },
+    {
+      "candidate_cell_id": "ai_product_pm/ai_product_strategy/plan_ai_product_feature",
+      "candidate_original_cell_id": null,
+      "classification": "likely_duplicate",
+      "rationale": "Candidate maps to an already-covered exact cell without a clear deterministic score lift.",
+      "suggested_next_action": "check_representative_posts_before_counting_as_unique",
+      "domain_id": "ai_product_pm",
+      "subdomain_id": "ai_product_strategy",
+      "subdomain_name": "CPO Strategy & Metrics",
+      "query_intent_ids": [
+        "plan_ai_product_feature"
+      ],
+      "source_role": "supporting",
+      "coverage_level": "strong",
+      "depth_level": "practical",
+      "aggregate_score": 3.849,
+      "scores": {
+        "depth": 4,
+        "practicality": 4,
+        "evidence_quality": 4,
+        "source_utility": 4,
+        "intrinsic_distinctiveness": 3,
+        "anti_hype": 3,
+        "community_signal": 0
+      },
+      "confidence": 0.9,
+      "confidence_normalized_0_5": 4.5,
+      "evidence_ref_count": 2,
+      "limitations": [],
+      "taxonomy_flags": [],
+      "exact_match": {
+        "matrix_cell_id": "ai_product_pm/ai_product_strategy/plan_ai_product_feature",
+        "coverage_status": "strong_single_source",
+        "redundancy_level": "single_source",
+        "expert_count": 1,
+        "best_experts": [
+          {
+            "expert_id": "polyakov",
+            "display_name": "Polyakov",
+            "source_role": "primary",
+            "aggregate_score": 4.34,
+            "evidence_ref_count": 4
+          }
+        ]
+      },
+      "domain_query_intent_matches": [
+        {
+          "rollup_id": "ai_product_pm/plan_ai_product_feature",
+          "coverage_status": "strong_single_source",
+          "overlap_status": "related_multi_source",
+          "expert_count": 2,
+          "exact_cell_count": 2,
+          "exact_cell_ids": [
+            "ai_product_pm/ai_product_strategy/plan_ai_product_feature",
+            "ai_product_pm/pm_workflow/plan_ai_product_feature"
+          ],
+          "best_experts": [
+            {
+              "expert_id": "polyakov",
+              "display_name": "Polyakov",
+              "source_role": "primary",
+              "aggregate_score": 4.34,
+              "evidence_ref_count": 4
+            },
+            {
+              "expert_id": "ilia_izmailov",
+              "display_name": "Ilia Izmailov",
+              "source_role": "supporting",
+              "aggregate_score": 4.0,
+              "evidence_ref_count": 4
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "closest_existing_experts": [
+    {
+      "expert_id": "polyakov",
+      "display_name": "Polyakov",
+      "match_count": 4,
+      "exact_match_count": 1,
+      "related_match_count": 3,
+      "matched_candidate_cells": [
+        "agent_ops/multi_agent_orchestration/design_agentic_dev_workflow",
+        "ai_product_pm/ai_product_strategy/plan_ai_product_feature",
+        "coding_agents/cursor_windsurf_copilot/learn_ai_assisted_development"
+      ],
+      "matched_rollups": [
+        "agent_ops/design_agentic_dev_workflow",
+        "ai_product_pm/plan_ai_product_feature",
+        "coding_agents/learn_ai_assisted_development"
+      ],
+      "best_existing_score": 5.0
+    },
+    {
+      "expert_id": "ai_architect",
+      "display_name": "AI Architect",
+      "match_count": 2,
+      "exact_match_count": 0,
+      "related_match_count": 2,
+      "matched_candidate_cells": [
+        "agent_ops/multi_agent_orchestration/design_agentic_dev_workflow",
+        "coding_agents/cursor_windsurf_copilot/learn_ai_assisted_development"
+      ],
+      "matched_rollups": [
+        "agent_ops/design_agentic_dev_workflow",
+        "coding_agents/learn_ai_assisted_development"
+      ],
+      "best_existing_score": 4.811
+    },
+    {
+      "expert_id": "neuraldeep",
+      "display_name": "Neuraldeep",
+      "match_count": 1,
+      "exact_match_count": 0,
+      "related_match_count": 1,
+      "matched_candidate_cells": [
+        "agent_ops/multi_agent_orchestration/design_agentic_dev_workflow"
+      ],
+      "matched_rollups": [
+        "agent_ops/design_agentic_dev_workflow"
+      ],
+      "best_existing_score": 5.0
+    },
+    {
+      "expert_id": "refat",
+      "display_name": "Refat (Tech & AI)",
+      "match_count": 1,
+      "exact_match_count": 0,
+      "related_match_count": 1,
+      "matched_candidate_cells": [
+        "agent_ops/multi_agent_orchestration/design_agentic_dev_workflow"
+      ],
+      "matched_rollups": [
+        "agent_ops/design_agentic_dev_workflow"
+      ],
+      "best_existing_score": 4.925
+    },
+    {
+      "expert_id": "ilia_izmailov",
+      "display_name": "Ilia Izmailov",
+      "match_count": 1,
+      "exact_match_count": 0,
+      "related_match_count": 1,
+      "matched_candidate_cells": [
+        "ai_product_pm/ai_product_strategy/plan_ai_product_feature"
+      ],
+      "matched_rollups": [
+        "ai_product_pm/plan_ai_product_feature"
+      ],
+      "best_existing_score": 4.0
+    }
+  ],
+  "candidate_applied_aliases": [],
+  "candidate_taxonomy_flags": [],
+  "limitations": [
+    "Diagnostic-only report; it does not make a final admission decision.",
+    "Comparison is deterministic over passport matrix_export cells and matrix rollups.",
+    "It does not inspect raw posts, runtime retrieval behavior, embeddings, or source_bundle quality.",
+    "LLM arbitration is still useful for borderline duplicate-vs-complement cases."
+  ]
+}

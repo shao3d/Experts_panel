@@ -1,0 +1,381 @@
+{
+  "schema_version": "candidate_overlap_report.v0.1",
+  "created_at": "2026-05-10T19:42:28.690726+00:00",
+  "candidate": {
+    "expert_id": "doronin",
+    "display_name": "Doronin",
+    "channel_username": "@kdoronin_blog",
+    "schema_version": "expert_value_passport.v1.1",
+    "generated_at": "2026-05-10T19:38:39.900250+00:00",
+    "passport_path": "output/expert_admission/semantic_passports/doronin/doronin_semantic_passport.normalized.json",
+    "cell_count": 4
+  },
+  "summary": {
+    "exact_overlap_count": 3,
+    "related_overlap_count": 0,
+    "likely_duplicate_count": 3,
+    "adds_adjacent_viewpoint_count": 0,
+    "deepens_existing_cell_count": 0
+  },
+  "cell_impacts": [
+    {
+      "candidate_cell_id": "coding_agents/claude_code_workflows/design_agentic_dev_workflow",
+      "candidate_original_cell_id": null,
+      "classification": "likely_duplicate",
+      "rationale": "Candidate maps to an already-covered exact cell without a clear deterministic score lift.",
+      "suggested_next_action": "check_representative_posts_before_counting_as_unique",
+      "domain_id": "coding_agents",
+      "subdomain_id": "claude_code_workflows",
+      "subdomain_name": "Claude Code Workflows",
+      "query_intent_ids": [
+        "design_agentic_dev_workflow"
+      ],
+      "source_role": "primary",
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "aggregate_score": 4.925,
+      "scores": {
+        "depth": 5.0,
+        "practicality": 5.0,
+        "evidence_quality": 5.0,
+        "source_utility": 5.0,
+        "intrinsic_distinctiveness": 4.5,
+        "anti_hype": 5.0,
+        "community_signal": 4.0
+      },
+      "confidence": 0.95,
+      "confidence_normalized_0_5": 4.75,
+      "evidence_ref_count": 6,
+      "limitations": [],
+      "taxonomy_flags": [],
+      "exact_match": {
+        "matrix_cell_id": "coding_agents/claude_code_workflows/design_agentic_dev_workflow",
+        "coverage_status": "strong_single_source",
+        "redundancy_level": "single_source",
+        "expert_count": 1,
+        "best_experts": [
+          {
+            "expert_id": "ilia_izmailov",
+            "display_name": "Ilia Izmailov",
+            "source_role": "primary",
+            "aggregate_score": 4.774,
+            "evidence_ref_count": 5
+          }
+        ]
+      },
+      "domain_query_intent_matches": [
+        {
+          "rollup_id": "coding_agents/design_agentic_dev_workflow",
+          "coverage_status": "strong_multi_source",
+          "overlap_status": "related_multi_source",
+          "expert_count": 4,
+          "exact_cell_count": 2,
+          "exact_cell_ids": [
+            "coding_agents/agentic_dev_process/design_agentic_dev_workflow",
+            "coding_agents/claude_code_workflows/design_agentic_dev_workflow"
+          ],
+          "best_experts": [
+            {
+              "expert_id": "ai_grabli",
+              "display_name": "Tech_AI_grabli",
+              "source_role": "primary",
+              "aggregate_score": 4.811,
+              "evidence_ref_count": 2
+            },
+            {
+              "expert_id": "akimov",
+              "display_name": "Akimov",
+              "source_role": "primary",
+              "aggregate_score": 4.811,
+              "evidence_ref_count": 4
+            },
+            {
+              "expert_id": "ostrikov",
+              "display_name": "Ostrikov",
+              "source_role": "primary",
+              "aggregate_score": 4.774,
+              "evidence_ref_count": 3
+            },
+            {
+              "expert_id": "ilia_izmailov",
+              "display_name": "Ilia Izmailov",
+              "source_role": "primary",
+              "aggregate_score": 4.774,
+              "evidence_ref_count": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_cell_id": "coding_agents/agentic_dev_process/design_agentic_dev_workflow",
+      "candidate_original_cell_id": null,
+      "classification": "likely_duplicate",
+      "rationale": "Candidate maps to an already-covered exact cell without a clear deterministic score lift.",
+      "suggested_next_action": "check_representative_posts_before_counting_as_unique",
+      "domain_id": "coding_agents",
+      "subdomain_id": "agentic_dev_process",
+      "subdomain_name": "Agentic Development Process",
+      "query_intent_ids": [
+        "design_agentic_dev_workflow"
+      ],
+      "source_role": "primary",
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "aggregate_score": 4.792,
+      "scores": {
+        "depth": 5.0,
+        "practicality": 4.5,
+        "evidence_quality": 4.5,
+        "source_utility": 5.0,
+        "intrinsic_distinctiveness": 5.0,
+        "anti_hype": 5.0,
+        "community_signal": 4.5
+      },
+      "confidence": 0.95,
+      "confidence_normalized_0_5": 4.75,
+      "evidence_ref_count": 9,
+      "limitations": [],
+      "taxonomy_flags": [],
+      "exact_match": {
+        "matrix_cell_id": "coding_agents/agentic_dev_process/design_agentic_dev_workflow",
+        "coverage_status": "strong_multi_source",
+        "redundancy_level": "medium",
+        "expert_count": 3,
+        "best_experts": [
+          {
+            "expert_id": "ai_grabli",
+            "display_name": "Tech_AI_grabli",
+            "source_role": "primary",
+            "aggregate_score": 4.811,
+            "evidence_ref_count": 2
+          },
+          {
+            "expert_id": "akimov",
+            "display_name": "Akimov",
+            "source_role": "primary",
+            "aggregate_score": 4.811,
+            "evidence_ref_count": 4
+          },
+          {
+            "expert_id": "ostrikov",
+            "display_name": "Ostrikov",
+            "source_role": "primary",
+            "aggregate_score": 4.774,
+            "evidence_ref_count": 3
+          }
+        ]
+      },
+      "domain_query_intent_matches": [
+        {
+          "rollup_id": "coding_agents/design_agentic_dev_workflow",
+          "coverage_status": "strong_multi_source",
+          "overlap_status": "related_multi_source",
+          "expert_count": 4,
+          "exact_cell_count": 2,
+          "exact_cell_ids": [
+            "coding_agents/agentic_dev_process/design_agentic_dev_workflow",
+            "coding_agents/claude_code_workflows/design_agentic_dev_workflow"
+          ],
+          "best_experts": [
+            {
+              "expert_id": "ai_grabli",
+              "display_name": "Tech_AI_grabli",
+              "source_role": "primary",
+              "aggregate_score": 4.811,
+              "evidence_ref_count": 2
+            },
+            {
+              "expert_id": "akimov",
+              "display_name": "Akimov",
+              "source_role": "primary",
+              "aggregate_score": 4.811,
+              "evidence_ref_count": 4
+            },
+            {
+              "expert_id": "ostrikov",
+              "display_name": "Ostrikov",
+              "source_role": "primary",
+              "aggregate_score": 4.774,
+              "evidence_ref_count": 3
+            },
+            {
+              "expert_id": "ilia_izmailov",
+              "display_name": "Ilia Izmailov",
+              "source_role": "primary",
+              "aggregate_score": 4.774,
+              "evidence_ref_count": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_cell_id": "rag_retrieval_knowledge/knowledge_base_design/design_rag_knowledge_base",
+      "candidate_original_cell_id": null,
+      "classification": "likely_duplicate",
+      "rationale": "Candidate maps to an already-covered exact cell without a clear deterministic score lift.",
+      "suggested_next_action": "check_representative_posts_before_counting_as_unique",
+      "domain_id": "rag_retrieval_knowledge",
+      "subdomain_id": "knowledge_base_design",
+      "subdomain_name": "Knowledge Base Design (Temporal Graphs)",
+      "query_intent_ids": [
+        "design_rag_knowledge_base"
+      ],
+      "source_role": "primary",
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "aggregate_score": 4.292,
+      "scores": {
+        "depth": 4.5,
+        "practicality": 4.0,
+        "evidence_quality": 4.0,
+        "source_utility": 4.5,
+        "intrinsic_distinctiveness": 4.5,
+        "anti_hype": 0.0,
+        "community_signal": 4.0
+      },
+      "confidence": null,
+      "confidence_normalized_0_5": null,
+      "evidence_ref_count": 5,
+      "limitations": [
+        "Deterministically repaired from matrix_cells because matrix_export omitted this matrix-worthy cell."
+      ],
+      "taxonomy_flags": [],
+      "exact_match": {
+        "matrix_cell_id": "rag_retrieval_knowledge/knowledge_base_design/design_rag_knowledge_base",
+        "coverage_status": "strong_single_source",
+        "redundancy_level": "single_source",
+        "expert_count": 1,
+        "best_experts": [
+          {
+            "expert_id": "refat",
+            "display_name": "Refat (Tech & AI)",
+            "source_role": "primary",
+            "aggregate_score": 4.462,
+            "evidence_ref_count": 2
+          }
+        ]
+      },
+      "domain_query_intent_matches": [
+        {
+          "rollup_id": "rag_retrieval_knowledge/design_rag_knowledge_base",
+          "coverage_status": "strong_multi_source",
+          "overlap_status": "related_multi_source",
+          "expert_count": 2,
+          "exact_cell_count": 2,
+          "exact_cell_ids": [
+            "rag_retrieval_knowledge/knowledge_base_design/design_rag_knowledge_base",
+            "rag_retrieval_knowledge/rag_architecture/design_rag_knowledge_base"
+          ],
+          "best_experts": [
+            {
+              "expert_id": "refat",
+              "display_name": "Refat (Tech & AI)",
+              "source_role": "primary",
+              "aggregate_score": 4.462,
+              "evidence_ref_count": 2
+            },
+            {
+              "expert_id": "air_ai",
+              "display_name": "Air",
+              "source_role": "primary",
+              "aggregate_score": 4.0,
+              "evidence_ref_count": 2
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "closest_existing_experts": [
+    {
+      "expert_id": "ai_grabli",
+      "display_name": "Tech_AI_grabli",
+      "match_count": 3,
+      "exact_match_count": 1,
+      "related_match_count": 2,
+      "matched_candidate_cells": [
+        "coding_agents/agentic_dev_process/design_agentic_dev_workflow",
+        "coding_agents/claude_code_workflows/design_agentic_dev_workflow"
+      ],
+      "matched_rollups": [
+        "coding_agents/design_agentic_dev_workflow"
+      ],
+      "best_existing_score": 4.811
+    },
+    {
+      "expert_id": "akimov",
+      "display_name": "Akimov",
+      "match_count": 3,
+      "exact_match_count": 1,
+      "related_match_count": 2,
+      "matched_candidate_cells": [
+        "coding_agents/agentic_dev_process/design_agentic_dev_workflow",
+        "coding_agents/claude_code_workflows/design_agentic_dev_workflow"
+      ],
+      "matched_rollups": [
+        "coding_agents/design_agentic_dev_workflow"
+      ],
+      "best_existing_score": 4.811
+    },
+    {
+      "expert_id": "ilia_izmailov",
+      "display_name": "Ilia Izmailov",
+      "match_count": 3,
+      "exact_match_count": 1,
+      "related_match_count": 2,
+      "matched_candidate_cells": [
+        "coding_agents/agentic_dev_process/design_agentic_dev_workflow",
+        "coding_agents/claude_code_workflows/design_agentic_dev_workflow"
+      ],
+      "matched_rollups": [
+        "coding_agents/design_agentic_dev_workflow"
+      ],
+      "best_existing_score": 4.774
+    },
+    {
+      "expert_id": "ostrikov",
+      "display_name": "Ostrikov",
+      "match_count": 3,
+      "exact_match_count": 1,
+      "related_match_count": 2,
+      "matched_candidate_cells": [
+        "coding_agents/agentic_dev_process/design_agentic_dev_workflow",
+        "coding_agents/claude_code_workflows/design_agentic_dev_workflow"
+      ],
+      "matched_rollups": [
+        "coding_agents/design_agentic_dev_workflow"
+      ],
+      "best_existing_score": 4.774
+    },
+    {
+      "expert_id": "refat",
+      "display_name": "Refat (Tech & AI)",
+      "match_count": 2,
+      "exact_match_count": 1,
+      "related_match_count": 1,
+      "matched_candidate_cells": [
+        "rag_retrieval_knowledge/knowledge_base_design/design_rag_knowledge_base"
+      ],
+      "matched_rollups": [
+        "rag_retrieval_knowledge/design_rag_knowledge_base"
+      ],
+      "best_existing_score": 4.462
+    },
+    {
+      "expert_id": "air_ai",
+      "display_name": "Air",
+      "match_count": 1,
+      "exact_match_count": 0,
+      "related_match_count": 1,
+      "matched_candidate_cells": [
+        "rag_retrieval_knowledge/knowledge_base_design/design_rag_knowledge_base"
+      ],
+      "matched_rollups": [
+        "rag_retrieval_knowledge/design_rag_knowledge_base"
+      ],
+      "best_existing_score": 4.0
+    }
+  ]
+}

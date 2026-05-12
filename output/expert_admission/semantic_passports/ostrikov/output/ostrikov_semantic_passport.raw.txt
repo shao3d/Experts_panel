@@ -1,0 +1,938 @@
+{
+  "schema_version": "expert_value_passport.v1.1",
+  "passport_meta": {
+    "schema_version": "expert_value_passport.v1.1",
+    "expert_id": "ostrikov",
+    "display_name": "Ostrikov",
+    "channel_username": "@aostrikov_ai_agents",
+    "model_assumed": "gemini-3.1-pro-preview",
+    "prompt_version": "semantic-passport-prompt.v1",
+    "generated_at": "2026-05-10T16:22:18.362892+00:00"
+  },
+  "corpus_audit": {
+    "post_count_seen": 68,
+    "comment_count_seen": 1188,
+    "date_range": {
+      "first_post": "2026-01-07 18:52:39.000000",
+      "last_post": "2026-05-03 09:04:23.000000"
+    },
+    "language_mix": [
+      "ru",
+      "en"
+    ],
+    "material_limitations": [
+      "Some posts are announcements for streams or hackathons, requiring external video viewing for full context."
+    ],
+    "author_vs_community_boundary": "Clear. The author writes detailed, structured posts. The community is highly engaged, technical, and often shares their own GitHub repos, architectural ideas, and prompt strategies in the comments."
+  },
+  "source_ref_index_used": [
+    {
+      "source_ref": "P0001",
+      "source_kind": "expert_post",
+      "post_id": 5437,
+      "telegram_message_id": 11,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-07T18:52:39Z",
+      "why_used": "Critique of superficial AI courses, establishes anti-hype stance."
+    },
+    {
+      "source_ref": "P0005",
+      "source_kind": "expert_post",
+      "post_id": 5441,
+      "telegram_message_id": 17,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-11T08:54:05Z",
+      "why_used": "Details on winning the ERC3 agent competition using ReAct and prompt evolution."
+    },
+    {
+      "source_ref": "P0008",
+      "source_kind": "expert_post",
+      "post_id": 5444,
+      "telegram_message_id": 22,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-20T20:10:05Z",
+      "why_used": "Community building, curation of top AI channels."
+    },
+    {
+      "source_ref": "P0011",
+      "source_kind": "expert_post",
+      "post_id": 5447,
+      "telegram_message_id": 25,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-22T08:58:03Z",
+      "why_used": "Highly practical PRD template for AI-assisted microservice generation."
+    },
+    {
+      "source_ref": "P0012",
+      "source_kind": "expert_post",
+      "post_id": 5448,
+      "telegram_message_id": 26,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-23T12:33:12Z",
+      "why_used": "Deep dive into AI engineering trade-offs (RAG chunking, Agent vs Graph, optimization triangle)."
+    },
+    {
+      "source_ref": "P0014",
+      "source_kind": "expert_post",
+      "post_id": 5450,
+      "telegram_message_id": 28,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-24T10:44:44Z",
+      "why_used": "Analysis of LocalDesk agent loop, context management, and tool calling."
+    },
+    {
+      "source_ref": "P0020",
+      "source_kind": "expert_post",
+      "post_id": 5456,
+      "telegram_message_id": 37,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-03T18:52:13Z",
+      "why_used": "Discussion on agent guardrails and docker isolation."
+    },
+    {
+      "source_ref": "P0023",
+      "source_kind": "expert_post",
+      "post_id": 5459,
+      "telegram_message_id": 40,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-23T07:40:47Z",
+      "why_used": "Insights on AI-First development processes and harness engineering."
+    },
+    {
+      "source_ref": "P0024",
+      "source_kind": "expert_post",
+      "post_id": 5460,
+      "telegram_message_id": 41,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-27T07:46:10Z",
+      "why_used": "Signature insight on vibecoding: adapting to AI-generated code rather than forcing human patterns."
+    },
+    {
+      "source_ref": "P0027",
+      "source_kind": "expert_post",
+      "post_id": 5463,
+      "telegram_message_id": 44,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-03-02T08:41:18Z",
+      "why_used": "Concept of AI-Fluency combined with domain experience; introduction to SKILL.md."
+    },
+    {
+      "source_ref": "P0039",
+      "source_kind": "expert_post",
+      "post_id": 7999,
+      "telegram_message_id": 60,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-03-28T08:55:03Z",
+      "why_used": "Detailed architectural breakdown of OpenClaw/learn-claude-code (Part 1)."
+    },
+    {
+      "source_ref": "P0040",
+      "source_kind": "expert_post",
+      "post_id": 8000,
+      "telegram_message_id": 61,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-03-29T12:19:22Z",
+      "why_used": "Detailed architectural breakdown of OpenClaw/learn-claude-code (Part 2)."
+    },
+    {
+      "source_ref": "P0061",
+      "source_kind": "expert_post",
+      "post_id": 9668,
+      "telegram_message_id": 94,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-18T13:10:00Z",
+      "why_used": "Analysis of BitGN PAC1 winning agent architecture (REPL + execute_code)."
+    },
+    {
+      "source_ref": "P0068",
+      "source_kind": "expert_post",
+      "post_id": 9848,
+      "telegram_message_id": 110,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-05-03T09:04:23Z",
+      "why_used": "AI-First company transformation concepts."
+    }
+  ],
+  "executive_summary": {
+    "one_sentence_positioning": "A top-tier AI engineering practitioner and community leader who provides deep, production-tested insights into agentic workflows, AI-first software development, and the architectural mechanics of coding agents.",
+    "strongest_system_value": "Deconstructing complex agent architectures (like Claude Code/OpenClaw) into practical, reusable patterns (agent loops, context compaction, SKILL.md) and establishing pragmatic engineering standards for AI-assisted development.",
+    "weakest_system_value": "Less focused on foundational model training or theoretical ML research; heavily biased towards applied engineering, API orchestration, and prompt/tool engineering.",
+    "best_fit_queries": [
+      "How to design a robust agent loop for coding tasks?",
+      "What are the trade-offs between free agents and state machines in production?",
+      "How to structure a PRD for an AI coding assistant?",
+      "How to implement context compaction in a multi-agent system?"
+    ],
+    "poor_fit_queries": [
+      "How to pre-train a local LLM from scratch?",
+      "Mathematical proofs for transformer attention mechanisms."
+    ],
+    "confidence": 0.95
+  },
+  "expert_positioning": {
+    "primary_role": "AI Engineering Lead & Agent Architect",
+    "audience": [
+      "Software Engineers transitioning to AI",
+      "AI Product Managers",
+      "CTOs and Tech Leads",
+      "Hackathon participants"
+    ],
+    "voice": [
+      "Pragmatic",
+      "Enthusiastic",
+      "Technical",
+      "Humorous",
+      "Direct"
+    ],
+    "worldview": [
+      "AI-First development requires adapting human processes to AI, not forcing AI to mimic human coding styles.",
+      "The future belongs to domain experts who develop 'AI-Fluency' (the ability to iteratively manage and build skills for agents).",
+      "Simple, deterministic architectures (like REPL loops or state machines) often outperform complex, multi-tool free agents in production."
+    ],
+    "distinctive_angle": "Combines deep hands-on hackathon/production experience with a talent for deconstructing complex agent frameworks into digestible, actionable engineering patterns.",
+    "recurring_formats": [
+      "Architectural teardowns of open-source agent frameworks",
+      "Practical templates (e.g., PRDs, SKILL.md)",
+      "Trade-off matrices for AI engineering decisions",
+      "Community stream announcements and summaries"
+    ],
+    "evidence_refs": [
+      "P0011",
+      "P0012",
+      "P0024",
+      "P0027",
+      "P0039"
+    ]
+  },
+  "knowledge_domains": [
+    {
+      "domain_id": "coding_agents",
+      "domain_name": "AI Coding Agents & Workflows",
+      "subdomain_ids": [
+        "claude_code_workflows",
+        "agentic_dev_process",
+        "mcp_tooling"
+      ],
+      "query_intent_ids": [
+        "design_agentic_dev_workflow",
+        "learn_ai_assisted_development"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "unique",
+      "what_the_expert_knows": [
+        "Internal mechanics of Claude Code and OpenClaw.",
+        "How to structure PRDs specifically for AI consumption.",
+        "The shift from writing code to 'vibecoding' and managing agent harnesses."
+      ],
+      "how_they_reason": [
+        "Focuses on the agent loop as the core primitive.",
+        "Advocates for adapting QA and architecture to handle AI-generated code rather than fighting it."
+      ],
+      "missing_or_weak_subtopics": [
+        "Deep IDE integration specifics (e.g., Cursor internals), though mentions them broadly."
+      ],
+      "evidence_refs": [
+        "P0011",
+        "P0023",
+        "P0024",
+        "P0039"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "domain_id": "agent_ops",
+      "domain_name": "Agent Architecture & Operations",
+      "subdomain_ids": [
+        "multi_agent_orchestration",
+        "tool_calling_hooks_skills",
+        "context_compression"
+      ],
+      "query_intent_ids": [
+        "design_agentic_dev_workflow",
+        "debug_agent_failure"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "Implementation of context compaction (local, auto, manual).",
+        "Design of subagents and task managers.",
+        "Guardrails and loop detection mechanisms for local agents."
+      ],
+      "how_they_reason": [
+        "Deconstructs complex systems into 10-20 line code primitives.",
+        "Evaluates architectures based on token efficiency and determinism."
+      ],
+      "missing_or_weak_subtopics": [],
+      "evidence_refs": [
+        "P0014",
+        "P0020",
+        "P0039",
+        "P0040"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "domain_id": "ai_engineering_infra",
+      "domain_name": "AI Engineering & Infrastructure",
+      "subdomain_ids": [
+        "rag_architecture",
+        "hybrid_retrieval"
+      ],
+      "query_intent_ids": [
+        "design_rag_knowledge_base",
+        "optimize_inference_cost_latency"
+      ],
+      "coverage_level": "moderate",
+      "depth_level": "practical",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "Trade-offs in RAG chunking strategies.",
+        "Dense vs. Sparse vs. Hybrid retrieval in production.",
+        "The optimization triangle: Quality vs. Latency vs. Cost."
+      ],
+      "how_they_reason": [
+        "Uses tabular trade-off matrices to map technical choices to business constraints."
+      ],
+      "missing_or_weak_subtopics": [
+        "Advanced vector database tuning."
+      ],
+      "evidence_refs": [
+        "P0012"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "domain_id": "business_adoption",
+      "domain_name": "Business Adoption & AI-First Strategy",
+      "subdomain_ids": [
+        "adoption_roadmaps",
+        "human_ai_workflow"
+      ],
+      "query_intent_ids": [
+        "build_human_ai_workflow",
+        "assess_ai_tool_business_adoption"
+      ],
+      "coverage_level": "moderate",
+      "depth_level": "practical",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "The concept of 'AI-Fluency' combined with domain expertise.",
+        "How to transition a company to an AI-First model.",
+        "The use of SKILL.md files to distill human expertise into agent instructions."
+      ],
+      "how_they_reason": [
+        "Views AI as a lever for existing expertise rather than a replacement for domain knowledge.",
+        "Believes organizational adaptation is the primary bottleneck, not technology."
+      ],
+      "missing_or_weak_subtopics": [
+        "Enterprise compliance and legal frameworks."
+      ],
+      "evidence_refs": [
+        "P0023",
+        "P0027",
+        "P0068"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "value_dimensions": [
+    {
+      "dimension_id": "practical_specificity",
+      "score_0_5": 5,
+      "rationale": "Provides exact PRD templates, architectural breakdowns of specific GitHub repos, and detailed trade-off matrices for production systems.",
+      "evidence_refs": [
+        "P0011",
+        "P0012",
+        "P0039"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "insight_density",
+      "score_0_5": 4,
+      "rationale": "High signal-to-noise ratio in technical posts, though interspersed with community announcements and personal updates.",
+      "evidence_refs": [
+        "P0024",
+        "P0039",
+        "P0061"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "dimension_id": "decision_value",
+      "score_0_5": 5,
+      "rationale": "Offers clear frameworks for making engineering decisions (e.g., Agent vs Graph, RAG chunking sizes, when to use subagents).",
+      "evidence_refs": [
+        "P0012",
+        "P0023"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "anti_hype_signal",
+      "score_0_5": 4,
+      "rationale": "Critiques superficial AI courses and overly complex agent architectures, advocating for simple REPL loops and deterministic state machines where appropriate.",
+      "evidence_refs": [
+        "P0001",
+        "P0012",
+        "P0061"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "dimension_id": "community_resonance",
+      "score_0_5": 5,
+      "rationale": "Acts as a central hub for the Russian-speaking AI engineering community, hosting streams, participating in hackathons, and driving massive comment engagement.",
+      "evidence_refs": [
+        "P0008",
+        "P0068"
+      ],
+      "confidence": 0.95
+    }
+  ],
+  "matrix_cells": [
+    {
+      "domain_id": "coding_agents",
+      "subdomain_id": "agentic_dev_process",
+      "subdomain_name": "Agentic Development Process",
+      "query_intent_ids": [
+        "design_agentic_dev_workflow"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0011",
+        "P0023",
+        "P0024"
+      ],
+      "notes": "Signature insights on structuring PRDs for AI and adapting human workflows to AI-generated code ('vibecoding')."
+    },
+    {
+      "domain_id": "agent_ops",
+      "subdomain_id": "multi_agent_orchestration",
+      "subdomain_name": "Multi-Agent Orchestration & Architecture",
+      "query_intent_ids": [
+        "design_agentic_dev_workflow"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 5,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 3,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0039",
+        "P0040",
+        "P0061"
+      ],
+      "notes": "Deep architectural teardowns of OpenClaw and winning hackathon agents, focusing on loops, context compaction, and tool execution."
+    },
+    {
+      "domain_id": "ai_engineering_infra",
+      "subdomain_id": "rag_architecture",
+      "subdomain_name": "RAG Architecture & Trade-offs",
+      "query_intent_ids": [
+        "design_rag_knowledge_base"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 3,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 4,
+      "comment_signal_score_0_5": 3,
+      "recommended_matrix_weight": "normal",
+      "evidence_refs": [
+        "P0012"
+      ],
+      "notes": "Excellent tabular breakdowns of RAG chunking and retrieval trade-offs for production environments."
+    },
+    {
+      "domain_id": "business_adoption",
+      "subdomain_id": "human_ai_workflow",
+      "subdomain_name": "Human-AI Workflow & Fluency",
+      "query_intent_ids": [
+        "build_human_ai_workflow"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 4,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 3,
+      "source_utility_score_0_5": 4,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0027",
+        "P0068"
+      ],
+      "notes": "Strong conceptual framework around 'AI-Fluency' and using SKILL.md to distill domain expertise into agent instructions."
+    }
+  ],
+  "query_intent_fit": [
+    {
+      "query_intent_id": "design_agentic_dev_workflow",
+      "query_intent_name": "Design Agentic Development Workflow",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "coding_agents",
+        "agent_ops"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "Provides exact architectural patterns, PRD templates, and code-level analysis of successful agent loops.",
+      "limitations": [],
+      "evidence_refs": [
+        "P0011",
+        "P0039",
+        "P0061"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "query_intent_id": "build_human_ai_workflow",
+      "query_intent_name": "Build Human-AI Workflow",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "business_adoption"
+      ],
+      "source_utility_score_0_5": 4,
+      "why": "Offers a clear philosophy on how domain experts should interact with agents (AI-Fluency) and how to encode knowledge via skills.",
+      "limitations": [
+        "More focused on individual/team productivity than enterprise-wide governance."
+      ],
+      "evidence_refs": [
+        "P0027",
+        "P0068"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "query_intent_id": "design_rag_knowledge_base",
+      "query_intent_name": "Design RAG Knowledge Base",
+      "fit_role": "supporting",
+      "best_domain_ids": [
+        "ai_engineering_infra"
+      ],
+      "source_utility_score_0_5": 4,
+      "why": "Provides excellent, concise trade-off matrices for RAG design decisions.",
+      "limitations": [
+        "Not the primary focus of the channel; covered in specific high-value posts."
+      ],
+      "evidence_refs": [
+        "P0012"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "content_quality_distribution": [
+    {
+      "category_id": "architecture_analysis",
+      "share_estimate_0_1": 0.3,
+      "system_value": "high",
+      "notes": "Deep dives into open-source repos and hackathon winners.",
+      "evidence_refs": [
+        "P0014",
+        "P0039",
+        "P0040",
+        "P0061"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "deep_practitioner",
+      "share_estimate_0_1": 0.3,
+      "system_value": "high",
+      "notes": "Frameworks, PRD templates, and engineering trade-offs.",
+      "evidence_refs": [
+        "P0011",
+        "P0012",
+        "P0023",
+        "P0024"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "commentary",
+      "share_estimate_0_1": 0.2,
+      "system_value": "medium",
+      "notes": "Thoughts on the AI industry, AI-first companies, and community building.",
+      "evidence_refs": [
+        "P0008",
+        "P0027",
+        "P0068"
+      ],
+      "confidence": 0.85
+    },
+    {
+      "category_id": "announcement_or_news",
+      "share_estimate_0_1": 0.2,
+      "system_value": "low",
+      "notes": "Announcements for streams, hackathons, and personal updates.",
+      "evidence_refs": [
+        "P0005"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "matrix_export": {
+    "schema_version": "knowledge_matrix_export.v1",
+    "expert_id": "ostrikov",
+    "cells": [
+      {
+        "cell_id": "coding_agents/agentic_dev_process/design_agentic_dev_workflow",
+        "domain_id": "coding_agents",
+        "subdomain_id": "agentic_dev_process",
+        "subdomain_name": "Agentic Development Process",
+        "query_intent_ids": [
+          "design_agentic_dev_workflow"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 5,
+          "evidence_quality": 4,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 5,
+          "anti_hype": 4,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0011",
+          "P0023",
+          "P0024"
+        ],
+        "confidence": 0.95
+      },
+      {
+        "cell_id": "agent_ops/multi_agent_orchestration/design_agentic_dev_workflow",
+        "domain_id": "agent_ops",
+        "subdomain_id": "multi_agent_orchestration",
+        "subdomain_name": "Multi-Agent Orchestration & Architecture",
+        "query_intent_ids": [
+          "design_agentic_dev_workflow"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 5,
+          "evidence_quality": 5,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 4,
+          "anti_hype": 4,
+          "community_signal": 3
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0039",
+          "P0040",
+          "P0061"
+        ],
+        "confidence": 0.95
+      },
+      {
+        "cell_id": "ai_engineering_infra/rag_architecture/design_rag_knowledge_base",
+        "domain_id": "ai_engineering_infra",
+        "subdomain_id": "rag_architecture",
+        "subdomain_name": "RAG Architecture & Trade-offs",
+        "query_intent_ids": [
+          "design_rag_knowledge_base"
+        ],
+        "coverage_level": "moderate",
+        "depth_level": "practical",
+        "source_role": "supporting",
+        "scores": {
+          "depth": 4,
+          "practicality": 5,
+          "evidence_quality": 4,
+          "source_utility": 4,
+          "intrinsic_distinctiveness": 3,
+          "anti_hype": 5,
+          "community_signal": 3
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0012"
+        ],
+        "confidence": 0.9
+      },
+      {
+        "cell_id": "business_adoption/human_ai_workflow/build_human_ai_workflow",
+        "domain_id": "business_adoption",
+        "subdomain_id": "human_ai_workflow",
+        "subdomain_name": "Human-AI Workflow & Fluency",
+        "query_intent_ids": [
+          "build_human_ai_workflow"
+        ],
+        "coverage_level": "moderate",
+        "depth_level": "practical",
+        "source_role": "primary",
+        "scores": {
+          "depth": 4,
+          "practicality": 4,
+          "evidence_quality": 3,
+          "source_utility": 4,
+          "intrinsic_distinctiveness": 4,
+          "anti_hype": 4,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0027",
+          "P0068"
+        ],
+        "confidence": 0.9
+      }
+    ],
+    "compare_hints": {
+      "likely_unique_cells": [
+        "coding_agents/agentic_dev_process/design_agentic_dev_workflow"
+      ],
+      "likely_duplicate_cells": [],
+      "cells_requiring_probe": [
+        "agent_ops/multi_agent_orchestration/design_agentic_dev_workflow"
+      ],
+      "matrix_only_decision_confidence": "high"
+    }
+  },
+  "signature_insights": [
+    {
+      "insight": "Stop trying to force AI to write human-like code. The goal is no longer 'teach AI to code like us', but 'learn to integrate and maintain the code AI writes'.",
+      "why_it_matters_for_experts_panel": "Challenges the common developer friction point with AI tools. Shifts the focus from prompt-engineering code style to building robust QA, auto-review, and deployment pipelines.",
+      "applicable_query_types": [
+        "design_agentic_dev_workflow"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0024"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "insight": "A simple REPL loop with a single `execute_code` tool often outperforms complex multi-tool agent architectures in production and competitions.",
+      "why_it_matters_for_experts_panel": "Provides a highly practical, anti-hype architectural recommendation for building reliable agents.",
+      "applicable_query_types": [
+        "design_agentic_dev_workflow",
+        "debug_agent_failure"
+      ],
+      "novelty_level": "useful_packaging",
+      "evidence_refs": [
+        "P0061"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "insight": "PRDs for AI agents must be highly structured, including explicit glossaries, API contracts, DB schemas, and sequence flows, to enable one-shot microservice generation.",
+      "why_it_matters_for_experts_panel": "Offers a concrete, reusable template for bridging product management and AI-assisted development.",
+      "applicable_query_types": [
+        "plan_ai_product_feature",
+        "design_agentic_dev_workflow"
+      ],
+      "novelty_level": "useful_packaging",
+      "evidence_refs": [
+        "P0011"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "insight": "The ultimate career moat is 'AI-Fluency' combined with deep domain experience—distilling years of expertise into SKILL.md files that guide agents.",
+      "why_it_matters_for_experts_panel": "Provides a strategic roadmap for non-technical professionals to adopt AI.",
+      "applicable_query_types": [
+        "build_human_ai_workflow",
+        "learn_ai_assisted_development"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0027"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "practical_patterns": [
+    {
+      "pattern": "AI-Optimized PRD Structure",
+      "when_to_use": "When defining requirements for an AI coding agent to generate a microservice.",
+      "failure_modes": [
+        "Leaving ambiguous sections for the AI to 'figure out', leading to architectural drift."
+      ],
+      "evidence_refs": [
+        "P0011"
+      ]
+    },
+    {
+      "pattern": "3-Level Context Compaction",
+      "when_to_use": "When managing long-running agent loops to prevent token limit exhaustion.",
+      "failure_modes": [
+        "Losing critical tool execution details if compaction is too aggressive."
+      ],
+      "evidence_refs": [
+        "P0039"
+      ]
+    },
+    {
+      "pattern": "SKILL.md Abstraction",
+      "when_to_use": "When encoding domain-specific workflows for agents without bloating the system prompt.",
+      "failure_modes": [
+        "Agent failing to invoke the `load_skill` tool if the skill description in the system prompt is unclear."
+      ],
+      "evidence_refs": [
+        "P0027",
+        "P0039"
+      ]
+    }
+  ],
+  "claims_and_positions": [
+    {
+      "claim": "Graph/State Machine architectures are superior to free agents for enterprise tasks requiring predictability.",
+      "stance": "supports",
+      "decision_relevance": "Guides architectural choices for enterprise AI deployments.",
+      "dispute_risk": "low",
+      "evidence_refs": [
+        "P0012"
+      ]
+    },
+    {
+      "claim": "Developers should stop caring about code aesthetics (e.g., OOP vs Functional, file length) when using AI.",
+      "stance": "supports",
+      "decision_relevance": "Challenges traditional software engineering dogmas in the AI era.",
+      "dispute_risk": "high",
+      "evidence_refs": [
+        "P0024"
+      ]
+    }
+  ],
+  "source_utility": {
+    "best_use_cases": [
+      "Designing agent loops and context management systems.",
+      "Structuring requirements (PRDs) for AI coding assistants.",
+      "Evaluating trade-offs in RAG and agent architectures."
+    ],
+    "bad_use_cases": [
+      "Deep learning model training and fine-tuning.",
+      "Theoretical AI research."
+    ],
+    "retrieval_keywords": [
+      "agent loop",
+      "Claude Code",
+      "OpenClaw",
+      "vibecoding",
+      "SKILL.md",
+      "context compaction",
+      "PRD for AI",
+      "AI-First company"
+    ],
+    "source_selection_hints": [
+      "Select when the user needs practical, code-level architectural patterns for agents.",
+      "Select when the user is struggling with AI-generated code quality and needs a workflow perspective."
+    ],
+    "expected_overlap_hypotheses": [
+      "High overlap with @neuraldeep (Valera Kovalskii) regarding local models and agent loops, as they frequently collaborate."
+    ],
+    "recommended_panex_role": "primary_expert"
+  },
+  "community_signal": {
+    "comment_themes": [
+      "Technical deep dives into agent architectures (e.g., LocalDesk, OpenClaw).",
+      "Debates on 'vibecoding' vs traditional software engineering.",
+      "Sharing of open-source repos and hackathon solutions."
+    ],
+    "questions_from_audience": [
+      "How to handle context limits in long-running agents?",
+      "What is the difference between skills, MCPs, and subagents?",
+      "How to safely deploy agents in corporate environments?"
+    ],
+    "disagreements_or_corrections": [
+      "Pushback from traditional developers on the idea of ignoring code aesthetics and file length (P0024)."
+    ],
+    "practical_feedback": [
+      "Community members actively testing and breaking shared agents (e.g., LocalTopSH) to improve guardrails."
+    ],
+    "noise_or_low_value_patterns": [
+      "Some off-topic banter and personal updates (e.g., unicycle accident)."
+    ],
+    "evidence_refs": [
+      "P0011",
+      "P0020",
+      "P0024",
+      "P0035"
+    ]
+  },
+  "admission_implications": {
+    "if_candidate_verdict": "accept",
+    "verdict_rationale": "Ostrikov provides exceptionally high-signal, production-grounded insights into agentic development. His ability to deconstruct complex frameworks into simple patterns and his pragmatic stance on 'vibecoding' make him a highly valuable primary source for AI engineering.",
+    "unique_value_claims_to_verify_against_matrix": [
+      "The specific PRD structure optimized for AI microservice generation.",
+      "The 3-level context compaction strategy derived from OpenClaw."
+    ],
+    "likely_duplicate_areas_to_check": [
+      "General RAG trade-offs (likely covered by many experts)."
+    ],
+    "minimum_followup_probe_queries": [
+      "Compare Ostrikov's agent loop design with LangGraph best practices.",
+      "How does Ostrikov's view on 'vibecoding' contrast with experts advocating for strict AI code review?"
+    ],
+    "risk_notes": [
+      "Some content relies on external YouTube videos which are not fully transcribed in the text corpus."
+    ]
+  },
+  "audit": {
+    "unsupported_or_weak_claims": [],
+    "abstentions": [],
+    "possible_model_errors": [],
+    "source_refs_used": [
+      "P0001",
+      "P0005",
+      "P0008",
+      "P0011",
+      "P0012",
+      "P0014",
+      "P0020",
+      "P0023",
+      "P0024",
+      "P0027",
+      "P0039",
+      "P0040",
+      "P0061",
+      "P0068"
+    ],
+    "source_refs_most_important": [
+      "P0011",
+      "P0012",
+      "P0024",
+      "P0039",
+      "P0061"
+    ]
+  }
+}

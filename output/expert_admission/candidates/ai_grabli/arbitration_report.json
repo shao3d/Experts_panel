@@ -1,0 +1,124 @@
+{
+  "schema_version": "candidate_semantic_arbitration.v0.1",
+  "created_at": "2026-05-10",
+  "candidate_id": "ai_grabli",
+  "display_name": "Tech_AI_grabli",
+  "recommended_verdict": "accept_with_routing_caveat",
+  "decision_mode": "llm_semantic_arbitration_over_passport_matrix_report_and_source_spot_checks",
+  "not_an_admission_decision": true,
+  "summary": {
+    "short_rationale": "AI_Grabli is overlap-heavy in coding-agent coverage, but adds a clean high-value gap for retrieval-quality / embedding-less RAG and a useful supporting signal around logprobs-based LLM classification.",
+    "strongest_argument_for": "The passport and source spot-check show distinctive practical RAG failure analysis: embeddings vs factual relevance, logical operators, aggregation, tables, LLM page filtering, large-context retrieval, and source traceability.",
+    "strongest_argument_against": "Two of four candidate cells are likely duplicates against already accepted coding-agent experts, and one additional eval/reasoning-control cell still needs probe before being treated as strong standalone expansion.",
+    "confidence": "medium_high"
+  },
+  "evidence": {
+    "passport": "output/expert_admission/semantic_passports/ai_grabli/output/ai_grabli_semantic_passport.normalized.json",
+    "candidate_report": "output/expert_admission/candidates/ai_grabli/candidate_impact_report.md",
+    "knowledge_matrix": "output/expert_admission/knowledge_matrix/knowledge_matrix.json",
+    "corpus_manifest": "output/expert_admission/semantic_passports/ai_grabli/input/run_manifest.json",
+    "source_spot_checks": [
+      "P0280",
+      "P0300",
+      "P0245",
+      "P0289"
+    ]
+  },
+  "run": {
+    "post_count_seen": 355,
+    "comment_count_seen": 2650,
+    "max_comments_per_post": null,
+    "date_range": {
+      "first_post": "2024-01-10 03:55:21.000000",
+      "last_post": "2026-05-01 07:38:45.000000"
+    },
+    "vertex_input_tokens": 539505,
+    "vertex_output_tokens": 12361,
+    "vertex_thoughts_tokens": 3193,
+    "finish_reason": "STOP",
+    "normalized_passport_valid": true,
+    "matrix_export_incomplete": false,
+    "normalizer_repaired_raw_matrix_export": true
+  },
+  "deterministic_preflight": {
+    "recommendation": "overlap_heavy_needs_stronger_review",
+    "candidate_cells": 4,
+    "fills_gap": 1,
+    "adds_adjacent_viewpoint": 0,
+    "deepens_existing_cell": 0,
+    "likely_duplicate": 2,
+    "needs_probe": 1,
+    "exact_overlaps": 2,
+    "related_overlaps": 0,
+    "clean_gap_count": 1,
+    "density_caveat": true
+  },
+  "accepted_basis_cells": [
+    {
+      "cell_id": "rag_retrieval_knowledge/hybrid_retrieval/improve_retrieval_quality",
+      "classification": "fills_gap",
+      "interpretation": "clean matrix gap for practical retrieval-quality improvement, embedding-less RAG, LLM page filtering, large-context retrieval, and source traceability"
+    }
+  ],
+  "probe_or_supporting_cells": [
+    {
+      "cell_id": "prompt_engineering/reasoning_control/build_ai_dev_eval",
+      "classification": "needs_probe",
+      "interpretation": "useful logprobs/thresholds LLM-classification angle; should be probed before counting as strong standalone expansion"
+    }
+  ],
+  "duplicate_or_supporting_cells": [
+    {
+      "cell_id": "coding_agents/agentic_dev_process/design_agentic_dev_workflow",
+      "nearest_existing": [
+        "ostrikov",
+        "ilia_izmailov"
+      ],
+      "interpretation": "already covered as strong multi-source coding-agent workflow coverage"
+    },
+    {
+      "cell_id": "coding_agents/claude_code_workflows/choose_ai_coding_tool",
+      "nearest_existing": [
+        "ai_architect",
+        "polyakov",
+        "ilia_izmailov",
+        "glebkudr"
+      ],
+      "interpretation": "already covered as strong multi-source tool-choice coverage"
+    }
+  ],
+  "routing_contract": {
+    "good_fit": [
+      "RAG retrieval-quality failure analysis",
+      "embedding-less RAG and LLM-first retrieval alternatives",
+      "large-context retrieval and LLM page filtering",
+      "source traceability for document QA",
+      "logprobs and thresholds for LLM classification",
+      "AI-engineering failure patterns and anti-hype practical lessons"
+    ],
+    "poor_fit": [
+      "broad AI news",
+      "business adoption or executive AI strategy",
+      "primary Claude Code / Codex tool-choice routing",
+      "primary general agentic-development workflow routing",
+      "beginner-friendly non-technical onboarding"
+    ]
+  },
+  "risk_notes": [
+    "Two of four candidate cells are likely duplicates.",
+    "The strongest new value is concentrated in one clean retrieval-quality cell.",
+    "LLM-first retrieval can be cost-sensitive at large scale.",
+    "The logprobs/eval cell should be probed before production routing weight is raised."
+  ],
+  "recommended_manifest_caveat": "accepted for retrieval-quality / embedding-less RAG and practical AI-engineering failure analysis; coding-agent coverage overlaps existing experts, avoid broad duplicate routing",
+  "recommended_followup_probe": {
+    "probe_needed_before_manual_admission": false,
+    "probe_useful_before_production_routing": true,
+    "probe_shape": [
+      "2 RAG failure / retrieval-quality queries against Refat and Air",
+      "1 embedding-less RAG vs hybrid/vector retrieval query",
+      "1 logprobs/thresholds LLM-classification query",
+      "1 coding-agent workflow query where AI_Grabli should be supporting"
+    ]
+  }
+}

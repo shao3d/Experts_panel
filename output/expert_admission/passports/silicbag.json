@@ -1,0 +1,339 @@
+{
+  "channel_username": "prompt_design",
+  "coverage": {
+    "agent_ops": 226,
+    "ai_engineering_infra": 36,
+    "ai_product_pm": 74,
+    "ai_ux_workflow": 52,
+    "business_adoption": 101,
+    "coding_agents": 106,
+    "creative_multimodal": 32,
+    "evals_quality": 41,
+    "general_ai_news": 15,
+    "model_landscape": 359,
+    "rag_retrieval_knowledge": 35,
+    "security_privacy_governance": 51
+  },
+  "coverage_strength": {
+    "agent_ops": "strong",
+    "ai_engineering_infra": "medium",
+    "ai_product_pm": "medium",
+    "ai_ux_workflow": "medium",
+    "business_adoption": "strong",
+    "coding_agents": "strong",
+    "creative_multimodal": "thin",
+    "evals_quality": "medium",
+    "general_ai_news": "thin",
+    "model_landscape": "strong",
+    "rag_retrieval_knowledge": "medium",
+    "security_privacy_governance": "medium"
+  },
+  "date_range": {
+    "first_post": "2023-02-10",
+    "last_post": "2026-05-02"
+  },
+  "depth_profile": {
+    "announcement_or_news": 142,
+    "architecture_analysis": 51,
+    "benchmark_or_eval": 41,
+    "case_study": 101,
+    "howto_or_checklist": 308,
+    "low_signal": 166,
+    "practitioner_experience": 51,
+    "tool_release": 28
+  },
+  "display_name": "SilicBag",
+  "embedding_count": 871,
+  "embedding_coverage_ratio": 1.0,
+  "expert_id": "silicbag",
+  "fts_count": 871,
+  "metadata_coverage_ratio": 0.8356,
+  "metadata_valid_count": 742,
+  "post_count": 888,
+  "representative_posts": [
+    {
+      "coverage_labels": [
+        "evals_quality",
+        "business_adoption"
+      ],
+      "created_at": "2026-04-29",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "У меня тут много тех, кто уже хорошо освоил искусственный интеллект в личных задачах и думает, как все это внедрить в процессы компании. Для вас ребята из AI Mindset запускают 3-недельный спринт AI-Native Organizations для фаундеров, CEOs, C-level и тимлидов, которым нужен не обзор инструментов, а рабочий ИИ-контур...",
+      "reason": "evals_quality, business_adoption; depth=benchmark_or_eval",
+      "telegram_message_id": 2134
+    },
+    {
+      "coverage_labels": [
+        "evals_quality",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-24",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "Вышла [новая модель](https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro/blob/main/DeepSeek_V4.pdf) - **DeepSeek V4. **Вот такой вот huídá (ответ) от китайцев!** **По** **бенчмаркам все довольно красиво. Пойду тестировать.",
+      "reason": "evals_quality, model_landscape; depth=benchmark_or_eval",
+      "telegram_message_id": 2115
+    },
+    {
+      "coverage_labels": [
+        "coding_agents"
+      ],
+      "created_at": "2026-04-27",
+      "depth_label": "case_study",
+      "excerpt": "Настроил себе сетапчик для более эффективного вайбкодинга, а то не успеваю проекты до среды доделать. Вы спрашиваете, а что у нас в среду? А я вам скажу. Наше второе офлайн-мероприятие в этом году - [«Деньги в ИИ».](https://t.me/prompt_design/2107) Кстати, билеты уже ~~почти~~ закончились (6 штук осталось), так что,...",
+      "reason": "coding_agents; depth=case_study",
+      "telegram_message_id": 2121
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-22",
+      "depth_label": "case_study",
+      "excerpt": "На прошлом мероприятии большинство кулуарных разговоров заканчивались спорами о том, как воспитывать детей в мире искусственного интеллекта: ограничивать доступ или, наоборот, дать полный карт-бланш на использование ChatGPT? А может, разрешать только вайбкодить, а картинки генерировать запретить? На кого учить детей...",
+      "reason": "coding_agents, agent_ops, model_landscape; depth=case_study",
+      "telegram_message_id": 2103
+    },
+    {
+      "coverage_labels": [
+        "ai_product_pm",
+        "business_adoption"
+      ],
+      "created_at": "2026-04-28",
+      "depth_label": "practitioner_experience",
+      "excerpt": "Заметили, что я рассказываю о проектах участников наших сообществ? Это не реклама, а часть программы. Она состоит из двух простых пунктов: — **Экспертиза** - совместно находить рабочие идеи, экономить ресурсы и понимать, как запускать продукты, поскольку в одиночку справиться с информационным шумом вокруг ИИ невозмо...",
+      "reason": "ai_product_pm, business_adoption; depth=practitioner_experience",
+      "telegram_message_id": 2130
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "ai_product_pm",
+        "business_adoption",
+        "security_privacy_governance",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-30",
+      "depth_label": "architecture_analysis",
+      "excerpt": "«Если ваш продукт генерирует уникальные данные с каждым взаимодействием - у вас что-то есть. Если ваш продукт - это обертка поверх публичных API - у вас ничего нет» - то, о чем я постоянно пишу и говорю на эфирах. Все эти стартапы, появившиеся как прослойки между ChatGPT или Gemini, обречены, как и SaaS-компании, ко...",
+      "reason": "coding_agents, agent_ops, ai_product_pm; depth=architecture_analysis",
+      "telegram_message_id": 2136
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "rag_retrieval_knowledge",
+        "business_adoption",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-30",
+      "depth_label": "architecture_analysis",
+      "excerpt": "Что, блин, делать? - вопрос, который звучал чаще всего в кулуарах вчерашнего [офлайн мероприятия](https://t.me/prompt_design/2091). Мне кажется, я успел пообщаться с парой десятков человек лично и это лучший дипресерч, который не осилит ни одна нейросеть (кроме человеческой). Когда ты видишь реальных людей, считывае...",
+      "reason": "coding_agents, rag_retrieval_knowledge, business_adoption; depth=architecture_analysis",
+      "telegram_message_id": 2135
+    },
+    {
+      "coverage_labels": [
+        "ai_engineering_infra",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-27",
+      "depth_label": "howto_or_checklist",
+      "excerpt": "На прошлой неделе стало известно, что Google инвестирует 40 млрд баксов в Anthropic. А до этого Amazon обязались инвестировать еще 25 млрд. Звучит круто, но если читать это глазами Anthropic, то будет так: ладно, покупайте долю, только дайте нам вычислительных мощностей! Например, по условиям сделки с Google, Anthro...",
+      "reason": "ai_engineering_infra, model_landscape; depth=howto_or_checklist",
+      "telegram_message_id": 2120
+    }
+  ],
+  "runtime_readiness": {
+    "embeddings_ready": true,
+    "fts_ready": true,
+    "metadata_advisory_ready": true,
+    "text_posts_ready": true
+  },
+  "text_post_count": 871,
+  "top_concepts": [
+    {
+      "count": 83,
+      "value": "Prompt Engineering"
+    },
+    {
+      "count": 77,
+      "value": "Automation"
+    },
+    {
+      "count": 53,
+      "value": "AI Agents"
+    },
+    {
+      "count": 50,
+      "value": "LLM"
+    },
+    {
+      "count": 38,
+      "value": "Artificial Intelligence"
+    },
+    {
+      "count": 33,
+      "value": "Generative AI"
+    },
+    {
+      "count": 29,
+      "value": "Subscription"
+    },
+    {
+      "count": 21,
+      "value": "API"
+    },
+    {
+      "count": 20,
+      "value": "Networking"
+    },
+    {
+      "count": 19,
+      "value": "RAG"
+    },
+    {
+      "count": 18,
+      "value": "Image Generation"
+    },
+    {
+      "count": 17,
+      "value": "Workflow Automation"
+    }
+  ],
+  "top_keywords": [
+    {
+      "count": 143,
+      "value": "интеллект"
+    },
+    {
+      "count": 141,
+      "value": "искусственный"
+    },
+    {
+      "count": 134,
+      "value": "llm"
+    },
+    {
+      "count": 112,
+      "value": "автоматизация"
+    },
+    {
+      "count": 106,
+      "value": "automation"
+    },
+    {
+      "count": 106,
+      "value": "prompt"
+    },
+    {
+      "count": 104,
+      "value": "intelligence"
+    },
+    {
+      "count": 103,
+      "value": "artificial"
+    },
+    {
+      "count": 97,
+      "value": "perplexity"
+    },
+    {
+      "count": 93,
+      "value": "agents"
+    },
+    {
+      "count": 92,
+      "value": "промпт"
+    },
+    {
+      "count": 92,
+      "value": "chatgpt"
+    },
+    {
+      "count": 82,
+      "value": "openai"
+    },
+    {
+      "count": 78,
+      "value": "нейросети"
+    },
+    {
+      "count": 74,
+      "value": "gemini"
+    },
+    {
+      "count": 72,
+      "value": "generation"
+    },
+    {
+      "count": 69,
+      "value": "генерация"
+    },
+    {
+      "count": 66,
+      "value": "neural"
+    },
+    {
+      "count": 66,
+      "value": "модели"
+    },
+    {
+      "count": 63,
+      "value": "google"
+    }
+  ],
+  "top_primary_topics": [
+    {
+      "count": 87,
+      "value": "AI Agents"
+    },
+    {
+      "count": 66,
+      "value": "Generative AI"
+    },
+    {
+      "count": 38,
+      "value": "Artificial Intelligence"
+    },
+    {
+      "count": 35,
+      "value": "Prompt Engineering"
+    },
+    {
+      "count": 18,
+      "value": "AI Automation"
+    },
+    {
+      "count": 17,
+      "value": "AI Search"
+    },
+    {
+      "count": 12,
+      "value": "Robotics"
+    },
+    {
+      "count": 11,
+      "value": "LLM"
+    },
+    {
+      "count": 11,
+      "value": "Workflow Automation"
+    },
+    {
+      "count": 10,
+      "value": "Community Management"
+    },
+    {
+      "count": 10,
+      "value": "AI Services"
+    },
+    {
+      "count": 10,
+      "value": "AI Tools"
+    }
+  ],
+  "warnings": []
+}

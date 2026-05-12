@@ -1,0 +1,80 @@
+{
+  "created_at": "2026-05-10T19:03:05.120065+00:00",
+  "packet_dir": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/llm_under_hood/input",
+  "prompt_path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/llm_under_hood/input/llm_under_hood_vertex_prompt.md",
+  "model": "gemini-3.1-pro-preview",
+  "project_id": "project-05d8e46e-231b-43f9-8e1",
+  "location": "global",
+  "count_tokens": {
+    "started_at": "2026-05-10T19:02:57.140939+00:00",
+    "finished_at": "2026-05-10T19:03:05.118469+00:00",
+    "response": {
+      "totalTokens": 915914,
+      "totalBillableCharacters": 2054492,
+      "promptTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 915914
+        }
+      ]
+    }
+  },
+  "generate": {
+    "started_at": "2026-05-10T19:03:05.120118+00:00",
+    "finished_at": "2026-05-10T19:07:06.124170+00:00",
+    "generation_config": {
+      "temperature": 0.1,
+      "candidateCount": 1,
+      "maxOutputTokens": 65536,
+      "responseMimeType": "application/json"
+    },
+    "usage_metadata": {
+      "promptTokenCount": 915914,
+      "candidatesTokenCount": 10954,
+      "totalTokenCount": 930014,
+      "trafficType": "ON_DEMAND",
+      "promptTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 915914
+        }
+      ],
+      "candidatesTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 10954
+        }
+      ],
+      "thoughtsTokenCount": 3146
+    },
+    "model_version": "gemini-3.1-pro-preview",
+    "finish_reason": "STOP",
+    "text_chars": 34825,
+    "json_parse_error": null,
+    "validation": {
+      "missing_required_top_level_keys": [],
+      "known_source_ref_count": 5731,
+      "used_source_ref_count": 21,
+      "source_ref_index_used_count": 18,
+      "unknown_source_refs": [],
+      "unknown_source_ref_count": 0,
+      "refs_missing_from_source_ref_index_used": [
+        "P0004",
+        "P0083",
+        "P0181"
+      ],
+      "refs_missing_from_source_ref_index_used_count": 3,
+      "matrix_cell_count": 4,
+      "matrix_export_cell_count": 3,
+      "matrix_export_incomplete": false,
+      "missing_matrix_export_cells": [],
+      "missing_matrix_export_cell_count": 0,
+      "bad_matrix_relative_novelty_values": [],
+      "passport_generated_at": "2026-05-10T19:01:01.792898+00:00",
+      "expected_generated_at": "2026-05-10T19:01:01.792898+00:00",
+      "generated_at_matches_expected": true,
+      "valid_basic_contract": false
+    }
+  },
+  "status": "generated"
+}

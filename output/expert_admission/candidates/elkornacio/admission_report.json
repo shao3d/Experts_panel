@@ -1,0 +1,59 @@
+{
+  "schema_version": "candidate_admission_report.v0.1",
+  "created_at": "2026-05-10",
+  "candidate_id": "elkornacio",
+  "display_name": "Elkornacio",
+  "channel_username": "@elkornacio",
+  "verdict": "accept",
+  "decision_mode": "manual_human_review",
+  "based_on": {
+    "semantic_passport": "output/expert_admission/semantic_passports/elkornacio/output/elkornacio_semantic_passport.normalized.json",
+    "candidate_impact_report": "output/expert_admission/candidates/elkornacio/candidate_impact_report.md",
+    "semantic_arbitration_report": "output/expert_admission/candidates/elkornacio/arbitration_report.md",
+    "knowledge_matrix_before_admission": "output/expert_admission/knowledge_matrix/knowledge_matrix.md"
+  },
+  "preflight_summary": {
+    "candidate_cells_from_matrix_export": 4,
+    "fills_gap": 0,
+    "adds_adjacent_viewpoint": 0,
+    "deepens_existing_cell": 1,
+    "needs_probe": 1,
+    "likely_duplicate": 2,
+    "taxonomy_extensions_after_taxonomy_update": 0,
+    "exact_overlaps": 3,
+    "related_overlaps": 0,
+    "preliminary_recommendation": "overlap_heavy_needs_stronger_review"
+  },
+  "accepted_cells": [
+    {
+      "cell_id": "coding_agents/cursor_windsurf_copilot/choose_ai_coding_tool",
+      "classification": "deepens_existing_cell",
+      "admission_interpretation": "accepted_as_primary_advanced_coding_tool_harness_depth"
+    },
+    {
+      "cell_id": "agent_ops/agentic_dev_process/design_agentic_dev_workflow",
+      "classification": "likely_duplicate",
+      "admission_interpretation": "accepted_as_overlap_depth_only_not_new_gap"
+    },
+    {
+      "cell_id": "agent_ops/mcp_tooling/design_agentic_dev_workflow",
+      "classification": "likely_duplicate",
+      "admission_interpretation": "accepted_as_overlap_contrarian_mcp_tooling_signal_only"
+    },
+    {
+      "cell_id": "agent_ops/mcp_tooling/manage_security_privacy_governance",
+      "classification": "needs_probe",
+      "admission_interpretation": "accepted_as_probe_needed_supporting_mcp_security_signal"
+    }
+  ],
+  "taxonomy_updates": [],
+  "routing_notes": [
+    "Strong fit for advanced model/harness/UI comparison, native harness judgment, and coding-agent tool architecture.",
+    "Use as a depth source for deterministic workflows and per-client Git-branch customization.",
+    "Use MCP security critique as supporting until targeted probes raise confidence.",
+    "Do not count as a clean map-expanding expert.",
+    "Do not route broadly for beginner-friendly AI-assisted development or generic MCP tutorials."
+  ],
+  "recommended_manifest_caveat": "accepted as advanced AI coding tool/harness depth expert; overlap-heavy with no clean matrix gaps, avoid broad duplicate routing",
+  "next_action": "proceed_as_accepted_in_semantic_knowledge_matrix_with_overlap_heavy_coding_tool_harness_routing_caveat"
+}

@@ -1,0 +1,79 @@
+{
+  "created_at": "2026-05-09T23:50:37.515151+00:00",
+  "packet_dir": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/neuraldeep/input_comments18",
+  "prompt_path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/neuraldeep/input_comments18/neuraldeep_vertex_prompt.md",
+  "model": "gemini-3.1-pro-preview",
+  "project_id": "project-05d8e46e-231b-43f9-8e1",
+  "location": "global",
+  "count_tokens": {
+    "started_at": "2026-05-09T23:50:26.570950+00:00",
+    "finished_at": "2026-05-09T23:50:37.514179+00:00",
+    "response": {
+      "totalTokens": 939190,
+      "totalBillableCharacters": 1967595,
+      "promptTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 939190
+        }
+      ]
+    }
+  },
+  "generate": {
+    "started_at": "2026-05-09T23:50:37.515190+00:00",
+    "finished_at": "2026-05-09T23:52:51.183084+00:00",
+    "generation_config": {
+      "temperature": 0.1,
+      "candidateCount": 1,
+      "maxOutputTokens": 65536,
+      "responseMimeType": "application/json"
+    },
+    "usage_metadata": {
+      "promptTokenCount": 939190,
+      "candidatesTokenCount": 12099,
+      "totalTokenCount": 954595,
+      "trafficType": "ON_DEMAND",
+      "promptTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 939190
+        }
+      ],
+      "candidatesTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 12099
+        }
+      ],
+      "thoughtsTokenCount": 3306
+    },
+    "model_version": "gemini-3.1-pro-preview",
+    "finish_reason": "STOP",
+    "text_chars": 36734,
+    "json_parse_error": null,
+    "validation": {
+      "missing_required_top_level_keys": [],
+      "known_source_ref_count": 6313,
+      "used_source_ref_count": 28,
+      "source_ref_index_used_count": 22,
+      "unknown_source_refs": [],
+      "unknown_source_ref_count": 0,
+      "refs_missing_from_source_ref_index_used": [
+        "P0126",
+        "P0186",
+        "P0204",
+        "P0244",
+        "P0275",
+        "P0439"
+      ],
+      "refs_missing_from_source_ref_index_used_count": 6,
+      "matrix_export_cell_count": 3,
+      "bad_matrix_relative_novelty_values": [],
+      "passport_generated_at": "2026-05-09T23:49:48.141769+00:00",
+      "expected_generated_at": "2026-05-09T23:49:48.141769+00:00",
+      "generated_at_matches_expected": true,
+      "valid_basic_contract": false
+    }
+  },
+  "status": "generated"
+}

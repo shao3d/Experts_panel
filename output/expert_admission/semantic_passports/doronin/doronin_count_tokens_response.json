@@ -1,0 +1,10 @@
+{
+  "totalTokens": 908955,
+  "totalBillableCharacters": 2187366,
+  "promptTokensDetails": [
+    {
+      "modality": "TEXT",
+      "tokenCount": 908955
+    }
+  ]
+}

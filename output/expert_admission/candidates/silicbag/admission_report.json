@@ -1,0 +1,58 @@
+{
+  "schema_version": "candidate_admission_report.v0.1",
+  "created_at": "2026-05-12",
+  "candidate_id": "silicbag",
+  "display_name": "SilicBag",
+  "channel_username": "@prompt_design",
+  "verdict": "accept",
+  "decision_mode": "manual_human_review",
+  "based_on": {
+    "semantic_passport": "output/expert_admission/semantic_passports/silicbag/output/silicbag_semantic_passport.normalized.json",
+    "candidate_impact_report": "output/expert_admission/candidates/silicbag/candidate_impact_report.md",
+    "semantic_arbitration_report": "output/expert_admission/candidates/silicbag/arbitration_report.md",
+    "manual_overlap_review": "representative source refs P0267, P0364, P0379, P0319, P0320, P0496, P0154"
+  },
+  "preflight_summary": {
+    "candidate_cells_from_matrix_export": 4,
+    "fills_gap": 0,
+    "adds_adjacent_viewpoint": 1,
+    "deepens_existing_cell": 0,
+    "needs_probe": 0,
+    "likely_duplicate": 3,
+    "taxonomy_extensions": 0,
+    "exact_overlaps": 3,
+    "related_overlaps": 1,
+    "preliminary_recommendation": "overlap_heavy_needs_stronger_review"
+  },
+  "accepted_cells": [
+    {
+      "cell_id": "business_adoption/roi_business_cases/assess_ai_tool_business_adoption",
+      "classification": "adds_adjacent_viewpoint",
+      "admission_interpretation": "accepted_as_accessible_ai_automation_business_roi_and_monetization_depth"
+    },
+    {
+      "cell_id": "agent_ops/agentic_dev_process/design_agentic_dev_workflow",
+      "classification": "likely_duplicate",
+      "admission_interpretation": "accepted_as_overlap_depth_for_non_programmer_agent_workflow_not_deep_architecture"
+    },
+    {
+      "cell_id": "prompt_engineering/model_specific_formatting/learn_ai_assisted_development",
+      "classification": "likely_duplicate",
+      "admission_interpretation": "accepted_as_overlap_depth_for_json_structured_prompt_templates_not_replacement_for_air"
+    },
+    {
+      "cell_id": "rag_retrieval_knowledge/knowledge_base_design/design_rag_knowledge_base",
+      "classification": "likely_duplicate",
+      "admission_interpretation": "accepted_as_overlap_depth_for_practical_document_preparation_and_notebooklm_rag_usage"
+    }
+  ],
+  "taxonomy_updates": [],
+  "routing_notes": [
+    "Strong fit for accessible AI automation, n8n/Make/OpenClaw workflows, NotebookLM/RAG document preparation, JSON prompt templates, and small-business AI adoption.",
+    "Useful when the user is a non-programmer, solo founder, marketer, community builder, or small business owner looking for practical starting points.",
+    "Do not route as a deep agent architecture, local-LLM infrastructure, enterprise security/deployment, or generic model-news source.",
+    "Filter or balance gray-market promo-code and questionable automation/monetization material."
+  ],
+  "recommended_manifest_caveat": "accepted as accessible AI automation / non-programmer workflow / community-grounded business adoption expert; overlap-heavy with agent workflow, prompt-engineering, and RAG cells, avoid routing for deep architecture, local-LLM infra, or generic model news",
+  "next_action": "proceed_as_accepted_in_semantic_knowledge_matrix_with_strict_accessible_ai_automation_routing_caveat"
+}

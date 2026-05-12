@@ -1,0 +1,47 @@
+{
+  "schema_version": "candidate_admission_report.v0.1",
+  "created_at": "2026-05-12",
+  "candidate_id": "air_ai",
+  "display_name": "Air",
+  "channel_username": null,
+  "verdict": "accept",
+  "decision_mode": "current_roster_seed_backfilled_semantic_review",
+  "based_on": {
+    "semantic_passport": "output/expert_admission/semantic_passports/air_ai/output/air_ai_semantic_passport.normalized.json",
+    "knowledge_matrix_after_backfill": "output/expert_admission/knowledge_matrix/knowledge_matrix.md"
+  },
+  "preflight_summary": {
+    "status": "not_rerun_seed_backfill",
+    "reason": "Backfill records the accepted seed rationale; it does not re-run admission."
+  },
+  "accepted_cells": [
+    {
+      "cell_id": "prompt_engineering/model_specific_formatting/learn_ai_assisted_development",
+      "classification": "seed_primary_value",
+      "admission_interpretation": "model_specific_prompt_formatting"
+    },
+    {
+      "cell_id": "ai_business_adoption/financial_modeling/assess_ai_tool_business_adoption",
+      "classification": "seed_primary_value",
+      "admission_interpretation": "financial_modeling_and_business_workflow_testing"
+    },
+    {
+      "cell_id": "prompt_engineering/reasoning_control/learn_ai_assisted_development",
+      "classification": "seed_supporting_value",
+      "admission_interpretation": "reasoning_model_control_and_prompt_strategy"
+    },
+    {
+      "cell_id": "rag_retrieval_knowledge/graph_rag_legal/design_rag_knowledge_base",
+      "classification": "supporting",
+      "admission_interpretation": "legal_graphrag_applied_workflow"
+    }
+  ],
+  "taxonomy_updates": [],
+  "routing_notes": [
+    "Strong fit for model-specific prompt formatting and reasoning-control prompting.",
+    "Strong fit for financial modeling and applied business workflows.",
+    "Avoid routing for local-LLM deployment, model training, or low-level infrastructure."
+  ],
+  "recommended_manifest_caveat": "accepted as prompt-engineering and business-workflow seed expert; strong fit for model-specific prompting, reasoning control, financial modeling, and legal/RAG workflows, avoid routing for local-LLM or low-level infrastructure questions",
+  "next_action": "keep_as_accepted_seed_expert_with_manifest_routing_caveat"
+}

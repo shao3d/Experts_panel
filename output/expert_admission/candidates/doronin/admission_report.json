@@ -1,0 +1,59 @@
+{
+  "schema_version": "candidate_admission_report.v0.1",
+  "created_at": "2026-05-10",
+  "candidate_id": "doronin",
+  "display_name": "Doronin",
+  "channel_username": "@kdoronin_blog",
+  "verdict": "accept",
+  "decision_mode": "manual_human_review",
+  "based_on": {
+    "semantic_passport": "output/expert_admission/semantic_passports/doronin/doronin_semantic_passport.normalized.json",
+    "candidate_impact_report": "output/expert_admission/candidates/doronin/candidate_impact_report.md",
+    "semantic_arbitration_report": "output/expert_admission/candidates/doronin/arbitration_report.md",
+    "knowledge_matrix_before_admission": "output/expert_admission/knowledge_matrix/knowledge_matrix.md"
+  },
+  "preflight_summary": {
+    "candidate_cells_from_matrix_export": 4,
+    "fills_gap": 1,
+    "adds_adjacent_viewpoint": 0,
+    "deepens_existing_cell": 0,
+    "needs_probe": 0,
+    "likely_duplicate": 3,
+    "taxonomy_extensions_after_taxonomy_update": 0,
+    "exact_overlaps": 3,
+    "related_overlaps": 0,
+    "preliminary_recommendation": "overlap_heavy_needs_stronger_review"
+  },
+  "accepted_cells": [
+    {
+      "cell_id": "agent_ops/mcp_tooling/build_human_ai_workflow",
+      "classification": "fills_gap",
+      "admission_interpretation": "accepted_as_primary_clean_custom_narrow_mcp_human_ai_workflow_gap"
+    },
+    {
+      "cell_id": "coding_agents/claude_code_workflows/design_agentic_dev_workflow",
+      "classification": "likely_duplicate",
+      "admission_interpretation": "accepted_as_second_strong_source_for_single_source_claude_code_workflow_cell"
+    },
+    {
+      "cell_id": "coding_agents/agentic_dev_process/design_agentic_dev_workflow",
+      "classification": "likely_duplicate",
+      "admission_interpretation": "accepted_as_overlap_depth_for_anti_vibe_engineering_discipline_not_new_gap"
+    },
+    {
+      "cell_id": "rag_retrieval_knowledge/knowledge_base_design/design_rag_knowledge_base",
+      "classification": "likely_duplicate",
+      "admission_interpretation": "accepted_as_adjacent_temporal_graph_memory_depth_not_replacement_for_refat"
+    }
+  ],
+  "taxonomy_updates": [],
+  "routing_notes": [
+    "Strong fit for disciplined AI-assisted development, anti-vibe coding, BDD, rules, layered documentation, and small-step agent constraints.",
+    "Strong fit for Claude Code workflow, migration from Cursor/Roo/Windsurf, and Claude Code Skills vs MCP tradeoffs.",
+    "Strong fit for custom narrow MCP tooling as part of practical human-AI workflow.",
+    "Useful for temporal-graph agent memory through Graphiti / Hindsight style systems.",
+    "Do not route as a broad duplicate coding-agent expert by default."
+  ],
+  "recommended_manifest_caveat": "accepted as disciplined AI-assisted development / Claude Code workflow / custom MCP and temporal-agent-memory depth expert; overlap-heavy with coding-agent and RAG cells, avoid broad duplicate routing",
+  "next_action": "proceed_as_accepted_in_semantic_knowledge_matrix_with_disciplined_ai_dev_routing_caveat"
+}

@@ -1,0 +1,122 @@
+{
+  "schema_version": "candidate_semantic_arbitration.v0.1",
+  "created_at": "2026-05-10",
+  "candidate_id": "llm_under_hood",
+  "display_name": "Rinat",
+  "recommended_verdict": "accept",
+  "decision_mode": "llm_semantic_arbitration_over_passport_matrix_report_and_source_spot_checks",
+  "not_an_admission_decision": true,
+  "summary": {
+    "short_rationale": "Rinat adds strong matrix value for Schema-Guided Reasoning, evals, reliability engineering, and engineering harnesses for AI-assisted development. The deterministic preflight has two clean gaps, one adjacent viewpoint, and no likely duplicates.",
+    "strongest_argument_for": "The passport and source spot checks show distinctive, grounded production patterns: SGR, eval-first development, quality trajectories, ground truth, error heatmaps, and feedback loops for both LLM systems and coding agents.",
+    "strongest_argument_against": "The expert has a strong anti-framework bias; he may not be the right source when users want standard LangChain, LangGraph, or MCP tutorials.",
+    "confidence": "high"
+  },
+  "evidence": {
+    "passport": "output/expert_admission/semantic_passports/llm_under_hood/output/llm_under_hood_semantic_passport.normalized.json",
+    "candidate_report": "output/expert_admission/candidates/llm_under_hood/candidate_impact_report.md",
+    "knowledge_matrix": "output/expert_admission/knowledge_matrix/knowledge_matrix.json",
+    "corpus_manifest": "output/expert_admission/semantic_passports/llm_under_hood/input/run_manifest.json",
+    "source_spot_checks": [
+      "P0130",
+      "P0149",
+      "P0076",
+      "P0123",
+      "P0097",
+      "P0232"
+    ]
+  },
+  "run": {
+    "post_count_seen": 321,
+    "comment_count_seen": 5410,
+    "max_comments_per_post": 20,
+    "full_db_comment_count": 12190,
+    "cap_trial_rejected": {
+      "max_comments_per_post": 25,
+      "vertex_input_tokens": 1054653,
+      "reason": "above target working range"
+    },
+    "date_range": {
+      "first_post": "2025-01-03 13:14:02.000000",
+      "last_post": "2026-05-03 20:03:24.000000"
+    },
+    "vertex_input_tokens": 915914,
+    "vertex_output_tokens": 10954,
+    "vertex_thoughts_tokens": 3146,
+    "finish_reason": "STOP",
+    "normalized_passport_valid": true,
+    "matrix_export_incomplete": false,
+    "transient_generation_error": "First cap-20 generation attempt returned 429 RESOURCE_EXHAUSTED; retry after pause succeeded."
+  },
+  "deterministic_preflight": {
+    "recommendation": "promising_needs_human_review",
+    "candidate_cells": 3,
+    "fills_gap": 2,
+    "adds_adjacent_viewpoint": 1,
+    "deepens_existing_cell": 0,
+    "likely_duplicate": 0,
+    "needs_probe": 0,
+    "exact_overlaps": 0,
+    "related_overlaps": 1,
+    "clean_gap_count": 2,
+    "density_caveat": false
+  },
+  "accepted_basis_cells": [
+    {
+      "cell_id": "agent_ops/reasoning_control/design_agentic_dev_workflow",
+      "classification": "adds_adjacent_viewpoint",
+      "interpretation": "distinct SGR / reasoning-control contribution inside the dense agent_ops workflow rollup"
+    },
+    {
+      "cell_id": "evals_quality/llm_evals/build_ai_dev_eval",
+      "classification": "fills_gap",
+      "interpretation": "clean matrix gap for eval-first LLM engineering, ground truth, heatmaps, and continuous feedback loops"
+    },
+    {
+      "cell_id": "agent_ops/agentic_dev_process/learn_ai_assisted_development",
+      "classification": "fills_gap",
+      "interpretation": "clean matrix gap for engineering harnesses around AI coding agents"
+    }
+  ],
+  "non_exported_supporting_cells": [
+    {
+      "cell_id": "rag_retrieval_knowledge/rag_architecture/improve_retrieval_quality",
+      "interpretation": "normal-weight RAG retrieval bottleneck signal; useful as supporting evidence but not a primary admission basis"
+    }
+  ],
+  "routing_contract": {
+    "good_fit": [
+      "Schema-Guided Reasoning and reasoning-control architecture",
+      "SGR vs Tool Calling comparisons",
+      "AI reliability engineering",
+      "LLM evals, ground truth, heatmaps, and feedback loops",
+      "engineering harnesses for AI coding agents",
+      "moving from vibe coding to maintainable AI-assisted development",
+      "quality trajectory thinking for production LLM systems"
+    ],
+    "poor_fit": [
+      "beginner-friendly LangChain or LangGraph tutorials",
+      "neutral MCP advocacy or standard MCP setup guide",
+      "broad model-release news",
+      "creative writing or multimodal content generation",
+      "off-the-shelf framework adoption when the user does not want custom architecture"
+    ]
+  },
+  "risk_notes": [
+    "Strong framework skepticism may underweight standard ecosystem paths.",
+    "SGR should be compared against Tool Calling and hybrid patterns, not treated as universally superior.",
+    "Cap 20 preserved 5410 comments but not the full 12190-comment corpus.",
+    "Some local-model and framework details may age quickly."
+  ],
+  "recommended_manifest_caveat": "accepted as SGR, AI reliability/evals, and engineering-harness depth expert; strong framework skepticism, avoid routing as generic LangChain/MCP tutorial source",
+  "recommended_followup_probe": {
+    "probe_needed_before_manual_admission": false,
+    "probe_useful_before_production_routing": true,
+    "probe_shape": [
+      "2 SGR vs Tool Calling / MCP architecture queries",
+      "2 evals / ground-truth / feedback-loop queries",
+      "1 coding-agent engineering-harness query against Akimov, AI_Grabli, and Ostrikov",
+      "1 RAG retrieval-quality query where Rinat should be supporting unless the question is eval/bottleneck focused"
+    ]
+  }
+}

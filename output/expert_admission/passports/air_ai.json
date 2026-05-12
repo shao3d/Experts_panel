@@ -1,0 +1,340 @@
+{
+  "channel_username": "realtimeforai",
+  "coverage": {
+    "agent_ops": 52,
+    "ai_engineering_infra": 6,
+    "ai_product_pm": 30,
+    "ai_ux_workflow": 6,
+    "business_adoption": 44,
+    "coding_agents": 22,
+    "creative_multimodal": 6,
+    "evals_quality": 10,
+    "general_ai_news": 0,
+    "model_landscape": 106,
+    "rag_retrieval_knowledge": 11,
+    "security_privacy_governance": 22
+  },
+  "coverage_strength": {
+    "agent_ops": "strong",
+    "ai_engineering_infra": "thin",
+    "ai_product_pm": "medium",
+    "ai_ux_workflow": "thin",
+    "business_adoption": "strong",
+    "coding_agents": "medium",
+    "creative_multimodal": "thin",
+    "evals_quality": "thin",
+    "general_ai_news": "none",
+    "model_landscape": "strong",
+    "rag_retrieval_knowledge": "thin",
+    "security_privacy_governance": "medium"
+  },
+  "date_range": {
+    "first_post": "2025-04-11",
+    "last_post": "2026-05-03"
+  },
+  "depth_profile": {
+    "announcement_or_news": 17,
+    "architecture_analysis": 16,
+    "benchmark_or_eval": 10,
+    "case_study": 14,
+    "howto_or_checklist": 43,
+    "low_signal": 10,
+    "practitioner_experience": 53,
+    "tool_release": 2
+  },
+  "display_name": "Air",
+  "embedding_count": 164,
+  "embedding_coverage_ratio": 1.0,
+  "expert_id": "air_ai",
+  "fts_count": 164,
+  "metadata_coverage_ratio": 0.8667,
+  "metadata_valid_count": 143,
+  "post_count": 165,
+  "representative_posts": [
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "evals_quality",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-13",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "**Работу с Excel на профессиональном уровне и Дашборд с обновлением ** можно организовать со скиллами <u>xlsx</u>sx и build-dashboard от Claude** Claude **не обязательно привязываться к моделям Claude - текст и скрипты этих скиллов можно использовать в других моделях* **Пример. ** Разберу когда есть только файл с мн...",
+      "reason": "coding_agents, agent_ops, evals_quality; depth=benchmark_or_eval",
+      "telegram_message_id": 418
+    },
+    {
+      "coverage_labels": [
+        "security_privacy_governance",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-28",
+      "depth_label": "practitioner_experience",
+      "excerpt": "Мы часто обсуждаем как сотрудники загружают рабочие документы с чувствительными данными в облачные модели Даже придумали международный термин **Shadow AI** **Теневой ИИ - **- использование сотрудниками несанкционированных нейросетей для рабочих задач Для безопасников по всему миру это головная боль 🤕 **Запреты помог...",
+      "reason": "security_privacy_governance, model_landscape; depth=practitioner_experience",
+      "telegram_message_id": 429
+    },
+    {
+      "coverage_labels": [
+        "business_adoption",
+        "security_privacy_governance"
+      ],
+      "created_at": "2026-04-23",
+      "depth_label": "practitioner_experience",
+      "excerpt": "**Экономить по крупному** **на CAPEX** Доступ к передовым западным моделям усложняется с каждым днем как снаружи, так и изнутри. Но это уже не вопрос «надо или не надо», **это вопрос фундаментальной экономики.** **Мы живем в материальном мире с конечными ресурсами** По законам рынка то, чего много и что доступно бол...",
+      "reason": "business_adoption, security_privacy_governance; depth=practitioner_experience",
+      "telegram_message_id": 424
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "business_adoption",
+        "ai_ux_workflow",
+        "security_privacy_governance",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-18",
+      "depth_label": "practitioner_experience",
+      "excerpt": "Как контролировать расходы в Claude - где с такой скоростью сгорают лимиты, а с выходом Opus 4.7 станет еще хуже Opus 4.7 в использовании дороже по сл. причинам: 🔸Н**овый tokenizer:** модель иначе режет текст на токены - до 1.35x больше токенов 🔸De**ep reasoning: **на поздних шагах агентной работы включается по умол...",
+      "reason": "coding_agents, agent_ops, business_adoption; depth=practitioner_experience",
+      "telegram_message_id": 421
+    },
+    {
+      "coverage_labels": [
+        "ai_engineering_infra",
+        "model_landscape"
+      ],
+      "created_at": "2026-03-16",
+      "depth_label": "howto_or_checklist",
+      "excerpt": "Часто **инновации рождаются из ограничений**, а если это китайские инновации в сфере ИИ, то еще и появляются в открытом доступе **Команда Kimi делится в своем исследовании** [«Attention Residuals»](https://github.com/MoonshotAI/Attention-Residuals/blob/master/Attention_Residuals.pdf) как выжимать из более слабого же...",
+      "reason": "ai_engineering_infra, model_landscape; depth=howto_or_checklist",
+      "telegram_message_id": 406
+    },
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "ai_product_pm",
+        "model_landscape"
+      ],
+      "created_at": "2026-03-11",
+      "depth_label": "howto_or_checklist",
+      "excerpt": "🦀 К**раба **по популярности на GitHub д**огоняет 🐠 Mi****roFish ** ](https://github.com/666ghj/MiroFish)Это инструмент для сценариев реакции общества на новый продукт, законопроект, PR-кампанию, темы, посты и т.д. 🔮 Mir**oFish пытается предсказать реакцию реального мира на событие через симуляцию. Сна**чала строит ц...",
+      "reason": "agent_ops, ai_product_pm, model_landscape; depth=howto_or_checklist",
+      "telegram_message_id": 404
+    },
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "model_landscape"
+      ],
+      "created_at": "2026-05-03",
+      "depth_label": "case_study",
+      "excerpt": "Как **проверить ПЛАН** до того, как в него вложены деньги и время метод **Premortem** **делают до запуска**, но так, будто провал уже случился (*postmortem): **план реализовали и он провалился** Метод описал психолог Гэри Кляйн в HBR. Даниэль Канеман называл его лучшим способом сбить избыточную уверенность и группов...",
+      "reason": "agent_ops, model_landscape; depth=case_study",
+      "telegram_message_id": 431
+    },
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-08",
+      "depth_label": "practitioner_experience",
+      "excerpt": "**Skills вот уже какую неделю на верхушке AI-хит-парада** и сегодня мне скинули **гайд от Антропик** – руководство по скиллам. Если раньше все говорили в основном о промптах, то сейчас все чаще обсуждают их. За последнюю неделю особенно много постов, а комментарии такого плана: почему не вызываются или не исполняютс...",
+      "reason": "agent_ops, model_landscape; depth=practitioner_experience",
+      "telegram_message_id": 417
+    }
+  ],
+  "runtime_readiness": {
+    "embeddings_ready": true,
+    "fts_ready": true,
+    "metadata_advisory_ready": true,
+    "text_posts_ready": true
+  },
+  "text_post_count": 164,
+  "top_concepts": [
+    {
+      "count": 31,
+      "value": "Prompt Engineering"
+    },
+    {
+      "count": 9,
+      "value": "Automation"
+    },
+    {
+      "count": 9,
+      "value": "RAG"
+    },
+    {
+      "count": 6,
+      "value": "AI Agents"
+    },
+    {
+      "count": 6,
+      "value": "Artificial Intelligence"
+    },
+    {
+      "count": 5,
+      "value": "Data Analysis"
+    },
+    {
+      "count": 5,
+      "value": "API"
+    },
+    {
+      "count": 4,
+      "value": "System Prompt"
+    },
+    {
+      "count": 4,
+      "value": "Data Visualization"
+    },
+    {
+      "count": 4,
+      "value": "Transcription"
+    },
+    {
+      "count": 4,
+      "value": "LLM"
+    },
+    {
+      "count": 4,
+      "value": "Prompt Injection"
+    }
+  ],
+  "top_keywords": [
+    {
+      "count": 59,
+      "value": "prompt"
+    },
+    {
+      "count": 43,
+      "value": "промпт"
+    },
+    {
+      "count": 32,
+      "value": "llm"
+    },
+    {
+      "count": 28,
+      "value": "искусственный"
+    },
+    {
+      "count": 28,
+      "value": "интеллект"
+    },
+    {
+      "count": 22,
+      "value": "claude"
+    },
+    {
+      "count": 18,
+      "value": "development"
+    },
+    {
+      "count": 18,
+      "value": "модели"
+    },
+    {
+      "count": 18,
+      "value": "data"
+    },
+    {
+      "count": 17,
+      "value": "engineering"
+    },
+    {
+      "count": 17,
+      "value": "анализ"
+    },
+    {
+      "count": 16,
+      "value": "agents"
+    },
+    {
+      "count": 16,
+      "value": "google"
+    },
+    {
+      "count": 16,
+      "value": "gemini"
+    },
+    {
+      "count": 14,
+      "value": "analysis"
+    },
+    {
+      "count": 14,
+      "value": "разработка"
+    },
+    {
+      "count": 13,
+      "value": "api"
+    },
+    {
+      "count": 13,
+      "value": "chatgpt"
+    },
+    {
+      "count": 13,
+      "value": "языковые"
+    },
+    {
+      "count": 13,
+      "value": "openai"
+    }
+  ],
+  "top_primary_topics": [
+    {
+      "count": 18,
+      "value": "Prompt Engineering"
+    },
+    {
+      "count": 14,
+      "value": "AI Agents"
+    },
+    {
+      "count": 6,
+      "value": "Generative AI"
+    },
+    {
+      "count": 3,
+      "value": "AI Integration"
+    },
+    {
+      "count": 3,
+      "value": "LLM Evaluation"
+    },
+    {
+      "count": 3,
+      "value": "AI Monetization"
+    },
+    {
+      "count": 2,
+      "value": "Artificial Intelligence"
+    },
+    {
+      "count": 2,
+      "value": "Web Development"
+    },
+    {
+      "count": 2,
+      "value": "AI Automation"
+    },
+    {
+      "count": 2,
+      "value": "Entrepreneurship"
+    },
+    {
+      "count": 2,
+      "value": "LLM Inference"
+    },
+    {
+      "count": 2,
+      "value": "AI Strategy"
+    }
+  ],
+  "warnings": []
+}

@@ -1,0 +1,76 @@
+{
+  "schema_version": "semantic_arbitration_report.v0.1",
+  "created_at": "2026-05-10",
+  "candidate": {
+    "expert_id": "doronin",
+    "display_name": "Doronin",
+    "channel_username": "@kdoronin_blog",
+    "passport_path": "output/expert_admission/semantic_passports/doronin/doronin_semantic_passport.normalized.json",
+    "candidate_impact_report": "output/expert_admission/candidates/doronin/candidate_impact_report.md",
+    "overlap_report": "output/expert_admission/candidates/doronin/overlap_report.json"
+  },
+  "verdict": "accept_with_routing_caveat",
+  "does_not_update_manifest": true,
+  "deterministic_preflight": {
+    "candidate_cells": 4,
+    "fills_gap": 1,
+    "adds_adjacent_viewpoint": 0,
+    "deepens_existing_cell": 0,
+    "likely_duplicate": 3,
+    "needs_probe": 0,
+    "exact_overlaps": 3,
+    "related_overlaps": 0,
+    "preliminary_recommendation": "overlap_heavy_needs_stronger_review"
+  },
+  "corpus_and_run": {
+    "post_count": 687,
+    "comment_count": 4026,
+    "max_comments_per_post": 10,
+    "first_post": "2024-06-11 15:58:34.000000",
+    "last_post": "2026-05-04 05:17:57.000000",
+    "vertex_input_tokens": 908955,
+    "vertex_output_tokens": 13951,
+    "thoughts_tokens": 5219,
+    "finish_reason": "STOP",
+    "normalized_validation_passed": true
+  },
+  "accepted_like_value": [
+    {
+      "cell_id": "agent_ops/mcp_tooling/build_human_ai_workflow",
+      "interpretation": "Clean gap for practical custom/narrow MCP tooling as part of reliable human-AI workflow."
+    },
+    {
+      "cell_id": "coding_agents/claude_code_workflows/design_agentic_dev_workflow",
+      "interpretation": "Exact overlap but useful second strong source for a previously single-source Claude Code workflow cell."
+    },
+    {
+      "cell_id": "coding_agents/agentic_dev_process/design_agentic_dev_workflow",
+      "interpretation": "Overlap-heavy but valuable anti-vibe engineering doctrine with concrete control mechanisms."
+    },
+    {
+      "cell_id": "rag_retrieval_knowledge/knowledge_base_design/design_rag_knowledge_base",
+      "interpretation": "Exact overlap with Refat but adjacent temporal-graph memory viewpoint."
+    }
+  ],
+  "routing_caveat": "accepted as disciplined AI-assisted development / Claude Code workflow / custom MCP and temporal-agent-memory depth expert; overlap-heavy with coding-agent and RAG cells, avoid broad duplicate routing",
+  "good_fit": [
+    "disciplined AI-assisted development vs vibe coding",
+    "Cursor or Claude Code rules, BDD, staged documentation, and agent constraints",
+    "Claude Code migration and Skills-vs-MCP tradeoffs",
+    "custom narrow MCP server practice",
+    "temporal graph memory for agents"
+  ],
+  "poor_fit": [
+    "beginner-only prompt engineering",
+    "primary enterprise AI adoption roadmap source",
+    "primary file-first knowledge-base design source",
+    "primary embedding-less RAG quality source",
+    "broad generic coding-agent routing without overlap checks"
+  ],
+  "risks": [
+    "3 of 4 cells are exact overlaps",
+    "tool preferences and pricing posts age quickly",
+    "opinionated source should be balanced on contentious tool-choice questions",
+    "RAG/knowledge-base cell was repaired from matrix_cells and should not be over-weighted without probes"
+  ]
+}

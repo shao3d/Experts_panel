@@ -1,0 +1,605 @@
+{
+  "schema_version": "candidate_overlap_report.v0.1",
+  "created_at": "2026-05-12T09:12:16.408060+00:00",
+  "candidate": {
+    "expert_id": "etechlead",
+    "display_name": "Etechlead",
+    "channel_username": "@etechlead",
+    "schema_version": "expert_value_passport.v1.1",
+    "generated_at": "2026-05-12T09:08:01.647058+00:00",
+    "passport_path": "output/expert_admission/semantic_passports/etechlead/output/etechlead_semantic_passport.normalized.json",
+    "cell_count": 6
+  },
+  "summary": {
+    "exact_overlap_count": 3,
+    "related_overlap_count": 0,
+    "likely_duplicate_count": 2,
+    "adds_adjacent_viewpoint_count": 0,
+    "deepens_existing_cell_count": 1
+  },
+  "cell_impacts": [
+    {
+      "candidate_cell_id": "coding_agents/cursor_windsurf_copilot/choose_ai_coding_tool",
+      "candidate_original_cell_id": null,
+      "classification": "likely_duplicate",
+      "rationale": "Candidate maps to an already-covered exact cell without a clear deterministic score lift.",
+      "suggested_next_action": "check_representative_posts_before_counting_as_unique",
+      "domain_id": "coding_agents",
+      "subdomain_id": "cursor_windsurf_copilot",
+      "subdomain_name": "AI IDEs",
+      "query_intent_ids": [
+        "choose_ai_coding_tool"
+      ],
+      "source_role": "primary",
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "aggregate_score": 5.0,
+      "scores": {
+        "depth": 5,
+        "practicality": 5,
+        "evidence_quality": 5,
+        "source_utility": 5,
+        "intrinsic_distinctiveness": 5,
+        "anti_hype": 5,
+        "community_signal": 4
+      },
+      "confidence": 0.95,
+      "confidence_normalized_0_5": 4.75,
+      "evidence_ref_count": 4,
+      "limitations": [],
+      "taxonomy_flags": [],
+      "exact_match": {
+        "matrix_cell_id": "coding_agents/cursor_windsurf_copilot/choose_ai_coding_tool",
+        "coverage_status": "strong_multi_source",
+        "redundancy_level": "medium",
+        "expert_count": 3,
+        "best_experts": [
+          {
+            "expert_id": "elkornacio",
+            "display_name": "Elkornacio",
+            "source_role": "primary",
+            "aggregate_score": 5.0,
+            "evidence_ref_count": 2
+          },
+          {
+            "expert_id": "ilia_izmailov",
+            "display_name": "Ilia Izmailov",
+            "source_role": "primary",
+            "aggregate_score": 4.434,
+            "evidence_ref_count": 5
+          },
+          {
+            "expert_id": "glebkudr",
+            "display_name": "Glebkudr",
+            "source_role": "primary",
+            "aggregate_score": 4.0,
+            "evidence_ref_count": 3
+          }
+        ]
+      },
+      "domain_query_intent_matches": [
+        {
+          "rollup_id": "coding_agents/choose_ai_coding_tool",
+          "coverage_status": "strong_multi_source",
+          "overlap_status": "related_multi_source",
+          "expert_count": 6,
+          "exact_cell_count": 5,
+          "exact_cell_ids": [
+            "coding_agents/claude_code_workflows/choose_ai_coding_tool",
+            "coding_agents/claude_code_workflows/learn_ai_assisted_development",
+            "coding_agents/codex_workflows/choose_ai_coding_tool",
+            "coding_agents/codex_workflows/learn_ai_assisted_development",
+            "coding_agents/cursor_windsurf_copilot/choose_ai_coding_tool"
+          ],
+          "best_experts": [
+            {
+              "expert_id": "elkornacio",
+              "display_name": "Elkornacio",
+              "source_role": "primary",
+              "aggregate_score": 5.0,
+              "evidence_ref_count": 2
+            },
+            {
+              "expert_id": "polyakov",
+              "display_name": "Polyakov",
+              "source_role": "primary",
+              "aggregate_score": 4.849,
+              "evidence_ref_count": 4
+            },
+            {
+              "expert_id": "ai_grabli",
+              "display_name": "Tech_AI_grabli",
+              "source_role": "primary",
+              "aggregate_score": 4.519,
+              "evidence_ref_count": 4
+            },
+            {
+              "expert_id": "ilia_izmailov",
+              "display_name": "Ilia Izmailov",
+              "source_role": "primary",
+              "aggregate_score": 4.434,
+              "evidence_ref_count": 5
+            },
+            {
+              "expert_id": "ai_architect",
+              "display_name": "AI Architect",
+              "source_role": "primary",
+              "aggregate_score": 4.406,
+              "evidence_ref_count": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_cell_id": "coding_agents/claude_code_workflows/choose_ai_coding_tool",
+      "candidate_original_cell_id": null,
+      "classification": "deepens_existing_cell",
+      "rationale": "Candidate overlaps an exact cell but improves a thin/moderate or weaker baseline.",
+      "suggested_next_action": "human_review_then_possible_accept",
+      "domain_id": "coding_agents",
+      "subdomain_id": "claude_code_workflows",
+      "subdomain_name": "CLI Agents",
+      "query_intent_ids": [
+        "choose_ai_coding_tool",
+        "design_agentic_dev_workflow"
+      ],
+      "source_role": "primary",
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "aggregate_score": 5.0,
+      "scores": {
+        "depth": 5,
+        "practicality": 5,
+        "evidence_quality": 5,
+        "source_utility": 5,
+        "intrinsic_distinctiveness": 5,
+        "anti_hype": 4,
+        "community_signal": 4
+      },
+      "confidence": 0.95,
+      "confidence_normalized_0_5": 4.75,
+      "evidence_ref_count": 4,
+      "limitations": [],
+      "taxonomy_flags": [],
+      "exact_match": {
+        "matrix_cell_id": "coding_agents/claude_code_workflows/choose_ai_coding_tool",
+        "coverage_status": "strong_multi_source",
+        "redundancy_level": "low",
+        "expert_count": 2,
+        "best_experts": [
+          {
+            "expert_id": "ai_grabli",
+            "display_name": "Tech_AI_grabli",
+            "source_role": "primary",
+            "aggregate_score": 4.519,
+            "evidence_ref_count": 4
+          },
+          {
+            "expert_id": "ai_architect",
+            "display_name": "AI Architect",
+            "source_role": "primary",
+            "aggregate_score": 4.406,
+            "evidence_ref_count": 2
+          }
+        ]
+      },
+      "domain_query_intent_matches": [
+        {
+          "rollup_id": "coding_agents/choose_ai_coding_tool",
+          "coverage_status": "strong_multi_source",
+          "overlap_status": "related_multi_source",
+          "expert_count": 6,
+          "exact_cell_count": 5,
+          "exact_cell_ids": [
+            "coding_agents/claude_code_workflows/choose_ai_coding_tool",
+            "coding_agents/claude_code_workflows/learn_ai_assisted_development",
+            "coding_agents/codex_workflows/choose_ai_coding_tool",
+            "coding_agents/codex_workflows/learn_ai_assisted_development",
+            "coding_agents/cursor_windsurf_copilot/choose_ai_coding_tool"
+          ],
+          "best_experts": [
+            {
+              "expert_id": "elkornacio",
+              "display_name": "Elkornacio",
+              "source_role": "primary",
+              "aggregate_score": 5.0,
+              "evidence_ref_count": 2
+            },
+            {
+              "expert_id": "polyakov",
+              "display_name": "Polyakov",
+              "source_role": "primary",
+              "aggregate_score": 4.849,
+              "evidence_ref_count": 4
+            },
+            {
+              "expert_id": "ai_grabli",
+              "display_name": "Tech_AI_grabli",
+              "source_role": "primary",
+              "aggregate_score": 4.519,
+              "evidence_ref_count": 4
+            },
+            {
+              "expert_id": "ilia_izmailov",
+              "display_name": "Ilia Izmailov",
+              "source_role": "primary",
+              "aggregate_score": 4.434,
+              "evidence_ref_count": 5
+            },
+            {
+              "expert_id": "ai_architect",
+              "display_name": "AI Architect",
+              "source_role": "primary",
+              "aggregate_score": 4.406,
+              "evidence_ref_count": 2
+            }
+          ]
+        },
+        {
+          "rollup_id": "coding_agents/design_agentic_dev_workflow",
+          "coverage_status": "strong_multi_source",
+          "overlap_status": "related_multi_source",
+          "expert_count": 5,
+          "exact_cell_count": 2,
+          "exact_cell_ids": [
+            "coding_agents/agentic_dev_process/design_agentic_dev_workflow",
+            "coding_agents/claude_code_workflows/design_agentic_dev_workflow"
+          ],
+          "best_experts": [
+            {
+              "expert_id": "doronin",
+              "display_name": "Doronin",
+              "source_role": "primary",
+              "aggregate_score": 4.925,
+              "evidence_ref_count": 6
+            },
+            {
+              "expert_id": "ai_grabli",
+              "display_name": "Tech_AI_grabli",
+              "source_role": "primary",
+              "aggregate_score": 4.811,
+              "evidence_ref_count": 2
+            },
+            {
+              "expert_id": "akimov",
+              "display_name": "Akimov",
+              "source_role": "primary",
+              "aggregate_score": 4.811,
+              "evidence_ref_count": 4
+            },
+            {
+              "expert_id": "ostrikov",
+              "display_name": "Ostrikov",
+              "source_role": "primary",
+              "aggregate_score": 4.774,
+              "evidence_ref_count": 3
+            },
+            {
+              "expert_id": "ilia_izmailov",
+              "display_name": "Ilia Izmailov",
+              "source_role": "primary",
+              "aggregate_score": 4.774,
+              "evidence_ref_count": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "candidate_cell_id": "agent_ops/mcp_tooling/design_agentic_dev_workflow",
+      "candidate_original_cell_id": null,
+      "classification": "likely_duplicate",
+      "rationale": "Candidate maps to an already-covered exact cell without a clear deterministic score lift.",
+      "suggested_next_action": "check_representative_posts_before_counting_as_unique",
+      "domain_id": "agent_ops",
+      "subdomain_id": "mcp_tooling",
+      "subdomain_name": "Model Context Protocol",
+      "query_intent_ids": [
+        "design_agentic_dev_workflow"
+      ],
+      "source_role": "primary",
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "aggregate_score": 4.623,
+      "scores": {
+        "depth": 5,
+        "practicality": 5,
+        "evidence_quality": 4,
+        "source_utility": 5,
+        "intrinsic_distinctiveness": 4,
+        "anti_hype": 4,
+        "community_signal": 3
+      },
+      "confidence": 0.9,
+      "confidence_normalized_0_5": 4.5,
+      "evidence_ref_count": 3,
+      "limitations": [],
+      "taxonomy_flags": [],
+      "exact_match": {
+        "matrix_cell_id": "agent_ops/mcp_tooling/design_agentic_dev_workflow",
+        "coverage_status": "strong_multi_source",
+        "redundancy_level": "medium",
+        "expert_count": 3,
+        "best_experts": [
+          {
+            "expert_id": "pashazloy",
+            "display_name": "PashaZloy",
+            "source_role": "primary",
+            "aggregate_score": 4.857,
+            "evidence_ref_count": 5
+          },
+          {
+            "expert_id": "neuraldeep",
+            "display_name": "Neuraldeep",
+            "source_role": "primary",
+            "aggregate_score": 4.434,
+            "evidence_ref_count": 2
+          },
+          {
+            "expert_id": "elkornacio",
+            "display_name": "Elkornacio",
+            "source_role": "primary",
+            "aggregate_score": 4.0,
+            "evidence_ref_count": 1
+          }
+        ]
+      },
+      "domain_query_intent_matches": [
+        {
+          "rollup_id": "agent_ops/design_agentic_dev_workflow",
+          "coverage_status": "strong_multi_source",
+          "overlap_status": "related_multi_source",
+          "expert_count": 10,
+          "exact_cell_count": 6,
+          "exact_cell_ids": [
+            "agent_ops/agentic_dev_process/design_agentic_dev_workflow",
+            "agent_ops/claude_code_workflows/design_agentic_dev_workflow",
+            "agent_ops/mcp_tooling/design_agentic_dev_workflow",
+            "agent_ops/multi_agent_orchestration/design_agentic_dev_workflow",
+            "agent_ops/reasoning_control/design_agentic_dev_workflow",
+            "agent_ops/tool_calling_hooks_skills/design_agentic_dev_workflow"
+          ],
+          "best_experts": [
+            {
+              "expert_id": "llm_under_hood",
+              "display_name": "Rinat",
+              "source_role": "primary",
+              "aggregate_score": 5.0,
+              "evidence_ref_count": 2
+            },
+            {
+              "expert_id": "neuraldeep",
+              "display_name": "Neuraldeep",
+              "source_role": "primary",
+              "aggregate_score": 5.0,
+              "evidence_ref_count": 3
+            },
+            {
+              "expert_id": "polyakov",
+              "display_name": "Polyakov",
+              "source_role": "primary",
+              "aggregate_score": 5.0,
+              "evidence_ref_count": 4
+            },
+            {
+              "expert_id": "refat",
+              "display_name": "Refat (Tech & AI)",
+              "source_role": "primary",
+              "aggregate_score": 4.925,
+              "evidence_ref_count": 3
+            },
+            {
+              "expert_id": "pashazloy",
+              "display_name": "PashaZloy",
+              "source_role": "primary",
+              "aggregate_score": 4.857,
+              "evidence_ref_count": 5
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "closest_existing_experts": [
+    {
+      "expert_id": "elkornacio",
+      "display_name": "Elkornacio",
+      "match_count": 4,
+      "exact_match_count": 2,
+      "related_match_count": 2,
+      "matched_candidate_cells": [
+        "agent_ops/mcp_tooling/design_agentic_dev_workflow",
+        "coding_agents/claude_code_workflows/choose_ai_coding_tool",
+        "coding_agents/cursor_windsurf_copilot/choose_ai_coding_tool"
+      ],
+      "matched_rollups": [
+        "agent_ops/design_agentic_dev_workflow",
+        "coding_agents/choose_ai_coding_tool",
+        "coding_agents/design_agentic_dev_workflow"
+      ],
+      "best_existing_score": 5.0
+    },
+    {
+      "expert_id": "polyakov",
+      "display_name": "Polyakov",
+      "match_count": 3,
+      "exact_match_count": 0,
+      "related_match_count": 3,
+      "matched_candidate_cells": [
+        "agent_ops/mcp_tooling/design_agentic_dev_workflow",
+        "coding_agents/claude_code_workflows/choose_ai_coding_tool",
+        "coding_agents/cursor_windsurf_copilot/choose_ai_coding_tool"
+      ],
+      "matched_rollups": [
+        "agent_ops/design_agentic_dev_workflow",
+        "coding_agents/choose_ai_coding_tool",
+        "coding_agents/design_agentic_dev_workflow"
+      ],
+      "best_existing_score": 5.0
+    },
+    {
+      "expert_id": "ai_grabli",
+      "display_name": "Tech_AI_grabli",
+      "match_count": 3,
+      "exact_match_count": 1,
+      "related_match_count": 2,
+      "matched_candidate_cells": [
+        "coding_agents/claude_code_workflows/choose_ai_coding_tool",
+        "coding_agents/cursor_windsurf_copilot/choose_ai_coding_tool"
+      ],
+      "matched_rollups": [
+        "coding_agents/choose_ai_coding_tool",
+        "coding_agents/design_agentic_dev_workflow"
+      ],
+      "best_existing_score": 4.519
+    },
+    {
+      "expert_id": "ilia_izmailov",
+      "display_name": "Ilia Izmailov",
+      "match_count": 3,
+      "exact_match_count": 1,
+      "related_match_count": 2,
+      "matched_candidate_cells": [
+        "coding_agents/claude_code_workflows/choose_ai_coding_tool",
+        "coding_agents/cursor_windsurf_copilot/choose_ai_coding_tool"
+      ],
+      "matched_rollups": [
+        "coding_agents/choose_ai_coding_tool",
+        "coding_agents/design_agentic_dev_workflow"
+      ],
+      "best_existing_score": 4.434
+    },
+    {
+      "expert_id": "ai_architect",
+      "display_name": "AI Architect",
+      "match_count": 3,
+      "exact_match_count": 1,
+      "related_match_count": 2,
+      "matched_candidate_cells": [
+        "coding_agents/claude_code_workflows/choose_ai_coding_tool",
+        "coding_agents/cursor_windsurf_copilot/choose_ai_coding_tool"
+      ],
+      "matched_rollups": [
+        "coding_agents/choose_ai_coding_tool",
+        "coding_agents/design_agentic_dev_workflow"
+      ],
+      "best_existing_score": 4.406
+    },
+    {
+      "expert_id": "neuraldeep",
+      "display_name": "Neuraldeep",
+      "match_count": 2,
+      "exact_match_count": 1,
+      "related_match_count": 1,
+      "matched_candidate_cells": [
+        "agent_ops/mcp_tooling/design_agentic_dev_workflow"
+      ],
+      "matched_rollups": [
+        "agent_ops/design_agentic_dev_workflow"
+      ],
+      "best_existing_score": 5.0
+    },
+    {
+      "expert_id": "pashazloy",
+      "display_name": "PashaZloy",
+      "match_count": 2,
+      "exact_match_count": 1,
+      "related_match_count": 1,
+      "matched_candidate_cells": [
+        "agent_ops/mcp_tooling/design_agentic_dev_workflow"
+      ],
+      "matched_rollups": [
+        "agent_ops/design_agentic_dev_workflow"
+      ],
+      "best_existing_score": 4.857
+    },
+    {
+      "expert_id": "llm_under_hood",
+      "display_name": "Rinat",
+      "match_count": 1,
+      "exact_match_count": 0,
+      "related_match_count": 1,
+      "matched_candidate_cells": [
+        "agent_ops/mcp_tooling/design_agentic_dev_workflow"
+      ],
+      "matched_rollups": [
+        "agent_ops/design_agentic_dev_workflow"
+      ],
+      "best_existing_score": 5.0
+    },
+    {
+      "expert_id": "doronin",
+      "display_name": "Doronin",
+      "match_count": 1,
+      "exact_match_count": 0,
+      "related_match_count": 1,
+      "matched_candidate_cells": [
+        "coding_agents/claude_code_workflows/choose_ai_coding_tool"
+      ],
+      "matched_rollups": [
+        "coding_agents/choose_ai_coding_tool",
+        "coding_agents/design_agentic_dev_workflow"
+      ],
+      "best_existing_score": 4.925
+    },
+    {
+      "expert_id": "refat",
+      "display_name": "Refat (Tech & AI)",
+      "match_count": 1,
+      "exact_match_count": 0,
+      "related_match_count": 1,
+      "matched_candidate_cells": [
+        "agent_ops/mcp_tooling/design_agentic_dev_workflow"
+      ],
+      "matched_rollups": [
+        "agent_ops/design_agentic_dev_workflow"
+      ],
+      "best_existing_score": 4.925
+    },
+    {
+      "expert_id": "akimov",
+      "display_name": "Akimov",
+      "match_count": 1,
+      "exact_match_count": 0,
+      "related_match_count": 1,
+      "matched_candidate_cells": [
+        "coding_agents/claude_code_workflows/choose_ai_coding_tool"
+      ],
+      "matched_rollups": [
+        "coding_agents/choose_ai_coding_tool",
+        "coding_agents/design_agentic_dev_workflow"
+      ],
+      "best_existing_score": 4.811
+    },
+    {
+      "expert_id": "ostrikov",
+      "display_name": "Ostrikov",
+      "match_count": 1,
+      "exact_match_count": 0,
+      "related_match_count": 1,
+      "matched_candidate_cells": [
+        "coding_agents/claude_code_workflows/choose_ai_coding_tool"
+      ],
+      "matched_rollups": [
+        "coding_agents/choose_ai_coding_tool",
+        "coding_agents/design_agentic_dev_workflow"
+      ],
+      "best_existing_score": 4.774
+    },
+    {
+      "expert_id": "glebkudr",
+      "display_name": "Glebkudr",
+      "match_count": 1,
+      "exact_match_count": 1,
+      "related_match_count": 0,
+      "matched_candidate_cells": [
+        "coding_agents/cursor_windsurf_copilot/choose_ai_coding_tool"
+      ],
+      "matched_rollups": [
+        "coding_agents/choose_ai_coding_tool"
+      ],
+      "best_existing_score": 4.0
+    }
+  ]
+}

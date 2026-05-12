@@ -1,0 +1,951 @@
+{
+  "schema_version": "expert_value_passport.v1.1",
+  "passport_meta": {
+    "schema_version": "expert_value_passport.v1.1",
+    "expert_id": "pashazloy",
+    "display_name": "PashaZloy",
+    "channel_username": "@evilfreelancer",
+    "model_assumed": "gemini-3.1-pro-preview",
+    "prompt_version": "semantic-passport-prompt.v1",
+    "generated_at": "2026-05-10T16:34:46.330767+00:00"
+  },
+  "corpus_audit": {
+    "post_count_seen": 400,
+    "comment_count_seen": 5992,
+    "date_range": {
+      "first_post": "2022-05-05 22:05:24.000000",
+      "last_post": "2026-05-03 12:58:18.000000"
+    },
+    "language_mix": [
+      "ru",
+      "en"
+    ],
+    "material_limitations": [],
+    "author_vs_community_boundary": "Clear boundary. The expert frequently collaborates with other known experts in the comments (e.g., Valerii Kovalskii, Alexander Abramov), but their voices are distinct. Comments are treated strictly as community signal or peer review."
+  },
+  "source_ref_index_used": [
+    {
+      "source_ref": "P0114",
+      "source_kind": "expert_post",
+      "post_id": 9250,
+      "created_at": "2025-05-05 07:56:06.000000",
+      "why_used": "Describes the expert's vibe-coding methodology using BDD/TDD principles."
+    },
+    {
+      "source_ref": "P0285",
+      "source_kind": "expert_post",
+      "post_id": 9427,
+      "created_at": "2026-01-26 11:01:08.000000",
+      "why_used": "Core insight: 'Tests are the long-term memory of a project' in vibe-coding."
+    },
+    {
+      "source_ref": "P0239",
+      "source_kind": "expert_post",
+      "post_id": 9387,
+      "created_at": "2025-11-14 10:50:45.000000",
+      "why_used": "Core insight: 'RAG is an agent with one tool (retrieval)'."
+    },
+    {
+      "source_ref": "P0314",
+      "source_kind": "expert_post",
+      "post_id": 9446,
+      "created_at": "2026-02-24 11:02:42.000000",
+      "why_used": "Comparison of Agent Skills and MCP servers."
+    },
+    {
+      "source_ref": "P0240",
+      "source_kind": "expert_post",
+      "post_id": 9378,
+      "created_at": "2025-11-16 19:35:32.000000",
+      "why_used": "Details on hardware setup: 4x RTX 5060 Ti for local LLM inference."
+    },
+    {
+      "source_ref": "P0338",
+      "source_kind": "expert_post",
+      "post_id": 9481,
+      "created_at": "2026-03-14 17:42:06.000000",
+      "why_used": "Details on hardware setup: RTX 4090 modified to 48GB VRAM."
+    },
+    {
+      "source_ref": "P0296",
+      "source_kind": "expert_post",
+      "post_id": 9438,
+      "created_at": "2026-02-08 16:04:35.000000",
+      "why_used": "Release of openapi-to-mcp project."
+    },
+    {
+      "source_ref": "P0334",
+      "source_kind": "expert_post",
+      "post_id": 9476,
+      "created_at": "2026-03-12 21:09:02.000000",
+      "why_used": "Release of openapi-to-cli project for context optimization."
+    },
+    {
+      "source_ref": "P0356",
+      "source_kind": "expert_post",
+      "post_id": 9501,
+      "created_at": "2026-03-28 00:43:52.000000",
+      "why_used": "Restoration and GGUF conversion of ruGPT3XL."
+    },
+    {
+      "source_ref": "P0361",
+      "source_kind": "expert_post",
+      "post_id": 9506,
+      "created_at": "2026-04-03 16:01:42.000000",
+      "why_used": "Fixing sparse attention in ruGPT3XL and patching llama.cpp."
+    },
+    {
+      "source_ref": "P0260",
+      "source_kind": "expert_post",
+      "post_id": 9398,
+      "created_at": "2025-12-31 17:11:20.000000",
+      "why_used": "Release of sgr-agent-core v0.5.0."
+    },
+    {
+      "source_ref": "P0342",
+      "source_kind": "expert_post",
+      "post_id": 9486,
+      "created_at": "2026-03-18 21:23:34.000000",
+      "why_used": "Release of sgr-agent-core v0.7.0."
+    },
+    {
+      "source_ref": "P0100",
+      "source_kind": "expert_post",
+      "post_id": 9236,
+      "created_at": "2025-04-15 19:22:48.000000",
+      "why_used": "Release of docker-fish-speech-server."
+    },
+    {
+      "source_ref": "P0184",
+      "source_kind": "expert_post",
+      "post_id": 9262,
+      "created_at": "2025-08-29 07:51:45.000000",
+      "why_used": "Release of img2md-vlm-ocr project."
+    },
+    {
+      "source_ref": "P0376",
+      "source_kind": "expert_post",
+      "post_id": 9521,
+      "created_at": "2026-04-07 10:42:06.000000",
+      "why_used": "Deep dive into how tool calling works in vLLM."
+    },
+    {
+      "source_ref": "P0149",
+      "source_kind": "expert_post",
+      "post_id": 9285,
+      "created_at": "2025-07-07 11:28:19.000000",
+      "why_used": "Analysis of JSONSchemaBench and structured output."
+    },
+    {
+      "source_ref": "P0227",
+      "source_kind": "expert_post",
+      "post_id": 9365,
+      "created_at": "2025-11-01 12:52:40.000000",
+      "why_used": "Definition of an LLM agent and its components."
+    },
+    {
+      "source_ref": "P0292",
+      "source_kind": "expert_post",
+      "post_id": 9436,
+      "created_at": "2026-02-07 11:31:05.000000",
+      "why_used": "Context compression techniques for agents."
+    },
+    {
+      "source_ref": "P0384",
+      "source_kind": "expert_post",
+      "post_id": 9674,
+      "created_at": "2026-04-15 16:33:59.000000",
+      "why_used": "Concept of skill orchestration and cascades."
+    },
+    {
+      "source_ref": "P0369",
+      "source_kind": "expert_post",
+      "post_id": 9514,
+      "created_at": "2026-04-02 20:34:26.000000",
+      "why_used": "Anti-hype stance on corporate AI pricing and vendor lock-in."
+    },
+    {
+      "source_ref": "P0231",
+      "source_kind": "expert_post",
+      "post_id": 9369,
+      "created_at": "2025-11-05 10:56:50.000000",
+      "why_used": "Practical example of running gpt-oss-120b locally with docker-compose."
+    },
+    {
+      "source_ref": "P0270",
+      "source_kind": "expert_post",
+      "post_id": 9412,
+      "created_at": "2026-01-14 12:54:50.000000",
+      "why_used": "Practical example of running Qwen3-VL-30B locally."
+    },
+    {
+      "source_ref": "P0384.C0007",
+      "source_kind": "community_comment",
+      "post_id": 9674,
+      "comment_id": 103890,
+      "telegram_comment_id": 224915,
+      "created_at": "2026-04-15 16:44:34.000000",
+      "why_used": "Expert elaborates on orchestrating skills for complex DevOps tasks."
+    },
+    {
+      "source_ref": "P0375.C0026",
+      "source_kind": "community_comment",
+      "post_id": 9520,
+      "comment_id": 91160,
+      "telegram_comment_id": 223213,
+      "created_at": "2026-04-07 10:59:46.000000",
+      "why_used": "Peer review from Nikita Sushko regarding ruGPT3XL training metrics."
+    }
+  ],
+  "executive_summary": {
+    "one_sentence_positioning": "A highly technical deep practitioner and open-source contributor specializing in local LLM infrastructure, agentic workflows (MCP, SGR), and hardware optimization for AI.",
+    "strongest_system_value": "Provides production-ready, hands-on implementations (Docker configs, CLI tools, Python scripts) for running, fine-tuning, and orchestrating local LLMs and agents, backed by deep architectural understanding.",
+    "weakest_system_value": "Less focused on high-level AI strategy or non-technical business adoption, preferring deep engineering and 'vibe-coding' methodologies.",
+    "best_fit_queries": [
+      "How to set up local LLM inference with vLLM or llama.cpp?",
+      "How to build and orchestrate AI agents using MCP or SGR?",
+      "What hardware is optimal for running 30B+ parameter models locally?",
+      "How to optimize context windows and tool calling for local LLMs?"
+    ],
+    "poor_fit_queries": [
+      "What is the ROI of enterprise AI adoption?",
+      "How to manage AI governance and compliance?",
+      "General AI news summaries without technical depth."
+    ],
+    "confidence": 4.9
+  },
+  "expert_positioning": {
+    "primary_role": "AI Infrastructure & Agent Engineer",
+    "audience": [
+      "ML Engineers",
+      "DevOps Engineers",
+      "AI Developers",
+      "Hardware Enthusiasts"
+    ],
+    "voice": [
+      "Pragmatic",
+      "Hands-on",
+      "Technical",
+      "Skeptical of corporate hype",
+      "Open-source advocate"
+    ],
+    "worldview": [
+      "Local, self-hosted models are essential to avoid vendor lock-in and high API costs.",
+      "Agentic workflows require strict orchestration (like SGR) and tests, not just autonomous LLM freedom.",
+      "Hardware optimization (e.g., multi-GPU setups, quantization) is key to democratizing AI.",
+      "Vibe-coding is a powerful tool but requires strong engineering fundamentals and TDD/BDD to avoid technical debt."
+    ],
+    "distinctive_angle": "Combines deep DevOps/infrastructure knowledge with ML engineering, creating practical bridges between raw models and usable agentic systems (e.g., openapi-to-mcp, sgr-agent-core).",
+    "recurring_formats": [
+      "Docker-compose configurations",
+      "CLI command snippets",
+      "Architectural deep-dives",
+      "Hardware build logs",
+      "Open-source project releases"
+    ],
+    "evidence_refs": [
+      "P0114",
+      "P0231",
+      "P0240",
+      "P0296",
+      "P0369",
+      "P0376"
+    ]
+  },
+  "knowledge_domains": [
+    {
+      "domain_id": "ai_engineering_infra",
+      "domain_name": "AI Engineering & Infrastructure",
+      "subdomain_ids": [
+        "local_agent_setup",
+        "inference_cost_latency",
+        "model_specific_formatting"
+      ],
+      "query_intent_ids": [
+        "optimize_inference_cost_latency",
+        "learn_ai_assisted_development"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "unique",
+      "what_the_expert_knows": [
+        "How to configure and optimize vLLM and llama.cpp for local inference.",
+        "Hardware requirements and multi-GPU setups (e.g., 4x RTX 5060 Ti, 4090 48GB mod) for running large models (up to 120B).",
+        "Quantization techniques (GGUF, MXFP4) and their impact on VRAM and inference speed.",
+        "Dockerization of AI tools and models."
+      ],
+      "how_they_reason": [
+        "Tests configurations empirically, sharing exact VRAM usage and tokens/second metrics.",
+        "Prefers Docker for isolation and reproducibility.",
+        "Analyzes engine source code (e.g., vLLM tool parsers, llama.cpp sparse attention) to debug issues."
+      ],
+      "missing_or_weak_subtopics": [
+        "Cloud-native enterprise deployments (AWS/GCP managed services)."
+      ],
+      "evidence_refs": [
+        "P0231",
+        "P0240",
+        "P0270",
+        "P0338",
+        "P0361",
+        "P0376"
+      ],
+      "confidence": 5.0
+    },
+    {
+      "domain_id": "agent_ops",
+      "domain_name": "Agent Operations & Orchestration",
+      "subdomain_ids": [
+        "mcp_tooling",
+        "multi_agent_orchestration",
+        "tool_calling_hooks_skills",
+        "agentic_dev_process"
+      ],
+      "query_intent_ids": [
+        "design_agentic_dev_workflow",
+        "build_human_ai_workflow"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "Implementation of Model Context Protocol (MCP) and Agent Client Protocol (ACP).",
+        "Schema-Guided Reasoning (SGR) for deterministic agent behavior.",
+        "Converting OpenAPI specs to MCP/CLI tools to optimize context windows.",
+        "Differences between Skills and MCP servers."
+      ],
+      "how_they_reason": [
+        "Views agents as a combination of LLM, prompt, memory, and tools.",
+        "Advocates for strict orchestration and structured output over autonomous 'black box' agents.",
+        "Builds wrapper tools (openapi-to-mcp, acpbox) to standardize agent interactions."
+      ],
+      "missing_or_weak_subtopics": [],
+      "evidence_refs": [
+        "P0227",
+        "P0296",
+        "P0314",
+        "P0334",
+        "P0342",
+        "P0347",
+        "P0384"
+      ],
+      "confidence": 5.0
+    },
+    {
+      "domain_id": "prompt_engineering",
+      "domain_name": "Prompt Engineering & Vibe-Coding",
+      "subdomain_ids": [
+        "cursor_windsurf_copilot",
+        "code_review_testing",
+        "context_compression"
+      ],
+      "query_intent_ids": [
+        "learn_ai_assisted_development",
+        "design_agentic_dev_workflow"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "practical",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "How to structure Cursor Rules for large projects.",
+        "Using BDD/TDD to constrain and guide coding agents.",
+        "Context compression techniques (tool filtering, summarization, English language preference)."
+      ],
+      "how_they_reason": [
+        "Believes tests are the 'long-term memory' of a vibe-coded project.",
+        "Decomposes tasks into atomic steps to prevent agent hallucinations.",
+        "Prefers modular rules over monolithic AGENTS.md files."
+      ],
+      "missing_or_weak_subtopics": [],
+      "evidence_refs": [
+        "P0114",
+        "P0285",
+        "P0292",
+        "P0325"
+      ],
+      "confidence": 4.8
+    }
+  ],
+  "value_dimensions": [
+    {
+      "dimension_id": "insight_density",
+      "score_0_5": 4.5,
+      "rationale": "High density of actionable insights, particularly regarding hardware setups, agent orchestration, and context optimization.",
+      "evidence_refs": [
+        "P0227",
+        "P0285",
+        "P0292",
+        "P0376",
+        "P0384"
+      ],
+      "confidence": 4.8
+    },
+    {
+      "dimension_id": "practical_specificity",
+      "score_0_5": 5.0,
+      "rationale": "Provides exact Docker configurations, CLI commands, hardware specs, and code snippets for almost every topic discussed.",
+      "evidence_refs": [
+        "P0231",
+        "P0270",
+        "P0296",
+        "P0334",
+        "P0347"
+      ],
+      "confidence": 5.0
+    },
+    {
+      "dimension_id": "evidence_quality",
+      "score_0_5": 4.5,
+      "rationale": "Claims are backed by personal benchmarks, GitHub repositories, and direct references to source code (e.g., vLLM internals).",
+      "evidence_refs": [
+        "P0231",
+        "P0361",
+        "P0376"
+      ],
+      "confidence": 4.8
+    },
+    {
+      "dimension_id": "source_utility_for_panex",
+      "score_0_5": 5.0,
+      "rationale": "An exceptional source for practical AI engineering, local deployment, and agent architecture. Highly reusable patterns.",
+      "evidence_refs": [
+        "P0114",
+        "P0285",
+        "P0296",
+        "P0342"
+      ],
+      "confidence": 5.0
+    },
+    {
+      "dimension_id": "anti_hype_signal",
+      "score_0_5": 4.5,
+      "rationale": "Consistently critiques corporate AI hype, vendor lock-in, and 'magic' autonomous agents, advocating for engineering rigor and open-source.",
+      "evidence_refs": [
+        "P0314",
+        "P0369",
+        "P0384"
+      ],
+      "confidence": 4.8
+    }
+  ],
+  "matrix_cells": [
+    {
+      "domain_id": "ai_engineering_infra",
+      "subdomain_id": "local_agent_setup",
+      "subdomain_name": "Local LLM & Agent Deployment",
+      "query_intent_ids": [
+        "optimize_inference_cost_latency",
+        "learn_ai_assisted_development"
+      ],
+      "depth_score_0_5": 5.0,
+      "practicality_score_0_5": 5.0,
+      "intrinsic_distinctiveness_score_0_5": 4.5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4.5,
+      "source_utility_score_0_5": 5.0,
+      "comment_signal_score_0_5": 4.0,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0231",
+        "P0240",
+        "P0270",
+        "P0338"
+      ],
+      "notes": "Provides exact hardware specs (e.g., 4x 5060 Ti) and Docker configs for running large models (120B) locally using vLLM and llama.cpp."
+    },
+    {
+      "domain_id": "agent_ops",
+      "subdomain_id": "mcp_tooling",
+      "subdomain_name": "MCP & Tool Calling",
+      "query_intent_ids": [
+        "design_agentic_dev_workflow"
+      ],
+      "depth_score_0_5": 5.0,
+      "practicality_score_0_5": 5.0,
+      "intrinsic_distinctiveness_score_0_5": 4.8,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4.5,
+      "source_utility_score_0_5": 5.0,
+      "comment_signal_score_0_5": 4.0,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0296",
+        "P0314",
+        "P0334",
+        "P0347",
+        "P0376"
+      ],
+      "notes": "Deep understanding of MCP, ACP, and tool calling internals (vLLM parsers). Created openapi-to-mcp and openapi-to-cli to optimize context."
+    },
+    {
+      "domain_id": "prompt_engineering",
+      "subdomain_id": "agentic_dev_process",
+      "subdomain_name": "Vibe-Coding & BDD",
+      "query_intent_ids": [
+        "learn_ai_assisted_development"
+      ],
+      "depth_score_0_5": 4.5,
+      "practicality_score_0_5": 4.5,
+      "intrinsic_distinctiveness_score_0_5": 4.5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4.0,
+      "source_utility_score_0_5": 4.5,
+      "comment_signal_score_0_5": 4.0,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0114",
+        "P0285",
+        "P0325"
+      ],
+      "notes": "Advocates for strict TDD/BDD workflows when using coding agents to prevent technical debt. Views tests as the 'long-term memory' of a project."
+    }
+  ],
+  "query_intent_fit": [
+    {
+      "query_intent_id": "design_agentic_dev_workflow",
+      "query_intent_name": "Design Agentic Dev Workflow",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "agent_ops",
+        "prompt_engineering"
+      ],
+      "source_utility_score_0_5": 5.0,
+      "why": "The expert is a core contributor to sgr-agent-core and actively builds tools (openapi-to-mcp, acpbox) to orchestrate agents. Provides deep architectural insights.",
+      "limitations": [],
+      "evidence_refs": [
+        "P0227",
+        "P0296",
+        "P0342",
+        "P0347",
+        "P0384"
+      ],
+      "confidence": 5.0
+    },
+    {
+      "query_intent_id": "optimize_inference_cost_latency",
+      "query_intent_name": "Optimize Inference Cost & Latency",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "ai_engineering_infra"
+      ],
+      "source_utility_score_0_5": 4.8,
+      "why": "Shares detailed benchmarks, hardware configurations (e.g., multi-GPU PCIe bandwidth issues), and quantization strategies (GGUF, MXFP4) for local inference.",
+      "limitations": [
+        "Focuses primarily on local/on-prem hardware rather than cloud optimization."
+      ],
+      "evidence_refs": [
+        "P0231",
+        "P0240",
+        "P0270",
+        "P0338"
+      ],
+      "confidence": 4.8
+    },
+    {
+      "query_intent_id": "learn_ai_assisted_development",
+      "query_intent_name": "Learn AI-Assisted Development",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "prompt_engineering"
+      ],
+      "source_utility_score_0_5": 4.5,
+      "why": "Provides concrete methodologies (BDD, layer-by-layer generation) and Cursor Rules configurations for effective 'vibe-coding'.",
+      "limitations": [],
+      "evidence_refs": [
+        "P0114",
+        "P0285",
+        "P0325"
+      ],
+      "confidence": 4.8
+    }
+  ],
+  "content_quality_distribution": [
+    {
+      "category_id": "deep_practitioner",
+      "share_estimate_0_1": 0.4,
+      "system_value": "high",
+      "notes": "Frequent deep dives into code, hardware setups, and model internals.",
+      "evidence_refs": [
+        "P0231",
+        "P0361",
+        "P0376"
+      ],
+      "confidence": 4.8
+    },
+    {
+      "category_id": "tool_release_with_analysis",
+      "share_estimate_0_1": 0.3,
+      "system_value": "high",
+      "notes": "Regularly releases open-source tools (openapi-to-mcp, acpbox, sgr-agent-core updates) with detailed explanations.",
+      "evidence_refs": [
+        "P0296",
+        "P0334",
+        "P0342",
+        "P0347"
+      ],
+      "confidence": 4.8
+    },
+    {
+      "category_id": "howto_or_checklist",
+      "share_estimate_0_1": 0.15,
+      "system_value": "medium",
+      "notes": "Provides guides on setting up models, Docker containers, and agent workflows.",
+      "evidence_refs": [
+        "P0114",
+        "P0270"
+      ],
+      "confidence": 4.5
+    },
+    {
+      "category_id": "commentary",
+      "share_estimate_0_1": 0.15,
+      "system_value": "medium",
+      "notes": "Philosophical posts on the future of AI, vendor lock-in, and the evolution of coding.",
+      "evidence_refs": [
+        "P0239",
+        "P0369",
+        "P0384"
+      ],
+      "confidence": 4.5
+    }
+  ],
+  "matrix_export": {
+    "schema_version": "knowledge_matrix_export.v1",
+    "expert_id": "pashazloy",
+    "cells": [
+      {
+        "cell_id": "ai_engineering_infra/local_agent_setup/optimize_inference_cost_latency",
+        "domain_id": "ai_engineering_infra",
+        "subdomain_id": "local_agent_setup",
+        "subdomain_name": "Local LLM & Agent Deployment",
+        "query_intent_ids": [
+          "optimize_inference_cost_latency"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5.0,
+          "practicality": 5.0,
+          "evidence_quality": 4.5,
+          "source_utility": 5.0,
+          "intrinsic_distinctiveness": 4.5,
+          "anti_hype": 4.5,
+          "community_signal": 4.0
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0231",
+          "P0240",
+          "P0270",
+          "P0338"
+        ],
+        "confidence": 4.8
+      },
+      {
+        "cell_id": "agent_ops/mcp_tooling/design_agentic_dev_workflow",
+        "domain_id": "agent_ops",
+        "subdomain_id": "mcp_tooling",
+        "subdomain_name": "MCP & Tool Calling",
+        "query_intent_ids": [
+          "design_agentic_dev_workflow"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5.0,
+          "practicality": 5.0,
+          "evidence_quality": 4.5,
+          "source_utility": 5.0,
+          "intrinsic_distinctiveness": 4.8,
+          "anti_hype": 4.5,
+          "community_signal": 4.0
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0296",
+          "P0314",
+          "P0334",
+          "P0347",
+          "P0376"
+        ],
+        "confidence": 4.9
+      },
+      {
+        "cell_id": "prompt_engineering/agentic_dev_process/learn_ai_assisted_development",
+        "domain_id": "prompt_engineering",
+        "subdomain_id": "agentic_dev_process",
+        "subdomain_name": "Vibe-Coding & BDD",
+        "query_intent_ids": [
+          "learn_ai_assisted_development"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "practical",
+        "source_role": "primary",
+        "scores": {
+          "depth": 4.5,
+          "practicality": 4.5,
+          "evidence_quality": 4.0,
+          "source_utility": 4.5,
+          "intrinsic_distinctiveness": 4.5,
+          "anti_hype": 4.0,
+          "community_signal": 4.0
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0114",
+          "P0285",
+          "P0325"
+        ],
+        "confidence": 4.8
+      }
+    ],
+    "compare_hints": {
+      "likely_unique_cells": [
+        "agent_ops/mcp_tooling/design_agentic_dev_workflow"
+      ],
+      "likely_duplicate_cells": [],
+      "cells_requiring_probe": [],
+      "matrix_only_decision_confidence": "high"
+    }
+  },
+  "signature_insights": [
+    {
+      "insight": "RAG is fundamentally just an agent with a single tool (retrieval).",
+      "why_it_matters_for_experts_panel": "Demystifies RAG architectures, aligning them with broader agentic frameworks (like SGR) for simpler conceptualization and orchestration.",
+      "applicable_query_types": [
+        "design_rag_knowledge_base",
+        "design_agentic_dev_workflow"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0239"
+      ],
+      "confidence": 4.5
+    },
+    {
+      "insight": "In vibe-coding, tests serve as the 'long-term memory' of a project, preventing agents from silently breaking existing features.",
+      "why_it_matters_for_experts_panel": "Provides a robust defense against technical debt and 'AI slop' in agent-assisted development, emphasizing TDD/BDD.",
+      "applicable_query_types": [
+        "learn_ai_assisted_development"
+      ],
+      "novelty_level": "useful_packaging",
+      "evidence_refs": [
+        "P0285"
+      ],
+      "confidence": 4.8
+    },
+    {
+      "insight": "Converting OpenAPI specifications directly into CLI tools (openapi-to-cli) is vastly more token-efficient than exposing hundreds of endpoints as individual MCP tools.",
+      "why_it_matters_for_experts_panel": "Offers a highly practical context compression technique for agents interacting with massive APIs (e.g., GitHub API).",
+      "applicable_query_types": [
+        "design_agentic_dev_workflow",
+        "optimize_inference_cost_latency"
+      ],
+      "novelty_level": "rare",
+      "evidence_refs": [
+        "P0334"
+      ],
+      "confidence": 4.9
+    },
+    {
+      "insight": "Agent Skills and MCP servers are conceptually identical; they differ only in delivery (local sandbox vs. remote execution).",
+      "why_it_matters_for_experts_panel": "Clarifies the fragmented landscape of agent tooling, helping architects choose the right integration pattern.",
+      "applicable_query_types": [
+        "design_agentic_dev_workflow"
+      ],
+      "novelty_level": "useful_packaging",
+      "evidence_refs": [
+        "P0314"
+      ],
+      "confidence": 4.5
+    }
+  ],
+  "practical_patterns": [
+    {
+      "pattern": "Vibe-coding via BDD: 1. Specs -> 2. Tests (Red) -> 3. Code -> 4. Tests (Green) -> 5. Refactor/Docs.",
+      "when_to_use": "When using coding agents (Cursor, OpenCode) to build features without losing control over architecture.",
+      "failure_modes": [
+        "Writing code before tests causes the agent to hallucinate tests that fit broken code."
+      ],
+      "evidence_refs": [
+        "P0114"
+      ]
+    },
+    {
+      "pattern": "Using `openapi-to-mcp` or `openapi-to-cli` to wrap complex APIs for agents.",
+      "when_to_use": "When an agent needs to interact with an API that has dozens/hundreds of endpoints, to save context tokens.",
+      "failure_modes": [
+        "APIs without proper OpenAPI/Swagger documentation cannot be automatically wrapped."
+      ],
+      "evidence_refs": [
+        "P0296",
+        "P0334"
+      ]
+    },
+    {
+      "pattern": "Running local LLMs via Docker with vLLM or llama.cpp, explicitly assigning GPUs and managing context length.",
+      "when_to_use": "When deploying on-premise models (e.g., Qwen, GigaChat, GLM) on consumer hardware (e.g., RTX 4090, 5060 Ti).",
+      "failure_modes": [
+        "OOM errors if context length or parallel requests exceed VRAM capacity."
+      ],
+      "evidence_refs": [
+        "P0231",
+        "P0270"
+      ]
+    }
+  ],
+  "claims_and_positions": [
+    {
+      "claim": "Corporate AI vendors (OpenAI, Anthropic) are creating vendor lock-in; local/open-source models are essential for business independence.",
+      "stance": "supports",
+      "decision_relevance": "Influences architectural decisions toward self-hosted models and open protocols.",
+      "dispute_risk": "medium",
+      "evidence_refs": [
+        "P0369"
+      ]
+    },
+    {
+      "claim": "Monolithic AGENTS.md files are an anti-pattern that wastes tokens; modular rules (like Cursor Rules) are superior.",
+      "stance": "warns_against",
+      "decision_relevance": "Guides prompt engineering and repository setup for agentic workflows.",
+      "dispute_risk": "low",
+      "evidence_refs": [
+        "P0325"
+      ]
+    },
+    {
+      "claim": "The future of agentic workflows lies in orchestration (cascades of skills) rather than monolithic agents with massive toolsets.",
+      "stance": "supports",
+      "decision_relevance": "Directs the design of multi-agent systems (MAS) and tool routing.",
+      "dispute_risk": "medium",
+      "evidence_refs": [
+        "P0384",
+        "P0384.C0007"
+      ]
+    }
+  ],
+  "source_utility": {
+    "best_use_cases": [
+      "Designing local LLM infrastructure and hardware setups.",
+      "Implementing MCP, ACP, and SGR for agentic workflows.",
+      "Establishing robust vibe-coding practices using TDD/BDD."
+    ],
+    "bad_use_cases": [
+      "High-level enterprise AI strategy without technical implementation.",
+      "Cloud-only (AWS/GCP) managed AI service deployments."
+    ],
+    "retrieval_keywords": [
+      "MCP",
+      "SGR",
+      "vLLM",
+      "llama.cpp",
+      "GGUF",
+      "vibe-coding",
+      "Cursor",
+      "OpenCode",
+      "RTX 5060 Ti",
+      "tool calling"
+    ],
+    "source_selection_hints": [
+      "Select when the user needs concrete Docker configurations or CLI commands for local AI.",
+      "Select when the user is building custom agent frameworks or integrating APIs with agents."
+    ],
+    "expected_overlap_hypotheses": [
+      "High overlap with Valerii Kovalskii (@neuraldeep) on SGR and local agents.",
+      "High overlap with Alexander Abramov (@dealerAI) on model evaluation and embeddings."
+    ],
+    "recommended_panex_role": "primary_expert"
+  },
+  "community_signal": {
+    "comment_themes": [
+      "Hardware troubleshooting and optimization (PCIe bandwidth, VRAM limits).",
+      "Debates on agent architecture (SGR vs. ReAct, MCP vs. Skills).",
+      "Discussions on the future of software engineering and 'vibe-coding'."
+    ],
+    "questions_from_audience": [
+      "How to optimize VRAM usage for specific models?",
+      "What is the difference between MCP and Skills?",
+      "How to prevent agents from breaking existing code?"
+    ],
+    "disagreements_or_corrections": [
+      "Peer review on ruGPT3XL training metrics (Nikita Sushko pointing out high loss values).",
+      "Debates on the necessity of Ansible vs. Agent-driven infrastructure management."
+    ],
+    "practical_feedback": [
+      "Users successfully deploying his openapi-to-cli and openapi-to-mcp tools.",
+      "Confirmation of hardware benchmarks (e.g., 5060 Ti performance)."
+    ],
+    "noise_or_low_value_patterns": [
+      "Occasional off-topic banter about games (Mass Effect), cars, or general IT nostalgia."
+    ],
+    "evidence_refs": [
+      "P0375.C0026",
+      "P0384.C0007"
+    ]
+  },
+  "admission_implications": {
+    "if_candidate_verdict": "accept",
+    "verdict_rationale": "PashaZloy is a highly technical, hands-on practitioner who builds and open-sources critical infrastructure for local LLMs and agents. His insights into MCP, SGR, and hardware optimization are extremely valuable for developers building AI systems.",
+    "unique_value_claims_to_verify_against_matrix": [
+      "Creator of openapi-to-mcp and openapi-to-cli for context compression.",
+      "Core contributor to sgr-agent-core."
+    ],
+    "likely_duplicate_areas_to_check": [
+      "General SGR concepts (likely overlaps with Valerii Kovalskii)."
+    ],
+    "minimum_followup_probe_queries": [
+      "Compare PashaZloy's approach to SGR with Valerii Kovalskii's."
+    ],
+    "risk_notes": [
+      "Strong opinions against corporate AI vendors might introduce bias, but it is well-reasoned and practical for open-source advocates."
+    ]
+  },
+  "audit": {
+    "unsupported_or_weak_claims": [],
+    "abstentions": [],
+    "possible_model_errors": [],
+    "source_refs_used": [
+      "P0100",
+      "P0114",
+      "P0149",
+      "P0184",
+      "P0227",
+      "P0231",
+      "P0239",
+      "P0240",
+      "P0270",
+      "P0285",
+      "P0292",
+      "P0296",
+      "P0314",
+      "P0325",
+      "P0334",
+      "P0338",
+      "P0342",
+      "P0347",
+      "P0356",
+      "P0361",
+      "P0363",
+      "P0369",
+      "P0375.C0026",
+      "P0376",
+      "P0384",
+      "P0384.C0007"
+    ],
+    "source_refs_most_important": [
+      "P0114",
+      "P0231",
+      "P0285",
+      "P0296",
+      "P0314",
+      "P0334",
+      "P0376",
+      "P0384"
+    ]
+  }
+}

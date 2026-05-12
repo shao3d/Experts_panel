@@ -1,0 +1,343 @@
+{
+  "channel_username": "neuraldeep",
+  "coverage": {
+    "agent_ops": 174,
+    "ai_engineering_infra": 57,
+    "ai_product_pm": 68,
+    "ai_ux_workflow": 34,
+    "business_adoption": 89,
+    "coding_agents": 114,
+    "creative_multimodal": 16,
+    "evals_quality": 57,
+    "general_ai_news": 1,
+    "model_landscape": 269,
+    "rag_retrieval_knowledge": 84,
+    "security_privacy_governance": 43
+  },
+  "coverage_strength": {
+    "agent_ops": "strong",
+    "ai_engineering_infra": "strong",
+    "ai_product_pm": "strong",
+    "ai_ux_workflow": "medium",
+    "business_adoption": "strong",
+    "coding_agents": "strong",
+    "creative_multimodal": "thin",
+    "evals_quality": "strong",
+    "general_ai_news": "thin",
+    "model_landscape": "strong",
+    "rag_retrieval_knowledge": "strong",
+    "security_privacy_governance": "medium"
+  },
+  "date_range": {
+    "first_post": "2025-01-04",
+    "last_post": "2026-05-04"
+  },
+  "depth_profile": {
+    "announcement_or_news": 77,
+    "architecture_analysis": 39,
+    "benchmark_or_eval": 55,
+    "case_study": 59,
+    "howto_or_checklist": 117,
+    "low_signal": 90,
+    "practitioner_experience": 63,
+    "tool_release": 14
+  },
+  "display_name": "Neuraldeep",
+  "embedding_count": 494,
+  "embedding_coverage_ratio": 1.0,
+  "expert_id": "neuraldeep",
+  "fts_count": 494,
+  "metadata_coverage_ratio": 0.7899,
+  "metadata_valid_count": 406,
+  "post_count": 514,
+  "representative_posts": [
+    {
+      "coverage_labels": [
+        "evals_quality",
+        "security_privacy_governance"
+      ],
+      "created_at": "2026-04-22",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "⚡️ **Открываем NSFW-бенчмарк для систем модерации** В прошлых постах мы много говорили о фильтрации NSFW. А теперь выкатываем в открытый доступ наш [двуязычный бенчмарк](https://huggingface.co/datasets/redmadrobot-rnd/nsfw_benchmark) для систем модерации контента. Что внутри датасета: • контрастные пары — о которых...",
+      "reason": "evals_quality, security_privacy_governance; depth=benchmark_or_eval",
+      "telegram_message_id": 2088
+    },
+    {
+      "coverage_labels": [
+        "evals_quality",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-20",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "**LLM hub by Kovalskii** Вчера анонсировал https://hub.neuraldeep.ru/, а сегодня с утра уже есть что анализировать (вы просто супер аудитория!) Что интересно из аналитики для меня: Много кто взял модели для прогона pac1 (бенчмарка от Рината) Кто-то взял для подключения к [opencode](https://t.me/neuraldeepchat/54442)...",
+      "reason": "evals_quality, model_landscape; depth=benchmark_or_eval",
+      "telegram_message_id": 2082
+    },
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "evals_quality",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-09",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "PAC1-DEV Почитать что это такое можно [тут](https://bitgn.com/challenge/PAC) ([Ринат](https://t.me/llm_under_hood) не перестает удивлять нас бенчмарками и соревнованиями) Решил пожечь подписку и реализовать свой подход, за старт спасибо (@multiagentsys) он выложил [репо](https://github.com/snow-ghost/sample-agent) о...",
+      "reason": "agent_ops, evals_quality, model_landscape; depth=benchmark_or_eval",
+      "telegram_message_id": 2058
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "evals_quality",
+        "business_adoption",
+        "security_privacy_governance",
+        "ai_engineering_infra",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-08",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "**Вышел наш второй комьюнити-стрим!** Для вас отжигали, на фото: @nobilix, @superbereza, @ai_grably, @aostrikov_ai_agents и маэстро @neuraldeep 📹 https://youtu.be/nUT1YRvjG98 24 вопроса, 2**.5 часа стрим,** чуть не дожали до бейзлайна Лекса Фридмана. Поболтали про агентов, будущее, лобстеров, утекший claude code и в...",
+      "reason": "coding_agents, agent_ops, evals_quality; depth=benchmark_or_eval",
+      "telegram_message_id": 2052
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "rag_retrieval_knowledge"
+      ],
+      "created_at": "2026-04-26",
+      "depth_label": "case_study",
+      "excerpt": "FOMO в обнимку с кодинг-агентом Заметил, что лагеря разделились особенно в коментах под постом [Тимура](https://t.me/the_ai_architect/291) Есть те, кто обвешивается плагинами, скиллами, автоматизациями саб-агентов, методологиями, которые состоят из 1 000 000 нюансов. И те, кто течет по течению, как я =) Буду честен:...",
+      "reason": "coding_agents, agent_ops, rag_retrieval_knowledge; depth=case_study",
+      "telegram_message_id": 2094
+    },
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "rag_retrieval_knowledge",
+        "model_landscape",
+        "creative_multimodal"
+      ],
+      "created_at": "2026-05-02",
+      "depth_label": "announcement_or_news",
+      "excerpt": "**Расширение каталога на ****Hub NeuralDeep**p](https://hub.neuraldeep.ru/) Сегодня вместе с Валерием (@neuraldeep) добавили новых моделей в публичной API проекта NeuralDeep. Базовый URL для запросов api.neuraldeep.ru (OpenAI-совместимо, Bearer с ключом). Ключ можно полчить после регистрации на hub.neuraldeep.ru. Ит...",
+      "reason": "agent_ops, rag_retrieval_knowledge, model_landscape; depth=announcement_or_news",
+      "telegram_message_id": 2113
+    },
+    {
+      "coverage_labels": [
+        "business_adoption",
+        "security_privacy_governance",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-20",
+      "depth_label": "case_study",
+      "excerpt": "⚡️ **Запустили платформу для управления LLM в бизнесе ** red_mad_router помогает компаниям собрать работу с LLM в одной системе, когда сервисы уже используются в разных командах. Решение объединяет доступы к моделям, контроль расходов, настройки безопасности и правила работы с данными. Изначально мы создавали платфо...",
+      "reason": "business_adoption, security_privacy_governance, model_landscape; depth=case_study",
+      "telegram_message_id": 2085
+    },
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-30",
+      "depth_label": "practitioner_experience",
+      "excerpt": "**Как создавать AI-агентов на on-prem-моделях? ** Как меняется создание пайплайна, когда мы переходим на локальные модели? Что вообще может этот ваш Qwen на 4B по сравнению с GPT-5.5? Чтобы ответить на эти (и многие другие) вопросы максимально-качественно, основываясь на **большом практическом опыте**, я попросил пр...",
+      "reason": "agent_ops, model_landscape; depth=practitioner_experience",
+      "telegram_message_id": 2111
+    }
+  ],
+  "runtime_readiness": {
+    "embeddings_ready": true,
+    "fts_ready": true,
+    "metadata_advisory_ready": true,
+    "text_posts_ready": true
+  },
+  "text_post_count": 494,
+  "top_concepts": [
+    {
+      "count": 27,
+      "value": "LLM"
+    },
+    {
+      "count": 24,
+      "value": "Prompt Engineering"
+    },
+    {
+      "count": 23,
+      "value": "RAG"
+    },
+    {
+      "count": 23,
+      "value": "Structured Output"
+    },
+    {
+      "count": 20,
+      "value": "Automation"
+    },
+    {
+      "count": 17,
+      "value": "Benchmarking"
+    },
+    {
+      "count": 15,
+      "value": "AI Agents"
+    },
+    {
+      "count": 13,
+      "value": "Inference"
+    },
+    {
+      "count": 12,
+      "value": "Open Source"
+    },
+    {
+      "count": 12,
+      "value": "Software Development"
+    },
+    {
+      "count": 11,
+      "value": "API"
+    },
+    {
+      "count": 11,
+      "value": "Agentic Workflow"
+    }
+  ],
+  "top_keywords": [
+    {
+      "count": 157,
+      "value": "llm"
+    },
+    {
+      "count": 79,
+      "value": "rag"
+    },
+    {
+      "count": 61,
+      "value": "agent"
+    },
+    {
+      "count": 59,
+      "value": "models"
+    },
+    {
+      "count": 56,
+      "value": "agents"
+    },
+    {
+      "count": 55,
+      "value": "разработка"
+    },
+    {
+      "count": 54,
+      "value": "модели"
+    },
+    {
+      "count": 51,
+      "value": "development"
+    },
+    {
+      "count": 48,
+      "value": "агенты"
+    },
+    {
+      "count": 43,
+      "value": "агент"
+    },
+    {
+      "count": 41,
+      "value": "поиск"
+    },
+    {
+      "count": 37,
+      "value": "context"
+    },
+    {
+      "count": 37,
+      "value": "search"
+    },
+    {
+      "count": 37,
+      "value": "интеллект"
+    },
+    {
+      "count": 36,
+      "value": "model"
+    },
+    {
+      "count": 36,
+      "value": "api"
+    },
+    {
+      "count": 36,
+      "value": "искусственный"
+    },
+    {
+      "count": 34,
+      "value": "generation"
+    },
+    {
+      "count": 33,
+      "value": "code"
+    },
+    {
+      "count": 32,
+      "value": "local"
+    }
+  ],
+  "top_primary_topics": [
+    {
+      "count": 48,
+      "value": "AI Agents"
+    },
+    {
+      "count": 20,
+      "value": "RAG"
+    },
+    {
+      "count": 10,
+      "value": "Deep Research"
+    },
+    {
+      "count": 8,
+      "value": "Artificial Intelligence"
+    },
+    {
+      "count": 8,
+      "value": "AI Coding"
+    },
+    {
+      "count": 7,
+      "value": "Agentic RAG"
+    },
+    {
+      "count": 7,
+      "value": "AI Development"
+    },
+    {
+      "count": 7,
+      "value": "Generative AI"
+    },
+    {
+      "count": 6,
+      "value": "LLM Inference"
+    },
+    {
+      "count": 6,
+      "value": "LLM Benchmarking"
+    },
+    {
+      "count": 5,
+      "value": "Local LLM"
+    },
+    {
+      "count": 5,
+      "value": "LLM Security"
+    }
+  ],
+  "warnings": []
+}

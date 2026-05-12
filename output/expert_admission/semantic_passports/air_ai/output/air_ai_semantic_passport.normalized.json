@@ -1,0 +1,975 @@
+{
+  "schema_version": "expert_value_passport.v1.1",
+  "passport_meta": {
+    "schema_version": "expert_value_passport.v1.1",
+    "expert_id": "air_ai",
+    "display_name": "Air",
+    "channel_username": "@realtimeforai",
+    "model_assumed": "gemini-3.1-pro-preview",
+    "prompt_version": "semantic-passport-prompt.v1",
+    "generated_at": "2026-05-09T21:28:57.130086+00:00"
+  },
+  "corpus_audit": {
+    "post_count_seen": 165,
+    "comment_count_seen": 1344,
+    "date_range": {
+      "first_post": "2025-04-11 10:52:53.000000",
+      "last_post": "2026-05-03 19:41:46.000000"
+    },
+    "language_mix": [
+      "ru",
+      "en"
+    ],
+    "material_limitations": [],
+    "author_vs_community_boundary": "Clear boundary. The expert posts detailed, structured practitioner guides and analyses. The community actively engages, asks clarifying questions, and shares alternative tools, which the expert often tests and incorporates."
+  },
+  "source_ref_index_used": [
+    {
+      "source_ref": "P0025",
+      "source_kind": "expert_post",
+      "post_id": 5176,
+      "telegram_message_id": 158,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-05-19 10:41:53.000000",
+      "why_used": "Comparison of Manus and Genspark agents."
+    },
+    {
+      "source_ref": "P0030",
+      "source_kind": "expert_post",
+      "post_id": 5181,
+      "telegram_message_id": 171,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-05-28 09:16:51.000000",
+      "why_used": "Detailed guide on preparing knowledge bases for RAG."
+    },
+    {
+      "source_ref": "P0039",
+      "source_kind": "expert_post",
+      "post_id": 5190,
+      "telegram_message_id": 184,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-06-05 12:55:47.000000",
+      "why_used": "Debunking myths about AI agents browsing capabilities."
+    },
+    {
+      "source_ref": "P0046",
+      "source_kind": "expert_post",
+      "post_id": 5197,
+      "telegram_message_id": 204,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-06-17 09:19:53.000000",
+      "why_used": "Prompt injection defense mechanisms and model vulnerability comparison."
+    },
+    {
+      "source_ref": "P0066",
+      "source_kind": "expert_post",
+      "post_id": 5217,
+      "telegram_message_id": 255,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-07-14 15:30:00.000000",
+      "why_used": "Benchmarking models (Grok 4, Sonnet 4, Opus 4, Gemini 2.5 Pro) on financial tasks."
+    },
+    {
+      "source_ref": "P0071",
+      "source_kind": "expert_post",
+      "post_id": 5222,
+      "telegram_message_id": 264,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-07-24 11:06:20.000000",
+      "why_used": "Explanation of GraphRAG for legal analysis."
+    },
+    {
+      "source_ref": "P0072",
+      "source_kind": "expert_post",
+      "post_id": 5223,
+      "telegram_message_id": 265,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-07-24 11:29:58.000000",
+      "why_used": "Step-by-step guide on Verified Graph-Prompting."
+    },
+    {
+      "source_ref": "P0083",
+      "source_kind": "expert_post",
+      "post_id": 5234,
+      "telegram_message_id": 285,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-19 15:59:34.000000",
+      "why_used": "Signature insight on how different models prefer different prompt formats (XML, JSON, Markdown)."
+    },
+    {
+      "source_ref": "P0088",
+      "source_kind": "expert_post",
+      "post_id": 5239,
+      "telegram_message_id": 294,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-09-03 10:29:04.000000",
+      "why_used": "Methodology for processing large documents (chunking, iterative summarization)."
+    },
+    {
+      "source_ref": "P0102",
+      "source_kind": "expert_post",
+      "post_id": 5253,
+      "telegram_message_id": 324,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-10-06 16:13:28.000000",
+      "why_used": "Converting Excel to TXT with XML tags for LLM analysis."
+    },
+    {
+      "source_ref": "P0112",
+      "source_kind": "expert_post",
+      "post_id": 5263,
+      "telegram_message_id": 341,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-10-24 11:43:06.000000",
+      "why_used": "Testing Claude in Excel for financial modeling."
+    },
+    {
+      "source_ref": "P0122",
+      "source_kind": "expert_post",
+      "post_id": 5273,
+      "telegram_message_id": 366,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-20 16:10:09.000000",
+      "why_used": "Review of Google Antigravity agent environment."
+    },
+    {
+      "source_ref": "P0134",
+      "source_kind": "expert_post",
+      "post_id": 5285,
+      "telegram_message_id": 390,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-13 12:52:38.000000",
+      "why_used": "Jailbreak technique 'Memoirs from 2030' to bypass reasoning models."
+    },
+    {
+      "source_ref": "P0137",
+      "source_kind": "expert_post",
+      "post_id": 5288,
+      "telegram_message_id": 394,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-30 18:21:29.000000",
+      "why_used": "Analysis of McKinsey report on AI agents replacing tasks, not jobs."
+    },
+    {
+      "source_ref": "P0138",
+      "source_kind": "expert_post",
+      "post_id": 5289,
+      "telegram_message_id": 395,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-06 17:04:13.000000",
+      "why_used": "Prompting framework: Role vs Process."
+    },
+    {
+      "source_ref": "P0143",
+      "source_kind": "expert_post",
+      "post_id": 7211,
+      "telegram_message_id": 402,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-03-05 18:28:21.000000",
+      "why_used": "Deep dive into Claude in Excel verifying a construction financial model."
+    },
+    {
+      "source_ref": "P0151",
+      "source_kind": "expert_post",
+      "post_id": 8033,
+      "telegram_message_id": 414,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-01 05:14:19.000000",
+      "why_used": "Comparison of Codex vs Cowork desktop agents and the use of Skills."
+    },
+    {
+      "source_ref": "P0155",
+      "source_kind": "expert_post",
+      "post_id": 9530,
+      "telegram_message_id": 418,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-13 15:59:50.000000",
+      "why_used": "Using Claude skills (xlsx, build-dashboard) for automated financial dashboards."
+    },
+    {
+      "source_ref": "P0165",
+      "source_kind": "expert_post",
+      "post_id": 9736,
+      "telegram_message_id": 431,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-05-03 19:41:46.000000",
+      "why_used": "Premortem prompting technique to force critical analysis."
+    },
+    {
+      "source_ref": "P0067",
+      "source_kind": "expert_post",
+      "post_id": 5218,
+      "telegram_message_id": 256,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-07-14 21:21:02.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    }
+  ],
+  "executive_summary": {
+    "one_sentence_positioning": "A highly pragmatic AI consultant and prompt engineer who rigorously tests LLMs and agents against real-world business, financial, and legal workflows.",
+    "strongest_system_value": "Provides deep, actionable frameworks for prompt engineering (e.g., format-to-model matching, Premortem prompting) and practical integration of AI into business tools like Excel.",
+    "weakest_system_value": "Less focused on low-level model training, fine-tuning, or open-source local deployment, preferring API and desktop agent solutions.",
+    "best_fit_queries": [
+      "How to format prompts for Claude vs Gemini vs GPT",
+      "Best AI agents for financial modeling in Excel",
+      "How to build a GraphRAG prompt for legal analysis",
+      "Techniques to bypass reasoning model safety filters"
+    ],
+    "poor_fit_queries": [
+      "How to fine-tune Llama 3 locally",
+      "Hardware requirements for training LLMs",
+      "Open-source alternatives to Midjourney"
+    ],
+    "confidence": 0.95
+  },
+  "expert_positioning": {
+    "primary_role": "AI Integration Consultant & Prompt Engineer",
+    "audience": [
+      "Product Managers",
+      "Financial Analysts",
+      "Lawyers",
+      "Business Owners",
+      "AI Practitioners"
+    ],
+    "voice": [
+      "Analytical",
+      "Pragmatic",
+      "Anti-hype",
+      "Structured"
+    ],
+    "worldview": [
+      "AI is a tool for business optimization, not magic.",
+      "Model architecture dictates how you should prompt it.",
+      "Agents are the future, but they require strict human oversight and precise instructions.",
+      "The AI market is driven by corporate monopolies, requiring users to be adaptable and pragmatic."
+    ],
+    "distinctive_angle": "Combines deep business domain knowledge (finance, real estate, legal) with advanced prompt engineering, treating LLMs as computational engines rather than just text generators.",
+    "recurring_formats": [
+      "Model comparisons on specific tasks",
+      "Step-by-step prompt frameworks",
+      "Debunking AI myths",
+      "Tool reviews (Agents, Extensions)"
+    ],
+    "evidence_refs": [
+      "P0066",
+      "P0083",
+      "P0143",
+      "P0165"
+    ]
+  },
+  "knowledge_domains": [
+    {
+      "domain_id": "prompt_engineering",
+      "domain_name": "Advanced Prompt Engineering",
+      "subdomain_ids": [
+        "prompt_formatting",
+        "jailbreaking",
+        "reasoning_models",
+        "system_prompts"
+      ],
+      "query_intent_ids": [
+        "design_agentic_dev_workflow",
+        "learn_ai_assisted_development"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "unique",
+      "what_the_expert_knows": [
+        "How different LLM architectures respond to data formats (XML for Claude, JSON for Gemini, Markdown for GPT).",
+        "How to use 'Premortem' prompting to bypass model sycophancy.",
+        "How to structure 'Role vs Process' in prompts to control reasoning depth.",
+        "Jailbreak techniques for reasoning models (e.g., 'Memoirs from 2030')."
+      ],
+      "how_they_reason": [
+        "Analyzes the underlying architecture of the model (e.g., Gemini's graph-based training vs Claude's Constitutional AI) to deduce the best prompting strategy.",
+        "Tests prompts iteratively and documents the exact failure modes."
+      ],
+      "missing_or_weak_subtopics": [
+        "Programmatic prompt optimization (DSPy)"
+      ],
+      "evidence_refs": [
+        "P0083",
+        "P0134",
+        "P0138",
+        "P0165"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "domain_id": "ai_business_adoption",
+      "domain_name": "AI in Business & Finance",
+      "subdomain_ids": [
+        "financial_modeling",
+        "excel_automation",
+        "legal_analysis"
+      ],
+      "query_intent_ids": [
+        "assess_ai_tool_business_adoption",
+        "plan_ai_product_feature"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "How to use Claude in Excel for complex financial modeling and auditing.",
+        "How to convert Excel data into XML-tagged TXT files for accurate LLM analysis.",
+        "How to build GraphRAG workflows for legal document verification."
+      ],
+      "how_they_reason": [
+        "Treats AI as a junior analyst that needs strict formatting (XML tags) and verification loops to prevent hallucinations in sensitive financial/legal data."
+      ],
+      "missing_or_weak_subtopics": [
+        "Enterprise-scale ERP integration coding"
+      ],
+      "evidence_refs": [
+        "P0071",
+        "P0072",
+        "P0102",
+        "P0112",
+        "P0143"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "domain_id": "agent_ops",
+      "domain_name": "AI Agents & Workflows",
+      "subdomain_ids": [
+        "desktop_agents",
+        "agentic_dev_process",
+        "mcp_tooling"
+      ],
+      "query_intent_ids": [
+        "choose_ai_coding_tool",
+        "design_agentic_dev_workflow"
+      ],
+      "coverage_level": "moderate",
+      "depth_level": "practical",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "Differences between desktop agents like Codex CLI, Claude Cowork, and Antigravity.",
+        "How to use Anthropic 'Skills' for repeatable agent workflows.",
+        "The limitations of current agents in autonomous web browsing."
+      ],
+      "how_they_reason": [
+        "Evaluates agents based on token consumption, adherence to instructions, and ability to handle complex, multi-step business logic without degrading."
+      ],
+      "missing_or_weak_subtopics": [
+        "Building custom agents from scratch in Python/LangChain"
+      ],
+      "evidence_refs": [
+        "P0025",
+        "P0039",
+        "P0122",
+        "P0151",
+        "P0155"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "value_dimensions": [
+    {
+      "dimension_id": "insight_density",
+      "score_0_5": 5,
+      "rationale": "Every post contains highly condensed, actionable insights, often translating complex AI concepts into practical business workflows.",
+      "evidence_refs": [
+        "P0083",
+        "P0138",
+        "P0165"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "practical_specificity",
+      "score_0_5": 5,
+      "rationale": "Provides exact prompt templates, XML structures for data formatting, and step-by-step guides for using specific tools.",
+      "evidence_refs": [
+        "P0072",
+        "P0102",
+        "P0155"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "evidence_quality",
+      "score_0_5": 5,
+      "rationale": "Claims are backed by personal testing (e.g., benchmarking 5 models on a financial task) and references to official documentation or research papers.",
+      "evidence_refs": [
+        "P0066",
+        "P0143"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "anti_hype_signal",
+      "score_0_5": 5,
+      "rationale": "Actively debunks AI myths (e.g., agents browsing freely, AI replacing all jobs) and highlights the flaws and high costs of current tools.",
+      "evidence_refs": [
+        "P0039",
+        "P0122",
+        "P0137"
+      ],
+      "confidence": 0.95
+    }
+  ],
+  "matrix_cells": [
+    {
+      "domain_id": "prompt_engineering",
+      "subdomain_id": "model_specific_formatting",
+      "subdomain_name": "Model-Specific Prompt Formatting",
+      "query_intent_ids": [
+        "learn_ai_assisted_development",
+        "design_agentic_dev_workflow"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 5,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 3,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0083"
+      ],
+      "notes": "Exceptional insight mapping LLM architecture to prompt formats: GPT -> Markdown, Gemini -> JSON, Claude -> XML."
+    },
+    {
+      "domain_id": "prompt_engineering",
+      "subdomain_id": "reasoning_control",
+      "subdomain_name": "Controlling Reasoning Models",
+      "query_intent_ids": [
+        "learn_ai_assisted_development"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 2,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0134",
+        "P0138",
+        "P0165"
+      ],
+      "notes": "Provides frameworks like 'Premortem' to force critical thinking, and 'Role vs Process' to control depth of reasoning."
+    },
+    {
+      "domain_id": "ai_business_adoption",
+      "subdomain_id": "financial_modeling",
+      "subdomain_name": "AI Financial Modeling",
+      "query_intent_ids": [
+        "assess_ai_tool_business_adoption"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 5,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0066",
+        "P0102",
+        "P0112",
+        "P0143",
+        "P0155"
+      ],
+      "notes": "Deep expertise in using Claude in Excel, converting Excel to XML-tagged TXT, and benchmarking models on financial tasks."
+    },
+    {
+      "domain_id": "rag_retrieval_knowledge",
+      "subdomain_id": "graph_rag_legal",
+      "subdomain_name": "GraphRAG for Legal Analysis",
+      "query_intent_ids": [
+        "design_rag_knowledge_base"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 4,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 4,
+      "comment_signal_score_0_5": 3,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0071",
+        "P0072"
+      ],
+      "notes": "Adapts GraphRAG concepts into a prompt-based workflow ('Verified Graph-Prompting') for legal document analysis."
+    }
+  ],
+  "query_intent_fit": [
+    {
+      "query_intent_id": "learn_ai_assisted_development",
+      "query_intent_name": "Learn AI-Assisted Development & Prompting",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "prompt_engineering"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "Offers highly structured, architectural approaches to prompting (formats, role vs process, premortem) that go far beyond basic tips.",
+      "limitations": [],
+      "evidence_refs": [
+        "P0083",
+        "P0138",
+        "P0165"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "query_intent_id": "assess_ai_tool_business_adoption",
+      "query_intent_name": "Assess AI Tool Business Adoption",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "ai_business_adoption"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "Provides concrete workflows for integrating AI into finance and legal, including data formatting (Excel to XML) and tool selection (Claude in Excel).",
+      "limitations": [],
+      "evidence_refs": [
+        "P0102",
+        "P0112",
+        "P0143"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "query_intent_id": "compare_models_for_task",
+      "query_intent_name": "Compare Models for Task",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "model_landscape"
+      ],
+      "source_utility_score_0_5": 4,
+      "why": "Regularly benchmarks models (GPT, Claude, Gemini, Grok) on specific, complex tasks like financial modeling and legal analysis.",
+      "limitations": [
+        "Focuses mostly on top-tier proprietary models, less on open-source."
+      ],
+      "evidence_refs": [
+        "P0066",
+        "P0067"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "content_quality_distribution": [
+    {
+      "category_id": "deep_practitioner",
+      "share_estimate_0_1": 0.4,
+      "system_value": "high",
+      "notes": "Detailed workflows for prompt engineering, data formatting, and agent usage.",
+      "evidence_refs": [
+        "P0072",
+        "P0083",
+        "P0102",
+        "P0138",
+        "P0165"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "benchmark_or_eval",
+      "share_estimate_0_1": 0.2,
+      "system_value": "high",
+      "notes": "Tests models against real-world business tasks.",
+      "evidence_refs": [
+        "P0066",
+        "P0143"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "commentary",
+      "share_estimate_0_1": 0.3,
+      "system_value": "medium",
+      "notes": "Analysis of AI market trends, OpenAI vs Google, and the future of work.",
+      "evidence_refs": [
+        "P0137"
+      ],
+      "confidence": 0.85
+    },
+    {
+      "category_id": "howto_or_checklist",
+      "share_estimate_0_1": 0.1,
+      "system_value": "high",
+      "notes": "Quick guides on using specific tools or features.",
+      "evidence_refs": [
+        "P0030",
+        "P0088"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "matrix_export": {
+    "schema_version": "knowledge_matrix_export.v1",
+    "expert_id": "air_ai",
+    "cells": [
+      {
+        "cell_id": "prompt_engineering/model_specific_formatting/learn_ai_assisted_development",
+        "domain_id": "prompt_engineering",
+        "subdomain_id": "model_specific_formatting",
+        "subdomain_name": "Model-Specific Prompt Formatting",
+        "query_intent_ids": [
+          "learn_ai_assisted_development"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 5,
+          "evidence_quality": 5,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 5,
+          "anti_hype": 4,
+          "community_signal": 3
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0083"
+        ],
+        "confidence": 0.95
+      },
+      {
+        "cell_id": "ai_business_adoption/financial_modeling/assess_ai_tool_business_adoption",
+        "domain_id": "ai_business_adoption",
+        "subdomain_id": "financial_modeling",
+        "subdomain_name": "AI Financial Modeling",
+        "query_intent_ids": [
+          "assess_ai_tool_business_adoption"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 5,
+          "evidence_quality": 5,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 5,
+          "anti_hype": 5,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0066",
+          "P0102",
+          "P0112",
+          "P0143",
+          "P0155"
+        ],
+        "confidence": 0.95
+      },
+      {
+        "cell_id": "prompt_engineering/reasoning_control/learn_ai_assisted_development",
+        "domain_id": "prompt_engineering",
+        "subdomain_id": "reasoning_control",
+        "subdomain_name": "Controlling Reasoning Models",
+        "query_intent_ids": [
+          "learn_ai_assisted_development"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5.0,
+          "practicality": 5.0,
+          "evidence_quality": 4.0,
+          "source_utility": 5.0,
+          "intrinsic_distinctiveness": 4.0,
+          "anti_hype": 0.0,
+          "community_signal": 2.0
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [
+          "Deterministically repaired from matrix_cells because matrix_export omitted this matrix-worthy cell."
+        ],
+        "evidence_refs": [
+          "P0134",
+          "P0138",
+          "P0165"
+        ],
+        "derived_from": "matrix_cells",
+        "repair_reason": "matrix_export_omitted_strong_or_signature_cell"
+      },
+      {
+        "cell_id": "rag_retrieval_knowledge/graph_rag_legal/design_rag_knowledge_base",
+        "domain_id": "rag_retrieval_knowledge",
+        "subdomain_id": "graph_rag_legal",
+        "subdomain_name": "GraphRAG for Legal Analysis",
+        "query_intent_ids": [
+          "design_rag_knowledge_base"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "practical",
+        "source_role": "primary",
+        "scores": {
+          "depth": 4.0,
+          "practicality": 4.0,
+          "evidence_quality": 4.0,
+          "source_utility": 4.0,
+          "intrinsic_distinctiveness": 4.0,
+          "anti_hype": 0.0,
+          "community_signal": 3.0
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [
+          "Deterministically repaired from matrix_cells because matrix_export omitted this matrix-worthy cell."
+        ],
+        "evidence_refs": [
+          "P0071",
+          "P0072"
+        ],
+        "derived_from": "matrix_cells",
+        "repair_reason": "matrix_export_omitted_strong_or_signature_cell"
+      }
+    ],
+    "compare_hints": {
+      "likely_unique_cells": [
+        "prompt_engineering/model_specific_formatting/learn_ai_assisted_development"
+      ],
+      "likely_duplicate_cells": [],
+      "cells_requiring_probe": [],
+      "matrix_only_decision_confidence": "high"
+    }
+  },
+  "signature_insights": [
+    {
+      "insight": "LLM architecture dictates optimal prompt formatting: GPT prefers Markdown (trained on unstructured web text), Gemini prefers JSON (built on knowledge graphs), and Claude prefers XML (Constitutional AI training uses XML tags for boundary setting).",
+      "why_it_matters_for_experts_panel": "Provides a fundamental, architectural reason for prompt formatting choices, moving beyond trial-and-error to systematic prompt engineering.",
+      "applicable_query_types": [
+        "learn_ai_assisted_development",
+        "design_agentic_dev_workflow"
+      ],
+      "novelty_level": "rare",
+      "evidence_refs": [
+        "P0083"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "insight": "Premortem prompting (asking the model to assume a plan has already failed and reconstruct the causes) forces the model out of 'sycophant' mode and activates deep critical analysis.",
+      "why_it_matters_for_experts_panel": "A highly reusable, psychological prompt pattern that improves the reliability of AI in strategic planning and legal analysis.",
+      "applicable_query_types": [
+        "plan_ai_product_feature",
+        "learn_ai_assisted_development"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0165"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "insight": "To analyze Excel data effectively with LLMs without API/Python, convert rows to TXT with XML tags (e.g., <row id='1'><price>100</price></row>). This creates a strict 'contract' that prevents hallucinations.",
+      "why_it_matters_for_experts_panel": "A highly practical workaround for business users who need to process structured data securely without coding.",
+      "applicable_query_types": [
+        "assess_ai_tool_business_adoption"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0102"
+      ],
+      "confidence": 0.95
+    }
+  ],
+  "practical_patterns": [
+    {
+      "pattern": "Verified Graph-Prompting for Legal Analysis",
+      "when_to_use": "When analyzing complex legal documents to prevent hallucinations.",
+      "failure_modes": [
+        "Model may lose context if the document is too large (>20 pages)."
+      ],
+      "evidence_refs": [
+        "P0072"
+      ]
+    },
+    {
+      "pattern": "Iterative Chunking for Large PDFs",
+      "when_to_use": "When processing large documents (e.g., 600 pages) without RAG infrastructure.",
+      "failure_modes": [
+        "Losing context at chunk boundaries (requires 2-3 page overlap)."
+      ],
+      "evidence_refs": [
+        "P0088"
+      ]
+    },
+    {
+      "pattern": "Role vs Process Prompting",
+      "when_to_use": "To control the depth and style of an LLM's reasoning.",
+      "failure_modes": [
+        "Using 'Role' without 'Process' leads to shallow, stereotypical answers."
+      ],
+      "evidence_refs": [
+        "P0138"
+      ]
+    }
+  ],
+  "claims_and_positions": [
+    {
+      "claim": "Grok 4 is excellent at math and code but fails at unstructured business/financial logic due to semantic understanding issues.",
+      "stance": "supports",
+      "decision_relevance": "Helps users choose the right model for financial vs coding tasks.",
+      "dispute_risk": "medium",
+      "evidence_refs": [
+        "P0066",
+        "P0067"
+      ]
+    },
+    {
+      "claim": "AI agents cannot autonomously browse most major websites (e.g., Amazon, Gmail) without official APIs due to bot protection.",
+      "stance": "warns_against",
+      "decision_relevance": "Prevents users from wasting time trying to build autonomous web-scraping agents for protected sites.",
+      "dispute_risk": "low",
+      "evidence_refs": [
+        "P0039"
+      ]
+    }
+  ],
+  "source_utility": {
+    "best_use_cases": [
+      "Extracting advanced prompt engineering frameworks.",
+      "Finding practical workflows for AI in finance and legal.",
+      "Understanding the nuances of different LLM architectures and their practical implications."
+    ],
+    "bad_use_cases": [
+      "Learning how to fine-tune open-source models locally.",
+      "Hardware optimization for AI training."
+    ],
+    "retrieval_keywords": [
+      "XML prompt",
+      "JSON prompt",
+      "GraphRAG",
+      "Claude in Excel",
+      "Premortem prompt",
+      "AI financial modeling",
+      "Agentic workflows"
+    ],
+    "source_selection_hints": [
+      "Select this expert when the user asks how to structure prompts for specific models (Claude vs Gemini vs GPT).",
+      "Select when the user needs to process Excel or financial data using LLMs."
+    ],
+    "expected_overlap_hypotheses": [
+      "May overlap with other prompt engineering experts, but stands out due to architectural explanations (why XML works for Claude)."
+    ],
+    "recommended_panex_role": "primary_expert"
+  },
+  "community_signal": {
+    "comment_themes": [
+      "Technical troubleshooting (e.g., API limits, model access).",
+      "Sharing alternative tools (e.g., local Whisper, OpenRouter).",
+      "Debates on AI replacing jobs vs augmenting them."
+    ],
+    "questions_from_audience": [
+      "How to bypass API limits?",
+      "Which model is best for specific coding tasks?",
+      "How to handle data privacy with cloud models?"
+    ],
+    "disagreements_or_corrections": [
+      "Community members sometimes suggest local/open-source alternatives to the expert's cloud-based solutions."
+    ],
+    "practical_feedback": [
+      "Users confirm the effectiveness of the expert's prompt templates and workflows."
+    ],
+    "noise_or_low_value_patterns": [
+      "Some philosophical debates about AGI and human nature."
+    ],
+    "evidence_refs": [
+      "P0030",
+      "P0046",
+      "P0151"
+    ]
+  },
+  "admission_implications": {
+    "if_candidate_verdict": "accept",
+    "verdict_rationale": "The expert provides exceptionally high-quality, practitioner-level insights into prompt engineering and AI business integration. Her approach is analytical, evidence-based, and highly structured, making her content highly reusable for an AI system.",
+    "unique_value_claims_to_verify_against_matrix": [
+      "The mapping of LLM architectures to optimal prompt formats (XML for Claude, JSON for Gemini, Markdown for GPT)."
+    ],
+    "likely_duplicate_areas_to_check": [
+      "Basic RAG concepts.",
+      "General AI news and updates."
+    ],
+    "minimum_followup_probe_queries": [
+      "Compare prompt formatting techniques across different LLMs.",
+      "How to use Claude for financial modeling in Excel."
+    ],
+    "risk_notes": []
+  },
+  "audit": {
+    "unsupported_or_weak_claims": [],
+    "abstentions": [],
+    "possible_model_errors": [],
+    "source_refs_used": [
+      "P0025",
+      "P0030",
+      "P0039",
+      "P0046",
+      "P0066",
+      "P0067",
+      "P0071",
+      "P0072",
+      "P0083",
+      "P0088",
+      "P0102",
+      "P0112",
+      "P0122",
+      "P0134",
+      "P0137",
+      "P0138",
+      "P0143",
+      "P0151",
+      "P0155",
+      "P0165"
+    ],
+    "source_refs_most_important": [
+      "P0083",
+      "P0102",
+      "P0138",
+      "P0143",
+      "P0165"
+    ],
+    "normalization_notes": [
+      {
+        "operation": "repair_matrix_export_from_matrix_cells",
+        "repaired_cell_count": 2,
+        "repaired_cell_ids": [
+          "prompt_engineering/reasoning_control/learn_ai_assisted_development",
+          "rag_retrieval_knowledge/graph_rag_legal/design_rag_knowledge_base"
+        ],
+        "skipped_cell_count": 0,
+        "skipped_cells": []
+      },
+      {
+        "operation": "hydrate_source_ref_index_used",
+        "hydrated_ref_count": 1,
+        "generated_at_set_from_manifest": "2026-05-09T21:28:57.130086+00:00"
+      }
+    ]
+  }
+}

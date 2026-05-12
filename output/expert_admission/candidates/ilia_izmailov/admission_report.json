@@ -1,0 +1,49 @@
+{
+  "schema_version": "candidate_admission_report.v0.1",
+  "created_at": "2026-05-10",
+  "candidate_id": "ilia_izmailov",
+  "display_name": "Ilia Izmailov",
+  "channel_username": "@ilia_izmailov",
+  "verdict": "accept",
+  "decision_mode": "manual_human_review",
+  "based_on": {
+    "semantic_passport": "output/expert_admission/semantic_passports/ilia_izmailov/output/ilia_izmailov_semantic_passport.normalized.json",
+    "candidate_impact_report": "output/expert_admission/candidates/ilia_izmailov/candidate_impact_report.md",
+    "knowledge_matrix": "output/expert_admission/knowledge_matrix/knowledge_matrix.md",
+    "leave_one_out_calibration": "output/expert_admission/candidate_calibration/leave_one_out_summary.md"
+  },
+  "preflight_summary": {
+    "candidate_cells": 3,
+    "fills_gap": 1,
+    "adds_adjacent_viewpoint": 1,
+    "needs_probe": 1,
+    "likely_duplicate": 0,
+    "taxonomy_extensions": 0,
+    "exact_overlaps": 0,
+    "related_overlaps": 1,
+    "preliminary_recommendation": "promising_needs_human_review"
+  },
+  "accepted_cells": [
+    {
+      "cell_id": "coding_agents/claude_code_workflows/design_agentic_dev_workflow",
+      "classification": "fills_gap",
+      "admission_interpretation": "strong_new_exact_cell"
+    },
+    {
+      "cell_id": "coding_agents/cursor_windsurf_copilot/choose_ai_coding_tool",
+      "classification": "adds_adjacent_viewpoint",
+      "admission_interpretation": "accepted_as_complementary_overlap"
+    },
+    {
+      "cell_id": "ai_product_pm/pm_workflow/plan_ai_product_feature",
+      "classification": "needs_probe",
+      "admission_interpretation": "accepted_as_supporting_probe_needed_cell"
+    }
+  ],
+  "routing_notes": [
+    "Strong fit for Claude Code workflows, agent-team patterns, AI-assisted product building, and AI coding tool comparisons.",
+    "Poor fit for traditional low-level backend, database, security, or infrastructure questions unless the query is explicitly AI-assisted workflow oriented.",
+    "Runtime retrieval probes were not run; source-ranking impact remains unproven."
+  ],
+  "next_action": "proceed_as_accepted_in_semantic_knowledge_matrix"
+}
