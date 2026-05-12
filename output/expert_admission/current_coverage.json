@@ -1,7 +1,7 @@
 {
   "coverage_map": {
     "agent_ops": {
-      "expert_count": 17,
+      "expert_count": 18,
       "representative_posts": [
         {
           "created_at": "2026-04-16",
@@ -82,10 +82,10 @@
           "strength": "strong"
         }
       ],
-      "total_matching_posts": 2168
+      "total_matching_posts": 2230
     },
     "ai_engineering_infra": {
-      "expert_count": 17,
+      "expert_count": 18,
       "representative_posts": [
         {
           "created_at": "2026-04-14",
@@ -166,10 +166,10 @@
           "strength": "medium"
         }
       ],
-      "total_matching_posts": 414
+      "total_matching_posts": 424
     },
     "ai_product_pm": {
-      "expert_count": 17,
+      "expert_count": 18,
       "representative_posts": [
         {
           "created_at": "2026-04-15",
@@ -250,10 +250,10 @@
           "strength": "strong"
         }
       ],
-      "total_matching_posts": 1140
+      "total_matching_posts": 1177
     },
     "ai_ux_workflow": {
-      "expert_count": 17,
+      "expert_count": 18,
       "representative_posts": [
         {
           "created_at": "2026-04-14",
@@ -270,6 +270,13 @@
           "telegram_message_id": 463
         },
         {
+          "created_at": "2026-05-05",
+          "depth_label": "practitioner_experience",
+          "excerpt": "**🧠 Пора раз и навсегда разобраться в скиллах и начать строить из них настоящих AI-ассистентов!** — особенно если вы до сих пор живёте одними промптами. Многие обыватели до сих пор думают, что весь процесс взаимодействия с нейросетью — это «правильно сформулированный запрос». Чем длиннее и хитрее, тем лучше. На само...",
+          "expert_id": "aimasters_me",
+          "telegram_message_id": 578
+        },
+        {
           "created_at": "2026-04-18",
           "depth_label": "practitioner_experience",
           "excerpt": "Как контролировать расходы в Claude - где с такой скоростью сгорают лимиты, а с выходом Opus 4.7 станет еще хуже Opus 4.7 в использовании дороже по сл. причинам: 🔸Н**овый tokenizer:** модель иначе режет текст на токены - до 1.35x больше токенов 🔸De**ep reasoning: **на поздних шагах агентной работы включается по умол...",
@@ -282,13 +289,6 @@
           "excerpt": "У врачей тоже скоро сплошной ИИ - OpenAI выпустил ChatGPT for Clinicians – отдельную конфигурацию для медиков с фокусом на клинические задачи: документацию, ресёрч и разбор кейсов. Доступ бесплатный, но только для верифицированных врачей, NP, PA и фармацевтов в США. Цифры по рынку, которые они приводят: 72% американ...",
           "expert_id": "akimov",
           "telegram_message_id": 2143
-        },
-        {
-          "created_at": "2026-04-27",
-          "depth_label": "benchmark_or_eval",
-          "excerpt": "*Нет, вы **посмотрите*е](https://x.com/unclebobmartin/status/2046206145597972849)* на этого еретика, о чём он вообще?* > Признайте: ИИ с лёгкостью уделает вас в кодинге. Нет такой задачи, на которую у вас ушёл бы день, а ИИ не сделал бы её за пять минут. > Всё кончено. Код будете писать не вы. Да-да, я знаю. Смирите...",
-          "expert_id": "doronin",
-          "telegram_message_id": 1264
         }
       ],
       "status": "strong",
@@ -334,10 +334,10 @@
           "strength": "medium"
         }
       ],
-      "total_matching_posts": 437
+      "total_matching_posts": 457
     },
     "business_adoption": {
-      "expert_count": 17,
+      "expert_count": 18,
       "representative_posts": [
         {
           "created_at": "2026-04-05",
@@ -418,10 +418,10 @@
           "strength": "strong"
         }
       ],
-      "total_matching_posts": 1208
+      "total_matching_posts": 1239
     },
     "coding_agents": {
-      "expert_count": 17,
+      "expert_count": 18,
       "representative_posts": [
         {
           "created_at": "2026-04-16",
@@ -502,10 +502,10 @@
           "strength": "strong"
         }
       ],
-      "total_matching_posts": 1737
+      "total_matching_posts": 1800
     },
     "creative_multimodal": {
-      "expert_count": 17,
+      "expert_count": 18,
       "representative_posts": [
         {
           "created_at": "2026-04-30",
@@ -513,6 +513,13 @@
           "excerpt": "**Про аудио** Появилась задача вытащить аудио из видео и сделать структурированный текст по этому аудио. Обычно, я просил агента использовать ffpmeg для извлечения аудио и далее полученный mp3 я руками кидал в ai.studio и промптил. Это хорошо работало, но требовало делать это руками Вчера я решил сделать это полност...",
           "expert_id": "ai_architect",
           "telegram_message_id": 295
+        },
+        {
+          "created_at": "2026-03-29",
+          "depth_label": "case_study",
+          "excerpt": "**Tinker - приложение для генерации контента** *сейчас мало кого этим удивишь* Картинки, видосы, лого - это всё уже было. Но меня удивил Shopify (платформа для онлайн-магазинов) - выпустили **совершенно бесплатное приложение **[Tinker](https://tinker.com/)** для генерации контента.** Формально - под магазины. Но мы-...",
+          "expert_id": "aimasters_me",
+          "telegram_message_id": 543
         },
         {
           "created_at": "2026-04-24",
@@ -534,13 +541,6 @@
           "excerpt": "**Вайб-обзор на GPT 5.1 / Gemini 3 Pro / Opus 4.5 (2/2)** **Gemini 3 Pro** Модель перед выпуском хайпили так, что казалось, будто у всех сотрудников Google есть KPI на то, чтобы твитнуть нечто загадочное про выход то Gemini, то про что-то с цифрой 3, то про будущие фантастические возможности. Конкретно у меня было м...",
           "expert_id": "etechlead",
           "telegram_message_id": 278
-        },
-        {
-          "created_at": "2026-03-13",
-          "depth_label": "practitioner_experience",
-          "excerpt": "**Ревью Lenny's Pass** **- лучшей подписки для старта в AI (и экономии $1000)** Почти год назад я уже [писал](https://t.me/NGI_ru/231) про Lenny's Pass. Недавно я ревьюил свои подписки, и заглянул посмотреть что изменилось. Да, часть классных штук уехала в более дорогой тариф, но сейчас это по-прежнему лучшая точка...",
-          "expert_id": "kornish",
-          "telegram_message_id": 592
         }
       ],
       "status": "strong",
@@ -586,10 +586,10 @@
           "strength": "thin"
         }
       ],
-      "total_matching_posts": 271
+      "total_matching_posts": 281
     },
     "evals_quality": {
-      "expert_count": 17,
+      "expert_count": 18,
       "representative_posts": [
         {
           "created_at": "2026-04-09",
@@ -613,18 +613,18 @@
           "telegram_message_id": 480
         },
         {
-          "created_at": "2026-04-13",
+          "created_at": "2026-04-16",
           "depth_label": "benchmark_or_eval",
-          "excerpt": "**Работу с Excel на профессиональном уровне и Дашборд с обновлением ** можно организовать со скиллами <u>xlsx</u>sx и build-dashboard от Claude** Claude **не обязательно привязываться к моделям Claude - текст и скрипты этих скиллов можно использовать в других моделях* **Пример. ** Разберу когда есть только файл с мн...",
-          "expert_id": "air_ai",
-          "telegram_message_id": 418
+          "excerpt": "Бенчмарки. **Краткая сводка статьи:** > Вышла Claude Opus 4.7 — главное улучшение в сложном кодинге, теперь можно доверять самые трудные задачи без присмотра. > > Что нового: > - Лучше следует инструкциям (старые промпты могут давать неожиданный результат — надо перенастраивать) > - Видит изображения в 3× большем ра...",
+          "expert_id": "aimasters_me",
+          "telegram_message_id": 563
         },
         {
-          "created_at": "2026-05-04",
+          "created_at": "2026-04-07",
           "depth_label": "benchmark_or_eval",
-          "excerpt": "Мне нравятся всякие сериалы про скорую помощь, но кажется скоро там будет сплошной ИИ. Прочитал про Гарвардское исследование, опубликованное в Science. Доказали, что LLM-системы точнее людей ставят диагнозы в условиях экстренной медицины – тех самых первых минут в приёмном покое, когда от решения зависит жизнь. Авто...",
-          "expert_id": "akimov",
-          "telegram_message_id": 2154
+          "excerpt": "Бенчмарки новой модели Anthropic Mythos поражают, мягко говоря.",
+          "expert_id": "aimasters_me",
+          "telegram_message_id": 552
         }
       ],
       "status": "strong",
@@ -670,10 +670,10 @@
           "strength": "medium"
         }
       ],
-      "total_matching_posts": 560
+      "total_matching_posts": 569
     },
     "general_ai_news": {
-      "expert_count": 12,
+      "expert_count": 13,
       "representative_posts": [],
       "status": "strong",
       "top_experts": [
@@ -703,6 +703,11 @@
           "strength": "thin"
         },
         {
+          "count": 3,
+          "expert_id": "aimasters_me",
+          "strength": "thin"
+        },
+        {
           "count": 2,
           "expert_id": "ai_grabli",
           "strength": "thin"
@@ -711,17 +716,12 @@
           "count": 2,
           "expert_id": "akimov",
           "strength": "thin"
-        },
-        {
-          "count": 2,
-          "expert_id": "polyakov",
-          "strength": "thin"
         }
       ],
-      "total_matching_posts": 54
+      "total_matching_posts": 57
     },
     "model_landscape": {
-      "expert_count": 17,
+      "expert_count": 18,
       "representative_posts": [
         {
           "created_at": "2026-04-16",
@@ -802,10 +802,10 @@
           "strength": "strong"
         }
       ],
-      "total_matching_posts": 3500
+      "total_matching_posts": 3666
     },
     "rag_retrieval_knowledge": {
-      "expert_count": 17,
+      "expert_count": 18,
       "representative_posts": [
         {
           "created_at": "2026-02-16",
@@ -886,10 +886,10 @@
           "strength": "medium"
         }
       ],
-      "total_matching_posts": 428
+      "total_matching_posts": 432
     },
     "security_privacy_governance": {
-      "expert_count": 17,
+      "expert_count": 18,
       "representative_posts": [
         {
           "created_at": "2026-04-09",
@@ -897,6 +897,13 @@
           "excerpt": "Не понимаю, почему так мало пишут про авторисерч Карпаты Мне кажется, самое важное направление года. Первые значимые сигналы до меня дошли еще во время ERC3, когда Леша Остриков дал модельке самой оптимизировать промпт напрямую об евалы А сейчас вот сам Андрей Карпаты выложил рабочий репо, да еще и так, что можно бр...",
           "expert_id": "ai_grabli",
           "telegram_message_id": 484
+        },
+        {
+          "created_at": "2026-04-29",
+          "depth_label": "howto_or_checklist",
+          "excerpt": "После запрета Anthropic на использование их подписки в сторонних агентах прошло 3 недели. **Все это время я гонял разные harness и ботов, чтобы найти лучшего персонального агента. **Мой честный разбор **Связки которые зашли** [OpenClaw](https://github.com/openclaw/openclaw) + GPT-5.5 - задачи делает чётко. Но стиль...",
+          "expert_id": "aimasters_me",
+          "telegram_message_id": 576
         },
         {
           "created_at": "2026-04-28",
@@ -918,13 +925,6 @@
           "excerpt": "Как контролировать расходы в Claude - где с такой скоростью сгорают лимиты, а с выходом Opus 4.7 станет еще хуже Opus 4.7 в использовании дороже по сл. причинам: 🔸Н**овый tokenizer:** модель иначе режет текст на токены - до 1.35x больше токенов 🔸De**ep reasoning: **на поздних шагах агентной работы включается по умол...",
           "expert_id": "air_ai",
           "telegram_message_id": 421
-        },
-        {
-          "created_at": "2026-04-24",
-          "depth_label": "benchmark_or_eval",
-          "excerpt": "У врачей тоже скоро сплошной ИИ - OpenAI выпустил ChatGPT for Clinicians – отдельную конфигурацию для медиков с фокусом на клинические задачи: документацию, ресёрч и разбор кейсов. Доступ бесплатный, но только для верифицированных врачей, NP, PA и фармацевтов в США. Цифры по рынку, которые они приводят: 72% американ...",
-          "expert_id": "akimov",
-          "telegram_message_id": 2143
         }
       ],
       "status": "strong",
@@ -965,12 +965,12 @@
           "strength": "medium"
         },
         {
-          "count": 23,
-          "expert_id": "ai_architect",
+          "count": 24,
+          "expert_id": "aimasters_me",
           "strength": "medium"
         }
       ],
-      "total_matching_posts": 528
+      "total_matching_posts": 552
     }
   },
   "db_path": "/Users/andreysazonov/Documents/Projects/Experts_panel/backend/data/experts.db",
@@ -1656,6 +1656,167 @@
         }
       ],
       "warnings": []
+    },
+    {
+      "channel_username": "aimastersme",
+      "coverage": {
+        "agent_ops": 62,
+        "ai_engineering_infra": 10,
+        "ai_product_pm": 37,
+        "ai_ux_workflow": 20,
+        "business_adoption": 31,
+        "coding_agents": 63,
+        "creative_multimodal": 10,
+        "evals_quality": 9,
+        "general_ai_news": 3,
+        "model_landscape": 166,
+        "rag_retrieval_knowledge": 4,
+        "security_privacy_governance": 24
+      },
+      "coverage_strength": {
+        "agent_ops": "strong",
+        "ai_engineering_infra": "thin",
+        "ai_product_pm": "medium",
+        "ai_ux_workflow": "medium",
+        "business_adoption": "medium",
+        "coding_agents": "strong",
+        "creative_multimodal": "thin",
+        "evals_quality": "thin",
+        "general_ai_news": "thin",
+        "model_landscape": "strong",
+        "rag_retrieval_knowledge": "thin",
+        "security_privacy_governance": "medium"
+      },
+      "date_range": {
+        "first_post": "2024-02-19",
+        "last_post": "2026-05-06"
+      },
+      "depth_profile": {
+        "announcement_or_news": 49,
+        "architecture_analysis": 33,
+        "benchmark_or_eval": 8,
+        "case_study": 21,
+        "howto_or_checklist": 126,
+        "low_signal": 39,
+        "practitioner_experience": 37,
+        "tool_release": 9
+      },
+      "display_name": "Aimasters.Me",
+      "embedding_count": 307,
+      "embedding_coverage_ratio": 1.0,
+      "expert_id": "aimasters_me",
+      "fts_count": 307,
+      "metadata_coverage_ratio": 0.0,
+      "metadata_valid_count": 0,
+      "post_count": 322,
+      "representative_posts": [
+        {
+          "coverage_labels": [
+            "coding_agents",
+            "evals_quality",
+            "model_landscape"
+          ],
+          "created_at": "2026-04-16",
+          "depth_label": "benchmark_or_eval",
+          "excerpt": "Бенчмарки. **Краткая сводка статьи:** > Вышла Claude Opus 4.7 — главное улучшение в сложном кодинге, теперь можно доверять самые трудные задачи без присмотра. > > Что нового: > - Лучше следует инструкциям (старые промпты могут давать неожиданный результат — надо перенастраивать) > - Видит изображения в 3× большем ра...",
+          "reason": "coding_agents, evals_quality, model_landscape; depth=benchmark_or_eval",
+          "telegram_message_id": 563
+        },
+        {
+          "coverage_labels": [
+            "coding_agents",
+            "agent_ops",
+            "model_landscape"
+          ],
+          "created_at": "2026-05-01",
+          "depth_label": "case_study",
+          "excerpt": "**Creative Director Skill v.2** https://github.com/smixs/creative-director-skill Обновил и улучшил навык креативного директора для поиска идей и разработки рекламного креатива. Теперь скилл включает базу из победителей рекламных фестивалей с 1950 по 2025 (571 кейс). Спасибо за это Паше Д. 😍 Установка: сбросить ссылк...",
+          "reason": "coding_agents, agent_ops, model_landscape; depth=case_study",
+          "telegram_message_id": 577
+        },
+        {
+          "coverage_labels": [
+            "ai_product_pm",
+            "model_landscape",
+            "creative_multimodal"
+          ],
+          "created_at": "2026-03-29",
+          "depth_label": "case_study",
+          "excerpt": "**Tinker - приложение для генерации контента** *сейчас мало кого этим удивишь* Картинки, видосы, лого - это всё уже было. Но меня удивил Shopify (платформа для онлайн-магазинов) - выпустили **совершенно бесплатное приложение **[Tinker](https://tinker.com/)** для генерации контента.** Формально - под магазины. Но мы-...",
+          "reason": "ai_product_pm, model_landscape, creative_multimodal; depth=case_study",
+          "telegram_message_id": 543
+        },
+        {
+          "coverage_labels": [
+            "agent_ops",
+            "ai_ux_workflow"
+          ],
+          "created_at": "2026-05-05",
+          "depth_label": "practitioner_experience",
+          "excerpt": "**🧠 Пора раз и навсегда разобраться в скиллах и начать строить из них настоящих AI-ассистентов!** — особенно если вы до сих пор живёте одними промптами. Многие обыватели до сих пор думают, что весь процесс взаимодействия с нейросетью — это «правильно сформулированный запрос». Чем длиннее и хитрее, тем лучше. На само...",
+          "reason": "agent_ops, ai_ux_workflow; depth=practitioner_experience",
+          "telegram_message_id": 578
+        },
+        {
+          "coverage_labels": [
+            "coding_agents",
+            "agent_ops",
+            "security_privacy_governance",
+            "model_landscape"
+          ],
+          "created_at": "2026-04-29",
+          "depth_label": "howto_or_checklist",
+          "excerpt": "После запрета Anthropic на использование их подписки в сторонних агентах прошло 3 недели. **Все это время я гонял разные harness и ботов, чтобы найти лучшего персонального агента. **Мой честный разбор **Связки которые зашли** [OpenClaw](https://github.com/openclaw/openclaw) + GPT-5.5 - задачи делает чётко. Но стиль...",
+          "reason": "coding_agents, agent_ops, security_privacy_governance; depth=howto_or_checklist",
+          "telegram_message_id": 576
+        },
+        {
+          "coverage_labels": [
+            "evals_quality",
+            "model_landscape"
+          ],
+          "created_at": "2026-04-07",
+          "depth_label": "benchmark_or_eval",
+          "excerpt": "Бенчмарки новой модели Anthropic Mythos поражают, мягко говоря.",
+          "reason": "evals_quality, model_landscape; depth=benchmark_or_eval",
+          "telegram_message_id": 552
+        },
+        {
+          "coverage_labels": [
+            "model_landscape"
+          ],
+          "created_at": "2026-04-15",
+          "depth_label": "architecture_analysis",
+          "excerpt": "Anthropic готовит к выходу Claude Opus 4.7, плюс новый AI-тул для дизайна сайтов и презентаций. По сообщению [The Information,](https://www.theinformation.com/briefings/exclusive-anthropic-preps-opus-4-7-model-ai-design-tool) могут выкатить уже на этой неделе @aimastersme",
+          "reason": "model_landscape; depth=architecture_analysis",
+          "telegram_message_id": 560
+        },
+        {
+          "coverage_labels": [
+            "coding_agents",
+            "agent_ops",
+            "model_landscape"
+          ],
+          "created_at": "2026-04-11",
+          "depth_label": "architecture_analysis",
+          "excerpt": "**Что делать тем, кто хочет толкового ассистента типа OpenClaw после бана ** Недавно Anthropic [забанили](https://t.me/aimastersme/550) всех крупных агентов на своей подписке. Теперь только оплата за каждый токен - дорого! За неделю прогнал почти все доступные модели через два агентских фреймворка - [OpenClaw](https...",
+          "reason": "coding_agents, agent_ops, model_landscape; depth=architecture_analysis",
+          "telegram_message_id": 559
+        }
+      ],
+      "runtime_readiness": {
+        "embeddings_ready": true,
+        "fts_ready": true,
+        "metadata_advisory_ready": false,
+        "text_posts_ready": true
+      },
+      "text_post_count": 307,
+      "top_concepts": [],
+      "top_keywords": [],
+      "top_primary_topics": [],
+      "warnings": [
+        "aimasters_me: no valid post_metadata; coverage is text-only"
+      ]
     },
     {
       "channel_username": "realtimeforai",
@@ -6496,32 +6657,34 @@
   "gaps": {
     "experts_with_embedding_gaps": [],
     "experts_without_metadata": [
+      "aimasters_me",
       "kornish",
       "pashazloy"
     ],
     "thin_or_missing_areas": []
   },
-  "generated_at": "2026-05-10T19:50:25+00:00",
+  "generated_at": "2026-05-12T13:20:35+00:00",
   "include_video_hub": false,
   "interpretation": [
     "Coverage status is raw-text keyword density only; it is not an admission verdict.",
     "No missing areas were found at the current coarse taxonomy level; candidate decisions should focus on incremental query utility, depth, freshness, and duplicate risk.",
     "Dense news/model coverage means another broad-news expert needs strong source-level evidence before admission.",
-    "Some experts lack valid post_metadata, so current-roster coverage must be treated as text-derived for them: kornish, pashazloy."
+    "Some experts lack valid post_metadata, so current-roster coverage must be treated as text-derived for them: aimasters_me, kornish, pashazloy."
   ],
   "summary": {
-    "expert_count": 17,
+    "expert_count": 18,
     "global_counts": {
-      "expert_metadata": 18,
-      "human_expert_metadata": 17,
-      "post_embeddings": 6622,
-      "posts": 7049,
-      "posts_fts": 6622,
-      "text_posts": 6622
+      "expert_metadata": 19,
+      "human_expert_metadata": 18,
+      "post_embeddings": 6929,
+      "posts": 7371,
+      "posts_fts": 6929,
+      "text_posts": 6929
     }
   },
   "version": 1,
   "warnings": [
+    "aimasters_me: no valid post_metadata; coverage is text-only",
     "kornish: no valid post_metadata; coverage is text-only",
     "ostrikov: post_metadata coverage below 50%",
     "pashazloy: no valid post_metadata; coverage is text-only"

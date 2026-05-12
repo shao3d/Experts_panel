@@ -1,10 +1,10 @@
-# Knowledge Matrix Health Review After 17 Experts
+# Knowledge Matrix Health Review After 18 Experts
 
 Generated: 2026-05-12
 
 ## Scope
 
-This is a top-down health review of the accepted expert-admission knowledge matrix after all 17 current human experts were accepted into the matrix.
+This is a top-down health review of the accepted expert-admission knowledge matrix after all 17 original current human experts plus Aimasters.Me were accepted into the matrix.
 
 This review does not rerun semantic-passport generation, representative-post arbitration, or runtime Panex probes. It checks whether the resulting matrix is coherent, useful, and aligned with the lightweight admission doctrine.
 
@@ -17,20 +17,20 @@ This review does not rerun semantic-passport generation, representative-post arb
 
 ## Current State
 
-- Accepted matrix experts: 17
-- Matrix cells: 43
-- Domain rollups: 10
-- Domain + intent rollups: 29
+- Accepted matrix experts: 18
+- Matrix cells: 47
+- Domain rollups: 11
+- Domain + intent rollups: 30
 - Taxonomy extensions currently proposed: 0
-- Strong single-source cells: 18
+- Strong single-source cells: 20
 - Strong multi-source cells: 13
-- Total single-source cells: 30
-- Related-cell overlaps: 9
+- Total single-source cells: 34
+- Related-cell overlaps: 10
 - Strong domain + intent multi-source rollups: 10
 
 ## Short Verdict
 
-The matrix is healthy enough to serve as the admission and routing map.
+The matrix is healthy enough to serve as the admission-control map.
 
 It is not a final judge. Its strongest current value is to show:
 
@@ -52,6 +52,7 @@ The panel is now meaningfully strong in these areas:
 - RAG / knowledge-base design / retrieval-quality discussions.
 - Local LLM and inference-practicality cluster.
 - Early but useful product/business adoption layer.
+- New but still narrow creative/multimodal workflow coverage through Aimasters.Me.
 
 ## Crowded Areas
 
@@ -63,6 +64,7 @@ These areas are overlap-heavy and should be strict for future candidates:
 - `coding_agents/choose_ai_coding_tool` rollup
 - `coding_agents/design_agentic_dev_workflow` rollup
 - `agent_ops/design_agentic_dev_workflow` rollup
+- `prompt_engineering/learn_ai_assisted_development` rollup
 
 Future experts in these zones should not be accepted just because they talk about Claude Code, Cursor, Codex, agents, MCP, or vibe coding. They need a clearly different angle, stronger evidence, unusually good source posts, or a distinct audience/use case.
 
@@ -76,11 +78,14 @@ Single-source coverage is not automatically bad, but it means the panel depends 
 - Product-management and AI-product workflow coverage is useful but still narrow.
 - Business adoption has useful coverage, but it is not yet broad.
 - Codex-specific workflow coverage is still narrower than Claude/Cursor coverage.
+- Creative/multimodal workflow coverage is now present, but mostly single-source and should be treated as promising rather than mature.
 - Model-comparison and current tool-choice guidance can age quickly.
 
 These are good target areas for future genuinely complementary experts.
 
 ## Calibration Reading
+
+The leave-one-out calibration below was run before Aimasters.Me and still reflects the 17-expert baseline. It remains useful as a sanity check for the original matrix, but should be refreshed after the next control-candidate batch.
 
 Leave-one-out calibration shows:
 
@@ -126,24 +131,25 @@ The current system matches the intended doctrine:
 
 ## Recommended Next Step
 
-Freeze this matrix as `v0.3` baseline and add a small routing-probe suite.
+Freeze this matrix as `v0.3` admission baseline and add a small admission-validation suite.
 
-The probe suite should be lightweight: about 20 representative user queries, covering crowded areas, brittle single-source areas, and cross-domain questions. Its purpose is not to re-judge admission. Its purpose is to verify that Panex/runtime retrieval actually routes to the right experts and source posts according to the matrix.
+The validation suite should be lightweight: a handful of control candidates or candidate-like scenarios that test whether the admission machine gives sane first-pass signals before LLM/human review.
 
-Suggested probe groups:
+Suggested validation cases:
 
-- coding-agent workflow and tool-choice overlap;
-- Codex-specific workflow;
-- Claude Code workflow;
-- RAG / knowledge-base design;
-- evals and reliability;
-- local LLM / inference cost;
-- AI-product / PM workflow;
-- business adoption / ROI;
-- security/privacy/governance.
+- an obvious duplicate expert;
+- a strong genuinely complementary expert;
+- a narrow but valuable specialist;
+- a noisy expert with many AI terms but low semantic value;
+- an overlap-heavy expert with a distinct practical angle;
+- an expert strong in a brittle single-source area.
+
+Runtime routing probes are still useful later, but they are secondary. The primary purpose of this matrix is to support expert admission decisions.
+
+Aimasters.Me is the first accepted external-style candidate after the 17-expert baseline. Treat it as a useful validation case: mechanically overlap-heavy, but manually accepted because it adds a clean creative/multimodal gap and a distinct Skills / personal-agent practitioner viewpoint.
 
 ## Bottom Line
 
 The matrix is coherent and useful. The main danger is not that it is too poor; the main danger is trusting it too mechanically.
 
-The right next move is not to add more admission artifacts. It is to test routing behavior with a small query-probe suite and keep LLM/human arbitration for real overlap decisions.
+The right next move is not to add more admission artifacts. It is to validate the admission machine on control candidates and keep LLM/human arbitration for real overlap decisions.

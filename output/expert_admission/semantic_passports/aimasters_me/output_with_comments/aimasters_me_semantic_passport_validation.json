@@ -1,0 +1,35 @@
+{
+  "missing_required_top_level_keys": [],
+  "known_source_ref_count": 2065,
+  "used_source_ref_count": 28,
+  "source_ref_index_used_count": 28,
+  "unknown_source_refs": [],
+  "unknown_source_ref_count": 0,
+  "refs_missing_from_source_ref_index_used": [],
+  "refs_missing_from_source_ref_index_used_count": 0,
+  "matrix_cell_count": 4,
+  "matrix_export_cell_count": 3,
+  "matrix_export_incomplete": true,
+  "missing_matrix_export_cells": [
+    {
+      "cell_id": "creative_multimodal/multimodal_generation/plan_ai_product_feature",
+      "domain_id": "creative_multimodal",
+      "subdomain_id": "multimodal_generation",
+      "query_intent_ids": [
+        "plan_ai_product_feature"
+      ],
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0112",
+        "P0156",
+        "P0221"
+      ]
+    }
+  ],
+  "missing_matrix_export_cell_count": 1,
+  "bad_matrix_relative_novelty_values": [],
+  "passport_generated_at": "2026-05-12T13:04:20.741391+00:00",
+  "expected_generated_at": "2026-05-12T13:04:20.741391+00:00",
+  "generated_at_matches_expected": true,
+  "valid_basic_contract": false
+}

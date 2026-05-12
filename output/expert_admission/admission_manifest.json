@@ -1,6 +1,6 @@
 {
   "schema_version": "expert_admission_manifest.v0.1",
-  "updated_at": "2026-05-10",
+  "updated_at": "2026-05-12",
   "purpose": "SSOT for which semantic passports are part of the accepted Experts Panel knowledge matrix.",
   "accepted_verdicts": [
     "accept",
@@ -46,6 +46,16 @@
       "admission_report": "output/expert_admission/candidates/air_ai/admission_report.json",
       "decision_basis": "current_roster_seed_backfilled_semantic_review",
       "routing_caveat": "accepted as prompt-engineering and business-workflow seed expert; strong fit for model-specific prompting, reasoning control, financial modeling, and legal/RAG workflows, avoid routing for local-LLM or low-level infrastructure questions"
+    },
+    {
+      "expert_id": "aimasters_me",
+      "display_name": "Aimasters.Me",
+      "verdict": "accept",
+      "include_in_knowledge_matrix": true,
+      "passport_path": "output/expert_admission/semantic_passports/aimasters_me/output_with_comments/aimasters_me_semantic_passport.normalized.json",
+      "admission_report": "output/expert_admission/candidates/aimasters_me/admission_report.json",
+      "decision_basis": "manual_human_review",
+      "routing_caveat": "accepted as Skills / personal-local agent / creative-multimodal workflow expert; comments are available and sampled DB evidence shows troubleshooting/tool-use feedback, though the Gemini passport did not cite concrete .C comment refs; overlap-heavy with existing agent/prompt experts, so use as complementary source for Claude Skills, Agent Second Brain, local agent setup, and AI presentation/image workflows; treat platform bypass posts as platform-risk and avoid routing for deep backend architecture, enterprise governance, generic security/compliance, or generic model news"
     },
     {
       "expert_id": "doronin",

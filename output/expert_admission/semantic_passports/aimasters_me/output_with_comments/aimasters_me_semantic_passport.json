@@ -1,0 +1,1091 @@
+{
+  "schema_version": "expert_value_passport.v1.1",
+  "passport_meta": {
+    "schema_version": "expert_value_passport.v1.1",
+    "expert_id": "aimasters_me",
+    "display_name": "Aimasters.Me",
+    "channel_username": "@aimastersme",
+    "model_assumed": "gemini-3.1-pro-preview",
+    "prompt_version": "semantic-passport-prompt.v1",
+    "generated_at": "2026-05-12T13:04:20.741391+00:00"
+  },
+  "corpus_audit": {
+    "post_count_seen": 184,
+    "comment_count_seen": 300,
+    "date_range": {
+      "first_post": "2024-02-19 09:39:00.000000",
+      "last_post": "2026-05-06 17:13:23.000000"
+    },
+    "language_mix": [
+      "ru"
+    ],
+    "material_limitations": [],
+    "author_vs_community_boundary": "Clear boundary. The expert posts detailed guides and code/prompts, while the community actively tests, asks technical questions, and shares their own results in the comments."
+  },
+  "source_ref_index_used": [
+    {
+      "source_ref": "P0004",
+      "source_kind": "expert_post",
+      "post_id": 9912,
+      "telegram_message_id": 15,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2024-02-20 15:40:57.000000",
+      "why_used": "Demonstrates early deep knowledge of Midjourney prompting and parameters."
+    },
+    {
+      "source_ref": "P0014",
+      "source_kind": "expert_post",
+      "post_id": 9922,
+      "telegram_message_id": 73,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2024-03-02 07:01:14.000000",
+      "why_used": "Shows practical techniques for negative prompting and weight adjustments in Midjourney."
+    },
+    {
+      "source_ref": "P0070",
+      "source_kind": "expert_post",
+      "post_id": 9979,
+      "telegram_message_id": 212,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2024-09-03 06:31:01.000000",
+      "why_used": "Provides a curated list of tools for using the Flux model."
+    },
+    {
+      "source_ref": "P0079",
+      "source_kind": "expert_post",
+      "post_id": 9988,
+      "telegram_message_id": 226,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2024-10-07 04:45:24.000000",
+      "why_used": "Shares a specific trick for achieving high realism in Flux by appending fake filenames."
+    },
+    {
+      "source_ref": "P0080",
+      "source_kind": "expert_post",
+      "post_id": 9989,
+      "telegram_message_id": 235,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2024-10-18 04:53:41.000000",
+      "why_used": "Outlines the expert's philosophy on AI adoption in business and the necessity of paid tools."
+    },
+    {
+      "source_ref": "P0112",
+      "source_kind": "expert_post",
+      "post_id": 10022,
+      "telegram_message_id": 290,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-01-04 04:21:06.000000",
+      "why_used": "Details a workflow for creating PowerPoint presentations using voice transcription and VBA scripts."
+    },
+    {
+      "source_ref": "P0129",
+      "source_kind": "expert_post",
+      "post_id": 10042,
+      "telegram_message_id": 311,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-03-04 04:21:06.000000",
+      "why_used": "Provides a highly structured prompt for extracting accurate summaries from YouTube transcripts."
+    },
+    {
+      "source_ref": "P0156",
+      "source_kind": "expert_post",
+      "post_id": 10069,
+      "telegram_message_id": 356,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-05-19 05:21:01.000000",
+      "why_used": "Shows an advanced workflow for generating interactive HTML presentations using Google AI Studio."
+    },
+    {
+      "source_ref": "P0158",
+      "source_kind": "expert_post",
+      "post_id": 10071,
+      "telegram_message_id": 359,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-05-23 05:21:01.000000",
+      "why_used": "Introduces the 'Kill Yellow Tint' signature insight for ChatGPT image generation."
+    },
+    {
+      "source_ref": "P0162",
+      "source_kind": "expert_post",
+      "post_id": 10075,
+      "telegram_message_id": 363,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-06-08 05:21:06.000000",
+      "why_used": "Explains the philosophy of treating AI as a colleague rather than a search engine."
+    },
+    {
+      "source_ref": "P0172",
+      "source_kind": "expert_post",
+      "post_id": 10085,
+      "telegram_message_id": 374,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-06-30 05:21:06.000000",
+      "why_used": "Critiques the rise of AI 'slop' and synthetic content farms on social media."
+    },
+    {
+      "source_ref": "P0190",
+      "source_kind": "expert_post",
+      "post_id": 10103,
+      "telegram_message_id": 402,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-18 16:49:31.000000",
+      "why_used": "Provides a practical guide to setting up a personal VPN using Outline and a VPS."
+    },
+    {
+      "source_ref": "P0202",
+      "source_kind": "expert_post",
+      "post_id": 10115,
+      "telegram_message_id": 424,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-10-04 06:00:23.000000",
+      "why_used": "Further critique of AI 'slop' and the devaluation of generic AI-generated video content."
+    },
+    {
+      "source_ref": "P0207",
+      "source_kind": "expert_post",
+      "post_id": 10120,
+      "telegram_message_id": 431,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-10-10 05:21:06.000000",
+      "why_used": "Analyzes AI adoption statistics, emphasizing that free AI tools do not yield real productivity gains."
+    },
+    {
+      "source_ref": "P0221",
+      "source_kind": "expert_post",
+      "post_id": 10135,
+      "telegram_message_id": 457,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-12-03 04:21:01.000000",
+      "why_used": "Demonstrates how to use Nano Banana Pro for generating high-quality presentation slides."
+    },
+    {
+      "source_ref": "P0223",
+      "source_kind": "expert_post",
+      "post_id": 10137,
+      "telegram_message_id": 461,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-12-13 04:21:01.000000",
+      "why_used": "Introduces the concept of 'Skills' in Claude as a replacement for traditional prompting."
+    },
+    {
+      "source_ref": "P0226",
+      "source_kind": "expert_post",
+      "post_id": 10140,
+      "telegram_message_id": 464,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-12-16 04:21:01.000000",
+      "why_used": "First introduction of the 'Agent Second Brain' concept built on Claude Code."
+    },
+    {
+      "source_ref": "P0232",
+      "source_kind": "expert_post",
+      "post_id": 10146,
+      "telegram_message_id": 471,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-12-27 04:24:59.000000",
+      "why_used": "Official release of the Agent Second Brain open-source repository."
+    },
+    {
+      "source_ref": "P0251",
+      "source_kind": "expert_post",
+      "post_id": 10166,
+      "telegram_message_id": 497,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-27 04:40:19.000000",
+      "why_used": "Details the memory architecture update for Agent Second Brain."
+    },
+    {
+      "source_ref": "P0252",
+      "source_kind": "expert_post",
+      "post_id": 10167,
+      "telegram_message_id": 498,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-28 04:25:45.000000",
+      "why_used": "Release of the 'Russian Humanizer' skill to remove AI-like phrasing from generated text."
+    },
+    {
+      "source_ref": "P0260",
+      "source_kind": "expert_post",
+      "post_id": 10175,
+      "telegram_message_id": 508,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-04 04:21:01.000000",
+      "why_used": "Critiques corporate AI adoption (Copilot) versus power users utilizing Claude Code and MCPs."
+    },
+    {
+      "source_ref": "P0266",
+      "source_kind": "expert_post",
+      "post_id": 10181,
+      "telegram_message_id": 514,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-08 07:56:48.000000",
+      "why_used": "Advanced tutorial on setting up Outline VPN on a VPS via SSH."
+    },
+    {
+      "source_ref": "P0267",
+      "source_kind": "expert_post",
+      "post_id": 10182,
+      "telegram_message_id": 515,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-08 13:29:08.000000",
+      "why_used": "Explains the paradigm shift from SaaS to RaaS (Result as a Service) and BYOA (Bring Your Own Agent)."
+    },
+    {
+      "source_ref": "P0275",
+      "source_kind": "expert_post",
+      "post_id": 10192,
+      "telegram_message_id": 526,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-16 04:21:01.000000",
+      "why_used": "Deep dive into why Skills are superior to Prompts for managing LLM context."
+    },
+    {
+      "source_ref": "P0278",
+      "source_kind": "expert_post",
+      "post_id": 10195,
+      "telegram_message_id": 529,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-26 04:21:01.000000",
+      "why_used": "Release of Agent Second Brain v2 with Ebbinghaus decay memory management."
+    },
+    {
+      "source_ref": "P0283",
+      "source_kind": "expert_post",
+      "post_id": 10200,
+      "telegram_message_id": 536,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-03-04 04:21:01.000000",
+      "why_used": "Release of Skill Conductor, a tool for building and evaluating Claude Skills."
+    },
+    {
+      "source_ref": "P0298",
+      "source_kind": "expert_post",
+      "post_id": 10216,
+      "telegram_message_id": 559,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-11 16:08:19.000000",
+      "why_used": "Compares always-on agent frameworks (OpenClaw, Hermes) and models after Anthropic's ban."
+    },
+    {
+      "source_ref": "P0309",
+      "source_kind": "expert_post",
+      "post_id": 10227,
+      "telegram_message_id": 578,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-05-05 05:21:01.000000",
+      "why_used": "Final confirmation of the shift from prompt engineering to skill engineering."
+    }
+  ],
+  "executive_summary": {
+    "one_sentence_positioning": "Aimasters.Me is a deep-practitioner channel focused on building autonomous AI agents, advanced workflow automation, and transitioning from basic prompt engineering to structured 'Skills' and 'Bring Your Own Agent' (BYOA) architectures.",
+    "strongest_system_value": "Exceptional technical depth and practical specificity in building local AI agents (e.g., Agent Second Brain), configuring Claude Code, and deploying custom 'Skills' (Markdown-based instruction sets) to bypass LLM limitations.",
+    "weakest_system_value": "The channel explicitly avoids basic AI news, generic prompt lists, and beginner-level overviews, making it less suitable for users seeking superficial AI updates.",
+    "best_fit_queries": [
+      "How to set up a local AI agent using Claude Code or OpenClaw",
+      "How to transition from prompt engineering to Claude Skills",
+      "How to build an AI 'Second Brain' with long-term memory",
+      "How to bypass corporate AI restrictions using VPS and SSH tunnels",
+      "How to generate high-quality presentations using Nano Banana Pro"
+    ],
+    "poor_fit_queries": [
+      "What are the latest AI news updates this week?",
+      "Give me 100 ChatGPT prompts for marketing",
+      "How to use basic free AI tools"
+    ],
+    "confidence": 0.95
+  },
+  "expert_positioning": {
+    "primary_role": "Deep Practitioner & Builder",
+    "audience": [
+      "Power users",
+      "Developers",
+      "Agency directors",
+      "Marketers seeking advanced automation"
+    ],
+    "voice": [
+      "Direct",
+      "Pragmatic",
+      "Anti-hype",
+      "Slightly sarcastic",
+      "Authoritative"
+    ],
+    "worldview": [
+      "Free AI tools are a trap; real productivity requires paid subscriptions and API access.",
+      "Prompt engineering is dead; the future belongs to structured 'Skills' and autonomous agents.",
+      "Corporate AI (like Copilot) is crippled by security; power users will outcompete corporations using local agents.",
+      "AI should be treated as a colleague to think *with*, not a search engine to think *for* you.",
+      "The software industry is shifting from SaaS to RaaS (Result as a Service) driven by BYOA (Bring Your Own Agent)."
+    ],
+    "distinctive_angle": "Bridges the gap between hardcore coding (CLI, VPS, Python) and practical business applications (marketing, presentations, CRM), providing open-source tools (Agent Second Brain, Skill Conductor) to automate complex workflows.",
+    "recurring_formats": [
+      "Step-by-step technical tutorials",
+      "Open-source tool releases (GitHub repos)",
+      "Model and framework comparisons (e.g., OpenClaw vs Hermes)",
+      "Philosophical essays on AI adoption and the future of work"
+    ],
+    "evidence_refs": [
+      "P0080",
+      "P0162",
+      "P0223",
+      "P0232",
+      "P0260",
+      "P0267",
+      "P0309"
+    ]
+  },
+  "knowledge_domains": [
+    {
+      "domain_id": "agent_ops",
+      "domain_name": "Autonomous Agents & Operations",
+      "subdomain_ids": [
+        "local_agent_setup",
+        "multi_agent_orchestration",
+        "mcp_tooling"
+      ],
+      "query_intent_ids": [
+        "design_agentic_dev_workflow",
+        "build_human_ai_workflow"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "unique",
+      "what_the_expert_knows": [
+        "How to deploy and configure always-on agents like OpenClaw, Hermes, and ZeroClaw.",
+        "How to build a 'Second Brain' agent with Ebbinghaus decay memory management.",
+        "How to connect agents to local file systems, Todoist, and Obsidian using MCPs.",
+        "How to bypass Anthropic's bans on third-party agents using CLI proxies and alternative models (GLM 5.1, Codex 5.4)."
+      ],
+      "how_they_reason": [
+        "Prefers local, always-on agents over web interfaces for true automation.",
+        "Values memory architecture (decay, multi-layer) over simple RAG, which he considers unreliable.",
+        "Evaluates agent frameworks based on speed, cost, and ability to follow strict 'Skills' without hallucinating."
+      ],
+      "missing_or_weak_subtopics": [
+        "Enterprise-scale agent deployment (focuses mostly on personal/power-user setups)"
+      ],
+      "evidence_refs": [
+        "P0226",
+        "P0232",
+        "P0251",
+        "P0278",
+        "P0298"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "domain_id": "prompt_engineering",
+      "domain_name": "Advanced Prompting & Skills",
+      "subdomain_ids": [
+        "claude_code_workflows",
+        "reasoning_control",
+        "model_specific_formatting"
+      ],
+      "query_intent_ids": [
+        "learn_ai_assisted_development",
+        "improve_retrieval_quality"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "How to transition from traditional prompts to structured Markdown 'Skills'.",
+        "How to build tools like 'Skill Conductor' for Test-Driven Development of AI instructions.",
+        "How to use the 'Kill Yellow Tint' command to fix ChatGPT image generation.",
+        "How to create a 'Russian Humanizer' skill to strip AI-generated clichés from text."
+      ],
+      "how_they_reason": [
+        "Believes prompt engineering is obsolete; structured, modular 'Skills' are the only way to prevent hallucinations in complex tasks.",
+        "Advocates for strict constraints and negative prompting to force models into creative solutions."
+      ],
+      "missing_or_weak_subtopics": [],
+      "evidence_refs": [
+        "P0158",
+        "P0223",
+        "P0252",
+        "P0275",
+        "P0283",
+        "P0309"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "domain_id": "creative_multimodal",
+      "domain_name": "Creative & Multimodal AI",
+      "subdomain_ids": [
+        "multimodal_generation",
+        "model_comparison"
+      ],
+      "query_intent_ids": [
+        "compare_models_for_task",
+        "plan_ai_product_feature"
+      ],
+      "coverage_level": "moderate",
+      "depth_level": "practical",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "How to use Nano Banana Pro for generating high-quality presentation slides and 3D renders.",
+        "How to train LoRAs on Flux for character consistency.",
+        "How to use Midjourney parameters (--no, --cw, --sref) for precise control."
+      ],
+      "how_they_reason": [
+        "Treats AI image generation as a professional design tool, prioritizing consistency and workflow integration over random art generation."
+      ],
+      "missing_or_weak_subtopics": [
+        "Deep technical breakdown of diffusion models (focuses on application rather than architecture)"
+      ],
+      "evidence_refs": [
+        "P0004",
+        "P0014",
+        "P0070",
+        "P0079",
+        "P0221"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "domain_id": "ai_engineering_infra",
+      "domain_name": "AI Engineering & Infrastructure",
+      "subdomain_ids": [
+        "local_agent_setup",
+        "security_privacy_controls"
+      ],
+      "query_intent_ids": [
+        "manage_security_privacy_governance",
+        "optimize_inference_cost_latency"
+      ],
+      "coverage_level": "moderate",
+      "depth_level": "practical",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "How to set up Outline VPN on a VPS via SSH to bypass regional AI blocks.",
+        "How to use SSH tunnels to authenticate CLI tools (like Codex) on headless servers.",
+        "The privacy risks of using free AI tiers versus API/Enterprise tiers."
+      ],
+      "how_they_reason": [
+        "Pragmatic approach to infrastructure: use cheap VPS providers (Contabo, Hetzner) and open-source tools to build robust personal AI environments."
+      ],
+      "missing_or_weak_subtopics": [
+        "Enterprise-grade cloud architecture (AWS/GCP scaling)"
+      ],
+      "evidence_refs": [
+        "P0190",
+        "P0266"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "value_dimensions": [
+    {
+      "dimension_id": "insight_density",
+      "score_0_5": 5,
+      "rationale": "Almost every post contains a specific workflow, a GitHub repository, a custom prompt, or a deep philosophical insight into AI adoption.",
+      "evidence_refs": [
+        "P0232",
+        "P0252",
+        "P0283"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "practical_specificity",
+      "score_0_5": 5,
+      "rationale": "Provides exact terminal commands, JSON structures, Markdown templates, and step-by-step guides for deploying complex AI systems.",
+      "evidence_refs": [
+        "P0156",
+        "P0266",
+        "P0278"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "anti_hype_signal",
+      "score_0_5": 5,
+      "rationale": "Actively critiques 'slop' (low-quality AI content), calls out corporate AI limitations, and warns against the 'brain rot' of relying on AI without thinking.",
+      "evidence_refs": [
+        "P0162",
+        "P0172",
+        "P0202",
+        "P0260"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "technical_depth",
+      "score_0_5": 4,
+      "rationale": "Highly technical for a 'power user' (writes Python scripts, deploys VPS, builds CLI agents), though he identifies primarily as an agency director rather than a hardcore software engineer.",
+      "evidence_refs": [
+        "P0226",
+        "P0266",
+        "P0278"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "dimension_id": "community_resonance",
+      "score_0_5": 5,
+      "rationale": "The community actively forks his GitHub repos, tests his VPN setups, and engages in deep discussions about the philosophy and technicalities of AI.",
+      "evidence_refs": [
+        "P0232",
+        "P0266"
+      ],
+      "confidence": 0.95
+    }
+  ],
+  "matrix_cells": [
+    {
+      "domain_id": "agent_ops",
+      "subdomain_id": "local_agent_setup",
+      "subdomain_name": "Local Agent Deployment & Memory",
+      "query_intent_ids": [
+        "design_agentic_dev_workflow"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 5,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0226",
+        "P0232",
+        "P0251",
+        "P0278"
+      ],
+      "notes": "The expert has built and open-sourced 'Agent Second Brain', detailing its memory architecture (Ebbinghaus decay) and integration with Obsidian and Todoist."
+    },
+    {
+      "domain_id": "prompt_engineering",
+      "subdomain_id": "claude_code_workflows",
+      "subdomain_name": "Claude Skills & Instruction Design",
+      "query_intent_ids": [
+        "learn_ai_assisted_development"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 5,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0223",
+        "P0252",
+        "P0275",
+        "P0283",
+        "P0309"
+      ],
+      "notes": "Pioneers the shift from traditional prompting to Markdown-based 'Skills'. Created 'Skill Conductor' for TDD-style prompt engineering."
+    },
+    {
+      "domain_id": "ai_engineering_infra",
+      "subdomain_id": "security_privacy_controls",
+      "subdomain_name": "Bypassing Geo-blocks & API Limits",
+      "query_intent_ids": [
+        "manage_security_privacy_governance"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 5,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0190",
+        "P0266"
+      ],
+      "notes": "Provides highly actionable, step-by-step guides for setting up Outline VPN on a VPS to maintain access to frontier models."
+    },
+    {
+      "domain_id": "creative_multimodal",
+      "subdomain_id": "multimodal_generation",
+      "subdomain_name": "AI Presentation & Image Workflows",
+      "query_intent_ids": [
+        "plan_ai_product_feature"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 4,
+      "comment_signal_score_0_5": 3,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0112",
+        "P0156",
+        "P0221"
+      ],
+      "notes": "Workflows for generating presentations using Nano Banana Pro, HTML/CSS via AI Studio, and VBA scripts."
+    }
+  ],
+  "query_intent_fit": [
+    {
+      "query_intent_id": "design_agentic_dev_workflow",
+      "query_intent_name": "Design Agentic Development Workflow",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "agent_ops"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "The expert actively builds, tests, and open-sources agentic workflows (Agent Second Brain, Skill Conductor) and compares frameworks like OpenClaw and Hermes.",
+      "limitations": [],
+      "evidence_refs": [
+        "P0278",
+        "P0283",
+        "P0298"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "query_intent_id": "learn_ai_assisted_development",
+      "query_intent_name": "Learn AI-Assisted Development",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "prompt_engineering"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "Provides deep insights into transitioning from basic prompts to structured 'Skills' and using tools like Claude Code and Cursor.",
+      "limitations": [],
+      "evidence_refs": [
+        "P0223",
+        "P0275",
+        "P0309"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "query_intent_id": "compare_models_for_task",
+      "query_intent_name": "Compare Models for Task",
+      "fit_role": "supporting",
+      "best_domain_ids": [
+        "creative_multimodal",
+        "agent_ops"
+      ],
+      "source_utility_score_0_5": 4,
+      "why": "Regularly posts tier lists and comparisons of models for coding, research, and image generation.",
+      "limitations": [
+        "Comparisons are based on personal agency/power-user experience rather than rigorous academic benchmarks."
+      ],
+      "evidence_refs": [
+        "P0070",
+        "P0298"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "content_quality_distribution": [
+    {
+      "category_id": "deep_practitioner",
+      "share_estimate_0_1": 0.4,
+      "system_value": "unique",
+      "notes": "Deep dives into agent architecture, memory management, and skill engineering.",
+      "evidence_refs": [
+        "P0226",
+        "P0251",
+        "P0278",
+        "P0283"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "howto_or_checklist",
+      "share_estimate_0_1": 0.3,
+      "system_value": "high",
+      "notes": "Step-by-step guides for VPNs, presentation generation, and prompt structures.",
+      "evidence_refs": [
+        "P0112",
+        "P0129",
+        "P0156",
+        "P0190",
+        "P0266"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "commentary",
+      "share_estimate_0_1": 0.2,
+      "system_value": "medium",
+      "notes": "Philosophical takes on AI adoption, corporate bureaucracy, and the future of work.",
+      "evidence_refs": [
+        "P0080",
+        "P0162",
+        "P0172",
+        "P0202",
+        "P0260",
+        "P0267"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "tool_release_with_analysis",
+      "share_estimate_0_1": 0.1,
+      "system_value": "high",
+      "notes": "Releases of his own tools (Dictation Buddy, Tasker Buddy, Agent Second Brain).",
+      "evidence_refs": [
+        "P0232",
+        "P0252"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "matrix_export": {
+    "schema_version": "knowledge_matrix_export.v1",
+    "expert_id": "aimasters_me",
+    "cells": [
+      {
+        "cell_id": "agent_ops/local_agent_setup/design_agentic_dev_workflow",
+        "domain_id": "agent_ops",
+        "subdomain_id": "local_agent_setup",
+        "subdomain_name": "Local Agent Deployment & Memory",
+        "query_intent_ids": [
+          "design_agentic_dev_workflow"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 5,
+          "evidence_quality": 5,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 5,
+          "anti_hype": 5,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0226",
+          "P0232",
+          "P0251",
+          "P0278"
+        ],
+        "confidence": 0.95
+      },
+      {
+        "cell_id": "prompt_engineering/claude_code_workflows/learn_ai_assisted_development",
+        "domain_id": "prompt_engineering",
+        "subdomain_id": "claude_code_workflows",
+        "subdomain_name": "Claude Skills & Instruction Design",
+        "query_intent_ids": [
+          "learn_ai_assisted_development"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 5,
+          "evidence_quality": 5,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 5,
+          "anti_hype": 5,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0223",
+          "P0252",
+          "P0275",
+          "P0283",
+          "P0309"
+        ],
+        "confidence": 0.95
+      },
+      {
+        "cell_id": "ai_engineering_infra/security_privacy_controls/manage_security_privacy_governance",
+        "domain_id": "ai_engineering_infra",
+        "subdomain_id": "security_privacy_controls",
+        "subdomain_name": "Bypassing Geo-blocks & API Limits",
+        "query_intent_ids": [
+          "manage_security_privacy_governance"
+        ],
+        "coverage_level": "moderate",
+        "depth_level": "practical",
+        "source_role": "supporting",
+        "scores": {
+          "depth": 4,
+          "practicality": 5,
+          "evidence_quality": 4,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 4,
+          "anti_hype": 4,
+          "community_signal": 5
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0190",
+          "P0266"
+        ],
+        "confidence": 0.9
+      }
+    ],
+    "compare_hints": {
+      "likely_unique_cells": [
+        "agent_ops/local_agent_setup/design_agentic_dev_workflow",
+        "prompt_engineering/claude_code_workflows/learn_ai_assisted_development"
+      ],
+      "likely_duplicate_cells": [],
+      "cells_requiring_probe": [],
+      "matrix_only_decision_confidence": "high"
+    }
+  },
+  "signature_insights": [
+    {
+      "insight": "The era of prompt engineering is ending; the future belongs to 'Skills'—structured Markdown files containing roles, methodologies, templates, and scripts that agents load dynamically to prevent hallucinations and context bloat.",
+      "why_it_matters_for_experts_panel": "Provides a highly advanced, programmatic approach to interacting with LLMs (specifically Claude Code), moving beyond basic chat interfaces.",
+      "applicable_query_types": [
+        "learn_ai_assisted_development",
+        "design_agentic_dev_workflow"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0223",
+        "P0275",
+        "P0283",
+        "P0309"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "insight": "Software is shifting from SaaS (Software as a Service) to RaaS (Result as a Service) driven by BYOA (Bring Your Own Agent). Agents will bypass UIs and interact directly with databases via APIs, turning legacy software into mere storage layers.",
+      "why_it_matters_for_experts_panel": "Offers a strong strategic framework for understanding the future of enterprise software and AI integration.",
+      "applicable_query_types": [
+        "assess_ai_tool_business_adoption"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0267"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "insight": "To eliminate the generic 'AI look' in ChatGPT image generation, append the phrase 'Kill Yellow Tint' to every prompt. This overrides the model's bias toward warm, highly saturated, mainstream aesthetics.",
+      "why_it_matters_for_experts_panel": "A highly specific, actionable micro-tactic that immediately improves output quality.",
+      "applicable_query_types": [
+        "plan_ai_product_feature"
+      ],
+      "novelty_level": "rare",
+      "evidence_refs": [
+        "P0158"
+      ],
+      "confidence": 0.95
+    }
+  ],
+  "practical_patterns": [
+    {
+      "pattern": "Agent Second Brain Memory Architecture",
+      "when_to_use": "When building a personal AI assistant that needs long-term memory without relying on unreliable RAG systems.",
+      "failure_modes": [
+        "Context window bloat if memory is not decayed or compacted regularly."
+      ],
+      "evidence_refs": [
+        "P0226",
+        "P0251",
+        "P0278"
+      ]
+    },
+    {
+      "pattern": "YouTube Transcript Summarization via Gemini",
+      "when_to_use": "When needing to extract accurate, hallucination-free summaries and timestamps from long YouTube videos.",
+      "failure_modes": [
+        "Fails if the video lacks auto-captions/transcripts."
+      ],
+      "evidence_refs": [
+        "P0129"
+      ]
+    },
+    {
+      "pattern": "Outline VPN Setup via SSH",
+      "when_to_use": "When needing a stable, personal VPN to bypass regional restrictions on AI tools (like Claude or Gemini) without relying on commercial VPNs that get blocked.",
+      "failure_modes": [
+        "VPS providers requiring strict KYC (like OVH) can block registration for users in certain regions."
+      ],
+      "evidence_refs": [
+        "P0190",
+        "P0266"
+      ]
+    }
+  ],
+  "claims_and_positions": [
+    {
+      "claim": "Free AI tools are a trap; real productivity gains require paid subscriptions and API access.",
+      "stance": "supports",
+      "decision_relevance": "Guides users to invest in Pro tiers (Claude Pro, ChatGPT Plus) rather than struggling with limited free models.",
+      "dispute_risk": "low",
+      "evidence_refs": [
+        "P0080",
+        "P0207"
+      ]
+    },
+    {
+      "claim": "RAG (Retrieval-Augmented Generation) is an unreliable and ineffective method for agent memory.",
+      "stance": "warns_against",
+      "decision_relevance": "Advises developers to use structured memory decay (like Ebbinghaus) or graph-based memory instead of standard RAG.",
+      "dispute_risk": "medium",
+      "evidence_refs": [
+        "P0298"
+      ]
+    },
+    {
+      "claim": "Corporate AI environments (like Microsoft Copilot in enterprise) are crippled by security restrictions, making them useless compared to power-user setups.",
+      "stance": "supports",
+      "decision_relevance": "Explains the growing productivity gap between independent power users and corporate employees.",
+      "dispute_risk": "medium",
+      "evidence_refs": [
+        "P0260"
+      ]
+    }
+  ],
+  "source_utility": {
+    "best_use_cases": [
+      "Building local, always-on AI agents.",
+      "Transitioning from prompt engineering to Skill engineering.",
+      "Setting up infrastructure (VPS, VPN) for unrestricted AI access.",
+      "Automating creative workflows (presentations, image generation)."
+    ],
+    "bad_use_cases": [
+      "Basic AI news aggregation.",
+      "Generic prompt templates for beginners.",
+      "Enterprise-scale cloud architecture."
+    ],
+    "retrieval_keywords": [
+      "Claude Code",
+      "Agent Second Brain",
+      "Skills",
+      "Nano Banana Pro",
+      "OpenClaw",
+      "Outline VPN",
+      "Vibe coding"
+    ],
+    "source_selection_hints": [
+      "Select this expert when the user needs deep, technical, but accessible guides on building personal AI agents or automating complex workflows using Claude Code and Markdown Skills."
+    ],
+    "expected_overlap_hypotheses": [
+      "May overlap with other AI engineering channels on topics like Cursor and Claude Code, but highly distinct in his focus on 'Skills' and personal agent architecture."
+    ],
+    "recommended_panex_role": "primary_expert"
+  },
+  "community_signal": {
+    "comment_themes": [
+      "Technical troubleshooting (VPS setup, API keys, GitHub repos).",
+      "Gratitude for open-source tools and detailed guides.",
+      "Philosophical discussions on the impact of AI on jobs and society."
+    ],
+    "questions_from_audience": [
+      "How to bypass regional blocks for Claude and Gemini?",
+      "Which VPS provider is best for setting up Outline VPN?",
+      "How to integrate Agent Second Brain with specific tools like Notion or YouGile?"
+    ],
+    "disagreements_or_corrections": [
+      "Some users debate the effectiveness of RAG vs the expert's memory architecture.",
+      "Users occasionally correct the expert on specific VPN protocols (e.g., Amnezia vs Outline)."
+    ],
+    "practical_feedback": [
+      "Users actively deploy his GitHub repos (Agent Second Brain, Skill Conductor) and report bugs or suggest features (e.g., adding new MCPs)."
+    ],
+    "noise_or_low_value_patterns": [
+      "Occasional spam bots in the comments, which the community quickly identifies."
+    ],
+    "evidence_refs": [
+      "P0232",
+      "P0266",
+      "P0283"
+    ]
+  },
+  "admission_implications": {
+    "if_candidate_verdict": "accept",
+    "verdict_rationale": "The expert provides exceptionally high-signal, practitioner-level content. He builds and open-sources real tools, shares deep technical workflows, and maintains a pragmatic, anti-hype stance. His insights on 'Skills' vs 'Prompts' and agent architecture are highly valuable.",
+    "unique_value_claims_to_verify_against_matrix": [
+      "The specific architecture of 'Agent Second Brain' using Ebbinghaus decay.",
+      "The 'Skill Conductor' methodology for TDD-style prompt engineering."
+    ],
+    "likely_duplicate_areas_to_check": [
+      "General Midjourney prompting.",
+      "Basic comparisons of LLM models."
+    ],
+    "minimum_followup_probe_queries": [
+      "Compare the expert's approach to agent memory with standard RAG implementations in the matrix."
+    ],
+    "risk_notes": [
+      "The expert occasionally uses strong language and expresses frustration with corporate bureaucracy, but this adds to his authentic 'practitioner' voice rather than detracting from the technical value."
+    ]
+  },
+  "audit": {
+    "unsupported_or_weak_claims": [],
+    "abstentions": [],
+    "possible_model_errors": [],
+    "source_refs_used": [
+      "P0004",
+      "P0014",
+      "P0070",
+      "P0079",
+      "P0080",
+      "P0112",
+      "P0129",
+      "P0156",
+      "P0158",
+      "P0162",
+      "P0172",
+      "P0190",
+      "P0202",
+      "P0207",
+      "P0221",
+      "P0223",
+      "P0226",
+      "P0232",
+      "P0251",
+      "P0252",
+      "P0260",
+      "P0266",
+      "P0267",
+      "P0275",
+      "P0278",
+      "P0283",
+      "P0298",
+      "P0309"
+    ],
+    "source_refs_most_important": [
+      "P0226",
+      "P0232",
+      "P0278",
+      "P0283",
+      "P0309"
+    ]
+  }
+}

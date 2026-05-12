@@ -1,0 +1,63 @@
+{
+  "schema_version": "candidate_admission_report.v0.1",
+  "created_at": "2026-05-12",
+  "candidate_id": "aimasters_me",
+  "display_name": "Aimasters.Me",
+  "channel_username": "@aimastersme",
+  "verdict": "accept",
+  "decision_mode": "manual_human_review",
+  "based_on": {
+    "semantic_passport": "output/expert_admission/semantic_passports/aimasters_me/output_with_comments/aimasters_me_semantic_passport.normalized.json",
+    "candidate_impact_report": "output/expert_admission/candidates/aimasters_me/candidate_impact_report.md",
+    "semantic_arbitration_report": null,
+    "manual_overlap_review": "comment-backed passport plus deterministic matrix preflight; accepted despite overlap-heavy warning because it adds one clean creative/multimodal gap and two strong adjacent practitioner viewpoints"
+  },
+  "preflight_summary": {
+    "candidate_cells_from_matrix_export": 4,
+    "fills_gap": 1,
+    "adds_adjacent_viewpoint": 2,
+    "deepens_existing_cell": 0,
+    "needs_probe": 1,
+    "likely_duplicate": 0,
+    "taxonomy_extensions": 0,
+    "exact_overlaps": 0,
+    "related_overlaps": 3,
+    "overlap_heavy_caveat": true,
+    "clean_gap_count": 1,
+    "dense_overlap_cells": 2,
+    "preliminary_recommendation": "overlap_heavy_needs_stronger_review"
+  },
+  "accepted_cells": [
+    {
+      "cell_id": "creative_multimodal/multimodal_generation/plan_ai_product_feature",
+      "classification": "fills_gap",
+      "admission_interpretation": "accepted_as_clean_gap_for_ai_presentation_image_and_creative_multimodal_workflows"
+    },
+    {
+      "cell_id": "agent_ops/local_agent_setup/design_agentic_dev_workflow",
+      "classification": "adds_adjacent_viewpoint",
+      "admission_interpretation": "accepted_as_local_personal_agent_setup_depth_with_platform_risk_caveat"
+    },
+    {
+      "cell_id": "prompt_engineering/claude_code_workflows/learn_ai_assisted_development",
+      "classification": "adds_adjacent_viewpoint",
+      "admission_interpretation": "accepted_as_strong_skills_and_claude_code_instruction_design_viewpoint_inside_existing_prompt_engineering_coverage"
+    },
+    {
+      "cell_id": "ai_engineering_infra/security_privacy_controls/manage_security_privacy_governance",
+      "classification": "needs_probe",
+      "admission_interpretation": "do_not_use_as_general_security_or_enterprise_governance_authority; keep only as practical platform_access_and_risk_context"
+    }
+  ],
+  "taxonomy_updates": [],
+  "routing_notes": [
+    "Strong fit for Claude Skills, Skill Conductor, Agent Second Brain, personal/local agent setup, and practical packaging of expertise into reusable AI workflows.",
+    "Useful for creative and marketing AI workflows, especially AI presentations, image workflows, and multimodal production patterns.",
+    "Community signal is now available in DB and packet; sampled comments under Agent Second Brain / Outline VPN / Skill Conductor posts show troubleshooting, deployment feedback, gratitude for open-source tools, and practical questions. The Gemini passport summarizes this signal but does not cite concrete .C comment refs.",
+    "Deterministic preflight is overlap-heavy, so route him as a complement in agent/prompt areas rather than as the default generic coding-agent expert.",
+    "Do not route as a deep backend architecture, local-LLM infrastructure, enterprise governance, or security/compliance source.",
+    "Treat platform bypass and restriction-workaround posts as platform-risk content, not enterprise-safe recommendations."
+  ],
+  "recommended_manifest_caveat": "accepted as Skills / personal-local agent / creative-multimodal workflow expert; comments are available and sampled DB evidence shows troubleshooting/tool-use feedback, though the Gemini passport did not cite concrete .C comment refs; overlap-heavy with existing agent/prompt experts, so use as complementary source for Claude Skills, Agent Second Brain, local agent setup, and AI presentation/image workflows; treat platform bypass posts as platform-risk and avoid routing for deep backend architecture, enterprise governance, generic security/compliance, or generic model news",
+  "next_action": "proceed_as_accepted_in_semantic_knowledge_matrix_and_local_experts_panel_system_with_strict_routing_caveat"
+}

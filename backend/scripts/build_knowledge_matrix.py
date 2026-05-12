@@ -100,6 +100,7 @@ CORE_QUERY_INTENT_IDS = {
 
 DOMAIN_ALIASES = {
     "ai_business_adoption": "business_adoption",
+    "ai_coding_ides": "coding_agents",
 }
 
 SUBDOMAIN_ALIASES: dict[str, str] = {
@@ -144,6 +145,12 @@ TAXONOMY_DECISIONS = [
         "kind": "domain",
         "decision": "alias_to_business_adoption",
         "rationale": "The existing business_adoption domain already covers business workflows and adoption economics.",
+    },
+    {
+        "value": "ai_coding_ides",
+        "kind": "domain",
+        "decision": "alias_to_coding_agents",
+        "rationale": "Aimasters.Me uses this label for Cursor/vibe-coding/tool-choice coverage already represented by the existing coding_agents domain.",
     },
     {
         "value": "architecture",

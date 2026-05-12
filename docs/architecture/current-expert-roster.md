@@ -1,7 +1,7 @@
 # Current Expert Roster
 
 **Status:** Production snapshot
-**Last updated:** 2026-05-04
+**Last updated:** 2026-05-12
 
 This file documents the active expert roster and the places that must stay in sync when experts are added, removed, or regrouped.
 
@@ -54,6 +54,7 @@ spellings to backend `expert_id` values before calling the Agent Context CLI.
 | `air_ai` | Air | `realtimeforai` |
 | `silicbag` | SilicBag | `prompt_design` |
 | `kornish` | Kornishev | `NGI_ru` |
+| `aimasters_me` | Aimasters | `aimastersme` |
 
 ### Knowledge Hub
 

@@ -44,8 +44,13 @@ else
 fi
 
 # Set Environment Variables for Scripts
-export DATABASE_URL="sqlite:///backend/data/experts.db"
+export DATABASE_URL="sqlite:///$(pwd)/backend/data/experts.db"
 export PYTHONPATH=$PYTHONPATH:$(pwd)/backend
+PYTHON_BIN="${PYTHON_BIN:-backend/.venv/bin/python}"
+
+if [ ! -x "$PYTHON_BIN" ]; then
+    PYTHON_BIN="python3"
+fi
 
 echo -e "${GREEN}🚀 STARTING NEW EXPERT REGISTRATION PROCESS${NC}"
 echo "--------------------------------------------------------"
@@ -58,7 +63,7 @@ echo "--------------------------------------------------------"
 # 1. Register Expert (Metadata + Posts + Sync State)
 echo -e "\n${YELLOW}📝 Step 1: Registering expert and importing posts...${NC}"
 # add_expert.py now automatically initializes sync_state
-python3 backend/tools/add_expert.py "$EXPERT_ID" "$DISPLAY_NAME" "$USERNAME" "$JSON_PATH"
+"$PYTHON_BIN" backend/tools/add_expert.py "$EXPERT_ID" "$DISPLAY_NAME" "$USERNAME" "$JSON_PATH"
 
 # 2. Sync Comments & Prepare Drift Analysis
 echo -e "\n${YELLOW}💬 Step 2: Fetching ALL comments for the new expert...${NC}"
@@ -68,7 +73,7 @@ echo "Also automatically creates 'pending' drift analysis records."
 
 # We pass TELEGRAM_CHANNEL explicitly as required by sync_channel.py
 # We use '|| true' to prevent the script from stopping if sync encounters a minor error (like a single post failure)
-TELEGRAM_CHANNEL="$USERNAME" python3 backend/sync_channel.py --expert-id "$EXPERT_ID" --depth 2000 || true
+TELEGRAM_CHANNEL="$USERNAME" "$PYTHON_BIN" backend/sync_channel.py --expert-id "$EXPERT_ID" --depth 2000 || true
 
 echo -e "\n${GREEN}✅ Expert registration and initial sync complete!${NC}"
 echo "--------------------------------------------------------"

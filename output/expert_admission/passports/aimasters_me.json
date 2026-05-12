@@ -1,0 +1,161 @@
+{
+  "channel_username": "aimastersme",
+  "coverage": {
+    "agent_ops": 62,
+    "ai_engineering_infra": 10,
+    "ai_product_pm": 37,
+    "ai_ux_workflow": 20,
+    "business_adoption": 31,
+    "coding_agents": 63,
+    "creative_multimodal": 10,
+    "evals_quality": 9,
+    "general_ai_news": 3,
+    "model_landscape": 166,
+    "rag_retrieval_knowledge": 4,
+    "security_privacy_governance": 24
+  },
+  "coverage_strength": {
+    "agent_ops": "strong",
+    "ai_engineering_infra": "thin",
+    "ai_product_pm": "medium",
+    "ai_ux_workflow": "medium",
+    "business_adoption": "medium",
+    "coding_agents": "strong",
+    "creative_multimodal": "thin",
+    "evals_quality": "thin",
+    "general_ai_news": "thin",
+    "model_landscape": "strong",
+    "rag_retrieval_knowledge": "thin",
+    "security_privacy_governance": "medium"
+  },
+  "date_range": {
+    "first_post": "2024-02-19",
+    "last_post": "2026-05-06"
+  },
+  "depth_profile": {
+    "announcement_or_news": 49,
+    "architecture_analysis": 33,
+    "benchmark_or_eval": 8,
+    "case_study": 21,
+    "howto_or_checklist": 126,
+    "low_signal": 39,
+    "practitioner_experience": 37,
+    "tool_release": 9
+  },
+  "display_name": "Aimasters.Me",
+  "embedding_count": 307,
+  "embedding_coverage_ratio": 1.0,
+  "expert_id": "aimasters_me",
+  "fts_count": 307,
+  "metadata_coverage_ratio": 0.0,
+  "metadata_valid_count": 0,
+  "post_count": 322,
+  "representative_posts": [
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "evals_quality",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-16",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "Бенчмарки. **Краткая сводка статьи:** > Вышла Claude Opus 4.7 — главное улучшение в сложном кодинге, теперь можно доверять самые трудные задачи без присмотра. > > Что нового: > - Лучше следует инструкциям (старые промпты могут давать неожиданный результат — надо перенастраивать) > - Видит изображения в 3× большем ра...",
+      "reason": "coding_agents, evals_quality, model_landscape; depth=benchmark_or_eval",
+      "telegram_message_id": 563
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "model_landscape"
+      ],
+      "created_at": "2026-05-01",
+      "depth_label": "case_study",
+      "excerpt": "**Creative Director Skill v.2** https://github.com/smixs/creative-director-skill Обновил и улучшил навык креативного директора для поиска идей и разработки рекламного креатива. Теперь скилл включает базу из победителей рекламных фестивалей с 1950 по 2025 (571 кейс). Спасибо за это Паше Д. 😍 Установка: сбросить ссылк...",
+      "reason": "coding_agents, agent_ops, model_landscape; depth=case_study",
+      "telegram_message_id": 577
+    },
+    {
+      "coverage_labels": [
+        "ai_product_pm",
+        "model_landscape",
+        "creative_multimodal"
+      ],
+      "created_at": "2026-03-29",
+      "depth_label": "case_study",
+      "excerpt": "**Tinker - приложение для генерации контента** *сейчас мало кого этим удивишь* Картинки, видосы, лого - это всё уже было. Но меня удивил Shopify (платформа для онлайн-магазинов) - выпустили **совершенно бесплатное приложение **[Tinker](https://tinker.com/)** для генерации контента.** Формально - под магазины. Но мы-...",
+      "reason": "ai_product_pm, model_landscape, creative_multimodal; depth=case_study",
+      "telegram_message_id": 543
+    },
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "ai_ux_workflow"
+      ],
+      "created_at": "2026-05-05",
+      "depth_label": "practitioner_experience",
+      "excerpt": "**🧠 Пора раз и навсегда разобраться в скиллах и начать строить из них настоящих AI-ассистентов!** — особенно если вы до сих пор живёте одними промптами. Многие обыватели до сих пор думают, что весь процесс взаимодействия с нейросетью — это «правильно сформулированный запрос». Чем длиннее и хитрее, тем лучше. На само...",
+      "reason": "agent_ops, ai_ux_workflow; depth=practitioner_experience",
+      "telegram_message_id": 578
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "security_privacy_governance",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-29",
+      "depth_label": "howto_or_checklist",
+      "excerpt": "После запрета Anthropic на использование их подписки в сторонних агентах прошло 3 недели. **Все это время я гонял разные harness и ботов, чтобы найти лучшего персонального агента. **Мой честный разбор **Связки которые зашли** [OpenClaw](https://github.com/openclaw/openclaw) + GPT-5.5 - задачи делает чётко. Но стиль...",
+      "reason": "coding_agents, agent_ops, security_privacy_governance; depth=howto_or_checklist",
+      "telegram_message_id": 576
+    },
+    {
+      "coverage_labels": [
+        "evals_quality",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-07",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "Бенчмарки новой модели Anthropic Mythos поражают, мягко говоря.",
+      "reason": "evals_quality, model_landscape; depth=benchmark_or_eval",
+      "telegram_message_id": 552
+    },
+    {
+      "coverage_labels": [
+        "model_landscape"
+      ],
+      "created_at": "2026-04-15",
+      "depth_label": "architecture_analysis",
+      "excerpt": "Anthropic готовит к выходу Claude Opus 4.7, плюс новый AI-тул для дизайна сайтов и презентаций. По сообщению [The Information,](https://www.theinformation.com/briefings/exclusive-anthropic-preps-opus-4-7-model-ai-design-tool) могут выкатить уже на этой неделе @aimastersme",
+      "reason": "model_landscape; depth=architecture_analysis",
+      "telegram_message_id": 560
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-11",
+      "depth_label": "architecture_analysis",
+      "excerpt": "**Что делать тем, кто хочет толкового ассистента типа OpenClaw после бана ** Недавно Anthropic [забанили](https://t.me/aimastersme/550) всех крупных агентов на своей подписке. Теперь только оплата за каждый токен - дорого! За неделю прогнал почти все доступные модели через два агентских фреймворка - [OpenClaw](https...",
+      "reason": "coding_agents, agent_ops, model_landscape; depth=architecture_analysis",
+      "telegram_message_id": 559
+    }
+  ],
+  "runtime_readiness": {
+    "embeddings_ready": true,
+    "fts_ready": true,
+    "metadata_advisory_ready": false,
+    "text_posts_ready": true
+  },
+  "text_post_count": 307,
+  "top_concepts": [],
+  "top_keywords": [],
+  "top_primary_topics": [],
+  "warnings": [
+    "aimasters_me: no valid post_metadata; coverage is text-only"
+  ]
+}
