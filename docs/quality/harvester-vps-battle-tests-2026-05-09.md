@@ -60,6 +60,13 @@ enforces this at final-report time: URLs without a matching `./extracts/<id>.md`
 are labeled `search_only_unverified`, surfaced in `citation_integrity`, and
 mark the completed job as degraded.
 
+Second-pass citation hardening tightens that policy further: unrepaired
+unverified URLs are removed from the normal `## References` / `## Sources`
+list and moved into the `## Citation Integrity` warning block as excluded
+search-only reference lines. Inline/body mentions are still preserved but
+marked with `search_only_unverified`. This keeps failed extracts useful as
+leads without letting them look like extract-backed evidence.
+
 ### 2. Deep Research Is Too Slow For Default Daily Use
 
 Completed jobs took roughly 12-18.5 minutes. One job exceeded 20 minutes and
@@ -761,6 +768,94 @@ failures and `grep` no-match exits, not delegated-tool routing failures.
 The remaining product gap is therefore extraction/citation reliability for
 hard-to-fetch sources such as Medium, not command routing.
 
+## Follow-Up: Unverified Reference Demotion
+
+The next citation-quality slice tightened the final report contract for failed
+extracts. Previously, unrepaired URLs stayed in the normal `## References`
+section with a `search_only_unverified` marker. That was visible, but still too
+easy for a reader or parent agent to treat as a normal citation.
+
+New behavior:
+
+- URLs without matching extract files still run through the bounded repair
+  pass first.
+- If repair succeeds, the URL becomes normal extract-backed evidence.
+- If repair fails and the URL is in a normal `## References`, `## Sources`,
+  `## Bibliography`, or `## Links` section, that reference line is removed from
+  the main source list.
+- Removed lines are preserved under `## Citation Integrity` as
+  `Excluded References`, with `excluded_reference_lines` in
+  `citation_integrity`.
+- Inline/body mentions are not deleted, but they are marked
+  `search_only_unverified`.
+
+Verification:
+
+```text
+local focused tests:
+  tests/test_orchestrator_finalize.py
+  tests/test_orchestrator_modes.py
+  tests/test_research_terminal_guard.py
+  36 passed
+
+VPS full container tests:
+  56 passed, 1 skipped
+
+VPS health:
+  ok
+
+Hermes hooks doctor:
+  all hooks healthy
+```
+
+Operational note: the VPS rebuild again pulled a fresh
+`nousresearch/hermes-agent:latest` digest. The overlay still passed, but this
+reinforces the existing risk that `latest` can change behavior underneath us.
+
+## Follow-Up: Alternate-Source Retry
+
+The next extraction-quality slice reduces degraded reports when a cited source
+is relevant but the original URL cannot be extracted.
+
+New behavior:
+
+- Finalization still starts with the strict citation contract.
+- For each unverified URL, the adapter first tries to extract the exact cited
+  URL.
+- If that exact extract fails, the adapter derives a search query from the
+  reference line or URL path, calls `/search`, and tries replacement candidates.
+- The report URL is rewritten only if the replacement URL has a saved
+  `./extracts/<id>.md` artifact.
+- Successful replacements are recorded in `citation_integrity.replaced_urls`;
+  the replacement URL is also listed in `citation_integrity.repaired_urls`.
+- This is a mechanical repair step, not another LLM summary/reduce pass.
+
+Verification:
+
+```text
+local focused tests:
+  tests/test_orchestrator_finalize.py
+  12 passed
+
+local nearby suite:
+  tests/test_orchestrator_finalize.py
+  tests/test_orchestrator_modes.py
+  tests/test_research_terminal_guard.py
+  37 passed
+
+VPS nearby suite:
+  37 passed
+
+VPS full container suite:
+  57 passed, 1 skipped
+
+VPS health:
+  ok
+
+Hermes hooks doctor:
+  all hooks healthy
+```
+
 ## Verdict
 
 The VPS deployment is operational, but not yet "strict research grade".
@@ -810,9 +905,13 @@ The VPS deployment is operational, but not yet "strict research grade".
 
 **Риск:**
 
-- Final reports may still contain search-only URLs when repair extraction fails,
-  but the adapter now labels them `search_only_unverified`; product surfaces
-  must make that warning visible.
+- Final reports may still mention search-only URLs when repair extraction
+  fails, but normal reference-list entries are now demoted into the
+  `Citation Integrity` warning block instead of staying beside extract-backed
+  references.
+- Failed exact-URL extracts can now be repaired by an alternate-source retry,
+  but only if `/search` returns a candidate that can be extracted successfully.
+  Otherwise the report remains degraded and visibly marked.
 - Global subagents can still violate workflow discipline unless their
   instructions enforce terminal Harvester status before final delivery.
 - `mode=deep` can still exceed a normal interactive waiting budget, especially
@@ -833,6 +932,6 @@ Continue hardening before broader product use:
 2. Consider optional `round1.md` / `critic_factcheck.md` artifacts if
    `partial_report.md` is useful but too coarse.
 3. Keep `mode=deep` reserved for explicit deep-research requests.
-4. For extraction/citation quality, next investigate whether failed extracts
-   should be excluded earlier or retried through alternate sources before final
-   synthesis.
+4. For extraction/citation quality, collect a few real degraded reports after
+   alternate-source retry and compare whether `replaced_urls` reduces visible
+   citation degradation without introducing weaker substitute sources.

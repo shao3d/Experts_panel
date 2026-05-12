@@ -110,8 +110,14 @@ def test_finalize_marks_unverified_report_citations(tmp_path):
         "verified_urls": 1,
         "unverified_urls": 1,
         "unverified": [unverified_url],
+        "excluded_reference_lines": [
+            "[2] Search-only - https://example.com/search-only"
+        ],
     }
-    assert f"{unverified_url} [search_only_unverified]" in job.report
+    report_body = job.report.split("## Citation Integrity", 1)[0]
+    assert "[2] Search-only - https://example.com/search-only" not in report_body
+    assert "Excluded search-only reference lines: 1" in job.report
+    assert f"- [2] Search-only - {unverified_url}" in job.report
     assert "## Citation Integrity" in job.report
     assert "Search-only/unverified URLs: 1" in job.report
     assert (workspace / "report.md").read_text(encoding="utf-8") == job.report
@@ -120,6 +126,33 @@ def test_finalize_marks_unverified_report_citations(tmp_path):
     assert done.payload["degraded"] is True
     assert done.payload["note"] == job.error
     assert done.payload["citation_integrity"] == job.citation_integrity
+
+
+def test_finalize_marks_unverified_inline_urls_without_dropping_body_text(tmp_path):
+    unverified_url = "https://example.com/search-only"
+
+    with _event_loop() as loop:
+        orch = _orchestrator(tmp_path)
+        workspace = tmp_path / "job"
+        workspace.mkdir()
+        (workspace / "report.md").write_text(
+            f"# Final report\n\nThis caveat mentions {unverified_url} inline.\n",
+            encoding="utf-8",
+        )
+        job = Job(id="job", query="q", status=JobStatus.running, workspace_path=workspace)
+
+        loop.run_until_complete(orch._finalize_success(job))
+
+    assert job.status == JobStatus.completed
+    assert job.error == "citation contract degraded - unverified citations: 1"
+    assert f"{unverified_url} [search_only_unverified]" in job.report
+    assert "Excluded search-only reference lines" not in job.report
+    assert job.citation_integrity == {
+        "total_urls": 1,
+        "verified_urls": 0,
+        "unverified_urls": 1,
+        "unverified": [unverified_url],
+    }
 
 
 def test_standard_finalize_repairs_unverified_report_citations(tmp_path):
@@ -221,6 +254,79 @@ def test_deep_finalize_also_repairs_unverified_report_citations(tmp_path):
         "repaired_urls": [repaired_url],
     }
     assert "search_only_unverified" not in job.report
+    done = [event for event in job.events if event.type == "done"][-1]
+    assert "degraded" not in done.payload
+    assert done.payload["citation_integrity"] == job.citation_integrity
+
+
+def test_finalize_replaces_unextractable_citation_with_extract_backed_alternate(tmp_path):
+    original_url = "https://blocked.example.com/useful-source"
+    alternate_url = "https://mirror.example.com/useful-source"
+    repair_attempts = []
+
+    async def repairer(url, workspace):
+        repair_attempts.append(url)
+        if url == original_url:
+            return False
+        if url == alternate_url:
+            extracts_dir = workspace / "extracts"
+            extracts_dir.mkdir(parents=True, exist_ok=True)
+            extract_id = hashlib.md5(url.encode("utf-8")).hexdigest()[:16]
+            (extracts_dir / f"{extract_id}.md").write_text(
+                "alternate extracted source",
+                encoding="utf-8",
+            )
+            return True
+        return False
+
+    async def search_alternates(query):
+        assert query == "Useful source title"
+        return [
+            {"url": original_url, "title": "same blocked result"},
+            {"url": alternate_url, "title": "extractable alternate"},
+        ]
+
+    with _event_loop() as loop:
+        orch = Orchestrator(
+            hermes_bin="hermes",
+            skills=["searcharvester-standard-research"],
+            jobs_dir=tmp_path,
+            env={},
+            timeout_sec=5,
+            citation_repairer=repairer,
+        )
+        orch._search_alternate_candidates = search_alternates  # type: ignore[method-assign]
+        workspace = tmp_path / "job"
+        workspace.mkdir()
+        (workspace / "report.md").write_text(
+            "# Final report\n\nClaim [1].\n\n"
+            f"## References\n[1] Useful source title - {original_url}\n",
+            encoding="utf-8",
+        )
+        job = Job(
+            id="job",
+            query="q",
+            mode="standard",
+            status=JobStatus.running,
+            workspace_path=workspace,
+        )
+
+        loop.run_until_complete(orch._finalize_success(job))
+
+    assert repair_attempts == [original_url, alternate_url]
+    assert job.status == JobStatus.completed
+    assert job.error is None
+    assert original_url not in job.report
+    assert alternate_url in job.report
+    assert "search_only_unverified" not in job.report
+    assert job.citation_integrity == {
+        "total_urls": 1,
+        "verified_urls": 1,
+        "unverified_urls": 0,
+        "unverified": [],
+        "repaired_urls": [alternate_url],
+        "replaced_urls": [{"from": original_url, "to": alternate_url}],
+    }
     done = [event for event in job.events if event.type == "done"][-1]
     assert "degraded" not in done.payload
     assert done.payload["citation_integrity"] == job.citation_integrity

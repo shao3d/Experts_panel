@@ -1,7 +1,7 @@
 # Harvester VPS Deploy Runbook
 
 **Status:** Active sidecar runbook
-**Last updated:** 2026-05-10
+**Last updated:** 2026-05-12
 **Scope:** Searcharvester/Harvester stack on the InterServer VPS for web search,
 extraction, and Hermes deep research through Vertex AI.
 
@@ -406,7 +406,11 @@ Broader live battle-test report:
   missing/source-ID-only URLs and markdown-wrapped URL edge cases. Standard-mode
   finalization also runs a bounded citation repair pass: if the report cites an
   unextracted URL, the adapter tries to extract it before marking the job
-  degraded. This now applies to completed `standard` and `deep` reports.
+  degraded. If that exact URL cannot be extracted, the adapter can run a
+  mechanical alternate-source retry: build a search query from the reference
+  line or URL path, call `/search`, try to extract replacement candidates, and
+  rewrite the report URL only after the replacement has a saved extract file.
+  This now applies to completed `standard` and `deep` reports.
 
 ## Public Exposure Check
 
@@ -444,9 +448,19 @@ Expected:
   cited without extract files`.
   - The current overlay/live adapter enforces this at final-report time:
     URLs in `report.md` without a matching `./extracts/<id>.md` first go
-    through a bounded repair pass; unrepaired URLs are labeled
-    `search_only_unverified`, surfaced in `citation_integrity`, and mark the
-    completed job as degraded.
+    through a bounded repair pass. The pass first tries to extract the exact
+    URL; if that fails, it can search for a replacement candidate and extract
+    that instead. Replacements are only written into the report after the new
+    URL is extract-backed, and are surfaced as `replaced_urls` in
+    `citation_integrity`.
+  - URLs still unrepaired after the exact-URL and alternate-source attempts are
+    labeled `search_only_unverified`, surfaced in `citation_integrity`, and
+    mark the completed job as degraded.
+  - Unrepaired unverified URLs are also demoted out of normal `## References`
+    / `## Sources` sections into the `## Citation Integrity` warning block as
+    excluded search-only reference lines. Inline mentions are preserved and
+    marked, but failed extracts should no longer sit beside extract-backed
+    references as if they were equivalent evidence.
   - Treat degraded citation integrity as a research-quality warning, not an
     infra failure.
 - Standard reports must cite extracted/read sources by their original source
@@ -509,7 +523,9 @@ Expected:
 - The adapter image inherits from `nousresearch/hermes-agent:latest`, which is
   mutable. A future rebuild can pull a different upstream Hermes image and
   change behavior. For repeatable production, pin image digests or preserve a
-  known-good deploy archive.
+  known-good deploy archive. This was observed again during the
+  2026-05-12 citation-demotion deploy: the overlay still passed
+  `56 passed, 1 skipped`, but the base image digest changed.
 
 ## Security Notes
 

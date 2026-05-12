@@ -52,6 +52,7 @@ DEFAULT_MAX_REPORT_CHARS_BY_MODE: dict[str, int] = {
     "deep": 20000,
 }
 CITATION_REPAIR_MAX_URLS = 8
+CITATION_ALTERNATE_SEARCH_MAX_RESULTS = 6
 PARTIAL_REPORT_MAX_SUBAGENTS = 12
 PARTIAL_REPORT_MAX_EXTRACTS = 30
 PARTIAL_REPORT_SNIPPET_CHARS = 1800
@@ -883,16 +884,20 @@ class Orchestrator:
     ) -> None:
         notes = list(notes or [])
         repair_result = await self._repair_unverified_citations(job, report)
+        report_for_contract = repair_result.get("report", report) if repair_result else report
         job.report, job.citation_integrity = _enforce_citation_contract(
-            report, job.workspace_path
+            report_for_contract, job.workspace_path
         )
         if repair_result:
             repaired = repair_result.get("repaired", [])
             failed = repair_result.get("failed", [])
+            replaced = repair_result.get("replaced", [])
             if repaired:
                 job.citation_integrity["repaired_urls"] = repaired
             if failed:
                 job.citation_integrity["repair_failed_urls"] = failed
+            if replaced:
+                job.citation_integrity["replaced_urls"] = replaced
         if job.citation_integrity and job.citation_integrity["unverified_urls"] > 0:
             notes.append(
                 f"{CITATION_DEGRADED_PREFIX}: "
@@ -938,7 +943,7 @@ class Orchestrator:
 
     async def _repair_unverified_citations(
         self, job: Job, report: str
-    ) -> dict[str, list[str]]:
+    ) -> dict[str, Any]:
         if (
             not self._citation_repair_enabled
             or job.workspace_path is None
@@ -952,6 +957,9 @@ class Orchestrator:
 
         repaired: list[str] = []
         failed: list[str] = []
+        replaced: list[dict[str, str]] = []
+        updated_report = report
+        existing_urls = _extract_unique_urls(report)
         for url in unverified[:CITATION_REPAIR_MAX_URLS]:
             try:
                 ok = await self._citation_repairer(url, job.workspace_path)
@@ -960,12 +968,87 @@ class Orchestrator:
                 ok = False
             if ok:
                 repaired.append(url)
-            else:
-                failed.append(url)
+                continue
+
+            alternate = await self._find_and_extract_alternate_citation(
+                url=url,
+                report=updated_report,
+                workspace_path=job.workspace_path,
+                existing_urls=existing_urls,
+            )
+            if alternate:
+                updated_report = _replace_report_url(updated_report, url, alternate)
+                existing_urls.discard(url)
+                existing_urls.add(alternate)
+                repaired.append(alternate)
+                replaced.append({"from": url, "to": alternate})
+                continue
+
+            failed.append(url)
 
         if len(unverified) > CITATION_REPAIR_MAX_URLS:
             failed.extend(unverified[CITATION_REPAIR_MAX_URLS:])
-        return {"repaired": repaired, "failed": failed}
+        result: dict[str, Any] = {"repaired": repaired, "failed": failed}
+        if replaced:
+            result["replaced"] = replaced
+            result["report"] = updated_report
+        return result
+
+    async def _find_and_extract_alternate_citation(
+        self,
+        *,
+        url: str,
+        report: str,
+        workspace_path: Path,
+        existing_urls: set[str],
+    ) -> str | None:
+        query = _alternate_search_query(report, url)
+        if not query:
+            return None
+
+        candidates = await self._search_alternate_candidates(query)
+        for candidate in candidates:
+            candidate_url = _clean_report_url(str(candidate.get("url") or ""))
+            if not _is_alternate_candidate_url(candidate_url, url, existing_urls):
+                continue
+            try:
+                ok = await self._citation_repairer(candidate_url, workspace_path)
+            except Exception:
+                logger.debug(
+                    "alternate citation extraction failed for %s", candidate_url,
+                    exc_info=True,
+                )
+                ok = False
+            if ok:
+                return candidate_url
+        return None
+
+    async def _search_alternate_candidates(self, query: str) -> list[dict[str, Any]]:
+        import aiohttp
+
+        base = self._adapter_url.rstrip("/")
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    f"{base}/search",
+                    json={
+                        "query": query,
+                        "max_results": CITATION_ALTERNATE_SEARCH_MAX_RESULTS,
+                        "include_raw_content": False,
+                    },
+                    timeout=aiohttp.ClientTimeout(total=45),
+                ) as resp:
+                    if resp.status != 200:
+                        return []
+                    data = await resp.json()
+        except Exception:
+            logger.debug("alternate citation search failed for %r", query, exc_info=True)
+            return []
+
+        results = data.get("results") if isinstance(data, dict) else None
+        if not isinstance(results, list):
+            return []
+        return [item for item in results if isinstance(item, dict)]
 
     async def _extract_url_to_workspace(self, url: str, workspace_path: Path) -> bool:
         import aiohttp
@@ -1257,9 +1340,65 @@ def _enforce_citation_contract(
     if not unverified:
         return report, integrity
 
-    marked = _mark_unverified_report_urls(report, set(unverified))
+    demoted, excluded_lines = _demote_unverified_reference_lines(
+        report, set(unverified)
+    )
+    if excluded_lines:
+        integrity["excluded_reference_lines"] = excluded_lines
+    marked = _mark_unverified_report_urls(demoted, set(unverified))
     marked = _append_citation_integrity_section(marked, integrity)
     return marked, integrity
+
+
+def _demote_unverified_reference_lines(
+    report: str, unverified_urls: set[str]
+) -> tuple[str, list[str]]:
+    """Remove unverified URLs from normal reference sections.
+
+    Search-only URLs can still be useful breadcrumbs, but they must not sit in
+    the same References list as extract-backed evidence. Inline/body mentions
+    are preserved and marked separately by _mark_unverified_report_urls().
+    """
+    lines = report.splitlines()
+    kept: list[str] = []
+    excluded: list[str] = []
+    in_reference_section = False
+
+    for line in lines:
+        if _is_markdown_heading(line):
+            in_reference_section = _is_reference_heading(line)
+            kept.append(line)
+            continue
+
+        if in_reference_section and _line_contains_any_url(line, unverified_urls):
+            stripped = line.strip()
+            if stripped:
+                excluded.append(stripped)
+            continue
+
+        kept.append(line)
+
+    return "\n".join(kept).strip() + ("\n" if report.endswith("\n") else ""), excluded
+
+
+def _is_markdown_heading(line: str) -> bool:
+    return line.lstrip().startswith("#")
+
+
+def _is_reference_heading(line: str) -> bool:
+    heading = line.lstrip("#").strip().lower()
+    return heading in {
+        "references",
+        "sources",
+        "source list",
+        "bibliography",
+        "links",
+    }
+
+
+def _line_contains_any_url(line: str, urls: set[str]) -> bool:
+    found = _extract_unique_urls(line)
+    return any(url in found for url in urls)
 
 
 def _mark_unverified_report_urls(report: str, unverified_urls: set[str]) -> str:
@@ -1287,8 +1426,18 @@ def _append_citation_integrity_section(report: str, integrity: dict[str, Any]) -
 - Search-only/unverified URLs: {integrity["unverified_urls"]}.
 - References marked `{CITATION_UNVERIFIED_MARKER}` were discovered but not backed by a saved extract file and should not be treated as extracted evidence.
 """
+    excluded_lines = integrity.get("excluded_reference_lines") or []
+    if excluded_lines:
+        section += (
+            f"- Excluded search-only reference lines: {len(excluded_lines)}.\n"
+        )
     if shown:
         section += f"\nUnverified URLs:\n{shown}\n"
+    if excluded_lines:
+        shown_lines = "\n".join(f"- {line}" for line in excluded_lines[:10])
+        if len(excluded_lines) > 10:
+            shown_lines += f"\n- ... {len(excluded_lines) - 10} more"
+        section += f"\nExcluded References:\n{shown_lines}\n"
     return report.rstrip() + "\n\n" + section
 
 
@@ -1373,6 +1522,64 @@ def _extract_unique_urls(text: str) -> set[str]:
     import re
     urls = re.findall(r"https?://[^\s)\]\"'<>]+", text)
     return {u for u in (_clean_report_url(url) for url in urls) if u}
+
+
+def _replace_report_url(report: str, old_url: str, new_url: str) -> str:
+    return report.replace(old_url, new_url)
+
+
+def _alternate_search_query(report: str, url: str) -> str:
+    line = _line_for_report_url(report, url)
+    if line:
+        query = _reference_line_to_query(line, url)
+        if query:
+            return query
+    return _url_to_search_query(url)
+
+
+def _line_for_report_url(report: str, url: str) -> str:
+    for line in report.splitlines():
+        if url in _extract_unique_urls(line) or url in line:
+            return line.strip()
+    return ""
+
+
+def _reference_line_to_query(line: str, url: str) -> str:
+    import re
+
+    text = line.replace(url, " ")
+    text = re.sub(r"https?://\S+", " ", text)
+    text = re.sub(r"\[[0-9]+\]", " ", text)
+    text = re.sub(r"[#>*_`|()[\]{}]", " ", text)
+    text = re.sub(r"\s+", " ", text).strip(" -—:;")
+    if len(text) < 8:
+        return ""
+    return text[:180]
+
+
+def _url_to_search_query(url: str) -> str:
+    from urllib.parse import urlparse
+    import re
+
+    parsed = urlparse(url)
+    bits = [parsed.netloc.replace("www.", "")]
+    path = re.sub(r"[-_/]+", " ", parsed.path)
+    path = re.sub(r"\.[a-zA-Z0-9]+$", "", path)
+    bits.append(path)
+    query = re.sub(r"\s+", " ", " ".join(bits)).strip()
+    return query[:180]
+
+
+def _is_alternate_candidate_url(
+    candidate_url: str,
+    original_url: str,
+    existing_urls: set[str],
+) -> bool:
+    if not candidate_url.startswith(("http://", "https://")):
+        return False
+    if candidate_url == original_url:
+        return False
+    return candidate_url not in existing_urls
 
 
 def _clean_report_url(url: str) -> str:
