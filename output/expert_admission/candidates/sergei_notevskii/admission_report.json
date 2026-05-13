@@ -1,0 +1,57 @@
+{
+  "schema_version": "candidate_admission_report.v0.1",
+  "created_at": "2026-05-12",
+  "candidate_id": "sergei_notevskii",
+  "display_name": "Sergei Notevskii",
+  "channel_username": "@sergeinotevskii",
+  "verdict": "accept",
+  "decision_mode": "manual_human_review",
+  "based_on": {
+    "semantic_passport": "output/expert_admission/semantic_passports/sergei_notevskii/output_with_comments/sergei_notevskii_semantic_passport.normalized.json",
+    "candidate_impact_report": "output/expert_admission/candidates/sergei_notevskii/candidate_impact_report.md",
+    "semantic_arbitration_report": null,
+    "manual_overlap_review": "comment-backed passport plus deterministic matrix preflight; accepted despite overlap-heavy warning because the expert adds a precision production-inference viewpoint around prefix caching, vLLM serving, latency/cost economics, and context-as-runtime-cost"
+  },
+  "preflight_summary": {
+    "candidate_cells_from_matrix_export": 4,
+    "fills_gap": 0,
+    "adds_adjacent_viewpoint": 1,
+    "deepens_existing_cell": 0,
+    "needs_probe": 0,
+    "likely_duplicate": 3,
+    "taxonomy_extensions": 0,
+    "exact_overlaps": 3,
+    "related_overlaps": 1,
+    "overlap_heavy_caveat": true,
+    "clean_gap_count": 0,
+    "dense_overlap_cells": 4,
+    "preliminary_recommendation": "overlap_heavy_needs_stronger_review"
+  },
+  "accepted_cells": [
+    {
+      "cell_id": "ai_engineering_infra/inference_cost_latency/optimize_inference_cost_latency",
+      "classification": "likely_duplicate",
+      "admission_interpretation": "accepted as a precision specialization inside an already-covered exact cell: prefix caching, vLLM serving, vLLM vs Ollama, MaaS vs self-hosted LLM, and production cost/latency tradeoffs"
+    },
+    {
+      "cell_id": "ai_engineering_infra/context_compression/optimize_inference_cost_latency",
+      "classification": "adds_adjacent_viewpoint",
+      "admission_interpretation": "accepted as adjacent infrastructure value around long-context degradation, context rot, and context design as a cost and quality constraint"
+    },
+    {
+      "cell_id": "agent_ops/tool_calling_hooks_skills/design_agentic_dev_workflow",
+      "classification": "likely_duplicate",
+      "admission_interpretation": "accepted only as supporting runtime-oriented perspective on Skills vs MCP and dynamic tool lists, not as a broad new agent-workflow source"
+    }
+  ],
+  "taxonomy_updates": [],
+  "routing_notes": [
+    "Strongest fit: production LLM inference, prefix/prompt caching, cache hit rate, vLLM, semantic routing, serving economics, and latency/cost optimization.",
+    "Useful as a complement to Neuraldeep and PashaZloy: less local-hardware/open-source breadth, more product-runtime economics and Bitrix24-backed production framing.",
+    "Useful as a complement to Polyakov, Aimasters.Me, Rinat, and Refat only when agent/tool/skills questions touch runtime constraints, context growth, caching, or tool-list stability.",
+    "Comment signal is available in the packet and DB, but the channel is still overlap-heavy; do not route as the default generic coding-agent expert.",
+    "Do not route by default for generic AI news, beginner prompting, creative/multimodal workflows, enterprise governance, or security/compliance."
+  ],
+  "recommended_manifest_caveat": "accepted as production LLM inference / prefix-cache / vLLM serving / cost-latency specialist; overlap-heavy with existing infra and agent experts, so route as a precision source for cache hit rate, vLLM vs Ollama, MaaS vs self-hosted, semantic routing, and context/caching economics; avoid default routing for generic AI news, beginner prompting, broad agent workflows, creative/multimodal, enterprise governance, or generic security/compliance",
+  "next_action": "proceed_as_accepted_in_semantic_knowledge_matrix_and_local_experts_panel_system_with_strict_routing_caveat"
+}

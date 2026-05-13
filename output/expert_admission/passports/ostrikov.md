@@ -7,11 +7,11 @@ Channel: `aostrikov_ai_agents`
 
 | Metric | Count |
 |---|---:|
-| Posts | 68 |
-| Text posts | 67 |
+| Posts | 69 |
+| Text posts | 68 |
 | Valid post_metadata | 29 |
-| Embeddings | 67 |
-| FTS rows | 67 |
+| Embeddings | 68 |
+| FTS rows | 68 |
 
 ## Coverage
 
@@ -33,7 +33,7 @@ Channel: `aostrikov_ai_agents`
 
 | Depth | Count |
 |---|---:|
-| `practitioner_experience` | 13 |
+| `practitioner_experience` | 14 |
 | `case_study` | 9 |
 | `architecture_analysis` | 7 |
 | `benchmark_or_eval` | 5 |

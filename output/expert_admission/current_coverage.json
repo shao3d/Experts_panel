@@ -1,7 +1,7 @@
 {
   "coverage_map": {
     "agent_ops": {
-      "expert_count": 18,
+      "expert_count": 20,
       "representative_posts": [
         {
           "created_at": "2026-04-16",
@@ -32,60 +32,60 @@
           "telegram_message_id": 295
         },
         {
-          "created_at": "2026-04-09",
-          "depth_label": "benchmark_or_eval",
-          "excerpt": "Не понимаю, почему так мало пишут про авторисерч Карпаты Мне кажется, самое важное направление года. Первые значимые сигналы до меня дошли еще во время ERC3, когда Леша Остриков дал модельке самой оптимизировать промпт напрямую об евалы А сейчас вот сам Андрей Карпаты выложил рабочий репо, да еще и так, что можно бр...",
-          "expert_id": "ai_grabli",
-          "telegram_message_id": 484
+          "created_at": "2026-04-20",
+          "depth_label": "practitioner_experience",
+          "excerpt": "**Топ популярных вопросов по курсу** ◾️ **Почему курс именно для разработчиков?** Потому что я сам разработчик и знаю как использовать этот AI рычаг разработчикам. ◾️ **Подойдёт ли мне курс?** 🚫 Нет, если вам не важен код, который пишет ai агент, потому что этот код через несколько месяцев будет в мусорной урне. Это...",
+          "expert_id": "ai_architect",
+          "telegram_message_id": 285
         }
       ],
       "status": "strong",
       "top_experts": [
         {
-          "count": 282,
+          "count": 353,
+          "expert_id": "deksden_notes",
+          "strength": "strong"
+        },
+        {
+          "count": 287,
           "expert_id": "doronin",
           "strength": "strong"
         },
         {
-          "count": 226,
+          "count": 233,
           "expert_id": "silicbag",
           "strength": "strong"
         },
         {
-          "count": 218,
+          "count": 222,
           "expert_id": "akimov",
           "strength": "strong"
         },
         {
-          "count": 174,
+          "count": 179,
           "expert_id": "neuraldeep",
           "strength": "strong"
         },
         {
-          "count": 150,
+          "count": 153,
           "expert_id": "refat",
           "strength": "strong"
         },
         {
-          "count": 147,
+          "count": 150,
           "expert_id": "polyakov",
           "strength": "strong"
         },
         {
-          "count": 143,
+          "count": 146,
           "expert_id": "llm_under_hood",
-          "strength": "strong"
-        },
-        {
-          "count": 121,
-          "expert_id": "pashazloy",
           "strength": "strong"
         }
       ],
-      "total_matching_posts": 2230
+      "total_matching_posts": 2667
     },
     "ai_engineering_infra": {
-      "expert_count": 18,
+      "expert_count": 20,
       "representative_posts": [
         {
           "created_at": "2026-04-14",
@@ -93,6 +93,13 @@
           "excerpt": "**Про developer ux** Я недавно настраивал sentry впервые. Мне не хотелось разбираться в новых (для меня) сущностях этого продукта, поэтому сетапить я его планировал с AI, конечно же. Дал задачу кодексу \"давай настроим sentry\" на проекте. Агент сходил и настроил, я создал новый проект на стороне Sentry. Дальше, нужно...",
           "expert_id": "ai_architect",
           "telegram_message_id": 280
+        },
+        {
+          "created_at": "2026-04-20",
+          "depth_label": "practitioner_experience",
+          "excerpt": "**Топ популярных вопросов по курсу** ◾️ **Почему курс именно для разработчиков?** Потому что я сам разработчик и знаю как использовать этот AI рычаг разработчикам. ◾️ **Подойдёт ли мне курс?** 🚫 Нет, если вам не важен код, который пишет ai агент, потому что этот код через несколько месяцев будет в мусорной урне. Это...",
+          "expert_id": "ai_architect",
+          "telegram_message_id": 285
         },
         {
           "created_at": "2026-03-29",
@@ -109,24 +116,17 @@
           "telegram_message_id": 406
         },
         {
-          "created_at": "2026-04-27",
-          "depth_label": "howto_or_checklist",
-          "excerpt": "**Google Cloud Next – кучища анонсов от Google** Обычно просматриваю такие вещи: в 99% случаев найдёшь что-то, что радикально упростит жизнь – функцию, библиотеку или софт. Собрал самое важное. **Gemini Enterprise app** (+$20–30 на сотрудника): Agent Designer, Inbox для работы агентов, Projects с памятью по файлам к...",
+          "created_at": "2026-05-11",
+          "depth_label": "practitioner_experience",
+          "excerpt": "Ну вот, то, о чем так много говорили: OpenAI запускает Deployment Company (кстати возможно намек на The Boring Company) – отдельный ИИ-консалтинг на $10 млрд. Купили Tomoro Consulting и 150 сотрудников теперь будут внедрять ИИ от OpenAI. Forward Deployed Engineers (FDE) сажают внутрь клиента – не \"интегрируем поверх...",
           "expert_id": "akimov",
-          "telegram_message_id": 2146
-        },
-        {
-          "created_at": "2026-04-17",
-          "depth_label": "case_study",
-          "excerpt": "Что новенького в Mastra и чем это вам может быть полезно если вы пилите агентов + анонс стрима. В [июльском посте](https://t.me/nobilix/138) я писал про [Mastra](https://mastra.ai/) как недостающий слой в агентной разработке. Фреймворк активно развивался, в январе вышел и беты и получил стабильную версию и в целом а...",
-          "expert_id": "doronin",
-          "telegram_message_id": 1257
+          "telegram_message_id": 2167
         }
       ],
       "status": "strong",
       "top_experts": [
         {
-          "count": 66,
+          "count": 70,
           "expert_id": "akimov",
           "strength": "medium"
         },
@@ -136,7 +136,7 @@
           "strength": "strong"
         },
         {
-          "count": 52,
+          "count": 53,
           "expert_id": "refat",
           "strength": "strong"
         },
@@ -146,7 +146,7 @@
           "strength": "medium"
         },
         {
-          "count": 36,
+          "count": 37,
           "expert_id": "silicbag",
           "strength": "medium"
         },
@@ -156,20 +156,20 @@
           "strength": "medium"
         },
         {
-          "count": 24,
-          "expert_id": "doronin",
+          "count": 25,
+          "expert_id": "deksden_notes",
           "strength": "thin"
         },
         {
-          "count": 19,
-          "expert_id": "glebkudr",
-          "strength": "medium"
+          "count": 24,
+          "expert_id": "doronin",
+          "strength": "thin"
         }
       ],
-      "total_matching_posts": 424
+      "total_matching_posts": 469
     },
     "ai_product_pm": {
-      "expert_count": 18,
+      "expert_count": 20,
       "representative_posts": [
         {
           "created_at": "2026-04-15",
@@ -210,12 +210,12 @@
       "status": "strong",
       "top_experts": [
         {
-          "count": 265,
+          "count": 270,
           "expert_id": "kornish",
           "strength": "strong"
         },
         {
-          "count": 112,
+          "count": 116,
           "expert_id": "akimov",
           "strength": "strong"
         },
@@ -225,35 +225,35 @@
           "strength": "strong"
         },
         {
-          "count": 80,
+          "count": 82,
           "expert_id": "refat",
           "strength": "strong"
         },
         {
-          "count": 74,
+          "count": 77,
           "expert_id": "silicbag",
           "strength": "medium"
         },
         {
-          "count": 69,
+          "count": 70,
           "expert_id": "llm_under_hood",
           "strength": "strong"
         },
         {
-          "count": 68,
+          "count": 69,
           "expert_id": "neuraldeep",
           "strength": "strong"
         },
         {
-          "count": 67,
+          "count": 68,
           "expert_id": "ai_grabli",
           "strength": "strong"
         }
       ],
-      "total_matching_posts": 1177
+      "total_matching_posts": 1271
     },
     "ai_ux_workflow": {
-      "expert_count": 18,
+      "expert_count": 20,
       "representative_posts": [
         {
           "created_at": "2026-04-14",
@@ -263,11 +263,11 @@
           "telegram_message_id": 280
         },
         {
-          "created_at": "2026-02-16",
-          "depth_label": "practitioner_experience",
-          "excerpt": "Сдвиг 2025 → 2026. Забавное наблюдение с моих консультаций: Во второй половине 25го года ко мне стали часто приходить компании с просьбой поревьюить их AI системы. И почти всегда консультация шла по следующему сценарию: 1. Рассказывают/показывают свой сложный комбайн: - Кастомный процессинг pdf в текст - sparse/denc...",
+          "created_at": "2026-05-07",
+          "depth_label": "howto_or_checklist",
+          "excerpt": "Невошедшее во вчерашний пост (по сути – альтернативы для 2 пункта): 1️⃣ Вариант [Hermes+Honcho](https://t.me/oestick/494?comment=4603) Из хорошего – у Hermes есть профили под разных пользователей, а Honcho дает память = обучение правильно решать задачи Но это не решает проблему изоляции юзеров + проблему совместного...",
           "expert_id": "ai_grabli",
-          "telegram_message_id": 463
+          "telegram_message_id": 496
         },
         {
           "created_at": "2026-05-05",
@@ -294,12 +294,12 @@
       "status": "strong",
       "top_experts": [
         {
-          "count": 77,
+          "count": 79,
           "expert_id": "kornish",
           "strength": "strong"
         },
         {
-          "count": 52,
+          "count": 53,
           "expert_id": "silicbag",
           "strength": "medium"
         },
@@ -309,17 +309,22 @@
           "strength": "medium"
         },
         {
-          "count": 37,
+          "count": 42,
+          "expert_id": "deksden_notes",
+          "strength": "medium"
+        },
+        {
+          "count": 38,
           "expert_id": "doronin",
           "strength": "medium"
         },
         {
-          "count": 35,
+          "count": 36,
           "expert_id": "refat",
           "strength": "medium"
         },
         {
-          "count": 34,
+          "count": 35,
           "expert_id": "neuraldeep",
           "strength": "medium"
         },
@@ -327,17 +332,12 @@
           "count": 24,
           "expert_id": "ai_architect",
           "strength": "medium"
-        },
-        {
-          "count": 23,
-          "expert_id": "polyakov",
-          "strength": "medium"
         }
       ],
-      "total_matching_posts": 457
+      "total_matching_posts": 511
     },
     "business_adoption": {
-      "expert_count": 18,
+      "expert_count": 20,
       "representative_posts": [
         {
           "created_at": "2026-04-05",
@@ -354,74 +354,74 @@
           "telegram_message_id": 474
         },
         {
-          "created_at": "2026-04-23",
+          "created_at": "2026-05-06",
           "depth_label": "practitioner_experience",
-          "excerpt": "**Экономить по крупному** **на CAPEX** Доступ к передовым западным моделям усложняется с каждым днем как снаружи, так и изнутри. Но это уже не вопрос «надо или не надо», **это вопрос фундаментальной экономики.** **Мы живем в материальном мире с конечными ресурсами** По законам рынка то, чего много и что доступно бол...",
-          "expert_id": "air_ai",
-          "telegram_message_id": 424
+          "excerpt": "Вчерашний запрос оказался ящиком Пандоры > Спасибо всем, кто откликнулся, познакомился со многими классными ребятами! Коротко в чем проблема: - Компании **хотят** внедрять агентов для внутренней автоматизации - Компании **не хотят**, чтобы сотрудники сами у себя на компе что-то костылили - Зато хотят контроль над до...",
+          "expert_id": "ai_grabli",
+          "telegram_message_id": 495
         },
         {
-          "created_at": "2026-04-18",
-          "depth_label": "practitioner_experience",
-          "excerpt": "Как контролировать расходы в Claude - где с такой скоростью сгорают лимиты, а с выходом Opus 4.7 станет еще хуже Opus 4.7 в использовании дороже по сл. причинам: 🔸Н**овый tokenizer:** модель иначе режет текст на токены - до 1.35x больше токенов 🔸De**ep reasoning: **на поздних шагах агентной работы включается по умол...",
-          "expert_id": "air_ai",
-          "telegram_message_id": 421
+          "created_at": "2026-05-07",
+          "depth_label": "howto_or_checklist",
+          "excerpt": "Невошедшее во вчерашний пост (по сути – альтернативы для 2 пункта): 1️⃣ Вариант [Hermes+Honcho](https://t.me/oestick/494?comment=4603) Из хорошего – у Hermes есть профили под разных пользователей, а Honcho дает память = обучение правильно решать задачи Но это не решает проблему изоляции юзеров + проблему совместного...",
+          "expert_id": "ai_grabli",
+          "telegram_message_id": 496
         },
         {
-          "created_at": "2026-04-24",
-          "depth_label": "benchmark_or_eval",
-          "excerpt": "DeepSeek-V4! DeepSeek наконец выпустил превью новой модели – прямой конкурент Claude, GPT и Gemini, только в open-source. Посмотрел в общем бенчмарки и отчет. Ну-у... Если бы вышла в начале года, - это был бы просто нереальный прорыв. Сейчас просто лучший опенсорс :) Да и сейчас в общем-то базовые архитектурные вещи...",
-          "expert_id": "akimov",
-          "telegram_message_id": 2141
+          "created_at": "2026-05-04",
+          "depth_label": "practitioner_experience",
+          "excerpt": "**Wenyan Prompting или «Изя всё»** Пост о том, что еще придумали находчивые и экономные разработчики для качественного сжатия контекста ~~~ Экосистема для AI-агентов [caveman](https://github.com/JuliusBrussee/caveman) (многоk ⭐️) делится на несколько уровней: она сжимает ответы, memory-файлы и MCP-описания, экономя...",
+          "expert_id": "air_ai",
+          "telegram_message_id": 433
         }
       ],
       "status": "strong",
       "top_experts": [
         {
-          "count": 165,
+          "count": 168,
           "expert_id": "kornish",
           "strength": "strong"
         },
         {
-          "count": 129,
+          "count": 130,
           "expert_id": "llm_under_hood",
           "strength": "strong"
         },
         {
-          "count": 126,
+          "count": 128,
           "expert_id": "akimov",
           "strength": "strong"
         },
         {
-          "count": 101,
+          "count": 107,
           "expert_id": "silicbag",
           "strength": "strong"
         },
         {
-          "count": 92,
-          "expert_id": "polyakov",
-          "strength": "strong"
-        },
-        {
-          "count": 92,
+          "count": 94,
           "expert_id": "refat",
           "strength": "strong"
         },
         {
-          "count": 89,
+          "count": 93,
+          "expert_id": "polyakov",
+          "strength": "strong"
+        },
+        {
+          "count": 91,
           "expert_id": "doronin",
           "strength": "strong"
         },
         {
-          "count": 89,
+          "count": 90,
           "expert_id": "neuraldeep",
           "strength": "strong"
         }
       ],
-      "total_matching_posts": 1239
+      "total_matching_posts": 1367
     },
     "coding_agents": {
-      "expert_count": 18,
+      "expert_count": 20,
       "representative_posts": [
         {
           "created_at": "2026-04-16",
@@ -462,7 +462,12 @@
       "status": "strong",
       "top_experts": [
         {
-          "count": 203,
+          "count": 253,
+          "expert_id": "deksden_notes",
+          "strength": "strong"
+        },
+        {
+          "count": 208,
           "expert_id": "akimov",
           "strength": "strong"
         },
@@ -472,7 +477,7 @@
           "strength": "strong"
         },
         {
-          "count": 152,
+          "count": 154,
           "expert_id": "ai_architect",
           "strength": "strong"
         },
@@ -482,30 +487,25 @@
           "strength": "strong"
         },
         {
-          "count": 121,
+          "count": 123,
           "expert_id": "refat",
           "strength": "strong"
         },
         {
-          "count": 117,
+          "count": 118,
           "expert_id": "elkornacio",
           "strength": "strong"
         },
         {
-          "count": 114,
+          "count": 115,
           "expert_id": "neuraldeep",
-          "strength": "strong"
-        },
-        {
-          "count": 106,
-          "expert_id": "etechlead",
           "strength": "strong"
         }
       ],
-      "total_matching_posts": 1800
+      "total_matching_posts": 2103
     },
     "creative_multimodal": {
-      "expert_count": 18,
+      "expert_count": 20,
       "representative_posts": [
         {
           "created_at": "2026-04-30",
@@ -522,36 +522,36 @@
           "telegram_message_id": 543
         },
         {
-          "created_at": "2026-04-24",
-          "depth_label": "practitioner_experience",
-          "excerpt": "Grok Voice Think Fast 1.0 – кажется, голос скоро будет AI везде... Потому что стоит она 3 бакса в час! Заточена под поддержку клиентов, телефонные продажи, бронирование, корпоративные интеграции с тяжёлым tool calling. – 25 языков с автоопределением, включая русский, 5 голосов – Точный сбор данных: адреса, email, но...",
-          "expert_id": "akimov",
-          "telegram_message_id": 2142
-        },
-        {
-          "created_at": "2026-02-20",
-          "depth_label": "architecture_analysis",
-          "excerpt": "заметил, что даже в около-ИИ тусах не все шарят за разницу между UI/harness/model. мне кажется, ситуация ещё усугубляется дегенеративным неймингом (Composer в Composer, Codex в Codex в Codex, вот этот вот весь адок). оч коротко, и с упрощением (опустим мультимодальности, и прочие ньюансы): модель - это буквально LLM...",
-          "expert_id": "elkornacio",
-          "telegram_message_id": 533
-        },
-        {
-          "created_at": "2025-12-01",
+          "created_at": "2026-05-07",
           "depth_label": "benchmark_or_eval",
-          "excerpt": "**Вайб-обзор на GPT 5.1 / Gemini 3 Pro / Opus 4.5 (2/2)** **Gemini 3 Pro** Модель перед выпуском хайпили так, что казалось, будто у всех сотрудников Google есть KPI на то, чтобы твитнуть нечто загадочное про выход то Gemini, то про что-то с цифрой 3, то про будущие фантастические возможности. Конкретно у меня было м...",
-          "expert_id": "etechlead",
-          "telegram_message_id": 278
+          "excerpt": "О, ответочка по голосу от OpenAI: GPT-Realtime-2, GPT-Realtime-Translate и GPT-Realtime-Whisper. **GPT-Realtime-2 – первая голосовая модель с ризонингом класса GPT-5** Напихали кучу всего: - Preambles – модель может сказать \"секунду, проверяю\" перед основным ответом, чтобы юзер понимал, что агент работает - Параллел...",
+          "expert_id": "akimov",
+          "telegram_message_id": 2163
+        },
+        {
+          "created_at": "2026-05-06",
+          "depth_label": "howto_or_checklist",
+          "excerpt": "Google прокачал managed RAG в Gemini API – теперь не нужно самим собирать связку vector store + embedder + reranker для 80% типовых задач. Для огромного количества простых RAG для документов/баз знаний этого будет вполне достаточно. Выпустили 3 апдейта: – Мультимодальность. Под капотом новый Gemini Embedding 2, пони...",
+          "expert_id": "akimov",
+          "telegram_message_id": 2159
+        },
+        {
+          "created_at": "2026-05-02",
+          "depth_label": "tool_release",
+          "excerpt": "⚪️ REMOTE tools #market часть 2 ... начало тут: https://t.me/deksden_notes/735 * Remoto: Remoto creates a secure tunnel between your terminal and your phone. When you run the CLI, it spawns a local shell session and connects to our relay server via WebSocket : https://www.remoto.sh/ * Takopi: Takopi runs coding agen...",
+          "expert_id": "deksden_notes",
+          "telegram_message_id": 736
         }
       ],
       "status": "strong",
       "top_experts": [
         {
-          "count": 61,
+          "count": 65,
           "expert_id": "akimov",
           "strength": "medium"
         },
         {
-          "count": 38,
+          "count": 39,
           "expert_id": "refat",
           "strength": "medium"
         },
@@ -576,7 +576,7 @@
           "strength": "thin"
         },
         {
-          "count": 13,
+          "count": 14,
           "expert_id": "polyakov",
           "strength": "medium"
         },
@@ -586,10 +586,10 @@
           "strength": "thin"
         }
       ],
-      "total_matching_posts": 281
+      "total_matching_posts": 306
     },
     "evals_quality": {
-      "expert_count": 18,
+      "expert_count": 20,
       "representative_posts": [
         {
           "created_at": "2026-04-09",
@@ -606,13 +606,6 @@
           "telegram_message_id": 481
         },
         {
-          "created_at": "2026-04-06",
-          "depth_label": "benchmark_or_eval",
-          "excerpt": "**Как стать одним из нас?** Мы отрываем внешний найм и ищем двух ниндзя в нашу безбашенную команду разработки AI-агентов. Все детали проекта не могу раскрыть, но до конца года эффект должен быть на девятки миллионов долларов (ну или меня уволят): **1. Айзек из сериала Кастлвания** Ты умеешь воскрешать агентов, неотл...",
-          "expert_id": "ai_grabli",
-          "telegram_message_id": 480
-        },
-        {
           "created_at": "2026-04-16",
           "depth_label": "benchmark_or_eval",
           "excerpt": "Бенчмарки. **Краткая сводка статьи:** > Вышла Claude Opus 4.7 — главное улучшение в сложном кодинге, теперь можно доверять самые трудные задачи без присмотра. > > Что нового: > - Лучше следует инструкциям (старые промпты могут давать неожиданный результат — надо перенастраивать) > - Видит изображения в 3× большем ра...",
@@ -625,17 +618,24 @@
           "excerpt": "Бенчмарки новой модели Anthropic Mythos поражают, мягко говоря.",
           "expert_id": "aimasters_me",
           "telegram_message_id": 552
+        },
+        {
+          "created_at": "2026-04-13",
+          "depth_label": "benchmark_or_eval",
+          "excerpt": "**Работу с Excel на профессиональном уровне и Дашборд с обновлением ** можно организовать со скиллами <u>xlsx</u>sx и build-dashboard от Claude** Claude **не обязательно привязываться к моделям Claude - текст и скрипты этих скиллов можно использовать в других моделях* **Пример. ** Разберу когда есть только файл с мн...",
+          "expert_id": "air_ai",
+          "telegram_message_id": 418
         }
       ],
       "status": "strong",
       "top_experts": [
         {
-          "count": 105,
+          "count": 106,
           "expert_id": "akimov",
           "strength": "strong"
         },
         {
-          "count": 79,
+          "count": 81,
           "expert_id": "llm_under_hood",
           "strength": "strong"
         },
@@ -645,7 +645,7 @@
           "strength": "strong"
         },
         {
-          "count": 51,
+          "count": 52,
           "expert_id": "refat",
           "strength": "strong"
         },
@@ -665,18 +665,23 @@
           "strength": "medium"
         },
         {
-          "count": 31,
+          "count": 32,
           "expert_id": "polyakov",
           "strength": "medium"
         }
       ],
-      "total_matching_posts": 569
+      "total_matching_posts": 627
     },
     "general_ai_news": {
-      "expert_count": 13,
+      "expert_count": 15,
       "representative_posts": [],
       "status": "strong",
       "top_experts": [
+        {
+          "count": 35,
+          "expert_id": "sergei_notevskii",
+          "strength": "medium"
+        },
         {
           "count": 15,
           "expert_id": "silicbag",
@@ -711,17 +716,12 @@
           "count": 2,
           "expert_id": "ai_grabli",
           "strength": "thin"
-        },
-        {
-          "count": 2,
-          "expert_id": "akimov",
-          "strength": "thin"
         }
       ],
-      "total_matching_posts": 57
+      "total_matching_posts": 93
     },
     "model_landscape": {
-      "expert_count": 18,
+      "expert_count": 20,
       "representative_posts": [
         {
           "created_at": "2026-04-16",
@@ -738,18 +738,11 @@
           "telegram_message_id": 295
         },
         {
-          "created_at": "2026-03-19",
-          "depth_label": "case_study",
-          "excerpt": "**Шумно строил. Часто шиппил. Оставил след** Вот такой кринжовый заголовок GPT 5.4 придумал для моего дашборда со статистикой по гитхабу. Ринат @llm_under_hood запустил челлендж (суть - показать свою статистику по гиту: коммиты, проекты, loc), а Нейро Ковальский (@neuraldeep) передал мне эстафету, так что делюсь сво...",
+          "created_at": "2026-05-05",
+          "depth_label": "practitioner_experience",
+          "excerpt": "последние новости по [курсу](https://t.me/the_ai_architect/283) • осталось всего лишь 4 места на среднем и старшем тарифах, думаю что soldout будет уже до конца этой недели • записал первый видеоурок, отдал в монтаж • назначил первые 3 созвона • записал и [выложил видео](https://youtu.be/K5JEZDjXX9c) с кратким обзор...",
           "expert_id": "ai_architect",
-          "telegram_message_id": 268
-        },
-        {
-          "created_at": "2026-03-16",
-          "depth_label": "case_study",
-          "excerpt": "Решил я тут поставить клешню (openclaw) второй раз в жизни (первый раз было 26 января) Кейс - дать клешне доступ к git repo и общаться с ним через чатик, просить вносить изменения в репо (это не кодинг, только некоторые заметки). Инпут - фото, аудио. Модель - z.ai (у меня годовая подписка на самом жирном тарифе прос...",
-          "expert_id": "ai_architect",
-          "telegram_message_id": 267
+          "telegram_message_id": 298
         },
         {
           "created_at": "2026-04-28",
@@ -757,76 +750,76 @@
           "excerpt": "**Писать код руками или AI Coding?** В последние пару недель в инфополе то и дело появляются новости о том, что тот или иной поставщик AI начинает резать лимиты, повышать стоимость токенов, отменять дешевые подписки. Вот хороший [разбор The Verge](https://www.theverge.com/ai-artificial-intelligence/917380/ai-monetiz...",
           "expert_id": "ai_architect",
           "telegram_message_id": 293
+        },
+        {
+          "created_at": "2026-04-09",
+          "depth_label": "benchmark_or_eval",
+          "excerpt": "Не понимаю, почему так мало пишут про авторисерч Карпаты Мне кажется, самое важное направление года. Первые значимые сигналы до меня дошли еще во время ERC3, когда Леша Остриков дал модельке самой оптимизировать промпт напрямую об евалы А сейчас вот сам Андрей Карпаты выложил рабочий репо, да еще и так, что можно бр...",
+          "expert_id": "ai_grabli",
+          "telegram_message_id": 484
         }
       ],
       "status": "strong",
       "top_experts": [
         {
-          "count": 480,
+          "count": 492,
           "expert_id": "akimov",
           "strength": "strong"
         },
         {
-          "count": 396,
+          "count": 398,
           "expert_id": "doronin",
           "strength": "strong"
         },
         {
-          "count": 359,
+          "count": 366,
           "expert_id": "silicbag",
           "strength": "strong"
         },
         {
-          "count": 270,
+          "count": 297,
+          "expert_id": "deksden_notes",
+          "strength": "strong"
+        },
+        {
+          "count": 275,
           "expert_id": "kornish",
           "strength": "strong"
         },
         {
-          "count": 269,
+          "count": 273,
           "expert_id": "neuraldeep",
           "strength": "strong"
         },
         {
-          "count": 218,
+          "count": 220,
           "expert_id": "llm_under_hood",
           "strength": "strong"
         },
         {
-          "count": 201,
+          "count": 205,
           "expert_id": "polyakov",
-          "strength": "strong"
-        },
-        {
-          "count": 192,
-          "expert_id": "pashazloy",
           "strength": "strong"
         }
       ],
-      "total_matching_posts": 3666
+      "total_matching_posts": 4183
     },
     "rag_retrieval_knowledge": {
-      "expert_count": 18,
+      "expert_count": 20,
       "representative_posts": [
         {
-          "created_at": "2026-02-16",
+          "created_at": "2026-05-06",
           "depth_label": "practitioner_experience",
-          "excerpt": "Сдвиг 2025 → 2026. Забавное наблюдение с моих консультаций: Во второй половине 25го года ко мне стали часто приходить компании с просьбой поревьюить их AI системы. И почти всегда консультация шла по следующему сценарию: 1. Рассказывают/показывают свой сложный комбайн: - Кастомный процессинг pdf в текст - sparse/denc...",
+          "excerpt": "Вчерашний запрос оказался ящиком Пандоры > Спасибо всем, кто откликнулся, познакомился со многими классными ребятами! Коротко в чем проблема: - Компании **хотят** внедрять агентов для внутренней автоматизации - Компании **не хотят**, чтобы сотрудники сами у себя на компе что-то костылили - Зато хотят контроль над до...",
           "expert_id": "ai_grabli",
-          "telegram_message_id": 463
+          "telegram_message_id": 495
         },
         {
-          "created_at": "2026-04-27",
+          "created_at": "2026-05-06",
           "depth_label": "howto_or_checklist",
-          "excerpt": "**Google Cloud Next – кучища анонсов от Google** Обычно просматриваю такие вещи: в 99% случаев найдёшь что-то, что радикально упростит жизнь – функцию, библиотеку или софт. Собрал самое важное. **Gemini Enterprise app** (+$20–30 на сотрудника): Agent Designer, Inbox для работы агентов, Projects с памятью по файлам к...",
+          "excerpt": "Google прокачал managed RAG в Gemini API – теперь не нужно самим собирать связку vector store + embedder + reranker для 80% типовых задач. Для огромного количества простых RAG для документов/баз знаний этого будет вполне достаточно. Выпустили 3 апдейта: – Мультимодальность. Под капотом новый Gemini Embedding 2, пони...",
           "expert_id": "akimov",
-          "telegram_message_id": 2146
-        },
-        {
-          "created_at": "2026-04-03",
-          "depth_label": "case_study",
-          "excerpt": "**Про стенд для тестов систем памяти AI-агентов.** Когда мне в руки попадает очередное решение для памяти AI-агентов, ~~я радуюсь, как ребёнок~~ собираю с ним стандартный тестовый стенд в docker: 1. База для векторов – [Qdrant](https://github.com/qdrant/qdrant). Поддерживается большинством фреймворков для организаци...",
-          "expert_id": "doronin",
-          "telegram_message_id": 1242
+          "telegram_message_id": 2159
         },
         {
           "created_at": "2026-01-22",
@@ -834,6 +827,13 @@
           "excerpt": "**Отецкая нотация испорченным вайбкодерам (1/2)** Когда я стал ИИ-кодером в 2024м, сеньоры часто доводили меня до слёз своими нудными воспоминаниями о том, как трудно им было джунами, как им приходилось писать код руками, сразу в прод, без подсветки, в vi, на удалённом терминале, на монохромном выпуклом дисплее, в к...",
           "expert_id": "etechlead",
           "telegram_message_id": 282
+        },
+        {
+          "created_at": "2026-05-04",
+          "depth_label": "architecture_analysis",
+          "excerpt": "Докладываюсь по flex пайплайнам — результаты охеренные Следите за руками. Пайплайн был с компьютерным зрением. Чертежи, стройка, все как мы любим 😁 Много листов pdf как-то связанных между собой (общей идеей) строительная документация это пиздец господа Я задал ограничение — работай исключительно с надписями/подписям...",
+          "expert_id": "glebkudr",
+          "telegram_message_id": 548
         },
         {
           "created_at": "2026-04-07",
@@ -846,12 +846,12 @@
       "status": "strong",
       "top_experts": [
         {
-          "count": 84,
+          "count": 85,
           "expert_id": "neuraldeep",
           "strength": "strong"
         },
         {
-          "count": 57,
+          "count": 58,
           "expert_id": "llm_under_hood",
           "strength": "strong"
         },
@@ -861,7 +861,7 @@
           "strength": "medium"
         },
         {
-          "count": 35,
+          "count": 36,
           "expert_id": "silicbag",
           "strength": "medium"
         },
@@ -872,13 +872,13 @@
         },
         {
           "count": 29,
-          "expert_id": "doronin",
-          "strength": "medium"
-        },
-        {
-          "count": 28,
           "expert_id": "akimov",
           "strength": "thin"
+        },
+        {
+          "count": 29,
+          "expert_id": "doronin",
+          "strength": "medium"
         },
         {
           "count": 24,
@@ -886,10 +886,10 @@
           "strength": "medium"
         }
       ],
-      "total_matching_posts": 432
+      "total_matching_posts": 461
     },
     "security_privacy_governance": {
-      "expert_count": 18,
+      "expert_count": 20,
       "representative_posts": [
         {
           "created_at": "2026-04-09",
@@ -913,34 +913,34 @@
           "telegram_message_id": 429
         },
         {
-          "created_at": "2026-04-23",
-          "depth_label": "practitioner_experience",
-          "excerpt": "**Экономить по крупному** **на CAPEX** Доступ к передовым западным моделям усложняется с каждым днем как снаружи, так и изнутри. Но это уже не вопрос «надо или не надо», **это вопрос фундаментальной экономики.** **Мы живем в материальном мире с конечными ресурсами** По законам рынка то, чего много и что доступно бол...",
-          "expert_id": "air_ai",
-          "telegram_message_id": 424
-        },
-        {
           "created_at": "2026-04-18",
           "depth_label": "practitioner_experience",
           "excerpt": "Как контролировать расходы в Claude - где с такой скоростью сгорают лимиты, а с выходом Opus 4.7 станет еще хуже Opus 4.7 в использовании дороже по сл. причинам: 🔸Н**овый tokenizer:** модель иначе режет текст на токены - до 1.35x больше токенов 🔸De**ep reasoning: **на поздних шагах агентной работы включается по умол...",
           "expert_id": "air_ai",
           "telegram_message_id": 421
+        },
+        {
+          "created_at": "2026-04-23",
+          "depth_label": "practitioner_experience",
+          "excerpt": "**Экономить по крупному** **на CAPEX** Доступ к передовым западным моделям усложняется с каждым днем как снаружи, так и изнутри. Но это уже не вопрос «надо или не надо», **это вопрос фундаментальной экономики.** **Мы живем в материальном мире с конечными ресурсами** По законам рынка то, чего много и что доступно бол...",
+          "expert_id": "air_ai",
+          "telegram_message_id": 424
         }
       ],
       "status": "strong",
       "top_experts": [
         {
-          "count": 87,
+          "count": 89,
           "expert_id": "akimov",
           "strength": "strong"
         },
         {
-          "count": 70,
+          "count": 73,
           "expert_id": "kornish",
           "strength": "strong"
         },
         {
-          "count": 58,
+          "count": 59,
           "expert_id": "refat",
           "strength": "strong"
         },
@@ -950,7 +950,7 @@
           "strength": "medium"
         },
         {
-          "count": 47,
+          "count": 48,
           "expert_id": "polyakov",
           "strength": "strong"
         },
@@ -965,12 +965,12 @@
           "strength": "medium"
         },
         {
-          "count": 24,
-          "expert_id": "aimasters_me",
-          "strength": "medium"
+          "count": 25,
+          "expert_id": "deksden_notes",
+          "strength": "thin"
         }
       ],
-      "total_matching_posts": 552
+      "total_matching_posts": 592
     }
   },
   "db_path": "/Users/andreysazonov/Documents/Projects/Experts_panel/backend/data/experts.db",
@@ -982,12 +982,12 @@
         "ai_engineering_infra": 11,
         "ai_product_pm": 40,
         "ai_ux_workflow": 24,
-        "business_adoption": 41,
-        "coding_agents": 152,
+        "business_adoption": 42,
+        "coding_agents": 154,
         "creative_multimodal": 2,
         "evals_quality": 18,
         "general_ai_news": 0,
-        "model_landscape": 144,
+        "model_landscape": 147,
         "rag_retrieval_knowledge": 9,
         "security_privacy_governance": 23
       },
@@ -1007,26 +1007,26 @@
       },
       "date_range": {
         "first_post": "2025-01-06",
-        "last_post": "2026-05-03"
+        "last_post": "2026-05-12"
       },
       "depth_profile": {
-        "announcement_or_news": 28,
+        "announcement_or_news": 29,
         "architecture_analysis": 21,
         "benchmark_or_eval": 17,
         "case_study": 28,
-        "howto_or_checklist": 63,
-        "low_signal": 25,
-        "practitioner_experience": 46,
+        "howto_or_checklist": 64,
+        "low_signal": 26,
+        "practitioner_experience": 47,
         "tool_release": 6
       },
       "display_name": "AI Architect",
-      "embedding_count": 226,
+      "embedding_count": 230,
       "embedding_coverage_ratio": 1.0,
       "expert_id": "ai_architect",
-      "fts_count": 226,
-      "metadata_coverage_ratio": 0.8376,
+      "fts_count": 230,
+      "metadata_coverage_ratio": 0.8235,
       "metadata_valid_count": 196,
-      "post_count": 234,
+      "post_count": 238,
       "representative_posts": [
         {
           "coverage_labels": [
@@ -1092,24 +1092,14 @@
         },
         {
           "coverage_labels": [
-            "model_landscape"
-          ],
-          "created_at": "2026-03-19",
-          "depth_label": "case_study",
-          "excerpt": "**Шумно строил. Часто шиппил. Оставил след** Вот такой кринжовый заголовок GPT 5.4 придумал для моего дашборда со статистикой по гитхабу. Ринат @llm_under_hood запустил челлендж (суть - показать свою статистику по гиту: коммиты, проекты, loc), а Нейро Ковальский (@neuraldeep) передал мне эстафету, так что делюсь сво...",
-          "reason": "model_landscape; depth=case_study",
-          "telegram_message_id": 268
-        },
-        {
-          "coverage_labels": [
             "coding_agents",
             "model_landscape"
           ],
-          "created_at": "2026-03-16",
-          "depth_label": "case_study",
-          "excerpt": "Решил я тут поставить клешню (openclaw) второй раз в жизни (первый раз было 26 января) Кейс - дать клешне доступ к git repo и общаться с ним через чатик, просить вносить изменения в репо (это не кодинг, только некоторые заметки). Инпут - фото, аудио. Модель - z.ai (у меня годовая подписка на самом жирном тарифе прос...",
-          "reason": "coding_agents, model_landscape; depth=case_study",
-          "telegram_message_id": 267
+          "created_at": "2026-05-05",
+          "depth_label": "practitioner_experience",
+          "excerpt": "последние новости по [курсу](https://t.me/the_ai_architect/283) • осталось всего лишь 4 места на среднем и старшем тарифах, думаю что soldout будет уже до конца этой недели • записал первый видеоурок, отдал в монтаж • назначил первые 3 созвона • записал и [выложил видео](https://youtu.be/K5JEZDjXX9c) с кратким обзор...",
+          "reason": "coding_agents, model_landscape; depth=practitioner_experience",
+          "telegram_message_id": 298
         },
         {
           "coverage_labels": [
@@ -1122,6 +1112,17 @@
           "excerpt": "**Писать код руками или AI Coding?** В последние пару недель в инфополе то и дело появляются новости о том, что тот или иной поставщик AI начинает резать лимиты, повышать стоимость токенов, отменять дешевые подписки. Вот хороший [разбор The Verge](https://www.theverge.com/ai-artificial-intelligence/917380/ai-monetiz...",
           "reason": "coding_agents, ai_product_pm, model_landscape; depth=practitioner_experience",
           "telegram_message_id": 293
+        },
+        {
+          "coverage_labels": [
+            "agent_ops",
+            "ai_engineering_infra"
+          ],
+          "created_at": "2026-04-20",
+          "depth_label": "practitioner_experience",
+          "excerpt": "**Топ популярных вопросов по курсу** ◾️ **Почему курс именно для разработчиков?** Потому что я сам разработчик и знаю как использовать этот AI рычаг разработчикам. ◾️ **Подойдёт ли мне курс?** 🚫 Нет, если вам не важен код, который пишет ai агент, потому что этот код через несколько месяцев будет в мусорной урне. Это...",
+          "reason": "agent_ops, ai_engineering_infra; depth=practitioner_experience",
+          "telegram_message_id": 285
         }
       ],
       "runtime_readiness": {
@@ -1130,7 +1131,7 @@
         "metadata_advisory_ready": true,
         "text_posts_ready": true
       },
-      "text_post_count": 226,
+      "text_post_count": 230,
       "top_concepts": [
         {
           "count": 24,
@@ -1318,17 +1319,17 @@
     {
       "channel_username": "oestick",
       "coverage": {
-        "agent_ops": 47,
+        "agent_ops": 52,
         "ai_engineering_infra": 7,
-        "ai_product_pm": 67,
-        "ai_ux_workflow": 19,
-        "business_adoption": 50,
-        "coding_agents": 62,
+        "ai_product_pm": 68,
+        "ai_ux_workflow": 20,
+        "business_adoption": 54,
+        "coding_agents": 65,
         "creative_multimodal": 2,
         "evals_quality": 16,
         "general_ai_news": 2,
-        "model_landscape": 147,
-        "rag_retrieval_knowledge": 21,
+        "model_landscape": 149,
+        "rag_retrieval_knowledge": 22,
         "security_privacy_governance": 9
       },
       "coverage_strength": {
@@ -1347,26 +1348,26 @@
       },
       "date_range": {
         "first_post": "2024-01-10",
-        "last_post": "2026-05-01"
+        "last_post": "2026-05-12"
       },
       "depth_profile": {
         "announcement_or_news": 32,
-        "architecture_analysis": 34,
+        "architecture_analysis": 35,
         "benchmark_or_eval": 17,
-        "case_study": 55,
-        "howto_or_checklist": 116,
+        "case_study": 56,
+        "howto_or_checklist": 118,
         "low_signal": 30,
-        "practitioner_experience": 73,
+        "practitioner_experience": 75,
         "tool_release": 0
       },
       "display_name": "Tech_AI_grabli",
-      "embedding_count": 351,
+      "embedding_count": 357,
       "embedding_coverage_ratio": 1.0,
       "expert_id": "ai_grabli",
-      "fts_count": 351,
-      "metadata_coverage_ratio": 0.9244,
+      "fts_count": 357,
+      "metadata_coverage_ratio": 0.9091,
       "metadata_valid_count": 330,
-      "post_count": 357,
+      "post_count": 363,
       "representative_posts": [
         {
           "coverage_labels": [
@@ -1380,6 +1381,17 @@
           "excerpt": "Не понимаю, почему так мало пишут про авторисерч Карпаты Мне кажется, самое важное направление года. Первые значимые сигналы до меня дошли еще во время ERC3, когда Леша Остриков дал модельке самой оптимизировать промпт напрямую об евалы А сейчас вот сам Андрей Карпаты выложил рабочий репо, да еще и так, что можно бр...",
           "reason": "agent_ops, evals_quality, security_privacy_governance; depth=benchmark_or_eval",
           "telegram_message_id": 484
+        },
+        {
+          "coverage_labels": [
+            "coding_agents",
+            "agent_ops"
+          ],
+          "created_at": "2026-05-12",
+          "depth_label": "case_study",
+          "excerpt": "Короче, есть у меня старая подруга Саша – ни разу не айтишник, у нее своя керамическая студия, оффлайн ивенты вроде бань и массовых глиномесных тусовок, а в найме (онлайн-школа) она занимается продажами и маркетингом. Проекты разнонаправленные, много рутины и оффлайн, и онлайн Год назад подсадил ее на ai.studio, кот...",
+          "reason": "coding_agents, agent_ops; depth=case_study",
+          "telegram_message_id": 499
         },
         {
           "coverage_labels": [
@@ -1423,15 +1435,29 @@
             "coding_agents",
             "agent_ops",
             "rag_retrieval_knowledge",
+            "business_adoption",
+            "model_landscape"
+          ],
+          "created_at": "2026-05-06",
+          "depth_label": "practitioner_experience",
+          "excerpt": "Вчерашний запрос оказался ящиком Пандоры > Спасибо всем, кто откликнулся, познакомился со многими классными ребятами! Коротко в чем проблема: - Компании **хотят** внедрять агентов для внутренней автоматизации - Компании **не хотят**, чтобы сотрудники сами у себя на компе что-то костылили - Зато хотят контроль над до...",
+          "reason": "coding_agents, agent_ops, rag_retrieval_knowledge; depth=practitioner_experience",
+          "telegram_message_id": 495
+        },
+        {
+          "coverage_labels": [
+            "coding_agents",
+            "agent_ops",
             "ai_product_pm",
+            "business_adoption",
             "ai_ux_workflow",
             "model_landscape"
           ],
-          "created_at": "2026-02-16",
-          "depth_label": "practitioner_experience",
-          "excerpt": "Сдвиг 2025 → 2026. Забавное наблюдение с моих консультаций: Во второй половине 25го года ко мне стали часто приходить компании с просьбой поревьюить их AI системы. И почти всегда консультация шла по следующему сценарию: 1. Рассказывают/показывают свой сложный комбайн: - Кастомный процессинг pdf в текст - sparse/denc...",
-          "reason": "coding_agents, agent_ops, rag_retrieval_knowledge; depth=practitioner_experience",
-          "telegram_message_id": 463
+          "created_at": "2026-05-07",
+          "depth_label": "howto_or_checklist",
+          "excerpt": "Невошедшее во вчерашний пост (по сути – альтернативы для 2 пункта): 1️⃣ Вариант [Hermes+Honcho](https://t.me/oestick/494?comment=4603) Из хорошего – у Hermes есть профили под разных пользователей, а Honcho дает память = обучение правильно решать задачи Но это не решает проблему изоляции юзеров + проблему совместного...",
+          "reason": "coding_agents, agent_ops, ai_product_pm; depth=howto_or_checklist",
+          "telegram_message_id": 496
         },
         {
           "coverage_labels": [
@@ -1443,27 +1469,6 @@
           "excerpt": "Вероятно, одна из самых интересных вакансий для AI engineer в российском бигтехе (по посту не очевидно, но это Яндекс) Леша – [победитель ERC3,](https://erc.timetoact-group.at/assets/erc3.html#prize) кмк, лучшего на сегодня бенчмарка для кожаных AI билдеров. Мне самому интересно с ним поработать – так что это не рек...",
           "reason": "agent_ops, evals_quality; depth=benchmark_or_eval",
           "telegram_message_id": 481
-        },
-        {
-          "coverage_labels": [
-            "agent_ops",
-            "evals_quality"
-          ],
-          "created_at": "2026-04-06",
-          "depth_label": "benchmark_or_eval",
-          "excerpt": "**Как стать одним из нас?** Мы отрываем внешний найм и ищем двух ниндзя в нашу безбашенную команду разработки AI-агентов. Все детали проекта не могу раскрыть, но до конца года эффект должен быть на девятки миллионов долларов (ну или меня уволят): **1. Айзек из сериала Кастлвания** Ты умеешь воскрешать агентов, неотл...",
-          "reason": "agent_ops, evals_quality; depth=benchmark_or_eval",
-          "telegram_message_id": 480
-        },
-        {
-          "coverage_labels": [
-            "ai_product_pm"
-          ],
-          "created_at": "2026-05-01",
-          "depth_label": "practitioner_experience",
-          "excerpt": "По мотивам вчерашнего мок-интервью спонтанно собираемся на брейншторм – *во что превратятся собеседования в айтишке* Должно быть супер интересно – у Родиона свой DevTools продукт, а у Макса просто колоссальный опыт работы с технологиями и людьми, которые их строят UPD: [вот ссылочка](https://youtube.com/live/y2NnheH...",
-          "reason": "ai_product_pm; depth=practitioner_experience",
-          "telegram_message_id": 492
         }
       ],
       "runtime_readiness": {
@@ -1472,7 +1477,7 @@
         "metadata_advisory_ready": true,
         "text_posts_ready": true
       },
-      "text_post_count": 351,
+      "text_post_count": 357,
       "top_concepts": [
         {
           "count": 39,
@@ -1821,16 +1826,16 @@
     {
       "channel_username": "realtimeforai",
       "coverage": {
-        "agent_ops": 52,
+        "agent_ops": 55,
         "ai_engineering_infra": 6,
         "ai_product_pm": 30,
         "ai_ux_workflow": 6,
-        "business_adoption": 44,
-        "coding_agents": 22,
+        "business_adoption": 46,
+        "coding_agents": 23,
         "creative_multimodal": 6,
         "evals_quality": 10,
         "general_ai_news": 0,
-        "model_landscape": 106,
+        "model_landscape": 109,
         "rag_retrieval_knowledge": 11,
         "security_privacy_governance": 22
       },
@@ -1850,26 +1855,26 @@
       },
       "date_range": {
         "first_post": "2025-04-11",
-        "last_post": "2026-05-03"
+        "last_post": "2026-05-12"
       },
       "depth_profile": {
-        "announcement_or_news": 17,
+        "announcement_or_news": 19,
         "architecture_analysis": 16,
         "benchmark_or_eval": 10,
         "case_study": 14,
-        "howto_or_checklist": 43,
+        "howto_or_checklist": 44,
         "low_signal": 10,
-        "practitioner_experience": 53,
+        "practitioner_experience": 54,
         "tool_release": 2
       },
       "display_name": "Air",
-      "embedding_count": 164,
+      "embedding_count": 168,
       "embedding_coverage_ratio": 1.0,
       "expert_id": "air_ai",
-      "fts_count": 164,
-      "metadata_coverage_ratio": 0.8667,
+      "fts_count": 168,
+      "metadata_coverage_ratio": 0.8462,
       "metadata_valid_count": 143,
-      "post_count": 165,
+      "post_count": 169,
       "representative_posts": [
         {
           "coverage_labels": [
@@ -1886,6 +1891,18 @@
         },
         {
           "coverage_labels": [
+            "coding_agents",
+            "agent_ops",
+            "business_adoption"
+          ],
+          "created_at": "2026-05-04",
+          "depth_label": "practitioner_experience",
+          "excerpt": "**Wenyan Prompting или «Изя всё»** Пост о том, что еще придумали находчивые и экономные разработчики для качественного сжатия контекста ~~~ Экосистема для AI-агентов [caveman](https://github.com/JuliusBrussee/caveman) (многоk ⭐️) делится на несколько уровней: она сжимает ответы, memory-файлы и MCP-описания, экономя...",
+          "reason": "coding_agents, agent_ops, business_adoption; depth=practitioner_experience",
+          "telegram_message_id": 433
+        },
+        {
+          "coverage_labels": [
             "security_privacy_governance",
             "model_landscape"
           ],
@@ -1894,17 +1911,6 @@
           "excerpt": "Мы часто обсуждаем как сотрудники загружают рабочие документы с чувствительными данными в облачные модели Даже придумали международный термин **Shadow AI** **Теневой ИИ - **- использование сотрудниками несанкционированных нейросетей для рабочих задач Для безопасников по всему миру это головная боль 🤕 **Запреты помог...",
           "reason": "security_privacy_governance, model_landscape; depth=practitioner_experience",
           "telegram_message_id": 429
-        },
-        {
-          "coverage_labels": [
-            "business_adoption",
-            "security_privacy_governance"
-          ],
-          "created_at": "2026-04-23",
-          "depth_label": "practitioner_experience",
-          "excerpt": "**Экономить по крупному** **на CAPEX** Доступ к передовым западным моделям усложняется с каждым днем как снаружи, так и изнутри. Но это уже не вопрос «надо или не надо», **это вопрос фундаментальной экономики.** **Мы живем в материальном мире с конечными ресурсами** По законам рынка то, чего много и что доступно бол...",
-          "reason": "business_adoption, security_privacy_governance; depth=practitioner_experience",
-          "telegram_message_id": 424
         },
         {
           "coverage_labels": [
@@ -1957,14 +1963,14 @@
         },
         {
           "coverage_labels": [
-            "agent_ops",
-            "model_landscape"
+            "business_adoption",
+            "security_privacy_governance"
           ],
-          "created_at": "2026-04-08",
+          "created_at": "2026-04-23",
           "depth_label": "practitioner_experience",
-          "excerpt": "**Skills вот уже какую неделю на верхушке AI-хит-парада** и сегодня мне скинули **гайд от Антропик** – руководство по скиллам. Если раньше все говорили в основном о промптах, то сейчас все чаще обсуждают их. За последнюю неделю особенно много постов, а комментарии такого плана: почему не вызываются или не исполняютс...",
-          "reason": "agent_ops, model_landscape; depth=practitioner_experience",
-          "telegram_message_id": 417
+          "excerpt": "**Экономить по крупному** **на CAPEX** Доступ к передовым западным моделям усложняется с каждым днем как снаружи, так и изнутри. Но это уже не вопрос «надо или не надо», **это вопрос фундаментальной экономики.** **Мы живем в материальном мире с конечными ресурсами** По законам рынка то, чего много и что доступно бол...",
+          "reason": "business_adoption, security_privacy_governance; depth=practitioner_experience",
+          "telegram_message_id": 424
         }
       ],
       "runtime_readiness": {
@@ -1973,7 +1979,7 @@
         "metadata_advisory_ready": true,
         "text_posts_ready": true
       },
-      "text_post_count": 164,
+      "text_post_count": 168,
       "top_concepts": [
         {
           "count": 31,
@@ -2161,18 +2167,18 @@
     {
       "channel_username": "ai_product",
       "coverage": {
-        "agent_ops": 218,
-        "ai_engineering_infra": 66,
-        "ai_product_pm": 112,
+        "agent_ops": 222,
+        "ai_engineering_infra": 70,
+        "ai_product_pm": 116,
         "ai_ux_workflow": 50,
-        "business_adoption": 126,
-        "coding_agents": 203,
-        "creative_multimodal": 61,
-        "evals_quality": 105,
+        "business_adoption": 128,
+        "coding_agents": 208,
+        "creative_multimodal": 65,
+        "evals_quality": 106,
         "general_ai_news": 2,
-        "model_landscape": 480,
-        "rag_retrieval_knowledge": 28,
-        "security_privacy_governance": 87
+        "model_landscape": 492,
+        "rag_retrieval_knowledge": 29,
+        "security_privacy_governance": 89
       },
       "coverage_strength": {
         "agent_ops": "strong",
@@ -2190,37 +2196,39 @@
       },
       "date_range": {
         "first_post": "2025-01-01",
-        "last_post": "2026-05-04"
+        "last_post": "2026-05-12"
       },
       "depth_profile": {
-        "announcement_or_news": 166,
-        "architecture_analysis": 29,
-        "benchmark_or_eval": 104,
-        "case_study": 92,
-        "howto_or_checklist": 175,
-        "low_signal": 150,
-        "practitioner_experience": 76,
+        "announcement_or_news": 168,
+        "architecture_analysis": 31,
+        "benchmark_or_eval": 105,
+        "case_study": 93,
+        "howto_or_checklist": 180,
+        "low_signal": 152,
+        "practitioner_experience": 78,
         "tool_release": 30
       },
       "display_name": "Akimov",
-      "embedding_count": 775,
+      "embedding_count": 790,
       "embedding_coverage_ratio": 1.0,
       "expert_id": "akimov",
-      "fts_count": 775,
-      "metadata_coverage_ratio": 0.7993,
+      "fts_count": 790,
+      "metadata_coverage_ratio": 0.7849,
       "metadata_valid_count": 657,
-      "post_count": 822,
+      "post_count": 837,
       "representative_posts": [
         {
           "coverage_labels": [
+            "agent_ops",
             "evals_quality",
-            "model_landscape"
+            "model_landscape",
+            "creative_multimodal"
           ],
-          "created_at": "2026-05-04",
+          "created_at": "2026-05-07",
           "depth_label": "benchmark_or_eval",
-          "excerpt": "Мне нравятся всякие сериалы про скорую помощь, но кажется скоро там будет сплошной ИИ. Прочитал про Гарвардское исследование, опубликованное в Science. Доказали, что LLM-системы точнее людей ставят диагнозы в условиях экстренной медицины – тех самых первых минут в приёмном покое, когда от решения зависит жизнь. Авто...",
-          "reason": "evals_quality, model_landscape; depth=benchmark_or_eval",
-          "telegram_message_id": 2154
+          "excerpt": "О, ответочка по голосу от OpenAI: GPT-Realtime-2, GPT-Realtime-Translate и GPT-Realtime-Whisper. **GPT-Realtime-2 – первая голосовая модель с ризонингом класса GPT-5** Напихали кучу всего: - Preambles – модель может сказать \"секунду, проверяю\" перед основным ответом, чтобы юзер понимал, что агент работает - Параллел...",
+          "reason": "agent_ops, evals_quality, model_landscape; depth=benchmark_or_eval",
+          "telegram_message_id": 2163
         },
         {
           "coverage_labels": [
@@ -2255,6 +2263,56 @@
             "coding_agents",
             "agent_ops",
             "ai_product_pm",
+            "security_privacy_governance",
+            "model_landscape"
+          ],
+          "created_at": "2026-05-07",
+          "depth_label": "case_study",
+          "excerpt": "С большим удовольствием посмотрел на интервью Бориса Чёрного из Claude Code. Понятно, что там в 100500-й раз, как случайно они сделали Claude Code и как улучшение моделей наконец заставило это все заработать, но самые прикольные мысли такие: \"Кодинг уже решенная задача\". Можно сгенерировать что угодно на каком угодн...",
+          "reason": "coding_agents, agent_ops, ai_product_pm; depth=case_study",
+          "telegram_message_id": 2161
+        },
+        {
+          "coverage_labels": [
+            "ai_product_pm",
+            "ai_engineering_infra",
+            "model_landscape"
+          ],
+          "created_at": "2026-05-11",
+          "depth_label": "practitioner_experience",
+          "excerpt": "Ну вот, то, о чем так много говорили: OpenAI запускает Deployment Company (кстати возможно намек на The Boring Company) – отдельный ИИ-консалтинг на $10 млрд. Купили Tomoro Consulting и 150 сотрудников теперь будут внедрять ИИ от OpenAI. Forward Deployed Engineers (FDE) сажают внутрь клиента – не \"интегрируем поверх...",
+          "reason": "ai_product_pm, ai_engineering_infra, model_landscape; depth=practitioner_experience",
+          "telegram_message_id": 2167
+        },
+        {
+          "coverage_labels": [
+            "rag_retrieval_knowledge",
+            "ai_engineering_infra",
+            "model_landscape",
+            "creative_multimodal"
+          ],
+          "created_at": "2026-05-06",
+          "depth_label": "howto_or_checklist",
+          "excerpt": "Google прокачал managed RAG в Gemini API – теперь не нужно самим собирать связку vector store + embedder + reranker для 80% типовых задач. Для огромного количества простых RAG для документов/баз знаний этого будет вполне достаточно. Выпустили 3 апдейта: – Мультимодальность. Под капотом новый Gemini Embedding 2, пони...",
+          "reason": "rag_retrieval_knowledge, ai_engineering_infra, model_landscape; depth=howto_or_checklist",
+          "telegram_message_id": 2159
+        },
+        {
+          "coverage_labels": [
+            "evals_quality",
+            "model_landscape"
+          ],
+          "created_at": "2026-05-04",
+          "depth_label": "benchmark_or_eval",
+          "excerpt": "Мне нравятся всякие сериалы про скорую помощь, но кажется скоро там будет сплошной ИИ. Прочитал про Гарвардское исследование, опубликованное в Science. Доказали, что LLM-системы точнее людей ставят диагнозы в условиях экстренной медицины – тех самых первых минут в приёмном покое, когда от решения зависит жизнь. Авто...",
+          "reason": "evals_quality, model_landscape; depth=benchmark_or_eval",
+          "telegram_message_id": 2154
+        },
+        {
+          "coverage_labels": [
+            "coding_agents",
+            "agent_ops",
+            "ai_product_pm",
             "business_adoption",
             "model_landscape"
           ],
@@ -2263,62 +2321,6 @@
           "excerpt": "Вау, интервью с Head of Product Claude: Главная мысль – классическая схема разработки рассыпается. Скорость: с 6 месяцев до 1 дня Раньше циклы планировались на 6–12 месяцев вперёд. Сейчас в Anthropic путь от идеи до релиза – месяц, неделя, иногда день. PRD и роадмапы эволюционировали: roadmap перестал быть «планом н...",
           "reason": "coding_agents, agent_ops, ai_product_pm; depth=case_study",
           "telegram_message_id": 2144
-        },
-        {
-          "coverage_labels": [
-            "agent_ops",
-            "model_landscape",
-            "creative_multimodal"
-          ],
-          "created_at": "2026-04-24",
-          "depth_label": "practitioner_experience",
-          "excerpt": "Grok Voice Think Fast 1.0 – кажется, голос скоро будет AI везде... Потому что стоит она 3 бакса в час! Заточена под поддержку клиентов, телефонные продажи, бронирование, корпоративные интеграции с тяжёлым tool calling. – 25 языков с автоопределением, включая русский, 5 голосов – Точный сбор данных: адреса, email, но...",
-          "reason": "agent_ops, model_landscape, creative_multimodal; depth=practitioner_experience",
-          "telegram_message_id": 2142
-        },
-        {
-          "coverage_labels": [
-            "coding_agents",
-            "agent_ops",
-            "evals_quality",
-            "rag_retrieval_knowledge",
-            "business_adoption",
-            "security_privacy_governance",
-            "ai_engineering_infra",
-            "model_landscape"
-          ],
-          "created_at": "2026-04-27",
-          "depth_label": "howto_or_checklist",
-          "excerpt": "**Google Cloud Next – кучища анонсов от Google** Обычно просматриваю такие вещи: в 99% случаев найдёшь что-то, что радикально упростит жизнь – функцию, библиотеку или софт. Собрал самое важное. **Gemini Enterprise app** (+$20–30 на сотрудника): Agent Designer, Inbox для работы агентов, Projects с памятью по файлам к...",
-          "reason": "coding_agents, agent_ops, evals_quality; depth=howto_or_checklist",
-          "telegram_message_id": 2146
-        },
-        {
-          "coverage_labels": [
-            "ai_product_pm",
-            "business_adoption",
-            "model_landscape"
-          ],
-          "created_at": "2026-04-23",
-          "depth_label": "case_study",
-          "excerpt": "OpenAI таки хочет добраться до консультантов и внедренцев. Создает DeployCo – $10B совместное предприятие с Private Equity-фондами для захвата энтерпрайза. OpenAI гарантирует PE-инвесторам 17.5% годовых на горизонте 5 лет Операционная модель – калька с Palantir. Инженеры DeployCo внедряются внутрь клиентов – автомат...",
-          "reason": "ai_product_pm, business_adoption, model_landscape; depth=case_study",
-          "telegram_message_id": 2135
-        },
-        {
-          "coverage_labels": [
-            "coding_agents",
-            "agent_ops",
-            "ai_product_pm",
-            "business_adoption",
-            "security_privacy_governance",
-            "model_landscape"
-          ],
-          "created_at": "2026-04-22",
-          "depth_label": "case_study",
-          "excerpt": "OpenAI наступает на пятки Claude, запустила Workspace Agents в ChatGPT. Крутятся в облаке и делают ваши задачи. – Запускаются по расписанию или по триггеру в Slack – не нужно держать чат открытым – Шарятся внутри организации: построил один раз – пользуется вся команда – Имеют память и улучшаются в процессе использов...",
-          "reason": "coding_agents, agent_ops, ai_product_pm; depth=case_study",
-          "telegram_message_id": 2134
         }
       ],
       "runtime_readiness": {
@@ -2327,7 +2329,7 @@
         "metadata_advisory_ready": true,
         "text_posts_ready": true
       },
-      "text_post_count": 775,
+      "text_post_count": 790,
       "top_concepts": [
         {
           "count": 55,
@@ -2513,18 +2515,183 @@
       "warnings": []
     },
     {
+      "channel_username": "deksden_notes",
+      "coverage": {
+        "agent_ops": 353,
+        "ai_engineering_infra": 25,
+        "ai_product_pm": 41,
+        "ai_ux_workflow": 42,
+        "business_adoption": 63,
+        "coding_agents": 253,
+        "creative_multimodal": 11,
+        "evals_quality": 31,
+        "general_ai_news": 1,
+        "model_landscape": 297,
+        "rag_retrieval_knowledge": 13,
+        "security_privacy_governance": 25
+      },
+      "coverage_strength": {
+        "agent_ops": "strong",
+        "ai_engineering_infra": "thin",
+        "ai_product_pm": "medium",
+        "ai_ux_workflow": "medium",
+        "business_adoption": "medium",
+        "coding_agents": "strong",
+        "creative_multimodal": "thin",
+        "evals_quality": "medium",
+        "general_ai_news": "thin",
+        "model_landscape": "strong",
+        "rag_retrieval_knowledge": "thin",
+        "security_privacy_governance": "thin"
+      },
+      "date_range": {
+        "first_post": "2025-07-28",
+        "last_post": "2026-05-12"
+      },
+      "depth_profile": {
+        "announcement_or_news": 157,
+        "architecture_analysis": 56,
+        "benchmark_or_eval": 30,
+        "case_study": 57,
+        "howto_or_checklist": 214,
+        "low_signal": 67,
+        "practitioner_experience": 81,
+        "tool_release": 52
+      },
+      "display_name": "DEKSDEN notes",
+      "embedding_count": 711,
+      "embedding_coverage_ratio": 1.0,
+      "expert_id": "deksden_notes",
+      "fts_count": 711,
+      "metadata_coverage_ratio": 0.0,
+      "metadata_valid_count": 0,
+      "post_count": 714,
+      "representative_posts": [
+        {
+          "coverage_labels": [
+            "coding_agents",
+            "agent_ops",
+            "ai_product_pm",
+            "business_adoption"
+          ],
+          "created_at": "2026-04-29",
+          "depth_label": "case_study",
+          "excerpt": "⚪️ Комплимент Codex Я не приверженец брендов, компаний или продуктов. Видимо, низкая лояльность. Я приверженец функций, действий и поступков. Как говорится, критерий истины - практика. В этом разрезе не могу не отметить одну штуку, которую подсветил чел в твиттере, и про которую я знал, - но еще раз хотел бы похвали...",
+          "reason": "coding_agents, agent_ops, ai_product_pm; depth=case_study",
+          "telegram_message_id": 723
+        },
+        {
+          "coverage_labels": [
+            "coding_agents",
+            "agent_ops",
+            "ai_ux_workflow",
+            "model_landscape"
+          ],
+          "created_at": "2026-05-02",
+          "depth_label": "practitioner_experience",
+          "excerpt": "**Ищу 2–3 человек в команду — работать с агентами на реальных проектах** Привет, я Игорь (@maslennikovig). У нас небольшая горизонтальная команда, ведём IT-проекты от лендингов до систем с серьёзным инвестиционным бюджетом. Сейчас заказов сильно больше, чем рук — и это, кажется, надолго. Стэки разные — Next.js + Sup...",
+          "reason": "coding_agents, agent_ops, ai_ux_workflow; depth=practitioner_experience",
+          "telegram_message_id": 733
+        },
+        {
+          "coverage_labels": [
+            "coding_agents",
+            "agent_ops",
+            "ai_engineering_infra",
+            "model_landscape"
+          ],
+          "created_at": "2026-05-04",
+          "depth_label": "architecture_analysis",
+          "excerpt": "⚪️ Codex : меняем системный промпт (base instructions + developer instructions) За последнее время наткнулся дважды на эту фичу, и оба раза в контексте что не все знают про такие фичи. Я тоже в свое время не очень знал, но разбирался - поэтому думаю мои исследования могут быть полезны \"широким массам\" ИИ кодеров. Ит...",
+          "reason": "coding_agents, agent_ops, ai_engineering_infra; depth=architecture_analysis",
+          "telegram_message_id": 738
+        },
+        {
+          "coverage_labels": [
+            "coding_agents",
+            "ai_ux_workflow",
+            "security_privacy_governance",
+            "model_landscape",
+            "creative_multimodal"
+          ],
+          "created_at": "2026-05-02",
+          "depth_label": "tool_release",
+          "excerpt": "⚪️ REMOTE tools #market часть 2 ... начало тут: https://t.me/deksden_notes/735 * Remoto: Remoto creates a secure tunnel between your terminal and your phone. When you run the CLI, it spawns a local shell session and connects to our relay server via WebSocket : https://www.remoto.sh/ * Takopi: Takopi runs coding agen...",
+          "reason": "coding_agents, ai_ux_workflow, security_privacy_governance; depth=tool_release",
+          "telegram_message_id": 736
+        },
+        {
+          "coverage_labels": [
+            "coding_agents",
+            "ai_product_pm",
+            "business_adoption"
+          ],
+          "created_at": "2026-05-11",
+          "depth_label": "architecture_analysis",
+          "excerpt": "⚪️ Codex is for Everyone Мероприятие клозедов: May 13, 10:45 PM EET Online конечно 🔗 https://forum.openai.com/public/events/codex-is-for-everyone-why-codex-matters-beyond-code-fa40puy7wi?agenda_day=69ebc15673d8354297b24f73&agenda_filter_view=stage&agenda_stage=69ebc15673d8354297b24f79&agenda_track=69ebc15673d8354297...",
+          "reason": "coding_agents, ai_product_pm, business_adoption; depth=architecture_analysis",
+          "telegram_message_id": 756
+        },
+        {
+          "coverage_labels": [
+            "coding_agents",
+            "agent_ops"
+          ],
+          "created_at": "2026-05-09",
+          "depth_label": "howto_or_checklist",
+          "excerpt": "⚪️ Codex remote-control Заинтересовал меня пункт в последнем релизе кодекса cli: - Added `codex remote-control` as a simpler entrypoint for starting a headless, remotely controllable app-server. Вроде бы догаываюсь о чем идет речь, но захотелось разобраться поглубже. Расчехлил локальный репо, подтянул обновки, натра...",
+          "reason": "coding_agents, agent_ops; depth=howto_or_checklist",
+          "telegram_message_id": 754
+        },
+        {
+          "coverage_labels": [
+            "agent_ops"
+          ],
+          "created_at": "2026-05-09",
+          "depth_label": "howto_or_checklist",
+          "excerpt": "⚪️ Chrome Skills Скиллы реально зашли как популярные! И уже видны какие то перегибы. Вот в хром добавляют скиллы - хотя это просто сохраненные промпты, а не agent skills. Интересно видеть как маркетинг выхолащивает идеи. Потом прийдется разделять \"настоящие\" скиллы от скиллов в текстовом редакторе. @deksden_notes",
+          "reason": "agent_ops; depth=howto_or_checklist",
+          "telegram_message_id": 753
+        },
+        {
+          "coverage_labels": [
+            "coding_agents",
+            "model_landscape"
+          ],
+          "created_at": "2026-05-08",
+          "depth_label": "howto_or_checklist",
+          "excerpt": "**⚪️ Codex Chrome ** Не писал сразу - посмотрел сам как оно работает. Новый плагин для codex аппа - chrome + компаньон расширение для хрома. Кодекс работает с хромом напрямую, может работать с нексколькими вкладками параллельно, в фоне. Неплохо сделано, удобно! Попробуйте. 🔗 Видос: https://www.youtube.com/watch?v=b6...",
+          "reason": "coding_agents, model_landscape; depth=howto_or_checklist",
+          "telegram_message_id": 749
+        }
+      ],
+      "runtime_readiness": {
+        "embeddings_ready": true,
+        "fts_ready": true,
+        "metadata_advisory_ready": false,
+        "text_posts_ready": true
+      },
+      "text_post_count": 711,
+      "top_concepts": [],
+      "top_keywords": [],
+      "top_primary_topics": [],
+      "warnings": [
+        "deksden_notes: no valid post_metadata; coverage is text-only"
+      ]
+    },
+    {
       "channel_username": "kdoronin_blog",
       "coverage": {
-        "agent_ops": 282,
+        "agent_ops": 287,
         "ai_engineering_infra": 24,
         "ai_product_pm": 96,
-        "ai_ux_workflow": 37,
-        "business_adoption": 89,
+        "ai_ux_workflow": 38,
+        "business_adoption": 91,
         "coding_agents": 181,
         "creative_multimodal": 36,
         "evals_quality": 17,
         "general_ai_news": 11,
-        "model_landscape": 396,
+        "model_landscape": 398,
         "rag_retrieval_knowledge": 29,
         "security_privacy_governance": 22
       },
@@ -2544,26 +2711,26 @@
       },
       "date_range": {
         "first_post": "2024-06-11",
-        "last_post": "2026-05-04"
+        "last_post": "2026-05-11"
       },
       "depth_profile": {
         "announcement_or_news": 50,
         "architecture_analysis": 63,
         "benchmark_or_eval": 18,
         "case_study": 124,
-        "howto_or_checklist": 296,
+        "howto_or_checklist": 300,
         "low_signal": 199,
-        "practitioner_experience": 115,
+        "practitioner_experience": 117,
         "tool_release": 10
       },
       "display_name": "Doronin",
-      "embedding_count": 686,
+      "embedding_count": 692,
       "embedding_coverage_ratio": 1.0,
       "expert_id": "doronin",
-      "fts_count": 686,
-      "metadata_coverage_ratio": 0.7211,
+      "fts_count": 692,
+      "metadata_coverage_ratio": 0.7162,
       "metadata_valid_count": 631,
-      "post_count": 875,
+      "post_count": 881,
       "representative_posts": [
         {
           "coverage_labels": [
@@ -2617,30 +2784,6 @@
         },
         {
           "coverage_labels": [
-            "agent_ops",
-            "rag_retrieval_knowledge",
-            "model_landscape"
-          ],
-          "created_at": "2026-04-03",
-          "depth_label": "case_study",
-          "excerpt": "**Про стенд для тестов систем памяти AI-агентов.** Когда мне в руки попадает очередное решение для памяти AI-агентов, ~~я радуюсь, как ребёнок~~ собираю с ним стандартный тестовый стенд в docker: 1. База для векторов – [Qdrant](https://github.com/qdrant/qdrant). Поддерживается большинством фреймворков для организаци...",
-          "reason": "agent_ops, rag_retrieval_knowledge, model_landscape; depth=case_study",
-          "telegram_message_id": 1242
-        },
-        {
-          "coverage_labels": [
-            "agent_ops",
-            "evals_quality",
-            "model_landscape"
-          ],
-          "created_at": "2026-04-02",
-          "depth_label": "benchmark_or_eval",
-          "excerpt": "**Вышла Gemma4. ** Попробовал с ней повзаимодействовать через Ollama. Работает достаточно шустро, хоть и съедает почти все 32Gb памяти на моём ноутбуке. Думаю, за скорость стоит поблагодарить [недавнее MLX-обновление](https://ollama.com/blog/mlx) от Ollama. Судя по [официальному анонсу Google](https://deepmind.googl...",
-          "reason": "agent_ops, evals_quality, model_landscape; depth=benchmark_or_eval",
-          "telegram_message_id": 1241
-        },
-        {
-          "coverage_labels": [
             "agent_ops"
           ],
           "created_at": "2026-04-24",
@@ -2658,6 +2801,28 @@
           "excerpt": "**Вообще, мне дважды советовали попробовать ****Mastra.**.](https://mastra.ai/) И оба раза это делал [Рефат.](https://t.me/nobilix) Указывая в списке \"советую\" также [Agno](https://www.agno.com/) (писал про него [тут](https://t.me/kdoronin_blog/1097)). Собственно, выбирая между TS и Python, я выбирал последний, **ра...",
           "reason": "agent_ops; depth=case_study",
           "telegram_message_id": 1253
+        },
+        {
+          "coverage_labels": [
+            "model_landscape"
+          ],
+          "created_at": "2026-04-09",
+          "depth_label": "case_study",
+          "excerpt": "**Всё-таки дождался, когда ****Seedance2.0 выйдет на fal.ai**i](https://fal.ai/models/bytedance/seedance-2.0/text-to-video)**.** Сперва он был доступен **только через лист ожидания**, а сейчас, судя по всему, его открыли для всех. Вообще я разделяю AI-генераторы видео на два типа: 1. Годятся **для развлечения**. 2....",
+          "reason": "model_landscape; depth=case_study",
+          "telegram_message_id": 1246
+        },
+        {
+          "coverage_labels": [
+            "agent_ops",
+            "business_adoption",
+            "model_landscape"
+          ],
+          "created_at": "2026-05-11",
+          "depth_label": "practitioner_experience",
+          "excerpt": "**\"Каждый токен на счету\".** Вы его ждали – и он пришёл. **Анонс нового стрима!** Для большинства пользователей то, что OpenClaw или [Hermes](https://t.me/kdoronin_blog/1268) едят токены с лопаты – не проблема. Дело в том, что использует эту обвязку вокруг агента **один человек**. Поэтому и разница в пять раз (хорош...",
+          "reason": "agent_ops, business_adoption, model_landscape; depth=practitioner_experience",
+          "telegram_message_id": 1277
         }
       ],
       "runtime_readiness": {
@@ -2666,7 +2831,7 @@
         "metadata_advisory_ready": true,
         "text_posts_ready": true
       },
-      "text_post_count": 686,
+      "text_post_count": 692,
       "top_concepts": [
         {
           "count": 101,
@@ -2854,16 +3019,16 @@
     {
       "channel_username": "elkornacio",
       "coverage": {
-        "agent_ops": 111,
+        "agent_ops": 115,
         "ai_engineering_infra": 16,
-        "ai_product_pm": 43,
+        "ai_product_pm": 45,
         "ai_ux_workflow": 21,
-        "business_adoption": 41,
-        "coding_agents": 117,
+        "business_adoption": 43,
+        "coding_agents": 118,
         "creative_multimodal": 10,
         "evals_quality": 20,
         "general_ai_news": 1,
-        "model_landscape": 190,
+        "model_landscape": 193,
         "rag_retrieval_knowledge": 13,
         "security_privacy_governance": 10
       },
@@ -2883,26 +3048,26 @@
       },
       "date_range": {
         "first_post": "2025-01-10",
-        "last_post": "2026-05-01"
+        "last_post": "2026-05-11"
       },
       "depth_profile": {
-        "announcement_or_news": 68,
-        "architecture_analysis": 46,
+        "announcement_or_news": 70,
+        "architecture_analysis": 47,
         "benchmark_or_eval": 20,
-        "case_study": 31,
-        "howto_or_checklist": 140,
+        "case_study": 32,
+        "howto_or_checklist": 141,
         "low_signal": 99,
-        "practitioner_experience": 32,
+        "practitioner_experience": 33,
         "tool_release": 29
       },
       "display_name": "Elkornacio",
-      "embedding_count": 445,
+      "embedding_count": 451,
       "embedding_coverage_ratio": 1.0,
       "expert_id": "elkornacio",
-      "fts_count": 445,
-      "metadata_coverage_ratio": 0.9226,
+      "fts_count": 451,
+      "metadata_coverage_ratio": 0.9108,
       "metadata_valid_count": 429,
-      "post_count": 465,
+      "post_count": 471,
       "representative_posts": [
         {
           "coverage_labels": [
@@ -2920,18 +3085,13 @@
         },
         {
           "coverage_labels": [
-            "coding_agents",
-            "agent_ops",
-            "evals_quality",
-            "business_adoption",
-            "ai_engineering_infra",
-            "model_landscape"
+            "business_adoption"
           ],
-          "created_at": "2026-02-15",
-          "depth_label": "benchmark_or_eval",
-          "excerpt": "решил пошерить пачку небольших лайфхаков в работе с агентами, в основном про скрипты. думаю, опытным чувакам 90% из этого покажется прописными истинами, но, возможно, кто-то почерпнёт что-то полезное для себя. сохраняйте, шерьте, кайфуйте 🙂 1. не юзайте TUI в VSCode/Cursor для Claude Code / Codex / etc. мерцания инт...",
-          "reason": "coding_agents, agent_ops, evals_quality; depth=benchmark_or_eval",
-          "telegram_message_id": 529
+          "created_at": "2026-02-20",
+          "depth_label": "case_study",
+          "excerpt": "стоп, подождите, а вы не пропустили прошлый пост про [AI Hard Fork](https://entropy-x-stratoplan.com/?utm_source=elcor)? если вдруг, то вот: ребята из Стратоплана (где я выступал) сколлабились с ребятами из Entropy Talk (где я тоже выступал), и отказаться было нереально - я 25 февраля (среда) залечу на панельку в [A...",
+          "reason": "business_adoption; depth=case_study",
+          "telegram_message_id": 534
         },
         {
           "coverage_labels": [
@@ -2961,23 +3121,27 @@
         },
         {
           "coverage_labels": [
-            "business_adoption"
+            "agent_ops",
+            "model_landscape"
           ],
-          "created_at": "2026-02-20",
+          "created_at": "2026-05-07",
           "depth_label": "case_study",
-          "excerpt": "стоп, подождите, а вы не пропустили прошлый пост про [AI Hard Fork](https://entropy-x-stratoplan.com/?utm_source=elcor)? если вдруг, то вот: ребята из Стратоплана (где я выступал) сколлабились с ребятами из Entropy Talk (где я тоже выступал), и отказаться было нереально - я 25 февраля (среда) залечу на панельку в [A...",
-          "reason": "business_adoption; depth=case_study",
-          "telegram_message_id": 534
+          "excerpt": "https://claude.com/blog/new-in-claude-managed-agents Anthropic завезли \"сны\" для агентов в их облаке. этакая концепция само-рефлексии, где агент время от времени анализирует логи собственных сессий и прикидывает, где и что он мог бы сделать лучше, и какие новые скиллы/правила ему завести, чтобы стать ✨*лучшей версие...",
+          "reason": "agent_ops, model_landscape; depth=case_study",
+          "telegram_message_id": 563
         },
         {
           "coverage_labels": [
-            "business_adoption"
+            "agent_ops",
+            "ai_product_pm",
+            "business_adoption",
+            "model_landscape"
           ],
-          "created_at": "2026-02-15",
-          "depth_label": "case_study",
-          "excerpt": "я с начала года планировал не участвовать в конфах, но узнав, что ребята из Стратоплана (где я выступал) сколлабились с ребятами из Entropy Talk (где я тоже выступал), отказаться было нереально - я 25 февраля (среда через неделю) залечу на панельку в [AI Hard Fork](https://entropy-x-stratoplan.com/?utm_source=elcor)...",
-          "reason": "business_adoption; depth=case_study",
-          "telegram_message_id": 530
+          "created_at": "2026-05-11",
+          "depth_label": "practitioner_experience",
+          "excerpt": "мне очень хочется поэкспериментировать, создав такое инновационное объединение: маленькое и невероятно мобильное. ниша, естественно - продукты для агентной разработки. ИИ - это революция всего мироустройства, которая происходит на наших глазах, а агентная разработка - самая горячая, динамичная и прибыльная часть это...",
+          "reason": "agent_ops, ai_product_pm, business_adoption; depth=practitioner_experience",
+          "telegram_message_id": 566
         },
         {
           "coverage_labels": [
@@ -3010,7 +3174,7 @@
         "metadata_advisory_ready": true,
         "text_posts_ready": true
       },
-      "text_post_count": 445,
+      "text_post_count": 451,
       "top_concepts": [
         {
           "count": 31,
@@ -3559,18 +3723,18 @@
     {
       "channel_username": "gleb_pro_ai",
       "coverage": {
-        "agent_ops": 116,
-        "ai_engineering_infra": 19,
+        "agent_ops": 120,
+        "ai_engineering_infra": 20,
         "ai_product_pm": 31,
         "ai_ux_workflow": 9,
-        "business_adoption": 34,
+        "business_adoption": 35,
         "coding_agents": 129,
         "creative_multimodal": 1,
-        "evals_quality": 7,
+        "evals_quality": 8,
         "general_ai_news": 10,
-        "model_landscape": 127,
-        "rag_retrieval_knowledge": 11,
-        "security_privacy_governance": 7
+        "model_landscape": 130,
+        "rag_retrieval_knowledge": 12,
+        "security_privacy_governance": 8
       },
       "coverage_strength": {
         "agent_ops": "strong",
@@ -3588,27 +3752,38 @@
       },
       "date_range": {
         "first_post": "2025-05-02",
-        "last_post": "2026-05-04"
+        "last_post": "2026-05-12"
       },
       "depth_profile": {
-        "announcement_or_news": 80,
-        "architecture_analysis": 52,
-        "benchmark_or_eval": 7,
+        "announcement_or_news": 82,
+        "architecture_analysis": 54,
+        "benchmark_or_eval": 8,
         "case_study": 16,
-        "howto_or_checklist": 170,
-        "low_signal": 100,
-        "practitioner_experience": 39,
+        "howto_or_checklist": 176,
+        "low_signal": 101,
+        "practitioner_experience": 40,
         "tool_release": 8
       },
       "display_name": "Glebkudr",
-      "embedding_count": 455,
+      "embedding_count": 468,
       "embedding_coverage_ratio": 1.0,
       "expert_id": "glebkudr",
-      "fts_count": 455,
-      "metadata_coverage_ratio": 0.7712,
+      "fts_count": 468,
+      "metadata_coverage_ratio": 0.7505,
       "metadata_valid_count": 364,
-      "post_count": 472,
+      "post_count": 485,
       "representative_posts": [
+        {
+          "coverage_labels": [
+            "evals_quality",
+            "business_adoption"
+          ],
+          "created_at": "2026-05-12",
+          "depth_label": "benchmark_or_eval",
+          "excerpt": "Недавно у двоих уважаемых мной авторов стал замечать нейрослоп в публикациях. При этом метрики растут — статьи явно получаются более цепкими. Но от обоих я сразу же отписался. Почему? Не хочу чувствовать себя свиньей в хлеву, которой наливают в корыто цифровые помои. То есть мне кажется, это максимальное неуважение...",
+          "reason": "evals_quality, business_adoption; depth=benchmark_or_eval",
+          "telegram_message_id": 560
+        },
         {
           "coverage_labels": [
             "coding_agents",
@@ -3642,14 +3817,24 @@
         },
         {
           "coverage_labels": [
-            "coding_agents",
-            "business_adoption"
+            "agent_ops",
+            "security_privacy_governance"
           ],
-          "created_at": "2026-04-28",
-          "depth_label": "howto_or_checklist",
-          "excerpt": "Последнее время взял курс на оптимизацию подписок и каких-то левых затрат. Докладываюсь. 1) полный клон сайта из webflow и экспорт его пятым кулифай контейнером на дешманский vps -> 1 час работы, экономия 20 баксов в месяц. 2) переезд другого сайта вторым контейнером на другой дешманский vps -> экономия 60 баксов в...",
-          "reason": "coding_agents, business_adoption; depth=howto_or_checklist",
-          "telegram_message_id": 537
+          "created_at": "2026-05-05",
+          "depth_label": "architecture_analysis",
+          "excerpt": "Мастер-класс у клиента За 4 часа развернул ревьюилку мердж реквестов из гитлаба на базе кодекса (headless exec вариант). Развернуто на VPS и при поступлении хука с гитхаба, автоматически анализирует на безопасность как конкретные изменения по реквесту, так и по всей кодовой базе в целом. CodeRabbit идет нахер вместе...",
+          "reason": "agent_ops, security_privacy_governance; depth=architecture_analysis",
+          "telegram_message_id": 550
+        },
+        {
+          "coverage_labels": [
+            "rag_retrieval_knowledge"
+          ],
+          "created_at": "2026-05-04",
+          "depth_label": "architecture_analysis",
+          "excerpt": "Докладываюсь по flex пайплайнам — результаты охеренные Следите за руками. Пайплайн был с компьютерным зрением. Чертежи, стройка, все как мы любим 😁 Много листов pdf как-то связанных между собой (общей идеей) строительная документация это пиздец господа Я задал ограничение — работай исключительно с надписями/подписям...",
+          "reason": "rag_retrieval_knowledge; depth=architecture_analysis",
+          "telegram_message_id": 548
         },
         {
           "coverage_labels": [
@@ -3671,26 +3856,6 @@
           "excerpt": "**Сделал для SotaOCR возможность развертывания на своем сервере** — Никаких проблем с персоналкой, все у вас в контуре — Еще дешевле за объем, вплоть до 0.1р за страницу — удобный UX операторов + работа по АПИ внутри вашей сети — Помогу в запуске и развертывании нужных для вас моделей Модели кайф, я почти не встреча...",
           "reason": "ai_ux_workflow, ai_engineering_infra; depth=howto_or_checklist",
           "telegram_message_id": 532
-        },
-        {
-          "coverage_labels": [
-            "model_landscape"
-          ],
-          "created_at": "2026-04-23",
-          "depth_label": "architecture_analysis",
-          "excerpt": "Я знаю, вы обожаете OCR модельки прямо как я 😁 А выходят они не реже, чем LLM, так-то. Фиг уследишь. Поэтому что? Правильно. Новая SOTA каждый день. На этот раз в рейтинге вылез I[nfinity Parser 2 ](https://huggingface.co/infly/Infinity-Parser2-Pro) Хорошо — полный оупенсорс, можно юзать для коммерции. Плохо — модел...",
-          "reason": "model_landscape; depth=architecture_analysis",
-          "telegram_message_id": 525
-        },
-        {
-          "coverage_labels": [
-            "model_landscape"
-          ],
-          "created_at": "2026-04-14",
-          "depth_label": "architecture_analysis",
-          "excerpt": "Короче я распробовал 5.4 pro. Это та моделька, которая доступна только в вебе на подписках за 100+ баксов. Что делаю: 1) Кидаю ей зип файлики с репозиторием (как раньше склееные тексты в шотгане). Пишу — вот код, вот задача, поработай с ним, дай измененные файлы. Она их ловит, шуршит долго-долго, и пуляется файликам...",
-          "reason": "model_landscape; depth=architecture_analysis",
-          "telegram_message_id": 512
         }
       ],
       "runtime_readiness": {
@@ -3699,7 +3864,7 @@
         "metadata_advisory_ready": true,
         "text_posts_ready": true
       },
-      "text_post_count": 455,
+      "text_post_count": 468,
       "top_concepts": [
         {
           "count": 54,
@@ -3896,7 +4061,7 @@
         "creative_multimodal": 1,
         "evals_quality": 3,
         "general_ai_news": 4,
-        "model_landscape": 68,
+        "model_landscape": 69,
         "rag_retrieval_knowledge": 2,
         "security_privacy_governance": 7
       },
@@ -3916,26 +4081,26 @@
       },
       "date_range": {
         "first_post": "2025-05-27",
-        "last_post": "2026-05-03"
+        "last_post": "2026-05-09"
       },
       "depth_profile": {
-        "announcement_or_news": 35,
+        "announcement_or_news": 36,
         "architecture_analysis": 12,
         "benchmark_or_eval": 3,
         "case_study": 14,
-        "howto_or_checklist": 51,
+        "howto_or_checklist": 52,
         "low_signal": 34,
         "practitioner_experience": 24,
         "tool_release": 3
       },
       "display_name": "Ilia Izmailov",
-      "embedding_count": 171,
+      "embedding_count": 173,
       "embedding_coverage_ratio": 1.0,
       "expert_id": "ilia_izmailov",
-      "fts_count": 171,
-      "metadata_coverage_ratio": 0.8239,
+      "fts_count": 173,
+      "metadata_coverage_ratio": 0.8146,
       "metadata_valid_count": 145,
-      "post_count": 176,
+      "post_count": 178,
       "representative_posts": [
         {
           "coverage_labels": [
@@ -4036,7 +4201,7 @@
         "metadata_advisory_ready": true,
         "text_posts_ready": true
       },
-      "text_post_count": 171,
+      "text_post_count": 173,
       "top_concepts": [
         {
           "count": 13,
@@ -4224,18 +4389,18 @@
     {
       "channel_username": "NGI_ru",
       "coverage": {
-        "agent_ops": 119,
-        "ai_engineering_infra": 15,
-        "ai_product_pm": 265,
-        "ai_ux_workflow": 77,
-        "business_adoption": 165,
-        "coding_agents": 103,
+        "agent_ops": 120,
+        "ai_engineering_infra": 16,
+        "ai_product_pm": 270,
+        "ai_ux_workflow": 79,
+        "business_adoption": 168,
+        "coding_agents": 105,
         "creative_multimodal": 30,
         "evals_quality": 44,
         "general_ai_news": 1,
-        "model_landscape": 270,
+        "model_landscape": 275,
         "rag_retrieval_knowledge": 24,
-        "security_privacy_governance": 70
+        "security_privacy_governance": 73
       },
       "coverage_strength": {
         "agent_ops": "strong",
@@ -4253,26 +4418,26 @@
       },
       "date_range": {
         "first_post": "2024-05-08",
-        "last_post": "2026-05-02"
+        "last_post": "2026-05-11"
       },
       "depth_profile": {
         "announcement_or_news": 21,
-        "architecture_analysis": 32,
+        "architecture_analysis": 33,
         "benchmark_or_eval": 44,
-        "case_study": 145,
+        "case_study": 149,
         "howto_or_checklist": 75,
         "low_signal": 34,
         "practitioner_experience": 133,
         "tool_release": 3
       },
       "display_name": "Kornishev",
-      "embedding_count": 468,
+      "embedding_count": 473,
       "embedding_coverage_ratio": 1.0,
       "expert_id": "kornish",
-      "fts_count": 468,
+      "fts_count": 473,
       "metadata_coverage_ratio": 0.0,
       "metadata_valid_count": 0,
-      "post_count": 487,
+      "post_count": 492,
       "representative_posts": [
         {
           "coverage_labels": [
@@ -4288,6 +4453,62 @@
           "excerpt": "**Как пивот в AI‑агентов и смена бизнес‑модели вытащили Perplexity к $450M+ ARR. Разбор кейса** В прошлом посте я сравнивал функционал 3 агентских ИИ, которыми пользуюсь сейчас, отдельно выделяя Perplexity. Сегодня, как и обещал, разбираю что команда стартапа сделала на уровне стратегии и бизнес‑модели - и почему эт...",
           "reason": "agent_ops, evals_quality, rag_retrieval_knowledge; depth=benchmark_or_eval",
           "telegram_message_id": 612
+        },
+        {
+          "coverage_labels": [
+            "ai_product_pm",
+            "security_privacy_governance",
+            "model_landscape"
+          ],
+          "created_at": "2026-05-11",
+          "depth_label": "case_study",
+          "excerpt": "**Сходил на открытую лекцию в MIT по системному мышлению. Делюсь инсайтами. ** Помните, я недавно писал пост про выбор программы Executive Education? В рамках этого ресерча решил позалетать на открытые лекции разных универов - благо, и MIT, и Stanford проводят их в огромном количестве. Цели у меня тут сугубо прагмат...",
+          "reason": "ai_product_pm, security_privacy_governance, model_landscape; depth=case_study",
+          "telegram_message_id": 620
+        },
+        {
+          "coverage_labels": [
+            "coding_agents",
+            "ai_product_pm",
+            "business_adoption",
+            "security_privacy_governance",
+            "model_landscape"
+          ],
+          "created_at": "2026-05-10",
+          "depth_label": "case_study",
+          "excerpt": "**Как не потерять продукт и архитектуру мышления, когда половину работы делает AI ** Вижу, что последний пост очень вам откликнулся - в комментариях развернулось активное обсуждение, где вы делились своими мыслями и кейсами. Но проблема, которую мы затронули, лежит далеко за пределами только вайбкодинга. С повсемест...",
+          "reason": "coding_agents, ai_product_pm, business_adoption; depth=case_study",
+          "telegram_message_id": 619
+        },
+        {
+          "coverage_labels": [
+            "coding_agents",
+            "ai_product_pm",
+            "business_adoption",
+            "ai_ux_workflow",
+            "security_privacy_governance",
+            "ai_engineering_infra",
+            "model_landscape"
+          ],
+          "created_at": "2026-05-07",
+          "depth_label": "case_study",
+          "excerpt": "**Быстрый старт - быстрые похороны: как вайбкодинг убивает продукты ** Уже больше года мы живем в мире, где существует вайбкодинг. За это время многие начали экспериментировать с новыми инструментами, пытаться внедрить их в свои процессы, а кто-то даже благодаря им смог построить свой бизнес. Буквально недавно натык...",
+          "reason": "coding_agents, ai_product_pm, business_adoption; depth=case_study",
+          "telegram_message_id": 618
+        },
+        {
+          "coverage_labels": [
+            "agent_ops",
+            "ai_product_pm",
+            "business_adoption",
+            "ai_ux_workflow",
+            "model_landscape"
+          ],
+          "created_at": "2026-05-04",
+          "depth_label": "case_study",
+          "excerpt": "🚀 **NGI дайджест №36 ** Давно не собирал дайджесты. За это время много разбирал агентов, тестировал локальные модели и делился личными историями. Вот все самое важное: 1. Л[икбез про кибербез: как не потерять доступ к ИИ-инструментам ](https://t.me/NGI_ru/608)- рассказал, как защитить свой трафик и изолировать прило...",
+          "reason": "agent_ops, ai_product_pm, business_adoption; depth=case_study",
+          "telegram_message_id": 616
         },
         {
           "coverage_labels": [
@@ -4316,36 +4537,6 @@
         },
         {
           "coverage_labels": [
-            "coding_agents",
-            "agent_ops",
-            "ai_product_pm",
-            "business_adoption",
-            "ai_ux_workflow",
-            "model_landscape"
-          ],
-          "created_at": "2026-04-17",
-          "depth_label": "case_study",
-          "excerpt": "**Google и Perplexity радуют свежими релизами ** Редко пишу про конкретные новости и релизы, но сегодня захотелось, так как пользуюсь обоими продуктами. ** Perplexity Personal Computer **По сути это аналог OpenClaw, только обёрнутый в сторону бизнес-кейсов. Схема та же: ставите агента на свою машину, и он доступен о...",
-          "reason": "coding_agents, agent_ops, ai_product_pm; depth=case_study",
-          "telegram_message_id": 609
-        },
-        {
-          "coverage_labels": [
-            "coding_agents",
-            "agent_ops",
-            "ai_product_pm",
-            "business_adoption",
-            "model_landscape",
-            "creative_multimodal"
-          ],
-          "created_at": "2026-03-13",
-          "depth_label": "practitioner_experience",
-          "excerpt": "**Ревью Lenny's Pass** **- лучшей подписки для старта в AI (и экономии $1000)** Почти год назад я уже [писал](https://t.me/NGI_ru/231) про Lenny's Pass. Недавно я ревьюил свои подписки, и заглянул посмотреть что изменилось. Да, часть классных штук уехала в более дорогой тариф, но сейчас это по-прежнему лучшая точка...",
-          "reason": "coding_agents, agent_ops, ai_product_pm; depth=practitioner_experience",
-          "telegram_message_id": 592
-        },
-        {
-          "coverage_labels": [
             "ai_product_pm"
           ],
           "created_at": "2026-04-21",
@@ -4353,32 +4544,6 @@
           "excerpt": "**Как AI помог вернуть нам $1000+ и наказать Spirit Airlines: Perplexity как персональный юрист ** На этот Новый год мы с женой решили слетать отдохнуть в Доминикану. Все было супер, пока не настало время лететь обратно. В итоге наш перелет с 1 пересадкой общей длительностью 6 часов превратился в **ад с 3 пересадкам...",
           "reason": "ai_product_pm; depth=case_study",
           "telegram_message_id": 610
-        },
-        {
-          "coverage_labels": [
-            "coding_agents",
-            "agent_ops",
-            "rag_retrieval_knowledge",
-            "ai_product_pm"
-          ],
-          "created_at": "2026-04-09",
-          "depth_label": "case_study",
-          "excerpt": "**Метод управления знаниями без RAG от Андрея Карпатого** С появлением AI, одной из задач, которую пытаются решить многие люди и компании стала организация базы знаний и работы с ними. В 2023 году крутым подходом считался RAG и с тех пор многие используют и внедряют именно его. Вроде все просто: мы кормим ИИ какие-т...",
-          "reason": "coding_agents, agent_ops, rag_retrieval_knowledge; depth=case_study",
-          "telegram_message_id": 606
-        },
-        {
-          "coverage_labels": [
-            "agent_ops",
-            "ai_product_pm",
-            "ai_ux_workflow",
-            "model_landscape"
-          ],
-          "created_at": "2026-03-30",
-          "depth_label": "case_study",
-          "excerpt": "**Я ошибался насчёт Comet - переосмысление спустя несколько месяцев** Пару месяцев назад я уже [писал](https://t.me/NGI_ru/430) про Comet. Мои претензии тогда: медленно, нет кроссплатформенности, и вообще - Google скоро всех закопает. С тех пор браузер обновили и появились версии на Android и iOS. Я решил попробоват...",
-          "reason": "agent_ops, ai_product_pm, ai_ux_workflow; depth=case_study",
-          "telegram_message_id": 602
         }
       ],
       "runtime_readiness": {
@@ -4387,7 +4552,7 @@
         "metadata_advisory_ready": false,
         "text_posts_ready": true
       },
-      "text_post_count": 468,
+      "text_post_count": 473,
       "top_concepts": [],
       "top_keywords": [],
       "top_primary_topics": [],
@@ -4398,17 +4563,17 @@
     {
       "channel_username": "llm_under_hood",
       "coverage": {
-        "agent_ops": 143,
+        "agent_ops": 146,
         "ai_engineering_infra": 39,
-        "ai_product_pm": 69,
+        "ai_product_pm": 70,
         "ai_ux_workflow": 14,
-        "business_adoption": 129,
+        "business_adoption": 130,
         "coding_agents": 73,
         "creative_multimodal": 4,
-        "evals_quality": 79,
+        "evals_quality": 81,
         "general_ai_news": 0,
-        "model_landscape": 218,
-        "rag_retrieval_knowledge": 57,
+        "model_landscape": 220,
+        "rag_retrieval_knowledge": 58,
         "security_privacy_governance": 34
       },
       "coverage_strength": {
@@ -4427,27 +4592,51 @@
       },
       "date_range": {
         "first_post": "2025-01-03",
-        "last_post": "2026-05-03"
+        "last_post": "2026-05-12"
       },
       "depth_profile": {
         "announcement_or_news": 28,
         "architecture_analysis": 46,
-        "benchmark_or_eval": 78,
-        "case_study": 60,
+        "benchmark_or_eval": 80,
+        "case_study": 61,
         "howto_or_checklist": 53,
         "low_signal": 10,
         "practitioner_experience": 39,
         "tool_release": 7
       },
       "display_name": "Rinat",
-      "embedding_count": 321,
+      "embedding_count": 324,
       "embedding_coverage_ratio": 1.0,
       "expert_id": "llm_under_hood",
-      "fts_count": 321,
-      "metadata_coverage_ratio": 0.8287,
+      "fts_count": 324,
+      "metadata_coverage_ratio": 0.821,
       "metadata_valid_count": 266,
-      "post_count": 321,
+      "post_count": 324,
       "representative_posts": [
+        {
+          "coverage_labels": [
+            "agent_ops",
+            "evals_quality",
+            "ai_product_pm"
+          ],
+          "created_at": "2026-05-11",
+          "depth_label": "benchmark_or_eval",
+          "excerpt": "**+8 задач в ****ECOM1-DEV**V](https://bitgn.com/challenge/ecom)**. Теперь в мире бенчмарка появились магазины и складские запасы** Задачи к вашему агенту будут вроде: *> I'll be in Vienna today and need to buy as many items of product (the Sealant from Soudal in the Soudal Fix All Silirub 1GH-EJ4 Sealant line that...",
+          "reason": "agent_ops, evals_quality, ai_product_pm; depth=benchmark_or_eval",
+          "telegram_message_id": 831
+        },
+        {
+          "coverage_labels": [
+            "agent_ops",
+            "evals_quality",
+            "model_landscape"
+          ],
+          "created_at": "2026-05-08",
+          "depth_label": "benchmark_or_eval",
+          "excerpt": "**Первые 12 задач бенчмарка агентов ECOM1-DEV доступны на BitGN!** Все похоже на PAC1, но есть пара нюансов. (0) В E-commerce бенчмарке мы будем работать не с личной базой Майлза, а с оцифрованными версиями компаний. Это уже ближе к ERC3. (1) SDK похожий на PAC1, но чуть другой. Пример агента выложен в [sample-agent...",
+          "reason": "agent_ops, evals_quality, model_landscape; depth=benchmark_or_eval",
+          "telegram_message_id": 830
+        },
         {
           "coverage_labels": [
             "agent_ops",
@@ -4478,6 +4667,19 @@
         },
         {
           "coverage_labels": [
+            "agent_ops",
+            "rag_retrieval_knowledge",
+            "business_adoption",
+            "model_landscape"
+          ],
+          "created_at": "2026-05-12",
+          "depth_label": "case_study",
+          "excerpt": "**OpenAI осознали бесперспективность файн-тюнинга моделей** 7 Мая OpenAI оповестили разработчиков, что лавочка закрывается. Новые компании уже больше не могут запускать задачи тюнинга. В течение полугода закроют возможность даже для тех, кто уже тюнил. А возможность использования своих тюненых моделей сохранится тол...",
+          "reason": "agent_ops, rag_retrieval_knowledge, business_adoption; depth=case_study",
+          "telegram_message_id": 832
+        },
+        {
+          "coverage_labels": [
             "coding_agents",
             "agent_ops",
             "ai_product_pm",
@@ -4489,19 +4691,6 @@
           "excerpt": "**У YCombinator заметно поменялось видение AI-стартапов** Весной их [Request For Startups](https://www.ycombinator.com/rfs) звучал как “AI-native компании могут быстрее делать дорогую работу”. > RFS == “*Мы видим индустрию изнутри, и вот в такие компании мы бы с радостью вложили много денег*” Отсюда был приоритет на...",
           "reason": "coding_agents, agent_ops, ai_product_pm; depth=practitioner_experience",
           "telegram_message_id": 826
-        },
-        {
-          "coverage_labels": [
-            "coding_agents",
-            "agent_ops",
-            "rag_retrieval_knowledge",
-            "model_landscape"
-          ],
-          "created_at": "2026-04-05",
-          "depth_label": "howto_or_checklist",
-          "excerpt": "**Karpathy написал классный gist про использование LLM для ведения баз знаний**: [LLM wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) Это отчасти совпадает с тем, как я использую OpenAI Codex для персонального ассистента ([Personal OS v2](https://t.me/llm_under_hood/750)), но есть и различия...",
-          "reason": "coding_agents, agent_ops, rag_retrieval_knowledge; depth=howto_or_checklist",
-          "telegram_message_id": 792
         },
         {
           "coverage_labels": [
@@ -4523,31 +4712,6 @@
           "excerpt": "Bitgn/Pac1-PROD - соревнование закрыто! Результаты в стриме через полчаса. **Оценки ваших ранов появятся примерно тогда же ** **Бенчмарк теперь в открытом режиме**, должен показывать ошибки и оценки на новых ранах. Ваш, @llm_under_hood 🤗",
           "reason": "evals_quality; depth=benchmark_or_eval",
           "telegram_message_id": 803
-        },
-        {
-          "coverage_labels": [
-            "evals_quality",
-            "security_privacy_governance"
-          ],
-          "created_at": "2026-04-11",
-          "depth_label": "benchmark_or_eval",
-          "excerpt": "**Утечка данных про BitGN/PAC1-PROD ** Спасибо Daniel за подсказку, что названия задач продовского бенчмарка торчали наружу (runtimes были закрыты). Я это дело прикрыл. Вряд ли много людей это видели. Но, чтобы было честнее - вот всем список типов задач, которые будут в проде: *• Knowledge ops: keep working knowledg...",
-          "reason": "evals_quality, security_privacy_governance; depth=benchmark_or_eval",
-          "telegram_message_id": 798
-        },
-        {
-          "coverage_labels": [
-            "coding_agents",
-            "agent_ops",
-            "ai_product_pm",
-            "business_adoption",
-            "model_landscape"
-          ],
-          "created_at": "2026-05-03",
-          "depth_label": "case_study",
-          "excerpt": "**OpenCode + GPT 5.5 - ну не используйте вы субагентов!** В комментариях к [посту про эксперимент с рефакторингом](https://t.me/llm_under_hood/828) кода разными агентами, чаще всего просили запустить OpenCode + GPT 5.5. Запустил в режиме High на том же коммите с тем же промптом: > Scan through the repository on a hi...",
-          "reason": "coding_agents, agent_ops, ai_product_pm; depth=case_study",
-          "telegram_message_id": 829
         }
       ],
       "runtime_readiness": {
@@ -4556,7 +4720,7 @@
         "metadata_advisory_ready": true,
         "text_posts_ready": true
       },
-      "text_post_count": 321,
+      "text_post_count": 324,
       "top_concepts": [
         {
           "count": 25,
@@ -4744,17 +4908,17 @@
     {
       "channel_username": "neuraldeep",
       "coverage": {
-        "agent_ops": 174,
+        "agent_ops": 179,
         "ai_engineering_infra": 57,
-        "ai_product_pm": 68,
-        "ai_ux_workflow": 34,
-        "business_adoption": 89,
-        "coding_agents": 114,
+        "ai_product_pm": 69,
+        "ai_ux_workflow": 35,
+        "business_adoption": 90,
+        "coding_agents": 115,
         "creative_multimodal": 16,
         "evals_quality": 57,
         "general_ai_news": 1,
-        "model_landscape": 269,
-        "rag_retrieval_knowledge": 84,
+        "model_landscape": 273,
+        "rag_retrieval_knowledge": 85,
         "security_privacy_governance": 43
       },
       "coverage_strength": {
@@ -4773,26 +4937,26 @@
       },
       "date_range": {
         "first_post": "2025-01-04",
-        "last_post": "2026-05-04"
+        "last_post": "2026-05-12"
       },
       "depth_profile": {
-        "announcement_or_news": 77,
-        "architecture_analysis": 39,
+        "announcement_or_news": 80,
+        "architecture_analysis": 40,
         "benchmark_or_eval": 55,
-        "case_study": 59,
-        "howto_or_checklist": 117,
-        "low_signal": 90,
+        "case_study": 60,
+        "howto_or_checklist": 120,
+        "low_signal": 91,
         "practitioner_experience": 63,
         "tool_release": 14
       },
       "display_name": "Neuraldeep",
-      "embedding_count": 494,
+      "embedding_count": 503,
       "embedding_coverage_ratio": 1.0,
       "expert_id": "neuraldeep",
-      "fts_count": 494,
-      "metadata_coverage_ratio": 0.7899,
+      "fts_count": 503,
+      "metadata_coverage_ratio": 0.7763,
       "metadata_valid_count": 406,
-      "post_count": 514,
+      "post_count": 523,
       "representative_posts": [
         {
           "coverage_labels": [
@@ -4819,30 +4983,15 @@
         {
           "coverage_labels": [
             "agent_ops",
-            "evals_quality",
-            "model_landscape"
-          ],
-          "created_at": "2026-04-09",
-          "depth_label": "benchmark_or_eval",
-          "excerpt": "PAC1-DEV Почитать что это такое можно [тут](https://bitgn.com/challenge/PAC) ([Ринат](https://t.me/llm_under_hood) не перестает удивлять нас бенчмарками и соревнованиями) Решил пожечь подписку и реализовать свой подход, за старт спасибо (@multiagentsys) он выложил [репо](https://github.com/snow-ghost/sample-agent) о...",
-          "reason": "agent_ops, evals_quality, model_landscape; depth=benchmark_or_eval",
-          "telegram_message_id": 2058
-        },
-        {
-          "coverage_labels": [
-            "coding_agents",
-            "agent_ops",
-            "evals_quality",
+            "rag_retrieval_knowledge",
             "business_adoption",
-            "security_privacy_governance",
-            "ai_engineering_infra",
             "model_landscape"
           ],
-          "created_at": "2026-04-08",
-          "depth_label": "benchmark_or_eval",
-          "excerpt": "**Вышел наш второй комьюнити-стрим!** Для вас отжигали, на фото: @nobilix, @superbereza, @ai_grably, @aostrikov_ai_agents и маэстро @neuraldeep 📹 https://youtu.be/nUT1YRvjG98 24 вопроса, 2**.5 часа стрим,** чуть не дожали до бейзлайна Лекса Фридмана. Поболтали про агентов, будущее, лобстеров, утекший claude code и в...",
-          "reason": "coding_agents, agent_ops, evals_quality; depth=benchmark_or_eval",
-          "telegram_message_id": 2052
+          "created_at": "2026-05-12",
+          "depth_label": "case_study",
+          "excerpt": "**OpenAI осознали бесперспективность файн-тюнинга моделей** 7 Мая OpenAI оповестили разработчиков, что лавочка закрывается. Новые компании уже больше не могут запускать задачи тюнинга. В течение полугода закроют возможность даже для тех, кто уже тюнил. А возможность использования своих тюненых моделей сохранится тол...",
+          "reason": "agent_ops, rag_retrieval_knowledge, business_adoption; depth=case_study",
+          "telegram_message_id": 2129
         },
         {
           "coverage_labels": [
@@ -4855,6 +5004,31 @@
           "excerpt": "FOMO в обнимку с кодинг-агентом Заметил, что лагеря разделились особенно в коментах под постом [Тимура](https://t.me/the_ai_architect/291) Есть те, кто обвешивается плагинами, скиллами, автоматизациями саб-агентов, методологиями, которые состоят из 1 000 000 нюансов. И те, кто течет по течению, как я =) Буду честен:...",
           "reason": "coding_agents, agent_ops, rag_retrieval_knowledge; depth=case_study",
           "telegram_message_id": 2094
+        },
+        {
+          "coverage_labels": [
+            "coding_agents",
+            "agent_ops",
+            "ai_engineering_infra",
+            "model_landscape"
+          ],
+          "created_at": "2026-05-04",
+          "depth_label": "howto_or_checklist",
+          "excerpt": "**С большой GPU большая ответственность ** Разберем стек **vLLM**M](https://github.com/vllm-project/vllm)** + ****LiteLLM**M](https://github.com/BerriAI/litellm)** + ****Codex CLI**I](https://github.com/openai/codex) Часть первая, когда у вас много GPU серверов под LLM инференс, а у меня часть в одном офисе, часть в...",
+          "reason": "coding_agents, agent_ops, ai_engineering_infra; depth=howto_or_checklist",
+          "telegram_message_id": 2117
+        },
+        {
+          "coverage_labels": [
+            "ai_product_pm",
+            "ai_ux_workflow",
+            "model_landscape"
+          ],
+          "created_at": "2026-05-11",
+          "depth_label": "announcement_or_news",
+          "excerpt": "UPDATE: Новый продукт в рамках хаба LLM Research system [https://search.neuraldeep.ru/](https://search.neuraldeep.ru/) Собрал в него все лучшие свои подходы workflow поиска в интернете: чистый LLM Call пайплайн Всем пользователям доступен Perplexity-подобный поиск на базе GPT OSS 120b (возможны задержки с ответами)....",
+          "reason": "ai_product_pm, ai_ux_workflow, model_landscape; depth=announcement_or_news",
+          "telegram_message_id": 2128
         },
         {
           "coverage_labels": [
@@ -4880,17 +5054,6 @@
           "excerpt": "⚡️ **Запустили платформу для управления LLM в бизнесе ** red_mad_router помогает компаниям собрать работу с LLM в одной системе, когда сервисы уже используются в разных командах. Решение объединяет доступы к моделям, контроль расходов, настройки безопасности и правила работы с данными. Изначально мы создавали платфо...",
           "reason": "business_adoption, security_privacy_governance, model_landscape; depth=case_study",
           "telegram_message_id": 2085
-        },
-        {
-          "coverage_labels": [
-            "agent_ops",
-            "model_landscape"
-          ],
-          "created_at": "2026-04-30",
-          "depth_label": "practitioner_experience",
-          "excerpt": "**Как создавать AI-агентов на on-prem-моделях? ** Как меняется создание пайплайна, когда мы переходим на локальные модели? Что вообще может этот ваш Qwen на 4B по сравнению с GPT-5.5? Чтобы ответить на эти (и многие другие) вопросы максимально-качественно, основываясь на **большом практическом опыте**, я попросил пр...",
-          "reason": "agent_ops, model_landscape; depth=practitioner_experience",
-          "telegram_message_id": 2111
         }
       ],
       "runtime_readiness": {
@@ -4899,7 +5062,7 @@
         "metadata_advisory_ready": true,
         "text_posts_ready": true
       },
-      "text_post_count": 494,
+      "text_post_count": 503,
       "top_concepts": [
         {
           "count": 27,
@@ -5116,7 +5279,7 @@
       },
       "date_range": {
         "first_post": "2026-01-07",
-        "last_post": "2026-05-03"
+        "last_post": "2026-05-10"
       },
       "depth_profile": {
         "announcement_or_news": 11,
@@ -5125,17 +5288,17 @@
         "case_study": 9,
         "howto_or_checklist": 10,
         "low_signal": 12,
-        "practitioner_experience": 13,
+        "practitioner_experience": 14,
         "tool_release": 1
       },
       "display_name": "Ostrikov",
-      "embedding_count": 67,
+      "embedding_count": 68,
       "embedding_coverage_ratio": 1.0,
       "expert_id": "ostrikov",
-      "fts_count": 67,
-      "metadata_coverage_ratio": 0.4265,
+      "fts_count": 68,
+      "metadata_coverage_ratio": 0.4203,
       "metadata_valid_count": 29,
-      "post_count": 68,
+      "post_count": 69,
       "representative_posts": [
         {
           "coverage_labels": [
@@ -5243,7 +5406,7 @@
         "metadata_advisory_ready": true,
         "text_posts_ready": true
       },
-      "text_post_count": 67,
+      "text_post_count": 68,
       "top_concepts": [
         {
           "count": 5,
@@ -5433,16 +5596,16 @@
     {
       "channel_username": "evilfreelancer",
       "coverage": {
-        "agent_ops": 121,
+        "agent_ops": 124,
         "ai_engineering_infra": 28,
         "ai_product_pm": 24,
         "ai_ux_workflow": 4,
-        "business_adoption": 25,
+        "business_adoption": 26,
         "coding_agents": 63,
         "creative_multimodal": 12,
-        "evals_quality": 23,
+        "evals_quality": 25,
         "general_ai_news": 4,
-        "model_landscape": 192,
+        "model_landscape": 195,
         "rag_retrieval_knowledge": 34,
         "security_privacy_governance": 10
       },
@@ -5462,50 +5625,39 @@
       },
       "date_range": {
         "first_post": "2022-05-05",
-        "last_post": "2026-05-03"
+        "last_post": "2026-05-09"
       },
       "depth_profile": {
         "announcement_or_news": 70,
-        "architecture_analysis": 26,
-        "benchmark_or_eval": 23,
+        "architecture_analysis": 27,
+        "benchmark_or_eval": 25,
         "case_study": 29,
-        "howto_or_checklist": 113,
-        "low_signal": 75,
+        "howto_or_checklist": 114,
+        "low_signal": 76,
         "practitioner_experience": 57,
         "tool_release": 16
       },
       "display_name": "PashaZloy",
-      "embedding_count": 393,
+      "embedding_count": 398,
       "embedding_coverage_ratio": 1.0,
       "expert_id": "pashazloy",
-      "fts_count": 393,
+      "fts_count": 398,
       "metadata_coverage_ratio": 0.0,
       "metadata_valid_count": 0,
-      "post_count": 409,
+      "post_count": 414,
       "representative_posts": [
         {
           "coverage_labels": [
             "agent_ops",
-            "evals_quality"
-          ],
-          "created_at": "2026-04-09",
-          "depth_label": "benchmark_or_eval",
-          "excerpt": "Обучение [ruGPT3XL-8k](https://huggingface.co/evilfreelancer/ruGPT3XL-8k) на ризонинг и агентных датасетах продолжается и судя по eval_loss на 500 шаге тренировка прошла свой предел точности, дальше походу начался оверфит. Чепоинты эти я уже скопировал в отдельную папку, они нарезаны на шарды из-за особенностей FSDP...",
-          "reason": "agent_ops, evals_quality; depth=benchmark_or_eval",
-          "telegram_message_id": 1642
-        },
-        {
-          "coverage_labels": [
-            "agent_ops",
             "evals_quality",
-            "ai_product_pm",
+            "business_adoption",
             "model_landscape"
           ],
-          "created_at": "2026-04-04",
+          "created_at": "2026-05-06",
           "depth_label": "benchmark_or_eval",
-          "excerpt": "**Тестирование GigaChat 3.1 10B на агентных бенчмарках** Обычно я не пишу про новые модели, тем более отечественные, но совсем недавно состоялся [релиз](https://t.me/gigadev_channel/65) моделей семейства GigaChat 3.1 от команды Сбера. В линейке вышли две модели, на 702B и 10B параметров, обе построены как MoE и обе,...",
-          "reason": "agent_ops, evals_quality, ai_product_pm; depth=benchmark_or_eval",
-          "telegram_message_id": 1627
+          "excerpt": "Продолжая эксперимент с оценкой моделей на агентном сценарии. Выполнил прогоны по **Yandex Cloud API** и несколько моделей через локальный инференс, опираясь на ту же связку что и раньше: агент [phantom-agent](https://github.com/vakovalskii/phantom-agent) Валерия @neuraldeep, формат harness, тот же набор задач и вал...",
+          "reason": "agent_ops, evals_quality, business_adoption; depth=benchmark_or_eval",
+          "telegram_message_id": 1669
         },
         {
           "coverage_labels": [
@@ -5535,14 +5687,14 @@
           "coverage_labels": [
             "coding_agents",
             "agent_ops",
-            "ai_engineering_infra",
+            "ai_product_pm",
             "model_landscape"
           ],
-          "created_at": "2026-04-07",
-          "depth_label": "architecture_analysis",
-          "excerpt": "**Как работает tool calling в vLLM** Валерий @neuraldeep и Александр @countwithsasha подняли тему ([тыц](https://t.me/neuraldeep/2047) и [тыц](https://t.me/countwithsasha/574)) о том, как tool calling работает на стороне inference-движка, давайте разберём это на примере vLLM - одного из топовых движков для реализаци...",
-          "reason": "coding_agents, agent_ops, ai_engineering_infra; depth=architecture_analysis",
-          "telegram_message_id": 1636
+          "created_at": "2026-04-09",
+          "depth_label": "practitioner_experience",
+          "excerpt": "**Вайб-дизайн Starterkit** [18 марта 2026](http://blog.google/innovation-and-ai/models-and-research/google-labs/stitch-ai-ui-design/) года Google выкатили стандарт [DESIGN.md](https://stitch.withgoogle.com/docs/design-md/overview/) (прототип которого они тизерили ещё в [мае 25го](https://developers.googleblog.com/en...",
+          "reason": "coding_agents, agent_ops, ai_product_pm; depth=practitioner_experience",
+          "telegram_message_id": 1644
         },
         {
           "coverage_labels": [
@@ -5573,13 +5725,25 @@
         {
           "coverage_labels": [
             "agent_ops",
+            "evals_quality",
             "model_landscape"
           ],
-          "created_at": "2026-04-14",
-          "depth_label": "case_study",
-          "excerpt": "У**тром тесты, вечером код** Продолжаю делать заметки на полях о тонкостях работы с кодовыми агентами. Почему я так много внимания уделяю методологиям [BDD](https://en.wikipedia.org/wiki/Behavior-driven_development) и [TDD](https://en.wikipedia.org/wiki/Test-driven_development), и всегда пишу, что [тесты важны](http...",
-          "reason": "agent_ops, model_landscape; depth=case_study",
-          "telegram_message_id": 1646
+          "created_at": "2026-05-05",
+          "depth_label": "benchmark_or_eval",
+          "excerpt": "Ну чтож, хочу рассказать с какой целью я решил заморочиться с настройкой [gpt2giga](https://github.com/ai-forever/gpt2giga) и покупкой токенов моделей GigaChat-2 (Max, Pro и Lite). Для оценки семейства GigaChat-2 на агентном сценарии использован агент [phantom-agent](https://github.com/vakovalskii/phantom-agent) Вал...",
+          "reason": "agent_ops, evals_quality, model_landscape; depth=benchmark_or_eval",
+          "telegram_message_id": 1667
+        },
+        {
+          "coverage_labels": [
+            "agent_ops",
+            "evals_quality"
+          ],
+          "created_at": "2026-04-09",
+          "depth_label": "benchmark_or_eval",
+          "excerpt": "Обучение [ruGPT3XL-8k](https://huggingface.co/evilfreelancer/ruGPT3XL-8k) на ризонинг и агентных датасетах продолжается и судя по eval_loss на 500 шаге тренировка прошла свой предел точности, дальше походу начался оверфит. Чепоинты эти я уже скопировал в отдельную папку, они нарезаны на шарды из-за особенностей FSDP...",
+          "reason": "agent_ops, evals_quality; depth=benchmark_or_eval",
+          "telegram_message_id": 1642
         }
       ],
       "runtime_readiness": {
@@ -5588,7 +5752,7 @@
         "metadata_advisory_ready": false,
         "text_posts_ready": true
       },
-      "text_post_count": 393,
+      "text_post_count": 398,
       "top_concepts": [],
       "top_keywords": [],
       "top_primary_topics": [],
@@ -5599,18 +5763,18 @@
     {
       "channel_username": "countwithsasha",
       "coverage": {
-        "agent_ops": 147,
-        "ai_engineering_infra": 16,
-        "ai_product_pm": 47,
+        "agent_ops": 150,
+        "ai_engineering_infra": 17,
+        "ai_product_pm": 48,
         "ai_ux_workflow": 23,
-        "business_adoption": 92,
-        "coding_agents": 94,
-        "creative_multimodal": 13,
-        "evals_quality": 31,
+        "business_adoption": 93,
+        "coding_agents": 96,
+        "creative_multimodal": 14,
+        "evals_quality": 32,
         "general_ai_news": 2,
-        "model_landscape": 201,
-        "rag_retrieval_knowledge": 20,
-        "security_privacy_governance": 47
+        "model_landscape": 205,
+        "rag_retrieval_knowledge": 21,
+        "security_privacy_governance": 48
       },
       "coverage_strength": {
         "agent_ops": "strong",
@@ -5628,37 +5792,56 @@
       },
       "date_range": {
         "first_post": "2024-06-26",
-        "last_post": "2026-05-04"
+        "last_post": "2026-05-12"
       },
       "depth_profile": {
         "announcement_or_news": 8,
         "architecture_analysis": 13,
-        "benchmark_or_eval": 30,
-        "case_study": 132,
+        "benchmark_or_eval": 31,
+        "case_study": 135,
         "howto_or_checklist": 32,
         "low_signal": 55,
         "practitioner_experience": 40,
         "tool_release": 0
       },
       "display_name": "Polyakov",
-      "embedding_count": 261,
+      "embedding_count": 265,
       "embedding_coverage_ratio": 1.0,
       "expert_id": "polyakov",
-      "fts_count": 261,
-      "metadata_coverage_ratio": 0.6452,
+      "fts_count": 265,
+      "metadata_coverage_ratio": 0.6369,
       "metadata_valid_count": 200,
-      "post_count": 310,
+      "post_count": 314,
       "representative_posts": [
         {
           "coverage_labels": [
+            "agent_ops",
             "evals_quality",
+            "ai_product_pm",
+            "ai_engineering_infra",
             "model_landscape"
           ],
-          "created_at": "2026-04-15",
+          "created_at": "2026-05-05",
           "depth_label": "benchmark_or_eval",
-          "excerpt": "**Почему Claude не должен проверять код Claude (подставить сюда любого** **провайдера LLM)** Короче кажется можно ставить точку в обсуждениях оценок, которые модели ставят самим себе. И точка будет в виде пейпера Prior Prejudice (ACL 2026, UIUC). Ссылка: https://uiuc-conversational-ai-lab.github.io/prior-prejudice/...",
-          "reason": "evals_quality, model_landscape; depth=benchmark_or_eval",
-          "telegram_message_id": 587
+          "excerpt": "**Барбершоп-тест: отечественным ИИ-моделям нужно следующее поколение. Жду** Вчера [писал,](https://t.me/countwithsasha/633) что GigaChat плохо подходит как сердце агента. По пути c подачи *@evilfreelancer* я обнаружил, что лучше запускать Гигачат через LiteLLM с флагом `supports_function_calling: true` С этим флагом...",
+          "reason": "agent_ops, evals_quality, ai_product_pm; depth=benchmark_or_eval",
+          "telegram_message_id": 636
+        },
+        {
+          "coverage_labels": [
+            "coding_agents",
+            "agent_ops",
+            "rag_retrieval_knowledge",
+            "business_adoption",
+            "security_privacy_governance",
+            "model_landscape",
+            "creative_multimodal"
+          ],
+          "created_at": "2026-05-11",
+          "depth_label": "case_study",
+          "excerpt": "**Голосовые агенты и 152-ФЗ: дилемма, в которой я застрял** Голосовой агент в продакшене редко сводится к «реалистичной болталке с низкой задержкой». Нужны инструменты, MCP, доступ к бизнес-логике клиента, иногда подключение своей LLM. У 11labs всё это есть. 1 апреля 2026 [появился даже мультимодальный ввод](https:/...",
+          "reason": "coding_agents, agent_ops, rag_retrieval_knowledge; depth=case_study",
+          "telegram_message_id": 639
         },
         {
           "coverage_labels": [
@@ -5672,6 +5855,28 @@
           "excerpt": "**GigaChat как сердце агента: подключить получилось, пользоваться нет** На прошлой неделе я писал, что Алиса [пока больше похожа на воркфлоу:](https://t.me/countwithsasha/626) сценарий есть, а нормальной работы с нечеткими задачами нет. Я уже тогда захотел чекнуть Гигачат, тормозил гемор с ротацией API ключей. Вчера...",
           "reason": "agent_ops, business_adoption, ai_ux_workflow; depth=case_study",
           "telegram_message_id": 633
+        },
+        {
+          "coverage_labels": [
+            "model_landscape"
+          ],
+          "created_at": "2026-05-12",
+          "depth_label": "case_study",
+          "excerpt": "**Cmd+Shift+P — и Яндекс Gmail пересказывает мне email-рассылки**ылки У меня в Substack семь подписок по ИИ: Ahead of AI, Latent.Space, Interconnects, Simon Willison и др. Я долгое время тупо копил непрочитанные, хотя там встречаются крутые мысли. Читать не родной английский долго и требует усидчивости. Недавно обна...",
+          "reason": "model_landscape; depth=case_study",
+          "telegram_message_id": 640
+        },
+        {
+          "coverage_labels": [
+            "coding_agents",
+            "agent_ops",
+            "model_landscape"
+          ],
+          "created_at": "2026-05-07",
+          "depth_label": "case_study",
+          "excerpt": "**Книги для агентов (опять он про скиллы): серая зона и новый рынок** * Раньше я покупал книги O’Reilly, чтобы развиваться как программист. Теперь в проекте всё чаще программирует агент. Ему тоже нужны книги: только не PDF на 500 страниц, а навык, который можно вызвать во время работы.* На днях увидел на GitHub репо...",
+          "reason": "coding_agents, agent_ops, model_landscape; depth=case_study",
+          "telegram_message_id": 637
         },
         {
           "coverage_labels": [
@@ -5710,47 +5915,6 @@
           "excerpt": "**Алиса прислала пуш: у нас агенты. Я сразу отправил её в барбершоп ** У Яндекса уже где-то полгода висел [анонс закрытой беты ИИ-агентов.](https://3dnews.ru/1131494/alisa-ai-poluchila-iiagentov-kotorie-broniruyut-uslugi-ishchut-skidki-i-provodyat-issledovaniya-po-zadaniyu-polzovatelya) Сегодня Алиса в приложении пр...",
           "reason": "agent_ops, ai_product_pm, ai_ux_workflow; depth=case_study",
           "telegram_message_id": 626
-        },
-        {
-          "coverage_labels": [
-            "coding_agents",
-            "agent_ops",
-            "model_landscape",
-            "creative_multimodal"
-          ],
-          "created_at": "2026-04-30",
-          "depth_label": "case_study",
-          "excerpt": "**Сохраняемые посты апреля: топ-3 по пересылкам** Традиционный дайджест интересных постов за месяц. Измеряю контент процентом пересылок от просмотров: сколько людей унесли пост себе или коллеге. В апреле 33 поста, 80 234 просмотра, 2 897 пересылок. Просмотры выросли почти на 50%, а пересылки просели. 🥉 Т**ретье мест...",
-          "reason": "coding_agents, agent_ops, model_landscape; depth=case_study",
-          "telegram_message_id": 625
-        },
-        {
-          "coverage_labels": [
-            "coding_agents",
-            "agent_ops",
-            "ai_product_pm",
-            "business_adoption",
-            "security_privacy_governance",
-            "ai_engineering_infra",
-            "model_landscape"
-          ],
-          "created_at": "2026-04-27",
-          "depth_label": "case_study",
-          "excerpt": "**Эра дешёвого кода: какие сервисы сейчас пилить** Вчера цитировал пост коллеги про рост объёмов кода: пишется куча, до продукта доходит почти ничего. Ценность простого SaaS, где магия была в коде и интерфейсе, снижается. 🎯 Д**ано ** В* 2017 я на коленке собрал сервис по импорту товаров из фидов в маркетплейс ВК, сс...",
-          "reason": "coding_agents, agent_ops, ai_product_pm; depth=case_study",
-          "telegram_message_id": 616
-        },
-        {
-          "coverage_labels": [
-            "coding_agents",
-            "agent_ops",
-            "model_landscape"
-          ],
-          "created_at": "2026-04-29",
-          "depth_label": "case_study",
-          "excerpt": "**Как оживить битые Cowork-сессии Claude после переезда аккаунта ** После бана Claude я продолжил пересадку мозгов между аккаунтами. С Claude Code App всё было относительно просто: перенёс локальные индексы — сессии появились. С Cowork оказалось веселее. Там сессия — это не один файл, а связка из индекса, рабочей па...",
-          "reason": "coding_agents, agent_ops, model_landscape; depth=case_study",
-          "telegram_message_id": 624
         }
       ],
       "runtime_readiness": {
@@ -5759,7 +5923,7 @@
         "metadata_advisory_ready": true,
         "text_posts_ready": true
       },
-      "text_post_count": 261,
+      "text_post_count": 265,
       "top_concepts": [
         {
           "count": 26,
@@ -5947,18 +6111,18 @@
     {
       "channel_username": "nobilix",
       "coverage": {
-        "agent_ops": 150,
-        "ai_engineering_infra": 52,
-        "ai_product_pm": 80,
-        "ai_ux_workflow": 35,
-        "business_adoption": 92,
-        "coding_agents": 121,
-        "creative_multimodal": 38,
-        "evals_quality": 51,
+        "agent_ops": 153,
+        "ai_engineering_infra": 53,
+        "ai_product_pm": 82,
+        "ai_ux_workflow": 36,
+        "business_adoption": 94,
+        "coding_agents": 123,
+        "creative_multimodal": 39,
+        "evals_quality": 52,
         "general_ai_news": 1,
-        "model_landscape": 187,
+        "model_landscape": 189,
         "rag_retrieval_knowledge": 38,
-        "security_privacy_governance": 58
+        "security_privacy_governance": 59
       },
       "coverage_strength": {
         "agent_ops": "strong",
@@ -5976,26 +6140,26 @@
       },
       "date_range": {
         "first_post": "2025-03-12",
-        "last_post": "2026-05-02"
+        "last_post": "2026-05-09"
       },
       "depth_profile": {
         "announcement_or_news": 9,
-        "architecture_analysis": 26,
-        "benchmark_or_eval": 51,
-        "case_study": 77,
+        "architecture_analysis": 27,
+        "benchmark_or_eval": 52,
+        "case_study": 78,
         "howto_or_checklist": 33,
         "low_signal": 3,
         "practitioner_experience": 37,
         "tool_release": 1
       },
       "display_name": "Refat (Tech & AI)",
-      "embedding_count": 236,
+      "embedding_count": 239,
       "embedding_coverage_ratio": 1.0,
       "expert_id": "refat",
-      "fts_count": 236,
-      "metadata_coverage_ratio": 0.8143,
+      "fts_count": 239,
+      "metadata_coverage_ratio": 0.8042,
       "metadata_valid_count": 193,
-      "post_count": 237,
+      "post_count": 240,
       "representative_posts": [
         {
           "coverage_labels": [
@@ -6009,11 +6173,11 @@
             "model_landscape",
             "creative_multimodal"
           ],
-          "created_at": "2026-04-25",
+          "created_at": "2026-05-09",
           "depth_label": "benchmark_or_eval",
-          "excerpt": "#ReDigest [Продолжаем](https://t.me/nobilix/250) субботнюю рубрику, тут я кратко рассказываю про новости из мира технологий и AI, которые привлекли мое внимание. **Дайджест недели:** - OpenAI [выпустила](https://openai.com/index/introducing-gpt-5-5/) GPT-5.5 - новый флагман для агентов. Цены $5/$30 за миллион токено...",
+          "excerpt": "#ReDigest [Продолжаем](https://t.me/nobilix/256) субботнюю рубрику, тут я кратко рассказываю про новости из мира технологий и AI, которые привлекли мое внимание. **Дайджест недели:** - Anthropic [заключила](https://www.anthropic.com/news/higher-limits-spacex) сделку со SpaceX на 300+ МВт, по сути решив свою проблему...",
           "reason": "coding_agents, agent_ops, evals_quality; depth=benchmark_or_eval",
-          "telegram_message_id": 253
+          "telegram_message_id": 259
         },
         {
           "coverage_labels": [
@@ -6049,6 +6213,24 @@
           "excerpt": "#ReDigest [Продолжаем](https://t.me/nobilix/253) субботнюю рубрику, тут я кратко рассказываю про новости из мира технологий и AI, которые привлекли мое внимание. **Дайджест недели:** - Anthropic [подключила](https://www.anthropic.com/news/claude-for-creative-work) Claude к девяти креативным программам включая прилож...",
           "reason": "coding_agents, agent_ops, ai_product_pm; depth=case_study",
           "telegram_message_id": 256
+        },
+        {
+          "coverage_labels": [
+            "coding_agents",
+            "agent_ops",
+            "evals_quality",
+            "ai_product_pm",
+            "business_adoption",
+            "security_privacy_governance",
+            "ai_engineering_infra",
+            "model_landscape",
+            "creative_multimodal"
+          ],
+          "created_at": "2026-04-25",
+          "depth_label": "benchmark_or_eval",
+          "excerpt": "#ReDigest [Продолжаем](https://t.me/nobilix/250) субботнюю рубрику, тут я кратко рассказываю про новости из мира технологий и AI, которые привлекли мое внимание. **Дайджест недели:** - OpenAI [выпустила](https://openai.com/index/introducing-gpt-5-5/) GPT-5.5 - новый флагман для агентов. Цены $5/$30 за миллион токено...",
+          "reason": "coding_agents, agent_ops, evals_quality; depth=benchmark_or_eval",
+          "telegram_message_id": 253
         },
         {
           "coverage_labels": [
@@ -6098,29 +6280,15 @@
         },
         {
           "coverage_labels": [
-            "coding_agents",
             "agent_ops",
-            "business_adoption",
-            "ai_ux_workflow",
-            "model_landscape"
+            "ai_product_pm",
+            "business_adoption"
           ],
-          "created_at": "2026-04-29",
+          "created_at": "2026-05-06",
           "depth_label": "case_study",
-          "excerpt": "Remote VS Code как интерфейс для общей AI-станции: одна подписка на всех + общий воркспейс. Одновременно в разных командах и по разным причинам возникла необходимость поднять общую \"AI-рабочую станцию\" - мотивы немного разные, но суть одинаковая: нужно общее пространство, чтобы сотрудники имели доступ к одним и тем...",
-          "reason": "coding_agents, agent_ops, business_adoption; depth=case_study",
-          "telegram_message_id": 254
-        },
-        {
-          "coverage_labels": [
-            "agent_ops",
-            "business_adoption",
-            "model_landscape"
-          ],
-          "created_at": "2026-04-23",
-          "depth_label": "case_study",
-          "excerpt": "Пишете [Skills](https://t.me/nobilix/173) для бизнеса - черпайте вдохновение из SOP Сейчас не про скилы вокруг тулов (типа pdf или google ads), а процедурные: обработка входящей заявки, создание коммерческого предложения, обработка счета от поставщика и т.д. Цепочка действий с решениями и исключениями. Есть очень ра...",
-          "reason": "agent_ops, business_adoption, model_landscape; depth=case_study",
-          "telegram_message_id": 252
+          "excerpt": "Про outreach, сигналы и AI. Каналы продаж делятся на inbound (клиент сам приходит через контент, рекламу и тд) и outbound (ты идешь к нему первым). К слову, последний [дает](https://hockeystack.com/lab-blog-posts/marketing-influence-on-outbound-deals) 64% пайплайна в B2B SaaS. Аутрич - самый контролируемый канал лид...",
+          "reason": "agent_ops, ai_product_pm, business_adoption; depth=case_study",
+          "telegram_message_id": 257
         }
       ],
       "runtime_readiness": {
@@ -6129,7 +6297,7 @@
         "metadata_advisory_ready": true,
         "text_posts_ready": true
       },
-      "text_post_count": 236,
+      "text_post_count": 239,
       "top_concepts": [
         {
           "count": 32,
@@ -6315,19 +6483,185 @@
       "warnings": []
     },
     {
+      "channel_username": "sergeinotevskii",
+      "coverage": {
+        "agent_ops": 34,
+        "ai_engineering_infra": 11,
+        "ai_product_pm": 33,
+        "ai_ux_workflow": 5,
+        "business_adoption": 36,
+        "coding_agents": 25,
+        "creative_multimodal": 8,
+        "evals_quality": 19,
+        "general_ai_news": 35,
+        "model_landscape": 164,
+        "rag_retrieval_knowledge": 9,
+        "security_privacy_governance": 7
+      },
+      "coverage_strength": {
+        "agent_ops": "medium",
+        "ai_engineering_infra": "thin",
+        "ai_product_pm": "medium",
+        "ai_ux_workflow": "thin",
+        "business_adoption": "medium",
+        "coding_agents": "medium",
+        "creative_multimodal": "thin",
+        "evals_quality": "medium",
+        "general_ai_news": "medium",
+        "model_landscape": "strong",
+        "rag_retrieval_knowledge": "thin",
+        "security_privacy_governance": "thin"
+      },
+      "date_range": {
+        "first_post": "2023-06-07",
+        "last_post": "2026-05-12"
+      },
+      "depth_profile": {
+        "announcement_or_news": 49,
+        "architecture_analysis": 31,
+        "benchmark_or_eval": 19,
+        "case_study": 50,
+        "howto_or_checklist": 133,
+        "low_signal": 82,
+        "practitioner_experience": 46,
+        "tool_release": 14
+      },
+      "display_name": "Sergei Notevskii",
+      "embedding_count": 398,
+      "embedding_coverage_ratio": 1.0,
+      "expert_id": "sergei_notevskii",
+      "fts_count": 398,
+      "metadata_coverage_ratio": 0.0,
+      "metadata_valid_count": 0,
+      "post_count": 424,
+      "representative_posts": [
+        {
+          "coverage_labels": [
+            "agent_ops",
+            "evals_quality",
+            "business_adoption"
+          ],
+          "created_at": "2026-05-12",
+          "depth_label": "benchmark_or_eval",
+          "excerpt": "**Методичка по префикс кэшу** > “KV-cache hit rate is the single most important metric for a production-stage AI agent.” > - Context engineering for AI Agents, Manus Метрика которая имеет прямое влияние на деньги, которые вы тратите на AI. Ниже - три статьи разбирающие prefix_cache с разных сторон: - [Экономика кэши...",
+          "reason": "agent_ops, evals_quality, business_adoption; depth=benchmark_or_eval",
+          "telegram_message_id": 622
+        },
+        {
+          "coverage_labels": [
+            "evals_quality",
+            "business_adoption",
+            "model_landscape"
+          ],
+          "created_at": "2026-05-11",
+          "depth_label": "benchmark_or_eval",
+          "excerpt": "Завтра подвезу сразу 2 полезных артефакта про [кэширование префиксов](https://t.me/sergeinotevskii/588), а пока у меня вопрос. В сообществе вижу что многие \"создатели\" систем на базе AI вообще не запариваются (а иногда и не знают) о том что такое \"кэшированные токены\". И это интересно - потому что постоянно встречаю...",
+          "reason": "evals_quality, business_adoption, model_landscape; depth=benchmark_or_eval",
+          "telegram_message_id": 619
+        },
+        {
+          "coverage_labels": [
+            "coding_agents",
+            "agent_ops",
+            "evals_quality"
+          ],
+          "created_at": "2026-05-03",
+          "depth_label": "benchmark_or_eval",
+          "excerpt": "**Цель достигнута** Я тут не так часто пишу про ai в разработке (не часто же?), благо на эту тему есть крутые каналы других ребят. Но про эту историю захотелось написать даже в воскресенье ближе к полуночи(конечно в тихом режиме)… На днях вышло обновление Codex cli, куда добавили экспериментальную фичу /goal. Работа...",
+          "reason": "coding_agents, agent_ops, evals_quality; depth=benchmark_or_eval",
+          "telegram_message_id": 616
+        },
+        {
+          "coverage_labels": [
+            "agent_ops",
+            "evals_quality",
+            "ai_product_pm",
+            "ai_engineering_infra",
+            "model_landscape"
+          ],
+          "created_at": "2026-04-07",
+          "depth_label": "benchmark_or_eval",
+          "excerpt": "**Нет, ну такую вечеринку я не могу пропустить...** Cегодня официально объявлен день tools) Началось всё с [поста](https://t.me/countwithsasha/574) Александра, потом Валера [расписал](https://t.me/neuraldeep/2047) tools с тз инженера, Паша вообще [описал](https://t.me/evilfreelancer/1636) как сделать свой tool_parse...",
+          "reason": "agent_ops, evals_quality, ai_product_pm; depth=benchmark_or_eval",
+          "telegram_message_id": 608
+        },
+        {
+          "coverage_labels": [
+            "security_privacy_governance",
+            "model_landscape"
+          ],
+          "created_at": "2026-02-18",
+          "depth_label": "howto_or_checklist",
+          "excerpt": "**Датасет из веба** (вэба/вёба/web) Ресерчил разные движки для поиска с LLM через API и посоветовали [Parallel AI.](https://platform.parallel.ai/) И да, у них отличный дипресерч, но сегодня не об этом. Сервис предоставляет инструмент [FindAll](https://docs.parallel.ai/findall-api/findall-quickstart), который позволя...",
+          "reason": "security_privacy_governance, model_landscape; depth=howto_or_checklist",
+          "telegram_message_id": 591
+        },
+        {
+          "coverage_labels": [
+            "agent_ops",
+            "evals_quality",
+            "model_landscape"
+          ],
+          "created_at": "2026-03-02",
+          "depth_label": "benchmark_or_eval",
+          "excerpt": "#300tps Итак Qwen 3.5 вышел целой линейкой, как и ожидалось. И первые отзывы от ребят - очень хорош в агентских сценариях. Но вот загвоздка - у самой лакомой модели [35B-A3B](https://huggingface.co/Qwen/Qwen3.5-35B-A3B-FP8) (размер, MoE, бенчмарки) сейчас случается приступ при размышлениях, которые в итоге растягива...",
+          "reason": "agent_ops, evals_quality, model_landscape; depth=benchmark_or_eval",
+          "telegram_message_id": 596
+        },
+        {
+          "coverage_labels": [
+            "agent_ops",
+            "evals_quality",
+            "model_landscape"
+          ],
+          "created_at": "2026-03-02",
+          "depth_label": "benchmark_or_eval",
+          "excerpt": "Мой коллега [Сева](https://t.me/betensis) выкатил свежую [статью](https://habr.com/ru/companies/bitrix/articles/1004296/) на Хабре - про тестирование ai-сценариев и агентов. Внутри - конкретный путь от отсмотра ответов «глазками» до работающей системы бенчмарков, LLM-судей, Langfuse и конечно грабли которые мы собра...",
+          "reason": "agent_ops, evals_quality, model_landscape; depth=benchmark_or_eval",
+          "telegram_message_id": 595
+        },
+        {
+          "coverage_labels": [
+            "agent_ops",
+            "ai_product_pm",
+            "ai_engineering_infra",
+            "model_landscape"
+          ],
+          "created_at": "2026-03-06",
+          "depth_label": "case_study",
+          "excerpt": "#300tps **vLLM-SR** - роутер/комбайн который смог. Есть классическая боль в проде (особенно с чатовыми ассистентами): большая дорогая модель с reasoning обрабатывает \"привет, переведи текст\". На небольшом трафике незаметно, на большом - не хочется смотреть в статистику)) Когда OpenAI сделал авторежим (модель сама ре...",
+          "reason": "agent_ops, ai_product_pm, ai_engineering_infra; depth=case_study",
+          "telegram_message_id": 598
+        }
+      ],
+      "runtime_readiness": {
+        "embeddings_ready": true,
+        "fts_ready": true,
+        "metadata_advisory_ready": false,
+        "text_posts_ready": true
+      },
+      "text_post_count": 398,
+      "top_concepts": [],
+      "top_keywords": [],
+      "top_primary_topics": [],
+      "warnings": [
+        "sergei_notevskii: no valid post_metadata; coverage is text-only"
+      ]
+    },
+    {
       "channel_username": "prompt_design",
       "coverage": {
-        "agent_ops": 226,
-        "ai_engineering_infra": 36,
-        "ai_product_pm": 74,
-        "ai_ux_workflow": 52,
-        "business_adoption": 101,
-        "coding_agents": 106,
+        "agent_ops": 233,
+        "ai_engineering_infra": 37,
+        "ai_product_pm": 77,
+        "ai_ux_workflow": 53,
+        "business_adoption": 107,
+        "coding_agents": 112,
         "creative_multimodal": 32,
         "evals_quality": 41,
         "general_ai_news": 15,
-        "model_landscape": 359,
-        "rag_retrieval_knowledge": 35,
+        "model_landscape": 366,
+        "rag_retrieval_knowledge": 36,
         "security_privacy_governance": 51
       },
       "coverage_strength": {
@@ -6346,26 +6680,26 @@
       },
       "date_range": {
         "first_post": "2023-02-10",
-        "last_post": "2026-05-02"
+        "last_post": "2026-05-12"
       },
       "depth_profile": {
-        "announcement_or_news": 142,
-        "architecture_analysis": 51,
+        "announcement_or_news": 143,
+        "architecture_analysis": 53,
         "benchmark_or_eval": 41,
-        "case_study": 101,
-        "howto_or_checklist": 308,
-        "low_signal": 166,
+        "case_study": 106,
+        "howto_or_checklist": 312,
+        "low_signal": 167,
         "practitioner_experience": 51,
         "tool_release": 28
       },
       "display_name": "SilicBag",
-      "embedding_count": 871,
+      "embedding_count": 884,
       "embedding_coverage_ratio": 1.0,
       "expert_id": "silicbag",
-      "fts_count": 871,
-      "metadata_coverage_ratio": 0.8356,
+      "fts_count": 884,
+      "metadata_coverage_ratio": 0.8235,
       "metadata_valid_count": 742,
-      "post_count": 888,
+      "post_count": 901,
       "representative_posts": [
         {
           "coverage_labels": [
@@ -6380,24 +6714,15 @@
         },
         {
           "coverage_labels": [
-            "evals_quality",
-            "model_landscape"
+            "coding_agents",
+            "ai_product_pm",
+            "business_adoption"
           ],
-          "created_at": "2026-04-24",
-          "depth_label": "benchmark_or_eval",
-          "excerpt": "Вышла [новая модель](https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro/blob/main/DeepSeek_V4.pdf) - **DeepSeek V4. **Вот такой вот huídá (ответ) от китайцев!** **По** **бенчмаркам все довольно красиво. Пойду тестировать.",
-          "reason": "evals_quality, model_landscape; depth=benchmark_or_eval",
-          "telegram_message_id": 2115
-        },
-        {
-          "coverage_labels": [
-            "coding_agents"
-          ],
-          "created_at": "2026-04-27",
+          "created_at": "2026-05-12",
           "depth_label": "case_study",
-          "excerpt": "Настроил себе сетапчик для более эффективного вайбкодинга, а то не успеваю проекты до среды доделать. Вы спрашиваете, а что у нас в среду? А я вам скажу. Наше второе офлайн-мероприятие в этом году - [«Деньги в ИИ».](https://t.me/prompt_design/2107) Кстати, билеты уже ~~почти~~ закончились (6 штук осталось), так что,...",
-          "reason": "coding_agents; depth=case_study",
-          "telegram_message_id": 2121
+          "excerpt": "Завтра выступаю на крутой конференции! Хочу рассказать, как собирать аудиторию для своих ИИ-проектов. Кажется, что сейчас это самая важная задача, которая стоит как перед теми, кто рассказывает про ИИ, так и перед теми, кто пилит проекты. Потому что ты можешь создать отличное ИИ-решение, но если про него будет знать...",
+          "reason": "coding_agents, ai_product_pm, business_adoption; depth=case_study",
+          "telegram_message_id": 2151
         },
         {
           "coverage_labels": [
@@ -6405,22 +6730,38 @@
             "agent_ops",
             "model_landscape"
           ],
-          "created_at": "2026-04-22",
+          "created_at": "2026-05-07",
           "depth_label": "case_study",
-          "excerpt": "На прошлом мероприятии большинство кулуарных разговоров заканчивались спорами о том, как воспитывать детей в мире искусственного интеллекта: ограничивать доступ или, наоборот, дать полный карт-бланш на использование ChatGPT? А может, разрешать только вайбкодить, а картинки генерировать запретить? На кого учить детей...",
+          "excerpt": "Давайте протестируем новый формат подачи информации в этом канале. Это **.MD с 99 кейсами применения агента Hermes в быту и работе.** Внутри все структурировано и разбито на категории. Вы можете скормить его агенту, Claude Code, Codex, да хоть ChatGPT - и побрейнштормить вместе. Если вам такое заходит, ну бахните 🔥,...",
           "reason": "coding_agents, agent_ops, model_landscape; depth=case_study",
-          "telegram_message_id": 2103
+          "telegram_message_id": 2146
         },
         {
           "coverage_labels": [
-            "ai_product_pm",
-            "business_adoption"
+            "coding_agents",
+            "agent_ops",
+            "rag_retrieval_knowledge",
+            "business_adoption",
+            "model_landscape"
           ],
-          "created_at": "2026-04-28",
-          "depth_label": "practitioner_experience",
-          "excerpt": "Заметили, что я рассказываю о проектах участников наших сообществ? Это не реклама, а часть программы. Она состоит из двух простых пунктов: — **Экспертиза** - совместно находить рабочие идеи, экономить ресурсы и понимать, как запускать продукты, поскольку в одиночку справиться с информационным шумом вокруг ИИ невозмо...",
-          "reason": "ai_product_pm, business_adoption; depth=practitioner_experience",
-          "telegram_message_id": 2130
+          "created_at": "2026-05-06",
+          "depth_label": "case_study",
+          "excerpt": "А мы через 30 минут начинаем наш Research Mastermind. Напомню, что будет три спикера, на каждого отводится 10-15 минут на выступление и 10 минут на вопросы. Сегодня, так совпало, все спикеры из сообществ [«ʞошэМ»](https://t.me/prompt_design/1953) и вот их темы высупления: > 1) Операционный ад садовой фирмы в Берлине...",
+          "reason": "coding_agents, agent_ops, rag_retrieval_knowledge; depth=case_study",
+          "telegram_message_id": 2144
+        },
+        {
+          "coverage_labels": [
+            "coding_agents",
+            "business_adoption",
+            "ai_engineering_infra",
+            "model_landscape"
+          ],
+          "created_at": "2026-05-06",
+          "depth_label": "architecture_analysis",
+          "excerpt": "Anthropic радует новостями! Прямо сейчас: — 5-часовые лимиты Claude Code удвоили на Pro, Max, Team и Enterprise — Убрали урезание лимитов в пиковые часы для Pro и Max — API rate limits для моделей Opus подняли значительно А все почему? [Anthropic подписал со SpaceX контракт ](https://www.anthropic.com/news/higher-li...",
+          "reason": "coding_agents, business_adoption, ai_engineering_infra; depth=architecture_analysis",
+          "telegram_message_id": 2145
         },
         {
           "coverage_labels": [
@@ -6439,27 +6780,28 @@
         },
         {
           "coverage_labels": [
-            "coding_agents",
-            "rag_retrieval_knowledge",
+            "agent_ops",
+            "ai_product_pm",
             "business_adoption",
+            "ai_ux_workflow",
             "model_landscape"
           ],
-          "created_at": "2026-04-30",
-          "depth_label": "architecture_analysis",
-          "excerpt": "Что, блин, делать? - вопрос, который звучал чаще всего в кулуарах вчерашнего [офлайн мероприятия](https://t.me/prompt_design/2091). Мне кажется, я успел пообщаться с парой десятков человек лично и это лучший дипресерч, который не осилит ни одна нейросеть (кроме человеческой). Когда ты видишь реальных людей, считывае...",
-          "reason": "coding_agents, rag_retrieval_knowledge, business_adoption; depth=architecture_analysis",
-          "telegram_message_id": 2135
+          "created_at": "2026-05-12",
+          "depth_label": "howto_or_checklist",
+          "excerpt": "Если бы мне платили за каждого, кого я отговорил от создания ИИ-агента, я был бы сказочно богат, а те, кого отговорил, - счастливы. Но, к сожалению, за это мне не платят, а люди все равно создают себе ненужных агентов. Ну правда, серьезные менеджеры, взрослые дяди и тети, приходят за магией и цветными блестками, пос...",
+          "reason": "agent_ops, ai_product_pm, business_adoption; depth=howto_or_checklist",
+          "telegram_message_id": 2150
         },
         {
           "coverage_labels": [
-            "ai_engineering_infra",
-            "model_landscape"
+            "model_landscape",
+            "creative_multimodal"
           ],
-          "created_at": "2026-04-27",
+          "created_at": "2026-04-25",
           "depth_label": "howto_or_checklist",
-          "excerpt": "На прошлой неделе стало известно, что Google инвестирует 40 млрд баксов в Anthropic. А до этого Amazon обязались инвестировать еще 25 млрд. Звучит круто, но если читать это глазами Anthropic, то будет так: ладно, покупайте долю, только дайте нам вычислительных мощностей! Например, по условиям сделки с Google, Anthro...",
-          "reason": "ai_engineering_infra, model_landscape; depth=howto_or_checklist",
-          "telegram_message_id": 2120
+          "excerpt": "Вы же знаете, что я в основном по буковкам? Пишу в интернетах с 1999-го, но сейчас глупо отрицать тот факт, что тексты читают все меньше и меньше. И нужно, как SOTA-модель, становиться мультимодальным и омниканальным, короче, видео снимать, подкасты делать. Я вот вчера записал видосик - закинул, даже вроде неплохо о...",
+          "reason": "model_landscape, creative_multimodal; depth=howto_or_checklist",
+          "telegram_message_id": 2118
         }
       ],
       "runtime_readiness": {
@@ -6468,7 +6810,7 @@
         "metadata_advisory_ready": true,
         "text_posts_ready": true
       },
-      "text_post_count": 871,
+      "text_post_count": 884,
       "top_concepts": [
         {
           "count": 83,
@@ -6658,35 +7000,39 @@
     "experts_with_embedding_gaps": [],
     "experts_without_metadata": [
       "aimasters_me",
+      "deksden_notes",
       "kornish",
-      "pashazloy"
+      "pashazloy",
+      "sergei_notevskii"
     ],
     "thin_or_missing_areas": []
   },
-  "generated_at": "2026-05-12T13:20:35+00:00",
+  "generated_at": "2026-05-12T21:33:53+00:00",
   "include_video_hub": false,
   "interpretation": [
     "Coverage status is raw-text keyword density only; it is not an admission verdict.",
     "No missing areas were found at the current coarse taxonomy level; candidate decisions should focus on incremental query utility, depth, freshness, and duplicate risk.",
     "Dense news/model coverage means another broad-news expert needs strong source-level evidence before admission.",
-    "Some experts lack valid post_metadata, so current-roster coverage must be treated as text-derived for them: aimasters_me, kornish, pashazloy."
+    "Some experts lack valid post_metadata, so current-roster coverage must be treated as text-derived for them: aimasters_me, deksden_notes, kornish, pashazloy, sergei_notevskii."
   ],
   "summary": {
-    "expert_count": 18,
+    "expert_count": 20,
     "global_counts": {
-      "expert_metadata": 19,
-      "human_expert_metadata": 18,
-      "post_embeddings": 6929,
-      "posts": 7371,
-      "posts_fts": 6929,
-      "text_posts": 6929
+      "expert_metadata": 21,
+      "human_expert_metadata": 20,
+      "post_embeddings": 8137,
+      "posts": 8608,
+      "posts_fts": 8137,
+      "text_posts": 8137
     }
   },
   "version": 1,
   "warnings": [
     "aimasters_me: no valid post_metadata; coverage is text-only",
+    "deksden_notes: no valid post_metadata; coverage is text-only",
     "kornish: no valid post_metadata; coverage is text-only",
     "ostrikov: post_metadata coverage below 50%",
-    "pashazloy: no valid post_metadata; coverage is text-only"
+    "pashazloy: no valid post_metadata; coverage is text-only",
+    "sergei_notevskii: no valid post_metadata; coverage is text-only"
   ]
 }

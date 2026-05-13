@@ -1,0 +1,96 @@
+{
+  "created_at": "2026-05-12T19:56:14.141172+00:00",
+  "packet_dir": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/sergei_notevskii/input_with_comments",
+  "prompt_path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/sergei_notevskii/input_with_comments/sergei_notevskii_vertex_prompt.md",
+  "model": "gemini-3.1-pro-preview",
+  "project_id": "project-05d8e46e-231b-43f9-8e1",
+  "location": "global",
+  "count_tokens": {
+    "started_at": "2026-05-12T19:56:12.945966+00:00",
+    "finished_at": "2026-05-12T19:56:14.140116+00:00",
+    "response": {
+      "totalTokens": 235884,
+      "totalBillableCharacters": 563791,
+      "promptTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 235884
+        }
+      ]
+    }
+  },
+  "generate": {
+    "started_at": "2026-05-12T19:56:14.141215+00:00",
+    "finished_at": "2026-05-12T19:58:15.301232+00:00",
+    "generation_config": {
+      "temperature": 0.1,
+      "candidateCount": 1,
+      "maxOutputTokens": 65536,
+      "responseMimeType": "application/json"
+    },
+    "usage_metadata": {
+      "promptTokenCount": 235884,
+      "candidatesTokenCount": 13347,
+      "totalTokenCount": 251977,
+      "trafficType": "ON_DEMAND",
+      "promptTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 235884
+        }
+      ],
+      "candidatesTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 13347
+        }
+      ],
+      "thoughtsTokenCount": 2746
+    },
+    "model_version": "gemini-3.1-pro-preview",
+    "finish_reason": "STOP",
+    "text_chars": 39398,
+    "json_parse_error": null,
+    "validation": {
+      "missing_required_top_level_keys": [],
+      "known_source_ref_count": 1062,
+      "used_source_ref_count": 50,
+      "source_ref_index_used_count": 31,
+      "unknown_source_refs": [],
+      "unknown_source_ref_count": 0,
+      "refs_missing_from_source_ref_index_used": [
+        "P0093",
+        "P0211",
+        "P0213",
+        "P0227",
+        "P0234",
+        "P0259",
+        "P0303",
+        "P0309",
+        "P0311",
+        "P0318",
+        "P0330",
+        "P0332",
+        "P0333",
+        "P0369.C0006",
+        "P0383",
+        "P0388.C0002",
+        "P0389.C0008",
+        "P0392",
+        "P0403.C0003"
+      ],
+      "refs_missing_from_source_ref_index_used_count": 19,
+      "matrix_cell_count": 4,
+      "matrix_export_cell_count": 4,
+      "matrix_export_incomplete": false,
+      "missing_matrix_export_cells": [],
+      "missing_matrix_export_cell_count": 0,
+      "bad_matrix_relative_novelty_values": [],
+      "passport_generated_at": "2026-05-12T19:55:42.014272+00:00",
+      "expected_generated_at": "2026-05-12T19:55:42.014272+00:00",
+      "generated_at_matches_expected": true,
+      "valid_basic_contract": false
+    }
+  },
+  "status": "generated"
+}

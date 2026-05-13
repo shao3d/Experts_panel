@@ -40,6 +40,8 @@ spellings to backend `expert_id` values before calling the Agent Context CLI.
 | `glebkudr` | Glebkudr | `gleb_pro_ai` |
 | `ostrikov` | Ostrikov | `aostrikov_ai_agents` |
 | `pashazloy` | PashaZloy | `evilfreelancer` |
+| `sergei_notevskii` | Notevskii | `sergeinotevskii` |
+| `deksden_notes` | DEKSDEN | `deksden_notes` |
 
 ### Tech & Business
 

@@ -1,10 +1,10 @@
-# Knowledge Matrix Health Review After 18 Experts
+# Knowledge Matrix Health Review After 20 Experts
 
 Generated: 2026-05-12
 
 ## Scope
 
-This is a top-down health review of the accepted expert-admission knowledge matrix after all 17 original current human experts plus Aimasters.Me were accepted into the matrix.
+This is a top-down health review of the accepted expert-admission knowledge matrix after all 17 original current human experts plus Aimasters.Me, Sergei Notevskii, and DEKSDEN notes were accepted into the matrix.
 
 This review does not rerun semantic-passport generation, representative-post arbitration, or runtime Panex probes. It checks whether the resulting matrix is coherent, useful, and aligned with the lightweight admission doctrine.
 
@@ -17,14 +17,14 @@ This review does not rerun semantic-passport generation, representative-post arb
 
 ## Current State
 
-- Accepted matrix experts: 18
-- Matrix cells: 47
+- Accepted matrix experts: 20
+- Matrix cells: 49
 - Domain rollups: 11
-- Domain + intent rollups: 30
+- Domain + intent rollups: 31
 - Taxonomy extensions currently proposed: 0
-- Strong single-source cells: 20
-- Strong multi-source cells: 13
-- Total single-source cells: 34
+- Strong single-source cells: 19
+- Strong multi-source cells: 14
+- Total single-source cells: 35
 - Related-cell overlaps: 10
 - Strong domain + intent multi-source rollups: 10
 
@@ -51,6 +51,9 @@ The panel is now meaningfully strong in these areas:
 - Prompt engineering: model-specific formatting, reasoning control, context compression.
 - RAG / knowledge-base design / retrieval-quality discussions.
 - Local LLM and inference-practicality cluster.
+- Production LLM inference economics: prefix caching, vLLM serving, semantic routing, and cost/latency trade-offs.
+- Advanced AI SWE workflow design: CLI-agent orchestration, worktrees, task folders, Memory Banks, and context-compaction discipline.
+- Practitioner model/task evaluation for AI SWE is now represented more explicitly through DEKSDEN notes.
 - Early but useful product/business adoption layer.
 - New but still narrow creative/multimodal workflow coverage through Aimasters.Me.
 
@@ -65,8 +68,12 @@ These areas are overlap-heavy and should be strict for future candidates:
 - `coding_agents/design_agentic_dev_workflow` rollup
 - `agent_ops/design_agentic_dev_workflow` rollup
 - `prompt_engineering/learn_ai_assisted_development` rollup
+- `ai_engineering_infra/optimize_inference_cost_latency` rollup
+- `rag_retrieval_knowledge/design_rag_knowledge_base` rollup
 
 Future experts in these zones should not be accepted just because they talk about Claude Code, Cursor, Codex, agents, MCP, or vibe coding. They need a clearly different angle, stronger evidence, unusually good source posts, or a distinct audience/use case.
+
+For AI-infra candidates, the same rule now applies to vLLM, local LLMs, and cost/latency topics: they need a clear production specialization, measured practice, or a distinct runtime angle rather than generic "self-hosted LLM" commentary.
 
 ## Brittle Areas
 
@@ -74,7 +81,8 @@ Single-source coverage is not automatically bad, but it means the panel depends 
 
 - Security/privacy/governance is thin and mostly moderate.
 - Evals/reliability has strong voices, but is concentrated.
-- Deployment/observability for AI-dev systems is concentrated.
+- Deployment/observability and inference economics are stronger after Sergei Notevskii, but still concentrated in a small number of technical voices.
+- Model/task evals are stronger after DEKSDEN notes, but should be treated as practitioner evidence rather than universal benchmark truth.
 - Product-management and AI-product workflow coverage is useful but still narrow.
 - Business adoption has useful coverage, but it is not yet broad.
 - Codex-specific workflow coverage is still narrower than Claude/Cursor coverage.
@@ -146,7 +154,11 @@ Suggested validation cases:
 
 Runtime routing probes are still useful later, but they are secondary. The primary purpose of this matrix is to support expert admission decisions.
 
-Aimasters.Me is the first accepted external-style candidate after the 17-expert baseline. Treat it as a useful validation case: mechanically overlap-heavy, but manually accepted because it adds a clean creative/multimodal gap and a distinct Skills / personal-agent practitioner viewpoint.
+Aimasters.Me, Sergei Notevskii, and DEKSDEN notes are the first accepted external-style candidates after the 17-expert baseline. Treat them as useful validation cases:
+
+- Aimasters.Me was mechanically overlap-heavy, but manually accepted because it adds a clean creative/multimodal gap and a distinct Skills / personal-agent practitioner viewpoint.
+- Sergei Notevskii was even more overlap-heavy mechanically, but manually accepted as a narrow production-inference specialist: prefix caching, vLLM serving, semantic routing, and context/caching economics.
+- DEKSDEN notes was mechanically overlap-heavy in agent_ops and knowledge-base cells, but manually accepted as a precision source for mature CLI-agent workflows, Memory Bank/progressive-disclosure context engineering, and task-specific AI SWE evals.
 
 ## Bottom Line
 

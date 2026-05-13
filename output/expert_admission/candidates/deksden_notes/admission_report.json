@@ -1,0 +1,57 @@
+{
+  "schema_version": "candidate_admission_report.v0.1",
+  "created_at": "2026-05-12",
+  "candidate_id": "deksden_notes",
+  "display_name": "DEKSDEN notes",
+  "channel_username": "@deksden_notes",
+  "verdict": "accept",
+  "decision_mode": "manual_human_review",
+  "based_on": {
+    "semantic_passport": "output/expert_admission/semantic_passports/deksden_notes/output_comments12/deksden_notes_semantic_passport.normalized.json",
+    "candidate_impact_report": "output/expert_admission/candidates/deksden_notes/candidate_impact_report.md",
+    "semantic_arbitration_report": null,
+    "manual_overlap_review": "comment-backed passport plus deterministic matrix preflight; accepted despite overlap-heavy warning because the expert adds a distinctive advanced AI SWE workflow viewpoint around DeksdenFlow, CLI-agent orchestration, Git worktrees, Memory Bank/progressive-disclosure context engineering, and empirical model/task evals"
+  },
+  "preflight_summary": {
+    "candidate_cells_from_matrix_export": 3,
+    "fills_gap": 1,
+    "adds_adjacent_viewpoint": 0,
+    "deepens_existing_cell": 0,
+    "needs_probe": 0,
+    "likely_duplicate": 2,
+    "taxonomy_extensions": 0,
+    "exact_overlaps": 2,
+    "related_overlaps": 0,
+    "overlap_heavy_caveat": true,
+    "clean_gap_count": 1,
+    "dense_overlap_cells": 2,
+    "preliminary_recommendation": "overlap_heavy_needs_stronger_review"
+  },
+  "accepted_cells": [
+    {
+      "cell_id": "agent_ops/agentic_dev_process/design_agentic_dev_workflow",
+      "classification": "likely_duplicate",
+      "admission_interpretation": "accepted as a precision specialization inside a crowded agent_ops area: DeksdenFlow, CLI-agent management, Git worktree isolation, task folders, sub-agent orchestration, and merge/integration discipline"
+    },
+    {
+      "cell_id": "rag_retrieval_knowledge/knowledge_base_design/design_rag_knowledge_base",
+      "classification": "likely_duplicate",
+      "admission_interpretation": "accepted as a concrete Memory Bank and progressive-disclosure context-engineering source; useful when knowledge-base design is for AI coding agents rather than generic vector RAG"
+    },
+    {
+      "cell_id": "evals_quality/llm_evals/compare_models_for_task",
+      "classification": "fills_gap",
+      "admission_interpretation": "accepted as a clean matrix gap for practitioner model/task evaluation, multi-sampling, and AI SWE quality gates"
+    }
+  ],
+  "taxonomy_updates": [],
+  "routing_notes": [
+    "Strongest fit: mature AI-assisted software engineering workflow, CLI agents, DeksdenFlow, Git worktrees, task folders, Memory Bank design, context compaction, and empirical coding-agent evals.",
+    "Useful as a complement to AI Architect, Elkornacio, SilicBag, Refat, and Doronin when the question is about operationalizing agentic development process rather than generic agent news.",
+    "Use for Memory Bank/progressive-disclosure context engineering, but do not treat as a generic vector-RAG implementation source.",
+    "Use for model comparison only when the user needs task-specific AI SWE evals and quality gates; avoid treating personal evals as universal benchmarks.",
+    "Do not route by default for beginner AI IDE usage, generic prompting, broad AI business adoption, vendor drama, account-limit workarounds, or generic AI news."
+  ],
+  "recommended_manifest_caveat": "accepted as advanced AI SWE workflow specialist: CLI-agent orchestration, DeksdenFlow, Git worktree parallelism, Memory Bank/progressive-disclosure context engineering, and empirical model/task evals; overlap-heavy with existing agent_ops and knowledge-base experts, so route as a precision source for mature agentic development process, not for beginner AI IDE usage, generic AI news, broad business adoption, or vendor drama",
+  "next_action": "proceed_as_accepted_in_semantic_knowledge_matrix_and_local_experts_panel_system_with_strict_routing_caveat"
+}

@@ -1,18 +1,18 @@
 {
   "channel_username": "countwithsasha",
   "coverage": {
-    "agent_ops": 147,
-    "ai_engineering_infra": 16,
-    "ai_product_pm": 47,
+    "agent_ops": 150,
+    "ai_engineering_infra": 17,
+    "ai_product_pm": 48,
     "ai_ux_workflow": 23,
-    "business_adoption": 92,
-    "coding_agents": 94,
-    "creative_multimodal": 13,
-    "evals_quality": 31,
+    "business_adoption": 93,
+    "coding_agents": 96,
+    "creative_multimodal": 14,
+    "evals_quality": 32,
     "general_ai_news": 2,
-    "model_landscape": 201,
-    "rag_retrieval_knowledge": 20,
-    "security_privacy_governance": 47
+    "model_landscape": 205,
+    "rag_retrieval_knowledge": 21,
+    "security_privacy_governance": 48
   },
   "coverage_strength": {
     "agent_ops": "strong",
@@ -30,37 +30,56 @@
   },
   "date_range": {
     "first_post": "2024-06-26",
-    "last_post": "2026-05-04"
+    "last_post": "2026-05-12"
   },
   "depth_profile": {
     "announcement_or_news": 8,
     "architecture_analysis": 13,
-    "benchmark_or_eval": 30,
-    "case_study": 132,
+    "benchmark_or_eval": 31,
+    "case_study": 135,
     "howto_or_checklist": 32,
     "low_signal": 55,
     "practitioner_experience": 40,
     "tool_release": 0
   },
   "display_name": "Polyakov",
-  "embedding_count": 261,
+  "embedding_count": 265,
   "embedding_coverage_ratio": 1.0,
   "expert_id": "polyakov",
-  "fts_count": 261,
-  "metadata_coverage_ratio": 0.6452,
+  "fts_count": 265,
+  "metadata_coverage_ratio": 0.6369,
   "metadata_valid_count": 200,
-  "post_count": 310,
+  "post_count": 314,
   "representative_posts": [
     {
       "coverage_labels": [
+        "agent_ops",
         "evals_quality",
+        "ai_product_pm",
+        "ai_engineering_infra",
         "model_landscape"
       ],
-      "created_at": "2026-04-15",
+      "created_at": "2026-05-05",
       "depth_label": "benchmark_or_eval",
-      "excerpt": "**Почему Claude не должен проверять код Claude (подставить сюда любого** **провайдера LLM)** Короче кажется можно ставить точку в обсуждениях оценок, которые модели ставят самим себе. И точка будет в виде пейпера Prior Prejudice (ACL 2026, UIUC). Ссылка: https://uiuc-conversational-ai-lab.github.io/prior-prejudice/...",
-      "reason": "evals_quality, model_landscape; depth=benchmark_or_eval",
-      "telegram_message_id": 587
+      "excerpt": "**Барбершоп-тест: отечественным ИИ-моделям нужно следующее поколение. Жду** Вчера [писал,](https://t.me/countwithsasha/633) что GigaChat плохо подходит как сердце агента. По пути c подачи *@evilfreelancer* я обнаружил, что лучше запускать Гигачат через LiteLLM с флагом `supports_function_calling: true` С этим флагом...",
+      "reason": "agent_ops, evals_quality, ai_product_pm; depth=benchmark_or_eval",
+      "telegram_message_id": 636
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "rag_retrieval_knowledge",
+        "business_adoption",
+        "security_privacy_governance",
+        "model_landscape",
+        "creative_multimodal"
+      ],
+      "created_at": "2026-05-11",
+      "depth_label": "case_study",
+      "excerpt": "**Голосовые агенты и 152-ФЗ: дилемма, в которой я застрял** Голосовой агент в продакшене редко сводится к «реалистичной болталке с низкой задержкой». Нужны инструменты, MCP, доступ к бизнес-логике клиента, иногда подключение своей LLM. У 11labs всё это есть. 1 апреля 2026 [появился даже мультимодальный ввод](https:/...",
+      "reason": "coding_agents, agent_ops, rag_retrieval_knowledge; depth=case_study",
+      "telegram_message_id": 639
     },
     {
       "coverage_labels": [
@@ -74,6 +93,28 @@
       "excerpt": "**GigaChat как сердце агента: подключить получилось, пользоваться нет** На прошлой неделе я писал, что Алиса [пока больше похожа на воркфлоу:](https://t.me/countwithsasha/626) сценарий есть, а нормальной работы с нечеткими задачами нет. Я уже тогда захотел чекнуть Гигачат, тормозил гемор с ротацией API ключей. Вчера...",
       "reason": "agent_ops, business_adoption, ai_ux_workflow; depth=case_study",
       "telegram_message_id": 633
+    },
+    {
+      "coverage_labels": [
+        "model_landscape"
+      ],
+      "created_at": "2026-05-12",
+      "depth_label": "case_study",
+      "excerpt": "**Cmd+Shift+P — и Яндекс Gmail пересказывает мне email-рассылки**ылки У меня в Substack семь подписок по ИИ: Ahead of AI, Latent.Space, Interconnects, Simon Willison и др. Я долгое время тупо копил непрочитанные, хотя там встречаются крутые мысли. Читать не родной английский долго и требует усидчивости. Недавно обна...",
+      "reason": "model_landscape; depth=case_study",
+      "telegram_message_id": 640
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "model_landscape"
+      ],
+      "created_at": "2026-05-07",
+      "depth_label": "case_study",
+      "excerpt": "**Книги для агентов (опять он про скиллы): серая зона и новый рынок** * Раньше я покупал книги O’Reilly, чтобы развиваться как программист. Теперь в проекте всё чаще программирует агент. Ему тоже нужны книги: только не PDF на 500 страниц, а навык, который можно вызвать во время работы.* На днях увидел на GitHub репо...",
+      "reason": "coding_agents, agent_ops, model_landscape; depth=case_study",
+      "telegram_message_id": 637
     },
     {
       "coverage_labels": [
@@ -112,47 +153,6 @@
       "excerpt": "**Алиса прислала пуш: у нас агенты. Я сразу отправил её в барбершоп ** У Яндекса уже где-то полгода висел [анонс закрытой беты ИИ-агентов.](https://3dnews.ru/1131494/alisa-ai-poluchila-iiagentov-kotorie-broniruyut-uslugi-ishchut-skidki-i-provodyat-issledovaniya-po-zadaniyu-polzovatelya) Сегодня Алиса в приложении пр...",
       "reason": "agent_ops, ai_product_pm, ai_ux_workflow; depth=case_study",
       "telegram_message_id": 626
-    },
-    {
-      "coverage_labels": [
-        "coding_agents",
-        "agent_ops",
-        "model_landscape",
-        "creative_multimodal"
-      ],
-      "created_at": "2026-04-30",
-      "depth_label": "case_study",
-      "excerpt": "**Сохраняемые посты апреля: топ-3 по пересылкам** Традиционный дайджест интересных постов за месяц. Измеряю контент процентом пересылок от просмотров: сколько людей унесли пост себе или коллеге. В апреле 33 поста, 80 234 просмотра, 2 897 пересылок. Просмотры выросли почти на 50%, а пересылки просели. 🥉 Т**ретье мест...",
-      "reason": "coding_agents, agent_ops, model_landscape; depth=case_study",
-      "telegram_message_id": 625
-    },
-    {
-      "coverage_labels": [
-        "coding_agents",
-        "agent_ops",
-        "ai_product_pm",
-        "business_adoption",
-        "security_privacy_governance",
-        "ai_engineering_infra",
-        "model_landscape"
-      ],
-      "created_at": "2026-04-27",
-      "depth_label": "case_study",
-      "excerpt": "**Эра дешёвого кода: какие сервисы сейчас пилить** Вчера цитировал пост коллеги про рост объёмов кода: пишется куча, до продукта доходит почти ничего. Ценность простого SaaS, где магия была в коде и интерфейсе, снижается. 🎯 Д**ано ** В* 2017 я на коленке собрал сервис по импорту товаров из фидов в маркетплейс ВК, сс...",
-      "reason": "coding_agents, agent_ops, ai_product_pm; depth=case_study",
-      "telegram_message_id": 616
-    },
-    {
-      "coverage_labels": [
-        "coding_agents",
-        "agent_ops",
-        "model_landscape"
-      ],
-      "created_at": "2026-04-29",
-      "depth_label": "case_study",
-      "excerpt": "**Как оживить битые Cowork-сессии Claude после переезда аккаунта ** После бана Claude я продолжил пересадку мозгов между аккаунтами. С Claude Code App всё было относительно просто: перенёс локальные индексы — сессии появились. С Cowork оказалось веселее. Там сессия — это не один файл, а связка из индекса, рабочей па...",
-      "reason": "coding_agents, agent_ops, model_landscape; depth=case_study",
-      "telegram_message_id": 624
     }
   ],
   "runtime_readiness": {
@@ -161,7 +161,7 @@
     "metadata_advisory_ready": true,
     "text_posts_ready": true
   },
-  "text_post_count": 261,
+  "text_post_count": 265,
   "top_concepts": [
     {
       "count": 26,

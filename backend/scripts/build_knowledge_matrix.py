@@ -603,7 +603,8 @@ def build_matrix(passport_paths: list[Path]) -> dict[str, Any]:
             taxonomy_extensions.extend(taxonomy_flags(cell))
 
     cells_payload: list[dict[str, Any]] = []
-    for key, contributors in sorted(grouped.items()):
+    for key, raw_contributors in sorted(grouped.items()):
+        contributors = best_contributors_by_expert(raw_contributors)
         cells_payload.append(
             {
                 "matrix_cell_id": key,
@@ -614,6 +615,7 @@ def build_matrix(passport_paths: list[Path]) -> dict[str, Any]:
                 "coverage_status": classify_coverage(contributors),
                 "redundancy_level": classify_redundancy(contributors),
                 "expert_count": len(contributors),
+                "contribution_count": len(raw_contributors),
                 "best_experts": best_experts_payload(contributors),
                 "score_summary": score_summary_payload(contributors),
                 "contributors": contributors,

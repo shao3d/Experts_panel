@@ -1,8 +1,8 @@
 # Expert Coverage Report
 
-Generated: `2026-05-12T13:20:35+00:00`
+Generated: `2026-05-12T21:33:53+00:00`
 DB: `/Users/andreysazonov/Documents/Projects/Experts_panel/backend/data/experts.db`
-Experts included: `18`
+Experts included: `20`
 
 This report is read-only and uses heuristic offline labels. Runtime proof
 still requires source-level query probes through Agent Context.
@@ -12,35 +12,35 @@ still requires source-level query probes through Agent Context.
 - Coverage status is raw-text keyword density only; it is not an admission verdict.
 - No missing areas were found at the current coarse taxonomy level; candidate decisions should focus on incremental query utility, depth, freshness, and duplicate risk.
 - Dense news/model coverage means another broad-news expert needs strong source-level evidence before admission.
-- Some experts lack valid post_metadata, so current-roster coverage must be treated as text-derived for them: aimasters_me, kornish, pashazloy.
+- Some experts lack valid post_metadata, so current-roster coverage must be treated as text-derived for them: aimasters_me, deksden_notes, kornish, pashazloy, sergei_notevskii.
 
 ## Global Counts
 
 | Metric | Count |
 |---|---:|
-| `expert_metadata` | 19 |
-| `human_expert_metadata` | 18 |
-| `posts` | 7371 |
-| `text_posts` | 6929 |
-| `post_embeddings` | 6929 |
-| `posts_fts` | 6929 |
+| `expert_metadata` | 21 |
+| `human_expert_metadata` | 20 |
+| `posts` | 8608 |
+| `text_posts` | 8137 |
+| `post_embeddings` | 8137 |
+| `posts_fts` | 8137 |
 
 ## Coverage Map
 
 | Area | Status | Matching Posts | Experts | Top Experts |
 |---|---|---:|---:|---|
-| `coding_agents` | strong | 1800 | 18 | akimov (203), doronin (181), ai_architect (152), glebkudr (129) |
-| `agent_ops` | strong | 2230 | 18 | doronin (282), silicbag (226), akimov (218), neuraldeep (174) |
-| `evals_quality` | strong | 569 | 18 | akimov (105), llm_under_hood (79), neuraldeep (57), refat (51) |
-| `rag_retrieval_knowledge` | strong | 432 | 18 | neuraldeep (84), llm_under_hood (57), refat (38), silicbag (35) |
-| `ai_product_pm` | strong | 1177 | 18 | kornish (265), akimov (112), doronin (96), refat (80) |
-| `business_adoption` | strong | 1239 | 18 | kornish (165), llm_under_hood (129), akimov (126), silicbag (101) |
-| `ai_ux_workflow` | strong | 457 | 18 | kornish (77), silicbag (52), akimov (50), doronin (37) |
-| `security_privacy_governance` | strong | 552 | 18 | akimov (87), kornish (70), refat (58), silicbag (51) |
-| `ai_engineering_infra` | strong | 424 | 18 | akimov (66), neuraldeep (57), refat (52), llm_under_hood (39) |
-| `model_landscape` | strong | 3666 | 18 | akimov (480), doronin (396), silicbag (359), kornish (270) |
-| `creative_multimodal` | strong | 281 | 18 | akimov (61), refat (38), doronin (36), silicbag (32) |
-| `general_ai_news` | strong | 57 | 13 | silicbag (15), doronin (11), glebkudr (10), ilia_izmailov (4) |
+| `coding_agents` | strong | 2103 | 20 | deksden_notes (253), akimov (208), doronin (181), ai_architect (154) |
+| `agent_ops` | strong | 2667 | 20 | deksden_notes (353), doronin (287), silicbag (233), akimov (222) |
+| `evals_quality` | strong | 627 | 20 | akimov (106), llm_under_hood (81), neuraldeep (57), refat (52) |
+| `rag_retrieval_knowledge` | strong | 461 | 20 | neuraldeep (85), llm_under_hood (58), refat (38), silicbag (36) |
+| `ai_product_pm` | strong | 1271 | 20 | kornish (270), akimov (116), doronin (96), refat (82) |
+| `business_adoption` | strong | 1367 | 20 | kornish (168), llm_under_hood (130), akimov (128), silicbag (107) |
+| `ai_ux_workflow` | strong | 511 | 20 | kornish (79), silicbag (53), akimov (50), deksden_notes (42) |
+| `security_privacy_governance` | strong | 592 | 20 | akimov (89), kornish (73), refat (59), silicbag (51) |
+| `ai_engineering_infra` | strong | 469 | 20 | akimov (70), neuraldeep (57), refat (53), llm_under_hood (39) |
+| `model_landscape` | strong | 4183 | 20 | akimov (492), doronin (398), silicbag (366), deksden_notes (297) |
+| `creative_multimodal` | strong | 306 | 20 | akimov (65), refat (39), doronin (36), silicbag (32) |
+| `general_ai_news` | strong | 93 | 15 | sergei_notevskii (35), silicbag (15), doronin (11), glebkudr (10) |
 
 ## Gaps
 
@@ -49,8 +49,10 @@ Thin or missing areas:
 
 Experts without valid post_metadata:
 - `aimasters_me`
+- `deksden_notes`
 - `kornish`
 - `pashazloy`
+- `sergei_notevskii`
 
 Experts with embedding gaps:
 - none
@@ -59,28 +61,32 @@ Experts with embedding gaps:
 
 | Expert | Posts | Text | Metadata | Embeddings | Top Coverage | Warnings |
 |---|---:|---:|---:|---:|---|---:|
-| `ai_architect` | 234 | 226 | 196 | 226 | coding_agents:152, model_landscape:144, agent_ops:92 | 0 |
-| `ai_grabli` | 357 | 351 | 330 | 351 | model_landscape:147, ai_product_pm:67, coding_agents:62 | 0 |
+| `ai_architect` | 238 | 230 | 196 | 230 | coding_agents:154, model_landscape:147, agent_ops:92 | 0 |
+| `ai_grabli` | 363 | 357 | 330 | 357 | model_landscape:149, ai_product_pm:68, coding_agents:65 | 0 |
 | `aimasters_me` | 322 | 307 | 0 | 307 | model_landscape:166, coding_agents:63, agent_ops:62 | 1 |
-| `air_ai` | 165 | 164 | 143 | 164 | model_landscape:106, agent_ops:52, business_adoption:44 | 0 |
-| `akimov` | 822 | 775 | 657 | 775 | model_landscape:480, agent_ops:218, coding_agents:203 | 0 |
-| `doronin` | 875 | 686 | 631 | 686 | model_landscape:396, agent_ops:282, coding_agents:181 | 0 |
-| `elkornacio` | 465 | 445 | 429 | 445 | model_landscape:190, coding_agents:117, agent_ops:111 | 0 |
+| `air_ai` | 169 | 168 | 143 | 168 | model_landscape:109, agent_ops:55, business_adoption:46 | 0 |
+| `akimov` | 837 | 790 | 657 | 790 | model_landscape:492, agent_ops:222, coding_agents:208 | 0 |
+| `deksden_notes` | 714 | 711 | 0 | 711 | agent_ops:353, model_landscape:297, coding_agents:253 | 1 |
+| `doronin` | 881 | 692 | 631 | 692 | model_landscape:398, agent_ops:287, coding_agents:181 | 0 |
+| `elkornacio` | 471 | 451 | 429 | 451 | model_landscape:193, coding_agents:118, agent_ops:115 | 0 |
 | `etechlead` | 196 | 185 | 178 | 185 | model_landscape:118, coding_agents:106, agent_ops:98 | 0 |
-| `glebkudr` | 472 | 455 | 364 | 455 | coding_agents:129, model_landscape:127, agent_ops:116 | 0 |
-| `ilia_izmailov` | 176 | 171 | 145 | 171 | coding_agents:68, model_landscape:68, ai_product_pm:39 | 0 |
-| `kornish` | 487 | 468 | 0 | 468 | model_landscape:270, ai_product_pm:265, business_adoption:165 | 1 |
-| `llm_under_hood` | 321 | 321 | 266 | 321 | model_landscape:218, agent_ops:143, business_adoption:129 | 0 |
-| `neuraldeep` | 514 | 494 | 406 | 494 | model_landscape:269, agent_ops:174, coding_agents:114 | 0 |
-| `ostrikov` | 68 | 67 | 29 | 67 | agent_ops:41, model_landscape:28, coding_agents:23 | 1 |
-| `pashazloy` | 409 | 393 | 0 | 393 | model_landscape:192, agent_ops:121, coding_agents:63 | 1 |
-| `polyakov` | 310 | 261 | 200 | 261 | model_landscape:201, agent_ops:147, coding_agents:94 | 0 |
-| `refat` | 237 | 236 | 193 | 236 | model_landscape:187, agent_ops:150, coding_agents:121 | 0 |
-| `silicbag` | 888 | 871 | 742 | 871 | model_landscape:359, agent_ops:226, coding_agents:106 | 0 |
+| `glebkudr` | 485 | 468 | 364 | 468 | model_landscape:130, coding_agents:129, agent_ops:120 | 0 |
+| `ilia_izmailov` | 178 | 173 | 145 | 173 | model_landscape:69, coding_agents:68, ai_product_pm:39 | 0 |
+| `kornish` | 492 | 473 | 0 | 473 | model_landscape:275, ai_product_pm:270, business_adoption:168 | 1 |
+| `llm_under_hood` | 324 | 324 | 266 | 324 | model_landscape:220, agent_ops:146, business_adoption:130 | 0 |
+| `neuraldeep` | 523 | 503 | 406 | 503 | model_landscape:273, agent_ops:179, coding_agents:115 | 0 |
+| `ostrikov` | 69 | 68 | 29 | 68 | agent_ops:41, model_landscape:28, coding_agents:23 | 1 |
+| `pashazloy` | 414 | 398 | 0 | 398 | model_landscape:195, agent_ops:124, coding_agents:63 | 1 |
+| `polyakov` | 314 | 265 | 200 | 265 | model_landscape:205, agent_ops:150, coding_agents:96 | 0 |
+| `refat` | 240 | 239 | 193 | 239 | model_landscape:189, agent_ops:153, coding_agents:123 | 0 |
+| `sergei_notevskii` | 424 | 398 | 0 | 398 | model_landscape:164, business_adoption:36, general_ai_news:35 | 1 |
+| `silicbag` | 901 | 884 | 742 | 884 | model_landscape:366, agent_ops:233, coding_agents:112 | 0 |
 
 ## Warnings
 
 - aimasters_me: no valid post_metadata; coverage is text-only
+- deksden_notes: no valid post_metadata; coverage is text-only
 - kornish: no valid post_metadata; coverage is text-only
 - ostrikov: post_metadata coverage below 50%
 - pashazloy: no valid post_metadata; coverage is text-only
+- sergei_notevskii: no valid post_metadata; coverage is text-only

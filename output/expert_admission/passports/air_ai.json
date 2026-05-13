@@ -1,16 +1,16 @@
 {
   "channel_username": "realtimeforai",
   "coverage": {
-    "agent_ops": 52,
+    "agent_ops": 55,
     "ai_engineering_infra": 6,
     "ai_product_pm": 30,
     "ai_ux_workflow": 6,
-    "business_adoption": 44,
-    "coding_agents": 22,
+    "business_adoption": 46,
+    "coding_agents": 23,
     "creative_multimodal": 6,
     "evals_quality": 10,
     "general_ai_news": 0,
-    "model_landscape": 106,
+    "model_landscape": 109,
     "rag_retrieval_knowledge": 11,
     "security_privacy_governance": 22
   },
@@ -30,26 +30,26 @@
   },
   "date_range": {
     "first_post": "2025-04-11",
-    "last_post": "2026-05-03"
+    "last_post": "2026-05-12"
   },
   "depth_profile": {
-    "announcement_or_news": 17,
+    "announcement_or_news": 19,
     "architecture_analysis": 16,
     "benchmark_or_eval": 10,
     "case_study": 14,
-    "howto_or_checklist": 43,
+    "howto_or_checklist": 44,
     "low_signal": 10,
-    "practitioner_experience": 53,
+    "practitioner_experience": 54,
     "tool_release": 2
   },
   "display_name": "Air",
-  "embedding_count": 164,
+  "embedding_count": 168,
   "embedding_coverage_ratio": 1.0,
   "expert_id": "air_ai",
-  "fts_count": 164,
-  "metadata_coverage_ratio": 0.8667,
+  "fts_count": 168,
+  "metadata_coverage_ratio": 0.8462,
   "metadata_valid_count": 143,
-  "post_count": 165,
+  "post_count": 169,
   "representative_posts": [
     {
       "coverage_labels": [
@@ -66,6 +66,18 @@
     },
     {
       "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "business_adoption"
+      ],
+      "created_at": "2026-05-04",
+      "depth_label": "practitioner_experience",
+      "excerpt": "**Wenyan Prompting или «Изя всё»** Пост о том, что еще придумали находчивые и экономные разработчики для качественного сжатия контекста ~~~ Экосистема для AI-агентов [caveman](https://github.com/JuliusBrussee/caveman) (многоk ⭐️) делится на несколько уровней: она сжимает ответы, memory-файлы и MCP-описания, экономя...",
+      "reason": "coding_agents, agent_ops, business_adoption; depth=practitioner_experience",
+      "telegram_message_id": 433
+    },
+    {
+      "coverage_labels": [
         "security_privacy_governance",
         "model_landscape"
       ],
@@ -74,17 +86,6 @@
       "excerpt": "Мы часто обсуждаем как сотрудники загружают рабочие документы с чувствительными данными в облачные модели Даже придумали международный термин **Shadow AI** **Теневой ИИ - **- использование сотрудниками несанкционированных нейросетей для рабочих задач Для безопасников по всему миру это головная боль 🤕 **Запреты помог...",
       "reason": "security_privacy_governance, model_landscape; depth=practitioner_experience",
       "telegram_message_id": 429
-    },
-    {
-      "coverage_labels": [
-        "business_adoption",
-        "security_privacy_governance"
-      ],
-      "created_at": "2026-04-23",
-      "depth_label": "practitioner_experience",
-      "excerpt": "**Экономить по крупному** **на CAPEX** Доступ к передовым западным моделям усложняется с каждым днем как снаружи, так и изнутри. Но это уже не вопрос «надо или не надо», **это вопрос фундаментальной экономики.** **Мы живем в материальном мире с конечными ресурсами** По законам рынка то, чего много и что доступно бол...",
-      "reason": "business_adoption, security_privacy_governance; depth=practitioner_experience",
-      "telegram_message_id": 424
     },
     {
       "coverage_labels": [
@@ -137,14 +138,14 @@
     },
     {
       "coverage_labels": [
-        "agent_ops",
-        "model_landscape"
+        "business_adoption",
+        "security_privacy_governance"
       ],
-      "created_at": "2026-04-08",
+      "created_at": "2026-04-23",
       "depth_label": "practitioner_experience",
-      "excerpt": "**Skills вот уже какую неделю на верхушке AI-хит-парада** и сегодня мне скинули **гайд от Антропик** – руководство по скиллам. Если раньше все говорили в основном о промптах, то сейчас все чаще обсуждают их. За последнюю неделю особенно много постов, а комментарии такого плана: почему не вызываются или не исполняютс...",
-      "reason": "agent_ops, model_landscape; depth=practitioner_experience",
-      "telegram_message_id": 417
+      "excerpt": "**Экономить по крупному** **на CAPEX** Доступ к передовым западным моделям усложняется с каждым днем как снаружи, так и изнутри. Но это уже не вопрос «надо или не надо», **это вопрос фундаментальной экономики.** **Мы живем в материальном мире с конечными ресурсами** По законам рынка то, чего много и что доступно бол...",
+      "reason": "business_adoption, security_privacy_governance; depth=practitioner_experience",
+      "telegram_message_id": 424
     }
   ],
   "runtime_readiness": {
@@ -153,7 +154,7 @@
     "metadata_advisory_ready": true,
     "text_posts_ready": true
   },
-  "text_post_count": 164,
+  "text_post_count": 168,
   "top_concepts": [
     {
       "count": 31,

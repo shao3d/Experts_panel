@@ -1,18 +1,18 @@
 {
   "channel_username": "gleb_pro_ai",
   "coverage": {
-    "agent_ops": 116,
-    "ai_engineering_infra": 19,
+    "agent_ops": 120,
+    "ai_engineering_infra": 20,
     "ai_product_pm": 31,
     "ai_ux_workflow": 9,
-    "business_adoption": 34,
+    "business_adoption": 35,
     "coding_agents": 129,
     "creative_multimodal": 1,
-    "evals_quality": 7,
+    "evals_quality": 8,
     "general_ai_news": 10,
-    "model_landscape": 127,
-    "rag_retrieval_knowledge": 11,
-    "security_privacy_governance": 7
+    "model_landscape": 130,
+    "rag_retrieval_knowledge": 12,
+    "security_privacy_governance": 8
   },
   "coverage_strength": {
     "agent_ops": "strong",
@@ -30,27 +30,38 @@
   },
   "date_range": {
     "first_post": "2025-05-02",
-    "last_post": "2026-05-04"
+    "last_post": "2026-05-12"
   },
   "depth_profile": {
-    "announcement_or_news": 80,
-    "architecture_analysis": 52,
-    "benchmark_or_eval": 7,
+    "announcement_or_news": 82,
+    "architecture_analysis": 54,
+    "benchmark_or_eval": 8,
     "case_study": 16,
-    "howto_or_checklist": 170,
-    "low_signal": 100,
-    "practitioner_experience": 39,
+    "howto_or_checklist": 176,
+    "low_signal": 101,
+    "practitioner_experience": 40,
     "tool_release": 8
   },
   "display_name": "Glebkudr",
-  "embedding_count": 455,
+  "embedding_count": 468,
   "embedding_coverage_ratio": 1.0,
   "expert_id": "glebkudr",
-  "fts_count": 455,
-  "metadata_coverage_ratio": 0.7712,
+  "fts_count": 468,
+  "metadata_coverage_ratio": 0.7505,
   "metadata_valid_count": 364,
-  "post_count": 472,
+  "post_count": 485,
   "representative_posts": [
+    {
+      "coverage_labels": [
+        "evals_quality",
+        "business_adoption"
+      ],
+      "created_at": "2026-05-12",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "Недавно у двоих уважаемых мной авторов стал замечать нейрослоп в публикациях. При этом метрики растут — статьи явно получаются более цепкими. Но от обоих я сразу же отписался. Почему? Не хочу чувствовать себя свиньей в хлеву, которой наливают в корыто цифровые помои. То есть мне кажется, это максимальное неуважение...",
+      "reason": "evals_quality, business_adoption; depth=benchmark_or_eval",
+      "telegram_message_id": 560
+    },
     {
       "coverage_labels": [
         "coding_agents",
@@ -84,14 +95,24 @@
     },
     {
       "coverage_labels": [
-        "coding_agents",
-        "business_adoption"
+        "agent_ops",
+        "security_privacy_governance"
       ],
-      "created_at": "2026-04-28",
-      "depth_label": "howto_or_checklist",
-      "excerpt": "Последнее время взял курс на оптимизацию подписок и каких-то левых затрат. Докладываюсь. 1) полный клон сайта из webflow и экспорт его пятым кулифай контейнером на дешманский vps -> 1 час работы, экономия 20 баксов в месяц. 2) переезд другого сайта вторым контейнером на другой дешманский vps -> экономия 60 баксов в...",
-      "reason": "coding_agents, business_adoption; depth=howto_or_checklist",
-      "telegram_message_id": 537
+      "created_at": "2026-05-05",
+      "depth_label": "architecture_analysis",
+      "excerpt": "Мастер-класс у клиента За 4 часа развернул ревьюилку мердж реквестов из гитлаба на базе кодекса (headless exec вариант). Развернуто на VPS и при поступлении хука с гитхаба, автоматически анализирует на безопасность как конкретные изменения по реквесту, так и по всей кодовой базе в целом. CodeRabbit идет нахер вместе...",
+      "reason": "agent_ops, security_privacy_governance; depth=architecture_analysis",
+      "telegram_message_id": 550
+    },
+    {
+      "coverage_labels": [
+        "rag_retrieval_knowledge"
+      ],
+      "created_at": "2026-05-04",
+      "depth_label": "architecture_analysis",
+      "excerpt": "Докладываюсь по flex пайплайнам — результаты охеренные Следите за руками. Пайплайн был с компьютерным зрением. Чертежи, стройка, все как мы любим 😁 Много листов pdf как-то связанных между собой (общей идеей) строительная документация это пиздец господа Я задал ограничение — работай исключительно с надписями/подписям...",
+      "reason": "rag_retrieval_knowledge; depth=architecture_analysis",
+      "telegram_message_id": 548
     },
     {
       "coverage_labels": [
@@ -113,26 +134,6 @@
       "excerpt": "**Сделал для SotaOCR возможность развертывания на своем сервере** — Никаких проблем с персоналкой, все у вас в контуре — Еще дешевле за объем, вплоть до 0.1р за страницу — удобный UX операторов + работа по АПИ внутри вашей сети — Помогу в запуске и развертывании нужных для вас моделей Модели кайф, я почти не встреча...",
       "reason": "ai_ux_workflow, ai_engineering_infra; depth=howto_or_checklist",
       "telegram_message_id": 532
-    },
-    {
-      "coverage_labels": [
-        "model_landscape"
-      ],
-      "created_at": "2026-04-23",
-      "depth_label": "architecture_analysis",
-      "excerpt": "Я знаю, вы обожаете OCR модельки прямо как я 😁 А выходят они не реже, чем LLM, так-то. Фиг уследишь. Поэтому что? Правильно. Новая SOTA каждый день. На этот раз в рейтинге вылез I[nfinity Parser 2 ](https://huggingface.co/infly/Infinity-Parser2-Pro) Хорошо — полный оупенсорс, можно юзать для коммерции. Плохо — модел...",
-      "reason": "model_landscape; depth=architecture_analysis",
-      "telegram_message_id": 525
-    },
-    {
-      "coverage_labels": [
-        "model_landscape"
-      ],
-      "created_at": "2026-04-14",
-      "depth_label": "architecture_analysis",
-      "excerpt": "Короче я распробовал 5.4 pro. Это та моделька, которая доступна только в вебе на подписках за 100+ баксов. Что делаю: 1) Кидаю ей зип файлики с репозиторием (как раньше склееные тексты в шотгане). Пишу — вот код, вот задача, поработай с ним, дай измененные файлы. Она их ловит, шуршит долго-долго, и пуляется файликам...",
-      "reason": "model_landscape; depth=architecture_analysis",
-      "telegram_message_id": 512
     }
   ],
   "runtime_readiness": {
@@ -141,7 +142,7 @@
     "metadata_advisory_ready": true,
     "text_posts_ready": true
   },
-  "text_post_count": 455,
+  "text_post_count": 468,
   "top_concepts": [
     {
       "count": 54,

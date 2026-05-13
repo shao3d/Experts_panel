@@ -30,7 +30,7 @@
   },
   "date_range": {
     "first_post": "2026-01-07",
-    "last_post": "2026-05-03"
+    "last_post": "2026-05-10"
   },
   "depth_profile": {
     "announcement_or_news": 11,
@@ -39,17 +39,17 @@
     "case_study": 9,
     "howto_or_checklist": 10,
     "low_signal": 12,
-    "practitioner_experience": 13,
+    "practitioner_experience": 14,
     "tool_release": 1
   },
   "display_name": "Ostrikov",
-  "embedding_count": 67,
+  "embedding_count": 68,
   "embedding_coverage_ratio": 1.0,
   "expert_id": "ostrikov",
-  "fts_count": 67,
-  "metadata_coverage_ratio": 0.4265,
+  "fts_count": 68,
+  "metadata_coverage_ratio": 0.4203,
   "metadata_valid_count": 29,
-  "post_count": 68,
+  "post_count": 69,
   "representative_posts": [
     {
       "coverage_labels": [
@@ -157,7 +157,7 @@
     "metadata_advisory_ready": true,
     "text_posts_ready": true
   },
-  "text_post_count": 67,
+  "text_post_count": 68,
   "top_concepts": [
     {
       "count": 5,

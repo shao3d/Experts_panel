@@ -1,17 +1,17 @@
 {
   "channel_username": "llm_under_hood",
   "coverage": {
-    "agent_ops": 143,
+    "agent_ops": 146,
     "ai_engineering_infra": 39,
-    "ai_product_pm": 69,
+    "ai_product_pm": 70,
     "ai_ux_workflow": 14,
-    "business_adoption": 129,
+    "business_adoption": 130,
     "coding_agents": 73,
     "creative_multimodal": 4,
-    "evals_quality": 79,
+    "evals_quality": 81,
     "general_ai_news": 0,
-    "model_landscape": 218,
-    "rag_retrieval_knowledge": 57,
+    "model_landscape": 220,
+    "rag_retrieval_knowledge": 58,
     "security_privacy_governance": 34
   },
   "coverage_strength": {
@@ -30,27 +30,51 @@
   },
   "date_range": {
     "first_post": "2025-01-03",
-    "last_post": "2026-05-03"
+    "last_post": "2026-05-12"
   },
   "depth_profile": {
     "announcement_or_news": 28,
     "architecture_analysis": 46,
-    "benchmark_or_eval": 78,
-    "case_study": 60,
+    "benchmark_or_eval": 80,
+    "case_study": 61,
     "howto_or_checklist": 53,
     "low_signal": 10,
     "practitioner_experience": 39,
     "tool_release": 7
   },
   "display_name": "Rinat",
-  "embedding_count": 321,
+  "embedding_count": 324,
   "embedding_coverage_ratio": 1.0,
   "expert_id": "llm_under_hood",
-  "fts_count": 321,
-  "metadata_coverage_ratio": 0.8287,
+  "fts_count": 324,
+  "metadata_coverage_ratio": 0.821,
   "metadata_valid_count": 266,
-  "post_count": 321,
+  "post_count": 324,
   "representative_posts": [
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "evals_quality",
+        "ai_product_pm"
+      ],
+      "created_at": "2026-05-11",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "**+8 задач в ****ECOM1-DEV**V](https://bitgn.com/challenge/ecom)**. Теперь в мире бенчмарка появились магазины и складские запасы** Задачи к вашему агенту будут вроде: *> I'll be in Vienna today and need to buy as many items of product (the Sealant from Soudal in the Soudal Fix All Silirub 1GH-EJ4 Sealant line that...",
+      "reason": "agent_ops, evals_quality, ai_product_pm; depth=benchmark_or_eval",
+      "telegram_message_id": 831
+    },
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "evals_quality",
+        "model_landscape"
+      ],
+      "created_at": "2026-05-08",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "**Первые 12 задач бенчмарка агентов ECOM1-DEV доступны на BitGN!** Все похоже на PAC1, но есть пара нюансов. (0) В E-commerce бенчмарке мы будем работать не с личной базой Майлза, а с оцифрованными версиями компаний. Это уже ближе к ERC3. (1) SDK похожий на PAC1, но чуть другой. Пример агента выложен в [sample-agent...",
+      "reason": "agent_ops, evals_quality, model_landscape; depth=benchmark_or_eval",
+      "telegram_message_id": 830
+    },
     {
       "coverage_labels": [
         "agent_ops",
@@ -81,6 +105,19 @@
     },
     {
       "coverage_labels": [
+        "agent_ops",
+        "rag_retrieval_knowledge",
+        "business_adoption",
+        "model_landscape"
+      ],
+      "created_at": "2026-05-12",
+      "depth_label": "case_study",
+      "excerpt": "**OpenAI осознали бесперспективность файн-тюнинга моделей** 7 Мая OpenAI оповестили разработчиков, что лавочка закрывается. Новые компании уже больше не могут запускать задачи тюнинга. В течение полугода закроют возможность даже для тех, кто уже тюнил. А возможность использования своих тюненых моделей сохранится тол...",
+      "reason": "agent_ops, rag_retrieval_knowledge, business_adoption; depth=case_study",
+      "telegram_message_id": 832
+    },
+    {
+      "coverage_labels": [
         "coding_agents",
         "agent_ops",
         "ai_product_pm",
@@ -92,19 +129,6 @@
       "excerpt": "**У YCombinator заметно поменялось видение AI-стартапов** Весной их [Request For Startups](https://www.ycombinator.com/rfs) звучал как “AI-native компании могут быстрее делать дорогую работу”. > RFS == “*Мы видим индустрию изнутри, и вот в такие компании мы бы с радостью вложили много денег*” Отсюда был приоритет на...",
       "reason": "coding_agents, agent_ops, ai_product_pm; depth=practitioner_experience",
       "telegram_message_id": 826
-    },
-    {
-      "coverage_labels": [
-        "coding_agents",
-        "agent_ops",
-        "rag_retrieval_knowledge",
-        "model_landscape"
-      ],
-      "created_at": "2026-04-05",
-      "depth_label": "howto_or_checklist",
-      "excerpt": "**Karpathy написал классный gist про использование LLM для ведения баз знаний**: [LLM wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) Это отчасти совпадает с тем, как я использую OpenAI Codex для персонального ассистента ([Personal OS v2](https://t.me/llm_under_hood/750)), но есть и различия...",
-      "reason": "coding_agents, agent_ops, rag_retrieval_knowledge; depth=howto_or_checklist",
-      "telegram_message_id": 792
     },
     {
       "coverage_labels": [
@@ -126,31 +150,6 @@
       "excerpt": "Bitgn/Pac1-PROD - соревнование закрыто! Результаты в стриме через полчаса. **Оценки ваших ранов появятся примерно тогда же ** **Бенчмарк теперь в открытом режиме**, должен показывать ошибки и оценки на новых ранах. Ваш, @llm_under_hood 🤗",
       "reason": "evals_quality; depth=benchmark_or_eval",
       "telegram_message_id": 803
-    },
-    {
-      "coverage_labels": [
-        "evals_quality",
-        "security_privacy_governance"
-      ],
-      "created_at": "2026-04-11",
-      "depth_label": "benchmark_or_eval",
-      "excerpt": "**Утечка данных про BitGN/PAC1-PROD ** Спасибо Daniel за подсказку, что названия задач продовского бенчмарка торчали наружу (runtimes были закрыты). Я это дело прикрыл. Вряд ли много людей это видели. Но, чтобы было честнее - вот всем список типов задач, которые будут в проде: *• Knowledge ops: keep working knowledg...",
-      "reason": "evals_quality, security_privacy_governance; depth=benchmark_or_eval",
-      "telegram_message_id": 798
-    },
-    {
-      "coverage_labels": [
-        "coding_agents",
-        "agent_ops",
-        "ai_product_pm",
-        "business_adoption",
-        "model_landscape"
-      ],
-      "created_at": "2026-05-03",
-      "depth_label": "case_study",
-      "excerpt": "**OpenCode + GPT 5.5 - ну не используйте вы субагентов!** В комментариях к [посту про эксперимент с рефакторингом](https://t.me/llm_under_hood/828) кода разными агентами, чаще всего просили запустить OpenCode + GPT 5.5. Запустил в режиме High на том же коммите с тем же промптом: > Scan through the repository on a hi...",
-      "reason": "coding_agents, agent_ops, ai_product_pm; depth=case_study",
-      "telegram_message_id": 829
     }
   ],
   "runtime_readiness": {
@@ -159,7 +158,7 @@
     "metadata_advisory_ready": true,
     "text_posts_ready": true
   },
-  "text_post_count": 321,
+  "text_post_count": 324,
   "top_concepts": [
     {
       "count": 25,

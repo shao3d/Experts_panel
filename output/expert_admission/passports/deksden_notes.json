@@ -1,0 +1,165 @@
+{
+  "channel_username": "deksden_notes",
+  "coverage": {
+    "agent_ops": 353,
+    "ai_engineering_infra": 25,
+    "ai_product_pm": 41,
+    "ai_ux_workflow": 42,
+    "business_adoption": 63,
+    "coding_agents": 253,
+    "creative_multimodal": 11,
+    "evals_quality": 31,
+    "general_ai_news": 1,
+    "model_landscape": 297,
+    "rag_retrieval_knowledge": 13,
+    "security_privacy_governance": 25
+  },
+  "coverage_strength": {
+    "agent_ops": "strong",
+    "ai_engineering_infra": "thin",
+    "ai_product_pm": "medium",
+    "ai_ux_workflow": "medium",
+    "business_adoption": "medium",
+    "coding_agents": "strong",
+    "creative_multimodal": "thin",
+    "evals_quality": "medium",
+    "general_ai_news": "thin",
+    "model_landscape": "strong",
+    "rag_retrieval_knowledge": "thin",
+    "security_privacy_governance": "thin"
+  },
+  "date_range": {
+    "first_post": "2025-07-28",
+    "last_post": "2026-05-12"
+  },
+  "depth_profile": {
+    "announcement_or_news": 157,
+    "architecture_analysis": 56,
+    "benchmark_or_eval": 30,
+    "case_study": 57,
+    "howto_or_checklist": 214,
+    "low_signal": 67,
+    "practitioner_experience": 81,
+    "tool_release": 52
+  },
+  "display_name": "DEKSDEN notes",
+  "embedding_count": 711,
+  "embedding_coverage_ratio": 1.0,
+  "expert_id": "deksden_notes",
+  "fts_count": 711,
+  "metadata_coverage_ratio": 0.0,
+  "metadata_valid_count": 0,
+  "post_count": 714,
+  "representative_posts": [
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "ai_product_pm",
+        "business_adoption"
+      ],
+      "created_at": "2026-04-29",
+      "depth_label": "case_study",
+      "excerpt": "⚪️ Комплимент Codex Я не приверженец брендов, компаний или продуктов. Видимо, низкая лояльность. Я приверженец функций, действий и поступков. Как говорится, критерий истины - практика. В этом разрезе не могу не отметить одну штуку, которую подсветил чел в твиттере, и про которую я знал, - но еще раз хотел бы похвали...",
+      "reason": "coding_agents, agent_ops, ai_product_pm; depth=case_study",
+      "telegram_message_id": 723
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "ai_ux_workflow",
+        "model_landscape"
+      ],
+      "created_at": "2026-05-02",
+      "depth_label": "practitioner_experience",
+      "excerpt": "**Ищу 2–3 человек в команду — работать с агентами на реальных проектах** Привет, я Игорь (@maslennikovig). У нас небольшая горизонтальная команда, ведём IT-проекты от лендингов до систем с серьёзным инвестиционным бюджетом. Сейчас заказов сильно больше, чем рук — и это, кажется, надолго. Стэки разные — Next.js + Sup...",
+      "reason": "coding_agents, agent_ops, ai_ux_workflow; depth=practitioner_experience",
+      "telegram_message_id": 733
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "ai_engineering_infra",
+        "model_landscape"
+      ],
+      "created_at": "2026-05-04",
+      "depth_label": "architecture_analysis",
+      "excerpt": "⚪️ Codex : меняем системный промпт (base instructions + developer instructions) За последнее время наткнулся дважды на эту фичу, и оба раза в контексте что не все знают про такие фичи. Я тоже в свое время не очень знал, но разбирался - поэтому думаю мои исследования могут быть полезны \"широким массам\" ИИ кодеров. Ит...",
+      "reason": "coding_agents, agent_ops, ai_engineering_infra; depth=architecture_analysis",
+      "telegram_message_id": 738
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "ai_ux_workflow",
+        "security_privacy_governance",
+        "model_landscape",
+        "creative_multimodal"
+      ],
+      "created_at": "2026-05-02",
+      "depth_label": "tool_release",
+      "excerpt": "⚪️ REMOTE tools #market часть 2 ... начало тут: https://t.me/deksden_notes/735 * Remoto: Remoto creates a secure tunnel between your terminal and your phone. When you run the CLI, it spawns a local shell session and connects to our relay server via WebSocket : https://www.remoto.sh/ * Takopi: Takopi runs coding agen...",
+      "reason": "coding_agents, ai_ux_workflow, security_privacy_governance; depth=tool_release",
+      "telegram_message_id": 736
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "ai_product_pm",
+        "business_adoption"
+      ],
+      "created_at": "2026-05-11",
+      "depth_label": "architecture_analysis",
+      "excerpt": "⚪️ Codex is for Everyone Мероприятие клозедов: May 13, 10:45 PM EET Online конечно 🔗 https://forum.openai.com/public/events/codex-is-for-everyone-why-codex-matters-beyond-code-fa40puy7wi?agenda_day=69ebc15673d8354297b24f73&agenda_filter_view=stage&agenda_stage=69ebc15673d8354297b24f79&agenda_track=69ebc15673d8354297...",
+      "reason": "coding_agents, ai_product_pm, business_adoption; depth=architecture_analysis",
+      "telegram_message_id": 756
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops"
+      ],
+      "created_at": "2026-05-09",
+      "depth_label": "howto_or_checklist",
+      "excerpt": "⚪️ Codex remote-control Заинтересовал меня пункт в последнем релизе кодекса cli: - Added `codex remote-control` as a simpler entrypoint for starting a headless, remotely controllable app-server. Вроде бы догаываюсь о чем идет речь, но захотелось разобраться поглубже. Расчехлил локальный репо, подтянул обновки, натра...",
+      "reason": "coding_agents, agent_ops; depth=howto_or_checklist",
+      "telegram_message_id": 754
+    },
+    {
+      "coverage_labels": [
+        "agent_ops"
+      ],
+      "created_at": "2026-05-09",
+      "depth_label": "howto_or_checklist",
+      "excerpt": "⚪️ Chrome Skills Скиллы реально зашли как популярные! И уже видны какие то перегибы. Вот в хром добавляют скиллы - хотя это просто сохраненные промпты, а не agent skills. Интересно видеть как маркетинг выхолащивает идеи. Потом прийдется разделять \"настоящие\" скиллы от скиллов в текстовом редакторе. @deksden_notes",
+      "reason": "agent_ops; depth=howto_or_checklist",
+      "telegram_message_id": 753
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "model_landscape"
+      ],
+      "created_at": "2026-05-08",
+      "depth_label": "howto_or_checklist",
+      "excerpt": "**⚪️ Codex Chrome ** Не писал сразу - посмотрел сам как оно работает. Новый плагин для codex аппа - chrome + компаньон расширение для хрома. Кодекс работает с хромом напрямую, может работать с нексколькими вкладками параллельно, в фоне. Неплохо сделано, удобно! Попробуйте. 🔗 Видос: https://www.youtube.com/watch?v=b6...",
+      "reason": "coding_agents, model_landscape; depth=howto_or_checklist",
+      "telegram_message_id": 749
+    }
+  ],
+  "runtime_readiness": {
+    "embeddings_ready": true,
+    "fts_ready": true,
+    "metadata_advisory_ready": false,
+    "text_posts_ready": true
+  },
+  "text_post_count": 711,
+  "top_concepts": [],
+  "top_keywords": [],
+  "top_primary_topics": [],
+  "warnings": [
+    "deksden_notes: no valid post_metadata; coverage is text-only"
+  ]
+}

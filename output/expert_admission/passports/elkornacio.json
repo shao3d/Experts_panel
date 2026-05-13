@@ -1,16 +1,16 @@
 {
   "channel_username": "elkornacio",
   "coverage": {
-    "agent_ops": 111,
+    "agent_ops": 115,
     "ai_engineering_infra": 16,
-    "ai_product_pm": 43,
+    "ai_product_pm": 45,
     "ai_ux_workflow": 21,
-    "business_adoption": 41,
-    "coding_agents": 117,
+    "business_adoption": 43,
+    "coding_agents": 118,
     "creative_multimodal": 10,
     "evals_quality": 20,
     "general_ai_news": 1,
-    "model_landscape": 190,
+    "model_landscape": 193,
     "rag_retrieval_knowledge": 13,
     "security_privacy_governance": 10
   },
@@ -30,26 +30,26 @@
   },
   "date_range": {
     "first_post": "2025-01-10",
-    "last_post": "2026-05-01"
+    "last_post": "2026-05-11"
   },
   "depth_profile": {
-    "announcement_or_news": 68,
-    "architecture_analysis": 46,
+    "announcement_or_news": 70,
+    "architecture_analysis": 47,
     "benchmark_or_eval": 20,
-    "case_study": 31,
-    "howto_or_checklist": 140,
+    "case_study": 32,
+    "howto_or_checklist": 141,
     "low_signal": 99,
-    "practitioner_experience": 32,
+    "practitioner_experience": 33,
     "tool_release": 29
   },
   "display_name": "Elkornacio",
-  "embedding_count": 445,
+  "embedding_count": 451,
   "embedding_coverage_ratio": 1.0,
   "expert_id": "elkornacio",
-  "fts_count": 445,
-  "metadata_coverage_ratio": 0.9226,
+  "fts_count": 451,
+  "metadata_coverage_ratio": 0.9108,
   "metadata_valid_count": 429,
-  "post_count": 465,
+  "post_count": 471,
   "representative_posts": [
     {
       "coverage_labels": [
@@ -67,18 +67,13 @@
     },
     {
       "coverage_labels": [
-        "coding_agents",
-        "agent_ops",
-        "evals_quality",
-        "business_adoption",
-        "ai_engineering_infra",
-        "model_landscape"
+        "business_adoption"
       ],
-      "created_at": "2026-02-15",
-      "depth_label": "benchmark_or_eval",
-      "excerpt": "решил пошерить пачку небольших лайфхаков в работе с агентами, в основном про скрипты. думаю, опытным чувакам 90% из этого покажется прописными истинами, но, возможно, кто-то почерпнёт что-то полезное для себя. сохраняйте, шерьте, кайфуйте 🙂 1. не юзайте TUI в VSCode/Cursor для Claude Code / Codex / etc. мерцания инт...",
-      "reason": "coding_agents, agent_ops, evals_quality; depth=benchmark_or_eval",
-      "telegram_message_id": 529
+      "created_at": "2026-02-20",
+      "depth_label": "case_study",
+      "excerpt": "стоп, подождите, а вы не пропустили прошлый пост про [AI Hard Fork](https://entropy-x-stratoplan.com/?utm_source=elcor)? если вдруг, то вот: ребята из Стратоплана (где я выступал) сколлабились с ребятами из Entropy Talk (где я тоже выступал), и отказаться было нереально - я 25 февраля (среда) залечу на панельку в [A...",
+      "reason": "business_adoption; depth=case_study",
+      "telegram_message_id": 534
     },
     {
       "coverage_labels": [
@@ -108,23 +103,27 @@
     },
     {
       "coverage_labels": [
-        "business_adoption"
+        "agent_ops",
+        "model_landscape"
       ],
-      "created_at": "2026-02-20",
+      "created_at": "2026-05-07",
       "depth_label": "case_study",
-      "excerpt": "стоп, подождите, а вы не пропустили прошлый пост про [AI Hard Fork](https://entropy-x-stratoplan.com/?utm_source=elcor)? если вдруг, то вот: ребята из Стратоплана (где я выступал) сколлабились с ребятами из Entropy Talk (где я тоже выступал), и отказаться было нереально - я 25 февраля (среда) залечу на панельку в [A...",
-      "reason": "business_adoption; depth=case_study",
-      "telegram_message_id": 534
+      "excerpt": "https://claude.com/blog/new-in-claude-managed-agents Anthropic завезли \"сны\" для агентов в их облаке. этакая концепция само-рефлексии, где агент время от времени анализирует логи собственных сессий и прикидывает, где и что он мог бы сделать лучше, и какие новые скиллы/правила ему завести, чтобы стать ✨*лучшей версие...",
+      "reason": "agent_ops, model_landscape; depth=case_study",
+      "telegram_message_id": 563
     },
     {
       "coverage_labels": [
-        "business_adoption"
+        "agent_ops",
+        "ai_product_pm",
+        "business_adoption",
+        "model_landscape"
       ],
-      "created_at": "2026-02-15",
-      "depth_label": "case_study",
-      "excerpt": "я с начала года планировал не участвовать в конфах, но узнав, что ребята из Стратоплана (где я выступал) сколлабились с ребятами из Entropy Talk (где я тоже выступал), отказаться было нереально - я 25 февраля (среда через неделю) залечу на панельку в [AI Hard Fork](https://entropy-x-stratoplan.com/?utm_source=elcor)...",
-      "reason": "business_adoption; depth=case_study",
-      "telegram_message_id": 530
+      "created_at": "2026-05-11",
+      "depth_label": "practitioner_experience",
+      "excerpt": "мне очень хочется поэкспериментировать, создав такое инновационное объединение: маленькое и невероятно мобильное. ниша, естественно - продукты для агентной разработки. ИИ - это революция всего мироустройства, которая происходит на наших глазах, а агентная разработка - самая горячая, динамичная и прибыльная часть это...",
+      "reason": "agent_ops, ai_product_pm, business_adoption; depth=practitioner_experience",
+      "telegram_message_id": 566
     },
     {
       "coverage_labels": [
@@ -157,7 +156,7 @@
     "metadata_advisory_ready": true,
     "text_posts_ready": true
   },
-  "text_post_count": 445,
+  "text_post_count": 451,
   "top_concepts": [
     {
       "count": 31,

@@ -1,18 +1,18 @@
 {
   "channel_username": "nobilix",
   "coverage": {
-    "agent_ops": 150,
-    "ai_engineering_infra": 52,
-    "ai_product_pm": 80,
-    "ai_ux_workflow": 35,
-    "business_adoption": 92,
-    "coding_agents": 121,
-    "creative_multimodal": 38,
-    "evals_quality": 51,
+    "agent_ops": 153,
+    "ai_engineering_infra": 53,
+    "ai_product_pm": 82,
+    "ai_ux_workflow": 36,
+    "business_adoption": 94,
+    "coding_agents": 123,
+    "creative_multimodal": 39,
+    "evals_quality": 52,
     "general_ai_news": 1,
-    "model_landscape": 187,
+    "model_landscape": 189,
     "rag_retrieval_knowledge": 38,
-    "security_privacy_governance": 58
+    "security_privacy_governance": 59
   },
   "coverage_strength": {
     "agent_ops": "strong",
@@ -30,26 +30,26 @@
   },
   "date_range": {
     "first_post": "2025-03-12",
-    "last_post": "2026-05-02"
+    "last_post": "2026-05-09"
   },
   "depth_profile": {
     "announcement_or_news": 9,
-    "architecture_analysis": 26,
-    "benchmark_or_eval": 51,
-    "case_study": 77,
+    "architecture_analysis": 27,
+    "benchmark_or_eval": 52,
+    "case_study": 78,
     "howto_or_checklist": 33,
     "low_signal": 3,
     "practitioner_experience": 37,
     "tool_release": 1
   },
   "display_name": "Refat (Tech & AI)",
-  "embedding_count": 236,
+  "embedding_count": 239,
   "embedding_coverage_ratio": 1.0,
   "expert_id": "refat",
-  "fts_count": 236,
-  "metadata_coverage_ratio": 0.8143,
+  "fts_count": 239,
+  "metadata_coverage_ratio": 0.8042,
   "metadata_valid_count": 193,
-  "post_count": 237,
+  "post_count": 240,
   "representative_posts": [
     {
       "coverage_labels": [
@@ -63,11 +63,11 @@
         "model_landscape",
         "creative_multimodal"
       ],
-      "created_at": "2026-04-25",
+      "created_at": "2026-05-09",
       "depth_label": "benchmark_or_eval",
-      "excerpt": "#ReDigest [Продолжаем](https://t.me/nobilix/250) субботнюю рубрику, тут я кратко рассказываю про новости из мира технологий и AI, которые привлекли мое внимание. **Дайджест недели:** - OpenAI [выпустила](https://openai.com/index/introducing-gpt-5-5/) GPT-5.5 - новый флагман для агентов. Цены $5/$30 за миллион токено...",
+      "excerpt": "#ReDigest [Продолжаем](https://t.me/nobilix/256) субботнюю рубрику, тут я кратко рассказываю про новости из мира технологий и AI, которые привлекли мое внимание. **Дайджест недели:** - Anthropic [заключила](https://www.anthropic.com/news/higher-limits-spacex) сделку со SpaceX на 300+ МВт, по сути решив свою проблему...",
       "reason": "coding_agents, agent_ops, evals_quality; depth=benchmark_or_eval",
-      "telegram_message_id": 253
+      "telegram_message_id": 259
     },
     {
       "coverage_labels": [
@@ -103,6 +103,24 @@
       "excerpt": "#ReDigest [Продолжаем](https://t.me/nobilix/253) субботнюю рубрику, тут я кратко рассказываю про новости из мира технологий и AI, которые привлекли мое внимание. **Дайджест недели:** - Anthropic [подключила](https://www.anthropic.com/news/claude-for-creative-work) Claude к девяти креативным программам включая прилож...",
       "reason": "coding_agents, agent_ops, ai_product_pm; depth=case_study",
       "telegram_message_id": 256
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "evals_quality",
+        "ai_product_pm",
+        "business_adoption",
+        "security_privacy_governance",
+        "ai_engineering_infra",
+        "model_landscape",
+        "creative_multimodal"
+      ],
+      "created_at": "2026-04-25",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "#ReDigest [Продолжаем](https://t.me/nobilix/250) субботнюю рубрику, тут я кратко рассказываю про новости из мира технологий и AI, которые привлекли мое внимание. **Дайджест недели:** - OpenAI [выпустила](https://openai.com/index/introducing-gpt-5-5/) GPT-5.5 - новый флагман для агентов. Цены $5/$30 за миллион токено...",
+      "reason": "coding_agents, agent_ops, evals_quality; depth=benchmark_or_eval",
+      "telegram_message_id": 253
     },
     {
       "coverage_labels": [
@@ -152,29 +170,15 @@
     },
     {
       "coverage_labels": [
-        "coding_agents",
         "agent_ops",
-        "business_adoption",
-        "ai_ux_workflow",
-        "model_landscape"
+        "ai_product_pm",
+        "business_adoption"
       ],
-      "created_at": "2026-04-29",
+      "created_at": "2026-05-06",
       "depth_label": "case_study",
-      "excerpt": "Remote VS Code как интерфейс для общей AI-станции: одна подписка на всех + общий воркспейс. Одновременно в разных командах и по разным причинам возникла необходимость поднять общую \"AI-рабочую станцию\" - мотивы немного разные, но суть одинаковая: нужно общее пространство, чтобы сотрудники имели доступ к одним и тем...",
-      "reason": "coding_agents, agent_ops, business_adoption; depth=case_study",
-      "telegram_message_id": 254
-    },
-    {
-      "coverage_labels": [
-        "agent_ops",
-        "business_adoption",
-        "model_landscape"
-      ],
-      "created_at": "2026-04-23",
-      "depth_label": "case_study",
-      "excerpt": "Пишете [Skills](https://t.me/nobilix/173) для бизнеса - черпайте вдохновение из SOP Сейчас не про скилы вокруг тулов (типа pdf или google ads), а процедурные: обработка входящей заявки, создание коммерческого предложения, обработка счета от поставщика и т.д. Цепочка действий с решениями и исключениями. Есть очень ра...",
-      "reason": "agent_ops, business_adoption, model_landscape; depth=case_study",
-      "telegram_message_id": 252
+      "excerpt": "Про outreach, сигналы и AI. Каналы продаж делятся на inbound (клиент сам приходит через контент, рекламу и тд) и outbound (ты идешь к нему первым). К слову, последний [дает](https://hockeystack.com/lab-blog-posts/marketing-influence-on-outbound-deals) 64% пайплайна в B2B SaaS. Аутрич - самый контролируемый канал лид...",
+      "reason": "agent_ops, ai_product_pm, business_adoption; depth=case_study",
+      "telegram_message_id": 257
     }
   ],
   "runtime_readiness": {
@@ -183,7 +187,7 @@
     "metadata_advisory_ready": true,
     "text_posts_ready": true
   },
-  "text_post_count": 236,
+  "text_post_count": 239,
   "top_concepts": [
     {
       "count": 32,

@@ -7,18 +7,18 @@ Channel: `ilia_izmailov`
 
 | Metric | Count |
 |---|---:|
-| Posts | 176 |
-| Text posts | 171 |
+| Posts | 178 |
+| Text posts | 173 |
 | Valid post_metadata | 145 |
-| Embeddings | 171 |
-| FTS rows | 171 |
+| Embeddings | 173 |
+| FTS rows | 173 |
 
 ## Coverage
 
 | Area | Count | Strength |
 |---|---:|---|
+| `model_landscape` | 69 | strong |
 | `coding_agents` | 68 | strong |
-| `model_landscape` | 68 | strong |
 | `ai_product_pm` | 39 | medium |
 | `agent_ops` | 31 | medium |
 | `business_adoption` | 23 | medium |
@@ -38,9 +38,9 @@ Channel: `ilia_izmailov`
 | `case_study` | 14 |
 | `architecture_analysis` | 12 |
 | `benchmark_or_eval` | 3 |
-| `howto_or_checklist` | 51 |
+| `howto_or_checklist` | 52 |
 | `tool_release` | 3 |
-| `announcement_or_news` | 35 |
+| `announcement_or_news` | 36 |
 | `low_signal` | 34 |
 
 ## Top Metadata Signals

@@ -1,17 +1,17 @@
 {
   "channel_username": "oestick",
   "coverage": {
-    "agent_ops": 47,
+    "agent_ops": 52,
     "ai_engineering_infra": 7,
-    "ai_product_pm": 67,
-    "ai_ux_workflow": 19,
-    "business_adoption": 50,
-    "coding_agents": 62,
+    "ai_product_pm": 68,
+    "ai_ux_workflow": 20,
+    "business_adoption": 54,
+    "coding_agents": 65,
     "creative_multimodal": 2,
     "evals_quality": 16,
     "general_ai_news": 2,
-    "model_landscape": 147,
-    "rag_retrieval_knowledge": 21,
+    "model_landscape": 149,
+    "rag_retrieval_knowledge": 22,
     "security_privacy_governance": 9
   },
   "coverage_strength": {
@@ -30,26 +30,26 @@
   },
   "date_range": {
     "first_post": "2024-01-10",
-    "last_post": "2026-05-01"
+    "last_post": "2026-05-12"
   },
   "depth_profile": {
     "announcement_or_news": 32,
-    "architecture_analysis": 34,
+    "architecture_analysis": 35,
     "benchmark_or_eval": 17,
-    "case_study": 55,
-    "howto_or_checklist": 116,
+    "case_study": 56,
+    "howto_or_checklist": 118,
     "low_signal": 30,
-    "practitioner_experience": 73,
+    "practitioner_experience": 75,
     "tool_release": 0
   },
   "display_name": "Tech_AI_grabli",
-  "embedding_count": 351,
+  "embedding_count": 357,
   "embedding_coverage_ratio": 1.0,
   "expert_id": "ai_grabli",
-  "fts_count": 351,
-  "metadata_coverage_ratio": 0.9244,
+  "fts_count": 357,
+  "metadata_coverage_ratio": 0.9091,
   "metadata_valid_count": 330,
-  "post_count": 357,
+  "post_count": 363,
   "representative_posts": [
     {
       "coverage_labels": [
@@ -63,6 +63,17 @@
       "excerpt": "Не понимаю, почему так мало пишут про авторисерч Карпаты Мне кажется, самое важное направление года. Первые значимые сигналы до меня дошли еще во время ERC3, когда Леша Остриков дал модельке самой оптимизировать промпт напрямую об евалы А сейчас вот сам Андрей Карпаты выложил рабочий репо, да еще и так, что можно бр...",
       "reason": "agent_ops, evals_quality, security_privacy_governance; depth=benchmark_or_eval",
       "telegram_message_id": 484
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops"
+      ],
+      "created_at": "2026-05-12",
+      "depth_label": "case_study",
+      "excerpt": "Короче, есть у меня старая подруга Саша – ни разу не айтишник, у нее своя керамическая студия, оффлайн ивенты вроде бань и массовых глиномесных тусовок, а в найме (онлайн-школа) она занимается продажами и маркетингом. Проекты разнонаправленные, много рутины и оффлайн, и онлайн Год назад подсадил ее на ai.studio, кот...",
+      "reason": "coding_agents, agent_ops; depth=case_study",
+      "telegram_message_id": 499
     },
     {
       "coverage_labels": [
@@ -106,15 +117,29 @@
         "coding_agents",
         "agent_ops",
         "rag_retrieval_knowledge",
+        "business_adoption",
+        "model_landscape"
+      ],
+      "created_at": "2026-05-06",
+      "depth_label": "practitioner_experience",
+      "excerpt": "Вчерашний запрос оказался ящиком Пандоры > Спасибо всем, кто откликнулся, познакомился со многими классными ребятами! Коротко в чем проблема: - Компании **хотят** внедрять агентов для внутренней автоматизации - Компании **не хотят**, чтобы сотрудники сами у себя на компе что-то костылили - Зато хотят контроль над до...",
+      "reason": "coding_agents, agent_ops, rag_retrieval_knowledge; depth=practitioner_experience",
+      "telegram_message_id": 495
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
         "ai_product_pm",
+        "business_adoption",
         "ai_ux_workflow",
         "model_landscape"
       ],
-      "created_at": "2026-02-16",
-      "depth_label": "practitioner_experience",
-      "excerpt": "Сдвиг 2025 → 2026. Забавное наблюдение с моих консультаций: Во второй половине 25го года ко мне стали часто приходить компании с просьбой поревьюить их AI системы. И почти всегда консультация шла по следующему сценарию: 1. Рассказывают/показывают свой сложный комбайн: - Кастомный процессинг pdf в текст - sparse/denc...",
-      "reason": "coding_agents, agent_ops, rag_retrieval_knowledge; depth=practitioner_experience",
-      "telegram_message_id": 463
+      "created_at": "2026-05-07",
+      "depth_label": "howto_or_checklist",
+      "excerpt": "Невошедшее во вчерашний пост (по сути – альтернативы для 2 пункта): 1️⃣ Вариант [Hermes+Honcho](https://t.me/oestick/494?comment=4603) Из хорошего – у Hermes есть профили под разных пользователей, а Honcho дает память = обучение правильно решать задачи Но это не решает проблему изоляции юзеров + проблему совместного...",
+      "reason": "coding_agents, agent_ops, ai_product_pm; depth=howto_or_checklist",
+      "telegram_message_id": 496
     },
     {
       "coverage_labels": [
@@ -126,27 +151,6 @@
       "excerpt": "Вероятно, одна из самых интересных вакансий для AI engineer в российском бигтехе (по посту не очевидно, но это Яндекс) Леша – [победитель ERC3,](https://erc.timetoact-group.at/assets/erc3.html#prize) кмк, лучшего на сегодня бенчмарка для кожаных AI билдеров. Мне самому интересно с ним поработать – так что это не рек...",
       "reason": "agent_ops, evals_quality; depth=benchmark_or_eval",
       "telegram_message_id": 481
-    },
-    {
-      "coverage_labels": [
-        "agent_ops",
-        "evals_quality"
-      ],
-      "created_at": "2026-04-06",
-      "depth_label": "benchmark_or_eval",
-      "excerpt": "**Как стать одним из нас?** Мы отрываем внешний найм и ищем двух ниндзя в нашу безбашенную команду разработки AI-агентов. Все детали проекта не могу раскрыть, но до конца года эффект должен быть на девятки миллионов долларов (ну или меня уволят): **1. Айзек из сериала Кастлвания** Ты умеешь воскрешать агентов, неотл...",
-      "reason": "agent_ops, evals_quality; depth=benchmark_or_eval",
-      "telegram_message_id": 480
-    },
-    {
-      "coverage_labels": [
-        "ai_product_pm"
-      ],
-      "created_at": "2026-05-01",
-      "depth_label": "practitioner_experience",
-      "excerpt": "По мотивам вчерашнего мок-интервью спонтанно собираемся на брейншторм – *во что превратятся собеседования в айтишке* Должно быть супер интересно – у Родиона свой DevTools продукт, а у Макса просто колоссальный опыт работы с технологиями и людьми, которые их строят UPD: [вот ссылочка](https://youtube.com/live/y2NnheH...",
-      "reason": "ai_product_pm; depth=practitioner_experience",
-      "telegram_message_id": 492
     }
   ],
   "runtime_readiness": {
@@ -155,7 +159,7 @@
     "metadata_advisory_ready": true,
     "text_posts_ready": true
   },
-  "text_post_count": 351,
+  "text_post_count": 357,
   "top_concepts": [
     {
       "count": 39,

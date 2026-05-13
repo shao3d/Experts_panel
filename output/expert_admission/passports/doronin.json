@@ -1,16 +1,16 @@
 {
   "channel_username": "kdoronin_blog",
   "coverage": {
-    "agent_ops": 282,
+    "agent_ops": 287,
     "ai_engineering_infra": 24,
     "ai_product_pm": 96,
-    "ai_ux_workflow": 37,
-    "business_adoption": 89,
+    "ai_ux_workflow": 38,
+    "business_adoption": 91,
     "coding_agents": 181,
     "creative_multimodal": 36,
     "evals_quality": 17,
     "general_ai_news": 11,
-    "model_landscape": 396,
+    "model_landscape": 398,
     "rag_retrieval_knowledge": 29,
     "security_privacy_governance": 22
   },
@@ -30,26 +30,26 @@
   },
   "date_range": {
     "first_post": "2024-06-11",
-    "last_post": "2026-05-04"
+    "last_post": "2026-05-11"
   },
   "depth_profile": {
     "announcement_or_news": 50,
     "architecture_analysis": 63,
     "benchmark_or_eval": 18,
     "case_study": 124,
-    "howto_or_checklist": 296,
+    "howto_or_checklist": 300,
     "low_signal": 199,
-    "practitioner_experience": 115,
+    "practitioner_experience": 117,
     "tool_release": 10
   },
   "display_name": "Doronin",
-  "embedding_count": 686,
+  "embedding_count": 692,
   "embedding_coverage_ratio": 1.0,
   "expert_id": "doronin",
-  "fts_count": 686,
-  "metadata_coverage_ratio": 0.7211,
+  "fts_count": 692,
+  "metadata_coverage_ratio": 0.7162,
   "metadata_valid_count": 631,
-  "post_count": 875,
+  "post_count": 881,
   "representative_posts": [
     {
       "coverage_labels": [
@@ -103,30 +103,6 @@
     },
     {
       "coverage_labels": [
-        "agent_ops",
-        "rag_retrieval_knowledge",
-        "model_landscape"
-      ],
-      "created_at": "2026-04-03",
-      "depth_label": "case_study",
-      "excerpt": "**Про стенд для тестов систем памяти AI-агентов.** Когда мне в руки попадает очередное решение для памяти AI-агентов, ~~я радуюсь, как ребёнок~~ собираю с ним стандартный тестовый стенд в docker: 1. База для векторов – [Qdrant](https://github.com/qdrant/qdrant). Поддерживается большинством фреймворков для организаци...",
-      "reason": "agent_ops, rag_retrieval_knowledge, model_landscape; depth=case_study",
-      "telegram_message_id": 1242
-    },
-    {
-      "coverage_labels": [
-        "agent_ops",
-        "evals_quality",
-        "model_landscape"
-      ],
-      "created_at": "2026-04-02",
-      "depth_label": "benchmark_or_eval",
-      "excerpt": "**Вышла Gemma4. ** Попробовал с ней повзаимодействовать через Ollama. Работает достаточно шустро, хоть и съедает почти все 32Gb памяти на моём ноутбуке. Думаю, за скорость стоит поблагодарить [недавнее MLX-обновление](https://ollama.com/blog/mlx) от Ollama. Судя по [официальному анонсу Google](https://deepmind.googl...",
-      "reason": "agent_ops, evals_quality, model_landscape; depth=benchmark_or_eval",
-      "telegram_message_id": 1241
-    },
-    {
-      "coverage_labels": [
         "agent_ops"
       ],
       "created_at": "2026-04-24",
@@ -144,6 +120,28 @@
       "excerpt": "**Вообще, мне дважды советовали попробовать ****Mastra.**.](https://mastra.ai/) И оба раза это делал [Рефат.](https://t.me/nobilix) Указывая в списке \"советую\" также [Agno](https://www.agno.com/) (писал про него [тут](https://t.me/kdoronin_blog/1097)). Собственно, выбирая между TS и Python, я выбирал последний, **ра...",
       "reason": "agent_ops; depth=case_study",
       "telegram_message_id": 1253
+    },
+    {
+      "coverage_labels": [
+        "model_landscape"
+      ],
+      "created_at": "2026-04-09",
+      "depth_label": "case_study",
+      "excerpt": "**Всё-таки дождался, когда ****Seedance2.0 выйдет на fal.ai**i](https://fal.ai/models/bytedance/seedance-2.0/text-to-video)**.** Сперва он был доступен **только через лист ожидания**, а сейчас, судя по всему, его открыли для всех. Вообще я разделяю AI-генераторы видео на два типа: 1. Годятся **для развлечения**. 2....",
+      "reason": "model_landscape; depth=case_study",
+      "telegram_message_id": 1246
+    },
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "business_adoption",
+        "model_landscape"
+      ],
+      "created_at": "2026-05-11",
+      "depth_label": "practitioner_experience",
+      "excerpt": "**\"Каждый токен на счету\".** Вы его ждали – и он пришёл. **Анонс нового стрима!** Для большинства пользователей то, что OpenClaw или [Hermes](https://t.me/kdoronin_blog/1268) едят токены с лопаты – не проблема. Дело в том, что использует эту обвязку вокруг агента **один человек**. Поэтому и разница в пять раз (хорош...",
+      "reason": "agent_ops, business_adoption, model_landscape; depth=practitioner_experience",
+      "telegram_message_id": 1277
     }
   ],
   "runtime_readiness": {
@@ -152,7 +150,7 @@
     "metadata_advisory_ready": true,
     "text_posts_ready": true
   },
-  "text_post_count": 686,
+  "text_post_count": 692,
   "top_concepts": [
     {
       "count": 101,

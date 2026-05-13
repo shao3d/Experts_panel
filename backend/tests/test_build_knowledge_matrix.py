@@ -203,6 +203,42 @@ def test_build_matrix_adds_related_cell_overlap_rollup(tmp_path):
     assert overlap["decision_hint"] == "review_overlap_or_complement_before_counting_as_new_gap"
 
 
+def test_build_matrix_counts_one_expert_once_per_exact_cell(tmp_path):
+    module = load_module()
+    passport_path = tmp_path / "sergei_notevskii" / "output" / "sergei_notevskii_semantic_passport.normalized.json"
+    cell_id = "ai_engineering_infra/inference_cost_latency/optimize_inference_cost_latency"
+    write_passport(
+        passport_path,
+        "sergei_notevskii",
+        "Sergei Notevskii",
+        [
+            make_cell(
+                "ai_engineering_infra/inference_cost_latency/prefix_caching",
+                "ai_engineering_infra",
+                "inference_cost_latency",
+                "optimize_inference_cost_latency",
+                source_utility=5,
+            ),
+            make_cell(
+                "ai_engineering_infra/inference_cost_latency/vllm_vs_ollama",
+                "ai_engineering_infra",
+                "inference_cost_latency",
+                "optimize_inference_cost_latency",
+                source_utility=4,
+            ),
+        ],
+    )
+
+    matrix = module.build_matrix([passport_path])
+    cells = {cell["matrix_cell_id"]: cell for cell in matrix["cells"]}
+
+    assert matrix["summary"]["matrix_cell_count"] == 1
+    assert cells[cell_id]["expert_count"] == 1
+    assert cells[cell_id]["contribution_count"] == 2
+    assert cells[cell_id]["redundancy_level"] == "single_source"
+    assert cells[cell_id]["contributors"][0]["cell_id"] == "ai_engineering_infra/inference_cost_latency/prefix_caching"
+
+
 def test_discover_accepted_passports_uses_admission_manifest_gate(tmp_path):
     module = load_module()
     accepted_path = tmp_path / "refat" / "output" / "refat_semantic_passport.normalized.json"

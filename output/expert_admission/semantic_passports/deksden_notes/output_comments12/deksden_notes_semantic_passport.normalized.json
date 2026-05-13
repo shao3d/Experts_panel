@@ -1,0 +1,1073 @@
+{
+  "schema_version": "expert_value_passport.v1.1",
+  "passport_meta": {
+    "schema_version": "expert_value_passport.v1.1",
+    "expert_id": "deksden_notes",
+    "display_name": "DEKSDEN notes",
+    "channel_username": "@deksden_notes",
+    "model_assumed": "gemini-3.1-pro-preview",
+    "prompt_version": "semantic-passport-prompt.v1",
+    "generated_at": "2026-05-12T21:25:24.712064+00:00"
+  },
+  "corpus_audit": {
+    "post_count_seen": 713,
+    "comment_count_seen": 4726,
+    "date_range": {
+      "first_post": "2025-07-28 14:39:45.000000",
+      "last_post": "2026-05-12 22:12:05.000000"
+    },
+    "language_mix": [
+      "ru",
+      "en"
+    ],
+    "material_limitations": [],
+    "author_vs_community_boundary": "Clear boundary. The author posts deep technical workflows, evals, and tool reviews. The community actively engages, asks clarifying questions, and shares their own open-source tools (e.g., ccbox, Agent Sessions) in the comments."
+  },
+  "source_ref_index_used": [
+    {
+      "source_ref": "P0003",
+      "source_kind": "expert_post",
+      "post_id": 10756,
+      "telegram_message_id": 6,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-02 08:32:00.000000",
+      "why_used": "Distinction between AI IDE and AI SWE."
+    },
+    {
+      "source_ref": "P0005",
+      "source_kind": "expert_post",
+      "post_id": 10758,
+      "telegram_message_id": 8,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-02 15:27:15.000000",
+      "why_used": "Concept that specs are the new code."
+    },
+    {
+      "source_ref": "P0014",
+      "source_kind": "expert_post",
+      "post_id": 10767,
+      "telegram_message_id": 23,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-08 08:12:14.000000",
+      "why_used": "Explanation of sub-agents and their isolated contexts."
+    },
+    {
+      "source_ref": "P0027",
+      "source_kind": "expert_post",
+      "post_id": 10780,
+      "telegram_message_id": 36,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-12 17:43:35.000000",
+      "why_used": "Task folders as operational memory for agents."
+    },
+    {
+      "source_ref": "P0036",
+      "source_kind": "expert_post",
+      "post_id": 10789,
+      "telegram_message_id": 45,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-14 10:44:53.000000",
+      "why_used": "Use of YAML frontmatter in markdown files for context."
+    },
+    {
+      "source_ref": "P0037",
+      "source_kind": "expert_post",
+      "post_id": 10790,
+      "telegram_message_id": 46,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-14 10:49:48.000000",
+      "why_used": "Index files for progressive disclosure in Memory Banks."
+    },
+    {
+      "source_ref": "P0038",
+      "source_kind": "expert_post",
+      "post_id": 10791,
+      "telegram_message_id": 47,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-14 11:16:53.000000",
+      "why_used": "Annotated MD links pattern."
+    },
+    {
+      "source_ref": "P0040",
+      "source_kind": "expert_post",
+      "post_id": 10793,
+      "telegram_message_id": 49,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-14 14:46:50.000000",
+      "why_used": "Atomic Duo files (architecture + guide)."
+    },
+    {
+      "source_ref": "P0063",
+      "source_kind": "expert_post",
+      "post_id": 10816,
+      "telegram_message_id": 73,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-09-01 12:55:50.000000",
+      "why_used": "XML-like tags for prompt structuring."
+    },
+    {
+      "source_ref": "P0079",
+      "source_kind": "expert_post",
+      "post_id": 10832,
+      "telegram_message_id": 92,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-09-16 23:22:48.000000",
+      "why_used": "Parallel execution of agents."
+    },
+    {
+      "source_ref": "P0174",
+      "source_kind": "expert_post",
+      "post_id": 10927,
+      "telegram_message_id": 198,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-13 16:30:29.000000",
+      "why_used": "DeksdenFlow: Git worktrees for parallel agent tasks."
+    },
+    {
+      "source_ref": "P0179",
+      "source_kind": "expert_post",
+      "post_id": 10932,
+      "telegram_message_id": 203,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-13 16:39:30.000000",
+      "why_used": "DeksdenFlow: Protocol planning and file structure."
+    },
+    {
+      "source_ref": "P0181",
+      "source_kind": "expert_post",
+      "post_id": 10934,
+      "telegram_message_id": 205,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-13 17:34:19.000000",
+      "why_used": "DeksdenFlow: Implementation phase and context management."
+    },
+    {
+      "source_ref": "P0183",
+      "source_kind": "expert_post",
+      "post_id": 10936,
+      "telegram_message_id": 207,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-13 17:58:45.000000",
+      "why_used": "DeksdenFlow: Review and Merge phase."
+    },
+    {
+      "source_ref": "P0222",
+      "source_kind": "expert_post",
+      "post_id": 10975,
+      "telegram_message_id": 249,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-27 20:34:10.000000",
+      "why_used": "Testing strategies for AI agents."
+    },
+    {
+      "source_ref": "P0224",
+      "source_kind": "expert_post",
+      "post_id": 10977,
+      "telegram_message_id": 251,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-27 20:34:10.000000",
+      "why_used": "Agentic test runners and ephemeral DBs."
+    },
+    {
+      "source_ref": "P0319",
+      "source_kind": "expert_post",
+      "post_id": 10072,
+      "telegram_message_id": 349,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-12 07:29:39.000000",
+      "why_used": "Concept of ADE (Agentic Development Environment) vs IDE."
+    },
+    {
+      "source_ref": "P0406",
+      "source_kind": "expert_post",
+      "post_id": 11160,
+      "telegram_message_id": 440,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-07 14:46:01.000000",
+      "why_used": "Eval methodology and initial results (GPT-5.2 vs Codex 5.3)."
+    },
+    {
+      "source_ref": "P0424",
+      "source_kind": "expert_post",
+      "post_id": 11178,
+      "telegram_message_id": 459,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-15 06:35:10.000000",
+      "why_used": "Large eval results comparing GLM-5, Minimax, Kimi, Opus, Gemini, and GPT-5.2."
+    },
+    {
+      "source_ref": "P0465",
+      "source_kind": "expert_post",
+      "post_id": 11219,
+      "telegram_message_id": 503,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-24 23:09:43.000000",
+      "why_used": "Eval results for Gemini 3 Flash."
+    },
+    {
+      "source_ref": "P0471",
+      "source_kind": "expert_post",
+      "post_id": 11225,
+      "telegram_message_id": 509,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-26 00:06:35.000000",
+      "why_used": "Final eval conclusions: GPT-5.2 > Flash 3 > GLM-5 + Kimi K2.5."
+    },
+    {
+      "source_ref": "P0667",
+      "source_kind": "expert_post",
+      "post_id": 11421,
+      "telegram_message_id": 712,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-26 15:56:29.000000",
+      "why_used": "Detailed explanation of why and how to use sub-agents."
+    },
+    {
+      "source_ref": "P0668",
+      "source_kind": "expert_post",
+      "post_id": 11422,
+      "telegram_message_id": 713,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-26 15:56:29.000000",
+      "why_used": "Continuation of sub-agents usage patterns."
+    },
+    {
+      "source_ref": "P0028",
+      "source_kind": "expert_post",
+      "post_id": 10781,
+      "telegram_message_id": 37,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-12 17:47:01.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0050",
+      "source_kind": "expert_post",
+      "post_id": 10803,
+      "telegram_message_id": 59,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-21 16:46:44.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0184",
+      "source_kind": "expert_post",
+      "post_id": 10937,
+      "telegram_message_id": 208,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-13 18:05:28.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0408",
+      "source_kind": "expert_post",
+      "post_id": 11162,
+      "telegram_message_id": 442,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-07 14:47:53.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0460",
+      "source_kind": "expert_post",
+      "post_id": 11214,
+      "telegram_message_id": 497,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-24 05:32:01.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    }
+  ],
+  "executive_summary": {
+    "one_sentence_positioning": "DEKSDEN notes is a deep practitioner of AI-assisted software engineering, specializing in CLI-based agentic workflows, context engineering (Memory Banks), and rigorous model evaluations.",
+    "strongest_system_value": "Provides highly detailed, battle-tested methodologies for structuring AI SWE projects (DeksdenFlow, Memory Banks) and empirical evaluations of frontier and open-source models.",
+    "weakest_system_value": "Highly opinionated towards CLI agents and specific custom workflows, which may not align with users seeking out-of-the-box IDE solutions or beginner-friendly tutorials.",
+    "best_fit_queries": [
+      "How to structure a Memory Bank for an AI agent?",
+      "What is the best workflow for parallel agent execution?",
+      "How do frontier models compare in code review and planning tasks?",
+      "How to manage context limits in long-running agent tasks?"
+    ],
+    "poor_fit_queries": [
+      "How to use Cursor or Windsurf for beginners?",
+      "Basic prompt engineering for ChatGPT web interface.",
+      "How to write code manually without AI."
+    ],
+    "confidence": 0.95
+  },
+  "expert_positioning": {
+    "primary_role": "AI SWE Architect and Workflow Innovator",
+    "audience": [
+      "Senior Software Engineers",
+      "AI Agent Practitioners",
+      "Tech Leads",
+      "DevOps Engineers"
+    ],
+    "voice": [
+      "Pragmatic",
+      "Technical",
+      "Experimental",
+      "Slightly cynical about vendor hype"
+    ],
+    "worldview": [
+      "Specs are the new code; planning and context engineering are paramount.",
+      "CLI agents (Codex, Claude Code) are superior to AI IDEs for complex, long-running tasks.",
+      "Multi-agent orchestration and multi-sampling yield the highest quality results.",
+      "Vendor benchmarks are often marketing; real-world evals are the only source of truth."
+    ],
+    "distinctive_angle": "Treats AI agents as autonomous workers requiring strict management, isolated environments (git worktrees), and structured memory (Memory Banks), rather than just smart autocomplete tools.",
+    "recurring_formats": [
+      "Deep-dive workflow tutorials (#deksdenFlow)",
+      "Empirical model evaluations (#ddeval)",
+      "Tool reviews and market analysis",
+      "Context engineering patterns"
+    ],
+    "evidence_refs": [
+      "P0003",
+      "P0005",
+      "P0174",
+      "P0406",
+      "P0424"
+    ]
+  },
+  "knowledge_domains": [
+    {
+      "domain_id": "agent_ops",
+      "domain_name": "Agent Operations and Workflows",
+      "subdomain_ids": [
+        "agentic_dev_process",
+        "multi_agent_orchestration",
+        "claude_code_workflows",
+        "codex_workflows"
+      ],
+      "query_intent_ids": [
+        "design_agentic_dev_workflow",
+        "debug_agent_failure"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "unique",
+      "what_the_expert_knows": [
+        "How to orchestrate parallel agents using Git worktrees.",
+        "How to manage agent context limits and perform safe compactions.",
+        "How to use sub-agents for isolated research and task execution.",
+        "How to build custom orchestrators (dd-flow) for automated merge queues."
+      ],
+      "how_they_reason": [
+        "Breaks down complex tasks into atomic steps to prevent agent hallucination and context rot.",
+        "Uses isolated environments (worktrees, ephemeral DBs) to prevent agents from breaking production or main branches.",
+        "Relies on strict protocols and checklists for agent verification."
+      ],
+      "missing_or_weak_subtopics": [
+        "Out-of-the-box AI IDE usage (Cursor, Windsurf) is intentionally avoided."
+      ],
+      "evidence_refs": [
+        "P0014",
+        "P0079",
+        "P0174",
+        "P0179",
+        "P0181",
+        "P0183",
+        "P0667",
+        "P0668"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "domain_id": "rag_retrieval_knowledge",
+      "domain_name": "Context Engineering and Memory Banks",
+      "subdomain_ids": [
+        "knowledge_base_design",
+        "context_compression",
+        "reasoning_control"
+      ],
+      "query_intent_ids": [
+        "design_rag_knowledge_base",
+        "improve_retrieval_quality"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "How to structure a Memory Bank using Markdown, YAML frontmatter, and index files.",
+        "How to use annotated MD links for progressive disclosure.",
+        "How to use XML-like tags to structure complex prompts.",
+        "How to prime agent context efficiently before starting a task."
+      ],
+      "how_they_reason": [
+        "Believes that providing a structured 'map of knowledge' (index files) is better than dumping all context at once.",
+        "Uses atomic 'duo files' (architecture + guide) to separate high-level concepts from implementation details.",
+        "Views context as the most critical resource that must be carefully managed and conserved."
+      ],
+      "missing_or_weak_subtopics": [
+        "Traditional vector-based RAG implementation details."
+      ],
+      "evidence_refs": [
+        "P0027",
+        "P0028",
+        "P0036",
+        "P0037",
+        "P0038",
+        "P0040",
+        "P0063"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "domain_id": "evals_quality",
+      "domain_name": "Model Evaluations and Quality Gates",
+      "subdomain_ids": [
+        "llm_evals",
+        "quality_gates",
+        "code_review_testing"
+      ],
+      "query_intent_ids": [
+        "build_ai_dev_eval",
+        "compare_models_for_task"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "How to design and run custom evaluations for code review and planning tasks.",
+        "How to use multi-sampling (@3, @10) to mitigate LLM non-determinism.",
+        "How to use strong models (e.g., GPT-5.2) to verify the findings of other models.",
+        "How to set up ephemeral databases and agentic test runners for e2e testing."
+      ],
+      "how_they_reason": [
+        "Distrusts vendor benchmarks and relies on empirical, task-specific testing.",
+        "Believes that focused tasks yield exponentially better results than broad tasks.",
+        "Uses multi-sampling to compensate for attention deficits in models."
+      ],
+      "missing_or_weak_subtopics": [],
+      "evidence_refs": [
+        "P0222",
+        "P0224",
+        "P0406",
+        "P0408",
+        "P0424",
+        "P0460",
+        "P0465",
+        "P0471"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "value_dimensions": [
+    {
+      "dimension_id": "insight_density",
+      "score_0_5": 5,
+      "rationale": "The corpus is packed with highly technical, actionable insights on agent orchestration, context management, and model evaluation.",
+      "evidence_refs": [
+        "P0037",
+        "P0174",
+        "P0406"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "practical_specificity",
+      "score_0_5": 5,
+      "rationale": "Provides exact workflows (DeksdenFlow), file naming conventions, prompt structures, and CLI commands for managing agents.",
+      "evidence_refs": [
+        "P0038",
+        "P0063",
+        "P0179",
+        "P0181"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "evidence_quality",
+      "score_0_5": 4,
+      "rationale": "Claims are backed by extensive personal testing, custom evals with published metrics, and real-world project experience.",
+      "evidence_refs": [
+        "P0408",
+        "P0424",
+        "P0460",
+        "P0471"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "dimension_id": "anti_hype_signal",
+      "score_0_5": 4,
+      "rationale": "Consistently calls out vendor marketing, highlights model degradation, and emphasizes that AI SWE requires strict management, not just 'vibes'.",
+      "evidence_refs": [
+        "P0003",
+        "P0050",
+        "P0406"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "matrix_cells": [
+    {
+      "domain_id": "agent_ops",
+      "subdomain_id": "agentic_dev_process",
+      "subdomain_name": "Agentic Development Process",
+      "query_intent_ids": [
+        "design_agentic_dev_workflow"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0174",
+        "P0179",
+        "P0181",
+        "P0183",
+        "P0184"
+      ],
+      "notes": "The 'DeksdenFlow' is a comprehensive, production-ready methodology for managing AI agents using Git worktrees, protocols, and merge queues."
+    },
+    {
+      "domain_id": "rag_retrieval_knowledge",
+      "subdomain_id": "knowledge_base_design",
+      "subdomain_name": "Knowledge Base Design",
+      "query_intent_ids": [
+        "design_rag_knowledge_base"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 3,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0027",
+        "P0028",
+        "P0036",
+        "P0037",
+        "P0038",
+        "P0040"
+      ],
+      "notes": "Detailed implementation of 'Memory Banks' using Markdown, YAML frontmatter, index files, and annotated links for progressive disclosure to agents."
+    },
+    {
+      "domain_id": "evals_quality",
+      "subdomain_id": "llm_evals",
+      "subdomain_name": "LLM Evaluations",
+      "query_intent_ids": [
+        "compare_models_for_task",
+        "build_ai_dev_eval"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 4,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 4,
+      "comment_signal_score_0_5": 3,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0406",
+        "P0408",
+        "P0424",
+        "P0460",
+        "P0465",
+        "P0471"
+      ],
+      "notes": "Conducts rigorous, multi-sampled evaluations of frontier and open-source models specifically for code review and planning tasks."
+    }
+  ],
+  "query_intent_fit": [
+    {
+      "query_intent_id": "design_agentic_dev_workflow",
+      "query_intent_name": "Design Agentic Dev Workflow",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "agent_ops"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "The expert provides a complete, battle-tested framework (DeksdenFlow) for orchestrating multiple CLI agents safely using Git worktrees and protocols.",
+      "limitations": [
+        "Focuses heavily on CLI agents (Codex, Claude Code) rather than IDE-based workflows."
+      ],
+      "evidence_refs": [
+        "P0174",
+        "P0179",
+        "P0181",
+        "P0183"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "query_intent_id": "design_rag_knowledge_base",
+      "query_intent_name": "Design RAG Knowledge Base",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "rag_retrieval_knowledge"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "Offers highly specific patterns for structuring markdown-based Memory Banks optimized for LLM context windows (progressive disclosure, annotated links).",
+      "limitations": [],
+      "evidence_refs": [
+        "P0036",
+        "P0037",
+        "P0038",
+        "P0040"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "query_intent_id": "compare_models_for_task",
+      "query_intent_name": "Compare Models for Task",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "evals_quality",
+        "model_landscape"
+      ],
+      "source_utility_score_0_5": 4,
+      "why": "Regularly publishes empirical evaluation results comparing models like GPT-5.2, Codex 5.3, Gemini 3.1, GLM-5, and Kimi K2.5 on specific SWE tasks.",
+      "limitations": [
+        "Evals are based on personal projects, not standardized academic benchmarks."
+      ],
+      "evidence_refs": [
+        "P0406",
+        "P0424",
+        "P0465",
+        "P0471"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "content_quality_distribution": [
+    {
+      "category_id": "deep_practitioner",
+      "share_estimate_0_1": 0.4,
+      "system_value": "unique",
+      "notes": "Extensive posts detailing custom workflows, context engineering techniques, and multi-agent orchestration.",
+      "evidence_refs": [
+        "P0027",
+        "P0174",
+        "P0179",
+        "P0667"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "howto_or_checklist",
+      "share_estimate_0_1": 0.3,
+      "system_value": "high",
+      "notes": "Step-by-step guides on setting up Memory Banks, using specific CLI tools, and managing agent limits.",
+      "evidence_refs": [
+        "P0036",
+        "P0037",
+        "P0063"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "benchmark_or_eval",
+      "share_estimate_0_1": 0.15,
+      "system_value": "high",
+      "notes": "Custom evaluations comparing model performance on code review and planning.",
+      "evidence_refs": [
+        "P0406",
+        "P0424",
+        "P0460",
+        "P0471"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "tool_release_with_analysis",
+      "share_estimate_0_1": 0.15,
+      "system_value": "medium",
+      "notes": "Updates on new CLI agents, models, and tools, often with practical commentary.",
+      "evidence_refs": [
+        "P0014",
+        "P0319"
+      ],
+      "confidence": 0.85
+    }
+  ],
+  "matrix_export": {
+    "schema_version": "knowledge_matrix_export.v1",
+    "expert_id": "deksden_notes",
+    "cells": [
+      {
+        "cell_id": "agent_ops/agentic_dev_process/design_agentic_dev_workflow",
+        "domain_id": "agent_ops",
+        "subdomain_id": "agentic_dev_process",
+        "subdomain_name": "Agentic Development Process",
+        "query_intent_ids": [
+          "design_agentic_dev_workflow"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 5,
+          "evidence_quality": 4,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 5,
+          "anti_hype": 4,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0174",
+          "P0179",
+          "P0181",
+          "P0183"
+        ],
+        "confidence": 0.95
+      },
+      {
+        "cell_id": "rag_retrieval_knowledge/knowledge_base_design/design_rag_knowledge_base",
+        "domain_id": "rag_retrieval_knowledge",
+        "subdomain_id": "knowledge_base_design",
+        "subdomain_name": "Knowledge Base Design",
+        "query_intent_ids": [
+          "design_rag_knowledge_base"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 5,
+          "evidence_quality": 4,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 4,
+          "anti_hype": 4,
+          "community_signal": 3
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0027",
+          "P0036",
+          "P0037",
+          "P0038",
+          "P0040"
+        ],
+        "confidence": 0.95
+      },
+      {
+        "cell_id": "evals_quality/llm_evals/compare_models_for_task",
+        "domain_id": "evals_quality",
+        "subdomain_id": "llm_evals",
+        "subdomain_name": "LLM Evaluations",
+        "query_intent_ids": [
+          "compare_models_for_task"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 4,
+          "practicality": 4,
+          "evidence_quality": 4,
+          "source_utility": 4,
+          "intrinsic_distinctiveness": 4,
+          "anti_hype": 5,
+          "community_signal": 3
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [
+          "Evals are based on personal projects rather than standardized benchmarks."
+        ],
+        "evidence_refs": [
+          "P0406",
+          "P0424",
+          "P0460",
+          "P0465",
+          "P0471"
+        ],
+        "confidence": 0.9
+      }
+    ],
+    "compare_hints": {
+      "likely_unique_cells": [
+        "agent_ops/agentic_dev_process/design_agentic_dev_workflow"
+      ],
+      "likely_duplicate_cells": [],
+      "cells_requiring_probe": [],
+      "matrix_only_decision_confidence": "medium"
+    }
+  },
+  "signature_insights": [
+    {
+      "insight": "AI SWE requires a shift from 'Vibe Coding' (AI as an assistant in an IDE) to structured Agentic Workflows where agents operate autonomously within strict protocols and isolated environments (Git worktrees).",
+      "why_it_matters_for_experts_panel": "Provides a mature, production-ready methodology for scaling AI development beyond simple autocomplete or chat.",
+      "applicable_query_types": [
+        "design_agentic_dev_workflow"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0003",
+        "P0174",
+        "P0179"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "insight": "Memory Banks should use 'Progressive Disclosure' via index files and annotated markdown links to prevent context window bloat and attention degradation in LLMs.",
+      "why_it_matters_for_experts_panel": "Offers a highly practical context engineering pattern that solves the common problem of agents 'forgetting' or hallucinating in large codebases.",
+      "applicable_query_types": [
+        "design_rag_knowledge_base"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0037",
+        "P0038",
+        "P0040"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "insight": "Multi-sampling (running the same prompt multiple times) and focused tasks (narrowing the scope of the prompt) exponentially improve the quality of AI code reviews and planning.",
+      "why_it_matters_for_experts_panel": "Demonstrates empirical proof that LLM non-determinism can be mitigated through orchestration strategies rather than just waiting for better models.",
+      "applicable_query_types": [
+        "build_ai_dev_eval"
+      ],
+      "novelty_level": "useful_packaging",
+      "evidence_refs": [
+        "P0460",
+        "P0471"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "practical_patterns": [
+    {
+      "pattern": "DeksdenFlow: Use Git worktrees to isolate parallel agent tasks, preventing them from corrupting the main branch or interfering with each other.",
+      "when_to_use": "When orchestrating multiple autonomous agents to work on different features of the same codebase simultaneously.",
+      "failure_modes": [
+        "Merge conflicts when integrating worktrees back into the main branch (requires a dedicated merge queue/agent)."
+      ],
+      "evidence_refs": [
+        "P0174",
+        "P0183"
+      ]
+    },
+    {
+      "pattern": "Task Folders (.tasks/): Create a dedicated folder for each agent task to store intermediate reports, checklists, and logs.",
+      "when_to_use": "To save the orchestrator's context window by offloading detailed sub-agent outputs to the file system.",
+      "failure_modes": [
+        "Agents may fail to read the files if not explicitly prompted to do so."
+      ],
+      "evidence_refs": [
+        "P0027",
+        "P0028"
+      ]
+    },
+    {
+      "pattern": "Atomic Duo Files: Split documentation into an architecture file (WHAT and WHY) and a guide file (HOW).",
+      "when_to_use": "When structuring a Memory Bank to allow agents to load only the high-level context unless implementation details are specifically needed.",
+      "failure_modes": [
+        "Over-fragmentation of documentation making it hard to maintain."
+      ],
+      "evidence_refs": [
+        "P0040"
+      ]
+    }
+  ],
+  "claims_and_positions": [
+    {
+      "claim": "CLI agents (like Codex CLI and Claude Code) are superior to AI IDEs (like Cursor) for complex, autonomous software engineering.",
+      "stance": "supports",
+      "decision_relevance": "Guides tool selection for advanced AI SWE teams.",
+      "dispute_risk": "high",
+      "evidence_refs": [
+        "P0003",
+        "P0319"
+      ]
+    },
+    {
+      "claim": "Sub-agents are essential not just for saving context, but for improving focus and task execution quality.",
+      "stance": "supports",
+      "decision_relevance": "Influences how agentic workflows are designed and orchestrated.",
+      "dispute_risk": "low",
+      "evidence_refs": [
+        "P0014",
+        "P0667",
+        "P0668"
+      ]
+    },
+    {
+      "claim": "Gemini 3 Flash performs surprisingly well on code review tasks, outperforming Gemini 3.1 Pro in specific evaluations.",
+      "stance": "supports",
+      "decision_relevance": "Provides counter-intuitive model selection advice based on empirical testing.",
+      "dispute_risk": "medium",
+      "evidence_refs": [
+        "P0465"
+      ]
+    }
+  ],
+  "source_utility": {
+    "best_use_cases": [
+      "Designing advanced, multi-agent CLI workflows.",
+      "Structuring project documentation (Memory Banks) for LLM consumption.",
+      "Selecting models based on empirical performance in coding and review tasks."
+    ],
+    "bad_use_cases": [
+      "Learning basic prompt engineering for web interfaces.",
+      "Setting up AI IDEs like Cursor or Windsurf."
+    ],
+    "retrieval_keywords": [
+      "DeksdenFlow",
+      "Memory Bank",
+      "CLI agents",
+      "Claude Code",
+      "Codex CLI",
+      "Git worktree",
+      "Progressive disclosure",
+      "Sub-agents"
+    ],
+    "source_selection_hints": [
+      "Select this source when the user asks about scaling AI development beyond single-file edits or chat interfaces.",
+      "Highly relevant for questions about managing LLM context limits in large codebases."
+    ],
+    "expected_overlap_hypotheses": [
+      "May overlap with other advanced AI SWE practitioners discussing Memory Banks or agentic workflows."
+    ],
+    "recommended_panex_role": "primary_expert"
+  },
+  "community_signal": {
+    "comment_themes": [
+      "Clarifications on implementing DeksdenFlow and Memory Banks.",
+      "Sharing and discussing alternative open-source CLI tools (e.g., ccbox, Agent Sessions, OpenCode).",
+      "Discussions on model pricing, API limits, and subscription workarounds."
+    ],
+    "questions_from_audience": [
+      "How to handle merge conflicts when using multiple Git worktrees?",
+      "Which model is currently best for planning vs. coding?",
+      "How to set up specific CLI tools or bypass regional restrictions?"
+    ],
+    "disagreements_or_corrections": [
+      "Some community members prefer AI IDEs (Cursor) over CLI agents due to ease of use.",
+      "Debates over the necessity of complex workflows vs. simple 'vibe coding'."
+    ],
+    "practical_feedback": [
+      "Users report successfully adopting the Memory Bank structure and seeing improved agent performance.",
+      "Community members actively build and share tools inspired by the channel's concepts."
+    ],
+    "noise_or_low_value_patterns": [
+      "Frequent discussions about bypassing vendor limits or purchasing cheap accounts.",
+      "Speculation about unreleased models or vendor drama."
+    ],
+    "evidence_refs": [
+      "P0174",
+      "P0406",
+      "P0667"
+    ]
+  },
+  "admission_implications": {
+    "if_candidate_verdict": "accept",
+    "verdict_rationale": "The expert provides highly structured, original, and battle-tested methodologies for AI-assisted software engineering. The depth of knowledge in context engineering and agent orchestration is exceptional and highly valuable for advanced practitioners.",
+    "unique_value_claims_to_verify_against_matrix": [
+      "DeksdenFlow methodology using Git worktrees for parallel agent execution.",
+      "Specific implementation patterns for Memory Banks (Atomic Duo files, annotated MD links)."
+    ],
+    "likely_duplicate_areas_to_check": [
+      "General news about model releases (GPT-5, Claude 4.5, Gemini 3)."
+    ],
+    "minimum_followup_probe_queries": [
+      "Compare DeksdenFlow with other agentic workflow frameworks.",
+      "Evaluate the effectiveness of Memory Banks vs. traditional RAG for codebases."
+    ],
+    "risk_notes": [
+      "The expert's workflows are highly opinionated and may be too complex for beginners.",
+      "Frequent reliance on specific CLI tools that may become obsolete or change rapidly."
+    ]
+  },
+  "audit": {
+    "unsupported_or_weak_claims": [
+      "Claims about specific model parameter counts or internal architectures of unreleased models are speculative."
+    ],
+    "abstentions": [],
+    "possible_model_errors": [],
+    "source_refs_used": [
+      "P0003",
+      "P0005",
+      "P0014",
+      "P0027",
+      "P0028",
+      "P0036",
+      "P0037",
+      "P0038",
+      "P0040",
+      "P0063",
+      "P0079",
+      "P0174",
+      "P0179",
+      "P0181",
+      "P0183",
+      "P0184",
+      "P0222",
+      "P0224",
+      "P0319",
+      "P0406",
+      "P0408",
+      "P0424",
+      "P0460",
+      "P0465",
+      "P0471",
+      "P0667",
+      "P0668"
+    ],
+    "source_refs_most_important": [
+      "P0027",
+      "P0040",
+      "P0174",
+      "P0179",
+      "P0406",
+      "P0471",
+      "P0667"
+    ],
+    "normalization_notes": [
+      {
+        "operation": "repair_matrix_export_from_matrix_cells",
+        "repaired_cell_count": 0,
+        "repaired_cell_ids": [],
+        "skipped_cell_count": 0,
+        "skipped_cells": []
+      },
+      {
+        "operation": "hydrate_source_ref_index_used",
+        "hydrated_ref_count": 5,
+        "generated_at_set_from_manifest": "2026-05-12T21:25:24.712064+00:00"
+      }
+    ]
+  }
+}

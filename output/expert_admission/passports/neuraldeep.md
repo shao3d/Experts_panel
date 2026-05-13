@@ -7,26 +7,26 @@ Channel: `neuraldeep`
 
 | Metric | Count |
 |---|---:|
-| Posts | 514 |
-| Text posts | 494 |
+| Posts | 523 |
+| Text posts | 503 |
 | Valid post_metadata | 406 |
-| Embeddings | 494 |
-| FTS rows | 494 |
+| Embeddings | 503 |
+| FTS rows | 503 |
 
 ## Coverage
 
 | Area | Count | Strength |
 |---|---:|---|
-| `model_landscape` | 269 | strong |
-| `agent_ops` | 174 | strong |
-| `coding_agents` | 114 | strong |
-| `business_adoption` | 89 | strong |
-| `rag_retrieval_knowledge` | 84 | strong |
-| `ai_product_pm` | 68 | strong |
+| `model_landscape` | 273 | strong |
+| `agent_ops` | 179 | strong |
+| `coding_agents` | 115 | strong |
+| `business_adoption` | 90 | strong |
+| `rag_retrieval_knowledge` | 85 | strong |
+| `ai_product_pm` | 69 | strong |
 | `ai_engineering_infra` | 57 | strong |
 | `evals_quality` | 57 | strong |
 | `security_privacy_governance` | 43 | medium |
-| `ai_ux_workflow` | 34 | medium |
+| `ai_ux_workflow` | 35 | medium |
 | `creative_multimodal` | 16 | thin |
 | `general_ai_news` | 1 | thin |
 
@@ -35,13 +35,13 @@ Channel: `neuraldeep`
 | Depth | Count |
 |---|---:|
 | `practitioner_experience` | 63 |
-| `case_study` | 59 |
-| `architecture_analysis` | 39 |
+| `case_study` | 60 |
+| `architecture_analysis` | 40 |
 | `benchmark_or_eval` | 55 |
-| `howto_or_checklist` | 117 |
+| `howto_or_checklist` | 120 |
 | `tool_release` | 14 |
-| `announcement_or_news` | 77 |
-| `low_signal` | 90 |
+| `announcement_or_news` | 80 |
+| `low_signal` | 91 |
 
 ## Top Metadata Signals
 
@@ -89,9 +89,9 @@ Channel: `neuraldeep`
 
 - `neuraldeep:2088` (2026-04-22, benchmark_or_eval; `evals_quality`, `security_privacy_governance`) - ⚡️ **Открываем NSFW-бенчмарк для систем модерации** В прошлых постах мы много говорили о фильтрации NSFW. А теперь выкатываем в открытый доступ наш [двуязычный бенчмарк](https://huggingface.co/datasets/redmadrobot-rnd/nsfw_benchmark) для систем модерации контента. Что внутри датасета: • контрастные пары — о которых...
 - `neuraldeep:2082` (2026-04-20, benchmark_or_eval; `evals_quality`, `model_landscape`) - **LLM hub by Kovalskii** Вчера анонсировал https://hub.neuraldeep.ru/, а сегодня с утра уже есть что анализировать (вы просто супер аудитория!) Что интересно из аналитики для меня: Много кто взял модели для прогона pac1 (бенчмарка от Рината) Кто-то взял для подключения к [opencode](https://t.me/neuraldeepchat/54442)...
-- `neuraldeep:2058` (2026-04-09, benchmark_or_eval; `agent_ops`, `evals_quality`, `model_landscape`) - PAC1-DEV Почитать что это такое можно [тут](https://bitgn.com/challenge/PAC) ([Ринат](https://t.me/llm_under_hood) не перестает удивлять нас бенчмарками и соревнованиями) Решил пожечь подписку и реализовать свой подход, за старт спасибо (@multiagentsys) он выложил [репо](https://github.com/snow-ghost/sample-agent) о...
-- `neuraldeep:2052` (2026-04-08, benchmark_or_eval; `coding_agents`, `agent_ops`, `evals_quality`, `business_adoption`, `security_privacy_governance`, `ai_engineering_infra`, `model_landscape`) - **Вышел наш второй комьюнити-стрим!** Для вас отжигали, на фото: @nobilix, @superbereza, @ai_grably, @aostrikov_ai_agents и маэстро @neuraldeep 📹 https://youtu.be/nUT1YRvjG98 24 вопроса, 2**.5 часа стрим,** чуть не дожали до бейзлайна Лекса Фридмана. Поболтали про агентов, будущее, лобстеров, утекший claude code и в...
+- `neuraldeep:2129` (2026-05-12, case_study; `agent_ops`, `rag_retrieval_knowledge`, `business_adoption`, `model_landscape`) - **OpenAI осознали бесперспективность файн-тюнинга моделей** 7 Мая OpenAI оповестили разработчиков, что лавочка закрывается. Новые компании уже больше не могут запускать задачи тюнинга. В течение полугода закроют возможность даже для тех, кто уже тюнил. А возможность использования своих тюненых моделей сохранится тол...
 - `neuraldeep:2094` (2026-04-26, case_study; `coding_agents`, `agent_ops`, `rag_retrieval_knowledge`) - FOMO в обнимку с кодинг-агентом Заметил, что лагеря разделились особенно в коментах под постом [Тимура](https://t.me/the_ai_architect/291) Есть те, кто обвешивается плагинами, скиллами, автоматизациями саб-агентов, методологиями, которые состоят из 1 000 000 нюансов. И те, кто течет по течению, как я =) Буду честен:...
+- `neuraldeep:2117` (2026-05-04, howto_or_checklist; `coding_agents`, `agent_ops`, `ai_engineering_infra`, `model_landscape`) - **С большой GPU большая ответственность ** Разберем стек **vLLM**M](https://github.com/vllm-project/vllm)** + ****LiteLLM**M](https://github.com/BerriAI/litellm)** + ****Codex CLI**I](https://github.com/openai/codex) Часть первая, когда у вас много GPU серверов под LLM инференс, а у меня часть в одном офисе, часть в...
+- `neuraldeep:2128` (2026-05-11, announcement_or_news; `ai_product_pm`, `ai_ux_workflow`, `model_landscape`) - UPDATE: Новый продукт в рамках хаба LLM Research system [https://search.neuraldeep.ru/](https://search.neuraldeep.ru/) Собрал в него все лучшие свои подходы workflow поиска в интернете: чистый LLM Call пайплайн Всем пользователям доступен Perplexity-подобный поиск на базе GPT OSS 120b (возможны задержки с ответами)....
 - `neuraldeep:2113` (2026-05-02, announcement_or_news; `agent_ops`, `rag_retrieval_knowledge`, `model_landscape`, `creative_multimodal`) - **Расширение каталога на ****Hub NeuralDeep**p](https://hub.neuraldeep.ru/) Сегодня вместе с Валерием (@neuraldeep) добавили новых моделей в публичной API проекта NeuralDeep. Базовый URL для запросов api.neuraldeep.ru (OpenAI-совместимо, Bearer с ключом). Ключ можно полчить после регистрации на hub.neuraldeep.ru. Ит...
 - `neuraldeep:2085` (2026-04-20, case_study; `business_adoption`, `security_privacy_governance`, `model_landscape`) - ⚡️ **Запустили платформу для управления LLM в бизнесе ** red_mad_router помогает компаниям собрать работу с LLM в одной системе, когда сервисы уже используются в разных командах. Решение объединяет доступы к моделям, контроль расходов, настройки безопасности и правила работы с данными. Изначально мы создавали платфо...
-- `neuraldeep:2111` (2026-04-30, practitioner_experience; `agent_ops`, `model_landscape`) - **Как создавать AI-агентов на on-prem-моделях? ** Как меняется создание пайплайна, когда мы переходим на локальные модели? Что вообще может этот ваш Qwen на 4B по сравнению с GPT-5.5? Чтобы ответить на эти (и многие другие) вопросы максимально-качественно, основываясь на **большом практическом опыте**, я попросил пр...

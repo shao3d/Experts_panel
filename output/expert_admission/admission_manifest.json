@@ -68,6 +68,16 @@
       "routing_caveat": "accepted as disciplined AI-assisted development / Claude Code workflow / custom MCP and temporal-agent-memory depth expert; overlap-heavy with coding-agent and RAG cells, avoid broad duplicate routing"
     },
     {
+      "expert_id": "deksden_notes",
+      "display_name": "DEKSDEN notes",
+      "verdict": "accept",
+      "include_in_knowledge_matrix": true,
+      "passport_path": "output/expert_admission/semantic_passports/deksden_notes/output_comments12/deksden_notes_semantic_passport.normalized.json",
+      "admission_report": "output/expert_admission/candidates/deksden_notes/admission_report.json",
+      "decision_basis": "manual_human_review",
+      "routing_caveat": "accepted as advanced AI SWE workflow specialist: CLI-agent orchestration, DeksdenFlow, Git worktree parallelism, Memory Bank/progressive-disclosure context engineering, and empirical model/task evals; overlap-heavy with existing agent_ops and knowledge-base experts, so route as a precision source for mature agentic development process, not for beginner AI IDE usage, generic AI news, broad business adoption, or vendor drama"
+    },
+    {
       "expert_id": "elkornacio",
       "display_name": "Elkornacio",
       "verdict": "accept",
@@ -176,6 +186,16 @@
       "admission_report": "output/expert_admission/candidates/refat/admission_report.json",
       "decision_basis": "current_roster_seed_backfilled_semantic_review",
       "routing_caveat": "accepted as pragmatic AI-engineering, file-first knowledge-base, and Claude Code workflow seed expert; eval/observability cells are useful but probe-worthy, avoid routing for foundational ML theory"
+    },
+    {
+      "expert_id": "sergei_notevskii",
+      "display_name": "Sergei Notevskii",
+      "verdict": "accept",
+      "include_in_knowledge_matrix": true,
+      "passport_path": "output/expert_admission/semantic_passports/sergei_notevskii/output_with_comments/sergei_notevskii_semantic_passport.normalized.json",
+      "admission_report": "output/expert_admission/candidates/sergei_notevskii/admission_report.json",
+      "decision_basis": "manual_human_review",
+      "routing_caveat": "accepted as production LLM inference / prefix-cache / vLLM serving / cost-latency specialist; overlap-heavy with existing infra and agent experts, so route as a precision source for cache hit rate, vLLM vs Ollama, MaaS vs self-hosted, semantic routing, and context/caching economics; avoid default routing for generic AI news, beginner prompting, broad agent workflows, creative/multimodal, enterprise governance, or generic security/compliance"
     },
     {
       "expert_id": "silicbag",

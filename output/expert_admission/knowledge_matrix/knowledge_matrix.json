@@ -1,6 +1,6 @@
 {
   "schema_version": "knowledge_matrix.v0.3",
-  "created_at": "2026-05-12T13:24:09.000252+00:00",
+  "created_at": "2026-05-12T21:34:08.629638+00:00",
   "source_passports": [
     {
       "expert_id": "ai_architect",
@@ -31,6 +31,12 @@
       "display_name": "Akimov",
       "path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/akimov/output/akimov_semantic_passport.normalized.json",
       "cell_count": 2
+    },
+    {
+      "expert_id": "deksden_notes",
+      "display_name": "DEKSDEN notes",
+      "path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/deksden_notes/output_comments12/deksden_notes_semantic_passport.normalized.json",
+      "cell_count": 3
     },
     {
       "expert_id": "doronin",
@@ -105,6 +111,12 @@
       "cell_count": 4
     },
     {
+      "expert_id": "sergei_notevskii",
+      "display_name": "Sergei Notevskii",
+      "path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/sergei_notevskii/output_with_comments/sergei_notevskii_semantic_passport.normalized.json",
+      "cell_count": 4
+    },
+    {
       "expert_id": "silicbag",
       "display_name": "SilicBag",
       "path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/silicbag/output/silicbag_semantic_passport.normalized.json",
@@ -112,16 +124,16 @@
     }
   ],
   "summary": {
-    "passport_count": 18,
-    "expert_count": 18,
-    "matrix_cell_count": 47,
+    "passport_count": 20,
+    "expert_count": 20,
+    "matrix_cell_count": 49,
     "taxonomy_extension_count": 0,
-    "strong_single_source_count": 20,
-    "strong_multi_source_count": 13,
-    "single_source_cell_count": 34,
+    "strong_single_source_count": 19,
+    "strong_multi_source_count": 14,
+    "single_source_cell_count": 35,
     "applied_alias_count": 4,
     "domain_rollup_count": 11,
-    "domain_query_intent_rollup_count": 30,
+    "domain_query_intent_rollup_count": 31,
     "query_intent_rollup_count": 12,
     "related_cell_overlap_count": 10,
     "strong_domain_intent_multi_source_count": 10
@@ -136,14 +148,22 @@
         "design_agentic_dev_workflow"
       ],
       "coverage_status": "strong_multi_source",
-      "redundancy_level": "medium",
-      "expert_count": 3,
+      "redundancy_level": "high",
+      "expert_count": 4,
+      "contribution_count": 4,
       "best_experts": [
         {
           "expert_id": "ai_architect",
           "display_name": "AI Architect",
           "source_role": "primary",
           "aggregate_score": 4.811,
+          "evidence_ref_count": 4
+        },
+        {
+          "expert_id": "deksden_notes",
+          "display_name": "DEKSDEN notes",
+          "source_role": "primary",
+          "aggregate_score": 4.774,
           "evidence_ref_count": 4
         },
         {
@@ -163,7 +183,7 @@
       ],
       "score_summary": {
         "depth": {
-          "avg": 4.667,
+          "avg": 4.75,
           "max": 5
         },
         "practicality": {
@@ -171,7 +191,7 @@
           "max": 5
         },
         "evidence_quality": {
-          "avg": 4.167,
+          "avg": 4.125,
           "max": 4.5
         },
         "source_utility": {
@@ -179,11 +199,11 @@
           "max": 5
         },
         "intrinsic_distinctiveness": {
-          "avg": 4.5,
+          "avg": 4.625,
           "max": 5
         },
         "anti_hype": {
-          "avg": 4.333,
+          "avg": 4.25,
           "max": 5
         },
         "community_signal": {
@@ -227,6 +247,42 @@
           ],
           "confidence": 4.9,
           "aggregate_score": 4.811
+        },
+        {
+          "expert_id": "deksden_notes",
+          "display_name": "DEKSDEN notes",
+          "passport_path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/deksden_notes/output_comments12/deksden_notes_semantic_passport.normalized.json",
+          "matrix_cell_id": "agent_ops/agentic_dev_process/design_agentic_dev_workflow",
+          "cell_id": "agent_ops/agentic_dev_process/design_agentic_dev_workflow",
+          "original_cell_id": null,
+          "domain_id": "agent_ops",
+          "subdomain_id": "agentic_dev_process",
+          "subdomain_name": "Agentic Development Process",
+          "query_intent_ids": [
+            "design_agentic_dev_workflow"
+          ],
+          "source_role": "primary",
+          "coverage_level": "strong",
+          "depth_level": "deep_practitioner",
+          "scores": {
+            "depth": 5,
+            "practicality": 5,
+            "evidence_quality": 4,
+            "source_utility": 5,
+            "intrinsic_distinctiveness": 5,
+            "anti_hype": 4,
+            "community_signal": 4
+          },
+          "matrix_update_role": "needs_matrix_compare",
+          "limitations": [],
+          "evidence_refs": [
+            "P0174",
+            "P0179",
+            "P0181",
+            "P0183"
+          ],
+          "confidence": 0.95,
+          "aggregate_score": 4.774
         },
         {
           "expert_id": "elkornacio",
@@ -313,6 +369,7 @@
       "coverage_status": "strong_single_source",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "llm_under_hood",
@@ -402,6 +459,7 @@
       "coverage_status": "strong_single_source",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "refat",
@@ -491,6 +549,7 @@
       "coverage_status": "strong_single_source",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "etechlead",
@@ -580,6 +639,7 @@
       "coverage_status": "strong_single_source",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "aimasters_me",
@@ -669,6 +729,7 @@
       "coverage_status": "strong_single_source",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "doronin",
@@ -760,6 +821,7 @@
       "coverage_status": "strong_multi_source",
       "redundancy_level": "high",
       "expert_count": 4,
+      "contribution_count": 4,
       "best_experts": [
         {
           "expert_id": "pashazloy",
@@ -978,6 +1040,7 @@
       "coverage_status": "moderate",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "elkornacio",
@@ -1066,6 +1129,7 @@
       "coverage_status": "strong_multi_source",
       "redundancy_level": "low",
       "expert_count": 2,
+      "contribution_count": 2,
       "best_experts": [
         {
           "expert_id": "ostrikov",
@@ -1196,6 +1260,7 @@
       "coverage_status": "strong_single_source",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "llm_under_hood",
@@ -1281,8 +1346,9 @@
         "design_agentic_dev_workflow"
       ],
       "coverage_status": "strong_multi_source",
-      "redundancy_level": "low",
-      "expert_count": 2,
+      "redundancy_level": "medium",
+      "expert_count": 3,
+      "contribution_count": 3,
       "best_experts": [
         {
           "expert_id": "neuraldeep",
@@ -1297,19 +1363,26 @@
           "source_role": "primary",
           "aggregate_score": 5.0,
           "evidence_ref_count": 4
+        },
+        {
+          "expert_id": "sergei_notevskii",
+          "display_name": "Sergei Notevskii",
+          "source_role": "primary",
+          "aggregate_score": 4.245,
+          "evidence_ref_count": 3
         }
       ],
       "score_summary": {
         "depth": {
-          "avg": 5,
+          "avg": 4.667,
           "max": 5
         },
         "practicality": {
-          "avg": 5,
+          "avg": 4.667,
           "max": 5
         },
         "evidence_quality": {
-          "avg": 5,
+          "avg": 4.667,
           "max": 5
         },
         "source_utility": {
@@ -1317,11 +1390,11 @@
           "max": 5
         },
         "intrinsic_distinctiveness": {
-          "avg": 5,
+          "avg": 4.667,
           "max": 5
         },
         "anti_hype": {
-          "avg": 4.5,
+          "avg": 4.333,
           "max": 5
         },
         "community_signal": {
@@ -1400,6 +1473,41 @@
           ],
           "confidence": 0.95,
           "aggregate_score": 5.0
+        },
+        {
+          "expert_id": "sergei_notevskii",
+          "display_name": "Sergei Notevskii",
+          "passport_path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/sergei_notevskii/output_with_comments/sergei_notevskii_semantic_passport.normalized.json",
+          "matrix_cell_id": "agent_ops/tool_calling_hooks_skills/design_agentic_dev_workflow",
+          "cell_id": "agent_ops/tool_calling_hooks_skills/skills_vs_mcp",
+          "original_cell_id": null,
+          "domain_id": "agent_ops",
+          "subdomain_id": "tool_calling_hooks_skills",
+          "subdomain_name": "Tool Calling & Skills",
+          "query_intent_ids": [
+            "design_agentic_dev_workflow"
+          ],
+          "source_role": "primary",
+          "coverage_level": "strong",
+          "depth_level": "practical",
+          "scores": {
+            "depth": 4,
+            "practicality": 4,
+            "evidence_quality": 4,
+            "source_utility": 5,
+            "intrinsic_distinctiveness": 4,
+            "anti_hype": 4,
+            "community_signal": 4
+          },
+          "matrix_update_role": "needs_matrix_compare",
+          "limitations": [],
+          "evidence_refs": [
+            "P0369",
+            "P0369.C0004",
+            "P0373"
+          ],
+          "confidence": 0.9,
+          "aggregate_score": 4.245
         }
       ]
     },
@@ -1415,6 +1523,7 @@
       "coverage_status": "strong_single_source",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "etechlead",
@@ -1496,6 +1605,94 @@
       ]
     },
     {
+      "matrix_cell_id": "ai_engineering_infra/context_compression/optimize_inference_cost_latency",
+      "domain_id": "ai_engineering_infra",
+      "subdomain_id": "context_compression",
+      "subdomain_name": "Context Compression",
+      "query_intent_ids": [
+        "optimize_inference_cost_latency"
+      ],
+      "coverage_status": "moderate",
+      "redundancy_level": "single_source",
+      "expert_count": 1,
+      "contribution_count": 1,
+      "best_experts": [
+        {
+          "expert_id": "sergei_notevskii",
+          "display_name": "Sergei Notevskii",
+          "source_role": "primary",
+          "aggregate_score": 4.189,
+          "evidence_ref_count": 2
+        }
+      ],
+      "score_summary": {
+        "depth": {
+          "avg": 4,
+          "max": 4
+        },
+        "practicality": {
+          "avg": 5,
+          "max": 5
+        },
+        "evidence_quality": {
+          "avg": 4,
+          "max": 4
+        },
+        "source_utility": {
+          "avg": 4,
+          "max": 4
+        },
+        "intrinsic_distinctiveness": {
+          "avg": 4,
+          "max": 4
+        },
+        "anti_hype": {
+          "avg": 5,
+          "max": 5
+        },
+        "community_signal": {
+          "avg": 2,
+          "max": 2
+        }
+      },
+      "contributors": [
+        {
+          "expert_id": "sergei_notevskii",
+          "display_name": "Sergei Notevskii",
+          "passport_path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/sergei_notevskii/output_with_comments/sergei_notevskii_semantic_passport.normalized.json",
+          "matrix_cell_id": "ai_engineering_infra/context_compression/optimize_inference_cost_latency",
+          "cell_id": "ai_engineering_infra/context_compression/context_rot",
+          "original_cell_id": null,
+          "domain_id": "ai_engineering_infra",
+          "subdomain_id": "context_compression",
+          "subdomain_name": "Context Compression",
+          "query_intent_ids": [
+            "optimize_inference_cost_latency"
+          ],
+          "source_role": "primary",
+          "coverage_level": "strong",
+          "depth_level": "practical",
+          "scores": {
+            "depth": 4,
+            "practicality": 5,
+            "evidence_quality": 4,
+            "source_utility": 4,
+            "intrinsic_distinctiveness": 4,
+            "anti_hype": 5,
+            "community_signal": 2
+          },
+          "matrix_update_role": "needs_matrix_compare",
+          "limitations": [],
+          "evidence_refs": [
+            "P0263",
+            "P0355"
+          ],
+          "confidence": 0.9,
+          "aggregate_score": 4.189
+        }
+      ]
+    },
+    {
       "matrix_cell_id": "ai_engineering_infra/deployment_observability/build_ai_dev_eval",
       "domain_id": "ai_engineering_infra",
       "subdomain_id": "deployment_observability",
@@ -1506,6 +1703,7 @@
       "coverage_status": "strong_single_source",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "refat",
@@ -1595,6 +1793,7 @@
       "coverage_status": "strong_single_source",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "neuraldeep",
@@ -1680,13 +1879,21 @@
       "query_intent_ids": [
         "optimize_inference_cost_latency"
       ],
-      "coverage_status": "strong_single_source",
-      "redundancy_level": "single_source",
-      "expert_count": 1,
+      "coverage_status": "strong_multi_source",
+      "redundancy_level": "low",
+      "expert_count": 2,
+      "contribution_count": 3,
       "best_experts": [
         {
           "expert_id": "neuraldeep",
           "display_name": "Neuraldeep",
+          "source_role": "primary",
+          "aggregate_score": 5.0,
+          "evidence_ref_count": 3
+        },
+        {
+          "expert_id": "sergei_notevskii",
+          "display_name": "Sergei Notevskii",
           "source_role": "primary",
           "aggregate_score": 5.0,
           "evidence_ref_count": 3
@@ -1718,7 +1925,7 @@
           "max": 4
         },
         "community_signal": {
-          "avg": 4,
+          "avg": 3.5,
           "max": 4
         }
       },
@@ -1757,6 +1964,41 @@
           ],
           "confidence": 0.95,
           "aggregate_score": 5.0
+        },
+        {
+          "expert_id": "sergei_notevskii",
+          "display_name": "Sergei Notevskii",
+          "passport_path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/sergei_notevskii/output_with_comments/sergei_notevskii_semantic_passport.normalized.json",
+          "matrix_cell_id": "ai_engineering_infra/inference_cost_latency/optimize_inference_cost_latency",
+          "cell_id": "ai_engineering_infra/inference_cost_latency/prefix_caching",
+          "original_cell_id": null,
+          "domain_id": "ai_engineering_infra",
+          "subdomain_id": "inference_cost_latency",
+          "subdomain_name": "Inference Cost & Latency",
+          "query_intent_ids": [
+            "optimize_inference_cost_latency"
+          ],
+          "source_role": "primary",
+          "coverage_level": "strong",
+          "depth_level": "deep_practitioner",
+          "scores": {
+            "depth": 5,
+            "practicality": 5,
+            "evidence_quality": 5,
+            "source_utility": 5,
+            "intrinsic_distinctiveness": 5,
+            "anti_hype": 4,
+            "community_signal": 3
+          },
+          "matrix_update_role": "needs_matrix_compare",
+          "limitations": [],
+          "evidence_refs": [
+            "P0382",
+            "P0392",
+            "P0412"
+          ],
+          "confidence": 0.95,
+          "aggregate_score": 5.0
         }
       ]
     },
@@ -1771,6 +2013,7 @@
       "coverage_status": "moderate",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "refat",
@@ -1857,6 +2100,7 @@
       "coverage_status": "strong_single_source",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "pashazloy",
@@ -1946,6 +2190,7 @@
       "coverage_status": "moderate",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "glebkudr",
@@ -2036,6 +2281,7 @@
       "coverage_status": "moderate",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "ostrikov",
@@ -2122,6 +2368,7 @@
       "coverage_status": "moderate",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "aimasters_me",
@@ -2209,6 +2456,7 @@
       "coverage_status": "strong_single_source",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "akimov",
@@ -2297,6 +2545,7 @@
       "coverage_status": "strong_multi_source",
       "redundancy_level": "low",
       "expert_count": 2,
+      "contribution_count": 2,
       "best_experts": [
         {
           "expert_id": "kornish",
@@ -2432,6 +2681,7 @@
       "coverage_status": "moderate",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "ilia_izmailov",
@@ -2523,6 +2773,7 @@
       "coverage_status": "strong_single_source",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "air_ai",
@@ -2613,6 +2864,7 @@
       "coverage_status": "moderate",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "ostrikov",
@@ -2700,6 +2952,7 @@
       "coverage_status": "moderate",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "silicbag",
@@ -2788,6 +3041,7 @@
       "coverage_status": "strong_multi_source",
       "redundancy_level": "high",
       "expert_count": 5,
+      "contribution_count": 5,
       "best_experts": [
         {
           "expert_id": "ai_grabli",
@@ -3058,6 +3312,7 @@
       "coverage_status": "strong_multi_source",
       "redundancy_level": "medium",
       "expert_count": 3,
+      "contribution_count": 3,
       "best_experts": [
         {
           "expert_id": "etechlead",
@@ -3235,6 +3490,7 @@
       "coverage_status": "strong_multi_source",
       "redundancy_level": "low",
       "expert_count": 2,
+      "contribution_count": 2,
       "best_experts": [
         {
           "expert_id": "doronin",
@@ -3371,6 +3627,7 @@
       "coverage_status": "strong_single_source",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "polyakov",
@@ -3462,6 +3719,7 @@
       "coverage_status": "strong_single_source",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "ai_architect",
@@ -3551,6 +3809,7 @@
       "coverage_status": "moderate",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "polyakov",
@@ -3642,6 +3901,7 @@
       "coverage_status": "strong_multi_source",
       "redundancy_level": "high",
       "expert_count": 4,
+      "contribution_count": 4,
       "best_experts": [
         {
           "expert_id": "elkornacio",
@@ -3860,6 +4120,7 @@
       "coverage_status": "moderate",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "aimasters_me",
@@ -3950,6 +4211,7 @@
       "coverage_status": "strong_single_source",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "llm_under_hood",
@@ -4029,6 +4291,99 @@
       ]
     },
     {
+      "matrix_cell_id": "evals_quality/llm_evals/compare_models_for_task",
+      "domain_id": "evals_quality",
+      "subdomain_id": "llm_evals",
+      "subdomain_name": "LLM Evaluations",
+      "query_intent_ids": [
+        "compare_models_for_task"
+      ],
+      "coverage_status": "moderate",
+      "redundancy_level": "single_source",
+      "expert_count": 1,
+      "contribution_count": 1,
+      "best_experts": [
+        {
+          "expert_id": "deksden_notes",
+          "display_name": "DEKSDEN notes",
+          "source_role": "primary",
+          "aggregate_score": 4.0,
+          "evidence_ref_count": 5
+        }
+      ],
+      "score_summary": {
+        "depth": {
+          "avg": 4,
+          "max": 4
+        },
+        "practicality": {
+          "avg": 4,
+          "max": 4
+        },
+        "evidence_quality": {
+          "avg": 4,
+          "max": 4
+        },
+        "source_utility": {
+          "avg": 4,
+          "max": 4
+        },
+        "intrinsic_distinctiveness": {
+          "avg": 4,
+          "max": 4
+        },
+        "anti_hype": {
+          "avg": 5,
+          "max": 5
+        },
+        "community_signal": {
+          "avg": 3,
+          "max": 3
+        }
+      },
+      "contributors": [
+        {
+          "expert_id": "deksden_notes",
+          "display_name": "DEKSDEN notes",
+          "passport_path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/deksden_notes/output_comments12/deksden_notes_semantic_passport.normalized.json",
+          "matrix_cell_id": "evals_quality/llm_evals/compare_models_for_task",
+          "cell_id": "evals_quality/llm_evals/compare_models_for_task",
+          "original_cell_id": null,
+          "domain_id": "evals_quality",
+          "subdomain_id": "llm_evals",
+          "subdomain_name": "LLM Evaluations",
+          "query_intent_ids": [
+            "compare_models_for_task"
+          ],
+          "source_role": "primary",
+          "coverage_level": "strong",
+          "depth_level": "deep_practitioner",
+          "scores": {
+            "depth": 4,
+            "practicality": 4,
+            "evidence_quality": 4,
+            "source_utility": 4,
+            "intrinsic_distinctiveness": 4,
+            "anti_hype": 5,
+            "community_signal": 3
+          },
+          "matrix_update_role": "needs_matrix_compare",
+          "limitations": [
+            "Evals are based on personal projects rather than standardized benchmarks."
+          ],
+          "evidence_refs": [
+            "P0406",
+            "P0424",
+            "P0460",
+            "P0465",
+            "P0471"
+          ],
+          "confidence": 0.9,
+          "aggregate_score": 4.0
+        }
+      ]
+    },
+    {
       "matrix_cell_id": "model_landscape/model_comparison/compare_models_for_task",
       "domain_id": "model_landscape",
       "subdomain_id": "model_comparison",
@@ -4039,6 +4394,7 @@
       "coverage_status": "strong_multi_source",
       "redundancy_level": "low",
       "expert_count": 2,
+      "contribution_count": 2,
       "best_experts": [
         {
           "expert_id": "etechlead",
@@ -4176,6 +4532,7 @@
       "coverage_status": "strong_multi_source",
       "redundancy_level": "low",
       "expert_count": 2,
+      "contribution_count": 2,
       "best_experts": [
         {
           "expert_id": "neuraldeep",
@@ -4308,6 +4665,7 @@
       "coverage_status": "strong_single_source",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "aimasters_me",
@@ -4398,6 +4756,7 @@
       "coverage_status": "strong_single_source",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "glebkudr",
@@ -4486,6 +4845,7 @@
       "coverage_status": "strong_multi_source",
       "redundancy_level": "low",
       "expert_count": 2,
+      "contribution_count": 2,
       "best_experts": [
         {
           "expert_id": "air_ai",
@@ -4612,6 +4972,7 @@
       "coverage_status": "moderate",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "ai_grabli",
@@ -4702,6 +5063,7 @@
       "coverage_status": "moderate",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "kornish",
@@ -4791,6 +5153,7 @@
       "coverage_status": "strong_single_source",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "air_ai",
@@ -4881,6 +5244,7 @@
       "coverage_status": "strong_single_source",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "ai_grabli",
@@ -4963,14 +5327,22 @@
       "matrix_cell_id": "rag_retrieval_knowledge/knowledge_base_design/design_rag_knowledge_base",
       "domain_id": "rag_retrieval_knowledge",
       "subdomain_id": "knowledge_base_design",
-      "subdomain_name": "Knowledge Base Design (Temporal Graphs)",
+      "subdomain_name": "Knowledge Base Design",
       "query_intent_ids": [
         "design_rag_knowledge_base"
       ],
       "coverage_status": "strong_multi_source",
-      "redundancy_level": "medium",
-      "expert_count": 3,
+      "redundancy_level": "high",
+      "expert_count": 4,
+      "contribution_count": 4,
       "best_experts": [
+        {
+          "expert_id": "deksden_notes",
+          "display_name": "DEKSDEN notes",
+          "source_role": "primary",
+          "aggregate_score": 4.623,
+          "evidence_ref_count": 5
+        },
         {
           "expert_id": "refat",
           "display_name": "Refat (Tech & AI)",
@@ -4995,35 +5367,72 @@
       ],
       "score_summary": {
         "depth": {
-          "avg": 4.333,
-          "max": 4.5
+          "avg": 4.5,
+          "max": 5
         },
         "practicality": {
-          "avg": 4.5,
+          "avg": 4.625,
           "max": 5
         },
         "evidence_quality": {
           "avg": 4.0,
-          "max": 4.0
+          "max": 4
         },
         "source_utility": {
-          "avg": 4.667,
+          "avg": 4.75,
           "max": 5
         },
         "intrinsic_distinctiveness": {
-          "avg": 4.5,
+          "avg": 4.375,
           "max": 5
         },
         "anti_hype": {
-          "avg": 3.0,
+          "avg": 3.25,
           "max": 5
         },
         "community_signal": {
-          "avg": 3.833,
+          "avg": 3.625,
           "max": 4.5
         }
       },
       "contributors": [
+        {
+          "expert_id": "deksden_notes",
+          "display_name": "DEKSDEN notes",
+          "passport_path": "/Users/andreysazonov/Documents/Projects/Experts_panel/output/expert_admission/semantic_passports/deksden_notes/output_comments12/deksden_notes_semantic_passport.normalized.json",
+          "matrix_cell_id": "rag_retrieval_knowledge/knowledge_base_design/design_rag_knowledge_base",
+          "cell_id": "rag_retrieval_knowledge/knowledge_base_design/design_rag_knowledge_base",
+          "original_cell_id": null,
+          "domain_id": "rag_retrieval_knowledge",
+          "subdomain_id": "knowledge_base_design",
+          "subdomain_name": "Knowledge Base Design",
+          "query_intent_ids": [
+            "design_rag_knowledge_base"
+          ],
+          "source_role": "primary",
+          "coverage_level": "strong",
+          "depth_level": "deep_practitioner",
+          "scores": {
+            "depth": 5,
+            "practicality": 5,
+            "evidence_quality": 4,
+            "source_utility": 5,
+            "intrinsic_distinctiveness": 4,
+            "anti_hype": 4,
+            "community_signal": 3
+          },
+          "matrix_update_role": "needs_matrix_compare",
+          "limitations": [],
+          "evidence_refs": [
+            "P0027",
+            "P0036",
+            "P0037",
+            "P0038",
+            "P0040"
+          ],
+          "confidence": 0.95,
+          "aggregate_score": 4.623
+        },
         {
           "expert_id": "doronin",
           "display_name": "Doronin",
@@ -5145,6 +5554,7 @@
       "coverage_status": "moderate",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "air_ai",
@@ -5234,6 +5644,7 @@
       "coverage_status": "moderate",
       "redundancy_level": "single_source",
       "expert_count": 1,
+      "contribution_count": 1,
       "best_experts": [
         {
           "expert_id": "ai_architect",
@@ -5321,8 +5732,8 @@
         "redundancy_level": "high",
         "overlap_status": "related_multi_source",
         "decision_hint": "review_overlap_or_complement_before_counting_as_new_gap",
-        "expert_count": 13,
-        "contribution_count": 18,
+        "expert_count": 15,
+        "contribution_count": 20,
         "exact_cell_count": 11,
         "exact_cell_ids": [
           "agent_ops/agentic_dev_process/design_agentic_dev_workflow",
@@ -5376,31 +5787,31 @@
         ],
         "score_summary": {
           "depth": {
-            "avg": 4.885,
+            "avg": 4.833,
             "max": 5
           },
           "practicality": {
-            "avg": 5.0,
+            "avg": 4.933,
             "max": 5
           },
           "evidence_quality": {
-            "avg": 4.692,
+            "avg": 4.6,
             "max": 5
           },
           "source_utility": {
-            "avg": 4.962,
+            "avg": 4.967,
             "max": 5
           },
           "intrinsic_distinctiveness": {
-            "avg": 4.715,
+            "avg": 4.687,
             "max": 5
           },
           "anti_hype": {
-            "avg": 4.423,
+            "avg": 4.367,
             "max": 5
           },
           "community_signal": {
-            "avg": 3.885,
+            "avg": 3.9,
             "max": 4
           }
         },
@@ -5410,6 +5821,7 @@
             "subdomain_name": "Agentic Development Process",
             "expert_ids": [
               "ai_architect",
+              "deksden_notes",
               "elkornacio",
               "llm_under_hood",
               "silicbag"
@@ -5491,7 +5903,8 @@
             "subdomain_name": "Agent Architecture (SGR vs FC)",
             "expert_ids": [
               "neuraldeep",
-              "polyakov"
+              "polyakov",
+              "sergei_notevskii"
             ],
             "exact_cell_ids": [
               "agent_ops/tool_calling_hooks_skills/design_agentic_dev_workflow"
@@ -5507,11 +5920,12 @@
         "redundancy_level": "high",
         "overlap_status": "related_multi_source",
         "decision_hint": "review_overlap_or_complement_before_counting_as_new_gap",
-        "expert_count": 7,
-        "contribution_count": 9,
-        "exact_cell_count": 9,
+        "expert_count": 8,
+        "contribution_count": 11,
+        "exact_cell_count": 10,
         "exact_cell_ids": [
           "ai_engineering_infra/agentic_dev_process/build_human_ai_workflow",
+          "ai_engineering_infra/context_compression/optimize_inference_cost_latency",
           "ai_engineering_infra/deployment_observability/build_ai_dev_eval",
           "ai_engineering_infra/deployment_observability/manage_security_privacy_governance",
           "ai_engineering_infra/inference_cost_latency/optimize_inference_cost_latency",
@@ -5522,6 +5936,13 @@
           "ai_engineering_infra/security_privacy_controls/manage_security_privacy_governance"
         ],
         "best_experts": [
+          {
+            "expert_id": "sergei_notevskii",
+            "display_name": "Sergei Notevskii",
+            "source_role": "primary",
+            "aggregate_score": 5.0,
+            "evidence_ref_count": 3
+          },
           {
             "expert_id": "neuraldeep",
             "display_name": "Neuraldeep",
@@ -5549,42 +5970,35 @@
             "source_role": "supporting",
             "aggregate_score": 4.434,
             "evidence_ref_count": 2
-          },
-          {
-            "expert_id": "refat",
-            "display_name": "Refat (Tech & AI)",
-            "source_role": "primary",
-            "aggregate_score": 4.311,
-            "evidence_ref_count": 2
           }
         ],
         "score_summary": {
           "depth": {
-            "avg": 4.429,
+            "avg": 4.5,
             "max": 5
           },
           "practicality": {
-            "avg": 4.857,
-            "max": 5.0
+            "avg": 4.875,
+            "max": 5
           },
           "evidence_quality": {
-            "avg": 4.214,
+            "avg": 4.312,
             "max": 5
           },
           "source_utility": {
-            "avg": 4.643,
+            "avg": 4.688,
             "max": 5
           },
           "intrinsic_distinctiveness": {
-            "avg": 4.214,
+            "avg": 4.312,
             "max": 5
           },
           "anti_hype": {
-            "avg": 3.214,
+            "avg": 3.312,
             "max": 5
           },
           "community_signal": {
-            "avg": 3.929,
+            "avg": 3.812,
             "max": 5
           }
         },
@@ -5597,6 +6011,16 @@
             ],
             "exact_cell_ids": [
               "ai_engineering_infra/agentic_dev_process/build_human_ai_workflow"
+            ]
+          },
+          {
+            "subdomain_id": "context_compression",
+            "subdomain_name": "Context Compression",
+            "expert_ids": [
+              "sergei_notevskii"
+            ],
+            "exact_cell_ids": [
+              "ai_engineering_infra/context_compression/optimize_inference_cost_latency"
             ]
           },
           {
@@ -5615,7 +6039,8 @@
             "subdomain_id": "inference_cost_latency",
             "subdomain_name": "Local Hardware Economics",
             "expert_ids": [
-              "neuraldeep"
+              "neuraldeep",
+              "sergei_notevskii"
             ],
             "exact_cell_ids": [
               "ai_engineering_infra/inference_cost_latency/optimize_inference_cost_latency"
@@ -6101,15 +6526,16 @@
       {
         "rollup_id": "evals_quality",
         "rollup_kind": "domain",
-        "coverage_status": "strong_single_source",
-        "redundancy_level": "single_source",
-        "overlap_status": "single_source",
-        "decision_hint": "single_source_gap_or_specialization",
-        "expert_count": 1,
-        "contribution_count": 1,
-        "exact_cell_count": 1,
+        "coverage_status": "strong_multi_source",
+        "redundancy_level": "low",
+        "overlap_status": "related_multi_source",
+        "decision_hint": "review_overlap_or_complement_before_counting_as_new_gap",
+        "expert_count": 2,
+        "contribution_count": 2,
+        "exact_cell_count": 2,
         "exact_cell_ids": [
-          "evals_quality/llm_evals/build_ai_dev_eval"
+          "evals_quality/llm_evals/build_ai_dev_eval",
+          "evals_quality/llm_evals/compare_models_for_task"
         ],
         "best_experts": [
           {
@@ -6118,23 +6544,30 @@
             "source_role": "primary",
             "aggregate_score": 4.849,
             "evidence_ref_count": 4
+          },
+          {
+            "expert_id": "deksden_notes",
+            "display_name": "DEKSDEN notes",
+            "source_role": "primary",
+            "aggregate_score": 4.0,
+            "evidence_ref_count": 5
           }
         ],
         "score_summary": {
           "depth": {
-            "avg": 5,
+            "avg": 4.5,
             "max": 5
           },
           "practicality": {
-            "avg": 5,
+            "avg": 4.5,
             "max": 5
           },
           "evidence_quality": {
-            "avg": 5,
+            "avg": 4.5,
             "max": 5
           },
           "source_utility": {
-            "avg": 5,
+            "avg": 4.5,
             "max": 5
           },
           "intrinsic_distinctiveness": {
@@ -6146,7 +6579,7 @@
             "max": 5
           },
           "community_signal": {
-            "avg": 4,
+            "avg": 3.5,
             "max": 4
           }
         },
@@ -6155,10 +6588,12 @@
             "subdomain_id": "llm_evals",
             "subdomain_name": "Continuous Evaluation and Feedback Loops",
             "expert_ids": [
+              "deksden_notes",
               "llm_under_hood"
             ],
             "exact_cell_ids": [
-              "evals_quality/llm_evals/build_ai_dev_eval"
+              "evals_quality/llm_evals/build_ai_dev_eval",
+              "evals_quality/llm_evals/compare_models_for_task"
             ]
           }
         ],
@@ -6391,8 +6826,8 @@
         "redundancy_level": "high",
         "overlap_status": "related_multi_source",
         "decision_hint": "review_overlap_or_complement_before_counting_as_new_gap",
-        "expert_count": 5,
-        "contribution_count": 5,
+        "expert_count": 6,
+        "contribution_count": 6,
         "exact_cell_count": 3,
         "exact_cell_ids": [
           "rag_retrieval_knowledge/hybrid_retrieval/improve_retrieval_quality",
@@ -6406,6 +6841,13 @@
             "source_role": "primary",
             "aggregate_score": 4.792,
             "evidence_ref_count": 2
+          },
+          {
+            "expert_id": "deksden_notes",
+            "display_name": "DEKSDEN notes",
+            "source_role": "primary",
+            "aggregate_score": 4.623,
+            "evidence_ref_count": 5
           },
           {
             "expert_id": "refat",
@@ -6427,42 +6869,35 @@
             "source_role": "primary",
             "aggregate_score": 4.292,
             "evidence_ref_count": 5
-          },
-          {
-            "expert_id": "air_ai",
-            "display_name": "Air",
-            "source_role": "primary",
-            "aggregate_score": 4.0,
-            "evidence_ref_count": 2
           }
         ],
         "score_summary": {
           "depth": {
-            "avg": 4.4,
-            "max": 5.0
-          },
-          "practicality": {
-            "avg": 4.4,
-            "max": 5
-          },
-          "evidence_quality": {
-            "avg": 4.1,
-            "max": 4.5
-          },
-          "source_utility": {
-            "avg": 4.6,
-            "max": 5.0
-          },
-          "intrinsic_distinctiveness": {
             "avg": 4.5,
             "max": 5.0
           },
+          "practicality": {
+            "avg": 4.5,
+            "max": 5
+          },
+          "evidence_quality": {
+            "avg": 4.083,
+            "max": 4.5
+          },
+          "source_utility": {
+            "avg": 4.667,
+            "max": 5.0
+          },
+          "intrinsic_distinctiveness": {
+            "avg": 4.417,
+            "max": 5.0
+          },
           "anti_hype": {
-            "avg": 2.7,
+            "avg": 2.917,
             "max": 5
           },
           "community_signal": {
-            "avg": 3.8,
+            "avg": 3.667,
             "max": 4.5
           }
         },
@@ -6479,8 +6914,9 @@
           },
           {
             "subdomain_id": "knowledge_base_design",
-            "subdomain_name": "Knowledge Base Design (Temporal Graphs)",
+            "subdomain_name": "Knowledge Base Design",
             "expert_ids": [
+              "deksden_notes",
               "doronin",
               "refat",
               "silicbag"
@@ -6644,8 +7080,8 @@
         "redundancy_level": "high",
         "overlap_status": "related_multi_source",
         "decision_hint": "review_overlap_or_complement_before_counting_as_new_gap",
-        "expert_count": 12,
-        "contribution_count": 14,
+        "expert_count": 14,
+        "contribution_count": 16,
         "exact_cell_count": 7,
         "exact_cell_ids": [
           "agent_ops/agentic_dev_process/design_agentic_dev_workflow",
@@ -6695,15 +7131,15 @@
         ],
         "score_summary": {
           "depth": {
-            "avg": 4.917,
+            "avg": 4.857,
             "max": 5
           },
           "practicality": {
-            "avg": 5.0,
+            "avg": 4.929,
             "max": 5
           },
           "evidence_quality": {
-            "avg": 4.583,
+            "avg": 4.5,
             "max": 5
           },
           "source_utility": {
@@ -6711,15 +7147,15 @@
             "max": 5
           },
           "intrinsic_distinctiveness": {
-            "avg": 4.65,
+            "avg": 4.629,
             "max": 5
           },
           "anti_hype": {
-            "avg": 4.458,
+            "avg": 4.393,
             "max": 5
           },
           "community_signal": {
-            "avg": 3.833,
+            "avg": 3.857,
             "max": 4
           }
         },
@@ -6729,6 +7165,7 @@
             "subdomain_name": "Agentic Development Process",
             "expert_ids": [
               "ai_architect",
+              "deksden_notes",
               "elkornacio",
               "silicbag"
             ],
@@ -6795,7 +7232,8 @@
             "subdomain_name": "Agent Architecture (SGR vs FC)",
             "expert_ids": [
               "neuraldeep",
-              "polyakov"
+              "polyakov",
+              "sergei_notevskii"
             ],
             "exact_cell_ids": [
               "agent_ops/tool_calling_hooks_skills/design_agentic_dev_workflow"
@@ -7510,17 +7948,25 @@
         "rollup_id": "ai_engineering_infra/optimize_inference_cost_latency",
         "rollup_kind": "domain_query_intent",
         "coverage_status": "strong_multi_source",
-        "redundancy_level": "low",
+        "redundancy_level": "medium",
         "overlap_status": "related_multi_source",
         "decision_hint": "review_overlap_or_complement_before_counting_as_new_gap",
-        "expert_count": 2,
-        "contribution_count": 2,
-        "exact_cell_count": 2,
+        "expert_count": 3,
+        "contribution_count": 4,
+        "exact_cell_count": 3,
         "exact_cell_ids": [
+          "ai_engineering_infra/context_compression/optimize_inference_cost_latency",
           "ai_engineering_infra/inference_cost_latency/optimize_inference_cost_latency",
           "ai_engineering_infra/local_agent_setup/optimize_inference_cost_latency"
         ],
         "best_experts": [
+          {
+            "expert_id": "sergei_notevskii",
+            "display_name": "Sergei Notevskii",
+            "source_role": "primary",
+            "aggregate_score": 5.0,
+            "evidence_ref_count": 3
+          },
           {
             "expert_id": "neuraldeep",
             "display_name": "Neuraldeep",
@@ -7546,7 +7992,7 @@
             "max": 5
           },
           "evidence_quality": {
-            "avg": 4.75,
+            "avg": 4.833,
             "max": 5
           },
           "source_utility": {
@@ -7554,24 +8000,35 @@
             "max": 5
           },
           "intrinsic_distinctiveness": {
-            "avg": 4.75,
+            "avg": 4.833,
             "max": 5
           },
           "anti_hype": {
-            "avg": 4.25,
+            "avg": 4.167,
             "max": 4.5
           },
           "community_signal": {
-            "avg": 4.0,
+            "avg": 3.667,
             "max": 4
           }
         },
         "subdomains": [
           {
+            "subdomain_id": "context_compression",
+            "subdomain_name": "Context Compression",
+            "expert_ids": [
+              "sergei_notevskii"
+            ],
+            "exact_cell_ids": [
+              "ai_engineering_infra/context_compression/optimize_inference_cost_latency"
+            ]
+          },
+          {
             "subdomain_id": "inference_cost_latency",
             "subdomain_name": "Local Hardware Economics",
             "expert_ids": [
-              "neuraldeep"
+              "neuraldeep",
+              "sergei_notevskii"
             ],
             "exact_cell_ids": [
               "ai_engineering_infra/inference_cost_latency/optimize_inference_cost_latency"
@@ -8382,6 +8839,73 @@
         "query_intent_id": "build_ai_dev_eval"
       },
       {
+        "rollup_id": "evals_quality/compare_models_for_task",
+        "rollup_kind": "domain_query_intent",
+        "coverage_status": "moderate",
+        "redundancy_level": "single_source",
+        "overlap_status": "single_source",
+        "decision_hint": "single_source_gap_or_specialization",
+        "expert_count": 1,
+        "contribution_count": 1,
+        "exact_cell_count": 1,
+        "exact_cell_ids": [
+          "evals_quality/llm_evals/compare_models_for_task"
+        ],
+        "best_experts": [
+          {
+            "expert_id": "deksden_notes",
+            "display_name": "DEKSDEN notes",
+            "source_role": "primary",
+            "aggregate_score": 4.0,
+            "evidence_ref_count": 5
+          }
+        ],
+        "score_summary": {
+          "depth": {
+            "avg": 4,
+            "max": 4
+          },
+          "practicality": {
+            "avg": 4,
+            "max": 4
+          },
+          "evidence_quality": {
+            "avg": 4,
+            "max": 4
+          },
+          "source_utility": {
+            "avg": 4,
+            "max": 4
+          },
+          "intrinsic_distinctiveness": {
+            "avg": 4,
+            "max": 4
+          },
+          "anti_hype": {
+            "avg": 5,
+            "max": 5
+          },
+          "community_signal": {
+            "avg": 3,
+            "max": 3
+          }
+        },
+        "subdomains": [
+          {
+            "subdomain_id": "llm_evals",
+            "subdomain_name": "LLM Evaluations",
+            "expert_ids": [
+              "deksden_notes"
+            ],
+            "exact_cell_ids": [
+              "evals_quality/llm_evals/compare_models_for_task"
+            ]
+          }
+        ],
+        "domain_id": "evals_quality",
+        "query_intent_id": "compare_models_for_task"
+      },
+      {
         "rollup_id": "model_landscape/compare_models_for_task",
         "rollup_kind": "domain_query_intent",
         "coverage_status": "strong_multi_source",
@@ -8794,14 +9318,21 @@
         "redundancy_level": "high",
         "overlap_status": "related_multi_source",
         "decision_hint": "review_overlap_or_complement_before_counting_as_new_gap",
-        "expert_count": 4,
-        "contribution_count": 4,
+        "expert_count": 5,
+        "contribution_count": 5,
         "exact_cell_count": 2,
         "exact_cell_ids": [
           "rag_retrieval_knowledge/knowledge_base_design/design_rag_knowledge_base",
           "rag_retrieval_knowledge/rag_architecture/design_rag_knowledge_base"
         ],
         "best_experts": [
+          {
+            "expert_id": "deksden_notes",
+            "display_name": "DEKSDEN notes",
+            "source_role": "primary",
+            "aggregate_score": 4.623,
+            "evidence_ref_count": 5
+          },
           {
             "expert_id": "refat",
             "display_name": "Refat (Tech & AI)",
@@ -8833,39 +9364,40 @@
         ],
         "score_summary": {
           "depth": {
-            "avg": 4.25,
-            "max": 4.5
+            "avg": 4.4,
+            "max": 5
           },
           "practicality": {
-            "avg": 4.375,
+            "avg": 4.5,
             "max": 5
           },
           "evidence_quality": {
             "avg": 4.0,
-            "max": 4.0
+            "max": 4
           },
           "source_utility": {
-            "avg": 4.5,
+            "avg": 4.6,
             "max": 5
           },
           "intrinsic_distinctiveness": {
-            "avg": 4.375,
+            "avg": 4.3,
             "max": 5
           },
           "anti_hype": {
-            "avg": 2.25,
+            "avg": 2.6,
             "max": 5
           },
           "community_signal": {
-            "avg": 3.625,
+            "avg": 3.5,
             "max": 4.5
           }
         },
         "subdomains": [
           {
             "subdomain_id": "knowledge_base_design",
-            "subdomain_name": "Knowledge Base Design (Temporal Graphs)",
+            "subdomain_name": "Knowledge Base Design",
             "expert_ids": [
+              "deksden_notes",
               "doronin",
               "refat",
               "silicbag"
@@ -9492,14 +10024,15 @@
         "rollup_id": "compare_models_for_task",
         "rollup_kind": "query_intent",
         "coverage_status": "strong_multi_source",
-        "redundancy_level": "medium",
+        "redundancy_level": "high",
         "overlap_status": "related_multi_source",
         "decision_hint": "review_overlap_or_complement_before_counting_as_new_gap",
-        "expert_count": 3,
-        "contribution_count": 3,
-        "exact_cell_count": 2,
+        "expert_count": 4,
+        "contribution_count": 4,
+        "exact_cell_count": 3,
         "exact_cell_ids": [
           "ai_engineering_infra/model_comparison/compare_models_for_task",
+          "evals_quality/llm_evals/compare_models_for_task",
           "model_landscape/model_comparison/compare_models_for_task"
         ],
         "best_experts": [
@@ -9523,23 +10056,30 @@
             "source_role": "primary",
             "aggregate_score": 4.189,
             "evidence_ref_count": 3
+          },
+          {
+            "expert_id": "deksden_notes",
+            "display_name": "DEKSDEN notes",
+            "source_role": "primary",
+            "aggregate_score": 4.0,
+            "evidence_ref_count": 5
           }
         ],
         "score_summary": {
           "depth": {
-            "avg": 4.333,
+            "avg": 4.25,
             "max": 5
           },
           "practicality": {
-            "avg": 5.0,
+            "avg": 4.75,
             "max": 5.0
           },
           "evidence_quality": {
-            "avg": 4.333,
+            "avg": 4.25,
             "max": 5
           },
           "source_utility": {
-            "avg": 4.667,
+            "avg": 4.5,
             "max": 5
           },
           "intrinsic_distinctiveness": {
@@ -9547,15 +10087,25 @@
             "max": 5
           },
           "anti_hype": {
-            "avg": 3.333,
+            "avg": 3.75,
             "max": 5
           },
           "community_signal": {
-            "avg": 3.333,
+            "avg": 3.25,
             "max": 4.0
           }
         },
         "subdomains": [
+          {
+            "subdomain_id": "llm_evals",
+            "subdomain_name": "LLM Evaluations",
+            "expert_ids": [
+              "deksden_notes"
+            ],
+            "exact_cell_ids": [
+              "evals_quality/llm_evals/compare_models_for_task"
+            ]
+          },
           {
             "subdomain_id": "model_comparison",
             "subdomain_name": "Model Comparison for Coding & OCR",
@@ -9573,6 +10123,7 @@
         "query_intent_id": "compare_models_for_task",
         "domain_ids": [
           "ai_engineering_infra",
+          "evals_quality",
           "model_landscape"
         ]
       },
@@ -9583,8 +10134,8 @@
         "redundancy_level": "high",
         "overlap_status": "related_multi_source",
         "decision_hint": "review_overlap_or_complement_before_counting_as_new_gap",
-        "expert_count": 17,
-        "contribution_count": 22,
+        "expert_count": 19,
+        "contribution_count": 24,
         "exact_cell_count": 10,
         "exact_cell_ids": [
           "agent_ops/agentic_dev_process/design_agentic_dev_workflow",
@@ -9637,15 +10188,15 @@
         ],
         "score_summary": {
           "depth": {
-            "avg": 4.882,
+            "avg": 4.842,
             "max": 5
           },
           "practicality": {
-            "avg": 5.0,
+            "avg": 4.947,
             "max": 5
           },
           "evidence_quality": {
-            "avg": 4.588,
+            "avg": 4.526,
             "max": 5
           },
           "source_utility": {
@@ -9653,15 +10204,15 @@
             "max": 5
           },
           "intrinsic_distinctiveness": {
-            "avg": 4.665,
+            "avg": 4.647,
             "max": 5
           },
           "anti_hype": {
-            "avg": 4.471,
+            "avg": 4.421,
             "max": 5
           },
           "community_signal": {
-            "avg": 3.824,
+            "avg": 3.842,
             "max": 4
           }
         },
@@ -9673,6 +10224,7 @@
               "ai_architect",
               "ai_grabli",
               "akimov",
+              "deksden_notes",
               "doronin",
               "elkornacio",
               "kornish",
@@ -9748,7 +10300,8 @@
             "subdomain_name": "Agent Architecture (SGR vs FC)",
             "expert_ids": [
               "neuraldeep",
-              "polyakov"
+              "polyakov",
+              "sergei_notevskii"
             ],
             "exact_cell_ids": [
               "agent_ops/tool_calling_hooks_skills/design_agentic_dev_workflow"
@@ -9768,8 +10321,8 @@
         "redundancy_level": "high",
         "overlap_status": "related_multi_source",
         "decision_hint": "review_overlap_or_complement_before_counting_as_new_gap",
-        "expert_count": 6,
-        "contribution_count": 6,
+        "expert_count": 7,
+        "contribution_count": 7,
         "exact_cell_count": 4,
         "exact_cell_ids": [
           "agent_ops/context_compression/improve_retrieval_quality",
@@ -9784,6 +10337,13 @@
             "source_role": "primary",
             "aggregate_score": 5.0,
             "evidence_ref_count": 3
+          },
+          {
+            "expert_id": "deksden_notes",
+            "display_name": "DEKSDEN notes",
+            "source_role": "primary",
+            "aggregate_score": 4.623,
+            "evidence_ref_count": 5
           },
           {
             "expert_id": "refat",
@@ -9805,42 +10365,35 @@
             "source_role": "primary",
             "aggregate_score": 4.292,
             "evidence_ref_count": 5
-          },
-          {
-            "expert_id": "ostrikov",
-            "display_name": "Ostrikov",
-            "source_role": "supporting",
-            "aggregate_score": 4.038,
-            "evidence_ref_count": 1
           }
         ],
         "score_summary": {
           "depth": {
-            "avg": 4.333,
+            "avg": 4.429,
             "max": 5
           },
           "practicality": {
-            "avg": 4.583,
+            "avg": 4.643,
             "max": 5
           },
           "evidence_quality": {
-            "avg": 4.167,
+            "avg": 4.143,
             "max": 5
           },
           "source_utility": {
-            "avg": 4.5,
+            "avg": 4.571,
             "max": 5
           },
           "intrinsic_distinctiveness": {
-            "avg": 4.25,
+            "avg": 4.214,
             "max": 5
           },
           "anti_hype": {
-            "avg": 3.0,
+            "avg": 3.143,
             "max": 5
           },
           "community_signal": {
-            "avg": 3.583,
+            "avg": 3.5,
             "max": 4.5
           }
         },
@@ -9857,8 +10410,9 @@
           },
           {
             "subdomain_id": "knowledge_base_design",
-            "subdomain_name": "Knowledge Base Design (Temporal Graphs)",
+            "subdomain_name": "Knowledge Base Design",
             "expert_ids": [
+              "deksden_notes",
               "doronin",
               "refat",
               "silicbag"
@@ -10278,18 +10832,26 @@
         "rollup_id": "optimize_inference_cost_latency",
         "rollup_kind": "query_intent",
         "coverage_status": "strong_multi_source",
-        "redundancy_level": "medium",
+        "redundancy_level": "high",
         "overlap_status": "related_multi_source",
         "decision_hint": "review_overlap_or_complement_before_counting_as_new_gap",
-        "expert_count": 3,
-        "contribution_count": 3,
-        "exact_cell_count": 3,
+        "expert_count": 4,
+        "contribution_count": 5,
+        "exact_cell_count": 4,
         "exact_cell_ids": [
+          "ai_engineering_infra/context_compression/optimize_inference_cost_latency",
           "ai_engineering_infra/inference_cost_latency/optimize_inference_cost_latency",
           "ai_engineering_infra/local_agent_setup/optimize_inference_cost_latency",
           "prompt_engineering/context_compression/optimize_inference_cost_latency"
         ],
         "best_experts": [
+          {
+            "expert_id": "sergei_notevskii",
+            "display_name": "Sergei Notevskii",
+            "source_role": "primary",
+            "aggregate_score": 5.0,
+            "evidence_ref_count": 3
+          },
           {
             "expert_id": "neuraldeep",
             "display_name": "Neuraldeep",
@@ -10322,7 +10884,7 @@
             "max": 5
           },
           "evidence_quality": {
-            "avg": 4.833,
+            "avg": 4.875,
             "max": 5
           },
           "source_utility": {
@@ -10330,26 +10892,28 @@
             "max": 5
           },
           "intrinsic_distinctiveness": {
-            "avg": 4.833,
+            "avg": 4.875,
             "max": 5
           },
           "anti_hype": {
-            "avg": 4.167,
+            "avg": 4.125,
             "max": 4.5
           },
           "community_signal": {
-            "avg": 4.0,
+            "avg": 3.75,
             "max": 4
           }
         },
         "subdomains": [
           {
             "subdomain_id": "context_compression",
-            "subdomain_name": "Context Compression & Engineering",
+            "subdomain_name": "Context Compression",
             "expert_ids": [
-              "glebkudr"
+              "glebkudr",
+              "sergei_notevskii"
             ],
             "exact_cell_ids": [
+              "ai_engineering_infra/context_compression/optimize_inference_cost_latency",
               "prompt_engineering/context_compression/optimize_inference_cost_latency"
             ]
           },
@@ -10357,7 +10921,8 @@
             "subdomain_id": "inference_cost_latency",
             "subdomain_name": "Local Hardware Economics",
             "expert_ids": [
-              "neuraldeep"
+              "neuraldeep",
+              "sergei_notevskii"
             ],
             "exact_cell_ids": [
               "ai_engineering_infra/inference_cost_latency/optimize_inference_cost_latency"
@@ -10502,7 +11067,7 @@
       "domain_id": "agent_ops",
       "query_intent_id": "design_agentic_dev_workflow",
       "coverage_status": "strong_multi_source",
-      "expert_count": 12,
+      "expert_count": 14,
       "exact_cell_count": 7,
       "exact_cell_ids": [
         "agent_ops/agentic_dev_process/design_agentic_dev_workflow",
@@ -10557,6 +11122,7 @@
           "subdomain_name": "Agentic Development Process",
           "expert_ids": [
             "ai_architect",
+            "deksden_notes",
             "elkornacio",
             "silicbag"
           ],
@@ -10623,7 +11189,8 @@
           "subdomain_name": "Agent Architecture (SGR vs FC)",
           "expert_ids": [
             "neuraldeep",
-            "polyakov"
+            "polyakov",
+            "sergei_notevskii"
           ],
           "exact_cell_ids": [
             "agent_ops/tool_calling_hooks_skills/design_agentic_dev_workflow"
@@ -10687,13 +11254,21 @@
       "domain_id": "ai_engineering_infra",
       "query_intent_id": "optimize_inference_cost_latency",
       "coverage_status": "strong_multi_source",
-      "expert_count": 2,
-      "exact_cell_count": 2,
+      "expert_count": 3,
+      "exact_cell_count": 3,
       "exact_cell_ids": [
+        "ai_engineering_infra/context_compression/optimize_inference_cost_latency",
         "ai_engineering_infra/inference_cost_latency/optimize_inference_cost_latency",
         "ai_engineering_infra/local_agent_setup/optimize_inference_cost_latency"
       ],
       "best_experts": [
+        {
+          "expert_id": "sergei_notevskii",
+          "display_name": "Sergei Notevskii",
+          "source_role": "primary",
+          "aggregate_score": 5.0,
+          "evidence_ref_count": 3
+        },
         {
           "expert_id": "neuraldeep",
           "display_name": "Neuraldeep",
@@ -10712,10 +11287,21 @@
       "decision_hint": "review_overlap_or_complement_before_counting_as_new_gap",
       "subdomains": [
         {
+          "subdomain_id": "context_compression",
+          "subdomain_name": "Context Compression",
+          "expert_ids": [
+            "sergei_notevskii"
+          ],
+          "exact_cell_ids": [
+            "ai_engineering_infra/context_compression/optimize_inference_cost_latency"
+          ]
+        },
+        {
           "subdomain_id": "inference_cost_latency",
           "subdomain_name": "Local Hardware Economics",
           "expert_ids": [
-            "neuraldeep"
+            "neuraldeep",
+            "sergei_notevskii"
           ],
           "exact_cell_ids": [
             "ai_engineering_infra/inference_cost_latency/optimize_inference_cost_latency"
@@ -11186,13 +11772,20 @@
       "domain_id": "rag_retrieval_knowledge",
       "query_intent_id": "design_rag_knowledge_base",
       "coverage_status": "strong_multi_source",
-      "expert_count": 4,
+      "expert_count": 5,
       "exact_cell_count": 2,
       "exact_cell_ids": [
         "rag_retrieval_knowledge/knowledge_base_design/design_rag_knowledge_base",
         "rag_retrieval_knowledge/rag_architecture/design_rag_knowledge_base"
       ],
       "best_experts": [
+        {
+          "expert_id": "deksden_notes",
+          "display_name": "DEKSDEN notes",
+          "source_role": "primary",
+          "aggregate_score": 4.623,
+          "evidence_ref_count": 5
+        },
         {
           "expert_id": "refat",
           "display_name": "Refat (Tech & AI)",
@@ -11226,8 +11819,9 @@
       "subdomains": [
         {
           "subdomain_id": "knowledge_base_design",
-          "subdomain_name": "Knowledge Base Design (Temporal Graphs)",
+          "subdomain_name": "Knowledge Base Design",
           "expert_ids": [
+            "deksden_notes",
             "doronin",
             "refat",
             "silicbag"

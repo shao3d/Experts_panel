@@ -1,0 +1,166 @@
+{
+  "channel_username": "sergeinotevskii",
+  "coverage": {
+    "agent_ops": 34,
+    "ai_engineering_infra": 11,
+    "ai_product_pm": 33,
+    "ai_ux_workflow": 5,
+    "business_adoption": 36,
+    "coding_agents": 25,
+    "creative_multimodal": 8,
+    "evals_quality": 19,
+    "general_ai_news": 35,
+    "model_landscape": 164,
+    "rag_retrieval_knowledge": 9,
+    "security_privacy_governance": 7
+  },
+  "coverage_strength": {
+    "agent_ops": "medium",
+    "ai_engineering_infra": "thin",
+    "ai_product_pm": "medium",
+    "ai_ux_workflow": "thin",
+    "business_adoption": "medium",
+    "coding_agents": "medium",
+    "creative_multimodal": "thin",
+    "evals_quality": "medium",
+    "general_ai_news": "medium",
+    "model_landscape": "strong",
+    "rag_retrieval_knowledge": "thin",
+    "security_privacy_governance": "thin"
+  },
+  "date_range": {
+    "first_post": "2023-06-07",
+    "last_post": "2026-05-12"
+  },
+  "depth_profile": {
+    "announcement_or_news": 49,
+    "architecture_analysis": 31,
+    "benchmark_or_eval": 19,
+    "case_study": 50,
+    "howto_or_checklist": 133,
+    "low_signal": 82,
+    "practitioner_experience": 46,
+    "tool_release": 14
+  },
+  "display_name": "Sergei Notevskii",
+  "embedding_count": 398,
+  "embedding_coverage_ratio": 1.0,
+  "expert_id": "sergei_notevskii",
+  "fts_count": 398,
+  "metadata_coverage_ratio": 0.0,
+  "metadata_valid_count": 0,
+  "post_count": 424,
+  "representative_posts": [
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "evals_quality",
+        "business_adoption"
+      ],
+      "created_at": "2026-05-12",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "**Методичка по префикс кэшу** > “KV-cache hit rate is the single most important metric for a production-stage AI agent.” > - Context engineering for AI Agents, Manus Метрика которая имеет прямое влияние на деньги, которые вы тратите на AI. Ниже - три статьи разбирающие prefix_cache с разных сторон: - [Экономика кэши...",
+      "reason": "agent_ops, evals_quality, business_adoption; depth=benchmark_or_eval",
+      "telegram_message_id": 622
+    },
+    {
+      "coverage_labels": [
+        "evals_quality",
+        "business_adoption",
+        "model_landscape"
+      ],
+      "created_at": "2026-05-11",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "Завтра подвезу сразу 2 полезных артефакта про [кэширование префиксов](https://t.me/sergeinotevskii/588), а пока у меня вопрос. В сообществе вижу что многие \"создатели\" систем на базе AI вообще не запариваются (а иногда и не знают) о том что такое \"кэшированные токены\". И это интересно - потому что постоянно встречаю...",
+      "reason": "evals_quality, business_adoption, model_landscape; depth=benchmark_or_eval",
+      "telegram_message_id": 619
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "evals_quality"
+      ],
+      "created_at": "2026-05-03",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "**Цель достигнута** Я тут не так часто пишу про ai в разработке (не часто же?), благо на эту тему есть крутые каналы других ребят. Но про эту историю захотелось написать даже в воскресенье ближе к полуночи(конечно в тихом режиме)… На днях вышло обновление Codex cli, куда добавили экспериментальную фичу /goal. Работа...",
+      "reason": "coding_agents, agent_ops, evals_quality; depth=benchmark_or_eval",
+      "telegram_message_id": 616
+    },
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "evals_quality",
+        "ai_product_pm",
+        "ai_engineering_infra",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-07",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "**Нет, ну такую вечеринку я не могу пропустить...** Cегодня официально объявлен день tools) Началось всё с [поста](https://t.me/countwithsasha/574) Александра, потом Валера [расписал](https://t.me/neuraldeep/2047) tools с тз инженера, Паша вообще [описал](https://t.me/evilfreelancer/1636) как сделать свой tool_parse...",
+      "reason": "agent_ops, evals_quality, ai_product_pm; depth=benchmark_or_eval",
+      "telegram_message_id": 608
+    },
+    {
+      "coverage_labels": [
+        "security_privacy_governance",
+        "model_landscape"
+      ],
+      "created_at": "2026-02-18",
+      "depth_label": "howto_or_checklist",
+      "excerpt": "**Датасет из веба** (вэба/вёба/web) Ресерчил разные движки для поиска с LLM через API и посоветовали [Parallel AI.](https://platform.parallel.ai/) И да, у них отличный дипресерч, но сегодня не об этом. Сервис предоставляет инструмент [FindAll](https://docs.parallel.ai/findall-api/findall-quickstart), который позволя...",
+      "reason": "security_privacy_governance, model_landscape; depth=howto_or_checklist",
+      "telegram_message_id": 591
+    },
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "evals_quality",
+        "model_landscape"
+      ],
+      "created_at": "2026-03-02",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "#300tps Итак Qwen 3.5 вышел целой линейкой, как и ожидалось. И первые отзывы от ребят - очень хорош в агентских сценариях. Но вот загвоздка - у самой лакомой модели [35B-A3B](https://huggingface.co/Qwen/Qwen3.5-35B-A3B-FP8) (размер, MoE, бенчмарки) сейчас случается приступ при размышлениях, которые в итоге растягива...",
+      "reason": "agent_ops, evals_quality, model_landscape; depth=benchmark_or_eval",
+      "telegram_message_id": 596
+    },
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "evals_quality",
+        "model_landscape"
+      ],
+      "created_at": "2026-03-02",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "Мой коллега [Сева](https://t.me/betensis) выкатил свежую [статью](https://habr.com/ru/companies/bitrix/articles/1004296/) на Хабре - про тестирование ai-сценариев и агентов. Внутри - конкретный путь от отсмотра ответов «глазками» до работающей системы бенчмарков, LLM-судей, Langfuse и конечно грабли которые мы собра...",
+      "reason": "agent_ops, evals_quality, model_landscape; depth=benchmark_or_eval",
+      "telegram_message_id": 595
+    },
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "ai_product_pm",
+        "ai_engineering_infra",
+        "model_landscape"
+      ],
+      "created_at": "2026-03-06",
+      "depth_label": "case_study",
+      "excerpt": "#300tps **vLLM-SR** - роутер/комбайн который смог. Есть классическая боль в проде (особенно с чатовыми ассистентами): большая дорогая модель с reasoning обрабатывает \"привет, переведи текст\". На небольшом трафике незаметно, на большом - не хочется смотреть в статистику)) Когда OpenAI сделал авторежим (модель сама ре...",
+      "reason": "agent_ops, ai_product_pm, ai_engineering_infra; depth=case_study",
+      "telegram_message_id": 598
+    }
+  ],
+  "runtime_readiness": {
+    "embeddings_ready": true,
+    "fts_ready": true,
+    "metadata_advisory_ready": false,
+    "text_posts_ready": true
+  },
+  "text_post_count": 398,
+  "top_concepts": [],
+  "top_keywords": [],
+  "top_primary_topics": [],
+  "warnings": [
+    "sergei_notevskii: no valid post_metadata; coverage is text-only"
+  ]
+}

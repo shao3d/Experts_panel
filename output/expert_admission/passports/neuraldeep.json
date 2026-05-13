@@ -1,17 +1,17 @@
 {
   "channel_username": "neuraldeep",
   "coverage": {
-    "agent_ops": 174,
+    "agent_ops": 179,
     "ai_engineering_infra": 57,
-    "ai_product_pm": 68,
-    "ai_ux_workflow": 34,
-    "business_adoption": 89,
-    "coding_agents": 114,
+    "ai_product_pm": 69,
+    "ai_ux_workflow": 35,
+    "business_adoption": 90,
+    "coding_agents": 115,
     "creative_multimodal": 16,
     "evals_quality": 57,
     "general_ai_news": 1,
-    "model_landscape": 269,
-    "rag_retrieval_knowledge": 84,
+    "model_landscape": 273,
+    "rag_retrieval_knowledge": 85,
     "security_privacy_governance": 43
   },
   "coverage_strength": {
@@ -30,26 +30,26 @@
   },
   "date_range": {
     "first_post": "2025-01-04",
-    "last_post": "2026-05-04"
+    "last_post": "2026-05-12"
   },
   "depth_profile": {
-    "announcement_or_news": 77,
-    "architecture_analysis": 39,
+    "announcement_or_news": 80,
+    "architecture_analysis": 40,
     "benchmark_or_eval": 55,
-    "case_study": 59,
-    "howto_or_checklist": 117,
-    "low_signal": 90,
+    "case_study": 60,
+    "howto_or_checklist": 120,
+    "low_signal": 91,
     "practitioner_experience": 63,
     "tool_release": 14
   },
   "display_name": "Neuraldeep",
-  "embedding_count": 494,
+  "embedding_count": 503,
   "embedding_coverage_ratio": 1.0,
   "expert_id": "neuraldeep",
-  "fts_count": 494,
-  "metadata_coverage_ratio": 0.7899,
+  "fts_count": 503,
+  "metadata_coverage_ratio": 0.7763,
   "metadata_valid_count": 406,
-  "post_count": 514,
+  "post_count": 523,
   "representative_posts": [
     {
       "coverage_labels": [
@@ -76,30 +76,15 @@
     {
       "coverage_labels": [
         "agent_ops",
-        "evals_quality",
-        "model_landscape"
-      ],
-      "created_at": "2026-04-09",
-      "depth_label": "benchmark_or_eval",
-      "excerpt": "PAC1-DEV Почитать что это такое можно [тут](https://bitgn.com/challenge/PAC) ([Ринат](https://t.me/llm_under_hood) не перестает удивлять нас бенчмарками и соревнованиями) Решил пожечь подписку и реализовать свой подход, за старт спасибо (@multiagentsys) он выложил [репо](https://github.com/snow-ghost/sample-agent) о...",
-      "reason": "agent_ops, evals_quality, model_landscape; depth=benchmark_or_eval",
-      "telegram_message_id": 2058
-    },
-    {
-      "coverage_labels": [
-        "coding_agents",
-        "agent_ops",
-        "evals_quality",
+        "rag_retrieval_knowledge",
         "business_adoption",
-        "security_privacy_governance",
-        "ai_engineering_infra",
         "model_landscape"
       ],
-      "created_at": "2026-04-08",
-      "depth_label": "benchmark_or_eval",
-      "excerpt": "**Вышел наш второй комьюнити-стрим!** Для вас отжигали, на фото: @nobilix, @superbereza, @ai_grably, @aostrikov_ai_agents и маэстро @neuraldeep 📹 https://youtu.be/nUT1YRvjG98 24 вопроса, 2**.5 часа стрим,** чуть не дожали до бейзлайна Лекса Фридмана. Поболтали про агентов, будущее, лобстеров, утекший claude code и в...",
-      "reason": "coding_agents, agent_ops, evals_quality; depth=benchmark_or_eval",
-      "telegram_message_id": 2052
+      "created_at": "2026-05-12",
+      "depth_label": "case_study",
+      "excerpt": "**OpenAI осознали бесперспективность файн-тюнинга моделей** 7 Мая OpenAI оповестили разработчиков, что лавочка закрывается. Новые компании уже больше не могут запускать задачи тюнинга. В течение полугода закроют возможность даже для тех, кто уже тюнил. А возможность использования своих тюненых моделей сохранится тол...",
+      "reason": "agent_ops, rag_retrieval_knowledge, business_adoption; depth=case_study",
+      "telegram_message_id": 2129
     },
     {
       "coverage_labels": [
@@ -112,6 +97,31 @@
       "excerpt": "FOMO в обнимку с кодинг-агентом Заметил, что лагеря разделились особенно в коментах под постом [Тимура](https://t.me/the_ai_architect/291) Есть те, кто обвешивается плагинами, скиллами, автоматизациями саб-агентов, методологиями, которые состоят из 1 000 000 нюансов. И те, кто течет по течению, как я =) Буду честен:...",
       "reason": "coding_agents, agent_ops, rag_retrieval_knowledge; depth=case_study",
       "telegram_message_id": 2094
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "ai_engineering_infra",
+        "model_landscape"
+      ],
+      "created_at": "2026-05-04",
+      "depth_label": "howto_or_checklist",
+      "excerpt": "**С большой GPU большая ответственность ** Разберем стек **vLLM**M](https://github.com/vllm-project/vllm)** + ****LiteLLM**M](https://github.com/BerriAI/litellm)** + ****Codex CLI**I](https://github.com/openai/codex) Часть первая, когда у вас много GPU серверов под LLM инференс, а у меня часть в одном офисе, часть в...",
+      "reason": "coding_agents, agent_ops, ai_engineering_infra; depth=howto_or_checklist",
+      "telegram_message_id": 2117
+    },
+    {
+      "coverage_labels": [
+        "ai_product_pm",
+        "ai_ux_workflow",
+        "model_landscape"
+      ],
+      "created_at": "2026-05-11",
+      "depth_label": "announcement_or_news",
+      "excerpt": "UPDATE: Новый продукт в рамках хаба LLM Research system [https://search.neuraldeep.ru/](https://search.neuraldeep.ru/) Собрал в него все лучшие свои подходы workflow поиска в интернете: чистый LLM Call пайплайн Всем пользователям доступен Perplexity-подобный поиск на базе GPT OSS 120b (возможны задержки с ответами)....",
+      "reason": "ai_product_pm, ai_ux_workflow, model_landscape; depth=announcement_or_news",
+      "telegram_message_id": 2128
     },
     {
       "coverage_labels": [
@@ -137,17 +147,6 @@
       "excerpt": "⚡️ **Запустили платформу для управления LLM в бизнесе ** red_mad_router помогает компаниям собрать работу с LLM в одной системе, когда сервисы уже используются в разных командах. Решение объединяет доступы к моделям, контроль расходов, настройки безопасности и правила работы с данными. Изначально мы создавали платфо...",
       "reason": "business_adoption, security_privacy_governance, model_landscape; depth=case_study",
       "telegram_message_id": 2085
-    },
-    {
-      "coverage_labels": [
-        "agent_ops",
-        "model_landscape"
-      ],
-      "created_at": "2026-04-30",
-      "depth_label": "practitioner_experience",
-      "excerpt": "**Как создавать AI-агентов на on-prem-моделях? ** Как меняется создание пайплайна, когда мы переходим на локальные модели? Что вообще может этот ваш Qwen на 4B по сравнению с GPT-5.5? Чтобы ответить на эти (и многие другие) вопросы максимально-качественно, основываясь на **большом практическом опыте**, я попросил пр...",
-      "reason": "agent_ops, model_landscape; depth=practitioner_experience",
-      "telegram_message_id": 2111
     }
   ],
   "runtime_readiness": {
@@ -156,7 +155,7 @@
     "metadata_advisory_ready": true,
     "text_posts_ready": true
   },
-  "text_post_count": 494,
+  "text_post_count": 503,
   "top_concepts": [
     {
       "count": 27,

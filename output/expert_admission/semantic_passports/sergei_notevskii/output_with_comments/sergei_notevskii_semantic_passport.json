@@ -1,0 +1,1170 @@
+{
+  "schema_version": "expert_value_passport.v1.1",
+  "passport_meta": {
+    "schema_version": "expert_value_passport.v1.1",
+    "expert_id": "sergei_notevskii",
+    "display_name": "Sergei Notevskii",
+    "channel_username": "@sergeinotevskii",
+    "model_assumed": "gemini-3.1-pro-preview",
+    "prompt_version": "semantic-passport-prompt.v1",
+    "generated_at": "2026-05-12T19:55:42.014272+00:00"
+  },
+  "corpus_audit": {
+    "post_count_seen": 412,
+    "comment_count_seen": 650,
+    "date_range": {
+      "first_post": "2023-06-07 14:09:37.000000",
+      "last_post": "2026-05-12 10:09:01.000000"
+    },
+    "language_mix": [
+      "ru",
+      "en"
+    ],
+    "material_limitations": [
+      "Some technical implementations are referenced via external links (e.g., Habr articles, GitHub gists) which limits deep code analysis strictly within the Telegram corpus."
+    ],
+    "author_vs_community_boundary": "Clear boundary. The author posts structured thoughts, guides, and news. The community actively discusses technical nuances, shares alternative tools, and asks clarifying questions in the comments."
+  },
+  "source_ref_index_used": [
+    {
+      "source_ref": "P0001",
+      "source_kind": "expert_post",
+      "post_id": 10330,
+      "telegram_message_id": 2,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2023-06-07 14:09:37.000000",
+      "why_used": "Establishes initial background as Mobile SDET."
+    },
+    {
+      "source_ref": "P0224",
+      "source_kind": "expert_post",
+      "post_id": 10559,
+      "telegram_message_id": 376,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2024-04-03 07:01:07.000000",
+      "why_used": "Updates role to Product Manager at Bitrix24."
+    },
+    {
+      "source_ref": "P0352",
+      "source_kind": "expert_post",
+      "post_id": 10693,
+      "telegram_message_id": 555,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-05 20:59:56.000000",
+      "why_used": "Updates role to AI Platform Lead at Bitrix24, showing career progression."
+    },
+    {
+      "source_ref": "P0358",
+      "source_kind": "expert_post",
+      "post_id": 10699,
+      "telegram_message_id": 563,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-27 21:02:24.000000",
+      "why_used": "Deep dive into vLLM vs Ollama for production inference."
+    },
+    {
+      "source_ref": "P0362",
+      "source_kind": "expert_post",
+      "post_id": 10703,
+      "telegram_message_id": 567,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-12-04 14:01:32.000000",
+      "why_used": "Explains serving engines and production architecture."
+    },
+    {
+      "source_ref": "P0382",
+      "source_kind": "expert_post",
+      "post_id": 10723,
+      "telegram_message_id": 588,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-12 18:59:32.000000",
+      "why_used": "Details prefix caching economics and implementation."
+    },
+    {
+      "source_ref": "P0412",
+      "source_kind": "expert_post",
+      "post_id": 10753,
+      "telegram_message_id": 622,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-05-12 10:09:01.000000",
+      "why_used": "Summarizes prefix cache articles and provides a custom SKILL for auditing."
+    },
+    {
+      "source_ref": "P0369",
+      "source_kind": "expert_post",
+      "post_id": 10710,
+      "telegram_message_id": 575,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-12-26 09:31:17.000000",
+      "why_used": "Introduces Agent Skills vs MCP."
+    },
+    {
+      "source_ref": "P0369.C0004",
+      "source_kind": "community_comment",
+      "post_id": 10710,
+      "telegram_message_id": 575,
+      "comment_id": 112920,
+      "telegram_comment_id": 1246,
+      "created_at": "2025-12-27 11:53:28.000000",
+      "why_used": "Expert clarifies the difference between MCP (transport) and Skills (instructions)."
+    },
+    {
+      "source_ref": "P0373",
+      "source_kind": "expert_post",
+      "post_id": 10714,
+      "telegram_message_id": 579,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-09 18:59:24.000000",
+      "why_used": "Predictions for 2026, emphasizing Skills over MCP and agent memory."
+    },
+    {
+      "source_ref": "P0355",
+      "source_kind": "expert_post",
+      "post_id": 10696,
+      "telegram_message_id": 560,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-24 20:47:09.000000",
+      "why_used": "Analysis of long context degradation and context rot."
+    },
+    {
+      "source_ref": "P0263",
+      "source_kind": "expert_post",
+      "post_id": 10603,
+      "telegram_message_id": 428,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2024-08-20 08:08:53.000000",
+      "why_used": "Explains the 'lost in the middle' phenomenon."
+    },
+    {
+      "source_ref": "P0316",
+      "source_kind": "expert_post",
+      "post_id": 10657,
+      "telegram_message_id": 491,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-03-26 19:11:52.000000",
+      "why_used": "Anti-hype post debunking running DeepSeek V3/R1 on a laptop."
+    },
+    {
+      "source_ref": "P0308",
+      "source_kind": "expert_post",
+      "post_id": 10649,
+      "telegram_message_id": 482,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-02-27 08:25:31.000000",
+      "why_used": "Reviews DeepResearch tools (OpenAI, Perplexity, Grok)."
+    },
+    {
+      "source_ref": "P0331",
+      "source_kind": "expert_post",
+      "post_id": 10672,
+      "telegram_message_id": 522,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-04-26 21:31:11.000000",
+      "why_used": "Practical pattern: synthesizing multiple DeepResearch outputs using Gemini 2.5 Pro."
+    },
+    {
+      "source_ref": "P0028",
+      "source_kind": "expert_post",
+      "post_id": 10360,
+      "telegram_message_id": 50,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2023-06-30 16:25:19.000000",
+      "why_used": "Early prompt engineering basics."
+    },
+    {
+      "source_ref": "P0061",
+      "source_kind": "expert_post",
+      "post_id": 10394,
+      "telegram_message_id": 89,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2023-07-27 15:56:29.000000",
+      "why_used": "Explains Chain of Thought (CoT)."
+    },
+    {
+      "source_ref": "P0267",
+      "source_kind": "expert_post",
+      "post_id": 10607,
+      "telegram_message_id": 433,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2024-08-27 21:45:03.000000",
+      "why_used": "Analysis of Anthropic's leaked system prompts."
+    },
+    {
+      "source_ref": "P0388",
+      "source_kind": "expert_post",
+      "post_id": 10729,
+      "telegram_message_id": 596,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-03-02 21:35:33.000000",
+      "why_used": "Provides a custom vLLM logits processor to limit Qwen 3.5 reasoning tokens."
+    },
+    {
+      "source_ref": "P0399",
+      "source_kind": "expert_post",
+      "post_id": 10740,
+      "telegram_message_id": 608,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-07 18:47:04.000000",
+      "why_used": "Discusses the tradeoff between tool choice caching and model quality."
+    },
+    {
+      "source_ref": "P0364",
+      "source_kind": "expert_post",
+      "post_id": 10705,
+      "telegram_message_id": 569,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-12-11 19:49:50.000000",
+      "why_used": "Insights from migrating from MaaS to self-hosted models at Bitrix24."
+    },
+    {
+      "source_ref": "P0408",
+      "source_kind": "expert_post",
+      "post_id": 10749,
+      "telegram_message_id": 617,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-05-04 11:53:55.000000",
+      "why_used": "Highlights observability in LLM production."
+    },
+    {
+      "source_ref": "P0321",
+      "source_kind": "expert_post",
+      "post_id": 10662,
+      "telegram_message_id": 496,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-04-12 13:16:17.000000",
+      "why_used": "Explains LLM speed mechanics (TTFT vs generation)."
+    },
+    {
+      "source_ref": "P0323",
+      "source_kind": "expert_post",
+      "post_id": 10664,
+      "telegram_message_id": 509,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-04-15 00:45:53.000000",
+      "why_used": "Analyzes human preference bias in LMSYS Arena."
+    },
+    {
+      "source_ref": "P0354",
+      "source_kind": "expert_post",
+      "post_id": 10695,
+      "telegram_message_id": 558,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-06 17:33:37.000000",
+      "why_used": "Discusses Arena Expert and the need for domain-specific evals."
+    },
+    {
+      "source_ref": "P0348",
+      "source_kind": "expert_post",
+      "post_id": 10689,
+      "telegram_message_id": 544,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-09-20 10:27:05.000000",
+      "why_used": "Reviews Warp AI terminal."
+    },
+    {
+      "source_ref": "P0377",
+      "source_kind": "expert_post",
+      "post_id": 10718,
+      "telegram_message_id": 583,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-19 18:01:08.000000",
+      "why_used": "Reviews LocalDesk for vibecoding."
+    },
+    {
+      "source_ref": "P0378",
+      "source_kind": "expert_post",
+      "post_id": 10719,
+      "telegram_message_id": 584,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-21 21:55:28.000000",
+      "why_used": "Explores Hindsight for agent memory."
+    },
+    {
+      "source_ref": "P0380",
+      "source_kind": "expert_post",
+      "post_id": 10721,
+      "telegram_message_id": 586,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-01-23 20:19:33.000000",
+      "why_used": "Using Retain to export chat history."
+    },
+    {
+      "source_ref": "P0390",
+      "source_kind": "expert_post",
+      "post_id": 10731,
+      "telegram_message_id": 598,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-03-06 00:24:01.000000",
+      "why_used": "Deep dive into vLLM Semantic Router."
+    },
+    {
+      "source_ref": "P0406",
+      "source_kind": "expert_post",
+      "post_id": 10747,
+      "telegram_message_id": 615,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-25 00:08:43.000000",
+      "why_used": "Discusses vLLM recipes for reproducible model deployment."
+    }
+  ],
+  "executive_summary": {
+    "one_sentence_positioning": "Sergei Notevskii is an AI Platform Lead who provides deep, practitioner-level insights into LLM infrastructure (vLLM, caching), agentic workflows (Skills, MCP), and the practical economics of deploying AI in production.",
+    "strongest_system_value": "Exceptional technical depth in LLM serving architecture, specifically regarding prefix caching economics, vLLM optimization, and the transition from MaaS to self-hosted models.",
+    "weakest_system_value": "Personal lifestyle updates (sports, moving, family) and generic AI news roundups offer little reusable value for the system.",
+    "best_fit_queries": [
+      "How to optimize LLM inference costs using prefix caching?",
+      "What is the difference between Agent Skills and MCP?",
+      "How to deploy models using vLLM vs Ollama in production?",
+      "How to handle long context degradation in LLMs?"
+    ],
+    "poor_fit_queries": [
+      "Basic introduction to ChatGPT",
+      "How to generate images with Midjourney",
+      "General AI news from 2023"
+    ],
+    "confidence": 0.95
+  },
+  "expert_positioning": {
+    "primary_role": "AI Platform Lead & Infrastructure Practitioner",
+    "audience": [
+      "AI Engineers",
+      "MLOps",
+      "Product Managers",
+      "Developers building AI agents"
+    ],
+    "voice": [
+      "Technical",
+      "Pragmatic",
+      "Analytical",
+      "Informal but structured"
+    ],
+    "worldview": [
+      "More context is not better context; it degrades quality and increases costs.",
+      "Ollama is for toys and local tests; vLLM is for production.",
+      "Agent Skills are the new standard, complementing MCP.",
+      "People choose LLM answers they like, not the ones that are correct."
+    ],
+    "distinctive_angle": "Combines high-level product management perspective with deep, hands-on engineering experience in LLM serving, caching, and agent architecture at an enterprise scale (Bitrix24).",
+    "recurring_formats": [
+      "Deep-dive technical posts (#300токеноввсекунду)",
+      "Links to own Habr articles with summaries",
+      "Tool reviews and comparisons",
+      "AI news digests (less frequent recently)"
+    ],
+    "evidence_refs": [
+      "P0352",
+      "P0358",
+      "P0369",
+      "P0355",
+      "P0323"
+    ]
+  },
+  "knowledge_domains": [
+    {
+      "domain_id": "ai_engineering_infra",
+      "domain_name": "AI Engineering & Infrastructure",
+      "subdomain_ids": [
+        "inference_cost_latency",
+        "deployment_observability",
+        "context_compression"
+      ],
+      "query_intent_ids": [
+        "optimize_inference_cost_latency"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "unique",
+      "what_the_expert_knows": [
+        "How to optimize prefix caching to save inference costs.",
+        "The architectural differences and use cases for vLLM vs Ollama.",
+        "How to implement custom logits processors in vLLM to control reasoning tokens.",
+        "The mechanics of LLM speed (TTFT vs generation speed).",
+        "How to use vLLM Semantic Router for cost optimization."
+      ],
+      "how_they_reason": [
+        "Analyzes infrastructure choices through the lens of production economics and latency.",
+        "Relies on hands-on testing and enterprise-scale deployment experience rather than vendor benchmarks."
+      ],
+      "missing_or_weak_subtopics": [
+        "Hardware-level GPU optimization (CUDA kernels)"
+      ],
+      "evidence_refs": [
+        "P0358",
+        "P0362",
+        "P0382",
+        "P0388",
+        "P0390",
+        "P0406",
+        "P0412"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "domain_id": "agent_ops",
+      "domain_name": "Agent Operations & Architecture",
+      "subdomain_ids": [
+        "tool_calling_hooks_skills",
+        "mcp_tooling",
+        "agentic_dev_process"
+      ],
+      "query_intent_ids": [
+        "design_agentic_dev_workflow"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "The distinction and complementarity between Agent Skills and MCP.",
+        "How to manage tool choice caching tradeoffs in vLLM.",
+        "The evolution of agent memory (Hindsight, Retain).",
+        "How to synthesize multiple DeepResearch outputs."
+      ],
+      "how_they_reason": [
+        "Views agents not as 'smart models' but as a harness/layer over the model.",
+        "Prioritizes context efficiency and deterministic tool calling over dumping everything into the prompt."
+      ],
+      "missing_or_weak_subtopics": [
+        "Multi-agent orchestration frameworks (e.g., AutoGen, CrewAI)"
+      ],
+      "evidence_refs": [
+        "P0369",
+        "P0373",
+        "P0378",
+        "P0399",
+        "P0331"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "domain_id": "evals_quality",
+      "domain_name": "Evals & Quality",
+      "subdomain_ids": [
+        "benchmark_interpretation",
+        "llm_evals"
+      ],
+      "query_intent_ids": [
+        "compare_models_for_task"
+      ],
+      "coverage_level": "moderate",
+      "depth_level": "practical",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "Why public benchmarks (LMSYS Arena) suffer from human preference bias (sentiment, formatting).",
+        "The necessity of domain-specific evals (Arena Expert) over general benchmarks.",
+        "How long context degrades model quality (lost-in-the-middle)."
+      ],
+      "how_they_reason": [
+        "Skeptical of vendor benchmarks; advocates for custom, task-specific evals."
+      ],
+      "missing_or_weak_subtopics": [
+        "Automated regression harness setup"
+      ],
+      "evidence_refs": [
+        "P0323",
+        "P0330",
+        "P0354",
+        "P0355"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "value_dimensions": [
+    {
+      "dimension_id": "technical_depth",
+      "score_0_5": 5,
+      "rationale": "Provides deep dives into vLLM architecture, prefix caching economics, and custom logits processors, demonstrating advanced engineering knowledge.",
+      "evidence_refs": [
+        "P0358",
+        "P0382",
+        "P0388",
+        "P0399"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "practical_specificity",
+      "score_0_5": 5,
+      "rationale": "Shares actual code snippets (e.g., vLLM logits processor gist), specific tool configurations, and real-world production metrics from Bitrix24.",
+      "evidence_refs": [
+        "P0388",
+        "P0399",
+        "P0364"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "anti_hype_signal",
+      "score_0_5": 5,
+      "rationale": "Actively debunks myths (e.g., running DeepSeek V3 on a laptop, the 'more context is better' fallacy, the infallibility of public benchmarks).",
+      "evidence_refs": [
+        "P0316",
+        "P0355",
+        "P0323"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "source_utility_for_panex",
+      "score_0_5": 5,
+      "rationale": "Highly reusable insights for AI infrastructure, agent design, and inference optimization, which are core topics for Panex.",
+      "evidence_refs": [
+        "P0358",
+        "P0369",
+        "P0382"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "matrix_cells": [
+    {
+      "domain_id": "ai_engineering_infra",
+      "subdomain_id": "inference_cost_latency",
+      "subdomain_name": "Inference Cost & Latency Optimization",
+      "query_intent_ids": [
+        "optimize_inference_cost_latency"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 5,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 3,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0358",
+        "P0362",
+        "P0382",
+        "P0390",
+        "P0412"
+      ],
+      "notes": "Exceptional coverage of vLLM, prefix caching economics, and semantic routing."
+    },
+    {
+      "domain_id": "agent_ops",
+      "subdomain_id": "tool_calling_hooks_skills",
+      "subdomain_name": "Agent Skills & Tool Calling",
+      "query_intent_ids": [
+        "design_agentic_dev_workflow"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 4,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0369",
+        "P0369.C0004",
+        "P0373",
+        "P0399"
+      ],
+      "notes": "Clear articulation of the difference between MCP and Agent Skills, and the tradeoffs of tool caching."
+    },
+    {
+      "domain_id": "evals_quality",
+      "subdomain_id": "benchmark_interpretation",
+      "subdomain_name": "Benchmark Interpretation & Bias",
+      "query_intent_ids": [
+        "compare_models_for_task"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 4,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 4,
+      "comment_signal_score_0_5": 2,
+      "recommended_matrix_weight": "normal",
+      "evidence_refs": [
+        "P0323",
+        "P0330",
+        "P0354"
+      ],
+      "notes": "Strong analysis of human preference bias in LMSYS Arena and the shift towards expert evals."
+    },
+    {
+      "domain_id": "ai_engineering_infra",
+      "subdomain_id": "context_compression",
+      "subdomain_name": "Context Window Management",
+      "query_intent_ids": [
+        "optimize_inference_cost_latency"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 2,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0263",
+        "P0355"
+      ],
+      "notes": "Detailed breakdown of 'lost in the middle' and context rot, advocating for context compression over massive context windows."
+    }
+  ],
+  "query_intent_fit": [
+    {
+      "query_intent_id": "optimize_inference_cost_latency",
+      "query_intent_name": "Optimize Inference Cost & Latency",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "ai_engineering_infra"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "The expert provides production-tested strategies for vLLM deployment, prefix caching, and semantic routing to drastically reduce costs and latency.",
+      "limitations": [
+        "Focuses primarily on vLLM; less coverage of other serving engines like TGI."
+      ],
+      "evidence_refs": [
+        "P0358",
+        "P0382",
+        "P0390",
+        "P0412"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "query_intent_id": "design_agentic_dev_workflow",
+      "query_intent_name": "Design Agentic Dev Workflow",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "agent_ops"
+      ],
+      "source_utility_score_0_5": 4,
+      "why": "Offers clear architectural distinctions between MCP and Agent Skills, and discusses memory management for agents.",
+      "limitations": [
+        "More focused on the conceptual architecture and tool integration than specific multi-agent coding frameworks."
+      ],
+      "evidence_refs": [
+        "P0369",
+        "P0373",
+        "P0378"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "query_intent_id": "compare_models_for_task",
+      "query_intent_name": "Compare Models for Task",
+      "fit_role": "supporting",
+      "best_domain_ids": [
+        "evals_quality",
+        "model_landscape"
+      ],
+      "source_utility_score_0_5": 4,
+      "why": "Provides critical analysis of model benchmarks and practical advice on setting up custom evals.",
+      "limitations": [
+        "Model reviews are sometimes anecdotal, though benchmark analysis is rigorous."
+      ],
+      "evidence_refs": [
+        "P0323",
+        "P0354"
+      ],
+      "confidence": 0.85
+    }
+  ],
+  "content_quality_distribution": [
+    {
+      "category_id": "deep_practitioner",
+      "share_estimate_0_1": 0.3,
+      "system_value": "high",
+      "notes": "Deep dives into vLLM, caching, and agent architecture.",
+      "evidence_refs": [
+        "P0358",
+        "P0369",
+        "P0382",
+        "P0399"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "architecture_analysis",
+      "share_estimate_0_1": 0.15,
+      "system_value": "high",
+      "notes": "Analysis of serving engines, semantic routers, and agent memory.",
+      "evidence_refs": [
+        "P0362",
+        "P0378",
+        "P0390"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "howto_or_checklist",
+      "share_estimate_0_1": 0.15,
+      "system_value": "medium",
+      "notes": "Prompt engineering tips, tool setup guides.",
+      "evidence_refs": [
+        "P0028",
+        "P0061",
+        "P0309",
+        "P0388"
+      ],
+      "confidence": 0.85
+    },
+    {
+      "category_id": "announcement_or_news",
+      "share_estimate_0_1": 0.2,
+      "system_value": "low",
+      "notes": "Weekly AI digests and model release news.",
+      "evidence_refs": [
+        "P0211",
+        "P0213",
+        "P0227"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "low_signal",
+      "share_estimate_0_1": 0.2,
+      "system_value": "none",
+      "notes": "Personal life updates, sports, moving, jokes.",
+      "evidence_refs": [
+        "P0001",
+        "P0224",
+        "P0234"
+      ],
+      "confidence": 0.95
+    }
+  ],
+  "matrix_export": {
+    "schema_version": "knowledge_matrix_export.v1",
+    "expert_id": "sergei_notevskii",
+    "cells": [
+      {
+        "cell_id": "ai_engineering_infra/inference_cost_latency/prefix_caching",
+        "domain_id": "ai_engineering_infra",
+        "subdomain_id": "inference_cost_latency",
+        "subdomain_name": "Inference Cost & Latency",
+        "query_intent_ids": [
+          "optimize_inference_cost_latency"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 5,
+          "evidence_quality": 5,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 5,
+          "anti_hype": 4,
+          "community_signal": 3
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0382",
+          "P0392",
+          "P0412"
+        ],
+        "confidence": 0.95
+      },
+      {
+        "cell_id": "ai_engineering_infra/inference_cost_latency/vllm_vs_ollama",
+        "domain_id": "ai_engineering_infra",
+        "subdomain_id": "inference_cost_latency",
+        "subdomain_name": "Inference Cost & Latency",
+        "query_intent_ids": [
+          "optimize_inference_cost_latency"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 5,
+          "evidence_quality": 4,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 4,
+          "anti_hype": 5,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0358",
+          "P0362"
+        ],
+        "confidence": 0.95
+      },
+      {
+        "cell_id": "agent_ops/tool_calling_hooks_skills/skills_vs_mcp",
+        "domain_id": "agent_ops",
+        "subdomain_id": "tool_calling_hooks_skills",
+        "subdomain_name": "Tool Calling & Skills",
+        "query_intent_ids": [
+          "design_agentic_dev_workflow"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "practical",
+        "source_role": "primary",
+        "scores": {
+          "depth": 4,
+          "practicality": 4,
+          "evidence_quality": 4,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 4,
+          "anti_hype": 4,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0369",
+          "P0369.C0004",
+          "P0373"
+        ],
+        "confidence": 0.9
+      },
+      {
+        "cell_id": "ai_engineering_infra/context_compression/context_rot",
+        "domain_id": "ai_engineering_infra",
+        "subdomain_id": "context_compression",
+        "subdomain_name": "Context Compression",
+        "query_intent_ids": [
+          "optimize_inference_cost_latency"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "practical",
+        "source_role": "primary",
+        "scores": {
+          "depth": 4,
+          "practicality": 5,
+          "evidence_quality": 4,
+          "source_utility": 4,
+          "intrinsic_distinctiveness": 4,
+          "anti_hype": 5,
+          "community_signal": 2
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0263",
+          "P0355"
+        ],
+        "confidence": 0.9
+      }
+    ],
+    "compare_hints": {
+      "likely_unique_cells": [
+        "ai_engineering_infra/inference_cost_latency/prefix_caching"
+      ],
+      "likely_duplicate_cells": [
+        "prompt_engineering/reasoning_control/learn_ai_assisted_development"
+      ],
+      "cells_requiring_probe": [
+        "agent_ops/tool_calling_hooks_skills/skills_vs_mcp"
+      ],
+      "matrix_only_decision_confidence": "high"
+    }
+  },
+  "signature_insights": [
+    {
+      "insight": "Prefix caching is the single most important metric for production AI agents, capable of saving tens of percents in costs if prompts are structured with static prefixes and dynamic suffixes.",
+      "why_it_matters_for_experts_panel": "Provides actionable, high-ROI architectural advice for teams deploying LLMs at scale.",
+      "applicable_query_types": [
+        "optimize_inference_cost_latency"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0382",
+        "P0412"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "insight": "Ollama is excellent for local experimentation, but vLLM is the necessary serving engine for production due to PagedAttention, continuous batching, and OpenAI-compatible APIs.",
+      "why_it_matters_for_experts_panel": "Clarifies the tooling landscape for MLOps and prevents teams from deploying toy tools in production.",
+      "applicable_query_types": [
+        "optimize_inference_cost_latency"
+      ],
+      "novelty_level": "useful_packaging",
+      "evidence_refs": [
+        "P0358",
+        "P0362"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "insight": "Agent Skills and MCP are complementary: MCP acts as the transport layer (API/connection), while Skills act as the procedural layer (instructions on how to use the tools).",
+      "why_it_matters_for_experts_panel": "Resolves conceptual confusion in the rapidly evolving agent architecture space.",
+      "applicable_query_types": [
+        "design_agentic_dev_workflow"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0369",
+        "P0369.C0004"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "insight": "More context is not better context. Large context windows suffer from 'lost in the middle' degradation and 'context rot', making context compression and summarization superior to dumping raw data into the prompt.",
+      "why_it_matters_for_experts_panel": "Debunks a common marketing hype metric (1M+ token windows) with practical engineering reality.",
+      "applicable_query_types": [
+        "optimize_inference_cost_latency",
+        "improve_retrieval_quality"
+      ],
+      "novelty_level": "useful_packaging",
+      "evidence_refs": [
+        "P0263",
+        "P0355"
+      ],
+      "confidence": 0.95
+    }
+  ],
+  "practical_patterns": [
+    {
+      "pattern": "Synthesizing DeepResearch outputs: Run the same research query across multiple tools (ChatGPT, Grok, Perplexity), then feed all outputs into Gemini 2.5 Pro to synthesize a final report highlighting consensus and discrepancies.",
+      "when_to_use": "When conducting comprehensive research where hallucination risk must be minimized and multiple perspectives are needed.",
+      "failure_modes": [
+        "Requires access to multiple paid/freemium tools.",
+        "Gemini 2.5 Pro is needed specifically for its reliable long-context handling."
+      ],
+      "evidence_refs": [
+        "P0331"
+      ]
+    },
+    {
+      "pattern": "Custom vLLM logits processor to limit reasoning tokens: Inject a Python plugin into vLLM to forcefully cut off the reasoning phase of models like Qwen 3.5 if they exceed a token budget.",
+      "when_to_use": "When hosting reasoning models (like Qwen 3.5 35B) that tend to over-think or get stuck in infinite reasoning loops.",
+      "failure_modes": [
+        "Requires infrastructure access to the vLLM server.",
+        "May cut off valid reasoning if the budget is set too low."
+      ],
+      "evidence_refs": [
+        "P0388"
+      ]
+    },
+    {
+      "pattern": "Using vLLM Semantic Router (vLLM-SR) before the agent loop to route simple queries to small models (e.g., 8B) and complex queries to large models.",
+      "when_to_use": "In high-traffic production environments to reduce latency and costs.",
+      "failure_modes": [
+        "If placed inside an agentic loop, the router's regex might misfire and break the flow.",
+        "Adds 200ms-1s overhead, so it only pays off if the small model is significantly faster."
+      ],
+      "evidence_refs": [
+        "P0390"
+      ]
+    }
+  ],
+  "claims_and_positions": [
+    {
+      "claim": "Running DeepSeek V3/R1 locally on a standard laptop is a myth; it requires massive GPU clusters (e.g., 16x A100 80GB) for full performance, and heavily quantized versions lose significant quality.",
+      "stance": "warns_against",
+      "decision_relevance": "Prevents teams from underestimating hardware requirements for self-hosting state-of-the-art open-source models.",
+      "dispute_risk": "low",
+      "evidence_refs": [
+        "P0316"
+      ]
+    },
+    {
+      "claim": "Public LLM benchmarks (like LMSYS Arena) are heavily skewed by human preference for formatting, tone, and emojis, rather than factual accuracy.",
+      "stance": "supports",
+      "decision_relevance": "Encourages teams to build custom, domain-specific evals rather than relying on public leaderboards.",
+      "dispute_risk": "low",
+      "evidence_refs": [
+        "P0323",
+        "P0330",
+        "P0354"
+      ]
+    },
+    {
+      "claim": "Prompt engineering is not dead; it is more important than ever for autonomous agents and DeepResearch because the cost of a misunderstood prompt (in time and API credits) is much higher.",
+      "stance": "supports",
+      "decision_relevance": "Validates continued investment in prompt engineering skills for advanced AI workflows.",
+      "dispute_risk": "medium",
+      "evidence_refs": [
+        "P0333"
+      ]
+    }
+  ],
+  "source_utility": {
+    "best_use_cases": [
+      "Architecting LLM serving infrastructure (vLLM, caching).",
+      "Understanding the economics of LLM inference in production.",
+      "Designing agentic workflows using Skills and MCP.",
+      "Evaluating models beyond public benchmarks."
+    ],
+    "bad_use_cases": [
+      "Basic prompt engineering tutorials (covered better elsewhere).",
+      "Image/Video generation techniques (expert lost interest).",
+      "General AI news."
+    ],
+    "retrieval_keywords": [
+      "vLLM",
+      "prefix cache",
+      "Ollama",
+      "Agent Skills",
+      "MCP",
+      "DeepResearch",
+      "context window",
+      "lost in the middle",
+      "semantic router"
+    ],
+    "source_selection_hints": [
+      "Select for queries involving production deployment of open-source models.",
+      "Select for queries about optimizing LLM costs and latency.",
+      "Select for architectural discussions on AI agents."
+    ],
+    "expected_overlap_hypotheses": [
+      "Will overlap with other MLOps experts on vLLM.",
+      "Will overlap with agent developers on MCP."
+    ],
+    "recommended_panex_role": "primary_expert"
+  },
+  "community_signal": {
+    "comment_themes": [
+      "Technical clarifications on vLLM and local model deployment.",
+      "Sharing alternative tools and workarounds (e.g., bypassing geo-blocks).",
+      "Debates on the utility of Agent Skills vs MCP.",
+      "Gratitude for demystifying complex AI infrastructure topics."
+    ],
+    "questions_from_audience": [
+      "How to run specific quantized models (e.g., Qwen) on local hardware?",
+      "How to set up monitoring for vLLM?",
+      "What is the difference between MCP and Agent Skills in practice?"
+    ],
+    "disagreements_or_corrections": [
+      "Community members occasionally correct the expert on specific tool capabilities (e.g., Claude's ability to refuse tasks).",
+      "Debates on whether prompt engineering is becoming obsolete."
+    ],
+    "practical_feedback": [
+      "Users sharing their own hardware setups and tokens-per-second metrics.",
+      "Users confirming the effectiveness of the expert's custom vLLM scripts."
+    ],
+    "noise_or_low_value_patterns": [
+      "Personal congratulations on life events.",
+      "Support requests for the expert's Telegram bots."
+    ],
+    "evidence_refs": [
+      "P0369.C0004",
+      "P0388.C0002",
+      "P0389.C0008",
+      "P0403.C0003"
+    ]
+  },
+  "admission_implications": {
+    "if_candidate_verdict": "accept",
+    "verdict_rationale": "Sergei Notevskii provides high-signal, practitioner-grounded insights into the infrastructure and economics of deploying LLMs at scale. His transition from prompt engineering to MLOps/Agent architecture makes his recent content highly valuable for enterprise AI deployment.",
+    "unique_value_claims_to_verify_against_matrix": [
+      "Prefix caching economics and anti-patterns.",
+      "vLLM vs Ollama architectural differences.",
+      "Agent Skills vs MCP conceptual framework."
+    ],
+    "likely_duplicate_areas_to_check": [
+      "Basic prompt engineering (CoT, few-shot).",
+      "General AI news and model release summaries."
+    ],
+    "minimum_followup_probe_queries": [
+      "What are the most common anti-patterns that destroy prefix cache hit rates?",
+      "How do you implement a custom logits processor in vLLM to control reasoning models?"
+    ],
+    "risk_notes": [
+      "The channel contains a fair amount of personal updates and generic news, so retrieval systems must be tuned to extract the deep technical posts (often tagged #300токеноввсекунду)."
+    ]
+  },
+  "audit": {
+    "unsupported_or_weak_claims": [],
+    "abstentions": [
+      "Did not score matrix-relative novelty as per instructions."
+    ],
+    "possible_model_errors": [],
+    "source_refs_used": [
+      "P0001",
+      "P0028",
+      "P0061",
+      "P0093",
+      "P0211",
+      "P0213",
+      "P0224",
+      "P0227",
+      "P0234",
+      "P0259",
+      "P0263",
+      "P0267",
+      "P0303",
+      "P0308",
+      "P0309",
+      "P0311",
+      "P0316",
+      "P0318",
+      "P0321",
+      "P0323",
+      "P0330",
+      "P0331",
+      "P0332",
+      "P0333",
+      "P0348",
+      "P0352",
+      "P0354",
+      "P0355",
+      "P0358",
+      "P0362",
+      "P0364",
+      "P0369",
+      "P0369.C0004",
+      "P0369.C0006",
+      "P0373",
+      "P0377",
+      "P0378",
+      "P0380",
+      "P0382",
+      "P0383",
+      "P0388",
+      "P0388.C0002",
+      "P0389.C0008",
+      "P0390",
+      "P0392",
+      "P0399",
+      "P0403.C0003",
+      "P0406",
+      "P0408",
+      "P0412"
+    ],
+    "source_refs_most_important": [
+      "P0358",
+      "P0362",
+      "P0369",
+      "P0382",
+      "P0388",
+      "P0399",
+      "P0412"
+    ]
+  }
+}

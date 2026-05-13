@@ -7,20 +7,20 @@ Channel: `the_ai_architect`
 
 | Metric | Count |
 |---|---:|
-| Posts | 234 |
-| Text posts | 226 |
+| Posts | 238 |
+| Text posts | 230 |
 | Valid post_metadata | 196 |
-| Embeddings | 226 |
-| FTS rows | 226 |
+| Embeddings | 230 |
+| FTS rows | 230 |
 
 ## Coverage
 
 | Area | Count | Strength |
 |---|---:|---|
-| `coding_agents` | 152 | strong |
-| `model_landscape` | 144 | strong |
+| `coding_agents` | 154 | strong |
+| `model_landscape` | 147 | strong |
 | `agent_ops` | 92 | strong |
-| `business_adoption` | 41 | strong |
+| `business_adoption` | 42 | strong |
 | `ai_product_pm` | 40 | strong |
 | `ai_ux_workflow` | 24 | medium |
 | `security_privacy_governance` | 23 | medium |
@@ -33,14 +33,14 @@ Channel: `the_ai_architect`
 
 | Depth | Count |
 |---|---:|
-| `practitioner_experience` | 46 |
+| `practitioner_experience` | 47 |
 | `case_study` | 28 |
 | `architecture_analysis` | 21 |
 | `benchmark_or_eval` | 17 |
-| `howto_or_checklist` | 63 |
+| `howto_or_checklist` | 64 |
 | `tool_release` | 6 |
-| `announcement_or_news` | 28 |
-| `low_signal` | 25 |
+| `announcement_or_news` | 29 |
+| `low_signal` | 26 |
 
 ## Top Metadata Signals
 
@@ -91,6 +91,6 @@ Channel: `the_ai_architect`
 - `ai_architect:280` (2026-04-14, case_study; `coding_agents`, `agent_ops`, `ai_product_pm`, `ai_ux_workflow`, `ai_engineering_infra`) - **Про developer ux** Я недавно настраивал sentry впервые. Мне не хотелось разбираться в новых (для меня) сущностях этого продукта, поэтому сетапить я его планировал с AI, конечно же. Дал задачу кодексу "давай настроим sentry" на проекте. Агент сходил и настроил, я создал новый проект на стороне Sentry. Дальше, нужно...
 - `ai_architect:274` (2026-04-05, architecture_analysis; `coding_agents`, `business_adoption`) - Типичная проблема программирования - работа с велосипедами. С ai coding стала еще актуальнее. ты работаешь, поймал поток и спустя время осознаешь, что только что сделал решение, которое скорее всего можно было бы поискать в опен сорсе и интегрировать себе. Происходит эта проблема потому, что в моменте сложно отдать...
 - `ai_architect:295` (2026-04-30, howto_or_checklist; `coding_agents`, `agent_ops`, `model_landscape`, `creative_multimodal`) - **Про аудио** Появилась задача вытащить аудио из видео и сделать структурированный текст по этому аудио. Обычно, я просил агента использовать ffpmeg для извлечения аудио и далее полученный mp3 я руками кидал в ai.studio и промптил. Это хорошо работало, но требовало делать это руками Вчера я решил сделать это полност...
-- `ai_architect:268` (2026-03-19, case_study; `model_landscape`) - **Шумно строил. Часто шиппил. Оставил след** Вот такой кринжовый заголовок GPT 5.4 придумал для моего дашборда со статистикой по гитхабу. Ринат @llm_under_hood запустил челлендж (суть - показать свою статистику по гиту: коммиты, проекты, loc), а Нейро Ковальский (@neuraldeep) передал мне эстафету, так что делюсь сво...
-- `ai_architect:267` (2026-03-16, case_study; `coding_agents`, `model_landscape`) - Решил я тут поставить клешню (openclaw) второй раз в жизни (первый раз было 26 января) Кейс - дать клешне доступ к git repo и общаться с ним через чатик, просить вносить изменения в репо (это не кодинг, только некоторые заметки). Инпут - фото, аудио. Модель - z.ai (у меня годовая подписка на самом жирном тарифе прос...
+- `ai_architect:298` (2026-05-05, practitioner_experience; `coding_agents`, `model_landscape`) - последние новости по [курсу](https://t.me/the_ai_architect/283) • осталось всего лишь 4 места на среднем и старшем тарифах, думаю что soldout будет уже до конца этой недели • записал первый видеоурок, отдал в монтаж • назначил первые 3 созвона • записал и [выложил видео](https://youtu.be/K5JEZDjXX9c) с кратким обзор...
 - `ai_architect:293` (2026-04-28, practitioner_experience; `coding_agents`, `ai_product_pm`, `model_landscape`) - **Писать код руками или AI Coding?** В последние пару недель в инфополе то и дело появляются новости о том, что тот или иной поставщик AI начинает резать лимиты, повышать стоимость токенов, отменять дешевые подписки. Вот хороший [разбор The Verge](https://www.theverge.com/ai-artificial-intelligence/917380/ai-monetiz...
+- `ai_architect:285` (2026-04-20, practitioner_experience; `agent_ops`, `ai_engineering_infra`) - **Топ популярных вопросов по курсу** ◾️ **Почему курс именно для разработчиков?** Потому что я сам разработчик и знаю как использовать этот AI рычаг разработчикам. ◾️ **Подойдёт ли мне курс?** 🚫 Нет, если вам не важен код, который пишет ai агент, потому что этот код через несколько месяцев будет в мусорной урне. Это...

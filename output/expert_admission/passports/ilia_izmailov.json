@@ -10,7 +10,7 @@
     "creative_multimodal": 1,
     "evals_quality": 3,
     "general_ai_news": 4,
-    "model_landscape": 68,
+    "model_landscape": 69,
     "rag_retrieval_knowledge": 2,
     "security_privacy_governance": 7
   },
@@ -30,26 +30,26 @@
   },
   "date_range": {
     "first_post": "2025-05-27",
-    "last_post": "2026-05-03"
+    "last_post": "2026-05-09"
   },
   "depth_profile": {
-    "announcement_or_news": 35,
+    "announcement_or_news": 36,
     "architecture_analysis": 12,
     "benchmark_or_eval": 3,
     "case_study": 14,
-    "howto_or_checklist": 51,
+    "howto_or_checklist": 52,
     "low_signal": 34,
     "practitioner_experience": 24,
     "tool_release": 3
   },
   "display_name": "Ilia Izmailov",
-  "embedding_count": 171,
+  "embedding_count": 173,
   "embedding_coverage_ratio": 1.0,
   "expert_id": "ilia_izmailov",
-  "fts_count": 171,
-  "metadata_coverage_ratio": 0.8239,
+  "fts_count": 173,
+  "metadata_coverage_ratio": 0.8146,
   "metadata_valid_count": 145,
-  "post_count": 176,
+  "post_count": 178,
   "representative_posts": [
     {
       "coverage_labels": [
@@ -150,7 +150,7 @@
     "metadata_advisory_ready": true,
     "text_posts_ready": true
   },
-  "text_post_count": 171,
+  "text_post_count": 173,
   "top_concepts": [
     {
       "count": 13,
