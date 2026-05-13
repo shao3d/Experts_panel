@@ -1,18 +1,18 @@
 {
   "channel_username": "countwithsasha",
   "coverage": {
-    "agent_ops": 150,
-    "ai_engineering_infra": 17,
-    "ai_product_pm": 48,
-    "ai_ux_workflow": 23,
-    "business_adoption": 93,
-    "coding_agents": 96,
-    "creative_multimodal": 14,
-    "evals_quality": 32,
-    "general_ai_news": 2,
-    "model_landscape": 205,
-    "rag_retrieval_knowledge": 21,
-    "security_privacy_governance": 48
+    "agent_ops": 145,
+    "ai_engineering_infra": 16,
+    "ai_product_pm": 45,
+    "ai_ux_workflow": 21,
+    "business_adoption": 79,
+    "coding_agents": 95,
+    "creative_multimodal": 13,
+    "evals_quality": 29,
+    "general_ai_news": 0,
+    "model_landscape": 191,
+    "rag_retrieval_knowledge": 20,
+    "security_privacy_governance": 46
   },
   "coverage_strength": {
     "agent_ops": "strong",
@@ -23,33 +23,33 @@
     "coding_agents": "strong",
     "creative_multimodal": "medium",
     "evals_quality": "medium",
-    "general_ai_news": "thin",
+    "general_ai_news": "none",
     "model_landscape": "strong",
     "rag_retrieval_knowledge": "medium",
     "security_privacy_governance": "strong"
   },
   "date_range": {
-    "first_post": "2024-06-26",
+    "first_post": "2024-07-17",
     "last_post": "2026-05-12"
   },
   "depth_profile": {
-    "announcement_or_news": 8,
-    "architecture_analysis": 13,
-    "benchmark_or_eval": 31,
-    "case_study": 135,
-    "howto_or_checklist": 32,
-    "low_signal": 55,
-    "practitioner_experience": 40,
+    "announcement_or_news": 4,
+    "architecture_analysis": 9,
+    "benchmark_or_eval": 28,
+    "case_study": 127,
+    "howto_or_checklist": 21,
+    "low_signal": 33,
+    "practitioner_experience": 30,
     "tool_release": 0
   },
   "display_name": "Polyakov",
-  "embedding_count": 265,
+  "embedding_count": 220,
   "embedding_coverage_ratio": 1.0,
   "expert_id": "polyakov",
-  "fts_count": 265,
-  "metadata_coverage_ratio": 0.6369,
-  "metadata_valid_count": 200,
-  "post_count": 314,
+  "fts_count": 220,
+  "metadata_coverage_ratio": 0.6111,
+  "metadata_valid_count": 154,
+  "post_count": 252,
   "representative_posts": [
     {
       "coverage_labels": [
@@ -64,6 +64,20 @@
       "excerpt": "**Барбершоп-тест: отечественным ИИ-моделям нужно следующее поколение. Жду** Вчера [писал,](https://t.me/countwithsasha/633) что GigaChat плохо подходит как сердце агента. По пути c подачи *@evilfreelancer* я обнаружил, что лучше запускать Гигачат через LiteLLM с флагом `supports_function_calling: true` С этим флагом...",
       "reason": "agent_ops, evals_quality, ai_product_pm; depth=benchmark_or_eval",
       "telegram_message_id": 636
+    },
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "rag_retrieval_knowledge",
+        "ai_engineering_infra",
+        "model_landscape",
+        "creative_multimodal"
+      ],
+      "created_at": "2026-05-12",
+      "depth_label": "case_study",
+      "excerpt": "**Голосовые ассистенты учатся слышать и говорить одновременно** Вчера в чате о[бсуждали голосовых ботов](https://t.me/countwithsasha/639) на русском — сошлись, что всё упирается в тулинг и понимание пауз. Вечером Thinking Machines (лаборатория Миры Мурати, экс-CTO OpenAI) показали архитектуру, обходящую основные про...",
+      "reason": "agent_ops, rag_retrieval_knowledge, ai_engineering_infra; depth=case_study",
+      "telegram_message_id": 643
     },
     {
       "coverage_labels": [
@@ -141,18 +155,6 @@
       "excerpt": "**Manus внезапно стал нормальным инструментом для ежедневного рисёрча** Год назад я [писал про Manus](https://t.me/countwithsasha/235) как про крутую идею, но не рабочий инструмент. За год сервис не стал прям идеальным. Кредиты всё ещё списываются мутно, результат всё ещё надо проверять. Но Manus уже не выглядит про...",
       "reason": "coding_agents, agent_ops, business_adoption; depth=case_study",
       "telegram_message_id": 628
-    },
-    {
-      "coverage_labels": [
-        "agent_ops",
-        "ai_product_pm",
-        "ai_ux_workflow"
-      ],
-      "created_at": "2026-04-30",
-      "depth_label": "case_study",
-      "excerpt": "**Алиса прислала пуш: у нас агенты. Я сразу отправил её в барбершоп ** У Яндекса уже где-то полгода висел [анонс закрытой беты ИИ-агентов.](https://3dnews.ru/1131494/alisa-ai-poluchila-iiagentov-kotorie-broniruyut-uslugi-ishchut-skidki-i-provodyat-issledovaniya-po-zadaniyu-polzovatelya) Сегодня Алиса в приложении пр...",
-      "reason": "agent_ops, ai_product_pm, ai_ux_workflow; depth=case_study",
-      "telegram_message_id": 626
     }
   ],
   "runtime_readiness": {
@@ -161,39 +163,31 @@
     "metadata_advisory_ready": true,
     "text_posts_ready": true
   },
-  "text_post_count": 265,
+  "text_post_count": 220,
   "top_concepts": [
     {
-      "count": 26,
+      "count": 23,
       "value": "Prompt Engineering"
     },
     {
-      "count": 25,
+      "count": 18,
       "value": "Automation"
-    },
-    {
-      "count": 17,
-      "value": "LLM"
     },
     {
       "count": 14,
       "value": "AI Agents"
     },
     {
-      "count": 11,
-      "value": "API"
+      "count": 14,
+      "value": "LLM"
     },
     {
       "count": 10,
+      "value": "API"
+    },
+    {
+      "count": 9,
       "value": "Generative AI"
-    },
-    {
-      "count": 7,
-      "value": "Data Privacy"
-    },
-    {
-      "count": 7,
-      "value": "Fine-tuning"
     },
     {
       "count": 6,
@@ -201,97 +195,105 @@
     },
     {
       "count": 6,
+      "value": "Data Privacy"
+    },
+    {
+      "count": 6,
       "value": "API Integration"
     },
     {
-      "count": 6,
-      "value": "Prompt Injection"
+      "count": 5,
+      "value": "Code Review"
     },
     {
-      "count": 6,
-      "value": "Advertising"
+      "count": 5,
+      "value": "Agentic Workflow"
+    },
+    {
+      "count": 5,
+      "value": "Prompt Injection"
     }
   ],
   "top_keywords": [
     {
-      "count": 64,
+      "count": 60,
       "value": "claude"
     },
     {
-      "count": 55,
+      "count": 45,
       "value": "llm"
     },
     {
-      "count": 40,
-      "value": "code"
-    },
-    {
-      "count": 39,
+      "count": 37,
       "value": "api"
     },
     {
-      "count": 38,
-      "value": "openai"
+      "count": 36,
+      "value": "code"
     },
     {
-      "count": 37,
+      "count": 34,
       "value": "prompt"
     },
     {
-      "count": 36,
+      "count": 30,
       "value": "автоматизация"
     },
     {
-      "count": 35,
+      "count": 30,
+      "value": "openai"
+    },
+    {
+      "count": 29,
       "value": "automation"
     },
     {
-      "count": 32,
-      "value": "chatgpt"
-    },
-    {
-      "count": 30,
+      "count": 28,
       "value": "промпт"
     },
     {
-      "count": 29,
+      "count": 25,
+      "value": "chatgpt"
+    },
+    {
+      "count": 24,
       "value": "разработка"
     },
     {
-      "count": 29,
-      "value": "development"
-    },
-    {
-      "count": 29,
+      "count": 24,
       "value": "generation"
     },
     {
-      "count": 25,
-      "value": "search"
-    },
-    {
-      "count": 24,
-      "value": "yandex"
-    },
-    {
-      "count": 24,
-      "value": "модели"
-    },
-    {
       "count": 23,
-      "value": "advertising"
+      "value": "development"
+    },
+    {
+      "count": 22,
+      "value": "search"
     },
     {
       "count": 22,
       "value": "agent"
     },
     {
-      "count": 22,
+      "count": 19,
+      "value": "anthropic"
+    },
+    {
+      "count": 19,
+      "value": "модели"
+    },
+    {
+      "count": 18,
       "value": "data"
     },
     {
-      "count": 22,
+      "count": 18,
       "value": "генерация"
+    },
+    {
+      "count": 17,
+      "value": "yandex"
     }
   ],
   "top_primary_topics": [
@@ -305,19 +307,7 @@
     },
     {
       "count": 6,
-      "value": "Generative AI"
-    },
-    {
-      "count": 6,
       "value": "AI Coding"
-    },
-    {
-      "count": 5,
-      "value": "AI Development"
-    },
-    {
-      "count": 4,
-      "value": "AI Implementation"
     },
     {
       "count": 4,
@@ -325,7 +315,11 @@
     },
     {
       "count": 4,
-      "value": "AI Search"
+      "value": "AI Development"
+    },
+    {
+      "count": 4,
+      "value": "Generative AI"
     },
     {
       "count": 4,
@@ -333,7 +327,7 @@
     },
     {
       "count": 3,
-      "value": "Data Analytics"
+      "value": "AI Implementation"
     },
     {
       "count": 3,
@@ -342,6 +336,14 @@
     {
       "count": 3,
       "value": "AI Video Generation"
+    },
+    {
+      "count": 3,
+      "value": "LLM Integration"
+    },
+    {
+      "count": 3,
+      "value": "Content Marketing"
     }
   ],
   "warnings": []

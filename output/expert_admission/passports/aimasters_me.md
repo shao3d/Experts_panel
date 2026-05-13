@@ -7,26 +7,26 @@ Channel: `aimastersme`
 
 | Metric | Count |
 |---|---:|
-| Posts | 322 |
-| Text posts | 307 |
+| Posts | 256 |
+| Text posts | 243 |
 | Valid post_metadata | 0 |
-| Embeddings | 307 |
-| FTS rows | 307 |
+| Embeddings | 243 |
+| FTS rows | 243 |
 
 ## Coverage
 
 | Area | Count | Strength |
 |---|---:|---|
-| `model_landscape` | 166 | strong |
-| `coding_agents` | 63 | strong |
-| `agent_ops` | 62 | strong |
-| `ai_product_pm` | 37 | medium |
-| `business_adoption` | 31 | medium |
-| `security_privacy_governance` | 24 | medium |
-| `ai_ux_workflow` | 20 | medium |
-| `ai_engineering_infra` | 10 | thin |
-| `creative_multimodal` | 10 | thin |
-| `evals_quality` | 9 | thin |
+| `model_landscape` | 145 | strong |
+| `coding_agents` | 62 | strong |
+| `agent_ops` | 59 | strong |
+| `ai_product_pm` | 35 | medium |
+| `business_adoption` | 27 | medium |
+| `security_privacy_governance` | 21 | medium |
+| `ai_ux_workflow` | 18 | medium |
+| `ai_engineering_infra` | 9 | thin |
+| `creative_multimodal` | 7 | thin |
+| `evals_quality` | 7 | thin |
 | `rag_retrieval_knowledge` | 4 | thin |
 | `general_ai_news` | 3 | thin |
 
@@ -34,14 +34,14 @@ Channel: `aimastersme`
 
 | Depth | Count |
 |---|---:|
-| `practitioner_experience` | 37 |
-| `case_study` | 21 |
-| `architecture_analysis` | 33 |
-| `benchmark_or_eval` | 8 |
-| `howto_or_checklist` | 126 |
+| `practitioner_experience` | 28 |
+| `case_study` | 20 |
+| `architecture_analysis` | 28 |
+| `benchmark_or_eval` | 7 |
+| `howto_or_checklist` | 98 |
 | `tool_release` | 9 |
-| `announcement_or_news` | 49 |
-| `low_signal` | 39 |
+| `announcement_or_news` | 37 |
+| `low_signal` | 29 |
 
 ## Top Metadata Signals
 

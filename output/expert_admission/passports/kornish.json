@@ -1,18 +1,18 @@
 {
   "channel_username": "NGI_ru",
   "coverage": {
-    "agent_ops": 120,
+    "agent_ops": 118,
     "ai_engineering_infra": 16,
-    "ai_product_pm": 270,
-    "ai_ux_workflow": 79,
-    "business_adoption": 168,
-    "coding_agents": 105,
-    "creative_multimodal": 30,
-    "evals_quality": 44,
+    "ai_product_pm": 246,
+    "ai_ux_workflow": 76,
+    "business_adoption": 157,
+    "coding_agents": 104,
+    "creative_multimodal": 28,
+    "evals_quality": 40,
     "general_ai_news": 1,
-    "model_landscape": 275,
-    "rag_retrieval_knowledge": 24,
-    "security_privacy_governance": 73
+    "model_landscape": 254,
+    "rag_retrieval_knowledge": 23,
+    "security_privacy_governance": 69
   },
   "coverage_strength": {
     "agent_ops": "strong",
@@ -29,27 +29,27 @@
     "security_privacy_governance": "strong"
   },
   "date_range": {
-    "first_post": "2024-05-08",
+    "first_post": "2024-05-09",
     "last_post": "2026-05-11"
   },
   "depth_profile": {
-    "announcement_or_news": 21,
-    "architecture_analysis": 33,
-    "benchmark_or_eval": 44,
-    "case_study": 149,
-    "howto_or_checklist": 75,
-    "low_signal": 34,
-    "practitioner_experience": 133,
-    "tool_release": 3
+    "announcement_or_news": 18,
+    "architecture_analysis": 31,
+    "benchmark_or_eval": 40,
+    "case_study": 134,
+    "howto_or_checklist": 65,
+    "low_signal": 32,
+    "practitioner_experience": 120,
+    "tool_release": 2
   },
   "display_name": "Kornishev",
-  "embedding_count": 473,
+  "embedding_count": 423,
   "embedding_coverage_ratio": 1.0,
   "expert_id": "kornish",
-  "fts_count": 473,
+  "fts_count": 423,
   "metadata_coverage_ratio": 0.0,
   "metadata_valid_count": 0,
-  "post_count": 492,
+  "post_count": 442,
   "representative_posts": [
     {
       "coverage_labels": [
@@ -164,7 +164,7 @@
     "metadata_advisory_ready": false,
     "text_posts_ready": true
   },
-  "text_post_count": 473,
+  "text_post_count": 423,
   "top_concepts": [],
   "top_keywords": [],
   "top_primary_topics": [],

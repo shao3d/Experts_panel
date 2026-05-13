@@ -4,7 +4,13 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'backend/**'
+      - 'backend/src/**'
+      - 'backend/prompts/**'
+      - 'backend/migrations/**'
+      - 'backend/requirements.txt'
+      - 'backend/pyproject.toml'
+      - 'backend/uv.lock'
+      - 'backend/schema.sql'
       - 'frontend/**'
       - 'Dockerfile'
       - '.dockerignore'

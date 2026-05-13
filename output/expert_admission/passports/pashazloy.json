@@ -1,18 +1,18 @@
 {
   "channel_username": "evilfreelancer",
   "coverage": {
-    "agent_ops": 124,
+    "agent_ops": 125,
     "ai_engineering_infra": 28,
     "ai_product_pm": 24,
     "ai_ux_workflow": 4,
     "business_adoption": 26,
-    "coding_agents": 63,
+    "coding_agents": 64,
     "creative_multimodal": 12,
     "evals_quality": 25,
     "general_ai_news": 4,
-    "model_landscape": 195,
+    "model_landscape": 196,
     "rag_retrieval_knowledge": 34,
-    "security_privacy_governance": 10
+    "security_privacy_governance": 11
   },
   "coverage_strength": {
     "agent_ops": "strong",
@@ -30,11 +30,11 @@
   },
   "date_range": {
     "first_post": "2022-05-05",
-    "last_post": "2026-05-09"
+    "last_post": "2026-05-12"
   },
   "depth_profile": {
     "announcement_or_news": 70,
-    "architecture_analysis": 27,
+    "architecture_analysis": 28,
     "benchmark_or_eval": 25,
     "case_study": 29,
     "howto_or_checklist": 114,
@@ -43,13 +43,13 @@
     "tool_release": 16
   },
   "display_name": "PashaZloy",
-  "embedding_count": 398,
+  "embedding_count": 399,
   "embedding_coverage_ratio": 1.0,
   "expert_id": "pashazloy",
-  "fts_count": 398,
+  "fts_count": 399,
   "metadata_coverage_ratio": 0.0,
   "metadata_valid_count": 0,
-  "post_count": 414,
+  "post_count": 415,
   "representative_posts": [
     {
       "coverage_labels": [
@@ -103,6 +103,19 @@
     },
     {
       "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "security_privacy_governance",
+        "model_landscape"
+      ],
+      "created_at": "2026-05-12",
+      "depth_label": "architecture_analysis",
+      "excerpt": "**Claude Mythos это самая мощная модель-хакер или самый дорогой маркетинговый миф в истории ИИ?** Anthropic анонсировала модель, которая находит zero-day во всех ОС и браузерах, ломает чруты и пишет эксплойты на раз-два. Рынок кибербезопасности дрогнул, правительства созывают совещания, эксперты бьют тревогу. Но что...",
+      "reason": "coding_agents, agent_ops, security_privacy_governance; depth=architecture_analysis",
+      "telegram_message_id": 1674
+    },
+    {
+      "coverage_labels": [
         "agent_ops",
         "ai_product_pm",
         "business_adoption",
@@ -138,17 +151,6 @@
       "excerpt": "Ну чтож, хочу рассказать с какой целью я решил заморочиться с настройкой [gpt2giga](https://github.com/ai-forever/gpt2giga) и покупкой токенов моделей GigaChat-2 (Max, Pro и Lite). Для оценки семейства GigaChat-2 на агентном сценарии использован агент [phantom-agent](https://github.com/vakovalskii/phantom-agent) Вал...",
       "reason": "agent_ops, evals_quality, model_landscape; depth=benchmark_or_eval",
       "telegram_message_id": 1667
-    },
-    {
-      "coverage_labels": [
-        "agent_ops",
-        "evals_quality"
-      ],
-      "created_at": "2026-04-09",
-      "depth_label": "benchmark_or_eval",
-      "excerpt": "Обучение [ruGPT3XL-8k](https://huggingface.co/evilfreelancer/ruGPT3XL-8k) на ризонинг и агентных датасетах продолжается и судя по eval_loss на 500 шаге тренировка прошла свой предел точности, дальше походу начался оверфит. Чепоинты эти я уже скопировал в отдельную папку, они нарезаны на шарды из-за особенностей FSDP...",
-      "reason": "agent_ops, evals_quality; depth=benchmark_or_eval",
-      "telegram_message_id": 1642
     }
   ],
   "runtime_readiness": {
@@ -157,7 +159,7 @@
     "metadata_advisory_ready": false,
     "text_posts_ready": true
   },
-  "text_post_count": 398,
+  "text_post_count": 399,
   "top_concepts": [],
   "top_keywords": [],
   "top_primary_topics": [],

@@ -1,18 +1,18 @@
 {
   "channel_username": "kdoronin_blog",
   "coverage": {
-    "agent_ops": 287,
-    "ai_engineering_infra": 24,
-    "ai_product_pm": 96,
+    "agent_ops": 276,
+    "ai_engineering_infra": 23,
+    "ai_product_pm": 80,
     "ai_ux_workflow": 38,
-    "business_adoption": 91,
-    "coding_agents": 181,
-    "creative_multimodal": 36,
-    "evals_quality": 17,
-    "general_ai_news": 11,
-    "model_landscape": 398,
-    "rag_retrieval_knowledge": 29,
-    "security_privacy_governance": 22
+    "business_adoption": 76,
+    "coding_agents": 179,
+    "creative_multimodal": 34,
+    "evals_quality": 15,
+    "general_ai_news": 8,
+    "model_landscape": 376,
+    "rag_retrieval_knowledge": 27,
+    "security_privacy_governance": 21
   },
   "coverage_strength": {
     "agent_ops": "strong",
@@ -30,26 +30,26 @@
   },
   "date_range": {
     "first_post": "2024-06-11",
-    "last_post": "2026-05-11"
+    "last_post": "2026-05-12"
   },
   "depth_profile": {
-    "announcement_or_news": 50,
-    "architecture_analysis": 63,
-    "benchmark_or_eval": 18,
-    "case_study": 124,
-    "howto_or_checklist": 300,
-    "low_signal": 199,
-    "practitioner_experience": 117,
+    "announcement_or_news": 43,
+    "architecture_analysis": 57,
+    "benchmark_or_eval": 16,
+    "case_study": 114,
+    "howto_or_checklist": 274,
+    "low_signal": 196,
+    "practitioner_experience": 104,
     "tool_release": 10
   },
   "display_name": "Doronin",
-  "embedding_count": 692,
+  "embedding_count": 627,
   "embedding_coverage_ratio": 1.0,
   "expert_id": "doronin",
-  "fts_count": 692,
-  "metadata_coverage_ratio": 0.7162,
-  "metadata_valid_count": 631,
-  "post_count": 881,
+  "fts_count": 627,
+  "metadata_coverage_ratio": 0.6941,
+  "metadata_valid_count": 565,
+  "post_count": 814,
   "representative_posts": [
     {
       "coverage_labels": [
@@ -103,6 +103,17 @@
     },
     {
       "coverage_labels": [
+        "agent_ops",
+        "rag_retrieval_knowledge"
+      ],
+      "created_at": "2026-05-12",
+      "depth_label": "architecture_analysis",
+      "excerpt": "**Рубрика \"нашёл новое интересное решение для памяти AI-агентов\".** На прошлой неделе на arxiv.org вышла статья [\"Storage Is Not Memory: A Retrieval-Centered Architecture for Agent Recall\"](https://arxiv.org/html/2605.04897v1). То есть: > Кому какое дело, какой красоты твои абстракции для хранения информации, если r...",
+      "reason": "agent_ops, rag_retrieval_knowledge; depth=architecture_analysis",
+      "telegram_message_id": 1278
+    },
+    {
+      "coverage_labels": [
         "agent_ops"
       ],
       "created_at": "2026-04-24",
@@ -130,18 +141,6 @@
       "excerpt": "**Всё-таки дождался, когда ****Seedance2.0 выйдет на fal.ai**i](https://fal.ai/models/bytedance/seedance-2.0/text-to-video)**.** Сперва он был доступен **только через лист ожидания**, а сейчас, судя по всему, его открыли для всех. Вообще я разделяю AI-генераторы видео на два типа: 1. Годятся **для развлечения**. 2....",
       "reason": "model_landscape; depth=case_study",
       "telegram_message_id": 1246
-    },
-    {
-      "coverage_labels": [
-        "agent_ops",
-        "business_adoption",
-        "model_landscape"
-      ],
-      "created_at": "2026-05-11",
-      "depth_label": "practitioner_experience",
-      "excerpt": "**\"Каждый токен на счету\".** Вы его ждали – и он пришёл. **Анонс нового стрима!** Для большинства пользователей то, что OpenClaw или [Hermes](https://t.me/kdoronin_blog/1268) едят токены с лопаты – не проблема. Дело в том, что использует эту обвязку вокруг агента **один человек**. Поэтому и разница в пять раз (хорош...",
-      "reason": "agent_ops, business_adoption, model_landscape; depth=practitioner_experience",
-      "telegram_message_id": 1277
     }
   ],
   "runtime_readiness": {
@@ -150,39 +149,35 @@
     "metadata_advisory_ready": true,
     "text_posts_ready": true
   },
-  "text_post_count": 692,
+  "text_post_count": 627,
   "top_concepts": [
     {
-      "count": 101,
+      "count": 93,
       "value": "Prompt Engineering"
     },
     {
-      "count": 74,
+      "count": 73,
       "value": "AI Agents"
     },
     {
-      "count": 43,
-      "value": "Automation"
-    },
-    {
       "count": 42,
-      "value": "LLM"
-    },
-    {
-      "count": 40,
-      "value": "API"
+      "value": "Automation"
     },
     {
       "count": 39,
       "value": "Generative AI"
     },
     {
-      "count": 26,
-      "value": "Software Development"
+      "count": 39,
+      "value": "LLM"
     },
     {
-      "count": 19,
-      "value": "Context Window"
+      "count": 38,
+      "value": "API"
+    },
+    {
+      "count": 25,
+      "value": "Software Development"
     },
     {
       "count": 19,
@@ -191,6 +186,10 @@
     {
       "count": 16,
       "value": "AI Agent"
+    },
+    {
+      "count": 16,
+      "value": "Context Window"
     },
     {
       "count": 15,
@@ -203,93 +202,93 @@
   ],
   "top_keywords": [
     {
-      "count": 165,
+      "count": 147,
       "value": "llm"
     },
     {
-      "count": 135,
+      "count": 133,
       "value": "генерация"
     },
     {
-      "count": 135,
+      "count": 133,
       "value": "generation"
     },
     {
-      "count": 127,
-      "value": "code"
-    },
-    {
-      "count": 123,
+      "count": 118,
       "value": "claude"
     },
     {
-      "count": 118,
+      "count": 117,
       "value": "video"
     },
     {
-      "count": 117,
-      "value": "development"
-    },
-    {
-      "count": 107,
-      "value": "разработка"
+      "count": 115,
+      "value": "code"
     },
     {
       "count": 105,
+      "value": "development"
+    },
+    {
+      "count": 98,
       "value": "prompt"
+    },
+    {
+      "count": 96,
+      "value": "разработка"
     },
     {
       "count": 94,
       "value": "видео"
     },
     {
-      "count": 93,
-      "value": "интеллект"
-    },
-    {
-      "count": 93,
-      "value": "промпт"
-    },
-    {
-      "count": 92,
-      "value": "agents"
-    },
-    {
       "count": 90,
-      "value": "искусственный"
+      "value": "agents"
     },
     {
       "count": 89,
       "value": "cursor"
     },
     {
+      "count": 88,
+      "value": "интеллект"
+    },
+    {
+      "count": 88,
+      "value": "промпт"
+    },
+    {
       "count": 85,
-      "value": "нейросети"
+      "value": "искусственный"
     },
     {
       "count": 84,
       "value": "agent"
     },
     {
-      "count": 82,
+      "count": 81,
       "value": "api"
     },
     {
-      "count": 77,
-      "value": "neural"
+      "count": 80,
+      "value": "нейросети"
     },
     {
-      "count": 73,
+      "count": 72,
       "value": "ai-агент"
+    },
+    {
+      "count": 69,
+      "value": "neural"
     }
   ],
   "top_primary_topics": [
     {
-      "count": 70,
+      "count": 69,
       "value": "AI Agents"
     },
     {
-      "count": 34,
+      "count": 31,
       "value": "AI Development"
     },
     {
@@ -330,7 +329,7 @@
     },
     {
       "count": 8,
-      "value": "Prompt Engineering"
+      "value": "Claude Code"
     }
   ],
   "warnings": []

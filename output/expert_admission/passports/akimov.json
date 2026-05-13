@@ -10,7 +10,7 @@
     "creative_multimodal": 65,
     "evals_quality": 106,
     "general_ai_news": 2,
-    "model_landscape": 492,
+    "model_landscape": 493,
     "rag_retrieval_knowledge": 29,
     "security_privacy_governance": 89
   },
@@ -37,19 +37,19 @@
     "architecture_analysis": 31,
     "benchmark_or_eval": 105,
     "case_study": 93,
-    "howto_or_checklist": 180,
+    "howto_or_checklist": 181,
     "low_signal": 152,
     "practitioner_experience": 78,
     "tool_release": 30
   },
   "display_name": "Akimov",
-  "embedding_count": 790,
+  "embedding_count": 791,
   "embedding_coverage_ratio": 1.0,
   "expert_id": "akimov",
-  "fts_count": 790,
-  "metadata_coverage_ratio": 0.7849,
+  "fts_count": 791,
+  "metadata_coverage_ratio": 0.784,
   "metadata_valid_count": 657,
-  "post_count": 837,
+  "post_count": 838,
   "representative_posts": [
     {
       "coverage_labels": [
@@ -82,20 +82,6 @@
       "coverage_labels": [
         "coding_agents",
         "agent_ops",
-        "evals_quality",
-        "business_adoption",
-        "model_landscape"
-      ],
-      "created_at": "2026-04-24",
-      "depth_label": "benchmark_or_eval",
-      "excerpt": "DeepSeek-V4! DeepSeek наконец выпустил превью новой модели – прямой конкурент Claude, GPT и Gemini, только в open-source. Посмотрел в общем бенчмарки и отчет. Ну-у... Если бы вышла в начале года, - это был бы просто нереальный прорыв. Сейчас просто лучший опенсорс :) Да и сейчас в общем-то базовые архитектурные вещи...",
-      "reason": "coding_agents, agent_ops, evals_quality; depth=benchmark_or_eval",
-      "telegram_message_id": 2141
-    },
-    {
-      "coverage_labels": [
-        "coding_agents",
-        "agent_ops",
         "ai_product_pm",
         "security_privacy_governance",
         "model_landscape"
@@ -105,6 +91,20 @@
       "excerpt": "С большим удовольствием посмотрел на интервью Бориса Чёрного из Claude Code. Понятно, что там в 100500-й раз, как случайно они сделали Claude Code и как улучшение моделей наконец заставило это все заработать, но самые прикольные мысли такие: \"Кодинг уже решенная задача\". Можно сгенерировать что угодно на каком угодн...",
       "reason": "coding_agents, agent_ops, ai_product_pm; depth=case_study",
       "telegram_message_id": 2161
+    },
+    {
+      "coverage_labels": [
+        "coding_agents",
+        "agent_ops",
+        "ai_product_pm",
+        "business_adoption",
+        "model_landscape"
+      ],
+      "created_at": "2026-04-24",
+      "depth_label": "case_study",
+      "excerpt": "Вау, интервью с Head of Product Claude: Главная мысль – классическая схема разработки рассыпается. Скорость: с 6 месяцев до 1 дня Раньше циклы планировались на 6–12 месяцев вперёд. Сейчас в Anthropic путь от идеи до релиза – месяц, неделя, иногда день. PRD и роадмапы эволюционировали: roadmap перестал быть «планом н...",
+      "reason": "coding_agents, agent_ops, ai_product_pm; depth=case_study",
+      "telegram_message_id": 2144
     },
     {
       "coverage_labels": [
@@ -144,17 +144,14 @@
     },
     {
       "coverage_labels": [
-        "coding_agents",
-        "agent_ops",
-        "ai_product_pm",
-        "business_adoption",
-        "model_landscape"
+        "model_landscape",
+        "creative_multimodal"
       ],
-      "created_at": "2026-04-24",
-      "depth_label": "case_study",
-      "excerpt": "Вау, интервью с Head of Product Claude: Главная мысль – классическая схема разработки рассыпается. Скорость: с 6 месяцев до 1 дня Раньше циклы планировались на 6–12 месяцев вперёд. Сейчас в Anthropic путь от идеи до релиза – месяц, неделя, иногда день. PRD и роадмапы эволюционировали: roadmap перестал быть «планом н...",
-      "reason": "coding_agents, agent_ops, ai_product_pm; depth=case_study",
-      "telegram_message_id": 2144
+      "created_at": "2026-05-06",
+      "depth_label": "practitioner_experience",
+      "excerpt": "Специально оставил на утро внимательно почитать и потестить. Inworld (я кажется их один из фанатов) выпустили Realtime TTS-2 – голосовую модель, заточенную под живой диалог, а не аудиокниги Уже #1 в голосовой арене на https://artificialanalysis.ai/text-to-speech/leaderboard То есть выше и OpenAI, и Gemini, и ElevenL...",
+      "reason": "model_landscape, creative_multimodal; depth=practitioner_experience",
+      "telegram_message_id": 2158
     }
   ],
   "runtime_readiness": {
@@ -163,7 +160,7 @@
     "metadata_advisory_ready": true,
     "text_posts_ready": true
   },
-  "text_post_count": 790,
+  "text_post_count": 791,
   "top_concepts": [
     {
       "count": 55,

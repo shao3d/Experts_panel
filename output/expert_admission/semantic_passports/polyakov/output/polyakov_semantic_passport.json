@@ -24,16 +24,6 @@
   },
   "source_ref_index_used": [
     {
-      "source_ref": "P0039",
-      "source_kind": "expert_post",
-      "post_id": 3466,
-      "telegram_message_id": 82,
-      "comment_id": null,
-      "telegram_comment_id": null,
-      "created_at": "2024-11-05 16:12:56.000000",
-      "why_used": "Evidence of early adoption and practical use of Cursor for automated bot creation."
-    },
-    {
       "source_ref": "P0050",
       "source_kind": "expert_post",
       "post_id": 3477,
@@ -554,9 +544,10 @@
         "Evaluates tools based on their ability to handle complex refactoring vs. simple generation.",
         "Believes 'vibe-coding' lowers the barrier to entry but requires strong architectural oversight."
       ],
-      "missing_or_weak_subtopics": [],
+      "missing_or_weak_subtopics": [
+        "Early 2024 first-Cursor-experience evidence was pruned from the live DB; retained AI-coding support comes from later 2025-2026 Claude/Codex/OpenClaw posts."
+      ],
       "evidence_refs": [
-        "P0039",
         "P0098",
         "P0149",
         "P0172",
@@ -1271,7 +1262,6 @@
     "abstentions": [],
     "possible_model_errors": [],
     "source_refs_used": [
-      "P0039",
       "P0050",
       "P0057",
       "P0086",
@@ -1327,6 +1317,14 @@
       "P0230",
       "P0240",
       "P0250"
+    ],
+    "normalization_notes": [
+      {
+        "operation": "post_prune_remove_stale_refs",
+        "removed_source_ref_count": 1,
+        "reason": "polyakov posts before 2025-01-01 were soft-pruned from the live DB; one previously cited first-Cursor-experience ref no longer resolves to a post.",
+        "updated_at": "2026-05-13T14:07:07.636480+00:00"
+      }
     ]
   }
 }

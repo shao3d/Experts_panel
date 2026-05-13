@@ -1,18 +1,18 @@
 {
   "channel_username": "oestick",
   "coverage": {
-    "agent_ops": 52,
-    "ai_engineering_infra": 7,
-    "ai_product_pm": 68,
-    "ai_ux_workflow": 20,
-    "business_adoption": 54,
-    "coding_agents": 65,
+    "agent_ops": 48,
+    "ai_engineering_infra": 6,
+    "ai_product_pm": 48,
+    "ai_ux_workflow": 16,
+    "business_adoption": 46,
+    "coding_agents": 62,
     "creative_multimodal": 2,
     "evals_quality": 16,
-    "general_ai_news": 2,
-    "model_landscape": 149,
-    "rag_retrieval_knowledge": 22,
-    "security_privacy_governance": 9
+    "general_ai_news": 0,
+    "model_landscape": 120,
+    "rag_retrieval_knowledge": 21,
+    "security_privacy_governance": 8
   },
   "coverage_strength": {
     "agent_ops": "strong",
@@ -23,33 +23,33 @@
     "coding_agents": "strong",
     "creative_multimodal": "thin",
     "evals_quality": "medium",
-    "general_ai_news": "thin",
+    "general_ai_news": "none",
     "model_landscape": "strong",
     "rag_retrieval_knowledge": "medium",
     "security_privacy_governance": "thin"
   },
   "date_range": {
-    "first_post": "2024-01-10",
+    "first_post": "2024-01-11",
     "last_post": "2026-05-12"
   },
   "depth_profile": {
-    "announcement_or_news": 32,
-    "architecture_analysis": 35,
-    "benchmark_or_eval": 17,
-    "case_study": 56,
-    "howto_or_checklist": 118,
-    "low_signal": 30,
-    "practitioner_experience": 75,
+    "announcement_or_news": 21,
+    "architecture_analysis": 26,
+    "benchmark_or_eval": 16,
+    "case_study": 36,
+    "howto_or_checklist": 54,
+    "low_signal": 9,
+    "practitioner_experience": 49,
     "tool_release": 0
   },
   "display_name": "Tech_AI_grabli",
-  "embedding_count": 357,
+  "embedding_count": 209,
   "embedding_coverage_ratio": 1.0,
   "expert_id": "ai_grabli",
-  "fts_count": 357,
-  "metadata_coverage_ratio": 0.9091,
-  "metadata_valid_count": 330,
-  "post_count": 363,
+  "fts_count": 209,
+  "metadata_coverage_ratio": 0.8673,
+  "metadata_valid_count": 183,
+  "post_count": 211,
   "representative_posts": [
     {
       "coverage_labels": [
@@ -159,26 +159,26 @@
     "metadata_advisory_ready": true,
     "text_posts_ready": true
   },
-  "text_post_count": 357,
+  "text_post_count": 209,
   "top_concepts": [
     {
-      "count": 39,
+      "count": 28,
       "value": "Prompt Engineering"
     },
     {
-      "count": 16,
-      "value": "Automation"
-    },
-    {
-      "count": 16,
-      "value": "LLM"
-    },
-    {
-      "count": 13,
+      "count": 12,
       "value": "RAG"
     },
     {
-      "count": 10,
+      "count": 12,
+      "value": "LLM"
+    },
+    {
+      "count": 11,
+      "value": "Automation"
+    },
+    {
+      "count": 9,
       "value": "Software Development"
     },
     {
@@ -190,113 +190,109 @@
       "value": "Context Window"
     },
     {
-      "count": 7,
-      "value": "Product Management"
-    },
-    {
       "count": 6,
       "value": "Embeddings"
     },
     {
-      "count": 6,
-      "value": "Networking"
+      "count": 5,
+      "value": "Product Management"
     },
     {
-      "count": 6,
-      "value": "Productivity"
+      "count": 4,
+      "value": "AI Agents"
     },
     {
-      "count": 6,
-      "value": "Marketing"
+      "count": 4,
+      "value": "Project Management"
+    },
+    {
+      "count": 4,
+      "value": "Data Extraction"
     }
   ],
   "top_keywords": [
     {
-      "count": 81,
+      "count": 66,
       "value": "llm"
     },
     {
-      "count": 60,
+      "count": 43,
       "value": "prompt"
     },
     {
-      "count": 54,
+      "count": 38,
       "value": "промпт"
     },
     {
-      "count": 44,
-      "value": "разработка"
-    },
-    {
-      "count": 44,
+      "count": 31,
       "value": "development"
     },
     {
-      "count": 34,
-      "value": "gpt"
+      "count": 30,
+      "value": "разработка"
     },
     {
-      "count": 30,
+      "count": 26,
       "value": "искусственный"
     },
     {
-      "count": 30,
+      "count": 26,
       "value": "интеллект"
     },
     {
-      "count": 26,
+      "count": 25,
       "value": "code"
     },
     {
-      "count": 26,
-      "value": "generation"
-    },
-    {
-      "count": 26,
-      "value": "автоматизация"
-    },
-    {
-      "count": 26,
-      "value": "обучение"
-    },
-    {
-      "count": 24,
+      "count": 22,
       "value": "context"
     },
     {
-      "count": 23,
-      "value": "automation"
+      "count": 19,
+      "value": "rag"
     },
     {
-      "count": 22,
-      "value": "data"
+      "count": 18,
+      "value": "автоматизация"
     },
     {
-      "count": 22,
-      "value": "генерация"
-    },
-    {
-      "count": 22,
-      "value": "neural"
-    },
-    {
-      "count": 21,
+      "count": 18,
       "value": "google"
     },
     {
-      "count": 21,
-      "value": "telegram"
+      "count": 17,
+      "value": "automation"
     },
     {
-      "count": 21,
-      "value": "телеграм"
+      "count": 16,
+      "value": "agents"
+    },
+    {
+      "count": 16,
+      "value": "claude"
+    },
+    {
+      "count": 16,
+      "value": "generation"
+    },
+    {
+      "count": 16,
+      "value": "models"
+    },
+    {
+      "count": 16,
+      "value": "openai"
+    },
+    {
+      "count": 16,
+      "value": "модели"
+    },
+    {
+      "count": 16,
+      "value": "gpt"
     }
   ],
   "top_primary_topics": [
-    {
-      "count": 17,
-      "value": "Prompt Engineering"
-    },
     {
       "count": 12,
       "value": "AI Development"
@@ -307,19 +303,7 @@
     },
     {
       "count": 7,
-      "value": "Generative AI"
-    },
-    {
-      "count": 6,
-      "value": "Content Strategy"
-    },
-    {
-      "count": 5,
-      "value": "Software Engineering"
-    },
-    {
-      "count": 4,
-      "value": "AI Engineering"
+      "value": "Prompt Engineering"
     },
     {
       "count": 4,
@@ -338,8 +322,24 @@
       "value": "LLM Evaluation"
     },
     {
-      "count": 4,
-      "value": "Productivity"
+      "count": 3,
+      "value": "AI Engineering"
+    },
+    {
+      "count": 3,
+      "value": "AI Integration"
+    },
+    {
+      "count": 3,
+      "value": "RAG"
+    },
+    {
+      "count": 3,
+      "value": "Video Conferencing"
+    },
+    {
+      "count": 3,
+      "value": "Content Strategy"
     }
   ],
   "warnings": []

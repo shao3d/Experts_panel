@@ -7,82 +7,81 @@ Channel: `oestick`
 
 | Metric | Count |
 |---|---:|
-| Posts | 363 |
-| Text posts | 357 |
-| Valid post_metadata | 330 |
-| Embeddings | 357 |
-| FTS rows | 357 |
+| Posts | 211 |
+| Text posts | 209 |
+| Valid post_metadata | 183 |
+| Embeddings | 209 |
+| FTS rows | 209 |
 
 ## Coverage
 
 | Area | Count | Strength |
 |---|---:|---|
-| `model_landscape` | 149 | strong |
-| `ai_product_pm` | 68 | strong |
-| `coding_agents` | 65 | strong |
-| `business_adoption` | 54 | strong |
-| `agent_ops` | 52 | strong |
-| `rag_retrieval_knowledge` | 22 | medium |
-| `ai_ux_workflow` | 20 | medium |
+| `model_landscape` | 120 | strong |
+| `coding_agents` | 62 | strong |
+| `agent_ops` | 48 | strong |
+| `ai_product_pm` | 48 | strong |
+| `business_adoption` | 46 | strong |
+| `rag_retrieval_knowledge` | 21 | medium |
+| `ai_ux_workflow` | 16 | medium |
 | `evals_quality` | 16 | medium |
-| `security_privacy_governance` | 9 | thin |
-| `ai_engineering_infra` | 7 | thin |
+| `security_privacy_governance` | 8 | thin |
+| `ai_engineering_infra` | 6 | thin |
 | `creative_multimodal` | 2 | thin |
-| `general_ai_news` | 2 | thin |
 
 ## Depth Profile
 
 | Depth | Count |
 |---|---:|
-| `practitioner_experience` | 75 |
-| `case_study` | 56 |
-| `architecture_analysis` | 35 |
-| `benchmark_or_eval` | 17 |
-| `howto_or_checklist` | 118 |
+| `practitioner_experience` | 49 |
+| `case_study` | 36 |
+| `architecture_analysis` | 26 |
+| `benchmark_or_eval` | 16 |
+| `howto_or_checklist` | 54 |
 | `tool_release` | 0 |
-| `announcement_or_news` | 32 |
-| `low_signal` | 30 |
+| `announcement_or_news` | 21 |
+| `low_signal` | 9 |
 
 ## Top Metadata Signals
 
 ### Primary topics
 
-- `Prompt Engineering`: 17
 - `AI Development`: 12
 - `AI Agents`: 10
-- `Generative AI`: 7
-- `Content Strategy`: 6
-- `Software Engineering`: 5
-- `AI Engineering`: 4
+- `Prompt Engineering`: 7
 - `AI Coding`: 4
 - `Artificial Intelligence`: 4
 - `Structured Output`: 4
+- `LLM Evaluation`: 4
+- `AI Engineering`: 3
+- `AI Integration`: 3
+- `RAG`: 3
 
 ### Concepts
 
-- `Prompt Engineering`: 39
-- `Automation`: 16
-- `LLM`: 16
-- `RAG`: 13
-- `Software Development`: 10
+- `Prompt Engineering`: 28
+- `RAG`: 12
+- `LLM`: 12
+- `Automation`: 11
+- `Software Development`: 9
 - `Structured Output`: 8
 - `Context Window`: 8
-- `Product Management`: 7
 - `Embeddings`: 6
-- `Networking`: 6
+- `Product Management`: 5
+- `AI Agents`: 4
 
 ### Keywords
 
-- `llm`: 81
-- `prompt`: 60
-- `промпт`: 54
-- `разработка`: 44
-- `development`: 44
-- `gpt`: 34
-- `искусственный`: 30
-- `интеллект`: 30
-- `code`: 26
-- `generation`: 26
+- `llm`: 66
+- `prompt`: 43
+- `промпт`: 38
+- `development`: 31
+- `разработка`: 30
+- `искусственный`: 26
+- `интеллект`: 26
+- `code`: 25
+- `context`: 22
+- `rag`: 19
 
 
 ## Representative Posts

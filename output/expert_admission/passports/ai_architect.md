@@ -7,11 +7,11 @@ Channel: `the_ai_architect`
 
 | Metric | Count |
 |---|---:|
-| Posts | 238 |
-| Text posts | 230 |
+| Posts | 239 |
+| Text posts | 231 |
 | Valid post_metadata | 196 |
-| Embeddings | 230 |
-| FTS rows | 230 |
+| Embeddings | 231 |
+| FTS rows | 231 |
 
 ## Coverage
 
@@ -19,7 +19,7 @@ Channel: `the_ai_architect`
 |---|---:|---|
 | `coding_agents` | 154 | strong |
 | `model_landscape` | 147 | strong |
-| `agent_ops` | 92 | strong |
+| `agent_ops` | 93 | strong |
 | `business_adoption` | 42 | strong |
 | `ai_product_pm` | 40 | strong |
 | `ai_ux_workflow` | 24 | medium |
@@ -39,7 +39,7 @@ Channel: `the_ai_architect`
 | `benchmark_or_eval` | 17 |
 | `howto_or_checklist` | 64 |
 | `tool_release` | 6 |
-| `announcement_or_news` | 29 |
+| `announcement_or_news` | 30 |
 | `low_signal` | 26 |
 
 ## Top Metadata Signals

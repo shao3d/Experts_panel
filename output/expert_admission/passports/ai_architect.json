@@ -1,7 +1,7 @@
 {
   "channel_username": "the_ai_architect",
   "coverage": {
-    "agent_ops": 92,
+    "agent_ops": 93,
     "ai_engineering_infra": 11,
     "ai_product_pm": 40,
     "ai_ux_workflow": 24,
@@ -33,7 +33,7 @@
     "last_post": "2026-05-12"
   },
   "depth_profile": {
-    "announcement_or_news": 29,
+    "announcement_or_news": 30,
     "architecture_analysis": 21,
     "benchmark_or_eval": 17,
     "case_study": 28,
@@ -43,13 +43,13 @@
     "tool_release": 6
   },
   "display_name": "AI Architect",
-  "embedding_count": 230,
+  "embedding_count": 231,
   "embedding_coverage_ratio": 1.0,
   "expert_id": "ai_architect",
-  "fts_count": 230,
-  "metadata_coverage_ratio": 0.8235,
+  "fts_count": 231,
+  "metadata_coverage_ratio": 0.8201,
   "metadata_valid_count": 196,
-  "post_count": 238,
+  "post_count": 239,
   "representative_posts": [
     {
       "coverage_labels": [
@@ -154,7 +154,7 @@
     "metadata_advisory_ready": true,
     "text_posts_ready": true
   },
-  "text_post_count": 230,
+  "text_post_count": 231,
   "top_concepts": [
     {
       "count": 24,

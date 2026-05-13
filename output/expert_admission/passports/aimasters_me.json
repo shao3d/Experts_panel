@@ -1,18 +1,18 @@
 {
   "channel_username": "aimastersme",
   "coverage": {
-    "agent_ops": 62,
-    "ai_engineering_infra": 10,
-    "ai_product_pm": 37,
-    "ai_ux_workflow": 20,
-    "business_adoption": 31,
-    "coding_agents": 63,
-    "creative_multimodal": 10,
-    "evals_quality": 9,
+    "agent_ops": 59,
+    "ai_engineering_infra": 9,
+    "ai_product_pm": 35,
+    "ai_ux_workflow": 18,
+    "business_adoption": 27,
+    "coding_agents": 62,
+    "creative_multimodal": 7,
+    "evals_quality": 7,
     "general_ai_news": 3,
-    "model_landscape": 166,
+    "model_landscape": 145,
     "rag_retrieval_knowledge": 4,
-    "security_privacy_governance": 24
+    "security_privacy_governance": 21
   },
   "coverage_strength": {
     "agent_ops": "strong",
@@ -29,27 +29,27 @@
     "security_privacy_governance": "medium"
   },
   "date_range": {
-    "first_post": "2024-02-19",
+    "first_post": "2024-08-12",
     "last_post": "2026-05-06"
   },
   "depth_profile": {
-    "announcement_or_news": 49,
-    "architecture_analysis": 33,
-    "benchmark_or_eval": 8,
-    "case_study": 21,
-    "howto_or_checklist": 126,
-    "low_signal": 39,
-    "practitioner_experience": 37,
+    "announcement_or_news": 37,
+    "architecture_analysis": 28,
+    "benchmark_or_eval": 7,
+    "case_study": 20,
+    "howto_or_checklist": 98,
+    "low_signal": 29,
+    "practitioner_experience": 28,
     "tool_release": 9
   },
   "display_name": "Aimasters.Me",
-  "embedding_count": 307,
+  "embedding_count": 243,
   "embedding_coverage_ratio": 1.0,
   "expert_id": "aimasters_me",
-  "fts_count": 307,
+  "fts_count": 243,
   "metadata_coverage_ratio": 0.0,
   "metadata_valid_count": 0,
-  "post_count": 322,
+  "post_count": 256,
   "representative_posts": [
     {
       "coverage_labels": [
@@ -151,7 +151,7 @@
     "metadata_advisory_ready": false,
     "text_posts_ready": true
   },
-  "text_post_count": 307,
+  "text_post_count": 243,
   "top_concepts": [],
   "top_keywords": [],
   "top_primary_topics": [],

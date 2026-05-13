@@ -1,14 +1,14 @@
 {
   "channel_username": "aostrikov_ai_agents",
   "coverage": {
-    "agent_ops": 41,
+    "agent_ops": 43,
     "ai_engineering_infra": 6,
     "ai_product_pm": 12,
     "ai_ux_workflow": 4,
-    "business_adoption": 10,
+    "business_adoption": 11,
     "coding_agents": 23,
     "creative_multimodal": 1,
-    "evals_quality": 5,
+    "evals_quality": 6,
     "general_ai_news": 0,
     "model_landscape": 28,
     "rag_retrieval_knowledge": 6,
@@ -30,27 +30,39 @@
   },
   "date_range": {
     "first_post": "2026-01-07",
-    "last_post": "2026-05-10"
+    "last_post": "2026-05-12"
   },
   "depth_profile": {
     "announcement_or_news": 11,
     "architecture_analysis": 7,
-    "benchmark_or_eval": 5,
+    "benchmark_or_eval": 6,
     "case_study": 9,
-    "howto_or_checklist": 10,
+    "howto_or_checklist": 11,
     "low_signal": 12,
     "practitioner_experience": 14,
     "tool_release": 1
   },
   "display_name": "Ostrikov",
-  "embedding_count": 68,
+  "embedding_count": 70,
   "embedding_coverage_ratio": 1.0,
   "expert_id": "ostrikov",
-  "fts_count": 68,
-  "metadata_coverage_ratio": 0.4203,
+  "fts_count": 70,
+  "metadata_coverage_ratio": 0.4085,
   "metadata_valid_count": 29,
-  "post_count": 69,
+  "post_count": 71,
   "representative_posts": [
+    {
+      "coverage_labels": [
+        "agent_ops",
+        "evals_quality",
+        "business_adoption"
+      ],
+      "created_at": "2026-05-12",
+      "depth_label": "benchmark_or_eval",
+      "excerpt": "**Методичка по префикс кэшу** > “KV-cache hit rate is the single most important metric for a production-stage AI agent.” > - Context engineering for AI Agents, Manus Метрика которая имеет прямое влияние на деньги, которые вы тратите на AI. Ниже - три статьи разбирающие prefix_cache с разных сторон: - [Экономика кэши...",
+      "reason": "agent_ops, evals_quality, business_adoption; depth=benchmark_or_eval",
+      "telegram_message_id": 113
+    },
     {
       "coverage_labels": [
         "coding_agents",
@@ -139,16 +151,6 @@
       "excerpt": "🚀 Серия соревнований по МЛ и научный проект ! Денежный призовой фонд больше 100 000 р и будет расти ! Кому интересен МЛ/RL или математика или пазлы или роботы. Приглашаем Вас принять участие в серии челленджей и развитии научного опен-соурс проекта. Соревнование организуется совместно с учеными лаборатории интеллект...",
       "reason": "coding_agents, agent_ops; depth=case_study",
       "telegram_message_id": 92
-    },
-    {
-      "coverage_labels": [
-        "agent_ops"
-      ],
-      "created_at": "2026-04-13",
-      "depth_label": "case_study",
-      "excerpt": "**Вообще, мне дважды советовали попробовать ****Mastra**a](https://mastra.ai/)**.** И оба раза это делал [Рефат](https://t.me/nobilix). Указывая в списке \"советую\" также [Agno](https://www.agno.com/) (писал про него [тут](https://t.me/kdoronin_blog/1097)). Собственно, выбирая между TS и Python, я выбирал последний,...",
-      "reason": "agent_ops; depth=case_study",
-      "telegram_message_id": 89
     }
   ],
   "runtime_readiness": {
@@ -157,7 +159,7 @@
     "metadata_advisory_ready": true,
     "text_posts_ready": true
   },
-  "text_post_count": 68,
+  "text_post_count": 70,
   "top_concepts": [
     {
       "count": 5,

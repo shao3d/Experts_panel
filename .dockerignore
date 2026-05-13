@@ -96,6 +96,40 @@
 **/.claude/logs
 **/*.log
 **/logs
+**/.adal/**
+**/.augment/**
+**/.codebuddy/**
+**/.commandcode/**
+**/.continue/**
+**/.cortex/**
+**/.crush/**
+**/.factory/**
+**/.goose/**
+**/.iflow/**
+**/.junie/**
+**/.kilocode/**
+**/.kiro/**
+**/.kode/**
+**/.mcpjam/**
+**/.mux/**
+**/.neovate/**
+**/.openhands/**
+**/.pi/**
+**/.pochi/**
+**/.qoder/**
+**/.qwen/**
+**/.roo/**
+**/.trae/**
+**/.vibe/**
+**/.windsurf/**
+**/.zencoder/**
+
+# =========================
+# KNOWLEDGE OPS / GENERATED ARTIFACTS
+# =========================
+output/**
+docs/**
+.haft/**
 
 # =========================
 # IDE & SYSTEM

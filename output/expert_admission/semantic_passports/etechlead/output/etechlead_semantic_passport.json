@@ -20,7 +20,8 @@
       "ru"
     ],
     "material_limitations": [
-      "Only a subset of comments is visible in the packet"
+      "Only a subset of comments is visible in the packet",
+      "Live DB was soft-pruned after passport generation: etechlead posts before 2024-12-24 were removed unless linked by newer posts; all passport-cited refs still resolve in the live DB as of 2026-05-13."
     ],
     "author_vs_community_boundary": "Clear boundary. The author actively engages in comments, providing deep technical follow-ups and clarifications, which are treated as expert voice when authored by 'Этихлид' or 'Unknown' where context clearly indicates the author."
   },
@@ -1374,6 +1375,19 @@
       "P0177",
       "P0183",
       "P0188"
+    ],
+    "normalization_notes": [
+      {
+        "operation": "post_prune_live_db_audit",
+        "reason": "etechlead live DB was soft-pruned with cutoff 2024-12-24; no passport-cited source refs were removed.",
+        "cutoff_date": "2024-12-24",
+        "deleted_posts": 47,
+        "deleted_comments": 254,
+        "preserved_linked_old_posts": 17,
+        "live_source_refs_checked": 42,
+        "stale_source_refs_after_prune": 0,
+        "updated_at": "2026-05-13T14:22:05.364195+00:00"
+      }
     ]
   }
 }

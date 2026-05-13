@@ -1,23 +1,23 @@
 {
   "channel_username": "etechlead",
   "coverage": {
-    "agent_ops": 98,
-    "ai_engineering_infra": 12,
-    "ai_product_pm": 43,
-    "ai_ux_workflow": 22,
-    "business_adoption": 57,
-    "coding_agents": 106,
-    "creative_multimodal": 6,
-    "evals_quality": 33,
+    "agent_ops": 91,
+    "ai_engineering_infra": 9,
+    "ai_product_pm": 36,
+    "ai_ux_workflow": 20,
+    "business_adoption": 50,
+    "coding_agents": 101,
+    "creative_multimodal": 3,
+    "evals_quality": 31,
     "general_ai_news": 0,
-    "model_landscape": 118,
-    "rag_retrieval_knowledge": 6,
-    "security_privacy_governance": 23
+    "model_landscape": 109,
+    "rag_retrieval_knowledge": 5,
+    "security_privacy_governance": 19
   },
   "coverage_strength": {
     "agent_ops": "strong",
-    "ai_engineering_infra": "medium",
-    "ai_product_pm": "strong",
+    "ai_engineering_infra": "thin",
+    "ai_product_pm": "medium",
     "ai_ux_workflow": "medium",
     "business_adoption": "strong",
     "coding_agents": "strong",
@@ -34,22 +34,22 @@
   },
   "depth_profile": {
     "announcement_or_news": 10,
-    "architecture_analysis": 16,
-    "benchmark_or_eval": 33,
-    "case_study": 13,
-    "howto_or_checklist": 47,
-    "low_signal": 18,
-    "practitioner_experience": 58,
+    "architecture_analysis": 14,
+    "benchmark_or_eval": 31,
+    "case_study": 12,
+    "howto_or_checklist": 33,
+    "low_signal": 8,
+    "practitioner_experience": 40,
     "tool_release": 1
   },
   "display_name": "Etechlead",
-  "embedding_count": 185,
+  "embedding_count": 146,
   "embedding_coverage_ratio": 1.0,
   "expert_id": "etechlead",
-  "fts_count": 185,
-  "metadata_coverage_ratio": 0.9082,
-  "metadata_valid_count": 178,
-  "post_count": 196,
+  "fts_count": 146,
+  "metadata_coverage_ratio": 0.9329,
+  "metadata_valid_count": 139,
+  "post_count": 149,
   "representative_posts": [
     {
       "coverage_labels": [
@@ -174,10 +174,10 @@
     "metadata_advisory_ready": true,
     "text_posts_ready": true
   },
-  "text_post_count": 185,
+  "text_post_count": 146,
   "top_concepts": [
     {
-      "count": 18,
+      "count": 16,
       "value": "Software Development"
     },
     {
@@ -201,15 +201,15 @@
       "value": "Reasoning"
     },
     {
-      "count": 10,
+      "count": 9,
       "value": "LLM"
     },
     {
-      "count": 9,
+      "count": 8,
       "value": "Productivity"
     },
     {
-      "count": 9,
+      "count": 8,
       "value": "Software Engineering"
     },
     {
@@ -218,48 +218,48 @@
     },
     {
       "count": 8,
-      "value": "Artificial Intelligence"
+      "value": "Code Refactoring"
     },
     {
-      "count": 8,
-      "value": "Code Refactoring"
+      "count": 7,
+      "value": "Prompt Engineering"
     }
   ],
   "top_keywords": [
     {
-      "count": 66,
+      "count": 61,
       "value": "development"
     },
     {
-      "count": 65,
+      "count": 61,
       "value": "разработка"
     },
     {
-      "count": 52,
-      "value": "llm"
+      "count": 50,
+      "value": "code"
     },
     {
-      "count": 51,
-      "value": "code"
+      "count": 48,
+      "value": "llm"
     },
     {
       "count": 48,
       "value": "context"
     },
     {
-      "count": 47,
+      "count": 45,
       "value": "claude"
     },
     {
-      "count": 45,
+      "count": 42,
       "value": "cursor"
     },
     {
-      "count": 36,
+      "count": 35,
       "value": "агенты"
     },
     {
-      "count": 35,
+      "count": 34,
       "value": "agents"
     },
     {
@@ -271,24 +271,12 @@
       "value": "coding"
     },
     {
-      "count": 29,
-      "value": "интеллект"
-    },
-    {
-      "count": 28,
-      "value": "искусственный"
-    },
-    {
       "count": 26,
       "value": "model"
     },
     {
       "count": 25,
       "value": "agent"
-    },
-    {
-      "count": 23,
-      "value": "chatgpt"
     },
     {
       "count": 22,
@@ -305,6 +293,18 @@
     {
       "count": 21,
       "value": "refactoring"
+    },
+    {
+      "count": 21,
+      "value": "gemini"
+    },
+    {
+      "count": 20,
+      "value": "искусственный"
+    },
+    {
+      "count": 20,
+      "value": "интеллект"
     }
   ],
   "top_primary_topics": [
@@ -313,16 +313,12 @@
       "value": "AI Agents"
     },
     {
-      "count": 23,
+      "count": 22,
       "value": "AI Development"
     },
     {
       "count": 9,
       "value": "LLM Evaluation"
-    },
-    {
-      "count": 5,
-      "value": "Artificial Intelligence"
     },
     {
       "count": 4,
@@ -335,6 +331,10 @@
     {
       "count": 4,
       "value": "Cursor IDE"
+    },
+    {
+      "count": 4,
+      "value": "Artificial Intelligence"
     },
     {
       "count": 3,
@@ -354,7 +354,7 @@
     },
     {
       "count": 2,
-      "value": "Software Engineering"
+      "value": "AI IDE"
     }
   ],
   "warnings": []

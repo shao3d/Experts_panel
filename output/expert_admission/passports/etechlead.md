@@ -7,80 +7,80 @@ Channel: `etechlead`
 
 | Metric | Count |
 |---|---:|
-| Posts | 196 |
-| Text posts | 185 |
-| Valid post_metadata | 178 |
-| Embeddings | 185 |
-| FTS rows | 185 |
+| Posts | 149 |
+| Text posts | 146 |
+| Valid post_metadata | 139 |
+| Embeddings | 146 |
+| FTS rows | 146 |
 
 ## Coverage
 
 | Area | Count | Strength |
 |---|---:|---|
-| `model_landscape` | 118 | strong |
-| `coding_agents` | 106 | strong |
-| `agent_ops` | 98 | strong |
-| `business_adoption` | 57 | strong |
-| `ai_product_pm` | 43 | strong |
-| `evals_quality` | 33 | medium |
-| `security_privacy_governance` | 23 | medium |
-| `ai_ux_workflow` | 22 | medium |
-| `ai_engineering_infra` | 12 | medium |
-| `creative_multimodal` | 6 | thin |
-| `rag_retrieval_knowledge` | 6 | thin |
+| `model_landscape` | 109 | strong |
+| `coding_agents` | 101 | strong |
+| `agent_ops` | 91 | strong |
+| `business_adoption` | 50 | strong |
+| `ai_product_pm` | 36 | medium |
+| `evals_quality` | 31 | medium |
+| `ai_ux_workflow` | 20 | medium |
+| `security_privacy_governance` | 19 | medium |
+| `ai_engineering_infra` | 9 | thin |
+| `rag_retrieval_knowledge` | 5 | thin |
+| `creative_multimodal` | 3 | thin |
 
 ## Depth Profile
 
 | Depth | Count |
 |---|---:|
-| `practitioner_experience` | 58 |
-| `case_study` | 13 |
-| `architecture_analysis` | 16 |
-| `benchmark_or_eval` | 33 |
-| `howto_or_checklist` | 47 |
+| `practitioner_experience` | 40 |
+| `case_study` | 12 |
+| `architecture_analysis` | 14 |
+| `benchmark_or_eval` | 31 |
+| `howto_or_checklist` | 33 |
 | `tool_release` | 1 |
 | `announcement_or_news` | 10 |
-| `low_signal` | 18 |
+| `low_signal` | 8 |
 
 ## Top Metadata Signals
 
 ### Primary topics
 
 - `AI Agents`: 24
-- `AI Development`: 23
+- `AI Development`: 22
 - `LLM Evaluation`: 9
-- `Artificial Intelligence`: 5
 - `AI Coding Agents`: 4
 - `LLM Development`: 4
 - `Cursor IDE`: 4
+- `Artificial Intelligence`: 4
 - `AI Coding`: 3
 - `AI Safety`: 2
 - `LLM Review`: 2
 
 ### Concepts
 
-- `Software Development`: 18
+- `Software Development`: 16
 - `Agentic Workflow`: 15
 - `AI Agents`: 14
 - `Automation`: 14
 - `Context Window`: 13
 - `Reasoning`: 10
-- `LLM`: 10
-- `Productivity`: 9
-- `Software Engineering`: 9
+- `LLM`: 9
+- `Productivity`: 8
+- `Software Engineering`: 8
 - `Context Management`: 8
 
 ### Keywords
 
-- `development`: 66
-- `разработка`: 65
-- `llm`: 52
-- `code`: 51
+- `development`: 61
+- `разработка`: 61
+- `code`: 50
+- `llm`: 48
 - `context`: 48
-- `claude`: 47
-- `cursor`: 45
-- `агенты`: 36
-- `agents`: 35
+- `claude`: 45
+- `cursor`: 42
+- `агенты`: 35
+- `agents`: 34
 - `контекст`: 33
 
 

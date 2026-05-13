@@ -21,31 +21,12 @@
       "en"
     ],
     "material_limitations": [
-      "Only a subset of posts provided in the prompt corpus"
+      "Only a subset of posts provided in the prompt corpus",
+      "Live DB was soft-pruned after passport generation; two stale pre-cutoff source refs no longer resolve and were removed from citation fields. Remaining matrix/export evidence refs resolve in the live DB as of 2026-05-13."
     ],
     "author_vs_community_boundary": "Clear boundary. The author frequently engages in comments under the name 'AI и грабли', clarifying technical details and debating approaches with a highly technical audience."
   },
   "source_ref_index_used": [
-    {
-      "source_ref": "P0091",
-      "source_kind": "expert_post",
-      "post_id": 2163,
-      "telegram_message_id": 154,
-      "comment_id": null,
-      "telegram_comment_id": null,
-      "created_at": "2024-08-24 19:35:49.000000",
-      "why_used": "Evidence of anti-hype stance regarding AI wrapper startups."
-    },
-    {
-      "source_ref": "P0161",
-      "source_kind": "expert_post",
-      "post_id": 2233,
-      "telegram_message_id": 234,
-      "comment_id": null,
-      "telegram_comment_id": null,
-      "created_at": "2024-11-29 19:48:01.000000",
-      "why_used": "Evidence of self-reflective voice and sharing failures."
-    },
     {
       "source_ref": "P0167",
       "source_kind": "expert_post",
@@ -403,7 +384,6 @@
       "Conference/Workshop announcements"
     ],
     "evidence_refs": [
-      "P0161",
       "P0203",
       "P0280",
       "P0299"
@@ -592,7 +572,6 @@
       "score_0_5": 5.0,
       "rationale": "Actively debunks hype, such as the 'AI makes developers slower' study, and criticizes wrapper startups and over-engineered MCP setups.",
       "evidence_refs": [
-        "P0091",
         "P0261",
         "P0289"
       ],
@@ -776,7 +755,6 @@
       "system_value": "low",
       "notes": "Reflections on personal productivity, startup failures, and career advice.",
       "evidence_refs": [
-        "P0161",
         "P0211",
         "P0336"
       ],
@@ -1131,8 +1109,6 @@
     "abstentions": [],
     "possible_model_errors": [],
     "source_refs_used": [
-      "P0091",
-      "P0161",
       "P0167",
       "P0168",
       "P0174",
@@ -1166,6 +1142,12 @@
       "P0289"
     ],
     "normalization_notes": [
+      {
+        "operation": "post_prune_remove_stale_refs",
+        "removed_source_ref_count": 2,
+        "reason": "ai_grabli live DB was soft-pruned; two previously cited pre-cutoff refs no longer resolve to posts. Claims remain supported by later live refs in the same sections.",
+        "updated_at": "2026-05-13T14:45:02.725367+00:00"
+      },
       {
         "operation": "repair_matrix_export_from_matrix_cells",
         "repaired_cell_count": 1,

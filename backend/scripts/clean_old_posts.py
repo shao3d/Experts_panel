@@ -36,6 +36,8 @@ class PrunePlan:
     delete_drift: int
     keep_drift: int
     delete_links: int
+    delete_vec_posts: int
+    keep_vec_posts: int
 
 
 def chunked(items: list[int], size: int) -> Iterable[list[int]]:
@@ -45,6 +47,36 @@ def chunked(items: list[int], size: int) -> Iterable[list[int]]:
 
 def enable_foreign_keys(conn: sqlite3.Connection) -> None:
     conn.execute("PRAGMA foreign_keys = ON")
+
+
+def table_exists(conn: sqlite3.Connection, table: str) -> bool:
+    row = conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name = ?",
+        (table,),
+    ).fetchone()
+    return row is not None
+
+
+def load_sqlite_vec_if_needed(conn: sqlite3.Connection) -> None:
+    """Load sqlite-vec before touching vec0 virtual tables."""
+    if not table_exists(conn, "vec_posts"):
+        return
+
+    try:
+        import sqlite_vec
+
+        conn.enable_load_extension(True)
+        sqlite_vec.load(conn)
+    except Exception as exc:
+        raise RuntimeError(
+            "vec_posts exists but sqlite_vec could not be loaded; aborting prune "
+            "to avoid leaving stale vector rows."
+        ) from exc
+    finally:
+        try:
+            conn.enable_load_extension(False)
+        except Exception:
+            pass
 
 
 def create_backup(db_path: Path, backup_dir: Path) -> Path:
@@ -153,6 +185,16 @@ def build_plan(
         delete_drift=count_for_posts(conn, "comment_group_drift", "post_id", delete_post_ids),
         keep_drift=count_for_posts(conn, "comment_group_drift", "post_id", keep_post_ids),
         delete_links=count_links_touching_posts(conn, delete_post_ids),
+        delete_vec_posts=(
+            count_for_posts(conn, "vec_posts", "post_id", delete_post_ids)
+            if table_exists(conn, "vec_posts")
+            else 0
+        ),
+        keep_vec_posts=(
+            count_for_posts(conn, "vec_posts", "post_id", keep_post_ids)
+            if table_exists(conn, "vec_posts")
+            else 0
+        ),
     )
 
     return plan, new_post_ids, keep_post_ids, delete_post_ids
@@ -178,10 +220,75 @@ def print_plan(expert_id: str, cutoff_date: str, plan: PrunePlan) -> None:
     print(f"  Drift records kept with linked old posts: {plan.keep_drift}")
     print(f"  Drift records deleted: {plan.delete_drift}")
     print(f"  Links deleted: {plan.delete_links}")
+    print(f"  Vec rows kept with linked old posts: {plan.keep_vec_posts}")
+    print(f"  Vec rows deleted: {plan.delete_vec_posts}")
     print("=" * 60)
 
 
+def rebuild_vec_posts_excluding(conn: sqlite3.Connection, post_ids: list[int]) -> None:
+    """Rebuild vec_posts when sqlite-vec direct DELETE is ineffective.
+
+    Existing production DBs were populated with sqlite-vec rows where direct
+    DELETE by the declared primary key can be a no-op. Rebuilding the virtual
+    table from its readable rows is deterministic and keeps embeddings for all
+    remaining posts without re-calling the embedding API.
+    """
+    if not post_ids or not table_exists(conn, "vec_posts"):
+        return
+
+    delete_ids = set(post_ids)
+    rows = conn.execute(
+        "SELECT post_id, embedding, expert_id, created_at FROM vec_posts"
+    ).fetchall()
+    keep_rows = [row for row in rows if row[0] not in delete_ids]
+
+    conn.execute("DROP TABLE vec_posts")
+    conn.execute(
+        """
+        CREATE VIRTUAL TABLE vec_posts USING vec0(
+            post_id INTEGER PRIMARY KEY,
+            embedding float[768],
+            expert_id TEXT PARTITION KEY,
+            created_at TEXT
+        )
+        """
+    )
+    for batch in chunked(keep_rows, 500):
+        conn.executemany(
+            """
+            INSERT INTO vec_posts (post_id, embedding, expert_id, created_at)
+            VALUES (?, ?, ?, ?)
+            """,
+            batch,
+        )
+
+
+def delete_vec_posts(conn: sqlite3.Connection, post_ids: list[int]) -> None:
+    if not post_ids or not table_exists(conn, "vec_posts"):
+        return
+
+    for batch in chunked(post_ids, 500):
+        placeholders = ",".join("?" for _ in batch)
+        conn.execute(
+            f"DELETE FROM vec_posts WHERE post_id IN ({placeholders})",
+            batch,
+        )
+
+    remaining = count_for_posts(conn, "vec_posts", "post_id", post_ids)
+    if remaining:
+        rebuild_vec_posts_excluding(conn, post_ids)
+        remaining_after_rebuild = count_for_posts(
+            conn, "vec_posts", "post_id", post_ids
+        )
+        if remaining_after_rebuild:
+            raise RuntimeError(
+                f"Failed to delete {remaining_after_rebuild} stale vec_posts rows"
+            )
+
+
 def delete_posts(conn: sqlite3.Connection, post_ids: list[int]) -> None:
+    delete_vec_posts(conn, post_ids)
+
     for batch in chunked(post_ids, 500):
         placeholders = ",".join("?" for _ in batch)
 
@@ -240,6 +347,7 @@ def main() -> int:
     conn = sqlite3.connect(db_path)
     try:
         enable_foreign_keys(conn)
+        load_sqlite_vec_if_needed(conn)
         plan, _, _, delete_post_ids = build_plan(conn, args.expert_id, args.cutoff_date)
         print_plan(args.expert_id, args.cutoff_date, plan)
 
@@ -275,6 +383,7 @@ def main() -> int:
     verify_conn = sqlite3.connect(db_path)
     try:
         enable_foreign_keys(verify_conn)
+        load_sqlite_vec_if_needed(verify_conn)
         plan_after, _, _, _ = build_plan(verify_conn, args.expert_id, args.cutoff_date)
         print()
         print("Post-prune check:")

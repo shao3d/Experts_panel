@@ -7,7 +7,7 @@
     "channel_username": "@neuraldeep",
     "model_assumed": "gemini-3.1-pro-preview",
     "prompt_version": "semantic-passport-prompt.v1",
-    "generated_at": "2026-05-09T23:44:32.558201+00:00"
+    "generated_at": "2026-05-09T23:49:48.141769+00:00"
   },
   "corpus_audit": {
     "post_count_seen": 506,
@@ -1171,7 +1171,7 @@
       {
         "operation": "hydrate_source_ref_index_used",
         "hydrated_ref_count": 6,
-        "generated_at_set_from_manifest": "2026-05-09T23:44:32.558201+00:00"
+        "generated_at_set_from_manifest": "2026-05-09T23:49:48.141769+00:00"
       }
     ]
   }

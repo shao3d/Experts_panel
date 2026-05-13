@@ -7,26 +7,26 @@ Channel: `NGI_ru`
 
 | Metric | Count |
 |---|---:|
-| Posts | 492 |
-| Text posts | 473 |
+| Posts | 442 |
+| Text posts | 423 |
 | Valid post_metadata | 0 |
-| Embeddings | 473 |
-| FTS rows | 473 |
+| Embeddings | 423 |
+| FTS rows | 423 |
 
 ## Coverage
 
 | Area | Count | Strength |
 |---|---:|---|
-| `model_landscape` | 275 | strong |
-| `ai_product_pm` | 270 | strong |
-| `business_adoption` | 168 | strong |
-| `agent_ops` | 120 | strong |
-| `coding_agents` | 105 | strong |
-| `ai_ux_workflow` | 79 | strong |
-| `security_privacy_governance` | 73 | strong |
-| `evals_quality` | 44 | medium |
-| `creative_multimodal` | 30 | medium |
-| `rag_retrieval_knowledge` | 24 | medium |
+| `model_landscape` | 254 | strong |
+| `ai_product_pm` | 246 | strong |
+| `business_adoption` | 157 | strong |
+| `agent_ops` | 118 | strong |
+| `coding_agents` | 104 | strong |
+| `ai_ux_workflow` | 76 | strong |
+| `security_privacy_governance` | 69 | strong |
+| `evals_quality` | 40 | medium |
+| `creative_multimodal` | 28 | medium |
+| `rag_retrieval_knowledge` | 23 | medium |
 | `ai_engineering_infra` | 16 | thin |
 | `general_ai_news` | 1 | thin |
 
@@ -34,14 +34,14 @@ Channel: `NGI_ru`
 
 | Depth | Count |
 |---|---:|
-| `practitioner_experience` | 133 |
-| `case_study` | 149 |
-| `architecture_analysis` | 33 |
-| `benchmark_or_eval` | 44 |
-| `howto_or_checklist` | 75 |
-| `tool_release` | 3 |
-| `announcement_or_news` | 21 |
-| `low_signal` | 34 |
+| `practitioner_experience` | 120 |
+| `case_study` | 134 |
+| `architecture_analysis` | 31 |
+| `benchmark_or_eval` | 40 |
+| `howto_or_checklist` | 65 |
+| `tool_release` | 2 |
+| `announcement_or_news` | 18 |
+| `low_signal` | 32 |
 
 ## Top Metadata Signals
 

@@ -47,7 +47,7 @@
           "strength": "strong"
         },
         {
-          "count": 287,
+          "count": 276,
           "expert_id": "doronin",
           "strength": "strong"
         },
@@ -72,17 +72,17 @@
           "strength": "strong"
         },
         {
-          "count": 150,
-          "expert_id": "polyakov",
-          "strength": "strong"
-        },
-        {
           "count": 146,
           "expert_id": "llm_under_hood",
           "strength": "strong"
+        },
+        {
+          "count": 145,
+          "expert_id": "polyakov",
+          "strength": "strong"
         }
       ],
-      "total_matching_posts": 2667
+      "total_matching_posts": 2639
     },
     "ai_engineering_infra": {
       "expert_count": 20,
@@ -161,12 +161,12 @@
           "strength": "thin"
         },
         {
-          "count": 24,
+          "count": 23,
           "expert_id": "doronin",
           "strength": "thin"
         }
       ],
-      "total_matching_posts": 469
+      "total_matching_posts": 462
     },
     "ai_product_pm": {
       "expert_count": 20,
@@ -210,7 +210,7 @@
       "status": "strong",
       "top_experts": [
         {
-          "count": 270,
+          "count": 246,
           "expert_id": "kornish",
           "strength": "strong"
         },
@@ -220,13 +220,13 @@
           "strength": "strong"
         },
         {
-          "count": 96,
-          "expert_id": "doronin",
+          "count": 82,
+          "expert_id": "refat",
           "strength": "strong"
         },
         {
-          "count": 82,
-          "expert_id": "refat",
+          "count": 80,
+          "expert_id": "doronin",
           "strength": "strong"
         },
         {
@@ -245,12 +245,12 @@
           "strength": "strong"
         },
         {
-          "count": 68,
+          "count": 48,
           "expert_id": "ai_grabli",
           "strength": "strong"
         }
       ],
-      "total_matching_posts": 1271
+      "total_matching_posts": 1199
     },
     "ai_ux_workflow": {
       "expert_count": 20,
@@ -294,7 +294,7 @@
       "status": "strong",
       "top_experts": [
         {
-          "count": 79,
+          "count": 76,
           "expert_id": "kornish",
           "strength": "strong"
         },
@@ -334,7 +334,7 @@
           "strength": "medium"
         }
       ],
-      "total_matching_posts": 511
+      "total_matching_posts": 498
     },
     "business_adoption": {
       "expert_count": 20,
@@ -378,7 +378,7 @@
       "status": "strong",
       "top_experts": [
         {
-          "count": 168,
+          "count": 157,
           "expert_id": "kornish",
           "strength": "strong"
         },
@@ -403,22 +403,22 @@
           "strength": "strong"
         },
         {
-          "count": 93,
+          "count": 90,
+          "expert_id": "neuraldeep",
+          "strength": "strong"
+        },
+        {
+          "count": 79,
           "expert_id": "polyakov",
           "strength": "strong"
         },
         {
-          "count": 91,
+          "count": 76,
           "expert_id": "doronin",
-          "strength": "strong"
-        },
-        {
-          "count": 90,
-          "expert_id": "neuraldeep",
           "strength": "strong"
         }
       ],
-      "total_matching_posts": 1367
+      "total_matching_posts": 1309
     },
     "coding_agents": {
       "expert_count": 20,
@@ -472,7 +472,7 @@
           "strength": "strong"
         },
         {
-          "count": 181,
+          "count": 179,
           "expert_id": "doronin",
           "strength": "strong"
         },
@@ -502,7 +502,7 @@
           "strength": "strong"
         }
       ],
-      "total_matching_posts": 2103
+      "total_matching_posts": 2091
     },
     "creative_multimodal": {
       "expert_count": 20,
@@ -536,11 +536,11 @@
           "telegram_message_id": 2159
         },
         {
-          "created_at": "2026-05-02",
-          "depth_label": "tool_release",
-          "excerpt": "⚪️ REMOTE tools #market часть 2 ... начало тут: https://t.me/deksden_notes/735 * Remoto: Remoto creates a secure tunnel between your terminal and your phone. When you run the CLI, it spawns a local shell session and connects to our relay server via WebSocket : https://www.remoto.sh/ * Takopi: Takopi runs coding agen...",
-          "expert_id": "deksden_notes",
-          "telegram_message_id": 736
+          "created_at": "2026-05-06",
+          "depth_label": "practitioner_experience",
+          "excerpt": "Специально оставил на утро внимательно почитать и потестить. Inworld (я кажется их один из фанатов) выпустили Realtime TTS-2 – голосовую модель, заточенную под живой диалог, а не аудиокниги Уже #1 в голосовой арене на https://artificialanalysis.ai/text-to-speech/leaderboard То есть выше и OpenAI, и Gemini, и ElevenL...",
+          "expert_id": "akimov",
+          "telegram_message_id": 2158
         }
       ],
       "status": "strong",
@@ -556,7 +556,7 @@
           "strength": "medium"
         },
         {
-          "count": 36,
+          "count": 34,
           "expert_id": "doronin",
           "strength": "medium"
         },
@@ -566,7 +566,7 @@
           "strength": "thin"
         },
         {
-          "count": 30,
+          "count": 28,
           "expert_id": "kornish",
           "strength": "medium"
         },
@@ -576,7 +576,7 @@
           "strength": "thin"
         },
         {
-          "count": 14,
+          "count": 13,
           "expert_id": "polyakov",
           "strength": "medium"
         },
@@ -586,7 +586,7 @@
           "strength": "thin"
         }
       ],
-      "total_matching_posts": 306
+      "total_matching_posts": 295
     },
     "evals_quality": {
       "expert_count": 20,
@@ -650,30 +650,30 @@
           "strength": "strong"
         },
         {
-          "count": 44,
-          "expert_id": "kornish",
-          "strength": "medium"
-        },
-        {
           "count": 41,
           "expert_id": "silicbag",
           "strength": "medium"
         },
         {
-          "count": 33,
-          "expert_id": "etechlead",
+          "count": 40,
+          "expert_id": "kornish",
           "strength": "medium"
         },
         {
-          "count": 32,
-          "expert_id": "polyakov",
+          "count": 31,
+          "expert_id": "deksden_notes",
+          "strength": "medium"
+        },
+        {
+          "count": 31,
+          "expert_id": "etechlead",
           "strength": "medium"
         }
       ],
-      "total_matching_posts": 627
+      "total_matching_posts": 615
     },
     "general_ai_news": {
-      "expert_count": 15,
+      "expert_count": 13,
       "representative_posts": [],
       "status": "strong",
       "top_experts": [
@@ -688,13 +688,13 @@
           "strength": "thin"
         },
         {
-          "count": 11,
-          "expert_id": "doronin",
+          "count": 10,
+          "expert_id": "glebkudr",
           "strength": "thin"
         },
         {
-          "count": 10,
-          "expert_id": "glebkudr",
+          "count": 8,
+          "expert_id": "doronin",
           "strength": "thin"
         },
         {
@@ -714,11 +714,11 @@
         },
         {
           "count": 2,
-          "expert_id": "ai_grabli",
+          "expert_id": "akimov",
           "strength": "thin"
         }
       ],
-      "total_matching_posts": 93
+      "total_matching_posts": 86
     },
     "model_landscape": {
       "expert_count": 20,
@@ -762,12 +762,12 @@
       "status": "strong",
       "top_experts": [
         {
-          "count": 492,
+          "count": 493,
           "expert_id": "akimov",
           "strength": "strong"
         },
         {
-          "count": 398,
+          "count": 376,
           "expert_id": "doronin",
           "strength": "strong"
         },
@@ -782,13 +782,13 @@
           "strength": "strong"
         },
         {
-          "count": 275,
-          "expert_id": "kornish",
+          "count": 273,
+          "expert_id": "neuraldeep",
           "strength": "strong"
         },
         {
-          "count": 273,
-          "expert_id": "neuraldeep",
+          "count": 254,
+          "expert_id": "kornish",
           "strength": "strong"
         },
         {
@@ -797,12 +797,12 @@
           "strength": "strong"
         },
         {
-          "count": 205,
-          "expert_id": "polyakov",
+          "count": 196,
+          "expert_id": "pashazloy",
           "strength": "strong"
         }
       ],
-      "total_matching_posts": 4183
+      "total_matching_posts": 4069
     },
     "rag_retrieval_knowledge": {
       "expert_count": 20,
@@ -822,6 +822,13 @@
           "telegram_message_id": 2159
         },
         {
+          "created_at": "2026-05-12",
+          "depth_label": "architecture_analysis",
+          "excerpt": "**Рубрика \"нашёл новое интересное решение для памяти AI-агентов\".** На прошлой неделе на arxiv.org вышла статья [\"Storage Is Not Memory: A Retrieval-Centered Architecture for Agent Recall\"](https://arxiv.org/html/2605.04897v1). То есть: > Кому какое дело, какой красоты твои абстракции для хранения информации, если r...",
+          "expert_id": "doronin",
+          "telegram_message_id": 1278
+        },
+        {
           "created_at": "2026-01-22",
           "depth_label": "practitioner_experience",
           "excerpt": "**Отецкая нотация испорченным вайбкодерам (1/2)** Когда я стал ИИ-кодером в 2024м, сеньоры часто доводили меня до слёз своими нудными воспоминаниями о том, как трудно им было джунами, как им приходилось писать код руками, сразу в прод, без подсветки, в vi, на удалённом терминале, на монохромном выпуклом дисплее, в к...",
@@ -834,13 +841,6 @@
           "excerpt": "Докладываюсь по flex пайплайнам — результаты охеренные Следите за руками. Пайплайн был с компьютерным зрением. Чертежи, стройка, все как мы любим 😁 Много листов pdf как-то связанных между собой (общей идеей) строительная документация это пиздец господа Я задал ограничение — работай исключительно с надписями/подписям...",
           "expert_id": "glebkudr",
           "telegram_message_id": 548
-        },
-        {
-          "created_at": "2026-04-07",
-          "depth_label": "architecture_analysis",
-          "excerpt": "Карпатый на днях опубликовал LLM Wiki — альтернативу RAG для базы знаний LLM в этом подходе строит структурированный набор взаимосвязанных markdown-файлов, с которым в дальнейшем будет работать вместо обращения к сырым источникам. В архитектуре 3 слоя: — исходные документы — вики (которую пишет LLM) — схема (файл, о...",
-          "expert_id": "ilia_izmailov",
-          "telegram_message_id": 200
         }
       ],
       "status": "strong",
@@ -876,17 +876,17 @@
           "strength": "thin"
         },
         {
-          "count": 29,
+          "count": 27,
           "expert_id": "doronin",
           "strength": "medium"
         },
         {
-          "count": 24,
+          "count": 23,
           "expert_id": "kornish",
           "strength": "medium"
         }
       ],
-      "total_matching_posts": 461
+      "total_matching_posts": 455
     },
     "security_privacy_governance": {
       "expert_count": 20,
@@ -935,7 +935,7 @@
           "strength": "strong"
         },
         {
-          "count": 73,
+          "count": 69,
           "expert_id": "kornish",
           "strength": "strong"
         },
@@ -950,7 +950,7 @@
           "strength": "medium"
         },
         {
-          "count": 48,
+          "count": 46,
           "expert_id": "polyakov",
           "strength": "strong"
         },
@@ -970,7 +970,7 @@
           "strength": "thin"
         }
       ],
-      "total_matching_posts": 592
+      "total_matching_posts": 578
     }
   },
   "db_path": "/Users/andreysazonov/Documents/Projects/Experts_panel/backend/data/experts.db",
@@ -978,7 +978,7 @@
     {
       "channel_username": "the_ai_architect",
       "coverage": {
-        "agent_ops": 92,
+        "agent_ops": 93,
         "ai_engineering_infra": 11,
         "ai_product_pm": 40,
         "ai_ux_workflow": 24,
@@ -1010,7 +1010,7 @@
         "last_post": "2026-05-12"
       },
       "depth_profile": {
-        "announcement_or_news": 29,
+        "announcement_or_news": 30,
         "architecture_analysis": 21,
         "benchmark_or_eval": 17,
         "case_study": 28,
@@ -1020,13 +1020,13 @@
         "tool_release": 6
       },
       "display_name": "AI Architect",
-      "embedding_count": 230,
+      "embedding_count": 231,
       "embedding_coverage_ratio": 1.0,
       "expert_id": "ai_architect",
-      "fts_count": 230,
-      "metadata_coverage_ratio": 0.8235,
+      "fts_count": 231,
+      "metadata_coverage_ratio": 0.8201,
       "metadata_valid_count": 196,
-      "post_count": 238,
+      "post_count": 239,
       "representative_posts": [
         {
           "coverage_labels": [
@@ -1131,7 +1131,7 @@
         "metadata_advisory_ready": true,
         "text_posts_ready": true
       },
-      "text_post_count": 230,
+      "text_post_count": 231,
       "top_concepts": [
         {
           "count": 24,
@@ -1319,18 +1319,18 @@
     {
       "channel_username": "oestick",
       "coverage": {
-        "agent_ops": 52,
-        "ai_engineering_infra": 7,
-        "ai_product_pm": 68,
-        "ai_ux_workflow": 20,
-        "business_adoption": 54,
-        "coding_agents": 65,
+        "agent_ops": 48,
+        "ai_engineering_infra": 6,
+        "ai_product_pm": 48,
+        "ai_ux_workflow": 16,
+        "business_adoption": 46,
+        "coding_agents": 62,
         "creative_multimodal": 2,
         "evals_quality": 16,
-        "general_ai_news": 2,
-        "model_landscape": 149,
-        "rag_retrieval_knowledge": 22,
-        "security_privacy_governance": 9
+        "general_ai_news": 0,
+        "model_landscape": 120,
+        "rag_retrieval_knowledge": 21,
+        "security_privacy_governance": 8
       },
       "coverage_strength": {
         "agent_ops": "strong",
@@ -1341,33 +1341,33 @@
         "coding_agents": "strong",
         "creative_multimodal": "thin",
         "evals_quality": "medium",
-        "general_ai_news": "thin",
+        "general_ai_news": "none",
         "model_landscape": "strong",
         "rag_retrieval_knowledge": "medium",
         "security_privacy_governance": "thin"
       },
       "date_range": {
-        "first_post": "2024-01-10",
+        "first_post": "2024-01-11",
         "last_post": "2026-05-12"
       },
       "depth_profile": {
-        "announcement_or_news": 32,
-        "architecture_analysis": 35,
-        "benchmark_or_eval": 17,
-        "case_study": 56,
-        "howto_or_checklist": 118,
-        "low_signal": 30,
-        "practitioner_experience": 75,
+        "announcement_or_news": 21,
+        "architecture_analysis": 26,
+        "benchmark_or_eval": 16,
+        "case_study": 36,
+        "howto_or_checklist": 54,
+        "low_signal": 9,
+        "practitioner_experience": 49,
         "tool_release": 0
       },
       "display_name": "Tech_AI_grabli",
-      "embedding_count": 357,
+      "embedding_count": 209,
       "embedding_coverage_ratio": 1.0,
       "expert_id": "ai_grabli",
-      "fts_count": 357,
-      "metadata_coverage_ratio": 0.9091,
-      "metadata_valid_count": 330,
-      "post_count": 363,
+      "fts_count": 209,
+      "metadata_coverage_ratio": 0.8673,
+      "metadata_valid_count": 183,
+      "post_count": 211,
       "representative_posts": [
         {
           "coverage_labels": [
@@ -1477,26 +1477,26 @@
         "metadata_advisory_ready": true,
         "text_posts_ready": true
       },
-      "text_post_count": 357,
+      "text_post_count": 209,
       "top_concepts": [
         {
-          "count": 39,
+          "count": 28,
           "value": "Prompt Engineering"
         },
         {
-          "count": 16,
-          "value": "Automation"
-        },
-        {
-          "count": 16,
-          "value": "LLM"
-        },
-        {
-          "count": 13,
+          "count": 12,
           "value": "RAG"
         },
         {
-          "count": 10,
+          "count": 12,
+          "value": "LLM"
+        },
+        {
+          "count": 11,
+          "value": "Automation"
+        },
+        {
+          "count": 9,
           "value": "Software Development"
         },
         {
@@ -1508,113 +1508,109 @@
           "value": "Context Window"
         },
         {
-          "count": 7,
-          "value": "Product Management"
-        },
-        {
           "count": 6,
           "value": "Embeddings"
         },
         {
-          "count": 6,
-          "value": "Networking"
+          "count": 5,
+          "value": "Product Management"
         },
         {
-          "count": 6,
-          "value": "Productivity"
+          "count": 4,
+          "value": "AI Agents"
         },
         {
-          "count": 6,
-          "value": "Marketing"
+          "count": 4,
+          "value": "Project Management"
+        },
+        {
+          "count": 4,
+          "value": "Data Extraction"
         }
       ],
       "top_keywords": [
         {
-          "count": 81,
+          "count": 66,
           "value": "llm"
         },
         {
-          "count": 60,
+          "count": 43,
           "value": "prompt"
         },
         {
-          "count": 54,
+          "count": 38,
           "value": "промпт"
         },
         {
-          "count": 44,
-          "value": "разработка"
-        },
-        {
-          "count": 44,
+          "count": 31,
           "value": "development"
         },
         {
-          "count": 34,
-          "value": "gpt"
+          "count": 30,
+          "value": "разработка"
         },
         {
-          "count": 30,
+          "count": 26,
           "value": "искусственный"
         },
         {
-          "count": 30,
+          "count": 26,
           "value": "интеллект"
         },
         {
-          "count": 26,
+          "count": 25,
           "value": "code"
         },
         {
-          "count": 26,
-          "value": "generation"
-        },
-        {
-          "count": 26,
-          "value": "автоматизация"
-        },
-        {
-          "count": 26,
-          "value": "обучение"
-        },
-        {
-          "count": 24,
+          "count": 22,
           "value": "context"
         },
         {
-          "count": 23,
-          "value": "automation"
+          "count": 19,
+          "value": "rag"
         },
         {
-          "count": 22,
-          "value": "data"
+          "count": 18,
+          "value": "автоматизация"
         },
         {
-          "count": 22,
-          "value": "генерация"
-        },
-        {
-          "count": 22,
-          "value": "neural"
-        },
-        {
-          "count": 21,
+          "count": 18,
           "value": "google"
         },
         {
-          "count": 21,
-          "value": "telegram"
+          "count": 17,
+          "value": "automation"
         },
         {
-          "count": 21,
-          "value": "телеграм"
+          "count": 16,
+          "value": "agents"
+        },
+        {
+          "count": 16,
+          "value": "claude"
+        },
+        {
+          "count": 16,
+          "value": "generation"
+        },
+        {
+          "count": 16,
+          "value": "models"
+        },
+        {
+          "count": 16,
+          "value": "openai"
+        },
+        {
+          "count": 16,
+          "value": "модели"
+        },
+        {
+          "count": 16,
+          "value": "gpt"
         }
       ],
       "top_primary_topics": [
-        {
-          "count": 17,
-          "value": "Prompt Engineering"
-        },
         {
           "count": 12,
           "value": "AI Development"
@@ -1625,19 +1621,7 @@
         },
         {
           "count": 7,
-          "value": "Generative AI"
-        },
-        {
-          "count": 6,
-          "value": "Content Strategy"
-        },
-        {
-          "count": 5,
-          "value": "Software Engineering"
-        },
-        {
-          "count": 4,
-          "value": "AI Engineering"
+          "value": "Prompt Engineering"
         },
         {
           "count": 4,
@@ -1656,8 +1640,24 @@
           "value": "LLM Evaluation"
         },
         {
-          "count": 4,
-          "value": "Productivity"
+          "count": 3,
+          "value": "AI Engineering"
+        },
+        {
+          "count": 3,
+          "value": "AI Integration"
+        },
+        {
+          "count": 3,
+          "value": "RAG"
+        },
+        {
+          "count": 3,
+          "value": "Video Conferencing"
+        },
+        {
+          "count": 3,
+          "value": "Content Strategy"
         }
       ],
       "warnings": []
@@ -1665,18 +1665,18 @@
     {
       "channel_username": "aimastersme",
       "coverage": {
-        "agent_ops": 62,
-        "ai_engineering_infra": 10,
-        "ai_product_pm": 37,
-        "ai_ux_workflow": 20,
-        "business_adoption": 31,
-        "coding_agents": 63,
-        "creative_multimodal": 10,
-        "evals_quality": 9,
+        "agent_ops": 59,
+        "ai_engineering_infra": 9,
+        "ai_product_pm": 35,
+        "ai_ux_workflow": 18,
+        "business_adoption": 27,
+        "coding_agents": 62,
+        "creative_multimodal": 7,
+        "evals_quality": 7,
         "general_ai_news": 3,
-        "model_landscape": 166,
+        "model_landscape": 145,
         "rag_retrieval_knowledge": 4,
-        "security_privacy_governance": 24
+        "security_privacy_governance": 21
       },
       "coverage_strength": {
         "agent_ops": "strong",
@@ -1693,27 +1693,27 @@
         "security_privacy_governance": "medium"
       },
       "date_range": {
-        "first_post": "2024-02-19",
+        "first_post": "2024-08-12",
         "last_post": "2026-05-06"
       },
       "depth_profile": {
-        "announcement_or_news": 49,
-        "architecture_analysis": 33,
-        "benchmark_or_eval": 8,
-        "case_study": 21,
-        "howto_or_checklist": 126,
-        "low_signal": 39,
-        "practitioner_experience": 37,
+        "announcement_or_news": 37,
+        "architecture_analysis": 28,
+        "benchmark_or_eval": 7,
+        "case_study": 20,
+        "howto_or_checklist": 98,
+        "low_signal": 29,
+        "practitioner_experience": 28,
         "tool_release": 9
       },
       "display_name": "Aimasters.Me",
-      "embedding_count": 307,
+      "embedding_count": 243,
       "embedding_coverage_ratio": 1.0,
       "expert_id": "aimasters_me",
-      "fts_count": 307,
+      "fts_count": 243,
       "metadata_coverage_ratio": 0.0,
       "metadata_valid_count": 0,
-      "post_count": 322,
+      "post_count": 256,
       "representative_posts": [
         {
           "coverage_labels": [
@@ -1815,7 +1815,7 @@
         "metadata_advisory_ready": false,
         "text_posts_ready": true
       },
-      "text_post_count": 307,
+      "text_post_count": 243,
       "top_concepts": [],
       "top_keywords": [],
       "top_primary_topics": [],
@@ -2176,7 +2176,7 @@
         "creative_multimodal": 65,
         "evals_quality": 106,
         "general_ai_news": 2,
-        "model_landscape": 492,
+        "model_landscape": 493,
         "rag_retrieval_knowledge": 29,
         "security_privacy_governance": 89
       },
@@ -2203,19 +2203,19 @@
         "architecture_analysis": 31,
         "benchmark_or_eval": 105,
         "case_study": 93,
-        "howto_or_checklist": 180,
+        "howto_or_checklist": 181,
         "low_signal": 152,
         "practitioner_experience": 78,
         "tool_release": 30
       },
       "display_name": "Akimov",
-      "embedding_count": 790,
+      "embedding_count": 791,
       "embedding_coverage_ratio": 1.0,
       "expert_id": "akimov",
-      "fts_count": 790,
-      "metadata_coverage_ratio": 0.7849,
+      "fts_count": 791,
+      "metadata_coverage_ratio": 0.784,
       "metadata_valid_count": 657,
-      "post_count": 837,
+      "post_count": 838,
       "representative_posts": [
         {
           "coverage_labels": [
@@ -2248,20 +2248,6 @@
           "coverage_labels": [
             "coding_agents",
             "agent_ops",
-            "evals_quality",
-            "business_adoption",
-            "model_landscape"
-          ],
-          "created_at": "2026-04-24",
-          "depth_label": "benchmark_or_eval",
-          "excerpt": "DeepSeek-V4! DeepSeek наконец выпустил превью новой модели – прямой конкурент Claude, GPT и Gemini, только в open-source. Посмотрел в общем бенчмарки и отчет. Ну-у... Если бы вышла в начале года, - это был бы просто нереальный прорыв. Сейчас просто лучший опенсорс :) Да и сейчас в общем-то базовые архитектурные вещи...",
-          "reason": "coding_agents, agent_ops, evals_quality; depth=benchmark_or_eval",
-          "telegram_message_id": 2141
-        },
-        {
-          "coverage_labels": [
-            "coding_agents",
-            "agent_ops",
             "ai_product_pm",
             "security_privacy_governance",
             "model_landscape"
@@ -2271,6 +2257,20 @@
           "excerpt": "С большим удовольствием посмотрел на интервью Бориса Чёрного из Claude Code. Понятно, что там в 100500-й раз, как случайно они сделали Claude Code и как улучшение моделей наконец заставило это все заработать, но самые прикольные мысли такие: \"Кодинг уже решенная задача\". Можно сгенерировать что угодно на каком угодн...",
           "reason": "coding_agents, agent_ops, ai_product_pm; depth=case_study",
           "telegram_message_id": 2161
+        },
+        {
+          "coverage_labels": [
+            "coding_agents",
+            "agent_ops",
+            "ai_product_pm",
+            "business_adoption",
+            "model_landscape"
+          ],
+          "created_at": "2026-04-24",
+          "depth_label": "case_study",
+          "excerpt": "Вау, интервью с Head of Product Claude: Главная мысль – классическая схема разработки рассыпается. Скорость: с 6 месяцев до 1 дня Раньше циклы планировались на 6–12 месяцев вперёд. Сейчас в Anthropic путь от идеи до релиза – месяц, неделя, иногда день. PRD и роадмапы эволюционировали: roadmap перестал быть «планом н...",
+          "reason": "coding_agents, agent_ops, ai_product_pm; depth=case_study",
+          "telegram_message_id": 2144
         },
         {
           "coverage_labels": [
@@ -2310,17 +2310,14 @@
         },
         {
           "coverage_labels": [
-            "coding_agents",
-            "agent_ops",
-            "ai_product_pm",
-            "business_adoption",
-            "model_landscape"
+            "model_landscape",
+            "creative_multimodal"
           ],
-          "created_at": "2026-04-24",
-          "depth_label": "case_study",
-          "excerpt": "Вау, интервью с Head of Product Claude: Главная мысль – классическая схема разработки рассыпается. Скорость: с 6 месяцев до 1 дня Раньше циклы планировались на 6–12 месяцев вперёд. Сейчас в Anthropic путь от идеи до релиза – месяц, неделя, иногда день. PRD и роадмапы эволюционировали: roadmap перестал быть «планом н...",
-          "reason": "coding_agents, agent_ops, ai_product_pm; depth=case_study",
-          "telegram_message_id": 2144
+          "created_at": "2026-05-06",
+          "depth_label": "practitioner_experience",
+          "excerpt": "Специально оставил на утро внимательно почитать и потестить. Inworld (я кажется их один из фанатов) выпустили Realtime TTS-2 – голосовую модель, заточенную под живой диалог, а не аудиокниги Уже #1 в голосовой арене на https://artificialanalysis.ai/text-to-speech/leaderboard То есть выше и OpenAI, и Gemini, и ElevenL...",
+          "reason": "model_landscape, creative_multimodal; depth=practitioner_experience",
+          "telegram_message_id": 2158
         }
       ],
       "runtime_readiness": {
@@ -2329,7 +2326,7 @@
         "metadata_advisory_ready": true,
         "text_posts_ready": true
       },
-      "text_post_count": 790,
+      "text_post_count": 791,
       "top_concepts": [
         {
           "count": 55,
@@ -2682,18 +2679,18 @@
     {
       "channel_username": "kdoronin_blog",
       "coverage": {
-        "agent_ops": 287,
-        "ai_engineering_infra": 24,
-        "ai_product_pm": 96,
+        "agent_ops": 276,
+        "ai_engineering_infra": 23,
+        "ai_product_pm": 80,
         "ai_ux_workflow": 38,
-        "business_adoption": 91,
-        "coding_agents": 181,
-        "creative_multimodal": 36,
-        "evals_quality": 17,
-        "general_ai_news": 11,
-        "model_landscape": 398,
-        "rag_retrieval_knowledge": 29,
-        "security_privacy_governance": 22
+        "business_adoption": 76,
+        "coding_agents": 179,
+        "creative_multimodal": 34,
+        "evals_quality": 15,
+        "general_ai_news": 8,
+        "model_landscape": 376,
+        "rag_retrieval_knowledge": 27,
+        "security_privacy_governance": 21
       },
       "coverage_strength": {
         "agent_ops": "strong",
@@ -2711,26 +2708,26 @@
       },
       "date_range": {
         "first_post": "2024-06-11",
-        "last_post": "2026-05-11"
+        "last_post": "2026-05-12"
       },
       "depth_profile": {
-        "announcement_or_news": 50,
-        "architecture_analysis": 63,
-        "benchmark_or_eval": 18,
-        "case_study": 124,
-        "howto_or_checklist": 300,
-        "low_signal": 199,
-        "practitioner_experience": 117,
+        "announcement_or_news": 43,
+        "architecture_analysis": 57,
+        "benchmark_or_eval": 16,
+        "case_study": 114,
+        "howto_or_checklist": 274,
+        "low_signal": 196,
+        "practitioner_experience": 104,
         "tool_release": 10
       },
       "display_name": "Doronin",
-      "embedding_count": 692,
+      "embedding_count": 627,
       "embedding_coverage_ratio": 1.0,
       "expert_id": "doronin",
-      "fts_count": 692,
-      "metadata_coverage_ratio": 0.7162,
-      "metadata_valid_count": 631,
-      "post_count": 881,
+      "fts_count": 627,
+      "metadata_coverage_ratio": 0.6941,
+      "metadata_valid_count": 565,
+      "post_count": 814,
       "representative_posts": [
         {
           "coverage_labels": [
@@ -2784,6 +2781,17 @@
         },
         {
           "coverage_labels": [
+            "agent_ops",
+            "rag_retrieval_knowledge"
+          ],
+          "created_at": "2026-05-12",
+          "depth_label": "architecture_analysis",
+          "excerpt": "**Рубрика \"нашёл новое интересное решение для памяти AI-агентов\".** На прошлой неделе на arxiv.org вышла статья [\"Storage Is Not Memory: A Retrieval-Centered Architecture for Agent Recall\"](https://arxiv.org/html/2605.04897v1). То есть: > Кому какое дело, какой красоты твои абстракции для хранения информации, если r...",
+          "reason": "agent_ops, rag_retrieval_knowledge; depth=architecture_analysis",
+          "telegram_message_id": 1278
+        },
+        {
+          "coverage_labels": [
             "agent_ops"
           ],
           "created_at": "2026-04-24",
@@ -2811,18 +2819,6 @@
           "excerpt": "**Всё-таки дождался, когда ****Seedance2.0 выйдет на fal.ai**i](https://fal.ai/models/bytedance/seedance-2.0/text-to-video)**.** Сперва он был доступен **только через лист ожидания**, а сейчас, судя по всему, его открыли для всех. Вообще я разделяю AI-генераторы видео на два типа: 1. Годятся **для развлечения**. 2....",
           "reason": "model_landscape; depth=case_study",
           "telegram_message_id": 1246
-        },
-        {
-          "coverage_labels": [
-            "agent_ops",
-            "business_adoption",
-            "model_landscape"
-          ],
-          "created_at": "2026-05-11",
-          "depth_label": "practitioner_experience",
-          "excerpt": "**\"Каждый токен на счету\".** Вы его ждали – и он пришёл. **Анонс нового стрима!** Для большинства пользователей то, что OpenClaw или [Hermes](https://t.me/kdoronin_blog/1268) едят токены с лопаты – не проблема. Дело в том, что использует эту обвязку вокруг агента **один человек**. Поэтому и разница в пять раз (хорош...",
-          "reason": "agent_ops, business_adoption, model_landscape; depth=practitioner_experience",
-          "telegram_message_id": 1277
         }
       ],
       "runtime_readiness": {
@@ -2831,39 +2827,35 @@
         "metadata_advisory_ready": true,
         "text_posts_ready": true
       },
-      "text_post_count": 692,
+      "text_post_count": 627,
       "top_concepts": [
         {
-          "count": 101,
+          "count": 93,
           "value": "Prompt Engineering"
         },
         {
-          "count": 74,
+          "count": 73,
           "value": "AI Agents"
         },
         {
-          "count": 43,
-          "value": "Automation"
-        },
-        {
           "count": 42,
-          "value": "LLM"
-        },
-        {
-          "count": 40,
-          "value": "API"
+          "value": "Automation"
         },
         {
           "count": 39,
           "value": "Generative AI"
         },
         {
-          "count": 26,
-          "value": "Software Development"
+          "count": 39,
+          "value": "LLM"
         },
         {
-          "count": 19,
-          "value": "Context Window"
+          "count": 38,
+          "value": "API"
+        },
+        {
+          "count": 25,
+          "value": "Software Development"
         },
         {
           "count": 19,
@@ -2872,6 +2864,10 @@
         {
           "count": 16,
           "value": "AI Agent"
+        },
+        {
+          "count": 16,
+          "value": "Context Window"
         },
         {
           "count": 15,
@@ -2884,93 +2880,93 @@
       ],
       "top_keywords": [
         {
-          "count": 165,
+          "count": 147,
           "value": "llm"
         },
         {
-          "count": 135,
+          "count": 133,
           "value": "генерация"
         },
         {
-          "count": 135,
+          "count": 133,
           "value": "generation"
         },
         {
-          "count": 127,
-          "value": "code"
-        },
-        {
-          "count": 123,
+          "count": 118,
           "value": "claude"
         },
         {
-          "count": 118,
+          "count": 117,
           "value": "video"
         },
         {
-          "count": 117,
-          "value": "development"
-        },
-        {
-          "count": 107,
-          "value": "разработка"
+          "count": 115,
+          "value": "code"
         },
         {
           "count": 105,
+          "value": "development"
+        },
+        {
+          "count": 98,
           "value": "prompt"
+        },
+        {
+          "count": 96,
+          "value": "разработка"
         },
         {
           "count": 94,
           "value": "видео"
         },
         {
-          "count": 93,
-          "value": "интеллект"
-        },
-        {
-          "count": 93,
-          "value": "промпт"
-        },
-        {
-          "count": 92,
-          "value": "agents"
-        },
-        {
           "count": 90,
-          "value": "искусственный"
+          "value": "agents"
         },
         {
           "count": 89,
           "value": "cursor"
         },
         {
+          "count": 88,
+          "value": "интеллект"
+        },
+        {
+          "count": 88,
+          "value": "промпт"
+        },
+        {
           "count": 85,
-          "value": "нейросети"
+          "value": "искусственный"
         },
         {
           "count": 84,
           "value": "agent"
         },
         {
-          "count": 82,
+          "count": 81,
           "value": "api"
         },
         {
-          "count": 77,
-          "value": "neural"
+          "count": 80,
+          "value": "нейросети"
         },
         {
-          "count": 73,
+          "count": 72,
           "value": "ai-агент"
+        },
+        {
+          "count": 69,
+          "value": "neural"
         }
       ],
       "top_primary_topics": [
         {
-          "count": 70,
+          "count": 69,
           "value": "AI Agents"
         },
         {
-          "count": 34,
+          "count": 31,
           "value": "AI Development"
         },
         {
@@ -3011,7 +3007,7 @@
         },
         {
           "count": 8,
-          "value": "Prompt Engineering"
+          "value": "Claude Code"
         }
       ],
       "warnings": []
@@ -3362,23 +3358,23 @@
     {
       "channel_username": "etechlead",
       "coverage": {
-        "agent_ops": 98,
-        "ai_engineering_infra": 12,
-        "ai_product_pm": 43,
-        "ai_ux_workflow": 22,
-        "business_adoption": 57,
-        "coding_agents": 106,
-        "creative_multimodal": 6,
-        "evals_quality": 33,
+        "agent_ops": 91,
+        "ai_engineering_infra": 9,
+        "ai_product_pm": 36,
+        "ai_ux_workflow": 20,
+        "business_adoption": 50,
+        "coding_agents": 101,
+        "creative_multimodal": 3,
+        "evals_quality": 31,
         "general_ai_news": 0,
-        "model_landscape": 118,
-        "rag_retrieval_knowledge": 6,
-        "security_privacy_governance": 23
+        "model_landscape": 109,
+        "rag_retrieval_knowledge": 5,
+        "security_privacy_governance": 19
       },
       "coverage_strength": {
         "agent_ops": "strong",
-        "ai_engineering_infra": "medium",
-        "ai_product_pm": "strong",
+        "ai_engineering_infra": "thin",
+        "ai_product_pm": "medium",
         "ai_ux_workflow": "medium",
         "business_adoption": "strong",
         "coding_agents": "strong",
@@ -3395,22 +3391,22 @@
       },
       "depth_profile": {
         "announcement_or_news": 10,
-        "architecture_analysis": 16,
-        "benchmark_or_eval": 33,
-        "case_study": 13,
-        "howto_or_checklist": 47,
-        "low_signal": 18,
-        "practitioner_experience": 58,
+        "architecture_analysis": 14,
+        "benchmark_or_eval": 31,
+        "case_study": 12,
+        "howto_or_checklist": 33,
+        "low_signal": 8,
+        "practitioner_experience": 40,
         "tool_release": 1
       },
       "display_name": "Etechlead",
-      "embedding_count": 185,
+      "embedding_count": 146,
       "embedding_coverage_ratio": 1.0,
       "expert_id": "etechlead",
-      "fts_count": 185,
-      "metadata_coverage_ratio": 0.9082,
-      "metadata_valid_count": 178,
-      "post_count": 196,
+      "fts_count": 146,
+      "metadata_coverage_ratio": 0.9329,
+      "metadata_valid_count": 139,
+      "post_count": 149,
       "representative_posts": [
         {
           "coverage_labels": [
@@ -3535,10 +3531,10 @@
         "metadata_advisory_ready": true,
         "text_posts_ready": true
       },
-      "text_post_count": 185,
+      "text_post_count": 146,
       "top_concepts": [
         {
-          "count": 18,
+          "count": 16,
           "value": "Software Development"
         },
         {
@@ -3562,15 +3558,15 @@
           "value": "Reasoning"
         },
         {
-          "count": 10,
+          "count": 9,
           "value": "LLM"
         },
         {
-          "count": 9,
+          "count": 8,
           "value": "Productivity"
         },
         {
-          "count": 9,
+          "count": 8,
           "value": "Software Engineering"
         },
         {
@@ -3579,48 +3575,48 @@
         },
         {
           "count": 8,
-          "value": "Artificial Intelligence"
+          "value": "Code Refactoring"
         },
         {
-          "count": 8,
-          "value": "Code Refactoring"
+          "count": 7,
+          "value": "Prompt Engineering"
         }
       ],
       "top_keywords": [
         {
-          "count": 66,
+          "count": 61,
           "value": "development"
         },
         {
-          "count": 65,
+          "count": 61,
           "value": "разработка"
         },
         {
-          "count": 52,
-          "value": "llm"
+          "count": 50,
+          "value": "code"
         },
         {
-          "count": 51,
-          "value": "code"
+          "count": 48,
+          "value": "llm"
         },
         {
           "count": 48,
           "value": "context"
         },
         {
-          "count": 47,
+          "count": 45,
           "value": "claude"
         },
         {
-          "count": 45,
+          "count": 42,
           "value": "cursor"
         },
         {
-          "count": 36,
+          "count": 35,
           "value": "агенты"
         },
         {
-          "count": 35,
+          "count": 34,
           "value": "agents"
         },
         {
@@ -3632,24 +3628,12 @@
           "value": "coding"
         },
         {
-          "count": 29,
-          "value": "интеллект"
-        },
-        {
-          "count": 28,
-          "value": "искусственный"
-        },
-        {
           "count": 26,
           "value": "model"
         },
         {
           "count": 25,
           "value": "agent"
-        },
-        {
-          "count": 23,
-          "value": "chatgpt"
         },
         {
           "count": 22,
@@ -3666,6 +3650,18 @@
         {
           "count": 21,
           "value": "refactoring"
+        },
+        {
+          "count": 21,
+          "value": "gemini"
+        },
+        {
+          "count": 20,
+          "value": "искусственный"
+        },
+        {
+          "count": 20,
+          "value": "интеллект"
         }
       ],
       "top_primary_topics": [
@@ -3674,16 +3670,12 @@
           "value": "AI Agents"
         },
         {
-          "count": 23,
+          "count": 22,
           "value": "AI Development"
         },
         {
           "count": 9,
           "value": "LLM Evaluation"
-        },
-        {
-          "count": 5,
-          "value": "Artificial Intelligence"
         },
         {
           "count": 4,
@@ -3696,6 +3688,10 @@
         {
           "count": 4,
           "value": "Cursor IDE"
+        },
+        {
+          "count": 4,
+          "value": "Artificial Intelligence"
         },
         {
           "count": 3,
@@ -3715,7 +3711,7 @@
         },
         {
           "count": 2,
-          "value": "Software Engineering"
+          "value": "AI IDE"
         }
       ],
       "warnings": []
@@ -4389,18 +4385,18 @@
     {
       "channel_username": "NGI_ru",
       "coverage": {
-        "agent_ops": 120,
+        "agent_ops": 118,
         "ai_engineering_infra": 16,
-        "ai_product_pm": 270,
-        "ai_ux_workflow": 79,
-        "business_adoption": 168,
-        "coding_agents": 105,
-        "creative_multimodal": 30,
-        "evals_quality": 44,
+        "ai_product_pm": 246,
+        "ai_ux_workflow": 76,
+        "business_adoption": 157,
+        "coding_agents": 104,
+        "creative_multimodal": 28,
+        "evals_quality": 40,
         "general_ai_news": 1,
-        "model_landscape": 275,
-        "rag_retrieval_knowledge": 24,
-        "security_privacy_governance": 73
+        "model_landscape": 254,
+        "rag_retrieval_knowledge": 23,
+        "security_privacy_governance": 69
       },
       "coverage_strength": {
         "agent_ops": "strong",
@@ -4417,27 +4413,27 @@
         "security_privacy_governance": "strong"
       },
       "date_range": {
-        "first_post": "2024-05-08",
+        "first_post": "2024-05-09",
         "last_post": "2026-05-11"
       },
       "depth_profile": {
-        "announcement_or_news": 21,
-        "architecture_analysis": 33,
-        "benchmark_or_eval": 44,
-        "case_study": 149,
-        "howto_or_checklist": 75,
-        "low_signal": 34,
-        "practitioner_experience": 133,
-        "tool_release": 3
+        "announcement_or_news": 18,
+        "architecture_analysis": 31,
+        "benchmark_or_eval": 40,
+        "case_study": 134,
+        "howto_or_checklist": 65,
+        "low_signal": 32,
+        "practitioner_experience": 120,
+        "tool_release": 2
       },
       "display_name": "Kornishev",
-      "embedding_count": 473,
+      "embedding_count": 423,
       "embedding_coverage_ratio": 1.0,
       "expert_id": "kornish",
-      "fts_count": 473,
+      "fts_count": 423,
       "metadata_coverage_ratio": 0.0,
       "metadata_valid_count": 0,
-      "post_count": 492,
+      "post_count": 442,
       "representative_posts": [
         {
           "coverage_labels": [
@@ -4552,7 +4548,7 @@
         "metadata_advisory_ready": false,
         "text_posts_ready": true
       },
-      "text_post_count": 473,
+      "text_post_count": 423,
       "top_concepts": [],
       "top_keywords": [],
       "top_primary_topics": [],
@@ -5250,14 +5246,14 @@
     {
       "channel_username": "aostrikov_ai_agents",
       "coverage": {
-        "agent_ops": 41,
+        "agent_ops": 43,
         "ai_engineering_infra": 6,
         "ai_product_pm": 12,
         "ai_ux_workflow": 4,
-        "business_adoption": 10,
+        "business_adoption": 11,
         "coding_agents": 23,
         "creative_multimodal": 1,
-        "evals_quality": 5,
+        "evals_quality": 6,
         "general_ai_news": 0,
         "model_landscape": 28,
         "rag_retrieval_knowledge": 6,
@@ -5279,27 +5275,39 @@
       },
       "date_range": {
         "first_post": "2026-01-07",
-        "last_post": "2026-05-10"
+        "last_post": "2026-05-12"
       },
       "depth_profile": {
         "announcement_or_news": 11,
         "architecture_analysis": 7,
-        "benchmark_or_eval": 5,
+        "benchmark_or_eval": 6,
         "case_study": 9,
-        "howto_or_checklist": 10,
+        "howto_or_checklist": 11,
         "low_signal": 12,
         "practitioner_experience": 14,
         "tool_release": 1
       },
       "display_name": "Ostrikov",
-      "embedding_count": 68,
+      "embedding_count": 70,
       "embedding_coverage_ratio": 1.0,
       "expert_id": "ostrikov",
-      "fts_count": 68,
-      "metadata_coverage_ratio": 0.4203,
+      "fts_count": 70,
+      "metadata_coverage_ratio": 0.4085,
       "metadata_valid_count": 29,
-      "post_count": 69,
+      "post_count": 71,
       "representative_posts": [
+        {
+          "coverage_labels": [
+            "agent_ops",
+            "evals_quality",
+            "business_adoption"
+          ],
+          "created_at": "2026-05-12",
+          "depth_label": "benchmark_or_eval",
+          "excerpt": "**Методичка по префикс кэшу** > “KV-cache hit rate is the single most important metric for a production-stage AI agent.” > - Context engineering for AI Agents, Manus Метрика которая имеет прямое влияние на деньги, которые вы тратите на AI. Ниже - три статьи разбирающие prefix_cache с разных сторон: - [Экономика кэши...",
+          "reason": "agent_ops, evals_quality, business_adoption; depth=benchmark_or_eval",
+          "telegram_message_id": 113
+        },
         {
           "coverage_labels": [
             "coding_agents",
@@ -5388,16 +5396,6 @@
           "excerpt": "🚀 Серия соревнований по МЛ и научный проект ! Денежный призовой фонд больше 100 000 р и будет расти ! Кому интересен МЛ/RL или математика или пазлы или роботы. Приглашаем Вас принять участие в серии челленджей и развитии научного опен-соурс проекта. Соревнование организуется совместно с учеными лаборатории интеллект...",
           "reason": "coding_agents, agent_ops; depth=case_study",
           "telegram_message_id": 92
-        },
-        {
-          "coverage_labels": [
-            "agent_ops"
-          ],
-          "created_at": "2026-04-13",
-          "depth_label": "case_study",
-          "excerpt": "**Вообще, мне дважды советовали попробовать ****Mastra**a](https://mastra.ai/)**.** И оба раза это делал [Рефат](https://t.me/nobilix). Указывая в списке \"советую\" также [Agno](https://www.agno.com/) (писал про него [тут](https://t.me/kdoronin_blog/1097)). Собственно, выбирая между TS и Python, я выбирал последний,...",
-          "reason": "agent_ops; depth=case_study",
-          "telegram_message_id": 89
         }
       ],
       "runtime_readiness": {
@@ -5406,7 +5404,7 @@
         "metadata_advisory_ready": true,
         "text_posts_ready": true
       },
-      "text_post_count": 68,
+      "text_post_count": 70,
       "top_concepts": [
         {
           "count": 5,
@@ -5596,18 +5594,18 @@
     {
       "channel_username": "evilfreelancer",
       "coverage": {
-        "agent_ops": 124,
+        "agent_ops": 125,
         "ai_engineering_infra": 28,
         "ai_product_pm": 24,
         "ai_ux_workflow": 4,
         "business_adoption": 26,
-        "coding_agents": 63,
+        "coding_agents": 64,
         "creative_multimodal": 12,
         "evals_quality": 25,
         "general_ai_news": 4,
-        "model_landscape": 195,
+        "model_landscape": 196,
         "rag_retrieval_knowledge": 34,
-        "security_privacy_governance": 10
+        "security_privacy_governance": 11
       },
       "coverage_strength": {
         "agent_ops": "strong",
@@ -5625,11 +5623,11 @@
       },
       "date_range": {
         "first_post": "2022-05-05",
-        "last_post": "2026-05-09"
+        "last_post": "2026-05-12"
       },
       "depth_profile": {
         "announcement_or_news": 70,
-        "architecture_analysis": 27,
+        "architecture_analysis": 28,
         "benchmark_or_eval": 25,
         "case_study": 29,
         "howto_or_checklist": 114,
@@ -5638,13 +5636,13 @@
         "tool_release": 16
       },
       "display_name": "PashaZloy",
-      "embedding_count": 398,
+      "embedding_count": 399,
       "embedding_coverage_ratio": 1.0,
       "expert_id": "pashazloy",
-      "fts_count": 398,
+      "fts_count": 399,
       "metadata_coverage_ratio": 0.0,
       "metadata_valid_count": 0,
-      "post_count": 414,
+      "post_count": 415,
       "representative_posts": [
         {
           "coverage_labels": [
@@ -5698,6 +5696,19 @@
         },
         {
           "coverage_labels": [
+            "coding_agents",
+            "agent_ops",
+            "security_privacy_governance",
+            "model_landscape"
+          ],
+          "created_at": "2026-05-12",
+          "depth_label": "architecture_analysis",
+          "excerpt": "**Claude Mythos это самая мощная модель-хакер или самый дорогой маркетинговый миф в истории ИИ?** Anthropic анонсировала модель, которая находит zero-day во всех ОС и браузерах, ломает чруты и пишет эксплойты на раз-два. Рынок кибербезопасности дрогнул, правительства созывают совещания, эксперты бьют тревогу. Но что...",
+          "reason": "coding_agents, agent_ops, security_privacy_governance; depth=architecture_analysis",
+          "telegram_message_id": 1674
+        },
+        {
+          "coverage_labels": [
             "agent_ops",
             "ai_product_pm",
             "business_adoption",
@@ -5733,17 +5744,6 @@
           "excerpt": "Ну чтож, хочу рассказать с какой целью я решил заморочиться с настройкой [gpt2giga](https://github.com/ai-forever/gpt2giga) и покупкой токенов моделей GigaChat-2 (Max, Pro и Lite). Для оценки семейства GigaChat-2 на агентном сценарии использован агент [phantom-agent](https://github.com/vakovalskii/phantom-agent) Вал...",
           "reason": "agent_ops, evals_quality, model_landscape; depth=benchmark_or_eval",
           "telegram_message_id": 1667
-        },
-        {
-          "coverage_labels": [
-            "agent_ops",
-            "evals_quality"
-          ],
-          "created_at": "2026-04-09",
-          "depth_label": "benchmark_or_eval",
-          "excerpt": "Обучение [ruGPT3XL-8k](https://huggingface.co/evilfreelancer/ruGPT3XL-8k) на ризонинг и агентных датасетах продолжается и судя по eval_loss на 500 шаге тренировка прошла свой предел точности, дальше походу начался оверфит. Чепоинты эти я уже скопировал в отдельную папку, они нарезаны на шарды из-за особенностей FSDP...",
-          "reason": "agent_ops, evals_quality; depth=benchmark_or_eval",
-          "telegram_message_id": 1642
         }
       ],
       "runtime_readiness": {
@@ -5752,7 +5752,7 @@
         "metadata_advisory_ready": false,
         "text_posts_ready": true
       },
-      "text_post_count": 398,
+      "text_post_count": 399,
       "top_concepts": [],
       "top_keywords": [],
       "top_primary_topics": [],
@@ -5763,18 +5763,18 @@
     {
       "channel_username": "countwithsasha",
       "coverage": {
-        "agent_ops": 150,
-        "ai_engineering_infra": 17,
-        "ai_product_pm": 48,
-        "ai_ux_workflow": 23,
-        "business_adoption": 93,
-        "coding_agents": 96,
-        "creative_multimodal": 14,
-        "evals_quality": 32,
-        "general_ai_news": 2,
-        "model_landscape": 205,
-        "rag_retrieval_knowledge": 21,
-        "security_privacy_governance": 48
+        "agent_ops": 145,
+        "ai_engineering_infra": 16,
+        "ai_product_pm": 45,
+        "ai_ux_workflow": 21,
+        "business_adoption": 79,
+        "coding_agents": 95,
+        "creative_multimodal": 13,
+        "evals_quality": 29,
+        "general_ai_news": 0,
+        "model_landscape": 191,
+        "rag_retrieval_knowledge": 20,
+        "security_privacy_governance": 46
       },
       "coverage_strength": {
         "agent_ops": "strong",
@@ -5785,33 +5785,33 @@
         "coding_agents": "strong",
         "creative_multimodal": "medium",
         "evals_quality": "medium",
-        "general_ai_news": "thin",
+        "general_ai_news": "none",
         "model_landscape": "strong",
         "rag_retrieval_knowledge": "medium",
         "security_privacy_governance": "strong"
       },
       "date_range": {
-        "first_post": "2024-06-26",
+        "first_post": "2024-07-17",
         "last_post": "2026-05-12"
       },
       "depth_profile": {
-        "announcement_or_news": 8,
-        "architecture_analysis": 13,
-        "benchmark_or_eval": 31,
-        "case_study": 135,
-        "howto_or_checklist": 32,
-        "low_signal": 55,
-        "practitioner_experience": 40,
+        "announcement_or_news": 4,
+        "architecture_analysis": 9,
+        "benchmark_or_eval": 28,
+        "case_study": 127,
+        "howto_or_checklist": 21,
+        "low_signal": 33,
+        "practitioner_experience": 30,
         "tool_release": 0
       },
       "display_name": "Polyakov",
-      "embedding_count": 265,
+      "embedding_count": 220,
       "embedding_coverage_ratio": 1.0,
       "expert_id": "polyakov",
-      "fts_count": 265,
-      "metadata_coverage_ratio": 0.6369,
-      "metadata_valid_count": 200,
-      "post_count": 314,
+      "fts_count": 220,
+      "metadata_coverage_ratio": 0.6111,
+      "metadata_valid_count": 154,
+      "post_count": 252,
       "representative_posts": [
         {
           "coverage_labels": [
@@ -5826,6 +5826,20 @@
           "excerpt": "**Барбершоп-тест: отечественным ИИ-моделям нужно следующее поколение. Жду** Вчера [писал,](https://t.me/countwithsasha/633) что GigaChat плохо подходит как сердце агента. По пути c подачи *@evilfreelancer* я обнаружил, что лучше запускать Гигачат через LiteLLM с флагом `supports_function_calling: true` С этим флагом...",
           "reason": "agent_ops, evals_quality, ai_product_pm; depth=benchmark_or_eval",
           "telegram_message_id": 636
+        },
+        {
+          "coverage_labels": [
+            "agent_ops",
+            "rag_retrieval_knowledge",
+            "ai_engineering_infra",
+            "model_landscape",
+            "creative_multimodal"
+          ],
+          "created_at": "2026-05-12",
+          "depth_label": "case_study",
+          "excerpt": "**Голосовые ассистенты учатся слышать и говорить одновременно** Вчера в чате о[бсуждали голосовых ботов](https://t.me/countwithsasha/639) на русском — сошлись, что всё упирается в тулинг и понимание пауз. Вечером Thinking Machines (лаборатория Миры Мурати, экс-CTO OpenAI) показали архитектуру, обходящую основные про...",
+          "reason": "agent_ops, rag_retrieval_knowledge, ai_engineering_infra; depth=case_study",
+          "telegram_message_id": 643
         },
         {
           "coverage_labels": [
@@ -5903,18 +5917,6 @@
           "excerpt": "**Manus внезапно стал нормальным инструментом для ежедневного рисёрча** Год назад я [писал про Manus](https://t.me/countwithsasha/235) как про крутую идею, но не рабочий инструмент. За год сервис не стал прям идеальным. Кредиты всё ещё списываются мутно, результат всё ещё надо проверять. Но Manus уже не выглядит про...",
           "reason": "coding_agents, agent_ops, business_adoption; depth=case_study",
           "telegram_message_id": 628
-        },
-        {
-          "coverage_labels": [
-            "agent_ops",
-            "ai_product_pm",
-            "ai_ux_workflow"
-          ],
-          "created_at": "2026-04-30",
-          "depth_label": "case_study",
-          "excerpt": "**Алиса прислала пуш: у нас агенты. Я сразу отправил её в барбершоп ** У Яндекса уже где-то полгода висел [анонс закрытой беты ИИ-агентов.](https://3dnews.ru/1131494/alisa-ai-poluchila-iiagentov-kotorie-broniruyut-uslugi-ishchut-skidki-i-provodyat-issledovaniya-po-zadaniyu-polzovatelya) Сегодня Алиса в приложении пр...",
-          "reason": "agent_ops, ai_product_pm, ai_ux_workflow; depth=case_study",
-          "telegram_message_id": 626
         }
       ],
       "runtime_readiness": {
@@ -5923,39 +5925,31 @@
         "metadata_advisory_ready": true,
         "text_posts_ready": true
       },
-      "text_post_count": 265,
+      "text_post_count": 220,
       "top_concepts": [
         {
-          "count": 26,
+          "count": 23,
           "value": "Prompt Engineering"
         },
         {
-          "count": 25,
+          "count": 18,
           "value": "Automation"
-        },
-        {
-          "count": 17,
-          "value": "LLM"
         },
         {
           "count": 14,
           "value": "AI Agents"
         },
         {
-          "count": 11,
-          "value": "API"
+          "count": 14,
+          "value": "LLM"
         },
         {
           "count": 10,
+          "value": "API"
+        },
+        {
+          "count": 9,
           "value": "Generative AI"
-        },
-        {
-          "count": 7,
-          "value": "Data Privacy"
-        },
-        {
-          "count": 7,
-          "value": "Fine-tuning"
         },
         {
           "count": 6,
@@ -5963,97 +5957,105 @@
         },
         {
           "count": 6,
+          "value": "Data Privacy"
+        },
+        {
+          "count": 6,
           "value": "API Integration"
         },
         {
-          "count": 6,
-          "value": "Prompt Injection"
+          "count": 5,
+          "value": "Code Review"
         },
         {
-          "count": 6,
-          "value": "Advertising"
+          "count": 5,
+          "value": "Agentic Workflow"
+        },
+        {
+          "count": 5,
+          "value": "Prompt Injection"
         }
       ],
       "top_keywords": [
         {
-          "count": 64,
+          "count": 60,
           "value": "claude"
         },
         {
-          "count": 55,
+          "count": 45,
           "value": "llm"
         },
         {
-          "count": 40,
-          "value": "code"
-        },
-        {
-          "count": 39,
+          "count": 37,
           "value": "api"
         },
         {
-          "count": 38,
-          "value": "openai"
+          "count": 36,
+          "value": "code"
         },
         {
-          "count": 37,
+          "count": 34,
           "value": "prompt"
         },
         {
-          "count": 36,
+          "count": 30,
           "value": "автоматизация"
         },
         {
-          "count": 35,
+          "count": 30,
+          "value": "openai"
+        },
+        {
+          "count": 29,
           "value": "automation"
         },
         {
-          "count": 32,
-          "value": "chatgpt"
-        },
-        {
-          "count": 30,
+          "count": 28,
           "value": "промпт"
         },
         {
-          "count": 29,
+          "count": 25,
+          "value": "chatgpt"
+        },
+        {
+          "count": 24,
           "value": "разработка"
         },
         {
-          "count": 29,
-          "value": "development"
-        },
-        {
-          "count": 29,
+          "count": 24,
           "value": "generation"
         },
         {
-          "count": 25,
-          "value": "search"
-        },
-        {
-          "count": 24,
-          "value": "yandex"
-        },
-        {
-          "count": 24,
-          "value": "модели"
-        },
-        {
           "count": 23,
-          "value": "advertising"
+          "value": "development"
+        },
+        {
+          "count": 22,
+          "value": "search"
         },
         {
           "count": 22,
           "value": "agent"
         },
         {
-          "count": 22,
+          "count": 19,
+          "value": "anthropic"
+        },
+        {
+          "count": 19,
+          "value": "модели"
+        },
+        {
+          "count": 18,
           "value": "data"
         },
         {
-          "count": 22,
+          "count": 18,
           "value": "генерация"
+        },
+        {
+          "count": 17,
+          "value": "yandex"
         }
       ],
       "top_primary_topics": [
@@ -6067,19 +6069,7 @@
         },
         {
           "count": 6,
-          "value": "Generative AI"
-        },
-        {
-          "count": 6,
           "value": "AI Coding"
-        },
-        {
-          "count": 5,
-          "value": "AI Development"
-        },
-        {
-          "count": 4,
-          "value": "AI Implementation"
         },
         {
           "count": 4,
@@ -6087,7 +6077,11 @@
         },
         {
           "count": 4,
-          "value": "AI Search"
+          "value": "AI Development"
+        },
+        {
+          "count": 4,
+          "value": "Generative AI"
         },
         {
           "count": 4,
@@ -6095,7 +6089,7 @@
         },
         {
           "count": 3,
-          "value": "Data Analytics"
+          "value": "AI Implementation"
         },
         {
           "count": 3,
@@ -6104,6 +6098,14 @@
         {
           "count": 3,
           "value": "AI Video Generation"
+        },
+        {
+          "count": 3,
+          "value": "LLM Integration"
+        },
+        {
+          "count": 3,
+          "value": "Content Marketing"
         }
       ],
       "warnings": []
@@ -7007,7 +7009,7 @@
     ],
     "thin_or_missing_areas": []
   },
-  "generated_at": "2026-05-12T21:33:53+00:00",
+  "generated_at": "2026-05-13T14:47:12+00:00",
   "include_video_hub": false,
   "interpretation": [
     "Coverage status is raw-text keyword density only; it is not an admission verdict.",
@@ -7020,10 +7022,10 @@
     "global_counts": {
       "expert_metadata": 21,
       "human_expert_metadata": 20,
-      "post_embeddings": 8137,
-      "posts": 8608,
-      "posts_fts": 8137,
-      "text_posts": 8137
+      "post_embeddings": 7731,
+      "posts": 8169,
+      "posts_fts": 7731,
+      "text_posts": 7731
     }
   },
   "version": 1,

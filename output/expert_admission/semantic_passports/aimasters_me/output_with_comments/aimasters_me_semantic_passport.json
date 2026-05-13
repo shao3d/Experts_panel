@@ -24,26 +24,6 @@
   },
   "source_ref_index_used": [
     {
-      "source_ref": "P0004",
-      "source_kind": "expert_post",
-      "post_id": 9912,
-      "telegram_message_id": 15,
-      "comment_id": null,
-      "telegram_comment_id": null,
-      "created_at": "2024-02-20 15:40:57.000000",
-      "why_used": "Demonstrates early deep knowledge of Midjourney prompting and parameters."
-    },
-    {
-      "source_ref": "P0014",
-      "source_kind": "expert_post",
-      "post_id": 9922,
-      "telegram_message_id": 73,
-      "comment_id": null,
-      "telegram_comment_id": null,
-      "created_at": "2024-03-02 07:01:14.000000",
-      "why_used": "Shows practical techniques for negative prompting and weight adjustments in Midjourney."
-    },
-    {
       "source_ref": "P0070",
       "source_kind": "expert_post",
       "post_id": 9979,
@@ -453,17 +433,16 @@
       "what_the_expert_knows": [
         "How to use Nano Banana Pro for generating high-quality presentation slides and 3D renders.",
         "How to train LoRAs on Flux for character consistency.",
-        "How to use Midjourney parameters (--no, --cw, --sref) for precise control."
+        "How to compare and operationalize modern image-generation tools such as Flux for practical creative workflows."
       ],
       "how_they_reason": [
         "Treats AI image generation as a professional design tool, prioritizing consistency and workflow integration over random art generation."
       ],
       "missing_or_weak_subtopics": [
-        "Deep technical breakdown of diffusion models (focuses on application rather than architecture)"
+        "Deep technical breakdown of diffusion models (focuses on application rather than architecture)",
+        "Early Midjourney prompt-parameter examples were pruned from the live DB; retained support is now Flux/Nano Banana/practical presentation-image workflows."
       ],
       "evidence_refs": [
-        "P0004",
-        "P0014",
         "P0070",
         "P0079",
         "P0221"
@@ -1036,7 +1015,7 @@
       "The 'Skill Conductor' methodology for TDD-style prompt engineering."
     ],
     "likely_duplicate_areas_to_check": [
-      "General Midjourney prompting.",
+      "General creative-image prompting.",
       "Basic comparisons of LLM models."
     ],
     "minimum_followup_probe_queries": [
@@ -1051,8 +1030,6 @@
     "abstentions": [],
     "possible_model_errors": [],
     "source_refs_used": [
-      "P0004",
-      "P0014",
       "P0070",
       "P0079",
       "P0080",
@@ -1086,6 +1063,14 @@
       "P0278",
       "P0283",
       "P0309"
+    ],
+    "normalization_notes": [
+      {
+        "operation": "post_prune_remove_stale_refs",
+        "reason": "aimasters_me posts before 2024-09-01 were soft-pruned from the live DB; two previously cited early Midjourney refs no longer resolve to posts.",
+        "updated_at": "2026-05-13T13:49:44.971541+00:00",
+        "removed_source_ref_count": 2
+      }
     ]
   }
 }

@@ -109,6 +109,42 @@ mode-revert-debug.log
 .claude/logs/
 *.log
 logs/
+.adal/
+.augment/
+.codebuddy/
+.commandcode/
+.continue/
+.cortex/
+.crush/
+.factory/
+.goose/
+.iflow/
+.junie/
+.kilocode/
+.kiro/
+.kode/
+.mcpjam/
+.mux/
+.neovate/
+.openhands/
+.pi/
+.pochi/
+.qoder/
+.qwen/
+.roo/
+.trae/
+.vibe/
+.windsurf/
+.zencoder/
+
+# =========================
+# KNOWLEDGE OPS WORKING ARTIFACTS
+# =========================
+output/expert_admission/semantic_passports/*/input*/
+output/expert_admission/semantic_passports/*/output_comments*/
+output/expert_admission/semantic_passports/*/output_with_comments/
+output/expert_admission/semantic_passports/aimasters_me/output/
+output/expert_admission/semantic_passports/sergei_notevskii/output/
 
 # =========================
 # IDE & SYSTEM
