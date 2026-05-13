@@ -137,6 +137,28 @@ The current system matches the intended doctrine:
 - Runtime query probes are optional escalation, not mandatory bureaucracy.
 - `post_metadata` is legacy/offline advisory data; runtime retrieval relies on source text, FTS, embeddings, and reranking.
 
+## CTO Recheck After Critique
+
+The matrix can remain the active admission baseline.
+
+The weak points found in the critique are real, but they are already handled by
+the current doctrine as long as the matrix is not treated as an automatic
+judge:
+
+- The matrix is intentionally lossy: it compresses rich passports into compact
+  cells and rollups.
+- Coarse coverage saturation does not mean the roster has no useful future
+  gaps.
+- Overlap-heavy signals must be read as "review the real source evidence", not
+  as "reject".
+- Deterministic preflight is allowed to be mechanical because final
+  overlap/duplicate decisions are reserved for LLM/human arbitration.
+- Runtime query probes stay optional escalation for disputed, high-impact, or
+  routing-weight-sensitive candidates.
+
+No new persistent report family is needed now. The next improvement should be a
+small validation set of control candidates, not a more bureaucratic matrix.
+
 ## Recommended Next Step
 
 Freeze this matrix as `v0.3` admission baseline and add a small admission-validation suite.

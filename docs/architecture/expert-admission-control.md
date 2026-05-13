@@ -198,6 +198,34 @@ unless a real runtime or decision need appears. A future routing-profile layer
 is allowed only when the Panel/Panex router can actually consume it or when
 manual admission decisions become hard to audit from the existing reports.
 
+### Known matrix limits
+
+The knowledge matrix is fit for continued use as the admission map, but only
+inside these limits:
+
+- It compresses a rich semantic passport into a small number of comparable
+  cells. This is useful for coverage and overlap detection, but it can hide
+  differences in audience, stance, source style, and practical depth.
+- Coarse coverage can look saturated even when the roster still lacks a useful
+  specialist angle. "No missing coarse area" is not the same as "no valuable
+  future expert exists."
+- Overlap is ambiguous by design. It can mean useless duplication, or it can
+  mean a valuable complementary angle inside a dense area.
+- The deterministic candidate preflight does not inspect raw posts, runtime
+  retrieval behavior, embeddings, or `source_bundle` quality. It gives a
+  starting signal only.
+- Freshness matters unevenly. Tool-choice, model-comparison, and current
+  coding-agent workflow cells should be treated as faster-decaying than durable
+  process, governance, or architecture cells.
+- Source references make passports auditable, but they do not by themselves
+  prove that every model-written claim is semantically fair. Important claims
+  still need representative-post review when the decision is consequential.
+
+Therefore the safe operating rule is simple: live with the matrix, but never
+delegate final admission authority to it. It is a map and warning system; the
+final product decision remains LLM/human arbitration over source evidence when
+the candidate is overlap-heavy, high-impact, or strategically important.
+
 Recommended semantic-passport admission pipeline:
 
 ```text
