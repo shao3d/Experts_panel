@@ -14,7 +14,11 @@ BACKUP_DIR="backend/data/backups"
 REMOTE_DB_PATH="/app/data/experts.db"
 REMOTE_BACKUP_PATH="/app/data/experts.db.backup"
 REMOTE_TMP_PATH="/app/data/experts.db.tmp"
+REMOTE_GZ_TMP_PATH="/app/data/experts.db.gz.tmp"
+REMOTE_CHUNK_PATH="/app/data/experts.db.upload_chunk"
 APP_NAME="experts-panel"
+UPLOAD_CHUNK_BYTES="${UPLOAD_CHUNK_BYTES:-2097152}"
+UPLOAD_CHUNK_RETRIES="${UPLOAD_CHUNK_RETRIES:-5}"
 
 # Ensure we are in project root
 if [ ! -f "fly.toml" ]; then
@@ -24,6 +28,22 @@ fi
 
 PROJECT_ROOT="$(pwd)"
 ABS_DB_PATH="$PROJECT_ROOT/$DB_PATH"
+
+sha256_file() {
+    if command -v sha256sum >/dev/null 2>&1; then
+        sha256sum "$1" | awk '{print $1}'
+    else
+        shasum -a 256 "$1" | awk '{print $1}'
+    fi
+}
+
+remote_stat_bytes() {
+    fly ssh console -C "stat -c %s $1 2>/dev/null || echo 0" | awk 'END {print $1}'
+}
+
+cleanup_remote_upload_artifacts() {
+    fly ssh console -C "rm -f $REMOTE_TMP_PATH $REMOTE_GZ_TMP_PATH $REMOTE_CHUNK_PATH $REMOTE_DB_PATH.gz" || true
+}
 
 # Create backup directory if not exists
 mkdir -p "$BACKUP_DIR"
@@ -135,23 +155,42 @@ fi
 
 # 7. Remote Backup
 echo "🛡️  [7/9] Creating remote backup on server..."
-if fly ssh console -C "cp $REMOTE_DB_PATH $REMOTE_BACKUP_PATH"; then
+REMOTE_BACKUP_CMD="if [ -f $REMOTE_DB_PATH ]; then rm -f $REMOTE_BACKUP_PATH && (ln $REMOTE_DB_PATH $REMOTE_BACKUP_PATH || cp $REMOTE_DB_PATH $REMOTE_BACKUP_PATH); else exit 2; fi"
+if fly ssh console -C "sh -lc '$REMOTE_BACKUP_CMD'"; then
     echo "   ✅ Remote backup created at $REMOTE_BACKUP_PATH"
 else
-    echo "   ⚠️ Failed to create remote backup (maybe file doesn't exist yet). Continuing."
+    BACKUP_STATUS=$?
+    if [ "$BACKUP_STATUS" -eq 2 ]; then
+        echo "   ⚠️ Remote DB does not exist yet. Skipping backup."
+    else
+        echo "   ❌ Failed to create remote backup. Aborting before upload."
+        exit 1
+    fi
 fi
 
-# 8. Upload New DB (Staged)
-echo "🚀 [8/9] Uploading fresh database (Staged)..."
+# 8. Upload New DB (Resumable Staged)
+echo "🚀 [8/9] Uploading fresh database (compressed chunked stage)..."
 # Disable update check to prevent hanging on old machines
 export FLY_NO_UPDATE_CHECK=1
 
-# Clean up leftovers from previous failed uploads before checking space.
-fly ssh console -C "rm -f $REMOTE_TMP_PATH $REMOTE_DB_PATH.gz" || true
+UPLOAD_WORK_DIR=$(mktemp -d "${TMPDIR:-/tmp}/experts-db-upload.XXXXXX")
+trap 'rm -rf "$UPLOAD_WORK_DIR"' EXIT
+LOCAL_GZ_PATH="$UPLOAD_WORK_DIR/experts.db.gz"
+LOCAL_CHUNK_PATH="$UPLOAD_WORK_DIR/chunk.bin"
+
+echo "   🗜️  Compressing local DB before upload..."
+gzip -c "$DB_PATH" > "$LOCAL_GZ_PATH"
 
 LOCAL_DB_BYTES=$(wc -c < "$DB_PATH" | tr -d ' ')
+LOCAL_GZ_BYTES=$(wc -c < "$LOCAL_GZ_PATH" | tr -d ' ')
+LOCAL_GZ_SHA=$(sha256_file "$LOCAL_GZ_PATH")
 LOCAL_DB_KB=$(( (LOCAL_DB_BYTES + 1023) / 1024 ))
-MIN_FREE_KB=$(( LOCAL_DB_KB + 51200 ))
+LOCAL_GZ_KB=$(( (LOCAL_GZ_BYTES + 1023) / 1024 ))
+MIN_FREE_KB=$(( LOCAL_DB_KB + LOCAL_GZ_KB + 51200 ))
+
+# Clean up leftovers from previous failed uploads before checking space.
+cleanup_remote_upload_artifacts
+
 REMOTE_FREE_KB=$(fly ssh console -C "df -Pk /app/data" | awk 'END {print $4}')
 
 if ! [[ "$REMOTE_FREE_KB" =~ ^[0-9]+$ ]]; then
@@ -159,7 +198,7 @@ if ! [[ "$REMOTE_FREE_KB" =~ ^[0-9]+$ ]]; then
     exit 1
 fi
 
-echo "   🧮 Remote free before upload: $(( REMOTE_FREE_KB / 1024 )) MiB; DB size: $(( LOCAL_DB_KB / 1024 )) MiB"
+echo "   🧮 Remote free before upload: $(( REMOTE_FREE_KB / 1024 )) MiB; DB size: $(( LOCAL_DB_KB / 1024 )) MiB; gzip: $(( LOCAL_GZ_KB / 1024 )) MiB"
 if [ "$REMOTE_FREE_KB" -lt "$MIN_FREE_KB" ]; then
     echo "   ❌ Not enough free space on /app/data for a staged upload."
     echo "      Need at least $(( MIN_FREE_KB / 1024 )) MiB free, found $(( REMOTE_FREE_KB / 1024 )) MiB."
@@ -167,24 +206,117 @@ if [ "$REMOTE_FREE_KB" -lt "$MIN_FREE_KB" ]; then
     exit 1
 fi
 
-echo "   📤 Uploading database to temporary path..."
-if fly sftp put "$DB_PATH" "$REMOTE_TMP_PATH"; then
-    echo "   ✅ Upload successful."
-else
-    echo "   ❌ Upload failed! Cleaning up..."
-    fly ssh console -C "rm -f $REMOTE_TMP_PATH" || true
+echo "   📤 Uploading gzip in $UPLOAD_CHUNK_BYTES-byte chunks..."
+fly ssh console -C "rm -f $REMOTE_GZ_TMP_PATH $REMOTE_CHUNK_PATH && : > $REMOTE_GZ_TMP_PATH"
+
+UPLOADED_BYTES=0
+CHUNK_INDEX=0
+CHUNK_COUNT=$(( (LOCAL_GZ_BYTES + UPLOAD_CHUNK_BYTES - 1) / UPLOAD_CHUNK_BYTES ))
+
+while [ "$UPLOADED_BYTES" -lt "$LOCAL_GZ_BYTES" ]; do
+    dd if="$LOCAL_GZ_PATH" of="$LOCAL_CHUNK_PATH" bs="$UPLOAD_CHUNK_BYTES" skip="$CHUNK_INDEX" count=1 2>/dev/null
+    CHUNK_BYTES=$(wc -c < "$LOCAL_CHUNK_PATH" | tr -d ' ')
+    EXPECTED_AFTER=$(( UPLOADED_BYTES + CHUNK_BYTES ))
+    CHUNK_NUMBER=$(( CHUNK_INDEX + 1 ))
+    echo "      chunk $CHUNK_NUMBER/$CHUNK_COUNT: $CHUNK_BYTES bytes"
+
+    REMOTE_BEFORE=$(remote_stat_bytes "$REMOTE_GZ_TMP_PATH")
+    if [ "$REMOTE_BEFORE" != "$UPLOADED_BYTES" ]; then
+        echo "   ❌ Remote gzip stage size drifted. Expected $UPLOADED_BYTES bytes, got $REMOTE_BEFORE bytes."
+        cleanup_remote_upload_artifacts
+        exit 1
+    fi
+
+    ATTEMPT=1
+    CHUNK_OK=0
+    while [ "$ATTEMPT" -le "$UPLOAD_CHUNK_RETRIES" ]; do
+        if fly sftp put "$LOCAL_CHUNK_PATH" "$REMOTE_CHUNK_PATH"; then
+            REMOTE_CHUNK_BYTES=$(remote_stat_bytes "$REMOTE_CHUNK_PATH")
+            if [ "$REMOTE_CHUNK_BYTES" = "$CHUNK_BYTES" ] && fly ssh console -C "sh -lc 'cat $REMOTE_CHUNK_PATH >> $REMOTE_GZ_TMP_PATH && rm -f $REMOTE_CHUNK_PATH'"; then
+                REMOTE_AFTER=$(remote_stat_bytes "$REMOTE_GZ_TMP_PATH")
+                if [ "$REMOTE_AFTER" = "$EXPECTED_AFTER" ]; then
+                    CHUNK_OK=1
+                    break
+                fi
+                echo "      ⚠️ Remote staged size mismatch after append: expected $EXPECTED_AFTER, got $REMOTE_AFTER"
+            else
+                echo "      ⚠️ Chunk size verification or append failed."
+            fi
+
+            REMOTE_AFTER_FAILURE=$(remote_stat_bytes "$REMOTE_GZ_TMP_PATH")
+            if [ "$REMOTE_AFTER_FAILURE" != "$UPLOADED_BYTES" ]; then
+                echo "   ❌ Remote gzip stage changed during a failed append. Cleaning up to avoid a corrupted staged file."
+                cleanup_remote_upload_artifacts
+                exit 1
+            fi
+        else
+            echo "      ⚠️ Chunk upload attempt $ATTEMPT failed."
+        fi
+
+        fly ssh console -C "rm -f $REMOTE_CHUNK_PATH" || true
+        ATTEMPT=$(( ATTEMPT + 1 ))
+        sleep 2
+    done
+
+    if [ "$CHUNK_OK" -ne 1 ]; then
+        echo "   ❌ Failed to upload chunk $CHUNK_NUMBER after $UPLOAD_CHUNK_RETRIES attempt(s). Cleaning up..."
+        cleanup_remote_upload_artifacts
+        exit 1
+    fi
+
+    UPLOADED_BYTES=$EXPECTED_AFTER
+    CHUNK_INDEX=$(( CHUNK_INDEX + 1 ))
+done
+
+REMOTE_GZ_BYTES=$(remote_stat_bytes "$REMOTE_GZ_TMP_PATH")
+if [ "$REMOTE_GZ_BYTES" != "$LOCAL_GZ_BYTES" ]; then
+    echo "   ❌ Uploaded gzip size mismatch. Expected $LOCAL_GZ_BYTES bytes, got $REMOTE_GZ_BYTES bytes."
+    cleanup_remote_upload_artifacts
     exit 1
 fi
 
-REMOTE_TMP_BYTES=$(fly ssh console -C "stat -c %s $REMOTE_TMP_PATH" | awk 'END {print $1}')
+REMOTE_GZ_SHA=$(fly ssh console -C "sha256sum $REMOTE_GZ_TMP_PATH | cut -d ' ' -f 1" | awk 'END {print $1}')
+if [ "$REMOTE_GZ_SHA" != "$LOCAL_GZ_SHA" ]; then
+    echo "   ❌ Uploaded gzip SHA mismatch."
+    echo "      Expected: $LOCAL_GZ_SHA"
+    echo "      Got:      $REMOTE_GZ_SHA"
+    cleanup_remote_upload_artifacts
+    exit 1
+fi
+
+if fly ssh console -C "gzip -t $REMOTE_GZ_TMP_PATH"; then
+    echo "   ✅ Gzip upload verified by size, SHA, and gzip test."
+else
+    echo "   ❌ Remote gzip validation failed."
+    cleanup_remote_upload_artifacts
+    exit 1
+fi
+
+echo "   📦 Decompressing staged DB on Fly..."
+if fly ssh console -C "sh -lc 'rm -f $REMOTE_TMP_PATH && gzip -dc $REMOTE_GZ_TMP_PATH > $REMOTE_TMP_PATH'"; then
+    REMOTE_TMP_BYTES=$(remote_stat_bytes "$REMOTE_TMP_PATH")
+else
+    echo "   ❌ Remote decompression failed."
+    cleanup_remote_upload_artifacts
+    exit 1
+fi
+
 if [ "$REMOTE_TMP_BYTES" != "$LOCAL_DB_BYTES" ]; then
-    echo "   ❌ Uploaded file size mismatch. Expected $LOCAL_DB_BYTES bytes, got $REMOTE_TMP_BYTES bytes."
-    fly ssh console -C "rm -f $REMOTE_TMP_PATH" || true
+    echo "   ❌ Decompressed DB size mismatch. Expected $LOCAL_DB_BYTES bytes, got $REMOTE_TMP_BYTES bytes."
+    cleanup_remote_upload_artifacts
+    exit 1
+fi
+
+echo "   🔎 Running SQLite integrity check on staged DB..."
+REMOTE_INTEGRITY=$(fly ssh console -C "python3 -c \"import sqlite3; con=sqlite3.connect('$REMOTE_TMP_PATH'); print(con.execute('PRAGMA integrity_check').fetchone()[0])\"" | awk 'END {print $1}')
+if [ "$REMOTE_INTEGRITY" != "ok" ]; then
+    echo "   ❌ SQLite integrity check failed: $REMOTE_INTEGRITY"
+    cleanup_remote_upload_artifacts
     exit 1
 fi
 
 echo "   🔁 Replacing production database..."
-REMOTE_REPLACE_CMD="rm -f $REMOTE_DB_PATH-wal $REMOTE_DB_PATH-shm && mv -f $REMOTE_TMP_PATH $REMOTE_DB_PATH && chown appuser:appuser $REMOTE_DB_PATH"
+REMOTE_REPLACE_CMD="rm -f $REMOTE_DB_PATH-wal $REMOTE_DB_PATH-shm && mv -f $REMOTE_TMP_PATH $REMOTE_DB_PATH && chown appuser:appuser $REMOTE_DB_PATH && rm -f $REMOTE_GZ_TMP_PATH $REMOTE_CHUNK_PATH"
 if fly ssh console -C "sh -lc '$REMOTE_REPLACE_CMD'"; then
     echo "   ✅ Production database replaced."
 else
