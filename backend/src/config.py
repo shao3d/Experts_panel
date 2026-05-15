@@ -13,6 +13,10 @@ def _mask_value(value: str) -> str:
     return f"{value[:5]}...{value[-4:]}"
 
 
+def _display_cap(value: int) -> str:
+    return "all" if value <= 0 else str(value)
+
+
 _BACKEND_DIR = Path(__file__).resolve().parents[1]
 _DEFAULT_SQLITE_DB_PATH = (_BACKEND_DIR / "data" / "experts.db").resolve()
 
@@ -58,22 +62,25 @@ AGENT_CONTEXT_MAX_RESPONSE_BYTES: int = int(
     os.getenv("AGENT_CONTEXT_MAX_RESPONSE_BYTES", "100000000")
 )
 AGENT_CONTEXT_DIGEST_MAX_SOURCE_REFS: int = int(
-    os.getenv("AGENT_CONTEXT_DIGEST_MAX_SOURCE_REFS", "8")
+    os.getenv("AGENT_CONTEXT_DIGEST_MAX_SOURCE_REFS", "0")
 )
 AGENT_CONTEXT_DIGEST_MAX_SOURCE_CHARS: int = int(
-    os.getenv("AGENT_CONTEXT_DIGEST_MAX_SOURCE_CHARS", "900")
+    os.getenv("AGENT_CONTEXT_DIGEST_MAX_SOURCE_CHARS", "0")
 )
 AGENT_CONTEXT_DIGEST_MAX_COMMENTS_PER_SOURCE: int = int(
-    os.getenv("AGENT_CONTEXT_DIGEST_MAX_COMMENTS_PER_SOURCE", "3")
+    os.getenv("AGENT_CONTEXT_DIGEST_MAX_COMMENTS_PER_SOURCE", "0")
 )
 AGENT_CONTEXT_DIGEST_MAX_COMMENT_CHARS: int = int(
-    os.getenv("AGENT_CONTEXT_DIGEST_MAX_COMMENT_CHARS", "360")
+    os.getenv("AGENT_CONTEXT_DIGEST_MAX_COMMENT_CHARS", "0")
 )
 AGENT_CONTEXT_DIGEST_MAX_LINKS_PER_SOURCE: int = int(
-    os.getenv("AGENT_CONTEXT_DIGEST_MAX_LINKS_PER_SOURCE", "5")
+    os.getenv("AGENT_CONTEXT_DIGEST_MAX_LINKS_PER_SOURCE", "0")
 )
 AGENT_CONTEXT_DIGEST_MAX_SIGNALS: int = int(
-    os.getenv("AGENT_CONTEXT_DIGEST_MAX_SIGNALS", "5")
+    os.getenv("AGENT_CONTEXT_DIGEST_MAX_SIGNALS", "0")
+)
+AGENT_CONTEXT_DIGEST_MAX_OUTPUT_TOKENS: int = int(
+    os.getenv("AGENT_CONTEXT_DIGEST_MAX_OUTPUT_TOKENS", "8192")
 )
 
 # --- Model Configuration ---
@@ -212,12 +219,13 @@ def get_runtime_config_log_lines() -> list[str]:
             f"  Agent Context Timeout:    {AGENT_CONTEXT_TIMEOUT_SECONDS}s",
             f"  Agent Context Max Bytes:  {AGENT_CONTEXT_MAX_RESPONSE_BYTES}",
             "  Agent Context Digest Caps: "
-            f"sources={AGENT_CONTEXT_DIGEST_MAX_SOURCE_REFS}, "
-            f"source_chars={AGENT_CONTEXT_DIGEST_MAX_SOURCE_CHARS}, "
-            f"comments/source={AGENT_CONTEXT_DIGEST_MAX_COMMENTS_PER_SOURCE}, "
-            f"comment_chars={AGENT_CONTEXT_DIGEST_MAX_COMMENT_CHARS}, "
-            f"links/source={AGENT_CONTEXT_DIGEST_MAX_LINKS_PER_SOURCE}, "
-            f"signals={AGENT_CONTEXT_DIGEST_MAX_SIGNALS}",
+            f"sources={_display_cap(AGENT_CONTEXT_DIGEST_MAX_SOURCE_REFS)}, "
+            f"source_chars={_display_cap(AGENT_CONTEXT_DIGEST_MAX_SOURCE_CHARS)}, "
+            f"comments/source={_display_cap(AGENT_CONTEXT_DIGEST_MAX_COMMENTS_PER_SOURCE)}, "
+            f"comment_chars={_display_cap(AGENT_CONTEXT_DIGEST_MAX_COMMENT_CHARS)}, "
+            f"links/source={_display_cap(AGENT_CONTEXT_DIGEST_MAX_LINKS_PER_SOURCE)}, "
+            f"signals={_display_cap(AGENT_CONTEXT_DIGEST_MAX_SIGNALS)}, "
+            f"output_tokens={AGENT_CONTEXT_DIGEST_MAX_OUTPUT_TOKENS}",
             "--- Loaded logging configuration ---",
             f"  Log Level:         {LOG_LEVEL}",
             f"  Backend Log File:  {BACKEND_LOG_FILE}",

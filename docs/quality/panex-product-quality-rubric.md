@@ -1,7 +1,7 @@
 # Panex Delivery Quality Rubric
 
 **Status:** AND-28 relay-only delivery BDD guardrail
-**Last updated:** 2026-05-08
+**Last updated:** 2026-05-15
 
 This rubric checks the delivery quality of the `Панэкс` /
 `experts_panel_researcher` answer after the Agent Context API has already
@@ -40,7 +40,7 @@ It must not frame practitioner opinions as proof.
 | Coverage | The answer covers the scenario-specific asks, not just a generic summary. |
 | Relay fidelity | The answer preserves backend digest fields and does not create a new meta-synthesis, fresh ranking, or project verdict. |
 | Nuance preservation | The answer keeps caveats, disagreement, and low-confidence areas visible. |
-| Brevity | The answer is compact enough for the parent chat, not a raw digest dump. |
+| Proportionality | The answer is as large as the backend digest requires: not a raw JSON dump, but not shortened or second-summarized. |
 | Expand path | When deeper audit is useful, the answer suggests a targeted source/comment expansion step. |
 | External boundary | External links are listed as author-supplied references only; Панэкс must not claim it opened/fetched/crawled them unless explicitly asked and actually did so. |
 
@@ -49,7 +49,7 @@ It must not frame practitioner opinions as proof.
 AND-22 adds product-behavior scenarios rather than backend API scenarios. They
 stress Панэкс as a user-facing research helper:
 
-- compact default answers for ordinary expert questions;
+- faithful default digest delivery for ordinary expert questions;
 - weak-signal honesty for small/single-file subagent questions;
 - human Russian follow-up expansion without requiring `source_key` jargon;
 - external-link boundary when sources mention GitHub/repos/tools;
@@ -114,13 +114,13 @@ Red flags:
   digest;
 - it hides `source_refs`, `comments_digest`, `omitted_counts`, or warnings.
 
-## Compact Default
+## Faithful Digest Delivery
 
-Default `expert_digest` answers should fit a parent-agent chat, not read like a
-full analyst report. Keep them compact by delivering the digest fields instead
-of rewriting every signal into new analysis.
+Default `expert_digest` answers should faithfully deliver the backend-generated
+digest fields. Панэкс may clean formatting, but must not shorten, rerank, or
+second-summarize the digest into a new analysis.
 
-Good compact shape:
+Good delivery shape:
 
 - compact Request passport;
 - scope and warnings;
@@ -151,8 +151,8 @@ lookup over source handles from a previous digest.
 - It runs a new `expert_digest` / `source_bundle` to satisfy an expansion phrase
   such as "раскрой по Рефату" unless the user explicitly asked to refresh or
   ask a new main question.
-- It produces a long report by default when compact digest delivery would be
-  enough.
+- It shortens, reranks, or re-summarizes the backend-generated `expert_digest`
+  instead of cleanly delivering the digest fields returned by the Panel.
 
 ## Current Eval Tool
 

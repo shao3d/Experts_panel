@@ -738,7 +738,9 @@ def _assert_expert_digest_contract(
         source_refs = digest["source_refs"]
         source_keys = {source_ref["source_key"] for source_ref in source_refs}
         assert source_refs
-        assert len(source_refs) <= 8
+        max_source_refs = int((digest.get("limits_used") or {}).get("max_source_refs") or 0)
+        if max_source_refs > 0:
+            assert len(source_refs) <= max_source_refs
         assert digest["key_signals"]
         assert digest.get("position")
         assert digest["source_index"]
@@ -747,7 +749,11 @@ def _assert_expert_digest_contract(
             assert source_ref["source_key"].startswith(f"{expert['expert_id']}:")
             assert source_ref["relevance"] in {"HIGH", "MEDIUM"}
             assert source_ref.get("short_excerpt")
-            assert len(source_ref["short_excerpt"]) <= 950
+            max_source_chars = int(
+                (digest.get("limits_used") or {}).get("max_source_chars") or 0
+            )
+            if max_source_chars > 0:
+                assert len(source_ref["short_excerpt"]) <= max_source_chars + 50
             assert "evidence_quality" in source_ref
             _assert_evidence_quality(source_ref["evidence_quality"])
             for external_link in source_ref.get("external_links") or []:

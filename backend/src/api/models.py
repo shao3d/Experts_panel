@@ -265,7 +265,7 @@ class AgentDigestComments(BaseModel):
 
 
 class AgentDigestSignal(BaseModel):
-    """One compact source-backed signal produced for an expert digest."""
+    """One source-backed signal produced for an expert digest."""
 
     claim: str
     support_level: str = "unknown"
@@ -275,7 +275,7 @@ class AgentDigestSignal(BaseModel):
 
 
 class AgentDigestOmittedCounts(BaseModel):
-    """Counts of raw evidence omitted from compact expert digest transport."""
+    """Counts of raw evidence omitted from expert digest transport."""
 
     main_sources: int = 0
     linked_context: int = 0
@@ -293,11 +293,11 @@ class AgentDigestLimitsUsed(BaseModel):
     max_comment_chars: int = 0
     max_links_per_source: int = 0
     max_signals: int = 0
-    source_index_scope: str = "all_selected_sources_compact"
+    source_index_scope: str = "all_selected_sources"
 
 
 class AgentExpertDigest(BaseModel):
-    """Panel-side compact digest for one expert."""
+    """Panel-side source-backed digest for one expert."""
 
     position: Optional[str] = None
     key_signals: List[AgentDigestSignal] = Field(default_factory=list)

@@ -282,12 +282,12 @@ def _print_expert_digest_summary(expert: dict[str, Any]) -> None:
     if limits_used:
         print(
             "    limits_used: "
-            f"source_refs<={limits_used.get('max_source_refs', 0)}; "
-            f"source_chars<={limits_used.get('max_source_chars', 0)}; "
-            f"comments/source<={limits_used.get('max_comments_per_source', 0)}; "
-            f"comment_chars<={limits_used.get('max_comment_chars', 0)}; "
-            f"links/source<={limits_used.get('max_links_per_source', 0)}; "
-            f"signals<={limits_used.get('max_signals', 0)}; "
+            f"source_refs={_format_limit(limits_used.get('max_source_refs', 0))}; "
+            f"source_chars={_format_limit(limits_used.get('max_source_chars', 0))}; "
+            f"comments/source={_format_limit(limits_used.get('max_comments_per_source', 0))}; "
+            f"comment_chars={_format_limit(limits_used.get('max_comment_chars', 0))}; "
+            f"links/source={_format_limit(limits_used.get('max_links_per_source', 0))}; "
+            f"signals={_format_limit(limits_used.get('max_signals', 0))}; "
             f"source_index={limits_used.get('source_index_scope', 'unknown')}"
         )
 
@@ -336,6 +336,16 @@ def _resolve_timeout(cli_timeout: float | None) -> float:
     if timeout <= 0:
         raise AgentContextCliError("AGENT_CONTEXT_TIMEOUT_SECONDS must be positive")
     return timeout
+
+
+def _format_limit(raw_value: object) -> str:
+    try:
+        value = int(raw_value or 0)
+    except (TypeError, ValueError):
+        return str(raw_value)
+    if value <= 0:
+        return "all"
+    return f"<={value}"
 
 
 def _format_evidence_quality(item: dict[str, Any]) -> str | None:

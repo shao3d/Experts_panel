@@ -1,6 +1,6 @@
 # Agent Context API Spec
 
-**Status:** Accepted / AND-5..AND-30 implemented / forced embedding search implemented
+**Status:** Accepted / AND-5..AND-31 implemented / forced embedding search implemented
 **Decision:** `.haft/decisions/dec-20260504-b2539c3d.md`
 **Last updated:** 2026-05-15
 
@@ -26,7 +26,7 @@ Current state as of 2026-05-15:
 | AND-14 all-experts paid local smoke | Done | Paid local smoke passed for the full MVP Telegram roster (`17` experts, no `video_hub`) with bounded parallelism, no warnings, and a `7.46MB` source_bundle response after forced Embs&Keys retrieval. |
 | AND-15 production Fly smoke mode | Done | `backend/scripts/agent_context_live_smoke.py` has an explicit external mode via `--api-url`; without that flag it still starts a local backend and ignores ambient `AGENT_CONTEXT_API_URL` to avoid accidental Fly calls. Production smoke passed on Fly with a separate production token for `refat,akimov`. |
 | AND-16 source external links V1 | Done | `source_bundle` now extracts HTTP(S) links from each selected `main_source` into `main_sources[].external_links` as author-supplied references with `fetch_status=not_fetched`. The API/CLI/subagent contract does not fetch, crawl, clone, or summarize external URLs unless a later explicit enrichment mode is requested. Local live dogfood for `neuraldeep` found 40 real external links with `bad_suffix_links_count=0`; production public endpoint verification on Fly version `338` found 99 real external links with `bad_suffix_links_count=0`. |
-| AND-17 panel-side `expert_digest` reduce | Done + deployed | Agent Context now supports `response_mode = "expert_digest"` for subagent calls. The backend still runs the same source discovery/comment-loading pipeline, then reduces selected posts and main-source comments into compact per-expert digests with provenance (`digest.source_refs`, `digest.source_index`, `digest.key_signals`, `digest.comments_digest`, `digest.omitted_counts`, `digest.limits_used`) and omits raw `main_sources` from that response. `source_bundle` remains available for explicit raw evidence/audit/debug requests. Production Fly smoke passed for `refat` with `mode=expert_digest`, `selected_sources_count=17`, `source_refs=8`, and no `expert_digest_reduce_failed` warning. |
+| AND-17 panel-side `expert_digest` reduce | Done + deployed | Agent Context supports `response_mode = "expert_digest"` for subagent calls. The backend still runs the same source discovery/comment-loading pipeline, then reduces selected posts and main-source comments into source-backed per-expert digests with provenance (`digest.source_refs`, `digest.source_index`, `digest.key_signals`, `digest.comments_digest`, `digest.omitted_counts`, `digest.limits_used`) and omits raw `main_sources` from that response. Digest compaction caps are opt-in: `0` means "all selected evidence/signals" so the Panel-side LLM, not Панэкс, decides the useful digest shape. `source_bundle` remains available for explicit raw evidence/audit/debug requests. |
 | AND-18 production `expert_digest` BDD hardening | Done + deployed | Added production-live BDD tests that hit Fly.io directly with `AGENT_CONTEXT_PRODUCTION_LIVE=1` and no local backend/mocks. The first red run found that some LLM digest outputs return top-level signal lists without `position`; the backend now fills a safe fallback `position` instead of weakening the contract. Final production runs passed for two-expert, three-expert, digest-vs-source_bundle compactness, comments-off, unknown expert, unsupported response mode, and `video_hub` 501 scenarios. |
 | AND-19 evidence expansion by `source_key` | Done + deployed | `expert_digest` now includes compact `digest.source_index` handles for all selected sources, while `POST /api/v1/agent/context/expand` expands exact `source_key` handles such as `refat:234` into raw/capped post evidence, direct comments, external link metadata, explicit `limits_used`, truncation metadata, and `not_found` entries without rerunning search, Map, Resolve, Reduce, or digest. Панэкс instructions use `src.cli.agent_context_expand` when the user asks in plain Russian to reveal sources/proofs/details from a previous digest, or gives concrete handles, then report a lean Evidence Note rather than a second digest. |
 | AND-20 evidence quality calibration | Done + deployed | Agent Context now attaches lightweight `evidence_quality` calibration to raw `main_sources`, compact `digest.source_refs`, full `digest.source_index`, and exact `source_expand` results. Labels are deterministic over already selected source text, relevance, comments, and author-supplied external-link metadata; they do not add a new LLM call, do not fetch links, and must be presented by Панэкс as calibration rather than proof. Production Fly BDD passed on release `v364` for digest labels, source_bundle labels, comments-off labels, exact source expansion labels, bad input boundaries, and raw-free bounded digest output. |
@@ -34,6 +34,7 @@ Current state as of 2026-05-15:
 | AND-22 Панэкс adversarial delivery dogfood | Done locally + production dogfood | Added five BDD-heavy product scenarios for compact default behavior, weak-signal honesty, human Russian source expansion follow-up, external-link boundary, and exact expert-scope discipline. Production Панэкс dogfood against Fly.io passed all five new scenarios; the full delivery-quality evaluator run passed `11` scenarios with `0` failures. |
 | AND-23 selector-based expansion UX | Done locally + production dogfood | Панэкс instructions now map human follow-up selectors such as "раскрой по Рефату", "этот вывод", "самый спорный источник", "что там в комментариях", and "слабые места" onto exact source handles from the previous `expert_digest`. Default expansion stays small: top 1 per named expert, top 1-2 generic strongest sources, and never all sources unless explicitly requested. Ambiguous selectors and missing previous digest context must ask one clarification or request a main Панэкс question first instead of guessing handles or running a new search. Production dogfood on Fly.io passed digest -> named-expert expansion (`refat:239`) and comments/weak-source expansion (`doronin:73`) without rerunning a new digest/source_bundle. |
 | AND-24 cross-repo Панэкс portable runner | Done locally + production dogfood | Added the global/user-level `panex` runner contract for calling Панэкс from any repo/cwd. `panex ask` defaults to production Fly.io and `response_mode=expert_digest`, ignores ambient local `AGENT_CONTEXT_API_URL` unless `--local` or `--api-url` is explicit, keeps `source_bundle` as opt-in raw/audit mode through `--response-mode source_bundle`, and `panex expand` targets production `source_expand` by default. `panex doctor` verifies setup without printing secrets; `scripts/install_panex_runner.sh` installs `~/.local/bin/panex` without storing the API token. Production dogfood from `/private/tmp` passed `panex ask` for `refat` and `panex expand refat:238` against Fly.io. |
+| AND-31 DB-synced all-experts scope + faithful digest delivery | Done locally | Agent Context `expert_scope=all` now resolves from `expert_metadata` at request time instead of the static 17-expert group union, while still excluding unsupported special sources such as `video_hub`. Default `expert_digest` caps are opt-in (`0` = all selected evidence/signals), the Panel-side digest LLM gets a larger output budget, and Панэкс instructions require clean delivery of the backend digest without shortening, reranking, or second-summarizing it. |
 | Панэкс human help/usage | Done locally | Added `panex guide` / `panex help` as token-free human CLI help, plus agent help triggers such as "Панэкс, помощь", "что ты умеешь", and "как пользоваться Панэксом". Help requests must answer from instructions and must not call `panex ask`, `panex expand`, or the API. `docs/guides/panex-usage.md` is the human quick reference. |
 | AND-25 Panex artifact transport | Done locally | Real subagent calls now use artifact-first transport: `panex ask` and `panex expand` support `--save --receipt-json`, save the full API response outside the current repo under `PANEX_ARTIFACT_DIR` or system temp, and print only a compact receipt with `artifact_path`, `request_id`, `response_bytes`, warnings, and `panex read` commands. `panex read` returns manifest, per-expert, or per-source-key slices so the subagent does not rely on huge stdout; `panex cleanup` removes old artifacts by TTL. Existing non-save `--json` behavior remains available for manual/small calls. |
 | AND-26 Panex parent routing hardening | Done locally | Agent metadata and global Codex guidance now make "Панэкс" / "Панэнкс" a subagent-routing signal: parent chats should prefer `experts_panel_researcher` over direct `panex CLI` when the user explicitly asks Панэкс / Experts Panel / selected experts. Direct CLI is fallback-only and must still use `--save --receipt-json` plus `panex read`, never large raw stdout. |
@@ -382,7 +383,7 @@ experts_panel_researcher
 Experts Panel
   -> partial source discovery pipeline
   -> selected sources + comments under those sources
-  -> compact per-expert digest with source refs
+  -> backend-generated per-expert digest with source refs
 ```
 
 ## 2. Non-Goals
@@ -1074,7 +1075,7 @@ Both modes start with the same source discovery pipeline:
 4. Optionally add Reddit source packet if requested.
 5. Return response:
    - `source_bundle`: raw selected sources/comments/context.
-   - `expert_digest`: compact per-expert digest plus source refs/source index and omitted counts.
+   - `expert_digest`: backend-generated per-expert digest plus source refs/source index and omitted counts.
 ```
 
 Expert execution must follow the same operational shape as the existing
@@ -1104,9 +1105,9 @@ loading:
 
 ```text
 raw AgentExpertSourceBundle
-  -> cap source refs/comments/external links by Agent Context digest limits
+  -> include all selected source refs/comments/external links unless explicit digest caps are configured
   -> include source_index handles for all selected sources
-  -> LLM compact digest per expert
+  -> LLM digest per expert
   -> return digest fields and clear raw main_sources from the transport response
 ```
 

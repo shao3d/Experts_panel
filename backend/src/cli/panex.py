@@ -63,7 +63,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--response-mode",
         choices=["expert_digest", "source_bundle"],
         default="expert_digest",
-        help="Response mode. Defaults to compact expert_digest.",
+        help="Response mode. Defaults to backend-generated expert_digest.",
     )
     selection = ask.add_mutually_exclusive_group()
     selection.add_argument(
@@ -78,7 +78,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     selection.add_argument(
         "--all",
         action="store_true",
-        help="Query all supported experts.",
+        help="Query all current database experts except unsupported special sources.",
     )
     _add_common_network_args(ask)
     _add_artifact_output_args(ask)
@@ -854,10 +854,10 @@ def _print_guide() -> None:
   --experts refat,akimov       конкретные expert_id
   --group tech                 группа tech
   --group tech_business        группа Tech & Business
-  --all                        все поддерживаемые эксперты
+  --all                        все текущие эксперты из БД, кроме специальных источников
 
 Режимы ответа:
-  expert_digest                default: компактный digest для parent chat
+  expert_digest                default: backend-generated digest без повторного сжатия в Панэксе
   source_bundle                raw/audit режим, только явно:
     panex ask --query "..." --experts refat --response-mode source_bundle --save --receipt-json
 

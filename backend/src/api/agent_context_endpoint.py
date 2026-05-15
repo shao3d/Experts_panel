@@ -16,6 +16,7 @@ from .models import (
     SelectionUsed,
 )
 from .. import config
+from ..models.expert import Expert
 from ..models.base import SessionLocal
 from ..services.agent_context_service import (
     AgentContextInvalidSourceKey,
@@ -54,6 +55,7 @@ _KNOWN_AGENT_CONTEXT_EXPERT_IDS = {
     for group_expert_ids in AGENT_CONTEXT_EXPERT_GROUPS.values()
     for expert_id in group_expert_ids
 } | {"video_hub"}
+_AGENT_CONTEXT_EXCLUDED_EXPERT_IDS = {"video_hub"}
 
 _SUPPORTED_EXPERT_SCOPES = {"all", "group", "custom", "none"}
 
@@ -86,7 +88,30 @@ def _normalize_expert_ids(expert_ids: Iterable[str] | None) -> list[str]:
     return normalized
 
 
-def _build_selection_used(agent_request: AgentContextRequest) -> SelectionUsed:
+def _load_agent_context_expert_ids(
+    db: Session,
+    *,
+    include_excluded: bool = False,
+) -> list[str]:
+    query = db.query(Expert.expert_id).order_by(Expert.expert_id)
+    expert_ids = [row[0] for row in query.all()]
+    if include_excluded:
+        return expert_ids
+    return [
+        expert_id
+        for expert_id in expert_ids
+        if expert_id not in _AGENT_CONTEXT_EXCLUDED_EXPERT_IDS
+    ]
+
+
+def _known_agent_context_expert_ids(db: Session) -> set[str]:
+    return (
+        set(_load_agent_context_expert_ids(db, include_excluded=True))
+        | _KNOWN_AGENT_CONTEXT_EXPERT_IDS
+    )
+
+
+def _build_selection_used(agent_request: AgentContextRequest, db: Session) -> SelectionUsed:
     """Validate MVP request options and return normalized selection metadata."""
     if agent_request.response_mode not in SUPPORTED_AGENT_CONTEXT_RESPONSE_MODES:
         raise HTTPException(
@@ -136,7 +161,7 @@ def _build_selection_used(agent_request: AgentContextRequest) -> SelectionUsed:
         unknown_expert_ids = [
             expert_id
             for expert_id in expert_filter
-            if expert_id not in _KNOWN_AGENT_CONTEXT_EXPERT_IDS
+            if expert_id not in _known_agent_context_expert_ids(db)
         ]
         if unknown_expert_ids:
             raise HTTPException(
@@ -177,12 +202,9 @@ def _build_selection_used(agent_request: AgentContextRequest) -> SelectionUsed:
     )
 
 
-def _resolve_expert_ids(selection_used: SelectionUsed) -> list[str]:
+def _resolve_expert_ids(selection_used: SelectionUsed, db: Session) -> list[str]:
     if selection_used.expert_scope == "all":
-        expert_ids: list[str] = []
-        for group_expert_ids in AGENT_CONTEXT_EXPERT_GROUPS.values():
-            expert_ids.extend(group_expert_ids)
-        return _normalize_expert_ids(expert_ids)
+        return _load_agent_context_expert_ids(db)
 
     return list(selection_used.expert_filter or [])
 
@@ -218,8 +240,8 @@ async def _build_agent_context_response(
     db: Session,
     start_time: float,
 ) -> AgentContextResponse:
-    selection_used = _build_selection_used(agent_request)
-    expert_ids = _resolve_expert_ids(selection_used)
+    selection_used = _build_selection_used(agent_request, db)
+    expert_ids = _resolve_expert_ids(selection_used, db)
     _reject_unsupported_video_hub(expert_ids)
     request_id = getattr(http_request.state, "request_id", "unknown")
 

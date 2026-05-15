@@ -141,7 +141,7 @@ def _expert_digest_response():
                             "source_key": "refat:101",
                             "relevance": "HIGH",
                             "reason": "Direct match",
-                            "short_excerpt": "Compact source excerpt",
+                            "short_excerpt": "Source excerpt",
                             "created_at": "2026-04-10T12:00:00",
                             "external_links": [
                                 {
@@ -227,15 +227,15 @@ def _expert_digest_response():
                         "external_links": 0,
                     },
                     "limits_used": {
-                        "max_source_refs": 8,
-                        "max_source_chars": 900,
-                        "max_comments_per_source": 3,
-                        "max_comment_chars": 360,
-                        "max_links_per_source": 5,
-                        "max_signals": 5,
-                        "source_index_scope": "all_selected_sources_compact",
+                        "max_source_refs": 0,
+                        "max_source_chars": 0,
+                        "max_comments_per_source": 0,
+                        "max_comment_chars": 0,
+                        "max_links_per_source": 0,
+                        "max_signals": 0,
+                        "source_index_scope": "all_selected_sources",
                     },
-                    "limits": ["Compact digest"],
+                    "limits": ["Backend digest"],
                     "no_signal_reason": None,
                 },
                 "no_results_reason": None,
@@ -1031,9 +1031,9 @@ def test_cli_sends_expert_digest_payload_when_requested(
     assert "source_refs: 1" in captured.out
     assert "source_index: 2" in captured.out
     assert (
-        "limits_used: source_refs<=8; source_chars<=900; comments/source<=3; "
-        "comment_chars<=360; links/source<=5; signals<=5; "
-        "source_index=all_selected_sources_compact"
+        "limits_used: source_refs=all; source_chars=all; comments/source=all; "
+        "comment_chars=all; links/source=all; signals=all; "
+        "source_index=all_selected_sources"
     ) in captured.out
     assert "refat:101 [HIGH] Direct match" in captured.out
     assert "quality: deep_practical/practitioner_experience; comments=mixed; confidence=high" in captured.out

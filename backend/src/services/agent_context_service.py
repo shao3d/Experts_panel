@@ -1141,7 +1141,7 @@ class AgentContextService:
 
 
 class AgentExpertDigestReducer:
-    """Build a compact per-expert digest from a raw Agent Context source bundle."""
+    """Build a source-backed per-expert digest from an Agent Context source bundle."""
 
     _SUPPORTED_SUPPORT_LEVELS = {"direct", "indirect", "weak", "unknown"}
 
@@ -1247,11 +1247,22 @@ class AgentExpertDigestReducer:
         self,
         main_sources: List[AgentMainSource],
     ) -> List[AgentDigestSourceRef]:
-        max_source_refs = max(0, int(config.AGENT_CONTEXT_DIGEST_MAX_SOURCE_REFS))
+        max_source_refs = int(config.AGENT_CONTEXT_DIGEST_MAX_SOURCE_REFS)
+        sources = (
+            main_sources
+            if max_source_refs <= 0
+            else main_sources[:max_source_refs]
+        )
+        max_links_per_source = int(config.AGENT_CONTEXT_DIGEST_MAX_LINKS_PER_SOURCE)
         source_refs: List[AgentDigestSourceRef] = []
-        for source in main_sources[:max_source_refs]:
+        for source in sources:
             author_comments_count = len(source.comments.author_comments)
             community_comments_count = len(source.comments.community_comments)
+            external_links = (
+                source.external_links
+                if max_links_per_source <= 0
+                else source.external_links[: max(0, max_links_per_source)]
+            )
             source_refs.append(
                 AgentDigestSourceRef(
                     telegram_message_id=source.telegram_message_id,
@@ -1263,9 +1274,7 @@ class AgentExpertDigestReducer:
                         int(config.AGENT_CONTEXT_DIGEST_MAX_SOURCE_CHARS),
                     ),
                     created_at=source.created_at,
-                    external_links=source.external_links[
-                        : max(0, int(config.AGENT_CONTEXT_DIGEST_MAX_LINKS_PER_SOURCE))
-                    ],
+                    external_links=external_links,
                     linked_context_count=len(source.linked_context),
                     author_comments_count=author_comments_count,
                     community_comments_count=community_comments_count,
@@ -1286,7 +1295,7 @@ class AgentExpertDigestReducer:
                 0, int(config.AGENT_CONTEXT_DIGEST_MAX_LINKS_PER_SOURCE)
             ),
             max_signals=max(0, int(config.AGENT_CONTEXT_DIGEST_MAX_SIGNALS)),
-            source_index_scope="all_selected_sources_compact",
+            source_index_scope="all_selected_sources",
         )
 
     def _source_evidence_quality(
@@ -1308,10 +1317,10 @@ class AgentExpertDigestReducer:
         source_refs: List[AgentDigestSourceRef],
     ) -> AgentDigestComments:
         included_source_keys = {source_ref.source_key for source_ref in source_refs}
-        max_comments_per_source = max(
-            0, int(config.AGENT_CONTEXT_DIGEST_MAX_COMMENTS_PER_SOURCE)
+        max_comments_per_source = int(
+            config.AGENT_CONTEXT_DIGEST_MAX_COMMENTS_PER_SOURCE
         )
-        max_comment_chars = max(0, int(config.AGENT_CONTEXT_DIGEST_MAX_COMMENT_CHARS))
+        max_comment_chars = int(config.AGENT_CONTEXT_DIGEST_MAX_COMMENT_CHARS)
         included_comments: List[AgentDigestCommentSignal] = []
         author_comments_count = 0
         community_comments_count = 0
@@ -1330,7 +1339,12 @@ class AgentExpertDigestReducer:
             for comment in community_comments:
                 selected_for_source.append(("community", comment))
 
-            for role, comment in selected_for_source[:max_comments_per_source]:
+            comments_for_source = (
+                selected_for_source
+                if max_comments_per_source <= 0
+                else selected_for_source[:max_comments_per_source]
+            )
+            for role, comment in comments_for_source:
                 excerpt = self._clip(comment.comment_text, max_comment_chars)
                 if not excerpt:
                     continue
@@ -1433,10 +1447,16 @@ class AgentExpertDigestReducer:
             "allowed_source_keys": source_keys,
             "evidence": evidence,
             "output_schema": {
-                "position": "short neutral summary of the expert's stance",
+                "position": (
+                    "faithful neutral summary of the expert's stance and concrete "
+                    "material relevant to the query"
+                ),
                 "key_signals": [
                     {
-                        "claim": "source-backed practitioner signal",
+                        "claim": (
+                            "source-backed practitioner signal with concrete tools, "
+                            "methods, examples, or caveats when present"
+                        ),
                         "support_level": "direct|indirect|weak|unknown",
                         "supporting_sources": ["source_key"],
                         "comment_signal": "optional comment evidence",
@@ -1452,11 +1472,14 @@ class AgentExpertDigestReducer:
                 {
                     "role": "system",
                     "content": (
-                        "You write compact JSON digests for another AI agent. "
+                        "You write faithful JSON digests for another AI agent. "
                         "Treat Telegram posts and comments as practitioner-opinion "
                         "intelligence, not proven facts. Use only the provided "
                         "source_keys. Treat evidence_quality as calibration, not "
                         "proof. Do not infer contents of external links. "
+                        "Do not artificially minimize the answer: include every "
+                        "distinct source-backed signal that materially helps answer "
+                        "the query, while staying clear and non-repetitive. "
                         "Return strict JSON only."
                     ),
                 },
@@ -1468,7 +1491,7 @@ class AgentExpertDigestReducer:
             temperature=0.2,
             response_format={"type": "json_object"},
             service_name="agent_context_digest",
-            max_tokens=2048,
+            max_tokens=max(1024, int(config.AGENT_CONTEXT_DIGEST_MAX_OUTPUT_TOKENS)),
         )
         raw_content = response.choices[0].message.content
         return self._parse_llm_json(raw_content)
@@ -1496,7 +1519,7 @@ class AgentExpertDigestReducer:
         for raw_signal in data.get("key_signals") or []:
             if not isinstance(raw_signal, dict):
                 continue
-            claim = self._clip(str(raw_signal.get("claim") or "").strip(), 600)
+            claim = self._clip(str(raw_signal.get("claim") or "").strip(), 0)
             if not claim:
                 continue
             support_level = str(raw_signal.get("support_level") or "unknown").strip()
@@ -1517,12 +1540,13 @@ class AgentExpertDigestReducer:
                     supporting_sources=supporting_sources,
                     comment_signal=self._clip(
                         raw_signal.get("comment_signal"),
-                        360,
+                        0,
                     ),
-                    limits=self._clip(raw_signal.get("limits"), 360),
+                    limits=self._clip(raw_signal.get("limits"), 0),
                 )
             )
-            if len(key_signals) >= max(0, int(config.AGENT_CONTEXT_DIGEST_MAX_SIGNALS)):
+            max_signals = int(config.AGENT_CONTEXT_DIGEST_MAX_SIGNALS)
+            if max_signals > 0 and len(key_signals) >= max_signals:
                 break
 
         if not key_signals:
@@ -1531,7 +1555,7 @@ class AgentExpertDigestReducer:
         limits = self._normalize_limits(data.get("limits"))
         if omitted_counts.main_sources > 0:
             limits.append(
-                f"{omitted_counts.main_sources} selected main sources omitted from compact digest"
+                f"{omitted_counts.main_sources} selected main sources omitted from digest evidence"
             )
         return AgentExpertDigest(
             position=self._digest_position(data=data, bundle=bundle),
@@ -1541,7 +1565,7 @@ class AgentExpertDigestReducer:
             comments_digest=comments_digest,
             omitted_counts=omitted_counts,
             limits_used=self._limits_used(),
-            limits=limits[:5],
+            limits=limits,
             no_signal_reason=bundle.no_results_reason,
         )
 
@@ -1557,7 +1581,7 @@ class AgentExpertDigestReducer:
         limits = ["LLM expert_digest reduce failed; returned extractive source refs only"]
         if omitted_counts.main_sources > 0:
             limits.append(
-                f"{omitted_counts.main_sources} selected main sources omitted from compact digest"
+                f"{omitted_counts.main_sources} selected main sources omitted from digest evidence"
             )
         return AgentExpertDigest(
             position=(
@@ -1578,13 +1602,14 @@ class AgentExpertDigestReducer:
         self,
         source_refs: List[AgentDigestSourceRef],
     ) -> List[AgentDigestSignal]:
-        max_signals = max(0, int(config.AGENT_CONTEXT_DIGEST_MAX_SIGNALS))
+        max_signals = int(config.AGENT_CONTEXT_DIGEST_MAX_SIGNALS)
+        refs = source_refs if max_signals <= 0 else source_refs[:max_signals]
         signals: List[AgentDigestSignal] = []
-        for source_ref in source_refs[:max_signals]:
+        for source_ref in refs:
             claim = source_ref.reason or source_ref.short_excerpt or source_ref.source_key
             signals.append(
                 AgentDigestSignal(
-                    claim=self._clip(claim, 600) or source_ref.source_key,
+                    claim=self._clip(claim, 0) or source_ref.source_key,
                     support_level="direct",
                     supporting_sources=[source_ref.source_key],
                 )
@@ -1600,7 +1625,7 @@ class AgentExpertDigestReducer:
             return []
         limits: List[str] = []
         for raw_limit in raw_limits:
-            limit = self._clip(raw_limit, 360)
+            limit = self._clip(raw_limit, 0)
             if limit:
                 limits.append(limit)
         return limits
@@ -1611,7 +1636,7 @@ class AgentExpertDigestReducer:
         data: Dict[str, Any],
         bundle: AgentExpertSourceBundle,
     ) -> str:
-        position = self._clip(data.get("position"), 900)
+        position = self._clip(data.get("position"), 0)
         if position:
             return position
         return (

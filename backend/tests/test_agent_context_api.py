@@ -35,6 +35,8 @@ from src.api.models import (
     AgentSourceComment,
     AgentSourceComments,
 )
+from src.models.base import SessionLocal
+from src.models.expert import Expert
 from src.services.agent_context_service import (
     AgentContextSearchContext,
     AgentContextService,
@@ -125,6 +127,20 @@ def _agent_context_payload(**overrides):
 
 def _auth_headers(token: str = "valid-agent-token") -> dict[str, str]:
     return {"Authorization": f"Bearer {token}"}
+
+
+def _db_expert_ids(*, include_video_hub: bool = False) -> list[str]:
+    db = SessionLocal()
+    try:
+        expert_ids = [
+            row[0]
+            for row in db.query(Expert.expert_id).order_by(Expert.expert_id).all()
+        ]
+    finally:
+        db.close()
+    if include_video_hub:
+        return expert_ids
+    return [expert_id for expert_id in expert_ids if expert_id != "video_hub"]
 
 
 def _fake_post(telegram_message_id: int, created_at: str):
@@ -414,11 +430,37 @@ def test_agent_context_all_excludes_video_hub():
     assert response.status_code == 200, response.text
     expert_ids = [expert["expert_id"] for expert in response.json()["experts"]]
     assert "video_hub" not in expert_ids
-    assert expert_ids == (
-        AGENT_CONTEXT_EXPERT_GROUPS["tech"]
-        + AGENT_CONTEXT_EXPERT_GROUPS["tech_business"]
-    )
+    assert expert_ids == _db_expert_ids()
     assert response.json()["selection_used"]["expert_filter"] is None
+
+
+def test_agent_context_custom_accepts_database_expert_outside_static_groups():
+    static_group_ids = {
+        expert_id
+        for group_expert_ids in AGENT_CONTEXT_EXPERT_GROUPS.values()
+        for expert_id in group_expert_ids
+    }
+    candidates = [
+        expert_id
+        for expert_id in _db_expert_ids()
+        if expert_id not in static_group_ids
+    ]
+    assert candidates, "test database should include at least one DB-only expert"
+
+    with TestClient(app) as client:
+        response = client.post(
+            "/api/v1/agent/context",
+            headers=_auth_headers(),
+            json=_agent_context_payload(
+                expert_scope="custom",
+                expert_filter=[candidates[0]],
+            ),
+        )
+
+    assert response.status_code == 200, response.text
+    assert [expert["expert_id"] for expert in response.json()["experts"]] == [
+        candidates[0]
+    ]
 
 
 def test_agent_context_processes_experts_with_bounded_parallelism(monkeypatch):
@@ -816,7 +858,7 @@ def test_agent_context_expert_digest_compacts_sources_and_comments(monkeypatch):
                     "limits": "Practitioner opinion, not benchmark evidence.",
                 }
             ],
-            "limits": ["Only compact source refs were sent to the reducer."],
+            "limits": ["Only capped source refs were sent to the reducer."],
         }
 
     monkeypatch.setattr(
@@ -889,12 +931,151 @@ def test_agent_context_expert_digest_compacts_sources_and_comments(monkeypatch):
         "max_comment_chars": 30,
         "max_links_per_source": 1,
         "max_signals": 2,
-        "source_index_scope": "all_selected_sources_compact",
+        "source_index_scope": "all_selected_sources",
     }
     assert digest["key_signals"][0]["supporting_sources"] == ["refat:101"]
     assert observed["llm_evidence"]["source_refs"][0]["source_key"] == "refat:101"
     assert observed["llm_evidence"]["source_refs"][0]["evidence_quality"]["comment_signal"] == "mixed"
     assert len(observed["llm_evidence"]["source_refs"]) == 1
+
+
+def test_agent_context_expert_digest_defaults_do_not_drop_sources_comments_or_signals(
+    monkeypatch,
+):
+    monkeypatch.setattr(config, "AGENT_CONTEXT_DIGEST_MAX_SOURCE_REFS", 0)
+    monkeypatch.setattr(config, "AGENT_CONTEXT_DIGEST_MAX_SOURCE_CHARS", 0)
+    monkeypatch.setattr(config, "AGENT_CONTEXT_DIGEST_MAX_COMMENTS_PER_SOURCE", 0)
+    monkeypatch.setattr(config, "AGENT_CONTEXT_DIGEST_MAX_COMMENT_CHARS", 0)
+    monkeypatch.setattr(config, "AGENT_CONTEXT_DIGEST_MAX_LINKS_PER_SOURCE", 0)
+    monkeypatch.setattr(config, "AGENT_CONTEXT_DIGEST_MAX_SIGNALS", 0)
+    observed = {"llm_evidence": None}
+
+    async def fake_build_expert_bundle(
+        self,
+        *,
+        expert_id,
+        agent_request,
+        search_context,
+        warnings,
+    ):
+        return AgentExpertSourceBundle(
+            expert_id=expert_id,
+            expert_name="Refat",
+            channel_username="nobilix",
+            selected_sources_count=2,
+            main_sources=[
+                AgentMainSource(
+                    telegram_message_id=101,
+                    source_key="refat:101",
+                    relevance="HIGH",
+                    reason="First source",
+                    content="First full source content that should not be clipped.",
+                    comments=AgentSourceComments(
+                        community_comments=[
+                            AgentSourceComment(
+                                comment_id=1,
+                                comment_text="First full comment that should not be clipped.",
+                                author_name="Reader",
+                            ),
+                            AgentSourceComment(
+                                comment_id=2,
+                                comment_text="Second full comment that should not be dropped.",
+                                author_name="Reader",
+                            ),
+                        ],
+                    ),
+                ),
+                AgentMainSource(
+                    telegram_message_id=102,
+                    source_key="refat:102",
+                    relevance="HIGH",
+                    reason="Second source",
+                    content="Second full source content.",
+                    external_links=[
+                        AgentExternalLink(
+                            url="https://example.com/a",
+                            domain="example.com",
+                            fetch_status="not_fetched",
+                        ),
+                        AgentExternalLink(
+                            url="https://example.com/b",
+                            domain="example.com",
+                            fetch_status="not_fetched",
+                        ),
+                    ],
+                ),
+            ],
+        )
+
+    async def fake_call_llm_digest(self, *, query, bundle, evidence):
+        observed["llm_evidence"] = evidence
+        return {
+            "position": "Full backend digest.",
+            "key_signals": [
+                {
+                    "claim": "Signal one.",
+                    "support_level": "direct",
+                    "supporting_sources": ["refat:101"],
+                },
+                {
+                    "claim": "Signal two.",
+                    "support_level": "direct",
+                    "supporting_sources": ["refat:102"],
+                },
+                {
+                    "claim": "Signal three.",
+                    "support_level": "direct",
+                    "supporting_sources": ["refat:101"],
+                },
+            ],
+            "limits": [
+                "First limit.",
+                "Second limit.",
+                "Third limit.",
+                "Fourth limit.",
+                "Fifth limit.",
+                "Sixth limit must not be dropped.",
+            ],
+        }
+
+    monkeypatch.setattr(
+        AgentContextService,
+        "_build_expert_bundle",
+        fake_build_expert_bundle,
+    )
+    monkeypatch.setattr(
+        AgentExpertDigestReducer,
+        "_call_llm_digest",
+        fake_call_llm_digest,
+    )
+
+    with TestClient(app) as client:
+        response = client.post(
+            "/api/v1/agent/context",
+            headers=_auth_headers(),
+            json=_agent_context_payload(
+                response_mode="expert_digest",
+                expert_filter=["refat"],
+            ),
+        )
+
+    assert response.status_code == 200, response.text
+    digest = response.json()["experts"][0]["digest"]
+    assert [source["source_key"] for source in digest["source_refs"]] == [
+        "refat:101",
+        "refat:102",
+    ]
+    assert digest["source_refs"][0]["short_excerpt"] == (
+        "First full source content that should not be clipped."
+    )
+    assert len(digest["source_refs"][1]["external_links"]) == 2
+    assert len(digest["comments_digest"]["included_comments"]) == 2
+    assert digest["omitted_counts"]["main_sources"] == 0
+    assert digest["omitted_counts"]["community_comments"] == 0
+    assert len(digest["key_signals"]) == 3
+    assert digest["limits"][-1] == "Sixth limit must not be dropped."
+    assert len(observed["llm_evidence"]["source_refs"]) == 2
+    assert len(observed["llm_evidence"]["comments"]["included_comments"]) == 2
 
 
 def test_agent_context_expert_digest_accepts_top_level_signal_list():
