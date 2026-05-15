@@ -91,6 +91,7 @@ def get_post_buckets(
     conn: sqlite3.Connection,
     expert_id: str,
     cutoff_date: str,
+    preserve_linked_old: bool,
 ) -> tuple[list[int], list[int], list[int]]:
     rows = conn.execute(
         """
@@ -111,7 +112,7 @@ def get_post_buckets(
             old_post_ids.add(post_id)
 
     old_posts_to_keep: set[int] = set()
-    if new_post_ids and old_post_ids:
+    if preserve_linked_old and new_post_ids and old_post_ids:
         links = conn.execute(
             "SELECT source_post_id, target_post_id FROM links"
         ).fetchall()
@@ -167,8 +168,14 @@ def build_plan(
     conn: sqlite3.Connection,
     expert_id: str,
     cutoff_date: str,
+    preserve_linked_old: bool,
 ) -> tuple[PrunePlan, list[int], list[int], list[int]]:
-    new_post_ids, keep_post_ids, delete_post_ids = get_post_buckets(conn, expert_id, cutoff_date)
+    new_post_ids, keep_post_ids, delete_post_ids = get_post_buckets(
+        conn,
+        expert_id,
+        cutoff_date,
+        preserve_linked_old,
+    )
     total_posts = conn.execute(
         "SELECT COUNT(*) FROM posts WHERE expert_id = ?",
         (expert_id,),
@@ -332,6 +339,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--backup-dir", default=str(DEFAULT_BACKUP_DIR), help="Directory for backups")
     parser.add_argument("--dry-run", action="store_true", help="Analyze only; do not modify DB")
     parser.add_argument("--yes", action="store_true", help="Skip confirmation prompt")
+    parser.add_argument(
+        "--no-preserve-linked-old",
+        action="store_true",
+        help="Delete all old posts before cutoff even if links connect them to newer posts.",
+    )
     return parser.parse_args()
 
 
@@ -348,7 +360,13 @@ def main() -> int:
     try:
         enable_foreign_keys(conn)
         load_sqlite_vec_if_needed(conn)
-        plan, _, _, delete_post_ids = build_plan(conn, args.expert_id, args.cutoff_date)
+        preserve_linked_old = not args.no_preserve_linked_old
+        plan, _, _, delete_post_ids = build_plan(
+            conn,
+            args.expert_id,
+            args.cutoff_date,
+            preserve_linked_old,
+        )
         print_plan(args.expert_id, args.cutoff_date, plan)
 
         if args.dry_run:
@@ -384,7 +402,12 @@ def main() -> int:
     try:
         enable_foreign_keys(verify_conn)
         load_sqlite_vec_if_needed(verify_conn)
-        plan_after, _, _, _ = build_plan(verify_conn, args.expert_id, args.cutoff_date)
+        plan_after, _, _, _ = build_plan(
+            verify_conn,
+            args.expert_id,
+            args.cutoff_date,
+            preserve_linked_old,
+        )
         print()
         print("Post-prune check:")
         print(f"  Remaining old posts deletable: {plan_after.delete_posts}")

@@ -1,7 +1,7 @@
 # Current Expert Roster
 
 **Status:** Production snapshot
-**Last updated:** 2026-05-12
+**Last updated:** 2026-05-15
 
 This file documents the active expert roster and the places that must stay in sync when experts are added, removed, or regrouped.
 
@@ -37,6 +37,7 @@ spellings to backend `expert_id` values before calling the Agent Context CLI.
 | `ilia_izmailov` | Ilia | `ilia_izmailov` |
 | `polyakov` | Polyakov | `countwithsasha` |
 | `etechlead` | Etechlead | `etechlead` |
+| `rodion_mostovoy` | Rodion | `ai_driven` |
 | `glebkudr` | Glebkudr | `gleb_pro_ai` |
 | `ostrikov` | Ostrikov | `aostrikov_ai_agents` |
 | `pashazloy` | PashaZloy | `evilfreelancer` |
@@ -53,6 +54,7 @@ spellings to backend `expert_id` values before calling the Agent Context CLI.
 | `llm_under_hood` | Rinat | `llm_under_hood` |
 | `elkornacio` | Elkornacio | `elkornacio` |
 | `doronin` | Doronin | `kdoronin_blog` |
+| `vlad_kooklev` | Kooklev | `prod1337` |
 | `air_ai` | Air | `realtimeforai` |
 | `silicbag` | SilicBag | `prompt_design` |
 | `kornish` | Kornishev | `NGI_ru` |

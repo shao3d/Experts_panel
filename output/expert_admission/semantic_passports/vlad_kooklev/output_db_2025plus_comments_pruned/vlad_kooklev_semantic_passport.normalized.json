@@ -1,0 +1,989 @@
+{
+  "schema_version": "expert_value_passport.v1.1",
+  "passport_meta": {
+    "schema_version": "expert_value_passport.v1.1",
+    "expert_id": "vlad_kooklev",
+    "display_name": "Vlad Kooklev",
+    "channel_username": "@prod1337",
+    "model_assumed": "gemini-3.1-pro-preview",
+    "prompt_version": "semantic-passport-prompt.v1",
+    "generated_at": "2026-05-15T00:38:20.224184+00:00"
+  },
+  "corpus_audit": {
+    "post_count_seen": 24,
+    "comment_count_seen": 292,
+    "date_range": {
+      "first_post": "2025-03-19 12:33:23.000000",
+      "last_post": "2026-05-14 11:44:51.000000"
+    },
+    "language_mix": [
+      "ru"
+    ],
+    "material_limitations": [
+      "Some referenced tools and repositories are proprietary or behind closed community walls (e.g., Vibecon course materials)."
+    ],
+    "author_vs_community_boundary": "Clear boundary. The author posts detailed architectural and workflow insights, while the community actively tests his repositories, suggests alternative tools, and occasionally performs security audits on his code."
+  },
+  "source_ref_index_used": [
+    {
+      "source_ref": "P0003",
+      "source_kind": "expert_post",
+      "post_id": 11597,
+      "telegram_message_id": 149,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-13 13:27:14.000000",
+      "why_used": "Defines the core concept of 'vibecoding' vs AI-driven development."
+    },
+    {
+      "source_ref": "P0004",
+      "source_kind": "expert_post",
+      "post_id": 11598,
+      "telegram_message_id": 150,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-14 09:46:12.000000",
+      "why_used": "Explains the transition from manual coding to agentic code revolution using Cursor and Claude."
+    },
+    {
+      "source_ref": "P0006",
+      "source_kind": "expert_post",
+      "post_id": 11600,
+      "telegram_message_id": 152,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-05 07:25:09.000000",
+      "why_used": "Discusses building a personal board of directors using Claude Code and custom orchestration."
+    },
+    {
+      "source_ref": "P0007",
+      "source_kind": "expert_post",
+      "post_id": 11601,
+      "telegram_message_id": 154,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-06 10:13:17.000000",
+      "why_used": "Critiques OpenClaw's stability and advocates for adopting best practices into controlled, custom systems."
+    },
+    {
+      "source_ref": "P0008",
+      "source_kind": "expert_post",
+      "post_id": 11602,
+      "telegram_message_id": 156,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-08 08:04:21.000000",
+      "why_used": "Details the architecture of an AI health coach agent based on scientific protocols."
+    },
+    {
+      "source_ref": "P0009",
+      "source_kind": "expert_post",
+      "post_id": 11603,
+      "telegram_message_id": 159,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-10 14:58:34.000000",
+      "why_used": "Presents the claim that AI agents will replace traditional online education."
+    },
+    {
+      "source_ref": "P0010",
+      "source_kind": "expert_post",
+      "post_id": 11604,
+      "telegram_message_id": 160,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-12 12:11:57.000000",
+      "why_used": "Introduces 'claude-pipe' for deep research orchestration."
+    },
+    {
+      "source_ref": "P0010.C0017",
+      "source_kind": "community_comment",
+      "post_id": 11604,
+      "telegram_message_id": null,
+      "comment_id": 121786,
+      "telegram_comment_id": 1383,
+      "created_at": "2026-02-13 23:18:33.000000",
+      "why_used": "Community security audit highlighting prompt injection and data leak risks in the expert's research pipeline."
+    },
+    {
+      "source_ref": "P0011",
+      "source_kind": "expert_post",
+      "post_id": 11605,
+      "telegram_message_id": 162,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-15 08:06:41.000000",
+      "why_used": "Explains Anthropic TOS bans due to OpenClaw cron/heartbeats and introduces 'claude-telegram'."
+    },
+    {
+      "source_ref": "P0012",
+      "source_kind": "expert_post",
+      "post_id": 11606,
+      "telegram_message_id": 163,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-16 12:16:22.000000",
+      "why_used": "Identifies 7 critical security vulnerabilities in AI agents and provides mitigation strategies."
+    },
+    {
+      "source_ref": "P0013",
+      "source_kind": "expert_post",
+      "post_id": 11607,
+      "telegram_message_id": 164,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-18 12:53:48.000000",
+      "why_used": "Introduces 'radius', a tool for granular permission control in AI agents."
+    },
+    {
+      "source_ref": "P0016",
+      "source_kind": "expert_post",
+      "post_id": 11610,
+      "telegram_message_id": 168,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-01 08:03:17.000000",
+      "why_used": "Outlines the 4 phases of vibecoding, culminating in autonomous agent orchestration."
+    },
+    {
+      "source_ref": "P0017",
+      "source_kind": "expert_post",
+      "post_id": 11611,
+      "telegram_message_id": 169,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-02 09:14:58.000000",
+      "why_used": "Discusses using Claude Code skills (Superpowers, Impeccable) to avoid generic AI design slop."
+    },
+    {
+      "source_ref": "P0018",
+      "source_kind": "expert_post",
+      "post_id": 11612,
+      "telegram_message_id": 170,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-11 09:53:56.000000",
+      "why_used": "Details 4 Claude Code skills for high-quality text generation (Anti-slop, Infostyle, JTBD, Tone-of-voice)."
+    },
+    {
+      "source_ref": "P0020",
+      "source_kind": "expert_post",
+      "post_id": 11614,
+      "telegram_message_id": 172,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-20 10:18:16.000000",
+      "why_used": "Analyzes Claude Design workflows and the importance of DESIGN.md files."
+    },
+    {
+      "source_ref": "P0022",
+      "source_kind": "expert_post",
+      "post_id": 11616,
+      "telegram_message_id": 174,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-05-04 11:06:19.000000",
+      "why_used": "Discusses solving voice-to-text reliability issues using local models (Handy)."
+    },
+    {
+      "source_ref": "P0022.C0005",
+      "source_kind": "community_comment",
+      "post_id": 11616,
+      "telegram_message_id": null,
+      "comment_id": 121673,
+      "telegram_comment_id": 1637,
+      "created_at": "2026-05-04 09:09:34.000000",
+      "why_used": "Community suggesting alternative voice tools (Aqua Voice) over the expert's recommendation."
+    },
+    {
+      "source_ref": "P0023",
+      "source_kind": "expert_post",
+      "post_id": 11617,
+      "telegram_message_id": 175,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-05-11 13:43:37.000000",
+      "why_used": "Analyzes token waste in Claude Code (73%) and proposes optimization strategies."
+    },
+    {
+      "source_ref": "P0024",
+      "source_kind": "expert_post",
+      "post_id": 11618,
+      "telegram_message_id": 176,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-05-14 11:44:51.000000",
+      "why_used": "Provides a roundup of advanced AI design tools and skills (open-design, html-ppt-skill)."
+    }
+  ],
+  "executive_summary": {
+    "one_sentence_positioning": "Vlad Kooklev is a deep practitioner and educator specializing in 'vibecoding' and agentic workflows, offering highly practical, open-source architectural solutions for AI orchestration, security, and cost optimization.",
+    "strongest_system_value": "Provides actionable, code-backed solutions for managing AI agent security (Radius), optimizing inference costs, and building custom orchestration pipelines that avoid platform TOS bans.",
+    "weakest_system_value": "Heavy reliance on Claude Code specifically may limit applicability for users locked into other ecosystems (e.g., strictly OpenAI or local-only setups), and some advanced materials are gated behind his paid courses.",
+    "best_fit_queries": [
+      "How to secure autonomous AI agents",
+      "Optimize token usage in Claude Code",
+      "Build a deep research AI pipeline",
+      "Avoid generic AI design and text slop",
+      "Transition from manual prompting to agentic orchestration"
+    ],
+    "poor_fit_queries": [
+      "Train custom foundational models",
+      "Low-level machine learning mathematics",
+      "Enterprise legacy system migration to AI"
+    ],
+    "confidence": 0.9
+  },
+  "expert_positioning": {
+    "primary_role": "AI Engineering Practitioner & Educator",
+    "audience": [
+      "Product Managers",
+      "Founders",
+      "Non-technical builders ('vibecoders')",
+      "AI Engineers"
+    ],
+    "voice": [
+      "Pragmatic",
+      "Builder-centric",
+      "Anti-hype",
+      "Instructional"
+    ],
+    "worldview": [
+      "AI agents will replace traditional software development and online education.",
+      "Security and cost optimization are the current primary bottlenecks for agent adoption.",
+      "Replicating and adapting open-source solutions is more efficient than innovating from scratch.",
+      "Granular control over agents is superior to both full autonomy and strict manual approval."
+    ],
+    "distinctive_angle": "Focuses on the unglamorous but critical operational realities of running AI agents in production: token waste, TOS bans, granular security permissions, and avoiding 'AI slop'.",
+    "recurring_formats": [
+      "Open-source tool releases",
+      "Workflow teardowns",
+      "Curated tool/skill roundups",
+      "Course/Conference announcements"
+    ],
+    "evidence_refs": [
+      "P0003",
+      "P0007",
+      "P0012",
+      "P0016",
+      "P0023"
+    ]
+  },
+  "knowledge_domains": [
+    {
+      "domain_id": "agent_ops",
+      "domain_name": "Agent Operations & Orchestration",
+      "subdomain_ids": [
+        "multi_agent_orchestration",
+        "inference_cost_latency",
+        "agentic_dev_process"
+      ],
+      "query_intent_ids": [
+        "design_agentic_dev_workflow",
+        "optimize_inference_cost_latency"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "How to build custom orchestrators to avoid Anthropic TOS bans caused by cron/heartbeats.",
+        "Techniques to reduce Claude Code token waste by up to 73% using 'Caveman' prompting and model routing.",
+        "How to structure multi-agent deep research pipelines with parallel aspect researchers and red-teaming."
+      ],
+      "how_they_reason": [
+        "Identifies systemic bottlenecks (e.g., token costs, bans) and builds lightweight, open-source wrappers to bypass them.",
+        "Prefers hybrid approaches (e.g., granular permissions) over binary choices (full autonomy vs. manual approval)."
+      ],
+      "missing_or_weak_subtopics": [
+        "Enterprise-scale deployment observability",
+        "Integration with legacy CI/CD pipelines"
+      ],
+      "evidence_refs": [
+        "P0010",
+        "P0011",
+        "P0013",
+        "P0023"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "domain_id": "security_privacy_governance",
+      "domain_name": "Security, Privacy & Governance",
+      "subdomain_ids": [
+        "security_privacy_controls",
+        "governance_risk"
+      ],
+      "query_intent_ids": [
+        "manage_security_privacy_governance"
+      ],
+      "coverage_level": "moderate",
+      "depth_level": "practical",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "The 7 critical vulnerabilities of open-source agents (e.g., skill injections, exposed ports, plaintext keys).",
+        "How to implement granular permission controls for agents using tools like 'Radius'."
+      ],
+      "how_they_reason": [
+        "Rejects system prompts as a valid security measure; insists on code-level sandboxing and explicit permission boundaries."
+      ],
+      "missing_or_weak_subtopics": [
+        "Compliance frameworks (SOC2, HIPAA)",
+        "Cryptographic data protection"
+      ],
+      "evidence_refs": [
+        "P0012",
+        "P0013"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "domain_id": "ai_coding_ides",
+      "domain_name": "AI Coding IDEs & Vibecoding",
+      "subdomain_ids": [
+        "claude_code_workflows",
+        "cursor_windsurf_copilot"
+      ],
+      "query_intent_ids": [
+        "learn_ai_assisted_development",
+        "choose_ai_coding_tool"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "The evolution of 'vibecoding' from manual prompting to autonomous agent orchestration.",
+        "How to configure Claude Code skills to enforce design systems and editorial guidelines."
+      ],
+      "how_they_reason": [
+        "Views coding as a means to an end; advocates for non-developers to build products by acting as 'CEOs' of AI agents."
+      ],
+      "missing_or_weak_subtopics": [
+        "Deep architectural refactoring of large legacy codebases"
+      ],
+      "evidence_refs": [
+        "P0003",
+        "P0004",
+        "P0016",
+        "P0017"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "domain_id": "creative_multimodal",
+      "domain_name": "Creative & Multimodal AI",
+      "subdomain_ids": [
+        "multimodal_generation",
+        "model_specific_formatting"
+      ],
+      "query_intent_ids": [
+        "plan_ai_product_feature"
+      ],
+      "coverage_level": "moderate",
+      "depth_level": "practical",
+      "system_value": "medium",
+      "what_the_expert_knows": [
+        "How to use DESIGN.md files to prevent generic UI generation in Claude Design.",
+        "How to apply Infostyle and JTBD frameworks as Claude Code skills to eliminate AI text slop."
+      ],
+      "how_they_reason": [
+        "Systematizes creative tasks by encoding editorial and design rules into reusable agent skills."
+      ],
+      "missing_or_weak_subtopics": [
+        "Advanced video generation models (Sora, Runway)",
+        "Complex 3D asset generation"
+      ],
+      "evidence_refs": [
+        "P0017",
+        "P0018",
+        "P0020",
+        "P0024"
+      ],
+      "confidence": 0.85
+    }
+  ],
+  "value_dimensions": [
+    {
+      "dimension_id": "insight_density",
+      "score_0_5": 4,
+      "rationale": "Consistently moves beyond surface-level news to provide architectural insights, such as identifying the exact causes of token waste or TOS bans.",
+      "evidence_refs": [
+        "P0011",
+        "P0012",
+        "P0023"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "dimension_id": "practical_specificity",
+      "score_0_5": 5,
+      "rationale": "Shares exact GitHub repositories, configuration files, and step-by-step workflows for every major claim.",
+      "evidence_refs": [
+        "P0010",
+        "P0013",
+        "P0020"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "dimension_id": "evidence_quality",
+      "score_0_5": 4,
+      "rationale": "Builds and tests his own tools to validate claims. Occasionally relies on community anecdotes, but mostly grounds claims in personal engineering experience.",
+      "evidence_refs": [
+        "P0006",
+        "P0010",
+        "P0013"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "dimension_id": "anti_hype_signal",
+      "score_0_5": 4,
+      "rationale": "Actively calls out the flaws in hyped tools (e.g., OpenClaw's security risks, Claude Code's token waste, AI 'slop' in design and text).",
+      "evidence_refs": [
+        "P0007",
+        "P0012",
+        "P0017",
+        "P0023"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "matrix_cells": [
+    {
+      "domain_id": "agent_ops",
+      "subdomain_id": "multi_agent_orchestration",
+      "subdomain_name": "Multi-Agent Orchestration",
+      "query_intent_ids": [
+        "design_agentic_dev_workflow"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 3,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0006",
+        "P0010",
+        "P0011"
+      ],
+      "notes": "Provides concrete architectures for orchestrating Claude Code agents without triggering platform bans."
+    },
+    {
+      "domain_id": "security_privacy_governance",
+      "subdomain_id": "security_privacy_controls",
+      "subdomain_name": "Security & Privacy Controls",
+      "query_intent_ids": [
+        "manage_security_privacy_governance"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 4,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0012",
+        "P0013",
+        "P0010.C0017"
+      ],
+      "notes": "Excellent breakdown of agent vulnerabilities (skill injection, exposed ports) and practical mitigation via the 'Radius' tool."
+    },
+    {
+      "domain_id": "agent_ops",
+      "subdomain_id": "inference_cost_latency",
+      "subdomain_name": "Inference Cost & Latency",
+      "query_intent_ids": [
+        "optimize_inference_cost_latency"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 4,
+      "intrinsic_distinctiveness_score_0_5": 3,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 3,
+      "source_utility_score_0_5": 4,
+      "comment_signal_score_0_5": 3,
+      "recommended_matrix_weight": "normal",
+      "evidence_refs": [
+        "P0023"
+      ],
+      "notes": "Highlights the 73% token waste issue in Claude Code and offers actionable fixes (Caveman prompting, model routing)."
+    },
+    {
+      "domain_id": "ai_coding_ides",
+      "subdomain_id": "claude_code_workflows",
+      "subdomain_name": "Claude Code Workflows",
+      "query_intent_ids": [
+        "learn_ai_assisted_development"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0016",
+        "P0017",
+        "P0018",
+        "P0020"
+      ],
+      "notes": "Deep expertise in extending Claude Code via custom skills for design, text generation, and research."
+    }
+  ],
+  "query_intent_fit": [
+    {
+      "query_intent_id": "design_agentic_dev_workflow",
+      "query_intent_name": "Design Agentic Dev Workflow",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "agent_ops",
+        "ai_coding_ides"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "The expert actively builds, open-sources, and teaches agentic workflows, providing specific architectures for research, coding, and design.",
+      "limitations": [
+        "Heavily biased towards Claude Code and Anthropic models."
+      ],
+      "evidence_refs": [
+        "P0010",
+        "P0016"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "query_intent_id": "manage_security_privacy_governance",
+      "query_intent_name": "Manage Security, Privacy & Governance",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "security_privacy_governance"
+      ],
+      "source_utility_score_0_5": 4,
+      "why": "Provides a highly practical framework for securing autonomous agents, identifying specific attack vectors and offering code-level solutions.",
+      "limitations": [
+        "Focuses strictly on agent security, not general enterprise cloud security."
+      ],
+      "evidence_refs": [
+        "P0012",
+        "P0013"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "query_intent_id": "optimize_inference_cost_latency",
+      "query_intent_name": "Optimize Inference Cost & Latency",
+      "fit_role": "supporting",
+      "best_domain_ids": [
+        "agent_ops"
+      ],
+      "source_utility_score_0_5": 4,
+      "why": "Offers specific strategies for reducing token burn in agentic loops.",
+      "limitations": [
+        "Strategies are somewhat anecdotal and focused on individual/small-team usage rather than enterprise scale."
+      ],
+      "evidence_refs": [
+        "P0023"
+      ],
+      "confidence": 0.85
+    }
+  ],
+  "content_quality_distribution": [
+    {
+      "category_id": "deep_practitioner",
+      "share_estimate_0_1": 0.4,
+      "system_value": "high",
+      "notes": "Frequently shares custom-built tools, GitHub repos, and architectural breakdowns.",
+      "evidence_refs": [
+        "P0010",
+        "P0011",
+        "P0013"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "howto_or_checklist",
+      "share_estimate_0_1": 0.3,
+      "system_value": "high",
+      "notes": "Provides actionable lists, such as the 7 security holes or 4 skills for text generation.",
+      "evidence_refs": [
+        "P0012",
+        "P0018"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "category_id": "tool_release_with_analysis",
+      "share_estimate_0_1": 0.2,
+      "system_value": "medium",
+      "notes": "Curates and analyzes new tools (e.g., Claude Design, Handy, Open-design).",
+      "evidence_refs": [
+        "P0020",
+        "P0022",
+        "P0024"
+      ],
+      "confidence": 0.85
+    },
+    {
+      "category_id": "announcement_or_news",
+      "share_estimate_0_1": 0.1,
+      "system_value": "low",
+      "notes": "Promotes his Vibecon courses and conferences.",
+      "evidence_refs": [
+        "P0003"
+      ],
+      "confidence": 0.9
+    }
+  ],
+  "matrix_export": {
+    "schema_version": "knowledge_matrix_export.v1",
+    "expert_id": "vlad_kooklev",
+    "cells": [
+      {
+        "cell_id": "agent_ops/multi_agent_orchestration/design_agentic_dev_workflow",
+        "domain_id": "agent_ops",
+        "subdomain_id": "multi_agent_orchestration",
+        "subdomain_name": "Multi-Agent Orchestration",
+        "query_intent_ids": [
+          "design_agentic_dev_workflow"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 4,
+          "practicality": 5,
+          "evidence_quality": 4,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 4,
+          "anti_hype": 4,
+          "community_signal": 3
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [
+          "Highly focused on Claude Code ecosystem."
+        ],
+        "evidence_refs": [
+          "P0006",
+          "P0010",
+          "P0011"
+        ],
+        "confidence": 0.9
+      },
+      {
+        "cell_id": "security_privacy_governance/security_privacy_controls/manage_security_privacy_governance",
+        "domain_id": "security_privacy_governance",
+        "subdomain_id": "security_privacy_controls",
+        "subdomain_name": "Security & Privacy Controls",
+        "query_intent_ids": [
+          "manage_security_privacy_governance"
+        ],
+        "coverage_level": "moderate",
+        "depth_level": "practical",
+        "source_role": "primary",
+        "scores": {
+          "depth": 4,
+          "practicality": 5,
+          "evidence_quality": 4,
+          "source_utility": 4,
+          "intrinsic_distinctiveness": 4,
+          "anti_hype": 5,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [
+          "Specific to agent vulnerabilities, not general application security."
+        ],
+        "evidence_refs": [
+          "P0012",
+          "P0013",
+          "P0010.C0017"
+        ],
+        "confidence": 0.9
+      },
+      {
+        "cell_id": "agent_ops/inference_cost_latency/optimize_inference_cost_latency",
+        "domain_id": "agent_ops",
+        "subdomain_id": "inference_cost_latency",
+        "subdomain_name": "Inference Cost & Latency",
+        "query_intent_ids": [
+          "optimize_inference_cost_latency"
+        ],
+        "coverage_level": "moderate",
+        "depth_level": "practical",
+        "source_role": "supporting",
+        "scores": {
+          "depth": 4,
+          "practicality": 4,
+          "evidence_quality": 3,
+          "source_utility": 4,
+          "intrinsic_distinctiveness": 3,
+          "anti_hype": 4,
+          "community_signal": 3
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [
+          "Focuses on token optimization for individual agent runs rather than enterprise scale."
+        ],
+        "evidence_refs": [
+          "P0023"
+        ],
+        "confidence": 0.85
+      },
+      {
+        "cell_id": "ai_coding_ides/claude_code_workflows/learn_ai_assisted_development",
+        "domain_id": "ai_coding_ides",
+        "subdomain_id": "claude_code_workflows",
+        "subdomain_name": "Claude Code Workflows",
+        "query_intent_ids": [
+          "learn_ai_assisted_development"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5.0,
+          "practicality": 5.0,
+          "evidence_quality": 4.0,
+          "source_utility": 5.0,
+          "intrinsic_distinctiveness": 4.0,
+          "anti_hype": 0.0,
+          "community_signal": 4.0
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [
+          "Deterministically repaired from matrix_cells because matrix_export omitted this matrix-worthy cell."
+        ],
+        "evidence_refs": [
+          "P0016",
+          "P0017",
+          "P0018",
+          "P0020"
+        ],
+        "derived_from": "matrix_cells",
+        "repair_reason": "matrix_export_omitted_strong_or_signature_cell"
+      }
+    ],
+    "compare_hints": {
+      "likely_unique_cells": [
+        "security_privacy_governance/security_privacy_controls/manage_security_privacy_governance"
+      ],
+      "likely_duplicate_cells": [],
+      "cells_requiring_probe": [
+        "agent_ops/multi_agent_orchestration/design_agentic_dev_workflow"
+      ],
+      "matrix_only_decision_confidence": "medium"
+    }
+  },
+  "signature_insights": [
+    {
+      "insight": "System prompts are insufficient for agent security; granular, code-level permission boundaries (like the 'Radius' tool) are required to prevent skill injections and data leaks.",
+      "why_it_matters_for_experts_panel": "Provides a highly actionable, anti-hype perspective on the reality of deploying autonomous agents safely.",
+      "applicable_query_types": [
+        "manage_security_privacy_governance"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0012",
+        "P0013"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "insight": "Using out-of-the-box orchestrators like OpenClaw with Anthropic subscriptions leads to TOS bans due to detectable cron/heartbeat patterns; custom, event-driven orchestrators are safer.",
+      "why_it_matters_for_experts_panel": "Saves practitioners from account bans and highlights the operational friction between AI providers and agent builders.",
+      "applicable_query_types": [
+        "design_agentic_dev_workflow"
+      ],
+      "novelty_level": "rare",
+      "evidence_refs": [
+        "P0011"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "insight": "Up to 73% of tokens in Claude Code are wasted; optimizing requires 'Caveman' prompting (forcing primitive, concise reasoning) and routing simple tasks to cheaper models.",
+      "why_it_matters_for_experts_panel": "Directly addresses the cost bottleneck of running continuous agentic loops.",
+      "applicable_query_types": [
+        "optimize_inference_cost_latency"
+      ],
+      "novelty_level": "useful_packaging",
+      "evidence_refs": [
+        "P0023"
+      ],
+      "confidence": 0.85
+    }
+  ],
+  "practical_patterns": [
+    {
+      "pattern": "Deep Research Pipeline (claude-pipe)",
+      "when_to_use": "When conducting comprehensive research that requires avoiding AI hallucinations and SEO spam.",
+      "failure_modes": [
+        "Prompt injection via malicious web content ingested during the research phase."
+      ],
+      "evidence_refs": [
+        "P0010",
+        "P0010.C0017"
+      ]
+    },
+    {
+      "pattern": "Anti-Slop Text Generation Skills",
+      "when_to_use": "When using Claude Code to generate documentation, articles, or UI copy to ensure it doesn't sound AI-generated.",
+      "failure_modes": [
+        "Over-constraining the model, leading to overly dry or robotic text if tone-of-voice skills aren't balanced."
+      ],
+      "evidence_refs": [
+        "P0018"
+      ]
+    }
+  ],
+  "claims_and_positions": [
+    {
+      "claim": "AI agents will replace traditional online courses by providing personalized, data-grounded learning experiences.",
+      "stance": "supports",
+      "decision_relevance": "Relevant for EdTech product strategy and understanding the future of knowledge work.",
+      "dispute_risk": "medium",
+      "evidence_refs": [
+        "P0009"
+      ]
+    },
+    {
+      "claim": "OpenClaw is insecure and risky for production use due to its architecture and TOS-violating request patterns.",
+      "stance": "warns_against",
+      "decision_relevance": "Critical for teams choosing an open-source agent orchestration framework.",
+      "dispute_risk": "high",
+      "evidence_refs": [
+        "P0007",
+        "P0011"
+      ]
+    }
+  ],
+  "source_utility": {
+    "best_use_cases": [
+      "Designing secure architectures for Claude Code agents.",
+      "Implementing 'vibecoding' workflows for non-technical teams.",
+      "Optimizing token usage in agentic loops."
+    ],
+    "bad_use_cases": [
+      "Training or fine-tuning foundational models.",
+      "Enterprise-grade cloud infrastructure security."
+    ],
+    "retrieval_keywords": [
+      "vibecoding",
+      "Claude Code",
+      "OpenClaw",
+      "agent security",
+      "Radius",
+      "token optimization",
+      "claude-pipe"
+    ],
+    "source_selection_hints": [
+      "Select when the user is building with Claude Code and needs practical, code-level solutions for orchestration, security, or cost."
+    ],
+    "expected_overlap_hypotheses": [
+      "High overlap with other Claude Code or Cursor advocates.",
+      "Potential overlap with general AI security researchers, though this source is more focused on practical agent sandboxing."
+    ],
+    "recommended_panex_role": "primary_expert"
+  },
+  "community_signal": {
+    "comment_themes": [
+      "Troubleshooting the expert's open-source repositories.",
+      "Suggesting alternative tools (e.g., Aqua Voice, Deepgram, Open-design).",
+      "Debating the limits of AI autonomy vs. human control."
+    ],
+    "questions_from_audience": [
+      "How to avoid Claude Code rate limits?",
+      "How to secure agents against prompt injection?",
+      "What are the best tools for voice-to-text without hallucination bugs?"
+    ],
+    "disagreements_or_corrections": [
+      "Community members pointed out critical security flaws (prompt injection, data leaks) in the expert's 'claude-pipe' repository.",
+      "Some users argued that local LLMs could solve the heartbeat/cron TOS issues without needing custom orchestrators."
+    ],
+    "practical_feedback": [
+      "Users actively test and confirm the utility of the expert's tools, though some report setup friction."
+    ],
+    "noise_or_low_value_patterns": [
+      "Occasional spam/scam comments (e.g., crypto links, job offers) in earlier posts."
+    ],
+    "evidence_refs": [
+      "P0010.C0017",
+      "P0022.C0005"
+    ]
+  },
+  "admission_implications": {
+    "if_candidate_verdict": "accept",
+    "verdict_rationale": "Vlad Kooklev provides exceptionally high-signal, practical, and code-backed insights into the emerging field of 'vibecoding' and agent orchestration. His focus on the unglamorous realities of agents (security, token costs, TOS bans) makes him highly valuable.",
+    "unique_value_claims_to_verify_against_matrix": [
+      "Granular agent security frameworks (Radius).",
+      "TOS ban avoidance strategies for Anthropic API/subscriptions."
+    ],
+    "likely_duplicate_areas_to_check": [
+      "General Cursor/Claude Code usage tutorials.",
+      "Basic prompt engineering for text generation."
+    ],
+    "minimum_followup_probe_queries": [
+      "Compare Vlad Kooklev's agent security approach with existing Panex security experts.",
+      "Check matrix for existing coverage of Claude Code token optimization."
+    ],
+    "risk_notes": [
+      "He sells courses (Vibecon), so some content is promotional, though he consistently provides enough free, open-source value to offset this."
+    ]
+  },
+  "audit": {
+    "unsupported_or_weak_claims": [],
+    "abstentions": [],
+    "possible_model_errors": [],
+    "source_refs_used": [
+      "P0003",
+      "P0004",
+      "P0006",
+      "P0007",
+      "P0008",
+      "P0009",
+      "P0010",
+      "P0010.C0017",
+      "P0011",
+      "P0012",
+      "P0013",
+      "P0016",
+      "P0017",
+      "P0018",
+      "P0020",
+      "P0022",
+      "P0022.C0005",
+      "P0023",
+      "P0024"
+    ],
+    "source_refs_most_important": [
+      "P0010",
+      "P0011",
+      "P0012",
+      "P0013",
+      "P0016",
+      "P0023"
+    ],
+    "normalization_notes": [
+      {
+        "operation": "repair_matrix_export_from_matrix_cells",
+        "repaired_cell_count": 1,
+        "repaired_cell_ids": [
+          "ai_coding_ides/claude_code_workflows/learn_ai_assisted_development"
+        ],
+        "skipped_cell_count": 0,
+        "skipped_cells": []
+      },
+      {
+        "operation": "hydrate_source_ref_index_used",
+        "hydrated_ref_count": 0,
+        "generated_at_set_from_manifest": "2026-05-15T00:38:20.224184+00:00"
+      }
+    ]
+  }
+}

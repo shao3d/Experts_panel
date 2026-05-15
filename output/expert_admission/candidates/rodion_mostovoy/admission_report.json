@@ -1,0 +1,73 @@
+{
+  "schema_version": "candidate_admission_report.v0.1",
+  "created_at": "2026-05-15",
+  "candidate_id": "rodion_mostovoy",
+  "display_name": "Rodion Mostovoy",
+  "channel_username": "@ai_driven",
+  "verdict": "accept",
+  "decision_mode": "manual_human_review_after_semantic_preflight",
+  "based_on": {
+    "semantic_passport": "output/expert_admission/semantic_passports/rodion_mostovoy/output_db_2025plus_comments_pruned/rodion_mostovoy_semantic_passport.normalized.json",
+    "candidate_impact_report": "output/expert_admission/candidates/rodion_mostovoy_db_2025plus_comments_pruned/candidate_impact_report.md",
+    "manual_overlap_review": "source refs P0051, P0052, P0056, P0067, P0074, P0096 and community refs from final DB+comments passport"
+  },
+  "preflight_summary": {
+    "candidate_cells_from_matrix_export": 5,
+    "fills_gap": 0,
+    "adds_adjacent_viewpoint": 1,
+    "deepens_existing_cell": 1,
+    "needs_probe": 0,
+    "likely_duplicate": 3,
+    "taxonomy_extensions": 0,
+    "exact_overlaps": 4,
+    "related_overlaps": 1,
+    "preliminary_recommendation": "overlap_heavy_needs_stronger_review"
+  },
+  "accepted_cells": [
+    {
+      "cell_id": "security_privacy_governance/security_privacy_controls/manage_security_privacy_governance",
+      "classification": "deepens_existing_cell",
+      "admission_interpretation": "accepted_as_deep_agent_execution_safety_source_for_ast_hooks_and_cli_agent_risk"
+    },
+    {
+      "cell_id": "coding_agents/codex_workflows/debug_agent_failure",
+      "classification": "adds_adjacent_viewpoint",
+      "admission_interpretation": "accepted_as_codex_cli_and_debugging_depth_not_as_generic_tool_choice_source"
+    },
+    {
+      "cell_id": "coding_agents/claude_code_workflows/design_agentic_dev_workflow",
+      "classification": "likely_duplicate",
+      "admission_interpretation": "accepted_as_claude_code_workflow_depth_for_ultrathink_sdd_and_safety_not_as_new_gap"
+    },
+    {
+      "cell_id": "agent_ops/agentic_dev_process/design_agentic_dev_workflow",
+      "classification": "likely_duplicate",
+      "admission_interpretation": "accepted_as_enterprise_agentic_engineering_process_depth_for_sdd_ai_tdd_sgr"
+    },
+    {
+      "cell_id": "model_landscape/model_comparison/compare_models_for_task",
+      "classification": "likely_duplicate",
+      "admission_interpretation": "accepted_as_coding_model_role_selection_depth_not_as_general_model_news"
+    }
+  ],
+  "taxonomy_updates": [],
+  "corpus_policy": {
+    "runtime_cutoff_date": "2025-01-01",
+    "pruning_summary": "Imported full export and Telegram API comments, then pruned all posts before 2025 because the candidate passport did not use pre-2025 sources as decision evidence and the AI coding/tooling landscape has shifted materially.",
+    "remaining_runtime_corpus": {
+      "posts": 101,
+      "text_posts_in_passport": 100,
+      "comments": 865,
+      "pre_2025_posts_preserved_as_linked_context": 0
+    }
+  },
+  "routing_notes": [
+    "Strong fit for advanced AI-assisted development, SDD, AI-TDD, SGR, Claude Code/Codex CLI workflows, context engineering, and safety hooks.",
+    "Use as a primary precision source for enterprise-grade agentic engineering and large-codebase context workflows.",
+    "Useful for model-to-task choices in coding, especially when the user asks which model to use for architecture, execution, debugging, or UI work.",
+    "Do not route as a beginner ChatGPT/tutorial source, generic AI news source, creative/multimodal source, or broad business-adoption expert.",
+    "Filter CodeAlive promotional framing while preserving the underlying context-engineering evidence."
+  ],
+  "recommended_manifest_caveat": "accepted as advanced AI-assisted development / SDD / AI-TDD / SGR / Claude Code and Codex CLI workflow / context-engineering / safety-hooks expert; overlap-heavy with existing coding-agent experts, so route as a precision source for enterprise-grade agentic engineering rather than generic AI coding advice",
+  "next_action": "include_in_semantic_knowledge_matrix_and_ui_after_matrix_rebuild"
+}

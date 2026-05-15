@@ -1,0 +1,54 @@
+{
+  "missing_required_top_level_keys": [],
+  "known_source_ref_count": 965,
+  "used_source_ref_count": 21,
+  "source_ref_index_used_count": 18,
+  "unknown_source_refs": [],
+  "unknown_source_ref_count": 0,
+  "refs_missing_from_source_ref_index_used": [
+    "P0059",
+    "P0068",
+    "P0074.C0039"
+  ],
+  "refs_missing_from_source_ref_index_used_count": 3,
+  "matrix_cell_count": 5,
+  "matrix_export_cell_count": 3,
+  "matrix_export_incomplete": true,
+  "missing_matrix_export_cells": [
+    {
+      "cell_id": "coding_agents/codex_workflows/debug_agent_failure",
+      "domain_id": "coding_agents",
+      "subdomain_id": "codex_workflows",
+      "query_intent_ids": [
+        "debug_agent_failure",
+        "choose_ai_coding_tool"
+      ],
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0052",
+        "P0067"
+      ]
+    },
+    {
+      "cell_id": "model_landscape/model_comparison/compare_models_for_task",
+      "domain_id": "model_landscape",
+      "subdomain_id": "model_comparison",
+      "query_intent_ids": [
+        "compare_models_for_task"
+      ],
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0032",
+        "P0041",
+        "P0066",
+        "P0067"
+      ]
+    }
+  ],
+  "missing_matrix_export_cell_count": 2,
+  "bad_matrix_relative_novelty_values": [],
+  "passport_generated_at": "2026-05-15T00:57:05.525804+00:00",
+  "expected_generated_at": "2026-05-15T00:57:05.525804+00:00",
+  "generated_at_matches_expected": true,
+  "valid_basic_contract": false
+}

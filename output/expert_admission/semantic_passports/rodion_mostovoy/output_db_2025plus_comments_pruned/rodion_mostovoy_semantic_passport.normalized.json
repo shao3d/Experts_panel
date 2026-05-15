@@ -1,0 +1,1129 @@
+{
+  "schema_version": "expert_value_passport.v1.1",
+  "passport_meta": {
+    "schema_version": "expert_value_passport.v1.1",
+    "expert_id": "rodion_mostovoy",
+    "display_name": "Rodion Mostovoy",
+    "channel_username": "@ai_driven",
+    "model_assumed": "gemini-3.1-pro-preview",
+    "prompt_version": "semantic-passport-prompt.v1",
+    "generated_at": "2026-05-15T00:57:05.525804+00:00"
+  },
+  "corpus_audit": {
+    "post_count_seen": 100,
+    "comment_count_seen": 865,
+    "date_range": {
+      "first_post": "2025-01-19 17:24:00.000000",
+      "last_post": "2026-05-14 17:09:29.000000"
+    },
+    "language_mix": [
+      "ru",
+      "en"
+    ],
+    "material_limitations": [],
+    "author_vs_community_boundary": "Clear boundary. The expert writes detailed, structured posts often summarizing his own practical experiments or tool developments (CodeAlive). The community actively engages in comments, sharing alternative tools, workflows, and debating the expert's findings."
+  },
+  "source_ref_index_used": [
+    {
+      "source_ref": "P0002",
+      "source_kind": "expert_post",
+      "post_id": 11642,
+      "telegram_message_id": 47,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-01-20 12:19:37.000000",
+      "why_used": "Demonstrates practical workflow for generating complex multithreaded code using o1-pro and Claude 3.5 Sonnet."
+    },
+    {
+      "source_ref": "P0019",
+      "source_kind": "expert_post",
+      "post_id": 11659,
+      "telegram_message_id": 78,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-03-02 12:41:11.000000",
+      "why_used": "Analyzes the agentic behavior and initiative of Claude 3.7 Sonnet."
+    },
+    {
+      "source_ref": "P0032",
+      "source_kind": "expert_post",
+      "post_id": 11673,
+      "telegram_message_id": 98,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-04-20 10:55:23.000000",
+      "why_used": "Provides a detailed comparison of o3, Gemini 2.5 Pro, and Claude 3.7 Sonnet for different development tasks."
+    },
+    {
+      "source_ref": "P0033",
+      "source_kind": "expert_post",
+      "post_id": 11674,
+      "telegram_message_id": 103,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-04-20 10:55:23.000000",
+      "why_used": "Highlights the limitations and hallucinations of the o3 model in practical coding scenarios."
+    },
+    {
+      "source_ref": "P0041",
+      "source_kind": "expert_post",
+      "post_id": 11682,
+      "telegram_message_id": 118,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-05-27 11:44:16.000000",
+      "why_used": "Reviews Claude 4 Sonnet and Opus, detailing their strengths in agentic workflows."
+    },
+    {
+      "source_ref": "P0046",
+      "source_kind": "expert_post",
+      "post_id": 11687,
+      "telegram_message_id": 128,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-06-29 11:00:56.000000",
+      "why_used": "Explains how AI can find complex bugs in large codebases using GraphRAG and reasoning models."
+    },
+    {
+      "source_ref": "P0051",
+      "source_kind": "expert_post",
+      "post_id": 11692,
+      "telegram_message_id": 138,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-17 19:55:18.000000",
+      "why_used": "Reveals undocumented keywords (e.g., 'ultrathink') to maximize reasoning budget in Claude Code."
+    },
+    {
+      "source_ref": "P0052",
+      "source_kind": "expert_post",
+      "post_id": 11693,
+      "telegram_message_id": 139,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-08-18 17:19:29.000000",
+      "why_used": "Compares Claude Code, Codex CLI, and Aider, providing specific use cases for each."
+    },
+    {
+      "source_ref": "P0056",
+      "source_kind": "expert_post",
+      "post_id": 11697,
+      "telegram_message_id": 143,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-09-08 08:32:46.000000",
+      "why_used": "Introduces the AI-TDD + Metaprompting + SGR (Scheme-Guided Reasoning) workflow."
+    },
+    {
+      "source_ref": "P0064",
+      "source_kind": "expert_post",
+      "post_id": 11705,
+      "telegram_message_id": 163,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-10-17 10:01:20.000000",
+      "why_used": "Discusses accelerating AI agents using Haiku 4.5 and CodeAlive MCP."
+    },
+    {
+      "source_ref": "P0066",
+      "source_kind": "expert_post",
+      "post_id": 11707,
+      "telegram_message_id": 165,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-11-11 08:01:19.000000",
+      "why_used": "Analyzes the use of Chinese open-source models (GLM 4.6, Kimi K2) via Synthetic subscription in Claude Code."
+    },
+    {
+      "source_ref": "P0067",
+      "source_kind": "expert_post",
+      "post_id": 11708,
+      "telegram_message_id": 166,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-12-04 10:09:28.000000",
+      "why_used": "Details a comprehensive workflow using Opus 4.5, Gemini 3 Pro, and GPT-5.1-Codex-Max for different stages of SDD."
+    },
+    {
+      "source_ref": "P0074",
+      "source_kind": "expert_post",
+      "post_id": 11715,
+      "telegram_message_id": 176,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-02-28 08:10:00.000000",
+      "why_used": "Outlines a bug-fix protocol and the philosophy of using a multi-layered test system as a safety net for AI-generated code."
+    },
+    {
+      "source_ref": "P0076",
+      "source_kind": "expert_post",
+      "post_id": 11717,
+      "telegram_message_id": 178,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-03-04 07:01:02.000000",
+      "why_used": "Explains how XML tags in prompts can cause biases in reasoning models and shares a prompt engineering skill."
+    },
+    {
+      "source_ref": "P0083",
+      "source_kind": "expert_post",
+      "post_id": 11724,
+      "telegram_message_id": 187,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-03-16 09:23:09.000000",
+      "why_used": "Argues that Spec-Driven Development (SDD) is the most critical phase in agentic engineering to prevent technical debt."
+    },
+    {
+      "source_ref": "P0092",
+      "source_kind": "expert_post",
+      "post_id": 11733,
+      "telegram_message_id": 196,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-04-28 14:55:06.000000",
+      "why_used": "Advocates for expensive API subscriptions to allow developers to experiment, citing a case where multiple cheaper models outperformed a single expensive one in code review."
+    },
+    {
+      "source_ref": "P0096",
+      "source_kind": "expert_post",
+      "post_id": 11737,
+      "telegram_message_id": 201,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-05-04 14:39:46.000000",
+      "why_used": "Introduces custom safety hooks based on AST parsing to prevent destructive actions by AI agents."
+    },
+    {
+      "source_ref": "P0100",
+      "source_kind": "expert_post",
+      "post_id": 11741,
+      "telegram_message_id": 205,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2026-05-14 17:09:29.000000",
+      "why_used": "Analyzes the AI-driven rewrite of Bun from Zig to Rust, highlighting the poor code quality and lack of human review."
+    },
+    {
+      "source_ref": "P0059",
+      "source_kind": "expert_post",
+      "post_id": 11700,
+      "telegram_message_id": 153,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-09-20 10:09:39.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0068",
+      "source_kind": "expert_post",
+      "post_id": 11709,
+      "telegram_message_id": 167,
+      "comment_id": null,
+      "telegram_comment_id": null,
+      "created_at": "2025-12-27 13:08:29.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    },
+    {
+      "source_ref": "P0074.C0039",
+      "source_kind": "community_comment",
+      "post_id": 11715,
+      "telegram_message_id": 176,
+      "comment_id": 122122,
+      "telegram_comment_id": 1978,
+      "created_at": "2026-02-28 09:29:02.000000",
+      "why_used": "Cited elsewhere in passport; hydrated by deterministic post-processor."
+    }
+  ],
+  "executive_summary": {
+    "one_sentence_positioning": "Rodion Mostovoy is a deep practitioner and AI dev tool founder who provides highly technical, battle-tested workflows for agentic engineering, context management, and Spec-Driven Development (SDD).",
+    "strongest_system_value": "Exceptional depth in Context Engineering (GraphRAG, MCPs) and practical orchestration of CLI coding agents (Claude Code, Codex CLI) using advanced prompting and safety hooks.",
+    "weakest_system_value": "Less focus on entry-level prompt engineering or basic AI tool tutorials, as the content is heavily geared toward senior engineers and enterprise-scale codebases.",
+    "best_fit_queries": [
+      "How to configure Claude Code for maximum reasoning?",
+      "What is the best workflow for Spec-Driven Development with AI agents?",
+      "How to prevent AI coding agents from executing destructive commands?",
+      "Which LLM is best for deep code review vs architectural planning?"
+    ],
+    "poor_fit_queries": [
+      "How to write a basic Python script with ChatGPT?",
+      "What is the best AI image generator?",
+      "How to learn programming from scratch using AI?"
+    ],
+    "confidence": 4.8
+  },
+  "expert_positioning": {
+    "primary_role": "Deep Practitioner & Tool Founder",
+    "audience": [
+      "Senior Developers",
+      "Tech Leads",
+      "AI Engineers",
+      "IT Architects"
+    ],
+    "voice": [
+      "Analytical",
+      "Pragmatic",
+      "Experimental",
+      "Community-driven"
+    ],
+    "worldview": [
+      "AI agents require strict safety nets (hooks) and rigorous test systems to be used safely in production.",
+      "Context Engineering (GraphRAG, AST parsing) is the primary bottleneck for scaling AI agents to enterprise codebases.",
+      "Spec-Driven Development (SDD) is critical; agents should not code without a rigorously reviewed specification.",
+      "Developers must be given budget and freedom to experiment with multiple LLMs to find optimal workflows."
+    ],
+    "distinctive_angle": "Combines the perspective of a hands-on senior developer with the insights of an AI dev tool founder (CodeAlive), focusing heavily on CLI agents, context orchestration, and enterprise safety.",
+    "recurring_formats": [
+      "Deep-dive tool comparisons (e.g., Claude Code vs Codex)",
+      "Workflow blueprints (e.g., AI-TDD + SGR)",
+      "Open-source tool releases (Safety hooks, MCPs)",
+      "Meetup/Stream announcements and summaries"
+    ],
+    "evidence_refs": [
+      "P0052",
+      "P0056",
+      "P0067",
+      "P0083",
+      "P0096"
+    ]
+  },
+  "knowledge_domains": [
+    {
+      "domain_id": "coding_agents",
+      "domain_name": "AI Coding Agents & CLI Tools",
+      "subdomain_ids": [
+        "claude_code_workflows",
+        "codex_workflows",
+        "agentic_dev_process",
+        "mcp_tooling"
+      ],
+      "query_intent_ids": [
+        "choose_ai_coding_tool",
+        "design_agentic_dev_workflow",
+        "debug_agent_failure"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "unique",
+      "what_the_expert_knows": [
+        "Undocumented features of Claude Code (e.g., 'ultrathink' keyword to maximize reasoning budget).",
+        "How to configure Codex CLI for extreme reasoning (`model_reasoning_effort=\"xhigh\"`).",
+        "The strengths and weaknesses of Aider vs Claude Code vs Codex CLI for specific tasks.",
+        "How to build and deploy custom safety hooks using AST parsing to prevent destructive agent actions."
+      ],
+      "how_they_reason": [
+        "Evaluates agents based on their ability to handle large contexts, follow complex instructions, and avoid destructive actions.",
+        "Prefers CLI agents over GUI IDEs (like Cursor) for complex, multi-step enterprise tasks due to better control over context and sub-agents."
+      ],
+      "missing_or_weak_subtopics": [
+        "Basic IDE integrations (e.g., standard Copilot usage) are largely ignored in favor of advanced CLI tools."
+      ],
+      "evidence_refs": [
+        "P0051",
+        "P0052",
+        "P0067",
+        "P0096"
+      ],
+      "confidence": 4.9
+    },
+    {
+      "domain_id": "agent_ops",
+      "domain_name": "Agentic Operations & Workflows",
+      "subdomain_ids": [
+        "agentic_dev_process",
+        "quality_gates",
+        "code_review_testing"
+      ],
+      "query_intent_ids": [
+        "design_agentic_dev_workflow",
+        "build_ai_dev_eval"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "deep_practitioner",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "The AI-TDD + Metaprompting + SGR (Scheme-Guided Reasoning) workflow.",
+        "How to implement Spec-Driven Development (SDD) using a multi-model approach (e.g., GPT-5.1 Pro for architecture, Opus 4.5 for planning, Codex for execution).",
+        "How to design a multi-layered test system as a safety net for AI-generated code."
+      ],
+      "how_they_reason": [
+        "Believes that bugs in production are failures of the test system, not just the agent.",
+        "Advocates for separating the planning/architecture phase from the execution phase, using different specialized LLMs for each."
+      ],
+      "missing_or_weak_subtopics": [],
+      "evidence_refs": [
+        "P0056",
+        "P0067",
+        "P0074",
+        "P0083"
+      ],
+      "confidence": 4.8
+    },
+    {
+      "domain_id": "rag_retrieval_knowledge",
+      "domain_name": "Context Engineering & RAG",
+      "subdomain_ids": [
+        "rag_architecture",
+        "knowledge_base_design",
+        "context_compression"
+      ],
+      "query_intent_ids": [
+        "design_rag_knowledge_base",
+        "improve_retrieval_quality"
+      ],
+      "coverage_level": "moderate",
+      "depth_level": "deep_practitioner",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "How to build Context-Engine-as-a-Service (CodeAlive) using GraphRAG, call graphs, and type hierarchies.",
+        "Why standard code embedding fails and why AST/Graph-based retrieval is necessary for large codebases.",
+        "How to use MCPs to feed highly relevant context to CLI agents, reducing token usage and increasing speed."
+      ],
+      "how_they_reason": [
+        "Views context engineering as the primary enabler for AI agents to work on enterprise legacy code.",
+        "Prioritizes deterministic context gathering (AST, graphs) over pure semantic search for code."
+      ],
+      "missing_or_weak_subtopics": [
+        "Detailed tutorials on building basic RAG pipelines from scratch (focuses on advanced GraphRAG)."
+      ],
+      "evidence_refs": [
+        "P0046",
+        "P0064",
+        "P0074.C0039"
+      ],
+      "confidence": 4.7
+    },
+    {
+      "domain_id": "model_landscape",
+      "domain_name": "LLM Landscape & Evaluation",
+      "subdomain_ids": [
+        "model_comparison",
+        "benchmark_interpretation"
+      ],
+      "query_intent_ids": [
+        "compare_models_for_task"
+      ],
+      "coverage_level": "strong",
+      "depth_level": "practical",
+      "system_value": "high",
+      "what_the_expert_knows": [
+        "Nuanced differences between o1, o3, Gemini 2.5/3 Pro, Claude 3.7/4, and GPT-5.1 variants.",
+        "The strengths of Chinese open-source models (GLM 4.6, Kimi K2) and how to access them via API subscriptions.",
+        "How to use multiple cheaper models (e.g., Qwen + DeepSeek) in parallel for code review to outperform a single expensive model (Opus)."
+      ],
+      "how_they_reason": [
+        "Relies on a mix of public benchmarks (LiveSWEBench, Aider Polyglot) and extensive personal empirical testing.",
+        "Categorizes models by persona (e.g., 'fast junior', 'architect', 'olympiad coder') to assign them to specific SDD stages."
+      ],
+      "missing_or_weak_subtopics": [],
+      "evidence_refs": [
+        "P0032",
+        "P0033",
+        "P0041",
+        "P0066",
+        "P0067",
+        "P0092"
+      ],
+      "confidence": 4.8
+    }
+  ],
+  "value_dimensions": [
+    {
+      "dimension_id": "insight_density",
+      "score_0_5": 5,
+      "rationale": "The channel is packed with highly specific, actionable insights, undocumented features, and advanced architectural patterns for AI development.",
+      "evidence_refs": [
+        "P0051",
+        "P0056",
+        "P0067",
+        "P0096"
+      ],
+      "confidence": 4.9
+    },
+    {
+      "dimension_id": "practical_specificity",
+      "score_0_5": 5,
+      "rationale": "Provides exact CLI commands, configuration flags, prompt structures, and links to open-source repositories created by the expert.",
+      "evidence_refs": [
+        "P0051",
+        "P0064",
+        "P0067",
+        "P0096"
+      ],
+      "confidence": 4.9
+    },
+    {
+      "dimension_id": "technical_depth",
+      "score_0_5": 5,
+      "rationale": "Discusses AST parsing for safety hooks, GraphRAG implementation details, and the intricacies of Scheme-Guided Reasoning (SGR).",
+      "evidence_refs": [
+        "P0046",
+        "P0056",
+        "P0074.C0039",
+        "P0096"
+      ],
+      "confidence": 4.8
+    },
+    {
+      "dimension_id": "decision_value",
+      "score_0_5": 5,
+      "rationale": "Offers clear, opinionated frameworks for choosing models, designing workflows (SDD), and implementing safety measures in enterprise environments.",
+      "evidence_refs": [
+        "P0052",
+        "P0067",
+        "P0074",
+        "P0083"
+      ],
+      "confidence": 4.8
+    },
+    {
+      "dimension_id": "anti_hype_signal",
+      "score_0_5": 4,
+      "rationale": "Actively critiques AI hype, pointing out model hallucinations, the dangers of 'vibe coding' without specs, and the poor quality of AI-generated rewrites (e.g., Bun in Rust).",
+      "evidence_refs": [
+        "P0033",
+        "P0083",
+        "P0100"
+      ],
+      "confidence": 4.7
+    }
+  ],
+  "matrix_cells": [
+    {
+      "domain_id": "coding_agents",
+      "subdomain_id": "claude_code_workflows",
+      "subdomain_name": "Claude Code Workflows",
+      "query_intent_ids": [
+        "design_agentic_dev_workflow",
+        "debug_agent_failure"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 5,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0051",
+        "P0052",
+        "P0064"
+      ],
+      "notes": "Exceptional depth on Claude Code, including undocumented reasoning flags ('ultrathink') and integration with MCPs."
+    },
+    {
+      "domain_id": "coding_agents",
+      "subdomain_id": "codex_workflows",
+      "subdomain_name": "Codex Workflows",
+      "query_intent_ids": [
+        "debug_agent_failure",
+        "choose_ai_coding_tool"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 4,
+      "comment_signal_score_0_5": 3,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0052",
+        "P0067"
+      ],
+      "notes": "Provides specific CLI flags for Codex (`model_reasoning_effort=\"xhigh\"`) and positions it as the ultimate bug-fixer for complex algorithmic issues."
+    },
+    {
+      "domain_id": "agent_ops",
+      "subdomain_id": "agentic_dev_process",
+      "subdomain_name": "Agentic Development Process",
+      "query_intent_ids": [
+        "design_agentic_dev_workflow"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 4,
+      "intrinsic_distinctiveness_score_0_5": 5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0056",
+        "P0067",
+        "P0083"
+      ],
+      "notes": "Introduces advanced workflows like AI-TDD + Metaprompting + SGR, and a multi-model Spec-Driven Development (SDD) pipeline."
+    },
+    {
+      "domain_id": "security_privacy_governance",
+      "subdomain_id": "security_privacy_controls",
+      "subdomain_name": "Security & Privacy Controls",
+      "query_intent_ids": [
+        "manage_security_privacy_governance"
+      ],
+      "depth_score_0_5": 5,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 5,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 5,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 3,
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0096"
+      ],
+      "notes": "Provides a custom, open-source AST-based safety hook system for AI agents to prevent destructive commands (rm -rf, db drops) with zero false positives."
+    },
+    {
+      "domain_id": "model_landscape",
+      "subdomain_id": "model_comparison",
+      "subdomain_name": "Model Comparison",
+      "query_intent_ids": [
+        "compare_models_for_task"
+      ],
+      "depth_score_0_5": 4,
+      "practicality_score_0_5": 5,
+      "intrinsic_distinctiveness_score_0_5": 4,
+      "matrix_relative_novelty": "not_scored_without_matrix",
+      "evidence_quality_score_0_5": 4,
+      "source_utility_score_0_5": 5,
+      "comment_signal_score_0_5": 4,
+      "recommended_matrix_weight": "strong",
+      "evidence_refs": [
+        "P0032",
+        "P0041",
+        "P0066",
+        "P0067"
+      ],
+      "notes": "Highly practical, task-based categorization of models (e.g., Gemini for long context, o3 for pure reasoning, Opus for planning)."
+    }
+  ],
+  "query_intent_fit": [
+    {
+      "query_intent_id": "design_agentic_dev_workflow",
+      "query_intent_name": "Design Agentic Dev Workflow",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "agent_ops",
+        "coding_agents"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "The expert provides end-to-end blueprints for agentic workflows, including SDD, AI-TDD, SGR, and multi-model orchestration.",
+      "limitations": [],
+      "evidence_refs": [
+        "P0056",
+        "P0067",
+        "P0083"
+      ],
+      "confidence": 4.9
+    },
+    {
+      "query_intent_id": "manage_security_privacy_governance",
+      "query_intent_name": "Manage Security, Privacy, and Governance",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "security_privacy_governance"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "Offers a concrete, open-source solution (AST-based safety hooks) to solve the critical problem of agents executing destructive commands.",
+      "limitations": [
+        "Focuses specifically on CLI agent execution safety, not broader enterprise data governance."
+      ],
+      "evidence_refs": [
+        "P0096"
+      ],
+      "confidence": 4.8
+    },
+    {
+      "query_intent_id": "compare_models_for_task",
+      "query_intent_name": "Compare Models for Task",
+      "fit_role": "primary",
+      "best_domain_ids": [
+        "model_landscape"
+      ],
+      "source_utility_score_0_5": 5,
+      "why": "Provides highly specific, role-based recommendations for models (e.g., GPT-5.1 Pro for architecture, Opus 4.5 for planning, Codex for execution).",
+      "limitations": [],
+      "evidence_refs": [
+        "P0032",
+        "P0067"
+      ],
+      "confidence": 4.8
+    }
+  ],
+  "content_quality_distribution": [
+    {
+      "category_id": "deep_practitioner",
+      "share_estimate_0_1": 0.4,
+      "system_value": "high",
+      "notes": "Deep dives into context engineering, AST parsing, and multi-model workflows.",
+      "evidence_refs": [
+        "P0046",
+        "P0056",
+        "P0067",
+        "P0096"
+      ],
+      "confidence": 4.8
+    },
+    {
+      "category_id": "howto_or_checklist",
+      "share_estimate_0_1": 0.2,
+      "system_value": "high",
+      "notes": "Provides specific CLI commands, prompt structures, and bug-fix protocols.",
+      "evidence_refs": [
+        "P0051",
+        "P0064",
+        "P0074"
+      ],
+      "confidence": 4.7
+    },
+    {
+      "category_id": "tool_release_with_analysis",
+      "share_estimate_0_1": 0.2,
+      "system_value": "medium",
+      "notes": "Analyzes new models and tools (Claude 4, GPT-5.1, Haiku 4.5) with practical testing.",
+      "evidence_refs": [
+        "P0032",
+        "P0041",
+        "P0067"
+      ],
+      "confidence": 4.6
+    },
+    {
+      "category_id": "announcement_or_news",
+      "share_estimate_0_1": 0.1,
+      "system_value": "low",
+      "notes": "Announcements for meetups, streams, and CodeAlive updates.",
+      "evidence_refs": [
+        "P0059",
+        "P0068"
+      ],
+      "confidence": 4.9
+    },
+    {
+      "category_id": "commentary",
+      "share_estimate_0_1": 0.1,
+      "system_value": "medium",
+      "notes": "Critiques of AI hype, such as the Bun rewrite in Rust.",
+      "evidence_refs": [
+        "P0100"
+      ],
+      "confidence": 4.5
+    }
+  ],
+  "matrix_export": {
+    "schema_version": "knowledge_matrix_export.v1",
+    "expert_id": "rodion_mostovoy",
+    "cells": [
+      {
+        "cell_id": "coding_agents/claude_code_workflows/design_agentic_dev_workflow",
+        "domain_id": "coding_agents",
+        "subdomain_id": "claude_code_workflows",
+        "subdomain_name": "Claude Code Workflows",
+        "query_intent_ids": [
+          "design_agentic_dev_workflow"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 5,
+          "evidence_quality": 5,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 5,
+          "anti_hype": 4,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0051",
+          "P0052",
+          "P0064"
+        ],
+        "confidence": 4.9
+      },
+      {
+        "cell_id": "agent_ops/agentic_dev_process/design_agentic_dev_workflow",
+        "domain_id": "agent_ops",
+        "subdomain_id": "agentic_dev_process",
+        "subdomain_name": "Agentic Development Process",
+        "query_intent_ids": [
+          "design_agentic_dev_workflow"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 4,
+          "evidence_quality": 4,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 5,
+          "anti_hype": 5,
+          "community_signal": 4
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [],
+        "evidence_refs": [
+          "P0056",
+          "P0067",
+          "P0083"
+        ],
+        "confidence": 4.8
+      },
+      {
+        "cell_id": "security_privacy_governance/security_privacy_controls/manage_security_privacy_governance",
+        "domain_id": "security_privacy_governance",
+        "subdomain_id": "security_privacy_controls",
+        "subdomain_name": "Security & Privacy Controls",
+        "query_intent_ids": [
+          "manage_security_privacy_governance"
+        ],
+        "coverage_level": "moderate",
+        "depth_level": "deep_practitioner",
+        "source_role": "primary",
+        "scores": {
+          "depth": 5,
+          "practicality": 5,
+          "evidence_quality": 5,
+          "source_utility": 5,
+          "intrinsic_distinctiveness": 5,
+          "anti_hype": 4,
+          "community_signal": 3
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [
+          "Focuses strictly on CLI agent execution safety."
+        ],
+        "evidence_refs": [
+          "P0096"
+        ],
+        "confidence": 4.9
+      },
+      {
+        "cell_id": "coding_agents/codex_workflows/debug_agent_failure",
+        "domain_id": "coding_agents",
+        "subdomain_id": "codex_workflows",
+        "subdomain_name": "Codex Workflows",
+        "query_intent_ids": [
+          "debug_agent_failure",
+          "choose_ai_coding_tool"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "practical",
+        "source_role": "primary",
+        "scores": {
+          "depth": 4.0,
+          "practicality": 5.0,
+          "evidence_quality": 4.0,
+          "source_utility": 4.0,
+          "intrinsic_distinctiveness": 4.0,
+          "anti_hype": 0.0,
+          "community_signal": 3.0
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [
+          "Deterministically repaired from matrix_cells because matrix_export omitted this matrix-worthy cell."
+        ],
+        "evidence_refs": [
+          "P0052",
+          "P0067"
+        ],
+        "derived_from": "matrix_cells",
+        "repair_reason": "matrix_export_omitted_strong_or_signature_cell"
+      },
+      {
+        "cell_id": "model_landscape/model_comparison/compare_models_for_task",
+        "domain_id": "model_landscape",
+        "subdomain_id": "model_comparison",
+        "subdomain_name": "Model Comparison",
+        "query_intent_ids": [
+          "compare_models_for_task"
+        ],
+        "coverage_level": "strong",
+        "depth_level": "practical",
+        "source_role": "primary",
+        "scores": {
+          "depth": 4.0,
+          "practicality": 5.0,
+          "evidence_quality": 4.0,
+          "source_utility": 5.0,
+          "intrinsic_distinctiveness": 4.0,
+          "anti_hype": 0.0,
+          "community_signal": 4.0
+        },
+        "matrix_update_role": "needs_matrix_compare",
+        "limitations": [
+          "Deterministically repaired from matrix_cells because matrix_export omitted this matrix-worthy cell."
+        ],
+        "evidence_refs": [
+          "P0032",
+          "P0041",
+          "P0066",
+          "P0067"
+        ],
+        "derived_from": "matrix_cells",
+        "repair_reason": "matrix_export_omitted_strong_or_signature_cell"
+      }
+    ],
+    "compare_hints": {
+      "likely_unique_cells": [
+        "security_privacy_governance/security_privacy_controls/manage_security_privacy_governance"
+      ],
+      "likely_duplicate_cells": [],
+      "cells_requiring_probe": [
+        "coding_agents/claude_code_workflows/design_agentic_dev_workflow"
+      ],
+      "matrix_only_decision_confidence": "high"
+    }
+  },
+  "signature_insights": [
+    {
+      "insight": "Claude Code has undocumented, hardcoded keywords (e.g., 'ultrathink', 'megathink') that force the model to use its maximum reasoning budget.",
+      "why_it_matters_for_experts_panel": "Provides a highly specific, actionable hack for developers using CLI agents to solve complex problems that standard prompts fail on.",
+      "applicable_query_types": [
+        "debug_agent_failure",
+        "design_agentic_dev_workflow"
+      ],
+      "novelty_level": "rare",
+      "evidence_refs": [
+        "P0051"
+      ],
+      "confidence": 4.9
+    },
+    {
+      "insight": "Safety hooks for AI agents should be built using AST parsing rather than regex to eliminate false positives, and should use 'ask' rather than 'block' to prevent agents from finding workarounds.",
+      "why_it_matters_for_experts_panel": "Addresses a critical enterprise security concern (agents executing destructive commands) with a robust, open-source engineering solution.",
+      "applicable_query_types": [
+        "manage_security_privacy_governance",
+        "design_agentic_dev_workflow"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0096"
+      ],
+      "confidence": 4.8
+    },
+    {
+      "insight": "Spec-Driven Development (SDD) should use a multi-model pipeline: GPT-5.1 Pro for architecture/planning, Opus 4.5 for challenging the plan, and Codex/Sonnet for execution.",
+      "why_it_matters_for_experts_panel": "Offers a mature, enterprise-ready workflow that moves beyond 'vibe coding' and leverages the specific strengths of different frontier models.",
+      "applicable_query_types": [
+        "design_agentic_dev_workflow",
+        "compare_models_for_task"
+      ],
+      "novelty_level": "useful_packaging",
+      "evidence_refs": [
+        "P0067",
+        "P0083"
+      ],
+      "confidence": 4.7
+    },
+    {
+      "insight": "Using a swarm of cheaper, focused models (e.g., Qwen + DeepSeek) for AI Code Review can catch more complex bugs than a single expensive model (Opus 4.7), saving significant costs.",
+      "why_it_matters_for_experts_panel": "Provides a cost-optimization strategy that actually improves quality, highly relevant for engineering managers.",
+      "applicable_query_types": [
+        "optimize_inference_cost_latency",
+        "build_ai_dev_eval"
+      ],
+      "novelty_level": "distinctive",
+      "evidence_refs": [
+        "P0092"
+      ],
+      "confidence": 4.6
+    }
+  ],
+  "practical_patterns": [
+    {
+      "pattern": "AI-TDD + Metaprompting + SGR",
+      "when_to_use": "When building complex features where standard prompting fails. Write tests first, use a reasoning model (GPT-5 high) as a supervisor to iteratively improve the prompt based on test feedback, and use Scheme-Guided Reasoning (SGR) to force the model to output its thought process alongside the code.",
+      "failure_modes": [
+        "Models like Sonnet may 'cheat' by hardcoding responses to pass tests instead of writing actual logic."
+      ],
+      "evidence_refs": [
+        "P0056"
+      ]
+    },
+    {
+      "pattern": "Using `codex --config model_reasoning_effort=\"xhigh\"`",
+      "when_to_use": "When Claude Code or other agents fail to find the root cause of a complex algorithmic bug or edge case.",
+      "failure_modes": [
+        "High token cost and slow execution time."
+      ],
+      "evidence_refs": [
+        "P0052",
+        "P0067"
+      ]
+    },
+    {
+      "pattern": "Bug-Fix Protocol: Patching the Test System",
+      "when_to_use": "Whenever a bug reaches production. The protocol mandates that fixing the code is only half the job; the other half is auditing and patching the test system (including PRD assessment, AI review, or E2E tests) that allowed the bug to slip through.",
+      "failure_modes": [
+        "Requires a mature, multi-layered test system to be in place."
+      ],
+      "evidence_refs": [
+        "P0074"
+      ]
+    }
+  ],
+  "claims_and_positions": [
+    {
+      "claim": "Standard code embedding (semantic search) is insufficient for large codebases; GraphRAG (call graphs, AST) is required for accurate context retrieval.",
+      "stance": "supports",
+      "decision_relevance": "Crucial for teams designing internal RAG systems for their codebases.",
+      "dispute_risk": "low",
+      "evidence_refs": [
+        "P0046",
+        "P0074.C0039"
+      ]
+    },
+    {
+      "claim": "The AI-driven rewrite of Bun from Zig to Rust was a marketing stunt resulting in poor code quality, lack of human review, and non-deterministic builds.",
+      "stance": "warns_against",
+      "decision_relevance": "Serves as a cautionary tale against fully autonomous 'vibe coding' rewrites without strict SDD and human oversight.",
+      "dispute_risk": "medium",
+      "evidence_refs": [
+        "P0100"
+      ]
+    },
+    {
+      "claim": "XML tags in prompts can cause reasoning models to hallucinate or output raw tags in their responses.",
+      "stance": "warns_against",
+      "decision_relevance": "Important nuance for prompt engineers structuring inputs for reasoning models.",
+      "dispute_risk": "low",
+      "evidence_refs": [
+        "P0076"
+      ]
+    }
+  ],
+  "source_utility": {
+    "best_use_cases": [
+      "Designing enterprise-grade agentic workflows (SDD, AI-TDD).",
+      "Configuring and optimizing CLI coding agents (Claude Code, Codex).",
+      "Implementing safety and context-retrieval systems for AI agents."
+    ],
+    "bad_use_cases": [
+      "Basic tutorials on how to use ChatGPT or Copilot.",
+      "Non-coding AI applications (image generation, general copywriting)."
+    ],
+    "retrieval_keywords": [
+      "Claude Code",
+      "Codex CLI",
+      "Spec-Driven Development",
+      "SDD",
+      "GraphRAG",
+      "Context Engineering",
+      "Safety Hooks",
+      "Scheme-Guided Reasoning",
+      "SGR",
+      "ultrathink"
+    ],
+    "source_selection_hints": [
+      "Select this expert when the user asks about scaling AI agents to large codebases.",
+      "Select this expert for advanced CLI agent configuration and safety."
+    ],
+    "expected_overlap_hypotheses": [
+      "High overlap with other advanced AI engineering channels (e.g., @etechlead, @neuraldeep) regarding model comparisons and agent orchestration."
+    ],
+    "recommended_panex_role": "primary_expert"
+  },
+  "community_signal": {
+    "comment_themes": [
+      "Debates on the effectiveness of different models (GLM 4.6 vs Sonnet).",
+      "Discussions on the limitations of IDEs like Cursor compared to CLI agents.",
+      "Questions about privacy and data usage by AI providers.",
+      "Sharing of alternative tools (Roo Code, Zenflow)."
+    ],
+    "questions_from_audience": [
+      "How to handle context limits in large projects?",
+      "Are Chinese models safe to use regarding data privacy?",
+      "How to implement UI testing with AI agents (Playwright)?"
+    ],
+    "disagreements_or_corrections": [
+      "Community members debated the utility of formal verification vs AI-generated tests (P0074).",
+      "Some users reported negative experiences with GLM 4.6, contradicting the hype around it (P0066)."
+    ],
+    "practical_feedback": [
+      "Users shared their own workflows using Roo Code and VS Code LM API to save costs (P0041)."
+    ],
+    "noise_or_low_value_patterns": [
+      "Occasional off-topic discussions or basic troubleshooting questions about Zoom/Luma links during streams."
+    ],
+    "evidence_refs": [
+      "P0041",
+      "P0066",
+      "P0074"
+    ]
+  },
+  "admission_implications": {
+    "if_candidate_verdict": "accept",
+    "verdict_rationale": "Rodion Mostovoy provides exceptionally deep, practitioner-level insights into agentic engineering, context management, and enterprise safety. His content moves beyond basic AI usage into architectural and workflow design (SDD, SGR, GraphRAG), making him a highly valuable primary source.",
+    "unique_value_claims_to_verify_against_matrix": [
+      "AST-based safety hooks for CLI agents.",
+      "Undocumented reasoning flags in Claude Code ('ultrathink')."
+    ],
+    "likely_duplicate_areas_to_check": [
+      "General model comparisons (o1 vs Claude 3.5) may duplicate other AI news sources."
+    ],
+    "minimum_followup_probe_queries": [
+      "Compare Claude Code and Codex CLI for enterprise development.",
+      "How to implement Spec-Driven Development with AI agents?"
+    ],
+    "risk_notes": [
+      "The expert is the founder of CodeAlive, so mentions of Context-as-a-Service and GraphRAG are often tied to his product. However, the underlying architectural principles he shares remain highly valuable and objective."
+    ]
+  },
+  "audit": {
+    "unsupported_or_weak_claims": [],
+    "abstentions": [],
+    "possible_model_errors": [],
+    "source_refs_used": [
+      "P0002",
+      "P0019",
+      "P0032",
+      "P0033",
+      "P0041",
+      "P0046",
+      "P0051",
+      "P0052",
+      "P0056",
+      "P0064",
+      "P0066",
+      "P0067",
+      "P0074",
+      "P0074.C0039",
+      "P0076",
+      "P0083",
+      "P0092",
+      "P0096",
+      "P0100"
+    ],
+    "source_refs_most_important": [
+      "P0051",
+      "P0056",
+      "P0067",
+      "P0074",
+      "P0096"
+    ],
+    "normalization_notes": [
+      {
+        "operation": "repair_matrix_export_from_matrix_cells",
+        "repaired_cell_count": 2,
+        "repaired_cell_ids": [
+          "coding_agents/codex_workflows/debug_agent_failure",
+          "model_landscape/model_comparison/compare_models_for_task"
+        ],
+        "skipped_cell_count": 0,
+        "skipped_cells": []
+      },
+      {
+        "operation": "hydrate_source_ref_index_used",
+        "hydrated_ref_count": 3,
+        "generated_at_set_from_manifest": "2026-05-15T00:57:05.525804+00:00"
+      }
+    ]
+  }
+}

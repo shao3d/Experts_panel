@@ -19,8 +19,8 @@ export interface ExpertGroup {
  * Expert Groups Definition (Used in Sidebar and Mobile Selection)
  */
 export const EXPERT_GROUPS: ExpertGroup[] = [
-  { label: 'Tech', expertIds: ['ai_architect', 'neuraldeep', 'ilia_izmailov', 'polyakov', 'etechlead', 'glebkudr', 'ostrikov', 'pashazloy', 'sergei_notevskii', 'deksden_notes'] },
-  { label: 'Tech & Business', expertIds: ['ai_grabli', 'refat', 'akimov', 'llm_under_hood', 'elkornacio', 'doronin', 'air_ai', 'silicbag', 'kornish', 'aimasters_me'] },
+  { label: 'Tech', expertIds: ['ai_architect', 'neuraldeep', 'ilia_izmailov', 'polyakov', 'etechlead', 'rodion_mostovoy', 'glebkudr', 'ostrikov', 'pashazloy', 'sergei_notevskii', 'deksden_notes'] },
+  { label: 'Tech & Business', expertIds: ['ai_grabli', 'refat', 'akimov', 'llm_under_hood', 'elkornacio', 'doronin', 'vlad_kooklev', 'air_ai', 'silicbag', 'kornish', 'aimasters_me'] },
   { label: 'Knowledge Hub', expertIds: ['video_hub'] },
 ];
 
@@ -40,7 +40,9 @@ export const EXPERT_UI_CONFIG: ExpertUIConfig = {
     'ilia_izmailov': 'Ilia',
     'polyakov': 'Polyakov',
     'doronin': 'Doronin',
+    'vlad_kooklev': 'Kooklev',
     'etechlead': 'Etechlead',
+    'rodion_mostovoy': 'Rodion',
     'glebkudr': 'Glebkudr',
     'video_hub': 'Video_Hub',
     'air_ai': 'Air',
@@ -53,7 +55,7 @@ export const EXPERT_UI_CONFIG: ExpertUIConfig = {
     'deksden_notes': 'DEKSDEN'
   },
   // Order used for sorting results
-  order: ['refat', 'ai_architect', 'neuraldeep', 'ai_grabli', 'akimov', 'llm_under_hood', 'elkornacio', 'ilia_izmailov', 'polyakov', 'doronin', 'etechlead', 'glebkudr', 'air_ai', 'ostrikov', 'silicbag', 'kornish', 'pashazloy', 'aimasters_me', 'sergei_notevskii', 'deksden_notes', 'video_hub']
+  order: ['refat', 'ai_architect', 'neuraldeep', 'ai_grabli', 'akimov', 'llm_under_hood', 'elkornacio', 'ilia_izmailov', 'polyakov', 'doronin', 'vlad_kooklev', 'etechlead', 'rodion_mostovoy', 'glebkudr', 'air_ai', 'ostrikov', 'silicbag', 'kornish', 'pashazloy', 'aimasters_me', 'sergei_notevskii', 'deksden_notes', 'video_hub']
 };
 
 /**

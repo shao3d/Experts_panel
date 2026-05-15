@@ -1,0 +1,66 @@
+{
+  "schema_version": "candidate_admission_report.v0.1",
+  "created_at": "2026-05-15",
+  "candidate_id": "vlad_kooklev",
+  "display_name": "Vlad Kooklev",
+  "channel_username": "@prod1337",
+  "verdict": "accept",
+  "decision_mode": "manual_human_review_after_semantic_preflight",
+  "based_on": {
+    "semantic_passport": "output/expert_admission/semantic_passports/vlad_kooklev/output_db_2025plus_comments_pruned/vlad_kooklev_semantic_passport.normalized.json",
+    "candidate_impact_report": "output/expert_admission/candidates/vlad_kooklev_db_2025plus_comments_pruned/candidate_impact_report.md",
+    "manual_overlap_review": "source refs P0010, P0011, P0012, P0013, P0023 and comment refs P0010.C0017, P0022.C0005"
+  },
+  "preflight_summary": {
+    "candidate_cells_from_matrix_export": 4,
+    "fills_gap": 0,
+    "adds_adjacent_viewpoint": 0,
+    "deepens_existing_cell": 1,
+    "needs_probe": 1,
+    "likely_duplicate": 2,
+    "taxonomy_extensions": 0,
+    "exact_overlaps": 3,
+    "related_overlaps": 0,
+    "preliminary_recommendation": "overlap_heavy_needs_stronger_review"
+  },
+  "accepted_cells": [
+    {
+      "cell_id": "security_privacy_governance/security_privacy_controls/manage_security_privacy_governance",
+      "classification": "deepens_existing_cell",
+      "admission_interpretation": "accepted_as_agent_security_depth_for_local_autonomous_agents_radius_and_openclaw_risk"
+    },
+    {
+      "cell_id": "agent_ops/inference_cost_latency/optimize_inference_cost_latency",
+      "classification": "needs_probe",
+      "admission_interpretation": "accepted_as_niche_claude_code_token_optimization_signal_not_broad_inference_infra_coverage"
+    },
+    {
+      "cell_id": "agent_ops/multi_agent_orchestration/design_agentic_dev_workflow",
+      "classification": "likely_duplicate",
+      "admission_interpretation": "accepted_as_claude_code_orchestration_depth_with_real_tool_releases_not_as_new_gap"
+    },
+    {
+      "cell_id": "coding_agents/claude_code_workflows/learn_ai_assisted_development",
+      "classification": "likely_duplicate",
+      "admission_interpretation": "accepted_as_vibecoding_and_claude_code_practitioner_depth_not_as_generic_coding_agent_source"
+    }
+  ],
+  "taxonomy_updates": [],
+  "corpus_policy": {
+    "runtime_cutoff_date": "2025-01-01",
+    "pruning_summary": "Imported full export and Telegram API comments, then pruned all posts before 2025 after confirming preserved links were cross-channel/legacy noise rather than required runtime context.",
+    "remaining_runtime_corpus": {
+      "posts": 24,
+      "comments": 292,
+      "pre_2025_posts_preserved_as_linked_context": 0
+    }
+  },
+  "routing_notes": [
+    "Strong fit for Claude Code orchestration, agent security, OpenClaw/Radius risk analysis, token optimization, and vibecoding practice.",
+    "Use as a precision source for practical local-agent security and Claude-centric workflows.",
+    "Do not route as a broad enterprise governance, foundational ML, local-LLM infra, or generic AI-news expert.",
+    "Filter promotional Vibecon/course material unless the user asks about learning paths or adoption."
+  ],
+  "recommended_manifest_caveat": "accepted for Claude Code orchestration, local-agent security, OpenClaw/Radius risk analysis, token optimization, and vibecoding practitioner depth; overlap-heavy with existing coding-agent experts, so route as a precision source rather than a generic AI-assisted development voice",
+  "next_action": "include_in_semantic_knowledge_matrix_and_ui_after_matrix_rebuild"
+}

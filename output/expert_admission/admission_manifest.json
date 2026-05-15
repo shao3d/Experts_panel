@@ -1,6 +1,6 @@
 {
   "schema_version": "expert_admission_manifest.v0.1",
-  "updated_at": "2026-05-12",
+  "updated_at": "2026-05-15",
   "purpose": "SSOT for which semantic passports are part of the accepted Experts Panel knowledge matrix.",
   "accepted_verdicts": [
     "accept",
@@ -206,6 +206,26 @@
       "admission_report": "output/expert_admission/candidates/silicbag/admission_report.json",
       "decision_basis": "manual_human_review",
       "routing_caveat": "accepted as accessible AI automation / non-programmer workflow / community-grounded business adoption expert; overlap-heavy with agent workflow, prompt-engineering, and RAG cells, avoid routing for deep architecture, local-LLM infra, or generic model news"
+    },
+    {
+      "expert_id": "vlad_kooklev",
+      "display_name": "Vlad Kooklev",
+      "verdict": "accept",
+      "include_in_knowledge_matrix": true,
+      "passport_path": "output/expert_admission/semantic_passports/vlad_kooklev/output_db_2025plus_comments_pruned/vlad_kooklev_semantic_passport.normalized.json",
+      "admission_report": "output/expert_admission/candidates/vlad_kooklev/admission_report.json",
+      "decision_basis": "manual_human_review_after_semantic_preflight",
+      "routing_caveat": "accepted for Claude Code orchestration, local-agent security, OpenClaw/Radius risk analysis, token optimization, and vibecoding practitioner depth; overlap-heavy with existing coding-agent experts, so route as a precision source rather than a generic AI-assisted development voice"
+    },
+    {
+      "expert_id": "rodion_mostovoy",
+      "display_name": "Rodion Mostovoy",
+      "verdict": "accept",
+      "include_in_knowledge_matrix": true,
+      "passport_path": "output/expert_admission/semantic_passports/rodion_mostovoy/output_db_2025plus_comments_pruned/rodion_mostovoy_semantic_passport.normalized.json",
+      "admission_report": "output/expert_admission/candidates/rodion_mostovoy/admission_report.json",
+      "decision_basis": "manual_human_review_after_semantic_preflight",
+      "routing_caveat": "accepted as advanced AI-assisted development / SDD / AI-TDD / SGR / Claude Code and Codex CLI workflow / context-engineering / safety-hooks expert; overlap-heavy with existing coding-agent experts, so route as a precision source for enterprise-grade agentic engineering rather than generic AI coding advice"
     }
   ]
 }

@@ -1,0 +1,36 @@
+{
+  "missing_required_top_level_keys": [],
+  "known_source_ref_count": 316,
+  "used_source_ref_count": 19,
+  "source_ref_index_used_count": 19,
+  "unknown_source_refs": [],
+  "unknown_source_ref_count": 0,
+  "refs_missing_from_source_ref_index_used": [],
+  "refs_missing_from_source_ref_index_used_count": 0,
+  "matrix_cell_count": 4,
+  "matrix_export_cell_count": 3,
+  "matrix_export_incomplete": true,
+  "missing_matrix_export_cells": [
+    {
+      "cell_id": "ai_coding_ides/claude_code_workflows/learn_ai_assisted_development",
+      "domain_id": "ai_coding_ides",
+      "subdomain_id": "claude_code_workflows",
+      "query_intent_ids": [
+        "learn_ai_assisted_development"
+      ],
+      "recommended_matrix_weight": "signature",
+      "evidence_refs": [
+        "P0016",
+        "P0017",
+        "P0018",
+        "P0020"
+      ]
+    }
+  ],
+  "missing_matrix_export_cell_count": 1,
+  "bad_matrix_relative_novelty_values": [],
+  "passport_generated_at": "2026-05-15T00:38:20.224184+00:00",
+  "expected_generated_at": "2026-05-15T00:38:20.224184+00:00",
+  "generated_at_matches_expected": true,
+  "valid_basic_contract": false
+}
