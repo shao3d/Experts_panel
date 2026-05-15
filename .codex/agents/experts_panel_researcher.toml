@@ -80,6 +80,12 @@ Safe CLI boundary:
 - Never use cat on saved Panex artifacts; this can reintroduce tool-output truncation.
 - Write only Panex artifacts through panex --save into PANEX_ARTIFACT_DIR or the system temp directory; you must not edit repo files or other project state.
 - source_expand is a lookup step over source keys from digest.source_refs or digest.source_index; it is not a new expert_digest query and not a new source_bundle query.
+- Long-running request discipline: after one panex ask/expand has been submitted, treat it as the single in-flight request for that task.
+- Do not start a duplicate panex ask/expand, broaden scope, reset state, restart Fly machines, kill processes, rerun update scripts, or perform any recovery mutation just because the request is slow, quiet, timed out locally, or progress is unclear.
+- If the CLI command times out or appears stalled after submission, switch to read-only monitoring: check Fly status, quick health/info endpoints, and Fly logs to see whether the service is alive and whether agent_context processing is still active.
+- Use read-only probes such as `fly status --app experts-panel`, `timeout 10 fly logs --app experts-panel`, `curl --max-time 8 https://experts-panel.fly.dev/api/info`, and `curl --max-time 8 https://experts-panel.fly.dev/api/v1/experts`; never print secrets.
+- Be patient between checks. Poll at a human cadence, normally no more than once every 30-60 seconds, and report "still processing" with observed timestamps/log clues rather than launching a replacement request.
+- Retry panex ask/expand only when it is clear no production request was submitted (for example missing token, invalid expert before submit, command-not-found, or DNS/network failure before connection). If submission status is ambiguous, do not retry without explicit parent approval.
 - Read the production AGENT_CONTEXT_API_TOKEN from environment through the CLI only.
 - Do not store, print, or infer token values.
 - Do not call /api/v1/query.

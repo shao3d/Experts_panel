@@ -1,8 +1,8 @@
 # Agent Context API Spec
 
-**Status:** Accepted / AND-5..AND-28 implemented / forced embedding search implemented
+**Status:** Accepted / AND-5..AND-30 implemented / forced embedding search implemented
 **Decision:** `.haft/decisions/dec-20260504-b2539c3d.md`
-**Last updated:** 2026-05-08
+**Last updated:** 2026-05-15
 
 This spec defines the first agent-facing surface for Experts Panel: an explicit-only research/context API for Codex, Claude Code, and similar coding/research agents.
 
@@ -10,7 +10,7 @@ This spec defines the first agent-facing surface for Experts Panel: an explicit-
 
 ## 0. Implementation Status
 
-Current state as of 2026-05-08:
+Current state as of 2026-05-15:
 
 | Slice | Status | What it means |
 |-------|--------|---------------|
@@ -39,6 +39,8 @@ Current state as of 2026-05-08:
 | AND-26 Panex parent routing hardening | Done locally | Agent metadata and global Codex guidance now make "Панэкс" / "Панэнкс" a subagent-routing signal: parent chats should prefer `experts_panel_researcher` over direct `panex CLI` when the user explicitly asks Панэкс / Experts Panel / selected experts. Direct CLI is fallback-only and must still use `--save --receipt-json` plus `panex read`, never large raw stdout. |
 | AND-27 Panex project-applicability boundary | Done locally | Панэкс is now explicitly a research/retrieval agent only. Parent chats may pass current-project context as a retrieval lens, but `experts_panel_researcher` must not make project-specific PM, product, backend, architecture, roadmap, go/no-go, or implementation recommendations. It returns practitioner signals, trade-offs, constraints, caveats, and source handles; final applicability analysis stays in the parent chat. |
 | AND-28 Panex relay-only subagent | Done locally | Since `expert_digest` is already reduced on the Panel side, `experts_panel_researcher` is now a relay-only delivery layer. It must not summarize the digest again, create a new meta-synthesis, rerank experts/sources, or add decision advice. It delivers backend digest fields through Request passport, Scope and warnings, Expert digest delivery, and Expansion candidates. |
+| AND-29 Panex long-running request patience | Done locally | After submitting one `panex ask` or `panex expand`, the subagent must treat it as the single in-flight request. Slow, quiet, locally timed-out, or unclear progress must lead to read-only monitoring of Fly status, quick API endpoints, and Fly logs, not duplicate requests, scope broadening, resets, restarts, update scripts, or recovery mutations. Retry is allowed only when it is clear no production request was submitted; ambiguous submission status requires explicit parent approval. |
+| AND-30 LLM JSON parse hardening | Done locally | Production logs showed repeated `JSONDecodeError` in Map and `expert_digest` reduce when Gemini returned fenced, repaired-but-not-strict, control-character, or truncated JSON despite JSON-mode prompting. `parse_llm_json()` now centralizes strict parse, fenced/extracted JSON, and `json_repair` fallback for LLM JSON surfaces. Plain safety/error text still fails closed into existing fallback behavior. Map prompt also stops asking for `LOW` items because downstream Agent Context ignores them, reducing long JSON responses that are prone to truncation. |
 | Forced embedding search for Agent Context | Done | Agent Context always forces Embs&Keys hybrid retrieval: CLI sends `use_super_passport=true`, API records `selection_used.use_super_passport=true`, and service prepares one query embedding for all selected experts before bounded parallel expert processing. UI toggle state does not apply to subagent/API calls. |
 | FTS5 query sanitation hardening | Done | Production logs for the Панэкс query about `file-fist` showed AI Scout returning an invalid FTS5 query and then fallback producing unsafe terms such as `file-fist*`, which made the FTS5 side of hybrid retrieval fail with `no such column: fist` while vector retrieval still worked. `AIScoutService` fallback and `sanitize_fts5_query()` now normalize hyphens, punctuation, and unbalanced Scout quotes into safe OR-only FTS5 terms such as `file* OR fist*`. Fallback slang expansion also avoids treating short particles like Russian `а` as substring slang matches while preserving exact short tech terms such as `бд`, `c#`, `c++`, and `.net`. |
 | Production Fly exposure | Done for explicit smoke and default subagent target | `https://experts-panel.fly.dev/api/v1/agent/context` is callable with the separate production bearer token and large source-bundle budgets. The global `panex` runner now pins Fly.io as the default real-request target for `ask` and `expand`; localhost is only for explicit `--local` smoke/debug. |
@@ -50,6 +52,7 @@ Implemented code paths:
 - `backend/src/services/ai_scout_service.py`
 - `backend/src/services/fts5_retrieval_service.py`
 - `backend/src/services/simple_resolve_service.py`
+- `backend/src/utils/llm_json.py`
 - `backend/src/api/models.py`
 - `backend/src/cli/agent_context.py`
 - `backend/src/cli/agent_context_expand.py`
@@ -66,6 +69,7 @@ Implemented code paths:
 - `backend/tests/test_agent_context_production_expert_digest.py`
 - `backend/tests/test_panex_quality_eval.py`
 - `backend/tests/test_fts5_query_sanitization.py`
+- `backend/tests/test_llm_json_utils.py`
 - `backend/tests/fixtures/experts_panel_researcher_source_bundle_sample.json`
 - `backend/tests/fixtures/panex_quality_scenarios.json`
 - `backend/scripts/agent_context_live_smoke.py`
@@ -224,6 +228,9 @@ backend/.venv/bin/python -m pytest backend/tests/test_agent_context_cli.py backe
 
 backend/.venv/bin/python -m pytest backend/tests/test_agent_context_api.py backend/tests/test_agent_context_acceptance.py backend/tests/test_agent_context_cli.py backend/tests/test_experts_panel_researcher_contract.py backend/tests/test_experts_panel_researcher_dogfood.py backend/tests/test_panex_quality_eval.py -q -o addopts=''
 # AND-28 relay-only broad Agent Context/Panex contour: 102 passed, 2 warnings
+
+backend/.venv/bin/python -m pytest backend/tests/test_experts_panel_researcher_contract.py backend/tests/test_llm_json_utils.py backend/tests/test_agent_context_api.py::test_agent_context_expert_digest_accepts_top_level_signal_list backend/tests/test_agent_context_api.py::test_agent_context_builds_sources_context_and_comments backend/tests/test_agent_context_api.py::test_agent_context_expert_digest_compacts_sources_and_comments -q -o addopts=''
+# AND-29/AND-30 targeted contract/parser/API checks: 29 passed, 2 warnings
 
 panex guide
 # prints human Панэкс usage guide without token or API call

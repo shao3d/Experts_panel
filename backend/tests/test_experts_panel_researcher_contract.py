@@ -169,6 +169,26 @@ def test_agents_use_artifact_transport_for_real_panex_calls():
     assert "must not edit repo files" in normalized
 
 
+def test_agents_wait_patiently_after_submitting_long_running_panex_request():
+    combined = "\n".join([_read(CLAUDE_AGENT_PATH), _codex_agent_config()["developer_instructions"]])
+    normalized = _normalize(combined)
+
+    assert "long-running request discipline" in normalized
+    assert "single in-flight request" in normalized
+    assert "do not start a duplicate" in normalized
+    assert "reset state" in normalized
+    assert "restart fly machines" in normalized
+    assert "rerun update scripts" in normalized
+    assert "read-only monitoring" in normalized
+    assert "fly status --app experts-panel" in combined
+    assert "timeout 10 fly logs --app experts-panel" in combined
+    assert "https://experts-panel.fly.dev/api/info" in combined
+    assert "https://experts-panel.fly.dev/api/v1/experts" in combined
+    assert "no more than once every 30-60 seconds" in normalized
+    assert "still processing" in normalized
+    assert "do not retry without explicit parent approval" in normalized
+
+
 def test_agents_require_explicit_triggers_and_expert_selection_clarification():
     combined = "\n".join([_read(CLAUDE_AGENT_PATH), _codex_agent_config()["developer_instructions"]])
     normalized = _normalize(combined)

@@ -18,7 +18,7 @@ Return a JSON object with this exact structure:
   "relevant_posts": [
     {
       "telegram_message_id": <integer - the telegram_message_id of the post>,
-      "relevance": "<HIGH|MEDIUM|LOW>",
+      "relevance": "<HIGH|MEDIUM>",
       "reason": "<brief explanation why this post is relevant in the same language as the user's question>"
     }
   ],
@@ -58,7 +58,7 @@ IMPORTANT RULES:
 - CRITICAL: Post MUST contain information that DIRECTLY helps answer what was asked
 - HIGH relevance: Direct discussion of the exact topic with substantial information
 - MEDIUM relevance: Same technology family OR necessary context (NOT just similar keywords!)
-- LOW relevance: Tangentially related but still provides useful perspective
+- Do not return LOW relevance items. If a post is only tangentially related, exclude it from relevant_posts.
 - Always explain WHY a post is relevant in the same language as the user's question
 - If no relevant posts found, return empty relevant_posts array
 - Consider post date when multiple posts discuss evolving topics

@@ -211,6 +211,31 @@ Artifact transport:
   `PANEX_ARTIFACT_DIR` or the system temp directory; you must not edit repo
   files or other project state.
 
+Long-running request discipline:
+
+- after one `panex ask` / `panex expand` has been submitted, treat it as the
+  single in-flight request for that task;
+- do not start a duplicate `panex ask` / `panex expand`, broaden scope, reset
+  state, restart Fly machines, kill processes, rerun update scripts, or perform
+  any recovery mutation just because the request is slow, quiet, timed out
+  locally, or progress is unclear;
+- if the CLI command times out or appears stalled after submission, switch to
+  read-only monitoring: check Fly status, quick health/info endpoints, and Fly
+  logs to see whether the service is alive and whether `agent_context`
+  processing is still active;
+- use read-only probes such as `fly status --app experts-panel`,
+  `timeout 10 fly logs --app experts-panel`,
+  `curl --max-time 8 https://experts-panel.fly.dev/api/info`, and
+  `curl --max-time 8 https://experts-panel.fly.dev/api/v1/experts`; never print
+  secrets;
+- be patient between checks. Poll at a human cadence, normally no more than once
+  every 30-60 seconds, and report "still processing" with observed
+  timestamps/log clues rather than launching a replacement request;
+- retry `panex ask` / `panex expand` only when it is clear no production request
+  was submitted, for example missing token, invalid expert before submit,
+  command-not-found, or DNS/network failure before connection. If submission
+  status is ambiguous, do not retry without explicit parent approval.
+
 Required behavior:
 
 - use `expert_digest` through `panex ask` by default: the Panel

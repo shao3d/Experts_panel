@@ -11,12 +11,12 @@ from string import Template
 
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 import httpx
-from json_repair import repair_json
 
 from ..models.post import Post
 from .vertex_llm_client import get_vertex_llm_client, VertexLLMError
 from ..utils.language_utils import prepare_prompt_with_language_instruction, prepare_system_message_with_language
 from ..utils.error_handler import error_handler
+from ..utils.llm_json import parse_llm_json
 from ..config import MAP_MAX_PARALLEL
 
 logger = logging.getLogger(__name__)
@@ -270,7 +270,7 @@ class MapService:
                 logger.error(f"Empty response from API for chunk {chunk_index}")
                 raise ValueError(f"Empty API response for chunk {chunk_index}")
 
-            result = json.loads(raw_content)
+            result = parse_llm_json(raw_content, context=f"map chunk {chunk_index}")
 
 
             # Add chunk metadata

@@ -50,6 +50,7 @@ from ..services.medium_scoring_service import MediumScoringService
 from ..services.monitored_client import create_monitored_client
 from ..services.simple_resolve_service import SimpleResolveService
 from ..utils.date_utils import get_cutoff_date
+from ..utils.llm_json import parse_llm_json
 
 logger = logging.getLogger(__name__)
 
@@ -1473,14 +1474,7 @@ class AgentExpertDigestReducer:
         return self._parse_llm_json(raw_content)
 
     def _parse_llm_json(self, raw_content: str) -> Any:
-        try:
-            return json.loads(raw_content)
-        except json.JSONDecodeError:
-            start = raw_content.find("{")
-            end = raw_content.rfind("}")
-            if start >= 0 and end > start:
-                return json.loads(raw_content[start : end + 1])
-            raise
+        return parse_llm_json(raw_content, context="agent_context_digest")
 
     def _normalize_llm_digest(
         self,
