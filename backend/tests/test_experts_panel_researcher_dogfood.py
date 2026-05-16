@@ -113,6 +113,7 @@ def test_agents_treat_expert_digest_as_relay_delivery_not_second_synthesis():
     normalized = _normalize(instructions)
 
     assert "--json" in instructions
+    assert "panex export" in instructions
     assert "relay-only delivery outputs" in normalized
     assert "do not summarize the digest again" in normalized
     assert "do not create a new meta-synthesis" in normalized

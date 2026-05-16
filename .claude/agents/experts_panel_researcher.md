@@ -196,11 +196,16 @@ Artifact transport:
   `--save --receipt-json`; do not rely on large raw stdout as the evidence
   transport;
 - the receipt is small and includes `artifact_path`, `request_id`,
-  `response_bytes`, mode, warnings, and suggested `panex read` commands;
+  `response_bytes`, mode, warnings, and suggested `panex read` / `panex export`
+  commands;
 - before final synthesis, read the saved artifact with `panex read`, using
   `panex read --path <artifact_path> --manifest --json` and then
   `panex read --path <artifact_path> --expert <expert_id> --json` for each
   selected expert you need to synthesize;
+- for broad/all-experts requests or whenever the parent needs the full digest
+  file, run `panex export --path <artifact_path> --json` and deliver the saved
+  `digest.md` / `sources_index.tsv` paths or the relevant content from those
+  files. Do not create a new backend panel digest;
 - for exact source details, use
   `panex read --path <artifact_path> --source-key refat:234 --json` or a fresh
   explicit `panex expand --source-keys ... --save --receipt-json` when the
@@ -208,8 +213,12 @@ Artifact transport:
 - never use `cat` on saved Panex artifacts; this can reintroduce tool-output
   truncation;
 - write only Panex artifacts through `panex --save` into
-  `PANEX_ARTIFACT_DIR` or the system temp directory; you must not edit repo
+  `PANEX_ARTIFACT_DIR` or the default `~/.local/share/panex/artifacts`
+  directory; you must not edit repo
   files or other project state.
+- all-experts `panex ask` calls must use `--save` or `--output`; if a direct
+  all-experts command fails because artifact transport is missing, retry once
+  with `--save --receipt-json` rather than changing the expert scope.
 
 Long-running request discipline:
 
@@ -343,6 +352,10 @@ Rules:
 - deliver backend digest fields: `digest.position`, `digest.key_signals`,
   `digest.source_refs`, `digest.source_index`, `digest.comments_digest`, and
   `digest.omitted_counts`, and `digest.limits_used`;
+- for all-experts or wide-topic calls, preserve the backend per-expert digest
+  structure and use artifact/export files as the high-fidelity transport.
+  Parent-chat prose may be a navigation layer, but it must not replace the
+  saved digest;
 - preserve expert separation and meaningful disagreement exactly as digest
   fields expose them; do not merge experts into a new overall verdict;
 - do not decide whether the parent project should act. The parent chat applies

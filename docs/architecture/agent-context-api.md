@@ -1,8 +1,8 @@
 # Agent Context API Spec
 
-**Status:** Accepted / AND-5..AND-31 implemented / forced embedding search implemented
+**Status:** Accepted / AND-5..AND-32 implemented / forced embedding search implemented
 **Decision:** `.haft/decisions/dec-20260504-b2539c3d.md`
-**Last updated:** 2026-05-15
+**Last updated:** 2026-05-16
 
 This spec defines the first agent-facing surface for Experts Panel: an explicit-only research/context API for Codex, Claude Code, and similar coding/research agents.
 
@@ -10,7 +10,7 @@ This spec defines the first agent-facing surface for Experts Panel: an explicit-
 
 ## 0. Implementation Status
 
-Current state as of 2026-05-15:
+Current state as of 2026-05-16:
 
 | Slice | Status | What it means |
 |-------|--------|---------------|
@@ -35,8 +35,9 @@ Current state as of 2026-05-15:
 | AND-23 selector-based expansion UX | Done locally + production dogfood | Панэкс instructions now map human follow-up selectors such as "раскрой по Рефату", "этот вывод", "самый спорный источник", "что там в комментариях", and "слабые места" onto exact source handles from the previous `expert_digest`. Default expansion stays small: top 1 per named expert, top 1-2 generic strongest sources, and never all sources unless explicitly requested. Ambiguous selectors and missing previous digest context must ask one clarification or request a main Панэкс question first instead of guessing handles or running a new search. Production dogfood on Fly.io passed digest -> named-expert expansion (`refat:239`) and comments/weak-source expansion (`doronin:73`) without rerunning a new digest/source_bundle. |
 | AND-24 cross-repo Панэкс portable runner | Done locally + production dogfood | Added the global/user-level `panex` runner contract for calling Панэкс from any repo/cwd. `panex ask` defaults to production Fly.io and `response_mode=expert_digest`, ignores ambient local `AGENT_CONTEXT_API_URL` unless `--local` or `--api-url` is explicit, keeps `source_bundle` as opt-in raw/audit mode through `--response-mode source_bundle`, and `panex expand` targets production `source_expand` by default. `panex doctor` verifies setup without printing secrets; `scripts/install_panex_runner.sh` installs `~/.local/bin/panex` without storing the API token. Production dogfood from `/private/tmp` passed `panex ask` for `refat` and `panex expand refat:238` against Fly.io. |
 | AND-31 DB-synced all-experts scope + faithful digest delivery | Done locally | Agent Context `expert_scope=all` now resolves from `expert_metadata` at request time instead of the static 17-expert group union, while still excluding unsupported special sources such as `video_hub`. Default `expert_digest` caps are opt-in (`0` = all selected evidence/signals), the Panel-side digest LLM gets a `16384` output-token budget per expert, and Панэкс instructions require clean delivery of the backend digest without shortening, reranking, or second-summarizing it. |
+| AND-32 artifact-first wide digest delivery | Done locally | All-experts `panex ask` now requires `--save` or `--output`, saved artifacts default to `~/.local/share/panex/artifacts`, receipts point to `panex read` and `panex export`, and `panex export` writes deterministic `manifest.json`, `digest.md`, and `sources_index.tsv`. This keeps the old UI Reduce/MetaSynthesis untouched and avoids adding a second backend panel-digest path. |
 | Панэкс human help/usage | Done locally | Added `panex guide` / `panex help` as token-free human CLI help, plus agent help triggers such as "Панэкс, помощь", "что ты умеешь", and "как пользоваться Панэксом". Help requests must answer from instructions and must not call `panex ask`, `panex expand`, or the API. `docs/guides/panex-usage.md` is the human quick reference. |
-| AND-25 Panex artifact transport | Done locally | Real subagent calls now use artifact-first transport: `panex ask` and `panex expand` support `--save --receipt-json`, save the full API response outside the current repo under `PANEX_ARTIFACT_DIR` or system temp, and print only a compact receipt with `artifact_path`, `request_id`, `response_bytes`, warnings, and `panex read` commands. `panex read` returns manifest, per-expert, or per-source-key slices so the subagent does not rely on huge stdout; `panex cleanup` removes old artifacts by TTL. Existing non-save `--json` behavior remains available for manual/small calls. |
+| AND-25 Panex artifact transport | Done locally | Real subagent calls now use artifact-first transport: `panex ask` and `panex expand` support `--save --receipt-json`, save the full API response outside the current repo under `PANEX_ARTIFACT_DIR` or the stable default `~/.local/share/panex/artifacts`, and print only a compact receipt with `artifact_path`, `request_id`, `response_bytes`, warnings, and `panex read` / `panex export` commands. `panex read` returns manifest, per-expert, or per-source-key slices; `panex export` writes human-readable digest/index files; `panex cleanup` removes old artifacts by TTL. Existing non-save `--json` behavior remains available for manual/small selected-expert calls. |
 | AND-26 Panex parent routing hardening | Done locally | Agent metadata and global Codex guidance now make "Панэкс" / "Панэнкс" a subagent-routing signal: parent chats should prefer `experts_panel_researcher` over direct `panex CLI` when the user explicitly asks Панэкс / Experts Panel / selected experts. Direct CLI is fallback-only and must still use `--save --receipt-json` plus `panex read`, never large raw stdout. |
 | AND-27 Panex project-applicability boundary | Done locally | Панэкс is now explicitly a research/retrieval agent only. Parent chats may pass current-project context as a retrieval lens, but `experts_panel_researcher` must not make project-specific PM, product, backend, architecture, roadmap, go/no-go, or implementation recommendations. It returns practitioner signals, trade-offs, constraints, caveats, and source handles; final applicability analysis stays in the parent chat. |
 | AND-28 Panex relay-only subagent | Done locally | Since `expert_digest` is already reduced on the Panel side, `experts_panel_researcher` is now a relay-only delivery layer. It must not summarize the digest again, create a new meta-synthesis, rerank experts/sources, or add decision advice. It delivers backend digest fields through Request passport, Scope and warnings, Expert digest delivery, and Expansion candidates. |
@@ -233,6 +234,9 @@ backend/.venv/bin/python -m pytest backend/tests/test_agent_context_api.py backe
 backend/.venv/bin/python -m pytest backend/tests/test_experts_panel_researcher_contract.py backend/tests/test_llm_json_utils.py backend/tests/test_agent_context_api.py::test_agent_context_expert_digest_accepts_top_level_signal_list backend/tests/test_agent_context_api.py::test_agent_context_builds_sources_context_and_comments backend/tests/test_agent_context_api.py::test_agent_context_expert_digest_compacts_sources_and_comments -q -o addopts=''
 # AND-29/AND-30 targeted contract/parser/API checks: 29 passed, 2 warnings
 
+backend/.venv/bin/python -m pytest backend/tests/test_agent_context_api.py backend/tests/test_agent_context_acceptance.py backend/tests/test_agent_context_cli.py backend/tests/test_experts_panel_researcher_contract.py backend/tests/test_experts_panel_researcher_dogfood.py backend/tests/test_panex_quality_eval.py -q -o addopts=''
+# AND-32 artifact-first export/all-experts transport contour: 108 passed, 2 warnings
+
 panex guide
 # prints human Панэкс usage guide without token or API call
 
@@ -247,6 +251,9 @@ panex read --path <artifact_path> --manifest --json
 
 panex read --path <artifact_path> --expert refat --json
 # reads one expert slice from saved artifact
+
+panex export --path <artifact_path> --json
+# writes manifest.json, digest.md, and sources_index.tsv next to the saved artifact
 
 panex ask --query "AND-25 artifact transport smoke: когда subagents реально помогают?" --experts refat --recent --save --receipt-json --timeout 3600
 # AND-25 production artifact transport smoke against Fly.io
@@ -1398,6 +1405,7 @@ calls. For day-to-day use from any repo, use the installed `panex` runner:
 ```text
 panex ask --query "<query>" --experts refat,akimov --save --receipt-json
 panex expand --source-keys refat:234 --save --receipt-json
+panex export --path <artifact_path> --json
 panex doctor
 ```
 
@@ -1418,7 +1426,9 @@ Wrapper responsibilities:
 - keep local development as an explicit smoke/debug mode only;
 - send `response_mode = expert_digest` by default;
 - reserve `response_mode = source_bundle` for explicit raw evidence/audit/debug requests;
-- use artifact-first transport through `--save --receipt-json` for real subagent calls, then read saved slices with `panex read` instead of dumping large stdout;
+- use artifact-first transport through `--save --receipt-json` for real subagent calls, then read saved slices with `panex read` or export human-readable `digest.md` / `sources_index.tsv` through `panex export` instead of dumping large stdout;
+- store default saved artifacts under `~/.local/share/panex/artifacts` unless `PANEX_ARTIFACT_DIR` is explicitly configured;
+- require artifact transport for all-experts `panex ask` requests, because those digests are expected to be large and must not depend on stdout/chat visibility;
 - send `use_super_passport = true` and rely on the API to force it true even if a caller tries to disable it;
 - keep `include_reddit = false`, `include_main_source_comments = true`, `include_drift_comment_groups = false`, and `synthesis_level = none` unless explicitly overridden by the caller;
 - print `selection_used`, warnings, and source packet metadata.
@@ -1466,7 +1476,7 @@ explicit user request
   -> experts_panel_researcher
   -> panex with --save --receipt-json
   -> saved artifact + compact receipt
-  -> panex read slices
+  -> panex read slices or panex export files
   -> expert_digest JSON by default
   -> relay-only digest delivery
 ```
@@ -1760,3 +1770,4 @@ These decisions close the remaining open questions for the MVP implementation:
 5. Use `expert_digest` as the default Панэкс/subagent response mode. It is a narrow panel-side reduce over selected sources and direct main-source comments, not the old full UI Reduce/Meta/Comment synthesis pipeline. Keep `source_bundle` as explicit raw evidence/audit/debug mode.
 6. Use exact `source_key` expansion as the second-step raw evidence path. `source_expand` is a lookup over `digest.source_refs` / `digest.source_index` handles, not a new `expert_digest` or `source_bundle` search.
 7. Use the global `panex` portable runner as the day-to-day cross-repo interface. It defaults to production Fly.io for `ask` and `expand`, ignores ambient local API URLs unless explicit, keeps `expert_digest` as default, and requires `--response-mode source_bundle` for raw/audit mode.
+8. Keep all-experts delivery artifact-first. The backend still returns per-expert `expert_digest`; the delivery layer preserves it via saved `response.json`, sliced `panex read`, and deterministic `panex export` files. Do not add a second backend panel-digest path unless the artifact-first flow proves insufficient in real use.

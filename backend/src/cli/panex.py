@@ -8,7 +8,6 @@ import json
 import os
 import shutil
 import sys
-import tempfile
 import time
 import uuid
 from pathlib import Path
@@ -39,6 +38,7 @@ LOCAL_AGENT_CONTEXT_EXPAND_API_URL = (
     "http://localhost:8000/api/v1/agent/context/expand"
 )
 DEFAULT_TIMEOUT_SECONDS = 3600.0
+DEFAULT_ARTIFACT_ROOT_RELATIVE = Path(".local") / "share" / "panex" / "artifacts"
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -142,6 +142,22 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Print one saved source entry by source_key.",
     )
     read.add_argument("--json", action="store_true", help="Print JSON.")
+
+    export = subparsers.add_parser(
+        "export",
+        help="Export a saved Панэкс artifact into Markdown and source index files.",
+    )
+    export.add_argument("--path", required=True, help="Path to a saved response.json.")
+    export.add_argument(
+        "--out-dir",
+        help="Directory for export files. Defaults to <artifact_dir>/export.",
+    )
+    export.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Allow export files to be replaced.",
+    )
+    export.add_argument("--json", action="store_true", help="Print JSON.")
 
     cleanup = subparsers.add_parser(
         "cleanup",
@@ -340,6 +356,13 @@ def main(argv: list[str] | None = None, *, load_env: bool = True) -> int:
             else:
                 _print_read_result(result)
             return 0
+        if args.command == "export":
+            result = _export_artifact(args)
+            if args.json:
+                print(json.dumps(result, ensure_ascii=False, separators=(",", ":")))
+            else:
+                _print_export_result(result)
+            return 0
         if args.command == "cleanup":
             result = _cleanup_artifacts(args)
             if args.json:
@@ -483,6 +506,15 @@ def _validate_artifact_args(args: argparse.Namespace) -> None:
         raise AgentContextCliError("--receipt-json requires --save or --output")
     if args.overwrite and not args.output:
         raise AgentContextCliError("--overwrite requires --output")
+    if (
+        getattr(args, "command", None) == "ask"
+        and _is_all_experts_ask(args)
+        and not _should_write_artifact(args)
+    ):
+        raise AgentContextCliError(
+            "all-experts panex ask requires --save or --output so the full digest "
+            "is preserved as an artifact."
+        )
     if args.output:
         output_path = Path(args.output).expanduser()
         if output_path.exists() and not args.overwrite:
@@ -493,6 +525,10 @@ def _validate_artifact_args(args: argparse.Namespace) -> None:
 
 def _should_write_artifact(args: argparse.Namespace) -> bool:
     return bool(getattr(args, "save", False) or getattr(args, "output", None))
+
+
+def _is_all_experts_ask(args: argparse.Namespace) -> bool:
+    return not getattr(args, "experts", None) and not getattr(args, "group", None)
 
 
 def _write_artifact_response(
@@ -547,6 +583,7 @@ def _build_artifact_receipt(
         "warnings": payload.get("warnings") or [],
         "read_next": [
             f"panex read --path {response_path} --manifest --json",
+            f"panex export --path {response_path} --json",
         ],
     }
     if payload.get("query") is not None:
@@ -585,13 +622,17 @@ def _new_artifact_dir(payload: dict[str, Any]) -> Path:
 
 def _artifact_root() -> Path:
     configured = os.getenv("PANEX_ARTIFACT_DIR")
-    root = Path(configured).expanduser() if configured else Path(tempfile.gettempdir()) / "panex-artifacts"
+    root = Path(configured).expanduser() if configured else _default_artifact_root()
     root.mkdir(parents=True, mode=0o700, exist_ok=True)
     try:
         root.chmod(0o700)
     except OSError:
         pass
     return root
+
+
+def _default_artifact_root() -> Path:
+    return Path.home() / DEFAULT_ARTIFACT_ROOT_RELATIVE
 
 
 def _safe_path_fragment(value: str) -> str:
@@ -607,6 +648,28 @@ def _write_json_atomic(path: Path, payload: dict[str, Any]) -> None:
         with os.fdopen(fd, "wb") as handle:
             handle.write(data)
             handle.write(b"\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(tmp_path, path)
+        try:
+            path.chmod(0o600)
+        except OSError:
+            pass
+    finally:
+        if tmp_path.exists():
+            tmp_path.unlink()
+
+
+def _write_text_atomic(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = path.with_name(f"{path.name}.{os.getpid()}.{uuid.uuid4().hex[:8]}.tmp")
+    data = text.encode("utf-8")
+    fd = os.open(tmp_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    try:
+        with os.fdopen(fd, "wb") as handle:
+            handle.write(data)
+            if not data.endswith(b"\n"):
+                handle.write(b"\n")
             handle.flush()
             os.fsync(handle.fileno())
         os.replace(tmp_path, path)
@@ -635,6 +698,76 @@ def _read_artifact(args: argparse.Namespace) -> dict[str, Any]:
             raise AgentContextCliError(f"source_key not found in artifact: {args.source_key}")
         return source
     raise AgentContextCliError("panex read requires --manifest, --expert, or --source-key")
+
+
+def _export_artifact(args: argparse.Namespace) -> dict[str, Any]:
+    path = Path(args.path).expanduser()
+    payload = _load_artifact_payload(path)
+    output_dir = Path(args.out_dir).expanduser() if args.out_dir else path.parent / "export"
+    files = {
+        "manifest": output_dir / "manifest.json",
+        "digest_markdown": output_dir / "digest.md",
+        "sources_index_tsv": output_dir / "sources_index.tsv",
+    }
+    existing = [target for target in files.values() if target.exists()]
+    if existing and not args.overwrite:
+        missing = [target for target in files.values() if not target.exists()]
+        if missing:
+            joined = ", ".join(str(target) for target in existing)
+            raise AgentContextCliError(
+                f"partial export already exists: {joined}. Use --overwrite to replace it."
+            )
+        return _build_export_result(
+            path=path,
+            output_dir=output_dir,
+            files=files,
+            payload=payload,
+            manifest=_artifact_manifest(path, payload),
+            status="existing",
+        )
+
+    output_dir.mkdir(parents=True, mode=0o700, exist_ok=True)
+    try:
+        output_dir.chmod(0o700)
+    except OSError:
+        pass
+
+    manifest = _artifact_manifest(path, payload)
+    manifest["export_dir"] = str(output_dir)
+    _write_json_atomic(files["manifest"], manifest)
+    _write_text_atomic(files["digest_markdown"], _artifact_markdown(path, payload, manifest))
+    _write_text_atomic(files["sources_index_tsv"], _sources_index_tsv(payload))
+
+    return _build_export_result(
+        path=path,
+        output_dir=output_dir,
+        files=files,
+        payload=payload,
+        manifest=manifest,
+        status="written",
+    )
+
+
+def _build_export_result(
+    *,
+    path: Path,
+    output_dir: Path,
+    files: dict[str, Path],
+    payload: dict[str, Any],
+    manifest: dict[str, Any],
+    status: str,
+) -> dict[str, Any]:
+    return {
+        "kind": "panex_artifact_export",
+        "artifact_path": str(path),
+        "output_dir": str(output_dir),
+        "files": {name: str(target) for name, target in files.items()},
+        "request_id": payload.get("request_id"),
+        "mode": payload.get("mode"),
+        "expert_count": manifest.get("expert_count", 0),
+        "source_keys_count": manifest.get("source_keys_count", 0),
+        "status": status,
+    }
 
 
 def _load_artifact_payload(path: Path) -> dict[str, Any]:
@@ -688,10 +821,12 @@ def _find_expert(payload: dict[str, Any], expert_id: str) -> dict[str, Any] | No
 
 def _source_keys_from_payload(payload: dict[str, Any]) -> list[str]:
     keys: list[str] = []
+    seen: set[str] = set()
     for source in _iter_sources(payload):
         source_key = source.get("source_key")
-        if source_key:
+        if source_key and str(source_key) not in seen:
             keys.append(str(source_key))
+            seen.add(str(source_key))
     return keys
 
 
@@ -703,22 +838,287 @@ def _find_source_by_key(payload: dict[str, Any], source_key: str) -> dict[str, A
 
 
 def _iter_sources(payload: dict[str, Any]):
+    for _, source in _iter_sources_with_context(payload):
+        yield source
+
+
+def _iter_sources_with_context(payload: dict[str, Any]):
     for source in payload.get("sources") or []:
         if isinstance(source, dict):
-            yield source
+            yield source.get("expert_id"), source
     for expert in payload.get("experts") or []:
         if not isinstance(expert, dict):
             continue
+        expert_id = expert.get("expert_id")
         for source in expert.get("main_sources") or []:
             if isinstance(source, dict):
-                yield source
+                yield expert_id, source
         digest = expert.get("digest") or {}
         if not isinstance(digest, dict):
             continue
         for field in ["source_refs", "source_index"]:
             for source in digest.get(field) or []:
                 if isinstance(source, dict):
-                    yield source
+                    yield expert_id, source
+
+
+def _artifact_markdown(
+    artifact_path: Path,
+    payload: dict[str, Any],
+    manifest: dict[str, Any],
+) -> str:
+    lines = [
+        "# Panex Artifact Digest",
+        "",
+        f"- artifact_path: `{artifact_path}`",
+        f"- request_id: `{payload.get('request_id') or ''}`",
+        f"- mode: `{payload.get('mode') or ''}`",
+        f"- expert_count: `{manifest.get('expert_count', 0)}`",
+        f"- source_keys_count: `{manifest.get('source_keys_count', 0)}`",
+    ]
+    if payload.get("query"):
+        lines.append(f"- query: {_inline_text(payload.get('query'))}")
+    warnings = payload.get("warnings") or []
+    warning_text = "; ".join(map(str, warnings)) if warnings else "none"
+    lines.append(f"- warnings: {_inline_text(warning_text)}")
+    lines.append("")
+
+    experts = payload.get("experts") or []
+    if experts:
+        lines.extend(["## Expert Digests", ""])
+    for expert in experts:
+        if isinstance(expert, dict):
+            lines.extend(_expert_markdown(expert))
+
+    sources = payload.get("sources") or []
+    if sources:
+        lines.extend(["## Sources", ""])
+        for source in sources:
+            if isinstance(source, dict):
+                lines.extend(_source_markdown(source, include_excerpt=True))
+
+    if not experts and not sources:
+        lines.extend(["No expert/source entries found in this artifact.", ""])
+
+    return "\n".join(lines)
+
+
+def _expert_markdown(expert: dict[str, Any]) -> list[str]:
+    expert_id = expert.get("expert_id") or "unknown"
+    title_parts = [str(expert_id)]
+    if expert.get("expert_name") and expert.get("expert_name") != expert_id:
+        title_parts.append(str(expert.get("expert_name")))
+    lines = [f"### {' / '.join(title_parts)}", ""]
+    for key in ["channel_username", "selected_sources_count", "no_results_reason"]:
+        value = expert.get(key)
+        if value not in (None, "", []):
+            lines.append(f"- {key}: {_inline_text(value)}")
+
+    digest = expert.get("digest")
+    if isinstance(digest, dict):
+        position = digest.get("position")
+        if position:
+            lines.extend(["", "**Position**", "", _block_text(position), ""])
+        key_signals = digest.get("key_signals") or []
+        if key_signals:
+            lines.extend(["**Key Signals**", ""])
+            for signal in key_signals:
+                if not isinstance(signal, dict):
+                    continue
+                claim = _inline_text(signal.get("claim") or "")
+                suffix = []
+                support = _inline_text(signal.get("support_level") or "")
+                sources = ", ".join(map(str, signal.get("supporting_sources") or []))
+                if support:
+                    suffix.append(f"support={support}")
+                if sources:
+                    suffix.append(f"sources={sources}")
+                if signal.get("comment_signal"):
+                    suffix.append(f"comments={_inline_text(signal.get('comment_signal'))}")
+                if signal.get("limits"):
+                    suffix.append(f"limits={_inline_text(signal.get('limits'))}")
+                meta = f" ({'; '.join(suffix)})" if suffix else ""
+                lines.append(f"- {claim}{meta}")
+            lines.append("")
+        source_refs = digest.get("source_refs") or []
+        if source_refs:
+            lines.extend(["**Source Refs**", ""])
+            for source in source_refs:
+                if isinstance(source, dict):
+                    lines.extend(_source_markdown(source, include_excerpt=True))
+        source_index = digest.get("source_index") or []
+        if source_index:
+            lines.extend(["**Source Index**", ""])
+            for source in source_index:
+                if isinstance(source, dict):
+                    lines.extend(_source_markdown(source, include_excerpt=False))
+        comments_digest = digest.get("comments_digest")
+        if isinstance(comments_digest, dict):
+            lines.extend(_comments_digest_markdown(comments_digest))
+        for key in ["omitted_counts", "limits_used", "limits", "no_signal_reason"]:
+            value = digest.get(key)
+            if value not in (None, "", [], {}):
+                lines.append(f"- {key}: `{json.dumps(value, ensure_ascii=False)}`")
+    else:
+        main_sources = expert.get("main_sources") or []
+        if main_sources:
+            lines.extend(["", "**Main Sources**", ""])
+            for source in main_sources:
+                if isinstance(source, dict):
+                    lines.extend(_source_markdown(source, include_excerpt=True))
+    lines.append("")
+    return lines
+
+
+def _source_markdown(source: dict[str, Any], *, include_excerpt: bool) -> list[str]:
+    source_key = source.get("source_key") or "unknown"
+    lines = [f"- `{source_key}`"]
+    details = []
+    for key in ["relevance", "created_at", "telegram_message_id", "reason"]:
+        value = source.get(key)
+        if value not in (None, "", []):
+            details.append(f"{key}: {_inline_text(value)}")
+    evidence_quality = source.get("evidence_quality")
+    if isinstance(evidence_quality, dict):
+        eq_parts = [
+            str(evidence_quality.get(key))
+            for key in ["depth", "source_type", "comment_signal", "confidence"]
+            if evidence_quality.get(key)
+        ]
+        if eq_parts:
+            details.append(f"evidence_quality: {' / '.join(eq_parts)}")
+    if details:
+        lines.append(f"  - {'; '.join(details)}")
+    if include_excerpt:
+        excerpt = source.get("short_excerpt") or source.get("content")
+        if excerpt:
+            lines.extend(["", _block_text(excerpt), ""])
+    external_links = source.get("external_links") or []
+    if external_links:
+        links = []
+        for link in external_links:
+            if isinstance(link, dict):
+                url = link.get("url")
+                status = link.get("fetch_status")
+                links.append(f"{url} ({status})" if status else str(url))
+        lines.append(f"  - external_links: {_inline_text('; '.join(links))}")
+    return lines
+
+
+def _comments_digest_markdown(comments_digest: dict[str, Any]) -> list[str]:
+    lines = ["**Comments Digest**", ""]
+    for key in ["author_comments_count", "community_comments_count", "omitted_comments_count"]:
+        if key in comments_digest:
+            lines.append(f"- {key}: `{comments_digest.get(key)}`")
+    included = comments_digest.get("included_comments") or []
+    if included:
+        lines.append("- included_comments:")
+        for comment in included:
+            if not isinstance(comment, dict):
+                continue
+            source_key = comment.get("source_key") or ""
+            role = comment.get("comment_role") or ""
+            excerpt = _inline_text(comment.get("short_excerpt") or comment.get("comment_text") or "")
+            lines.append(f"  - `{source_key}` {role}: {excerpt}")
+    lines.append("")
+    return lines
+
+
+def _sources_index_tsv(payload: dict[str, Any]) -> str:
+    columns = [
+        "source_key",
+        "expert_id",
+        "telegram_message_id",
+        "relevance",
+        "created_at",
+        "reason",
+        "evidence_depth",
+        "source_type",
+        "comment_signal",
+        "confidence",
+        "external_links_count",
+        "author_comments_count",
+        "community_comments_count",
+        "linked_context_count",
+        "content_chars",
+    ]
+    rows = ["\t".join(columns)]
+    seen: set[str] = set()
+    for expert_id, source in _iter_sources_for_index(payload):
+        source_key = source.get("source_key")
+        if not source_key or str(source_key) in seen:
+            continue
+        seen.add(str(source_key))
+        evidence_quality = source.get("evidence_quality") or {}
+        if not isinstance(evidence_quality, dict):
+            evidence_quality = {}
+        comments = source.get("comments") or {}
+        if not isinstance(comments, dict):
+            comments = {}
+        row = {
+            "source_key": source_key,
+            "expert_id": source.get("expert_id") or expert_id,
+            "telegram_message_id": source.get("telegram_message_id"),
+            "relevance": source.get("relevance"),
+            "created_at": source.get("created_at"),
+            "reason": source.get("reason"),
+            "evidence_depth": evidence_quality.get("depth"),
+            "source_type": evidence_quality.get("source_type"),
+            "comment_signal": evidence_quality.get("comment_signal"),
+            "confidence": evidence_quality.get("confidence"),
+            "external_links_count": source.get("external_links_count")
+            if source.get("external_links_count") is not None
+            else len(source.get("external_links") or []),
+            "author_comments_count": source.get("author_comments_count")
+            if source.get("author_comments_count") is not None
+            else len(comments.get("author_comments") or []),
+            "community_comments_count": source.get("community_comments_count")
+            if source.get("community_comments_count") is not None
+            else len(comments.get("community_comments") or []),
+            "linked_context_count": source.get("linked_context_count")
+            if source.get("linked_context_count") is not None
+            else len(source.get("linked_context") or []),
+            "content_chars": source.get("content_chars"),
+        }
+        rows.append("\t".join(_tsv_cell(row[column]) for column in columns))
+    return "\n".join(rows)
+
+
+def _iter_sources_for_index(payload: dict[str, Any]):
+    for source in payload.get("sources") or []:
+        if isinstance(source, dict):
+            yield source.get("expert_id"), source
+    for expert in payload.get("experts") or []:
+        if not isinstance(expert, dict):
+            continue
+        expert_id = expert.get("expert_id")
+        for source in expert.get("main_sources") or []:
+            if isinstance(source, dict):
+                yield expert_id, source
+        digest = expert.get("digest") or {}
+        if not isinstance(digest, dict):
+            continue
+        for source in digest.get("source_index") or []:
+            if isinstance(source, dict):
+                yield expert_id, source
+        for source in digest.get("source_refs") or []:
+            if isinstance(source, dict):
+                yield expert_id, source
+
+
+def _inline_text(value: Any) -> str:
+    return " ".join(str(value).split())
+
+
+def _block_text(value: Any) -> str:
+    text = str(value).replace("\r\n", "\n").replace("\r", "\n").strip()
+    return "\n".join(["> " + line if line else ">" for line in text.split("\n")])
+
+
+def _tsv_cell(value: Any) -> str:
+    if value is None:
+        return ""
+    return str(value).replace("\t", " ").replace("\r", " ").replace("\n", " ").strip()
 
 
 def _cleanup_artifacts(args: argparse.Namespace) -> dict[str, Any]:
@@ -806,6 +1206,17 @@ def _print_read_result(result: dict[str, Any]) -> None:
     print(json.dumps(result, ensure_ascii=False, indent=2))
 
 
+def _print_export_result(result: dict[str, Any]) -> None:
+    print("Panex artifact export")
+    print(f"request_id: {result.get('request_id')}")
+    print(f"mode: {result.get('mode')}")
+    print(f"artifact_path: {result.get('artifact_path')}")
+    print(f"output_dir: {result.get('output_dir')}")
+    print("files:")
+    for name, path in (result.get("files") or {}).items():
+        print(f"  {name}: {path}")
+
+
 def _print_cleanup_result(result: dict[str, Any]) -> None:
     print("Panex cleanup")
     print(f"artifact_dir: {result['artifact_dir']}")
@@ -867,10 +1278,14 @@ def _print_guide() -> None:
 
 Artifact transport:
   --save --receipt-json сохраняет полный ответ вне текущего repo и печатает
-  компактный receipt. Читать сохранённый ответ нужно через panex read:
+  компактный receipt. По умолчанию артефакты лежат в ~/.local/share/panex/artifacts
+  если не задан PANEX_ARTIFACT_DIR. Читать сохранённый ответ нужно через panex read:
     panex read --path <artifact_path> --manifest --json
     panex read --path <artifact_path> --expert refat --json
     panex read --path <artifact_path> --source-key refat:238 --json
+  Для человеческого просмотра и передачи наверх:
+    panex export --path <artifact_path> --json
+  All-experts ask требует --save или --output, чтобы полный digest не потерялся.
 
 Человеческие follow-up фразы:
   "раскрой по Рефату"
@@ -882,6 +1297,7 @@ Artifact transport:
 Диагностика:
   panex doctor
   panex doctor --live
+  panex export --path <artifact_path>
   panex cleanup
 
 Границы:

@@ -385,6 +385,8 @@ def clean_agent_context_env(monkeypatch):
         "AGENT_CONTEXT_API_URL",
         "AGENT_CONTEXT_EXPAND_API_URL",
         "AGENT_CONTEXT_TIMEOUT_SECONDS",
+        "PANEX_ARTIFACT_DIR",
+        "PANEX_ARTIFACT_TTL_DAYS",
     ]:
         monkeypatch.delenv(key, raising=False)
 
@@ -571,6 +573,7 @@ def test_panex_ask_save_receipt_json_writes_full_artifact_without_stdout_dump(
     assert receipt["mode"] == "expert_digest"
     assert receipt["artifact_path"].startswith(str(artifact_dir))
     assert receipt["response_bytes"] > 1000
+    assert any(command.startswith("panex export --path ") for command in receipt["read_next"])
     assert "Bounded subagent excerpt" not in captured.out
     assert "secret-token" not in captured.out
     assert "secret-token" not in captured.err
@@ -584,6 +587,41 @@ def test_panex_ask_save_receipt_json_writes_full_artifact_without_stdout_dump(
     assert json.loads(response_path.read_text(encoding="utf-8")) == payload
     assert "secret-token" not in response_path.read_text(encoding="utf-8")
     assert json.loads(receipt_path.read_text(encoding="utf-8")) == receipt
+
+
+def test_panex_ask_save_uses_stable_default_artifact_dir(
+    monkeypatch,
+    capsys,
+    tmp_path,
+    clean_agent_context_env,
+):
+    default_root = tmp_path / "home" / panex.DEFAULT_ARTIFACT_ROOT_RELATIVE
+    monkeypatch.setattr(panex, "_default_artifact_root", lambda: default_root)
+    monkeypatch.setenv("AGENT_CONTEXT_API_TOKEN", "secret-token")
+    monkeypatch.setattr(
+        panex.requests,
+        "post",
+        lambda *args, **kwargs: FakeResponse(payload=_expert_digest_response()),
+    )
+
+    exit_code = panex.main(
+        [
+            "ask",
+            "--query",
+            "When should we use subagents?",
+            "--experts",
+            "refat",
+            "--save",
+            "--receipt-json",
+        ],
+        load_env=False,
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    receipt = json.loads(captured.out)
+    assert receipt["artifact_path"].startswith(str(default_root))
+    assert Path(receipt["artifact_path"]).exists()
 
 
 def test_panex_save_creates_unique_artifacts_for_repeated_calls(
@@ -654,6 +692,34 @@ def test_panex_expand_save_receipt_json_writes_source_expand_artifact(
     assert receipt["mode"] == "source_expand"
     assert receipt["source_keys"] == ["refat:101"]
     assert json.loads(Path(receipt["artifact_path"]).read_text(encoding="utf-8")) == payload
+
+
+def test_panex_all_experts_requires_artifact_transport(
+    monkeypatch,
+    capsys,
+    clean_agent_context_env,
+):
+    monkeypatch.setenv("AGENT_CONTEXT_API_TOKEN", "secret-token")
+
+    def fail_post(*args, **kwargs):
+        raise AssertionError("all-experts request without artifact should fail before HTTP")
+
+    monkeypatch.setattr(panex.requests, "post", fail_post)
+
+    exit_code = panex.main(
+        [
+            "ask",
+            "--query",
+            "wide query",
+            "--all",
+            "--json",
+        ],
+        load_env=False,
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 1
+    assert "all-experts panex ask requires --save or --output" in captured.err
 
 
 def test_panex_output_file_requires_overwrite_for_existing_file(
@@ -739,6 +805,69 @@ def test_panex_read_manifest_expert_and_source_key_slices(
     assert source_slice["source_key"] == "akimov:201"
 
 
+def test_panex_export_writes_human_files_without_raw_stdout(
+    monkeypatch,
+    capsys,
+    tmp_path,
+    clean_agent_context_env,
+):
+    artifact_path = tmp_path / "response.json"
+    out_dir = tmp_path / "exported"
+    payload = _large_expert_digest_response()
+    artifact_path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+
+    exit_code = panex.main(
+        [
+            "export",
+            "--path",
+            str(artifact_path),
+            "--out-dir",
+            str(out_dir),
+            "--json",
+        ],
+        load_env=False,
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    result = json.loads(captured.out)
+    assert result["kind"] == "panex_artifact_export"
+    assert result["artifact_path"] == str(artifact_path)
+    assert result["output_dir"] == str(out_dir)
+    assert result["status"] == "written"
+    assert "Bounded subagent excerpt" not in captured.out
+
+    manifest = json.loads(Path(result["files"]["manifest"]).read_text(encoding="utf-8"))
+    digest_markdown = Path(result["files"]["digest_markdown"]).read_text(encoding="utf-8")
+    sources_index = Path(result["files"]["sources_index_tsv"]).read_text(encoding="utf-8")
+
+    assert manifest["mode"] == "expert_digest"
+    assert manifest["source_keys_count"] == 3
+    assert "# Panex Artifact Digest" in digest_markdown
+    assert "refat:101" in digest_markdown
+    assert "refat:102" in digest_markdown
+    assert "akimov:201" in digest_markdown
+    assert "source_key\texpert_id\ttelegram_message_id" in sources_index
+    assert "refat:101\trefat\t101\tHIGH\t2026-04-10T12:00:00\tDirect match" in sources_index
+    assert sources_index.count("refat:101") == 1
+    assert "akimov:201\takimov\t201" in sources_index
+
+    exit_code = panex.main(
+        ["export", "--path", str(artifact_path), "--out-dir", str(out_dir), "--json"],
+        load_env=False,
+    )
+    assert exit_code == 0
+    assert json.loads(capsys.readouterr().out)["status"] == "existing"
+
+    (out_dir / "sources_index.tsv").unlink()
+    exit_code = panex.main(
+        ["export", "--path", str(artifact_path), "--out-dir", str(out_dir)],
+        load_env=False,
+    )
+    assert exit_code == 1
+    assert "partial export already exists" in capsys.readouterr().err
+
+
 def test_panex_cleanup_removes_only_old_artifacts(
     monkeypatch,
     capsys,
@@ -794,6 +923,7 @@ def test_panex_guide_prints_human_usage_without_token_or_http(
     assert "Panex guide" in captured.out
     assert "panex ask" in captured.out
     assert "panex expand" in captured.out
+    assert "panex export" in captured.out
     assert "panex doctor" in captured.out
     assert "expert_digest" in captured.out
     assert "source_bundle" in captured.out

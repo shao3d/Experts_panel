@@ -133,6 +133,7 @@ def test_agent_metadata_routes_panex_to_subagent_before_direct_cli():
     assert "direct cli is a fallback" in normalized
     assert "--save --receipt-json" in combined
     assert "panex read" in combined
+    assert "panex export" in combined
     assert "do not dump raw stdout" in normalized
     assert "do not call panex automatically" in normalized
 
@@ -404,6 +405,8 @@ def test_agents_default_to_relay_only_digest_delivery():
     assert "digest.source_refs" in combined
     assert "digest.omitted_counts" in combined
     assert "digest.limits_used" in combined
+    assert "artifact/export files" in normalized
+    assert "must not replace the saved digest" in normalized
     assert "expansion candidates" in normalized
     assert "signals frame" not in normalized
     assert "convert it into a compact signals frame" not in normalized

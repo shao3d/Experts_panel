@@ -1,7 +1,7 @@
 # Panex Usage Guide
 
 **Status:** Active
-**Last updated:** 2026-05-15
+**Last updated:** 2026-05-16
 
 This is the human-facing quick guide for using Панэкс from Codex/Claude chats
 in any repo.
@@ -48,6 +48,7 @@ panex --help
 panex ask --help
 panex expand --help
 panex read --help
+panex export --help
 panex cleanup --help
 ```
 
@@ -84,6 +85,10 @@ Ask all current database experts except unsupported special sources such as `vid
 panex ask --query "Что думают про LLM caching?" --all --save --receipt-json
 ```
 
+All-experts requests must use `--save` or `--output`; this is intentional. The
+full digest may be large, and the CLI should preserve it as an artifact instead
+of relying on chat/stdout transport.
+
 ## Artifact Transport
 
 For real Codex/Claude subagent calls, use artifact-first transport:
@@ -94,9 +99,10 @@ panex ask --query "..." --group tech_business --save --receipt-json
 
 This prevents large Панэкс responses from being truncated in tool output. The
 full API response is saved outside the current repo, under
-`PANEX_ARTIFACT_DIR` or the system temp directory. Stdout contains only a small
-receipt with `artifact_path`, `request_id`, `response_bytes`, warnings, and
-suggested `panex read` commands.
+`PANEX_ARTIFACT_DIR` or, by default, `~/.local/share/panex/artifacts`. Stdout
+contains only a small receipt with `artifact_path`, `request_id`,
+`response_bytes`, warnings, and suggested `panex read` / `panex export`
+commands.
 
 Read saved results in slices:
 
@@ -108,6 +114,18 @@ panex read --path /path/to/response.json --source-key refat:238 --json
 
 Do not use `cat response.json` for large Панэкс artifacts; that can reintroduce
 tool-output truncation.
+
+Export saved results into human-readable files:
+
+```bash
+panex export --path /path/to/response.json --json
+```
+
+The export writes:
+
+- `manifest.json` - compact machine-readable artifact passport;
+- `digest.md` - readable per-expert digest delivery with source handles;
+- `sources_index.tsv` - source handle index for targeted follow-up expansion.
 
 ## Routing From Other Repos
 
@@ -126,6 +144,7 @@ use artifact transport:
 panex ask --query "..." --group tech_business --save --receipt-json
 panex read --path /path/to/response.json --manifest --json
 panex read --path /path/to/response.json --expert refat --json
+panex export --path /path/to/response.json --json
 ```
 
 This keeps the explicit-only boundary and avoids parent-chat stdout truncation.
