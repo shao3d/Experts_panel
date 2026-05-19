@@ -5,7 +5,12 @@ import pytest
 from fastapi import HTTPException
 
 from src.api import simplified_query_endpoint as endpoint
-from src.api.models import ConfidenceLevel, ExpertResponse, MultiExpertQueryResponse
+from src.api.models import (
+    ConfidenceLevel,
+    ExpertResponse,
+    MultiExpertQueryResponse,
+    QueryRequest,
+)
 
 
 def _sample_response(request_id: str) -> MultiExpertQueryResponse:
@@ -51,6 +56,27 @@ def test_saved_query_result_route_is_registered():
 
     assert "/api/v1/query/{request_id}/result" in routes
     assert "GET" in routes["/api/v1/query/{request_id}/result"]
+
+
+@pytest.mark.asyncio
+async def test_sse_progress_events_carry_request_id():
+    request_id = str(uuid.uuid4())
+    request = QueryRequest(
+        query="Smoke request id propagation",
+        expert_filter=[],
+        include_reddit=False,
+        stream_progress=True,
+    )
+
+    events = []
+    async for raw_event in endpoint.event_generator_parallel(request, db=None, request_id=request_id):
+        payload = raw_event.removeprefix("data: ").strip()
+        events.append(json.loads(payload))
+
+    assert events[0]["event_type"] == "start"
+    assert events[0]["data"]["request_id"] == request_id
+    assert events[1]["event_type"] == "error"
+    assert events[1]["data"]["request_id"] == request_id
 
 
 @pytest.mark.parametrize("bad_request_id", ["../secret", "not-a-uuid", "abc.json"])

@@ -1134,6 +1134,8 @@ async def event_generator_parallel(
         def yield_event(event: ProgressEvent) -> str:
             """Attach current pipeline_state to event and serialize for SSE."""
             event.pipeline_state = tracker.get_state()
+            event.data = event.data or {}
+            event.data.setdefault("request_id", request_id)
             sanitized = sanitize_for_json(event.model_dump(mode="json"))
             return f"data: {json.dumps(sanitized, ensure_ascii=False)}\n\n"
 
