@@ -74,7 +74,10 @@ Safe CLI boundary:
 - Command shape for explicit source expansion:
   panex expand --source-keys refat:234,etechlead:139 --save --receipt-json
 - Artifact transport for real production calls: always use --save --receipt-json for panex ask and panex expand; do not rely on large raw stdout as the evidence transport.
-- The receipt is small and includes artifact_path, request_id, response_bytes, mode, warnings, and suggested panex read/export commands.
+- With --save, the CLI uses backend artifact endpoints first: panex ask calls POST /api/v1/agent/context/artifact, and panex expand calls POST /api/v1/agent/context/expand/artifact. The backend persists the completed Agent Context result under request_id, returns a compact receipt with result_url, and the CLI fetches GET /api/v1/agent/context/{request_id}/result before writing the local artifact.
+- The receipt is small and includes artifact_path, request_id, response_bytes, mode, warnings, optional backend_result_url/result_url evidence, and suggested panex read/export commands.
+- Treat backend_result_url/result_url in the receipt as evidence that backend-durable artifact delivery was used. Do not call the artifact endpoints manually unless the parent explicitly asks for backend/API debugging; use panex ask/expand.
+- Backend-saved Agent Context artifacts are retained by the production backend cleanup policy, currently AGENT_CONTEXT_RESULTS_TTL_DAYS=7 on startup cleanup. Local saved artifacts remain under PANEX_ARTIFACT_DIR/default panex artifact storage and are cleaned separately with panex cleanup.
 - Before final synthesis, read the saved artifact with panex read: first panex read --path <artifact_path> --manifest --json, then panex read --path <artifact_path> --expert <expert_id> --json for each selected expert you need to synthesize.
 - For broad/all-experts requests or whenever the parent needs the full digest file, run panex export --path <artifact_path> --json and deliver the saved digest.md / sources_index.tsv paths or the relevant content from those files. Do not create a new backend panel digest.
 - For exact source details, use panex read --path <artifact_path> --source-key refat:234 --json or a fresh explicit panex expand --source-keys ... --save --receipt-json when the parent asks for raw expansion.

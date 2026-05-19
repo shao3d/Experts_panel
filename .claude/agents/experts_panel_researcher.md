@@ -195,9 +195,24 @@ Artifact transport:
 - for real production `panex ask` / `panex expand` calls, always use
   `--save --receipt-json`; do not rely on large raw stdout as the evidence
   transport;
+- with `--save`, the CLI uses backend artifact endpoints first:
+  `panex ask` calls `POST /api/v1/agent/context/artifact`, and
+  `panex expand` calls `POST /api/v1/agent/context/expand/artifact`. The
+  backend persists the completed Agent Context result under `request_id`,
+  returns a compact receipt with `result_url`, and the CLI fetches
+  `GET /api/v1/agent/context/{request_id}/result` before writing the local
+  artifact;
 - the receipt is small and includes `artifact_path`, `request_id`,
-  `response_bytes`, mode, warnings, and suggested `panex read` / `panex export`
-  commands;
+  `response_bytes`, mode, warnings, optional `backend_result_url` /
+  `result_url` evidence, and suggested `panex read` / `panex export` commands;
+- treat `backend_result_url` / `result_url` in the receipt as evidence that
+  backend-durable artifact delivery was used. Do not call the artifact
+  endpoints manually unless the parent explicitly asks for backend/API
+  debugging; use `panex ask` / `panex expand`;
+- backend-saved Agent Context artifacts are retained by the production backend
+  cleanup policy, currently `AGENT_CONTEXT_RESULTS_TTL_DAYS=7` on startup
+  cleanup. Local saved artifacts remain under `PANEX_ARTIFACT_DIR` / default
+  `panex` artifact storage and are cleaned separately with `panex cleanup`;
 - before final synthesis, read the saved artifact with `panex read`, using
   `panex read --path <artifact_path> --manifest --json` and then
   `panex read --path <artifact_path> --expert <expert_id> --json` for each
