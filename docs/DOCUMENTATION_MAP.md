@@ -37,6 +37,8 @@ Last updated: 2026-05-20
 - `docs/architecture/*` - системное поведение и design constraints.
 - `docs/guides/*` - операторские команды и процедуры.
 - `docs/quality/*` - рубрики и dogfood evidence.
+- `docs/research/*` and `docs/session-logs/*` - evidence/history, not current SSOT.
+- Loose top-level files in `docs/` other than this map are ad hoc artifacts unless listed below.
 - `output/expert_admission/*` - generated artifacts, не ручная документация.
 - `docs/archive/*` - только история; не использовать как current SSOT.
 

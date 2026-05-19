@@ -75,7 +75,10 @@ Minimum required runtime variables:
 
 ## 📚 Documentation
 
+- [Documentation Map](docs/DOCUMENTATION_MAP.md) - start here for current SSOT routing.
 - [Pipeline Architecture](docs/architecture/pipeline.md) - **The Source of Truth** for the 10-phase pipeline.
+- [Panex Usage Guide](docs/guides/panex-usage.md) - explicit-only agent/operator workflow.
+- [Expert Admission Control](docs/architecture/expert-admission-control.md) - semantic passports, knowledge matrix, and accept/reject doctrine.
 - [Frontend Guide](frontend/CLAUDE.md) - **NEW**: React + Tailwind architecture, Sidebar layout, and State management.
 - [Backend Guide](backend/CLAUDE.md) - Services, Config, and API details.
 - [Reddit Integration](docs/architecture/reddit-service.md) - Details on smart targeting and ranking.

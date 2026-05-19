@@ -1,9 +1,12 @@
 # Current Expert Roster
 
-**Status:** Production snapshot
-**Last updated:** 2026-05-15
+**Status:** Active roster reference
+**Last updated:** 2026-05-20
 
-This file documents the active expert roster and the places that must stay in sync when experts are added, removed, or regrouped.
+This file documents the intended active expert roster and the places that must
+stay in sync when experts are added, removed, or regrouped. For live production
+claims, verify the production API/Fly volume; a git push alone does not update
+the mounted SQLite database.
 
 ---
 

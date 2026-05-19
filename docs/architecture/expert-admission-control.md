@@ -1,7 +1,7 @@
 # Expert Admission Control
 
-**Status:** Proposed MVP architecture
-**Last updated:** 2026-05-10
+**Status:** Active admission doctrine and matrix workflow
+**Last updated:** 2026-05-20
 **Haft context:** `prob-20260509-71223b41`, `sol-20260509-ae57b368`
 
 This document defines the decision process for admitting new Telegram experts
@@ -43,19 +43,19 @@ The admission process must answer a product question:
 
 ## 2. Existing System Facts
 
-Current local snapshot checked on 2026-05-09:
+Current local snapshot checked on 2026-05-20:
 
 | Fact | Local evidence |
 |------|----------------|
 | Runtime roster source | `expert_metadata` + related SQLite rows |
 | UI roster source | `frontend/src/config/expertConfig.ts` |
 | Local DB path | `backend/data/experts.db` |
-| Current metadata rows | 18, including `video_hub` |
-| Human Telegram experts | Roughly 17 |
-| Posts | 7049 rows in `posts` |
-| FTS/embedding-eligible text posts | 6622 posts with text length > 30 |
-| Embeddings | 6622 rows in `post_embeddings` / `vec_posts` |
-| Valid post metadata | 4935 posts with valid `post_metadata` |
+| Current metadata rows | 23, including `video_hub` |
+| Human Telegram experts | 22 |
+| Posts | 8334 rows in `posts` |
+| FTS/embedding-eligible text posts | 7895 posts with text length > 30 |
+| Embeddings | 7895 rows in `post_embeddings` / `vec_posts` |
+| Valid post metadata | 4636 posts with valid `post_metadata` |
 
 Important architecture constraints:
 

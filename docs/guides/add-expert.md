@@ -1,7 +1,7 @@
 # 🚀 Добавление нового эксперта (Полный алгоритм)
 
-**Версия:** 7.2 (Single Config + Staged Fly DB Deploy)
-**Дата:** 2026-05-04
+**Версия:** 7.3 (Admission-first + Single Config + Staged Fly DB Deploy)
+**Дата:** 2026-05-20
 **Статус:** Актуально
 
 ---
@@ -9,12 +9,17 @@
 ## 📋 Краткий алгоритм (TL;DR)
 
 ```
+0. Admission: паспорт + knowledge matrix + accept/reject verdict
 1. Экспорт JSON из Telegram Desktop
 2. ./scripts/add_new_expert.sh <id> "<name>" <username> <json>
 3. UI интеграция + roster doc (`expertConfig.ts`, `current-expert-roster.md`)
 4. (Опционально) Ручной запуск Drift Analysis
 5. Деплой: ./scripts/update_production_db.sh + targeted git commit/push
 ```
+
+Этот runbook начинается после продуктового решения `accept`. Для оценки
+кандидата до импорта используй `docs/architecture/expert-admission-control.md`
+и artifacts under `output/expert_admission/*`.
 
 ---
 

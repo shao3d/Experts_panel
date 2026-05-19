@@ -1,6 +1,6 @@
 # Experts Panel: AI Context
 
-**Last Updated:** 2026-05-04
+**Last Updated:** 2026-05-20
 **Status:** Production (Stable)
 **Role:** System Architect & Explainer (MVP Principle)
 
@@ -19,6 +19,8 @@ Use these files as your Source of Truth. Do NOT trust `plan_*.md` files in archi
 - **Reddit Integration:** `docs/architecture/reddit-service.md` (The Sidecar)
 - **Video Hub:** `docs/architecture/video-hub-service.md` (Digital Twin)
 - **Current Expert Roster:** `docs/architecture/current-expert-roster.md` (active experts, removed experts, Fly volume caveat)
+- **Panex / Agent Context:** `docs/guides/panex-usage.md` + `docs/architecture/agent-context-api.md`
+- **Expert Admission:** `docs/architecture/expert-admission-control.md` (passport, matrix, accept/reject doctrine)
 - **Backend Services:** `backend/CLAUDE.md` (Service mapping)
 - **Frontend Components:** `frontend/CLAUDE.md` (UI structure)
 - **Doc Update Rules:** `docs/DOCUMENTATION_MAP.md` (Чеклист обновления)

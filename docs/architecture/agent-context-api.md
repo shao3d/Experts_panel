@@ -1,8 +1,8 @@
 # Agent Context API Spec
 
-**Status:** Accepted / AND-5..AND-32 implemented / forced embedding search implemented
+**Status:** Accepted / AND-5..AND-33 implemented / backend-durable artifact delivery deployed
 **Decision:** `.haft/decisions/dec-20260504-b2539c3d.md`
-**Last updated:** 2026-05-16
+**Last updated:** 2026-05-20
 
 This spec defines the first agent-facing surface for Experts Panel: an explicit-only research/context API for Codex, Claude Code, and similar coding/research agents.
 
@@ -10,7 +10,7 @@ This spec defines the first agent-facing surface for Experts Panel: an explicit-
 
 ## 0. Implementation Status
 
-Current state as of 2026-05-16:
+Current state as of 2026-05-20:
 
 | Slice | Status | What it means |
 |-------|--------|---------------|
