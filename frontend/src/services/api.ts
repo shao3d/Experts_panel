@@ -157,8 +157,9 @@ export class APIClient {
         return response.json();
       }
 
-      // Parse SSE stream
-      return this.parseSSEStream(response, onProgress);
+      // Parse SSE stream. Keep the request id from response headers as the
+      // recovery anchor in case the first or final SSE event is dropped.
+      return this.parseSSEStream(response, onProgress, response.headers.get('X-Request-ID'));
     } catch (err) {
       // Handle network errors (connection refused, timeout, DNS failure)
       if (err instanceof TypeError && err.message.includes('fetch')) {
@@ -271,7 +272,8 @@ export class APIClient {
    */
   private async parseSSEStream(
     response: Response,
-    onProgress?: ProgressCallback
+    onProgress?: ProgressCallback,
+    initialRequestId?: string | null
   ): Promise<QueryResponse> {
     console.log('[API] Using robust SSE parser v2');
     const reader = response.body?.getReader();
@@ -284,7 +286,7 @@ export class APIClient {
     let buffer = '';
     let finalResponse: QueryResponse | null = null;
     let lastErrorEvent: ProgressEvent | null = null; // Track last error event
-    let latestRequestId: string | null = null;
+    let latestRequestId: string | null = initialRequestId || null;
 
     const handleEvent = async (event: ProgressEvent): Promise<void> => {
       const eventRequestId =
