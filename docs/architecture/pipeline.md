@@ -1,7 +1,7 @@
 # Pipeline Architecture Guide
 
 **The Single Source of Truth** for the Experts Panel 10-phase pipeline.
-*Last Verified against Codebase: 2026-04-21*
+*Last Verified against Codebase: 2026-05-19*
 
 ## 🏗️ High-Level Overview
 
@@ -15,6 +15,7 @@ The system processes user queries through an **ten-phase pipeline** using a **Ge
 5.  **Date Filtering**: Optional "Recent Only" mode (last 3 months).
 6.  **Reddit-Only Mode**: Ability to bypass expert analysis entirely for broad community searches.
 7.  **Parallel Multi-Stream**: Telegram Experts, Reddit Community, and Video Hub Insights run in parallel for maximum recall.
+8.  **Durable Result Delivery**: Large all-experts responses are persisted server-side and fetched by `request_id`; SSE carries progress and a compact completion pointer, not a multi-megabyte final payload.
 
 ---
 
@@ -121,7 +122,7 @@ The system processes user queries through an **ten-phase pipeline** using a **Ge
 - **Language**: Matches query language via `prepare_prompt_with_language_instruction`.
 - **Fail-Safe**: Returns None on error — individual expert answers still displayed normally.
 - **Parallelism**: Launched as `asyncio.create_task()` right after expert collection, runs IN PARALLEL with Reddit wait. Awaited after Reddit completes (typically already done by then).
-- **Timeout**: 30s hard limit; if exceeded, cancelled gracefully.
+- **Timeout**: Configurable via `META_SYNTHESIS_TIMEOUT_SECONDS` (default: 120s); if exceeded, cancelled gracefully and individual expert answers still display normally.
 - **UX Integration**: Displayed as "Сводный анализ" / "Cross-Expert Analysis" collapsible section ABOVE individual expert accordions.
 
 ---
@@ -139,6 +140,12 @@ The system processes user queries through an **ten-phase pipeline** using a **Ge
 | AI Scout | `MODEL_SCOUT` | `gemini-3.1-flash-lite-preview` | Entity-centric FTS5 query expansion. |
 | Meta-Synthesis | `MODEL_META_SYNTHESIS` | `gemini-3-flash-preview` | Cross-expert unified analysis (≥2 experts). |
 | Embedding | `MODEL_EMBEDDING` | `gemini-embedding-001` | Pre-computed in Orchestrator for Vector KNN search. |
+
+### Runtime Controls
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `META_SYNTHESIS_TIMEOUT_SECONDS` | `120` | Maximum wait for cross-expert meta-synthesis after expert and Reddit pipelines complete. Keeps large all-experts UI requests from losing the top meta-synthesis block due to a too-small fixed timeout. |
 
 ### Vertex Compatibility Notes
 - Historical target models were preserved as much as possible during the Vertex migration.
@@ -163,6 +170,15 @@ If no experts are selected but "Search Reddit" is enabled:
 2.  **Reddit Execution**: Only Phase 8 (Reddit Sidecar) is executed.
 3.  **Response**: Returns valid JSON with empty `expert_responses` list and populated `reddit_response`.
 4.  **UI Handling**: Frontend displays "Community Insights" section while hiding empty expert placeholders.
+
+### SSE Final Result Delivery
+The browser still receives live progress over SSE, but the final response is delivered through a durable artifact for large and all-experts queries:
+
+1.  **Request ID**: `POST /api/v1/query` returns `X-Request-ID`; the same `request_id` is also included in SSE events.
+2.  **Server Artifact**: Backend writes the final `MultiExpertQueryResponse` to `QUERY_RESULTS_DIR` or, by default, next to `BACKEND_LOG_FILE` under `query_results/<request_id>.json`.
+3.  **Compact Complete Event**: The final SSE `complete` event carries metadata and `result_url` (`/api/v1/query/{request_id}/result`) instead of embedding the full multi-megabyte JSON response.
+4.  **Frontend Recovery**: The frontend fetches the saved result by `request_id`; if the final SSE event is dropped, it can still use the header/request-id recovery anchor at stream end.
+5.  **Operational Meaning**: If expert accordions render but the `Synthesis` stage is red, the query itself completed; the cross-expert meta-synthesis failed, timed out, or returned empty.
 
 ### Resilience & Error Handling
 - **Rate Limits**: The unified `vertex_llm_client` handles `429 Too Many Requests` using exponential backoff and jitter (Tenacity).
