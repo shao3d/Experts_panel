@@ -16,8 +16,11 @@ import time
 from typing import AsyncGenerator, Optional, Callable
 import logging
 import os
+from pathlib import Path
+import re
 
 from fastapi import APIRouter, HTTPException, Depends
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from sse_starlette.sse import EventSourceResponse
@@ -66,6 +69,68 @@ logger = logging.getLogger(__name__)
 
 # Create router
 router = APIRouter(prefix="/api/v1", tags=["query"])
+
+_REQUEST_ID_RE = re.compile(r"^[a-f0-9-]{36}$")
+
+
+def _query_results_dir() -> Path:
+    """Return the durable query-result directory for large UI responses."""
+
+    configured = os.getenv("QUERY_RESULTS_DIR")
+    if configured:
+        return Path(configured).expanduser()
+    return Path(config.BACKEND_LOG_FILE).expanduser().resolve().parent / "query_results"
+
+
+def _query_result_path(request_id: str) -> Path:
+    """Build a safe path for a saved query response."""
+
+    if not _REQUEST_ID_RE.match(request_id):
+        raise HTTPException(status_code=400, detail="Invalid request_id")
+    return _query_results_dir() / f"{request_id}.json"
+
+
+def _persist_query_result(response: MultiExpertQueryResponse) -> Path:
+    """Persist the final response before sending a small SSE completion event.
+
+    The full all-experts response can be several megabytes. Sending that as one
+    SSE event is fragile in browsers/proxies, so the UI fetches it by request_id.
+    """
+
+    result_path = _query_result_path(response.request_id)
+    result_path.parent.mkdir(parents=True, exist_ok=True)
+
+    payload = sanitize_for_json(response.model_dump(mode="json"))
+    serialized = json.dumps(payload, ensure_ascii=False)
+
+    tmp_path = result_path.with_suffix(".json.tmp")
+    tmp_path.write_text(serialized, encoding="utf-8")
+    os.replace(tmp_path, result_path)
+
+    logger.info(
+        "Saved query result artifact: request_id=%s bytes=%s path=%s",
+        response.request_id,
+        len(serialized.encode("utf-8")),
+        result_path,
+    )
+    return result_path
+
+
+@router.get("/query/{request_id}/result")
+async def get_saved_query_result(request_id: str):
+    """Fetch a saved final query response by request_id."""
+
+    result_path = _query_result_path(request_id)
+    if not result_path.exists():
+        raise HTTPException(status_code=404, detail="Query result not found")
+
+    try:
+        payload = json.loads(result_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        logger.error("Saved query result is invalid JSON: %s", result_path, exc_info=True)
+        raise HTTPException(status_code=500, detail="Saved query result is corrupted") from exc
+
+    return JSONResponse(content=payload)
 
 
 def get_standard_posts_query(
@@ -1644,6 +1709,7 @@ async def event_generator_parallel(
             total_processing_time_ms=processing_time_ms,
             request_id=request_id,
         )
+        _persist_query_result(response)
 
         # 7. Send final result
         reddit_message = ""
@@ -1658,7 +1724,13 @@ async def event_generator_parallel(
             phase="final",
             status="success",
             message=f"Query completed: {len(expert_responses)} experts{reddit_message}",
-            data={"response": response.model_dump(mode="json")},
+            data={
+                "request_id": request_id,
+                "result_url": f"/api/v1/query/{request_id}/result",
+                "experts_count": len(expert_responses),
+                "has_reddit": reddit_result is not None,
+                "has_meta_synthesis": bool(meta_synthesis_result),
+            },
         )
 
         yield yield_event(event)

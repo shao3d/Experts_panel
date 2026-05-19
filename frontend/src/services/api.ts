@@ -244,6 +244,25 @@ export class APIClient {
   }
 
   /**
+   * Fetch a saved final query result. Large all-experts responses are persisted
+   * server-side and referenced from the SSE completion event to avoid fragile
+   * multi-megabyte SSE payloads.
+   */
+  private async fetchSavedQueryResult(requestId: string): Promise<QueryResponse> {
+    const response = await fetch(
+      `${this.baseURL.replace(/\/$/, '')}/api/v1/query/${encodeURIComponent(requestId)}/result`,
+      { headers: this.buildHeaders() }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Saved query result is not available: ${response.status} ${response.statusText}`);
+    }
+
+    const rawResponse = await response.json();
+    return this.normalizeResponse(rawResponse);
+  }
+
+  /**
    * Parse Server-Sent Events stream from response
    *
    * @param response - Fetch response with SSE stream
@@ -265,6 +284,46 @@ export class APIClient {
     let buffer = '';
     let finalResponse: QueryResponse | null = null;
     let lastErrorEvent: ProgressEvent | null = null; // Track last error event
+    let latestRequestId: string | null = null;
+
+    const handleEvent = async (event: ProgressEvent): Promise<void> => {
+      const eventRequestId =
+        event.data?.request_id ||
+        event.request_id ||
+        event.data?.response?.request_id;
+      if (eventRequestId) {
+        latestRequestId = String(eventRequestId);
+      }
+
+      // Track error events for later use
+      if (event.event_type === 'error' || event.event_type === 'expert_error') {
+        lastErrorEvent = event;
+      }
+
+      if (onProgress) onProgress(event);
+
+      if (event.event_type !== 'complete') {
+        return;
+      }
+
+      if (event.data?.response) {
+        const rawResponse = event.data.response as any;
+        if (lastErrorEvent) {
+          (rawResponse as any).last_progress_event = lastErrorEvent;
+        }
+        finalResponse = this.normalizeResponse(rawResponse);
+        return;
+      }
+
+      const resultRequestId = event.data?.request_id || latestRequestId;
+      if (event.data?.result_url && resultRequestId) {
+        console.log('[SSE] Fetching saved final query result:', {
+          request_id: resultRequestId,
+          result_url: event.data.result_url
+        });
+        finalResponse = await this.fetchSavedQueryResult(String(resultRequestId));
+      }
+    };
 
     try {
       while (true) {
@@ -297,20 +356,7 @@ export class APIClient {
               // Log SSE events for debugging
               logSSEEvent(event.phase || 'unknown', event.event_type, event, event.message);
 
-              // Track error events for later use
-              if (event.event_type === 'error' || event.event_type === 'expert_error') {
-                lastErrorEvent = event;
-              }
-
-              if (onProgress) onProgress(event);
-              if (event.event_type === 'complete' && event.data?.response) {
-                const rawResponse = event.data.response as any;
-                // Attach last error event to response for error handling
-                if (lastErrorEvent) {
-                  (rawResponse as any).last_progress_event = lastErrorEvent;
-                }
-                finalResponse = this.normalizeResponse(rawResponse);
-              }
+              await handleEvent(event);
             } catch (e) {
               console.error('Failed to parse final SSE event:', trimmedLine, e);
             }
@@ -350,11 +396,6 @@ export class APIClient {
           try {
             const event: ProgressEvent = JSON.parse(trimmedLine);
 
-            // Track error events for later use
-            if (event.event_type === 'error' || event.event_type === 'expert_error') {
-              lastErrorEvent = event;
-            }
-
             // Debug logging
             console.log('[SSE] Event received:', {
               type: event.event_type,
@@ -365,22 +406,7 @@ export class APIClient {
               isLastError: event.event_type === 'error' || event.event_type === 'expert_error'
             });
 
-            // Call progress callback if provided
-            if (onProgress) {
-              onProgress(event);
-            }
-
-            // Check if this is the final result
-            if (event.event_type === 'complete' && event.data?.response) {
-              console.log('[SSE] Found final response in event.data.response:', event.data.response);
-              // Handle multi-expert response format
-              const rawResponse = event.data.response as any;
-              // Attach last error event to response for error handling
-              if (lastErrorEvent) {
-                (rawResponse as any).last_progress_event = lastErrorEvent;
-              }
-              finalResponse = this.normalizeResponse(rawResponse);
-            }
+            await handleEvent(event);
 
           } catch (parseError) {
             console.error('Failed to parse SSE event:', trimmedLine, parseError);
@@ -392,9 +418,21 @@ export class APIClient {
       console.log('[SSE] Stream ended. Final response:', finalResponse);
 
       if (!finalResponse) {
+        if (latestRequestId) {
+          try {
+            console.log('[SSE] Stream ended without complete event; trying saved result:', latestRequestId);
+            finalResponse = await this.fetchSavedQueryResult(latestRequestId);
+          } catch (fetchError) {
+            console.warn('[SSE] Saved result recovery failed:', fetchError);
+          }
+        }
+      }
+
+      if (!finalResponse) {
+        const errorEvent = lastErrorEvent as ProgressEvent | null;
         const backendMessage =
-          lastErrorEvent?.data?.user_message ||
-          lastErrorEvent?.message;
+          errorEvent?.data?.user_message ||
+          errorEvent?.message;
 
         if (backendMessage) {
           throw new Error(backendMessage);

@@ -298,7 +298,7 @@ export interface QueryResponse {
  */
 export interface ProgressEvent {
   /** Type of progress event */
-  event_type: 'phase_start' | 'progress' | 'phase_complete' | 'complete' | 'error' | 'expert_error';
+  event_type: 'start' | 'phase_start' | 'progress' | 'phase_complete' | 'complete' | 'error' | 'expert_error';
 
   /** Current phase (map/resolve/reduce/final) */
   phase: string;
@@ -317,6 +317,9 @@ export interface ProgressEvent {
 
   /** Aggregate pipeline state: maps phase names to statuses */
   pipeline_state?: Record<string, 'pending' | 'active' | 'completed' | 'skipped' | 'error'>;
+
+  /** Optional request ID for resumable/result-artifact flows */
+  request_id?: string;
 
   /** Legacy fields for compatibility */
   current?: number;
