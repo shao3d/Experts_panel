@@ -99,6 +99,15 @@ Defined in `.env`, loaded in `config.py`.
 - `MAX_FTS_RESULTS`: 300
 - `USE_SUPER_PASSPORT_DEFAULT`: false
 - `FTS5_CIRCUIT_BREAKER_THRESHOLD`: 3
+- `META_SYNTHESIS_TIMEOUT_SECONDS`: 120
+- `QUERY_RESULTS_DIR`: optional durable UI query result directory
+- `QUERY_RESULTS_TTL_DAYS`: 7
+- `AGENT_CONTEXT_RESULTS_DIR`: optional backend-saved Panex artifact directory
+- `AGENT_CONTEXT_RESULTS_TTL_DAYS`: 7
+- `AGENT_CONTEXT_DIGEST_MAX_*`: optional `expert_digest` evidence caps; `0` means all selected evidence for count/char caps
+- `AGENT_CONTEXT_DIGEST_MAX_OUTPUT_TOKENS`: 16384
+- `PANEX_ARTIFACT_DIR`: optional local Panex CLI artifact directory
+- `PANEX_ARTIFACT_TTL_DAYS`: 7
 - `REDDIT_SEARCH_V2_ENABLED`: true
 - `REDDIT_SEARCH_DEBUG`: false
 - `REDDIT_RERANK_CANDIDATES`: 18
