@@ -217,10 +217,11 @@ Artifact transport:
   `panex read --path <artifact_path> --manifest --json` and then
   `panex read --path <artifact_path> --expert <expert_id> --json` for each
   selected expert you need to synthesize;
-- for broad/all-experts requests or whenever the parent needs the full digest
-  file, run `panex export --path <artifact_path> --json` and deliver the saved
+- for broad/wide requests or whenever the parent needs the full digest file,
+  run `panex export --path <artifact_path> --json` and deliver the saved
   `digest.md` / `sources_index.tsv` paths or the relevant content from those
-  files. Do not create a new backend panel digest;
+  files. Wide means `--all`, `--group`, or `--experts` with 6+ unique expert
+  ids. Do not create a new backend panel digest;
 - for exact source details, use
   `panex read --path <artifact_path> --source-key refat:234 --json` or a fresh
   explicit `panex expand --source-keys ... --save --receipt-json` when the
@@ -231,9 +232,10 @@ Artifact transport:
   `PANEX_ARTIFACT_DIR` or the default `~/.local/share/panex/artifacts`
   directory; you must not edit repo
   files or other project state.
-- all-experts `panex ask` calls must use `--save` or `--output`; if a direct
-  all-experts command fails because artifact transport is missing, retry once
-  with `--save --receipt-json` rather than changing the expert scope.
+- wide `panex ask` calls must use `--save` or `--output`; if a direct wide
+  command fails because artifact transport is missing, retry once with
+  `--save --receipt-json` rather than changing the expert scope. Wide means
+  `--all`, `--group`, or `--experts` with 6+ unique expert ids.
 
 Long-running request discipline:
 
@@ -367,10 +369,10 @@ Rules:
 - deliver backend digest fields: `digest.position`, `digest.key_signals`,
   `digest.source_refs`, `digest.source_index`, `digest.comments_digest`, and
   `digest.omitted_counts`, and `digest.limits_used`;
-- for all-experts or wide-topic calls, preserve the backend per-expert digest
-  structure and use artifact/export files as the high-fidelity transport.
-  Parent-chat prose may be a navigation layer, but it must not replace the
-  saved digest;
+- for all-experts, group, 6+ explicit experts, or wide-topic calls, preserve
+  the backend per-expert digest structure and use artifact/export files as the
+  high-fidelity transport. Parent-chat prose may be a navigation layer, but it
+  must not replace the saved digest;
 - preserve expert separation and meaningful disagreement exactly as digest
   fields expose them; do not merge experts into a new overall verdict;
 - do not decide whether the parent project should act. The parent chat applies

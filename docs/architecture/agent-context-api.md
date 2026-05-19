@@ -1429,7 +1429,7 @@ Wrapper responsibilities:
 - reserve `response_mode = source_bundle` for explicit raw evidence/audit/debug requests;
 - use artifact-first transport through `--save --receipt-json` for real subagent calls, then read saved slices with `panex read` or export human-readable `digest.md` / `sources_index.tsv` through `panex export` instead of dumping large stdout;
 - store default saved artifacts under `~/.local/share/panex/artifacts` unless `PANEX_ARTIFACT_DIR` is explicitly configured;
-- require artifact transport for all-experts `panex ask` requests, because those digests are expected to be large and must not depend on stdout/chat visibility;
+- require artifact transport for wide `panex ask` requests (`--all`, `--group`, or 6+ explicit experts), because those digests are expected to be large and must not depend on stdout/chat visibility;
 - send `use_super_passport = true` and rely on the API to force it true even if a caller tries to disable it;
 - keep `include_reddit = false`, `include_main_source_comments = true`, `include_drift_comment_groups = false`, and `synthesis_level = none` unless explicitly overridden by the caller;
 - print `selection_used`, warnings, and source packet metadata.
@@ -1771,4 +1771,4 @@ These decisions close the remaining open questions for the MVP implementation:
 5. Use `expert_digest` as the default Панэкс/subagent response mode. It is a narrow panel-side reduce over selected sources and direct main-source comments, not the old full UI Reduce/Meta/Comment synthesis pipeline. Keep `source_bundle` as explicit raw evidence/audit/debug mode.
 6. Use exact `source_key` expansion as the second-step raw evidence path. `source_expand` is a lookup over `digest.source_refs` / `digest.source_index` handles, not a new `expert_digest` or `source_bundle` search.
 7. Use the global `panex` portable runner as the day-to-day cross-repo interface. It defaults to production Fly.io for `ask` and `expand`, ignores ambient local API URLs unless explicit, keeps `expert_digest` as default, and requires `--response-mode source_bundle` for raw/audit mode.
-8. Keep all-experts delivery artifact-first. The backend still returns per-expert `expert_digest`; the delivery layer preserves it via saved `response.json`, sliced `panex read`, and deterministic `panex export` files. Do not add a second backend panel-digest path unless the artifact-first flow proves insufficient in real use.
+8. Keep wide delivery artifact-first. Wide means `--all`, `--group`, or 6+ explicit experts. The backend still returns per-expert `expert_digest`; the delivery layer preserves it via saved `response.json`, sliced `panex read`, and deterministic `panex export` files. Do not add a second backend panel-digest path unless the artifact-first flow proves insufficient in real use.

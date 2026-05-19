@@ -83,7 +83,7 @@
     *   **Пример команды:** *"Действуй по плейбуку `docs/guides/video-hub-operator.md` для добавления видео."*
 
 *   **📄 `panex-usage.md`**
-    *   **О чём:** Быстрая человеческая памятка по Панэксу: help-триггеры, artifact-first workflow через `--save --receipt-json`, backend `result_url` / `backend_result_url`, `panex read`, `panex cleanup`, `panex guide`, `panex ask`, `panex expand`, `panex doctor`, выбор экспертов/групп, raw `source_bundle`, production/local boundaries, external links и комментарии.
+    *   **О чём:** Быстрая человеческая памятка по Панэксу: help-триггеры, artifact-first workflow через `--save --receipt-json`, wide delivery rule для `--all` / `--group` / 6+ experts, backend `result_url` / `backend_result_url`, `panex read`, `panex cleanup`, `panex guide`, `panex ask`, `panex expand`, `panex doctor`, выбор экспертов/групп, raw `source_bundle`, production/local boundaries, external links и комментарии.
     *   **Пример команды:** *"Напомни по `docs/guides/panex-usage.md`, как правильно пользоваться Панэксом."*
 
 *   **📄 `drift-analysis.md`**

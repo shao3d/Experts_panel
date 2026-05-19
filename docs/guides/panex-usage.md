@@ -85,9 +85,10 @@ Ask all current database experts except unsupported special sources such as `vid
 panex ask --query "Что думают про LLM caching?" --all --save --receipt-json
 ```
 
-All-experts requests must use `--save` or `--output`; this is intentional. The
-full digest may be large, and the CLI should preserve it as an artifact instead
-of relying on chat/stdout transport.
+Wide requests must use `--save` or `--output`; this is intentional. Wide means
+`--all`, `--group`, or `--experts` with 6+ unique expert ids. The full digest may
+be large, and the CLI should preserve it as an artifact instead of relying on
+chat/stdout transport.
 
 ## Artifact Transport
 
@@ -107,6 +108,14 @@ warnings, and suggested `panex read` / `panex export` commands.
 
 This is transport hardening only. It does not add a new analysis mode and does
 not create a UI-style cross-expert meta-synthesis for Панэкс.
+
+For wide delivery (`--all`, `--group`, or 6+ explicit experts), export the
+artifact after receipt and treat chat prose as navigation, not as a replacement
+for the saved digest:
+
+```bash
+panex export --path /path/to/response.json --json
+```
 
 Read saved results in slices:
 

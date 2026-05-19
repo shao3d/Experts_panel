@@ -40,6 +40,7 @@ LOCAL_AGENT_CONTEXT_EXPAND_API_URL = (
 )
 DEFAULT_TIMEOUT_SECONDS = 3600.0
 DEFAULT_ARTIFACT_ROOT_RELATIVE = Path(".local") / "share" / "panex" / "artifacts"
+WIDE_CUSTOM_EXPERT_COUNT_THRESHOLD = 6
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -613,12 +614,13 @@ def _validate_artifact_args(args: argparse.Namespace) -> None:
         raise AgentContextCliError("--overwrite requires --output")
     if (
         getattr(args, "command", None) == "ask"
-        and _is_all_experts_ask(args)
+        and _requires_artifact_transport(args)
         and not _should_write_artifact(args)
     ):
         raise AgentContextCliError(
-            "all-experts panex ask requires --save or --output so the full digest "
-            "is preserved as an artifact."
+            "wide/all-experts panex ask requires --save or --output so the full "
+            f"digest is preserved as an artifact. Wide means --all, --group, "
+            f"or --experts with {WIDE_CUSTOM_EXPERT_COUNT_THRESHOLD}+ experts."
         )
     if args.output:
         output_path = Path(args.output).expanduser()
@@ -634,6 +636,21 @@ def _should_write_artifact(args: argparse.Namespace) -> bool:
 
 def _is_all_experts_ask(args: argparse.Namespace) -> bool:
     return not getattr(args, "experts", None) and not getattr(args, "group", None)
+
+
+def _requires_artifact_transport(args: argparse.Namespace) -> bool:
+    if _is_all_experts_ask(args):
+        return True
+    if getattr(args, "group", None):
+        return True
+    return _custom_expert_count(args) >= WIDE_CUSTOM_EXPERT_COUNT_THRESHOLD
+
+
+def _custom_expert_count(args: argparse.Namespace) -> int:
+    raw_experts = getattr(args, "experts", None)
+    if not raw_experts:
+        return 0
+    return len(_parse_csv(raw_experts))
 
 
 def _write_artifact_response(
@@ -1396,7 +1413,8 @@ Artifact transport:
     panex read --path <artifact_path> --source-key refat:238 --json
   Для человеческого просмотра и передачи наверх:
     panex export --path <artifact_path> --json
-  All-experts ask требует --save или --output, чтобы полный digest не потерялся.
+  Wide ask требует --save или --output, чтобы полный digest не потерялся.
+  Wide = --all, --group или --experts с 6+ expert_id.
 
 Человеческие follow-up фразы:
   "раскрой по Рефату"

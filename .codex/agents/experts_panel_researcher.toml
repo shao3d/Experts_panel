@@ -79,11 +79,11 @@ Safe CLI boundary:
 - Treat backend_result_url/result_url in the receipt as evidence that backend-durable artifact delivery was used. Do not call the artifact endpoints manually unless the parent explicitly asks for backend/API debugging; use panex ask/expand.
 - Backend-saved Agent Context artifacts are retained by the production backend cleanup policy, currently AGENT_CONTEXT_RESULTS_TTL_DAYS=7 on startup cleanup. Local saved artifacts remain under PANEX_ARTIFACT_DIR/default panex artifact storage and are cleaned separately with panex cleanup.
 - Before final synthesis, read the saved artifact with panex read: first panex read --path <artifact_path> --manifest --json, then panex read --path <artifact_path> --expert <expert_id> --json for each selected expert you need to synthesize.
-- For broad/all-experts requests or whenever the parent needs the full digest file, run panex export --path <artifact_path> --json and deliver the saved digest.md / sources_index.tsv paths or the relevant content from those files. Do not create a new backend panel digest.
+- For broad/wide requests or whenever the parent needs the full digest file, run panex export --path <artifact_path> --json and deliver the saved digest.md / sources_index.tsv paths or the relevant content from those files. Wide means --all, --group, or --experts with 6+ unique expert ids. Do not create a new backend panel digest.
 - For exact source details, use panex read --path <artifact_path> --source-key refat:234 --json or a fresh explicit panex expand --source-keys ... --save --receipt-json when the parent asks for raw expansion.
 - Never use cat on saved Panex artifacts; this can reintroduce tool-output truncation.
 - Write only Panex artifacts through panex --save into PANEX_ARTIFACT_DIR or the default ~/.local/share/panex/artifacts directory; you must not edit repo files or other project state.
-- All-experts panex ask calls must use --save or --output; if a direct all-experts command fails because artifact transport is missing, retry once with --save --receipt-json rather than changing the expert scope.
+- Wide panex ask calls must use --save or --output; if a direct wide command fails because artifact transport is missing, retry once with --save --receipt-json rather than changing the expert scope. Wide means --all, --group, or --experts with 6+ unique expert ids.
 - source_expand is a lookup step over source keys from digest.source_refs or digest.source_index; it is not a new expert_digest query and not a new source_bundle query.
 - Long-running request discipline: after one panex ask/expand has been submitted, treat it as the single in-flight request for that task.
 - Do not start a duplicate panex ask/expand, broaden scope, reset state, restart Fly machines, kill processes, rerun update scripts, or perform any recovery mutation just because the request is slow, quiet, timed out locally, or progress is unclear.
@@ -157,7 +157,7 @@ API token, raw JSON, or long pipeline dumps. Required fields:
 
 Rules:
 - Deliver backend digest fields: digest.position, digest.key_signals, digest.source_refs, digest.source_index, digest.comments_digest, digest.omitted_counts, and digest.limits_used.
-- For all-experts or wide-topic calls, preserve the backend per-expert digest structure and use artifact/export files as the high-fidelity transport. Parent-chat prose may be a navigation layer, but it must not replace the saved digest.
+- For all-experts, group, 6+ explicit experts, or wide-topic calls, preserve the backend per-expert digest structure and use artifact/export files as the high-fidelity transport. Parent-chat prose may be a navigation layer, but it must not replace the saved digest.
 - Preserve expert separation and meaningful disagreement exactly as digest fields expose them; do not merge experts into a new overall verdict.
 - Do not decide whether the parent project should act. The parent chat applies the delivered digest to the current project.
 - Mention external links only as references supplied by the source author unless a later explicit enrichment step verifies their contents.

@@ -756,32 +756,78 @@ def test_panex_expand_save_receipt_json_writes_source_expand_artifact(
     assert json.loads(Path(receipt["artifact_path"]).read_text(encoding="utf-8")) == payload
 
 
-def test_panex_all_experts_requires_artifact_transport(
+@pytest.mark.parametrize(
+    "argv",
+    [
+        ["ask", "--query", "wide query", "--all", "--json"],
+        ["ask", "--query", "wide query", "--group", "tech", "--json"],
+        [
+            "ask",
+            "--query",
+            "wide query",
+            "--experts",
+            "refat,akimov,ai_architect,neuraldeep,ai_grabli,glebkudr",
+            "--json",
+        ],
+    ],
+)
+def test_panex_wide_ask_requires_artifact_transport(
     monkeypatch,
     capsys,
     clean_agent_context_env,
+    argv,
 ):
     monkeypatch.setenv("AGENT_CONTEXT_API_TOKEN", "secret-token")
 
     def fail_post(*args, **kwargs):
-        raise AssertionError("all-experts request without artifact should fail before HTTP")
+        raise AssertionError("wide request without artifact should fail before HTTP")
 
     monkeypatch.setattr(panex.requests, "post", fail_post)
+
+    exit_code = panex.main(argv, load_env=False)
+
+    captured = capsys.readouterr()
+    assert exit_code == 1
+    assert "wide/all-experts panex ask requires --save or --output" in captured.err
+
+
+def test_panex_custom_five_experts_can_use_json_for_manual_small_boundary(
+    monkeypatch,
+    capsys,
+    clean_agent_context_env,
+):
+    calls = []
+    monkeypatch.setenv("AGENT_CONTEXT_API_TOKEN", "secret-token")
+
+    def fake_post(url, *, headers, json, timeout):
+        calls.append(json)
+        return FakeResponse(payload=_expert_digest_response())
+
+    monkeypatch.setattr(panex.requests, "post", fake_post)
 
     exit_code = panex.main(
         [
             "ask",
             "--query",
-            "wide query",
-            "--all",
+            "manual boundary query",
+            "--experts",
+            "refat,akimov,ai_architect,neuraldeep,ai_grabli",
             "--json",
         ],
         load_env=False,
     )
 
     captured = capsys.readouterr()
-    assert exit_code == 1
-    assert "all-experts panex ask requires --save or --output" in captured.err
+    assert exit_code == 0
+    assert calls[0]["expert_scope"] == "custom"
+    assert calls[0]["expert_filter"] == [
+        "refat",
+        "akimov",
+        "ai_architect",
+        "neuraldeep",
+        "ai_grabli",
+    ]
+    assert "wide/all-experts" not in captured.err
 
 
 def test_panex_output_file_requires_overwrite_for_existing_file(
