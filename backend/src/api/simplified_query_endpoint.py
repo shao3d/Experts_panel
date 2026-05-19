@@ -64,6 +64,7 @@ from ..services.meta_synthesis_service import MetaSynthesisService
 from ..utils.error_handler import error_handler
 from ..utils.date_utils import get_cutoff_date
 from .pipeline_state_tracker import PipelineStateTracker, VIDEO_PHASE_MAP
+from ..services.artifact_retention_service import query_results_dir
 
 logger = logging.getLogger(__name__)
 
@@ -76,10 +77,7 @@ _REQUEST_ID_RE = re.compile(r"^[a-f0-9-]{36}$")
 def _query_results_dir() -> Path:
     """Return the durable query-result directory for large UI responses."""
 
-    configured = os.getenv("QUERY_RESULTS_DIR")
-    if configured:
-        return Path(configured).expanduser()
-    return Path(config.BACKEND_LOG_FILE).expanduser().resolve().parent / "query_results"
+    return query_results_dir()
 
 
 def _query_result_path(request_id: str) -> Path:

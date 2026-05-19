@@ -31,6 +31,7 @@ from ..services.agent_context_service import (
     AgentContextService,
     SUPPORTED_AGENT_CONTEXT_RESPONSE_MODES,
 )
+from ..services.artifact_retention_service import agent_context_results_dir
 
 
 AGENT_CONTEXT_EXPERT_GROUPS = {
@@ -75,16 +76,7 @@ router = APIRouter(prefix="/api/v1/agent", tags=["agent-context"])
 def _agent_context_results_dir() -> Path:
     """Return the durable Agent Context result directory."""
 
-    configured = config.AGENT_CONTEXT_RESULTS_DIR
-    if configured:
-        return Path(configured).expanduser()
-    return (
-        Path(config.BACKEND_LOG_FILE)
-        .expanduser()
-        .resolve()
-        .parent
-        / "agent_context_results"
-    )
+    return agent_context_results_dir()
 
 
 def _agent_context_result_path(request_id: str) -> Path:

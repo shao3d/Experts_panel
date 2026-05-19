@@ -32,6 +32,7 @@ from .agent_context_endpoint import router as agent_context_router
 from .dependencies import verify_admin_secret
 from ..models.base import engine, Base
 from .. import config
+from ..services.artifact_retention_service import cleanup_result_artifacts
 
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 IS_PRODUCTION = ENVIRONMENT.lower() == "production"
@@ -100,6 +101,16 @@ async def lifespan(app: FastAPI):
         logger.info("Health diagnostics cache initialized")
     except Exception as exc:
         logger.error("Health diagnostics warmup failed: %s", exc, exc_info=True)
+
+    try:
+        cleanup_summary = cleanup_result_artifacts()
+        logger.info(
+            "Result artifact retention cleanup complete: deleted_count=%s deleted_bytes=%s",
+            cleanup_summary["deleted_count"],
+            cleanup_summary["deleted_bytes"],
+        )
+    except Exception as exc:
+        logger.error("Result artifact retention cleanup failed: %s", exc, exc_info=True)
     
     yield
 

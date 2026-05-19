@@ -179,6 +179,7 @@ The browser still receives live progress over SSE, but the final response is del
 3.  **Compact Complete Event**: The final SSE `complete` event carries metadata and `result_url` (`/api/v1/query/{request_id}/result`) instead of embedding the full multi-megabyte JSON response.
 4.  **Frontend Recovery**: The frontend fetches the saved result by `request_id`; if the final SSE event is dropped, it can still use the header/request-id recovery anchor at stream end.
 5.  **Operational Meaning**: If expert accordions render but the `Synthesis` stage is red, the query itself completed; the cross-expert meta-synthesis failed, timed out, or returned empty.
+6.  **Retention**: `query_results/*.json` are cleaned on backend startup after `QUERY_RESULTS_TTL_DAYS` (default: 7 days). Cleanup touches only top-level JSON result artifacts.
 
 ### Resilience & Error Handling
 - **Rate Limits**: The unified `vertex_llm_client` handles `429 Too Many Requests` using exponential backoff and jitter (Tenacity).

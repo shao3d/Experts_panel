@@ -83,6 +83,11 @@ AGENT_CONTEXT_DIGEST_MAX_OUTPUT_TOKENS: int = int(
     os.getenv("AGENT_CONTEXT_DIGEST_MAX_OUTPUT_TOKENS", "16384")
 )
 AGENT_CONTEXT_RESULTS_DIR: str | None = os.getenv("AGENT_CONTEXT_RESULTS_DIR")
+QUERY_RESULTS_DIR: str | None = os.getenv("QUERY_RESULTS_DIR")
+QUERY_RESULTS_TTL_DAYS: float = float(os.getenv("QUERY_RESULTS_TTL_DAYS", "7"))
+AGENT_CONTEXT_RESULTS_TTL_DAYS: float = float(
+    os.getenv("AGENT_CONTEXT_RESULTS_TTL_DAYS", "7")
+)
 
 # --- Model Configuration ---
 # Only Gemini models on Vertex AI are supported.
@@ -233,6 +238,10 @@ def get_runtime_config_log_lines() -> list[str]:
             f"output_tokens={AGENT_CONTEXT_DIGEST_MAX_OUTPUT_TOKENS}",
             "  Agent Context Results Dir: "
             f"{AGENT_CONTEXT_RESULTS_DIR or 'default next to backend log'}",
+            "--- Loaded artifact retention configuration ---",
+            f"  Query Results Dir:          {QUERY_RESULTS_DIR or 'default next to backend log'}",
+            f"  Query Results TTL:          {QUERY_RESULTS_TTL_DAYS:g}d",
+            f"  Agent Context Results TTL:  {AGENT_CONTEXT_RESULTS_TTL_DAYS:g}d",
             "--- Loaded logging configuration ---",
             f"  Log Level:         {LOG_LEVEL}",
             f"  Backend Log File:  {BACKEND_LOG_FILE}",

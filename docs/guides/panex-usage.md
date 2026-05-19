@@ -137,6 +137,10 @@ Backend artifact endpoints used by `panex --save`:
 - `POST /api/v1/agent/context/expand/artifact` - build/save a `source_expand` response and return a compact receipt;
 - `GET /api/v1/agent/context/{request_id}/result` - fetch the saved backend result by `request_id`.
 
+Backend-saved Agent Context results are retained for `AGENT_CONTEXT_RESULTS_TTL_DAYS`
+(default: 7 days) and cleaned on backend startup. Local artifacts remain under
+the local `panex cleanup` policy below.
+
 ## Routing From Other Repos
 
 When you ask in another repo:
