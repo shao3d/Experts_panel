@@ -1,200 +1,153 @@
-# 🗺️ Документация проекта: Шпаргалка для Человека (SSOT)
+# Карта Документации
 
-Этот файл — ваша карта документации проекта **Experts Panel**, оптимизированная для работы с AI-агентом.
+Status: Active
+Last updated: 2026-05-20
 
----
+Это навигационный слой проекта Experts Panel. Он должен отвечать на вопрос
+"куда смотреть?", а не пересказывать содержимое всех документов.
 
-## 🧠 1. Главный Мозг: `.gemini/GEMINI.md`
-Это **Системный Промпт**, который AI загружает в себя автоматически.
-*   **Что внутри:** Роль AI, стек технологий (Python 3.11, React 18), "золотые файлы" (SSOT) и операционные правила.
-*   **Зачем знать:** Это фундамент логики AI. Если меняется стек или глобальные правила — правки вносятся сюда.
-*   **Правило:** Не удалять и не переименовывать!
+## Новый Чат
 
----
+В новом чате по проекту начинай так:
 
-## 🏗️ 2. Архитектура (Логика): `docs/architecture/`
-Сюда направляем AI, если нужно понять или изменить **логику работы** системы.
+1. Открой этот файл.
+2. Выбери маршрут по таблице ниже.
+3. Читай только нужные SSOT-документы.
+4. Для текущего статуса, деплоя, CLI и БД проверяй код/команды, а не память.
 
-**⚠️ Важно:** Если файл помечен как ⚠️ Experimental — это значит, что фича находится в стадии A/B тестирования и Recall <80%. Не включать по умолчанию в production!
+## Быстрые Маршруты
 
-*   **📄 `pipeline.md` (Главный файл)**
-    *   **О чём:** "Мозг" системы. Описывает 10 фаз обработки постов (Map -> Resolve -> Reduce + Reddit/Video/Meta-Synthesis), использование моделей Gemini, фильтры по датам, SSE progress и durable delivery больших финальных результатов через `request_id`.
-    *   **Пример команды:** *"Посмотри в `docs/architecture/pipeline.md`, как мы обрабатываем MEDIUM посты."*
+| Задача | Сначала читать | Потом, если нужно |
+| --- | --- | --- |
+| Общая архитектура / pipeline | `docs/architecture/pipeline.md` | `CLAUDE.md`, `backend/CLAUDE.md` |
+| Retrieval / Embs&Keys / FTS5 | `docs/architecture/super-passport-search.md` | `hybrid_retrieval_plan.md` как историю |
+| Панэкс как пользователь/оператор | `docs/guides/panex-usage.md` | `panex guide` |
+| Панэкс API / CLI / subagent | `docs/architecture/agent-context-api.md` | agent files ниже |
+| Новый эксперт / матрица знаний | `docs/architecture/expert-admission-control.md` | `output/expert_admission/admission_manifest.json` |
+| Текущий roster экспертов | `docs/architecture/current-expert-roster.md` | `frontend/src/config/expertConfig.ts`, `expert_metadata` |
+| Добавить/удалить эксперта | `docs/guides/add-expert.md` | `scripts/add_new_expert.sh`, `scripts/update_production_db.sh` |
+| Drift analysis | `docs/guides/drift-analysis.md` | drift scripts in `backend/scripts/` |
+| Video Hub | `docs/architecture/video-hub-service.md` | `docs/guides/video-hub-operator.md` |
+| Reddit sidecar | `docs/architecture/reddit-service.md` | service code under `services/reddit-proxy/` |
+| Backend runtime / health / CLI bootstrap | `docs/roadmap/backend-runtime-cleanup.md` | `backend/CLAUDE.md` |
+| Frontend layout/state | `frontend/CLAUDE.md` | frontend source files |
 
-*   **📄 `super-passport-search.md` (Embs&Keys Search)**
-    *   **О чём:** Гибридный поиск (Vector KNN + FTS5 + RRF). Эволюционировал из чистой FTS5 стратегии. Включает текущие правила AI Scout / FTS5 sanitation для спецсимволов, дефисов, punctuation и незакрытых кавычек.
-    *   **Пример команды:** *"Изучи `docs/architecture/super-passport-search.md` для понимания предфильтрации."*
+## Правила Навигации
 
-*   **📄 `ai-scout-level1-upgrade.md`**
-    *   **О чём:** Исторический план и реализация защиты FTS5 от Syntax Errors при поиске спецсимволов (C++, C#). Текущий production hardening по punctuation-heavy terms живёт в `super-passport-search.md` и коде `fts5_retrieval_service.py`.
-    *   **Пример команды:** *"Проверь по `docs/architecture/ai-scout-level1-upgrade.md`, как мы маппим спецсимволы."*
+- `docs/architecture/*` - системное поведение и design constraints.
+- `docs/guides/*` - операторские команды и процедуры.
+- `docs/quality/*` - рубрики и dogfood evidence.
+- `output/expert_admission/*` - generated artifacts, не ручная документация.
+- `docs/archive/*` - только история; не использовать как current SSOT.
 
-*   **📄 `ai-scout-level2-upgrade.md` (🔬 Proposed)**
-    *   **О чём:** План перехода на Entity-Centric Query Expansion для повышения Recall. Отказ от AND-фильтров.
-    *   **Пример команды:** *"Изучи план `docs/architecture/ai-scout-level2-upgrade.md` перед доработкой Scout."*
+## Главные SSOT
 
-*   **📄 `reddit-service.md`**
-    *   **О чём:** Всё про Reddit Sidecar Proxy. Поиск, дедупликация, ранжирование, таймауты.
-    *   **Пример команды:** *"Глянь в `docs/architecture/reddit-service.md`, какой там таймаут на поиск?"*
+| Файл | Зачем |
+| --- | --- |
+| `.gemini/GEMINI.md` | Project-level AI operating prompt. Это не подробная архитектурная спека. |
+| `docs/architecture/pipeline.md` | Главный backend pipeline: Map, Resolve, Reduce, Reddit, Video, Meta-Synthesis, SSE, durable UI delivery. |
+| `docs/architecture/super-passport-search.md` | Hybrid retrieval: Vector KNN, FTS5, RRF, AI Scout, punctuation hardening. |
+| `docs/architecture/current-expert-roster.md` | Актуальный roster, UI-группы, source-of-truth caveats. |
+| `CLAUDE.md` | Root project guide and repo-level operating notes. |
+| `backend/CLAUDE.md` | Backend services, commands, config, runtime notes. |
+| `frontend/CLAUDE.md` | Frontend structure, state, layout conventions. |
 
-*   **📄 `video-hub-service.md`**
-    *   **О чём:** Видео-сайдкар для анализа транскриптов. Логика "Digital Twin", 4 фазы, использование `gemini-3.1-pro-preview`.
-    *   **Пример команды:** *"Изучи `docs/architecture/video-hub-service.md`, как мы собираем контекст из видео."*
+## Панэкс
 
-*   **📄 `current-expert-roster.md`**
-    *   **О чём:** Актуальный roster экспертов: UI-группы, источник истины `expertConfig.ts`/`expert_metadata`, production DB caveat для Fly volume, список удалённых экспертов.
-    *   **Пример команды:** *"Перед правками списка экспертов проверь `docs/architecture/current-expert-roster.md`."*
+Для обычного использования Панэкса читай `docs/guides/panex-usage.md`.
 
-*   **📄 `expert-admission-control.md` (Proposed MVP)**
-    *   **О чём:** Decision gate перед добавлением нового Telegram-эксперта: карта покрытия, паспорт кандидата, overlap/gap анализ, query-probe A/B, verdicts `accept` / `reject` / `watchlist` / `limited_scope`, stop-gates против прямого production-импорта.
-    *   **Пример команды:** *"Перед добавлением нового эксперта оцени кандидата по `docs/architecture/expert-admission-control.md`."*
+Текущая краткая модель:
 
-*   **📄 `agent-context-api.md` (Accepted / AND-5..AND-33 Implemented / Forced Embeddings)**
-    *   **О чём:** Спека и текущий статус agent-facing API для Codex/Claude Code: authenticated endpoint, real `source_bundle`, deployed panel-side `expert_digest` reduce for default Панэкс calls, local CLI wrapper, BDD acceptance hardening, repo-local and user-level `experts_panel_researcher` / `Панэкс`, global cross-repo `panex` portable runner with Fly.io defaults, `panex doctor`, `panex ask`, `panex expand`, backend-durable artifact flow via `/api/v1/agent/context/artifact`, `/api/v1/agent/context/expand/artifact`, `result_url` / `backend_result_url`, and 7-day backend artifact retention, human Russian trigger phrases without requiring API jargon plus source-selection priority/stop-rules, selector-based expansion UX for phrases like "раскрой по Рефату", "этот вывод", "самый спорный источник", "что там в комментариях" and "слабые места", compact Request passport in Панэкс answers, faithful backend-generated answer contract for `expert_digest`, DB-synchronized `--all` scope excluding unsupported special sources like `video_hub`, local dogfood/live smoke helper, paid two-expert and all-experts local smoke passed, bounded expert parallelism via `MAX_CONCURRENT_EXPERTS`, forced Embs&Keys/embedding hybrid retrieval for subagent/API calls, FTS5 sanitation hardening for punctuation-heavy Scout/fallback queries, large all-experts-friendly budget `3600s`/`100000000` bytes, выбор экспертов по UI labels / русским именам с переводом в `expert_id`, comments под `main_sources`, `digest.source_refs` / `digest.source_index` / `digest.comments_digest` / `digest.omitted_counts` / `digest.limits_used` with opt-in caps where `0` means all selected evidence, `source_expand` lookup by `source_key` through `panex expand` / `src.cli.agent_context_expand`, lean Evidence Note для expanded sources без второго digest/reduce/synthesis слоя, mode-aware `source_expand` Request passport with `limits_used`, no-call clarification/boundary behavior when selector context is ambiguous or missing, `external_links` как author-supplied references без auto-fetch, `evidence_quality` calibration labels, Панэкс product-quality rubric/eval scaffold, AND-22 adversarial product dogfood, AND-23 selector expansion BDD, AND-24 portable runner dogfood from `/private/tmp`, Signals frame, explicit-only invocation, external `--api-url` smoke mode, Fly.io production smoke for `refat,akimov`, AND-16 production external-links verification on Fly version `338`, AND-17 production expert_digest smoke for `refat`, AND-18 production-live BDD tests for two/three experts, AND-19 exact source expansion, AND-20 production evidence quality BDD, AND-21 product-quality guardrail tests, AND-22 production Панэкс product BDD, AND-23 selector UX product BDD, AND-24 cross-repo `panex ask` / `panex expand` production BDD, and AND-33 backend-durable `panex --save` artifact delivery.
-    *   **Пример команды:** *"Перед следующим слайсом repo-local subagent перечитай `docs/architecture/agent-context-api.md` и проверь Implementation Status."*
+- explicit-only: Панэкс вызывается только по явной просьбе;
+- default response: backend `expert_digest`;
+- raw/audit mode: только явно через `source_bundle`;
+- exact source reveal: `panex expand`;
+- real calls: `--save --receipt-json`;
+- wide delivery: `--all`, `--group`, или `--experts` с 6+ experts;
+- wide результат сохраняется artifact-first и читается через `panex read` / `panex export`;
+- external links в постах - references-only, без auto-fetch.
 
-*   **📄 `docs/quality/panex-product-quality-rubric.md` (AND-23)**
-    *   **О чём:** Первый слой оценки продуктового качества финального ответа Панэкса: request fidelity, source grounding, signal honesty, coverage, actionability, faithful digest delivery without second summarization, mode-aware `source_expand` passport, selector-based expansion UX, no-call clarification/boundary scenarios, scenario-specific forbidden terms, source expansion path, exact scope discipline и external-link boundary. Это не API-contract test и не LLM-оракул, а deterministic guardrail + human review support.
-    *   **Пример команды:** *"Проверь ответ Панэкса по `docs/quality/panex-product-quality-rubric.md` и сценариям `panex_quality_scenarios.json`."*
+Agent instruction files:
 
-*   **📄 `docs/quality/panex-product-quality-dogfood-2026-05-07.md` (AND-22)**
-    *   **О чём:** Отчёт production BDD dogfood для пяти adversarial user-style сценариев Панэкса: compact default, weak signal, human follow-up expansion, external links boundary и exact scope discipline.
-    *   **Пример команды:** *"Покажи выводы AND-22 dogfood по Панэксу."*
+- Codex repo-local: `.codex/agents/experts_panel_researcher.toml`
+- Claude repo-local: `.claude/agents/experts_panel_researcher.md`
+- Codex global: `/Users/andreysazonov/.codex/agents/experts_panel_researcher.toml`
 
-*   **📄 `docs/quality/panex-selector-expansion-dogfood-2026-05-07.md` (AND-23)**
-    *   **О чём:** Отчёт BDD/product dogfood для selector-based expansion UX: named expert expansion, claim selector, comments/weak-source focus, ambiguity clarification и no-previous-digest boundary.
-    *   **Пример команды:** *"Покажи выводы AND-23 selector expansion dogfood по Панэксу."*
+Если меняется поведение Панэкса, синхронизируй repo-local и global Codex agent.
+Global copy живёт вне git.
 
-*   **📄 `docs/quality/panex-portable-runner-dogfood-2026-05-07.md` (AND-24)**
-    *   **О чём:** Отчёт BDD/product dogfood для cross-repo `panex` runner: установка user-level shim, `panex doctor`, production `panex ask` и `panex expand` из `/private/tmp`, Fly.io defaults, token-safety и explicit local/debug boundary.
-    *   **Пример команды:** *"Покажи выводы AND-24 portable runner dogfood по Панэксу."*
+## Expert Admission / Knowledge Matrix
 
----
+SSOT: `docs/architecture/expert-admission-control.md`.
 
-## 🛠️ 3. Инструкции (Действия): `docs/guides/`
-Сюда идем, когда нужно что-то **сделать руками** по четкому алгоритму.
+Короткая доктрина:
 
-*   **📄 `add-expert.md`**
-    *   **О чём:** Пошаговый алгоритм добавления и удаления эксперта (скрипт -> дрифт -> UI -> Fly volume).
-    *   **Пример команды:** *"Добавь или убери эксперта строго по гайду `docs/guides/add-expert.md`."*
+- semantic passport даёт ценностно-смысловой профиль эксперта;
+- knowledge matrix даёт карту покрытия и стартовую механическую рекомендацию;
+- overlap/gap зона не решается чисто механически;
+- при сильных overlap нужен LLM/human semantic review по источникам;
+- не переусложнять служебкой: держать паспорт, матрицу, report/verdict и понятный artifact trail.
 
-*   **📄 `video-hub-operator.md`**
-    *   **О чём:** Полный плейбук оператора Video Hub. Внешняя сегментация, сценарии склейки (Short/Long), импорт JSON, примечания про Vertex runtime и embeddings.
-    *   **Пример команды:** *"Действуй по плейбуку `docs/guides/video-hub-operator.md` для добавления видео."*
+Generated artifacts:
 
-*   **📄 `panex-usage.md`**
-    *   **О чём:** Быстрая человеческая памятка по Панэксу: help-триггеры, artifact-first workflow через `--save --receipt-json`, wide delivery rule для `--all` / `--group` / 6+ experts, backend `result_url` / `backend_result_url`, `panex read`, `panex cleanup`, `panex guide`, `panex ask`, `panex expand`, `panex doctor`, выбор экспертов/групп, raw `source_bundle`, production/local boundaries, external links и комментарии.
-    *   **Пример команды:** *"Напомни по `docs/guides/panex-usage.md`, как правильно пользоваться Панэксом."*
+| Artifact | Зачем |
+| --- | --- |
+| `output/expert_admission/admission_manifest.json` | Кто принят в матрицу и где лежат паспорта/reports. |
+| `output/expert_admission/knowledge_matrix/knowledge_matrix.md` | Человеческая версия матрицы. |
+| `output/expert_admission/knowledge_matrix/knowledge_matrix.json` | Машинная версия матрицы. |
+| `output/expert_admission/current_coverage.md` | Snapshot покрытия и caveats по данным. |
+| `output/expert_admission/semantic_passports/<expert>/...` | Паспорта экспертов. |
+| `output/expert_admission/candidates/<expert>/...` | Admission reports и impact/arbitration artifacts. |
 
-*   **📄 `drift-analysis.md`**
-    *   **О чём:** Как запускать анализ дрифта тем (смена контекста в комментариях) и интерпретировать результаты.
-    *   **Пример команды:** *"Напомни по `docs/guides/drift-analysis.md`, как проверить статус дрифта."*
+Generated artifacts лучше регенерировать скриптами, а не править руками.
 
-*   **📄 `ab-testing-super-passport.md`** *(NEW)*
-    *   **О чём:** Руководство по сравнению MapReduce и Hybrid Retrieval (Embs&Keys). A/B тестирование, Recall, latency.
-    *   **Пример команды:** *"Запусти A/B тест по гайду `docs/guides/ab-testing-super-passport.md`."*
+## Operator Guides
 
+| Файл | Когда читать |
+| --- | --- |
+| `docs/guides/add-expert.md` | Добавление/удаление эксперта, DB/embedding/Fly sync. |
+| `docs/guides/panex-usage.md` | Как пользоваться Панэксом из чата или CLI. |
+| `docs/guides/drift-analysis.md` | Проверка тематического drift. |
+| `docs/guides/ab-testing-super-passport.md` | A/B MapReduce vs Hybrid Retrieval. |
+| `docs/guides/video-hub-operator.md` | Операторский Video Hub workflow. |
+| `docs/guides/add-video.md` | Короткий flow добавления видео. |
 
----
+## Quality Docs
 
-## 💡 4. Будущее (Видения) & Роудмапы: `docs/concepts/` и `docs/roadmap/`
-Сюда AI заглядывает, чтобы понять стратегический вектор развития, текущие планы и "крутить" сложные бизнес-идеи.
+| Файл | Роль |
+| --- | --- |
+| `docs/quality/panex-product-quality-rubric.md` | Рубрика качества ответа Панэкса. |
+| `docs/quality/panex-product-quality-dogfood-2026-05-07.md` | Product-quality dogfood snapshot. |
+| `docs/quality/panex-selector-expansion-dogfood-2026-05-07.md` | Selector expansion dogfood snapshot. |
+| `docs/quality/panex-portable-runner-dogfood-2026-05-07.md` | Portable runner dogfood snapshot. |
 
-*   **📄 `docs/roadmap/scout-next-steps.md`** *(❌ Phases 2-4 Removed)*
-    *   **О чём:** Исторический план Metadata Enrichment. Фазы 2-4 удалены в марте 2026 — заменены на Hybrid Retrieval (Vector KNN + FTS5 + RRF). Фаза 1 (UI Toggle) по-прежнему активна.
-    *   **Пример команды:** *"Глянь историю эволюции поиска в `docs/roadmap/scout-next-steps.md`."*
+Quality docs - evidence snapshots and guardrails, not current API specs.
 
-*   **📄 `hybrid_retrieval_plan.md`** *(✅ Implemented)*
-    *   **О чём:** Реализованный план гибридного поиска (Векторный KNN через sqlite-vec + FTS5 BM25 + RRF). Интегрирован в основную ветку как `HybridRetrievalService`.
-    *   **Пример команды:** *"Изучи реализованный план `hybrid_retrieval_plan.md` перед правками слоя Retrieval."*
+## Concepts, Roadmap, Archive
 
-*   **📄 `docs/roadmap/video-hub-scaling.md`** *(Active Roadmap)*
-    *   **О чём:** Полный аудит Video Hub: сильные стороны (Summary Bridging, Topic Threading), 4 проблемы масштабирования (brute-force загрузка, нет chunking, нет retry, created_at), 5 nice-to-have улучшений. Файловая карта всех 11 файлов сервиса.
-    *   **Триггер:** Реализовывать при ~100-150 сегментах или 10+ видео.
-    *   **Пример команды:** *"Перед доработкой Video Hub — изучи план в `docs/roadmap/video-hub-scaling.md`."*
+| Файл/папка | Статус |
+| --- | --- |
+| `docs/concepts/ai-architect-mode.md` | Product concept, not runtime behavior. |
+| `docs/roadmap/video-hub-scaling.md` | Active scaling roadmap for larger Video Hub usage. |
+| `docs/roadmap/scout-next-steps.md` | Historical metadata-enrichment plan; removed phases are not active. |
+| `hybrid_retrieval_plan.md` | Historical implemented plan; current retrieval SSOT is `super-passport-search.md`. |
+| `docs/archive/*` | Historical only. Do not route new implementation from archive docs. |
 
-*   **📄 `docs/roadmap/backend-runtime-cleanup.md`** *(✅ Completed Initiative / Audit Trail)*
-    *   **О чём:** Завершённый cleanup после миграции на Vertex AI: canonical runtime client, честные `/health` и `/health/live`, единый стандарт для standalone CLI scripts, архивирование stale manual/debug entrypoints.
-    *   **Триггер:** Когда нужно понять, почему backend runtime/health/CLI сейчас устроены именно так, или повторить похожую cleanup-инициативу без возвращения legacy-хаоса.
-    *   **Пример команды:** *"Перед правками runtime-слоя и health-check посмотри итог в `docs/roadmap/backend-runtime-cleanup.md`."*
+## Update Checklist
 
-*   **📄 `docs/concepts/ai-architect-mode.md` (Генератор решений)**
-    *   **О чём:** Концепция перехода от RAG-поиска к Agentic-синтезу решений на основе ТЗ клиента. "Газ-Квас-Алмаз" воркфлоу.
-    *   **Пример команды:** *"Как мы можем прокрутить эту бизнес-идею через логику из `docs/concepts/ai-architect-mode.md`?"*
+| Change | Update |
+| --- | --- |
+| Pipeline/model/SSE/final delivery | `docs/architecture/pipeline.md`; maybe `CLAUDE.md`, `backend/CLAUDE.md` |
+| Hybrid search / embeddings / FTS5 / Scout | `docs/architecture/super-passport-search.md`; maybe `pipeline.md` |
+| Панэкс CLI/API/subagent behavior | `docs/guides/panex-usage.md`, `docs/architecture/agent-context-api.md`, repo-local agent files, global Codex agent |
+| New env var | `.env.example`, `backend/CLAUDE.md`, relevant architecture doc |
+| Expert roster/groups | `docs/architecture/current-expert-roster.md`, `docs/guides/add-expert.md`, frontend config if UI changes |
+| Expert admission doctrine / matrix workflow | `docs/architecture/expert-admission-control.md`; this map only if navigation changes |
+| Add/remove expert scripts | `docs/guides/add-expert.md` |
+| Video Hub behavior | `docs/architecture/video-hub-service.md`, `docs/guides/video-hub-operator.md` |
+| Reddit behavior | `docs/architecture/reddit-service.md`; maybe `CLAUDE.md` |
+| Frontend layout/state | `frontend/CLAUDE.md` |
+| Backend runtime/health/CLI bootstrap | `docs/roadmap/backend-runtime-cleanup.md`, `backend/CLAUDE.md` |
 
----
-
-## 💻 5. Локальная Документация (Код)
-Специфичные инструкции для бэкенда и фронтенда.
-
-*   **Backend:** `backend/CLAUDE.md` (Описание сервисов, команды запуска, миграции).
-*   **Frontend:** `frontend/CLAUDE.md` (Структура компонентов, стейт-менеджмент).
-
----
-
-## 🗑️ 5. Архив: `docs/archive/`
-Это "кладбище" старых идей и отчетов.
-*   **`plans/`**: Старые планы фич (v2, v3).
-*   **`reports/`**: Отчеты о тестах Reddit, миграции и оптимизации.
-*   **Правило:** **Никогда** не направляй AI в эту папку как в источник истины. Она только для исторической справки человеку.
-
----
-
-## 🔄 6. Чеклист обновления документации
-
-При изменении кода — обновляй документацию по этой таблице. **Проверяй только указанные файлы**, не все подряд.
-
-### Изменения в моделях / конфигурации LLM
-
-| Что менял | Обнови |
-|-----------|--------|
-| Модель в `config.py` (MODEL_*) | `CLAUDE.md` (таблица моделей), `backend/CLAUDE.md` (таблица сервисов), `docs/architecture/pipeline.md` (таблица моделей), `.env.example` |
-| Новая env-переменная | `.env.example`, `backend/CLAUDE.md` (секция Configuration) |
-| Удалил env-переменную | Те же + проверь `.gemini/GEMINI.md` |
-
-### Изменения в пайплайне
-
-| Что менял | Обнови |
-|-----------|--------|
-| Добавил/удалил фазу пайплайна | `docs/architecture/pipeline.md`, `CLAUDE.md` (Architecture Overview), `backend/CLAUDE.md` (таблица сервисов) |
-| Изменил логику существующей фазы | `docs/architecture/pipeline.md` (описание фазы) |
-| Изменил Hybrid Search / FTS5 / Scout | `docs/architecture/super-passport-search.md`, `docs/architecture/pipeline.md` (Phase 1) |
-| Изменил Reddit pipeline | `docs/architecture/reddit-service.md`, `CLAUDE.md` (секция Reddit) |
-| Изменил Video Hub | `docs/architecture/video-hub-service.md`, `docs/guides/video-hub-operator.md` |
-| Изменил Meta-Synthesis | `docs/architecture/pipeline.md` (Phase 10), `backend/CLAUDE.md` (таблица сервисов), `backend/prompts/meta_synthesis_prompt.txt` |
-
-### Изменения в инфраструктуре
-
-| Что менял | Обнови |
-|-----------|--------|
-| Изменил `update_production_db.sh` | `CLAUDE.md` ("Cycle of Life" секция), при изменении DB-deploy semantics — `docs/guides/add-expert.md` |
-| Изменил `add_new_expert.sh` | `docs/guides/add-expert.md` |
-| Изменил `deploy_video.sh` | `docs/guides/video-hub-operator.md` |
-| Добавил/удалил эксперта или поменял `expert_metadata` | `docs/architecture/current-expert-roster.md`, `docs/guides/add-expert.md` |
-| Изменил `run_drift_service.py` или `analyze_specific_drift.py` | `docs/guides/add-expert.md`, `docs/guides/drift-analysis.md`, при необходимости `backend/CLAUDE.md` |
-| Изменил `embed_posts.py` | `CLAUDE.md` ("Cycle of Life"), `docs/guides/add-video.md`, при необходимости `backend/CLAUDE.md` |
-| Добавил/удалил сервис (файл в `services/`) | `backend/CLAUDE.md` (таблица сервисов), `CLAUDE.md` (Key Files) |
-| Новая миграция БД | `backend/CLAUDE.md`, при необходимости `docs/architecture/pipeline.md` |
-
-### Изменения во фронтенде
-
-| Что менял | Обнови |
-|-----------|--------|
-| Новый компонент | `frontend/CLAUDE.md` (Project Structure) |
-| Изменил layout / UX | `frontend/CLAUDE.md` (Core Layout & UX) |
-| Новый стейт в App.tsx | `frontend/CLAUDE.md` (State Management) |
-| Изменил `frontend/src/config/expertConfig.ts` | `docs/architecture/current-expert-roster.md`, `docs/guides/add-expert.md`; если изменились группы/UX — `frontend/CLAUDE.md` |
-
-### Удаление кода
-
-| Что менял | Обнови |
-|-----------|--------|
-| Удалил скрипт/сервис/файл | `grep` по всем `.md` файлам на имя удалённого файла. Обнови или удали ссылки. |
-
----
-
-## 🤝 Как давать идеальные команды AI?
-
-1.  **При добавлении фичи:** *"В контексте `docs/architecture/reddit-service.md` предложи, как улучшить дедупликацию."*
-2.  **При исправлении логики:** *"Ты противоречишь архитектуре! Перечитай `docs/architecture/pipeline.md` про фазу Reduce."*
-3.  **При рутинных задачах:** *"Действуем строго по `docs/guides/add-expert.md`."*
+If a file or command is removed, run `rg` over Markdown docs for stale
+references and update only real hits.

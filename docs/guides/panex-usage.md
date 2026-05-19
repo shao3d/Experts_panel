@@ -1,7 +1,7 @@
 # Panex Usage Guide
 
 **Status:** Active
-**Last updated:** 2026-05-19
+**Last updated:** 2026-05-20
 
 This is the human-facing quick guide for using Панэкс from Codex/Claude chats
 in any repo.
