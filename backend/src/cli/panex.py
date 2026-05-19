@@ -12,6 +12,7 @@ import time
 import uuid
 from pathlib import Path
 from typing import Any
+from urllib.parse import urljoin
 
 import requests
 
@@ -222,29 +223,53 @@ def build_ask_payload(args: argparse.Namespace) -> dict[str, Any]:
     return payload
 
 
-def call_ask_api(args: argparse.Namespace) -> dict[str, Any]:
-    return _post_json(
-        api_url=_resolve_api_url(
-            args,
-            production_url=PRODUCTION_AGENT_CONTEXT_API_URL,
-            local_url=LOCAL_AGENT_CONTEXT_API_URL,
-        ),
+def call_ask_api(
+    args: argparse.Namespace,
+    *,
+    artifact_delivery: bool = False,
+) -> tuple[dict[str, Any], dict[str, Any] | None]:
+    api_url = _resolve_api_url(
+        args,
+        production_url=PRODUCTION_AGENT_CONTEXT_API_URL,
+        local_url=LOCAL_AGENT_CONTEXT_API_URL,
+    )
+    timeout_seconds = _resolve_timeout(args.timeout)
+    payload = _post_json(
+        api_url=_artifact_api_url(api_url) if artifact_delivery else api_url,
         payload=build_ask_payload(args),
-        timeout_seconds=_resolve_timeout(args.timeout),
+        timeout_seconds=timeout_seconds,
         error_prefix="Panex ask",
+    )
+    return _resolve_backend_artifact_payload(
+        payload,
+        base_api_url=api_url,
+        timeout_seconds=timeout_seconds,
+        error_prefix="Panex ask artifact",
     )
 
 
-def call_expand_api(args: argparse.Namespace) -> dict[str, Any]:
-    return _post_json(
-        api_url=_resolve_api_url(
-            args,
-            production_url=PRODUCTION_AGENT_CONTEXT_EXPAND_API_URL,
-            local_url=LOCAL_AGENT_CONTEXT_EXPAND_API_URL,
-        ),
+def call_expand_api(
+    args: argparse.Namespace,
+    *,
+    artifact_delivery: bool = False,
+) -> tuple[dict[str, Any], dict[str, Any] | None]:
+    api_url = _resolve_api_url(
+        args,
+        production_url=PRODUCTION_AGENT_CONTEXT_EXPAND_API_URL,
+        local_url=LOCAL_AGENT_CONTEXT_EXPAND_API_URL,
+    )
+    timeout_seconds = _resolve_timeout(args.timeout)
+    payload = _post_json(
+        api_url=_artifact_api_url(api_url) if artifact_delivery else api_url,
         payload=build_expand_payload(args),
-        timeout_seconds=_resolve_timeout(args.timeout),
+        timeout_seconds=timeout_seconds,
         error_prefix="Panex expand",
+    )
+    return _resolve_backend_artifact_payload(
+        payload,
+        base_api_url=api_url,
+        timeout_seconds=timeout_seconds,
+        error_prefix="Panex expand artifact",
     )
 
 
@@ -320,12 +345,17 @@ def main(argv: list[str] | None = None, *, load_env: bool = True) -> int:
             return 0
         if args.command == "ask":
             _validate_artifact_args(args)
-            payload = call_ask_api(args)
+            artifact_delivery = _should_write_artifact(args)
+            payload, backend_receipt = call_ask_api(
+                args,
+                artifact_delivery=artifact_delivery,
+            )
             if _should_write_artifact(args):
                 receipt = _write_artifact_response(
                     payload=payload,
                     args=args,
                     operation="ask",
+                    backend_receipt=backend_receipt,
                 )
                 _print_artifact_receipt(receipt, as_json=args.receipt_json)
             elif args.json:
@@ -335,13 +365,18 @@ def main(argv: list[str] | None = None, *, load_env: bool = True) -> int:
             return 0
         if args.command == "expand":
             _validate_artifact_args(args)
-            payload = call_expand_api(args)
+            artifact_delivery = _should_write_artifact(args)
+            payload, backend_receipt = call_expand_api(
+                args,
+                artifact_delivery=artifact_delivery,
+            )
             if _should_write_artifact(args):
                 receipt = _write_artifact_response(
                     payload=payload,
                     args=args,
                     operation="expand",
                     source_keys=build_expand_payload(args).get("source_keys") or [],
+                    backend_receipt=backend_receipt,
                 )
                 _print_artifact_receipt(receipt, as_json=args.receipt_json)
             elif args.json:
@@ -469,6 +504,76 @@ def _post_json(
         raise AgentContextCliError(f"{error_prefix} returned non-JSON response") from exc
 
 
+def _get_json(
+    *,
+    api_url: str,
+    timeout_seconds: float,
+    error_prefix: str,
+) -> dict[str, Any]:
+    token = os.getenv("AGENT_CONTEXT_API_TOKEN")
+    if not token:
+        raise AgentContextCliError(
+            "AGENT_CONTEXT_API_TOKEN is required for panex production calls. "
+            "Configure the production token in the current environment."
+        )
+
+    try:
+        response = requests.get(
+            api_url,
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=timeout_seconds,
+        )
+        response.raise_for_status()
+    except requests.Timeout as exc:
+        raise AgentContextCliError(
+            f"{error_prefix} request timed out after {timeout_seconds:g}s"
+        ) from exc
+    except requests.ConnectionError as exc:
+        raise AgentContextCliError(f"{error_prefix} endpoint is unreachable: {exc}") from exc
+    except requests.HTTPError as exc:
+        raise AgentContextCliError(_format_http_error(exc)) from exc
+    except requests.RequestException as exc:
+        raise AgentContextCliError(f"{error_prefix} request failed: {exc}") from exc
+
+    try:
+        return response.json()
+    except ValueError as exc:
+        raise AgentContextCliError(f"{error_prefix} returned non-JSON response") from exc
+
+
+def _artifact_api_url(api_url: str) -> str:
+    stripped = api_url.rstrip("/")
+    if stripped.endswith("/artifact"):
+        return stripped
+    return f"{stripped}/artifact"
+
+
+def _resolve_backend_artifact_payload(
+    payload: dict[str, Any],
+    *,
+    base_api_url: str,
+    timeout_seconds: float,
+    error_prefix: str,
+) -> tuple[dict[str, Any], dict[str, Any] | None]:
+    result_url = payload.get("result_url")
+    if not result_url:
+        return payload, None
+
+    artifact_payload = _get_json(
+        api_url=urljoin(base_api_url, str(result_url)),
+        timeout_seconds=timeout_seconds,
+        error_prefix=error_prefix,
+    )
+    receipt_request_id = payload.get("request_id")
+    artifact_request_id = artifact_payload.get("request_id")
+    if receipt_request_id and artifact_request_id and receipt_request_id != artifact_request_id:
+        raise AgentContextCliError(
+            "backend artifact request_id mismatch: "
+            f"receipt={receipt_request_id} artifact={artifact_request_id}"
+        )
+    return artifact_payload, payload
+
+
 def _resolve_api_url(
     args: argparse.Namespace,
     *,
@@ -537,6 +642,7 @@ def _write_artifact_response(
     args: argparse.Namespace,
     operation: str,
     source_keys: list[str] | None = None,
+    backend_receipt: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     if args.output:
         response_path = Path(args.output).expanduser()
@@ -556,6 +662,7 @@ def _write_artifact_response(
         receipt_path=receipt_path,
         response_bytes=response_bytes,
         source_keys=source_keys or [],
+        backend_receipt=backend_receipt,
     )
     if receipt_path is not None:
         _write_json_atomic(receipt_path, receipt)
@@ -570,6 +677,7 @@ def _build_artifact_receipt(
     receipt_path: Path | None,
     response_bytes: int,
     source_keys: list[str],
+    backend_receipt: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     mode = payload.get("mode")
     receipt: dict[str, Any] = {
@@ -599,6 +707,9 @@ def _build_artifact_receipt(
         receipt["read_next"].append(
             f"panex read --path {response_path} --source-key {source_keys[0]} --json"
         )
+    if backend_receipt:
+        receipt["backend_result_url"] = backend_receipt.get("result_url")
+        receipt["backend_response_bytes"] = backend_receipt.get("response_bytes")
     return receipt
 
 

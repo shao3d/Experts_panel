@@ -82,6 +82,7 @@ AGENT_CONTEXT_DIGEST_MAX_SIGNALS: int = int(
 AGENT_CONTEXT_DIGEST_MAX_OUTPUT_TOKENS: int = int(
     os.getenv("AGENT_CONTEXT_DIGEST_MAX_OUTPUT_TOKENS", "16384")
 )
+AGENT_CONTEXT_RESULTS_DIR: str | None = os.getenv("AGENT_CONTEXT_RESULTS_DIR")
 
 # --- Model Configuration ---
 # Only Gemini models on Vertex AI are supported.
@@ -230,6 +231,8 @@ def get_runtime_config_log_lines() -> list[str]:
             f"links/source={_display_cap(AGENT_CONTEXT_DIGEST_MAX_LINKS_PER_SOURCE)}, "
             f"signals={_display_cap(AGENT_CONTEXT_DIGEST_MAX_SIGNALS)}, "
             f"output_tokens={AGENT_CONTEXT_DIGEST_MAX_OUTPUT_TOKENS}",
+            "  Agent Context Results Dir: "
+            f"{AGENT_CONTEXT_RESULTS_DIR or 'default next to backend log'}",
             "--- Loaded logging configuration ---",
             f"  Log Level:         {LOG_LEVEL}",
             f"  Backend Log File:  {BACKEND_LOG_FILE}",

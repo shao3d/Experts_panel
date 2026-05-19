@@ -1,14 +1,21 @@
 """Endpoint skeleton for the explicit-only Agent Context API."""
 
 import asyncio
+import json
+import logging
+import os
+from pathlib import Path
+import re
 import time
 from typing import Any, Iterable
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from .dependencies import verify_agent_context_token
 from .models import (
+    AgentContextArtifactReceipt,
     AgentContextRequest,
     AgentContextResponse,
     AgentSourceExpandRequest,
@@ -58,8 +65,99 @@ _KNOWN_AGENT_CONTEXT_EXPERT_IDS = {
 _AGENT_CONTEXT_EXCLUDED_EXPERT_IDS = {"video_hub"}
 
 _SUPPORTED_EXPERT_SCOPES = {"all", "group", "custom", "none"}
+_REQUEST_ID_RE = re.compile(r"^[a-f0-9-]{36}$")
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/agent", tags=["agent-context"])
+
+
+def _agent_context_results_dir() -> Path:
+    """Return the durable Agent Context result directory."""
+
+    configured = config.AGENT_CONTEXT_RESULTS_DIR
+    if configured:
+        return Path(configured).expanduser()
+    return (
+        Path(config.BACKEND_LOG_FILE)
+        .expanduser()
+        .resolve()
+        .parent
+        / "agent_context_results"
+    )
+
+
+def _agent_context_result_path(request_id: str) -> Path:
+    """Build a safe path for a saved Agent Context response."""
+
+    if not _REQUEST_ID_RE.match(request_id):
+        raise HTTPException(status_code=400, detail="Invalid request_id")
+    return _agent_context_results_dir() / f"{request_id}.json"
+
+
+def _response_payload(response: Any) -> dict[str, Any]:
+    if hasattr(response, "model_dump"):
+        payload = response.model_dump(mode="json")
+    else:
+        payload = response
+    if not isinstance(payload, dict):
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Agent Context response is not a JSON object",
+        )
+    return payload
+
+
+def _persist_agent_context_result(response: Any) -> tuple[Path, int]:
+    """Persist a completed Agent Context response before returning a compact receipt."""
+
+    payload = _response_payload(response)
+    request_id = str(payload.get("request_id") or "")
+    result_path = _agent_context_result_path(request_id)
+    result_path.parent.mkdir(parents=True, exist_ok=True)
+
+    serialized = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+    tmp_path = result_path.with_suffix(".json.tmp")
+    tmp_path.write_bytes(serialized)
+    os.replace(tmp_path, result_path)
+
+    logger.info(
+        "Saved Agent Context result artifact: request_id=%s bytes=%s path=%s",
+        request_id,
+        len(serialized),
+        result_path,
+    )
+    return result_path, len(serialized)
+
+
+def _agent_context_result_url(request_id: str) -> str:
+    return f"/api/v1/agent/context/{request_id}/result"
+
+
+def _artifact_receipt(
+    *,
+    response: Any,
+    operation: str,
+    response_bytes: int,
+) -> AgentContextArtifactReceipt:
+    payload = _response_payload(response)
+    experts = payload.get("experts") or []
+    sources = payload.get("sources") or []
+    return AgentContextArtifactReceipt(
+        operation=operation,
+        request_id=str(payload["request_id"]),
+        mode=str(payload.get("mode") or "unknown"),
+        result_url=_agent_context_result_url(str(payload["request_id"])),
+        response_bytes=response_bytes,
+        query=payload.get("query"),
+        expert_count=len(experts) if isinstance(experts, list) else 0,
+        source_keys=[
+            str(source.get("source_key"))
+            for source in sources
+            if isinstance(source, dict) and source.get("source_key")
+        ],
+        warnings=list(payload.get("warnings") or []),
+    )
 
 
 def get_db():
@@ -286,6 +384,33 @@ async def _build_source_expand_response(
     return response
 
 
+@router.get(
+    "/context/{request_id}/result",
+    dependencies=[Depends(verify_agent_context_token)],
+)
+async def get_saved_agent_context_result(request_id: str):
+    """Fetch a saved Agent Context response by request_id."""
+
+    result_path = _agent_context_result_path(request_id)
+    if not result_path.exists():
+        raise HTTPException(status_code=404, detail="Agent Context result not found")
+
+    try:
+        payload = json.loads(result_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        logger.error(
+            "Saved Agent Context result is invalid JSON: %s",
+            result_path,
+            exc_info=True,
+        )
+        raise HTTPException(
+            status_code=500,
+            detail="Saved Agent Context result is invalid",
+        ) from exc
+
+    return JSONResponse(content=payload)
+
+
 @router.post(
     "/context",
     response_model=AgentContextResponse,
@@ -315,6 +440,44 @@ async def create_agent_context(
             status_code=status.HTTP_504_GATEWAY_TIMEOUT,
             detail="Agent Context API request exceeded configured timeout",
         ) from exc
+
+
+@router.post(
+    "/context/artifact",
+    response_model=AgentContextArtifactReceipt,
+    dependencies=[Depends(verify_agent_context_token)],
+)
+async def create_agent_context_artifact(
+    agent_request: AgentContextRequest,
+    http_request: Request,
+    db: Session = Depends(get_db),
+) -> AgentContextArtifactReceipt:
+    """Build, save, and return a compact receipt for an Agent Context response."""
+    start_time = time.perf_counter()
+    timeout_seconds = config.AGENT_CONTEXT_TIMEOUT_SECONDS
+    if timeout_seconds <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="AGENT_CONTEXT_TIMEOUT_SECONDS must be positive",
+        )
+
+    try:
+        response = await asyncio.wait_for(
+            _build_agent_context_response(agent_request, http_request, db, start_time),
+            timeout=timeout_seconds,
+        )
+    except asyncio.TimeoutError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+            detail="Agent Context API request exceeded configured timeout",
+        ) from exc
+
+    _, response_bytes = _persist_agent_context_result(response)
+    return _artifact_receipt(
+        response=response,
+        operation="ask",
+        response_bytes=response_bytes,
+    )
 
 
 @router.post(
@@ -351,3 +514,46 @@ async def expand_agent_context_sources(
             status_code=status.HTTP_504_GATEWAY_TIMEOUT,
             detail="Agent Context API source expansion exceeded configured timeout",
         ) from exc
+
+
+@router.post(
+    "/context/expand/artifact",
+    response_model=AgentContextArtifactReceipt,
+    dependencies=[Depends(verify_agent_context_token)],
+)
+async def expand_agent_context_sources_artifact(
+    expand_request: AgentSourceExpandRequest,
+    http_request: Request,
+    db: Session = Depends(get_db),
+) -> AgentContextArtifactReceipt:
+    """Build, save, and return a compact receipt for an exact source expansion."""
+    start_time = time.perf_counter()
+    timeout_seconds = config.AGENT_CONTEXT_TIMEOUT_SECONDS
+    if timeout_seconds <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="AGENT_CONTEXT_TIMEOUT_SECONDS must be positive",
+        )
+
+    try:
+        response = await asyncio.wait_for(
+            _build_source_expand_response(
+                expand_request,
+                http_request,
+                db,
+                start_time,
+            ),
+            timeout=timeout_seconds,
+        )
+    except asyncio.TimeoutError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+            detail="Agent Context API source expansion exceeded configured timeout",
+        ) from exc
+
+    _, response_bytes = _persist_agent_context_result(response)
+    return _artifact_receipt(
+        response=response,
+        operation="expand",
+        response_bytes=response_bytes,
+    )

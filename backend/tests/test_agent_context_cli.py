@@ -589,6 +589,68 @@ def test_panex_ask_save_receipt_json_writes_full_artifact_without_stdout_dump(
     assert json.loads(receipt_path.read_text(encoding="utf-8")) == receipt
 
 
+def test_panex_ask_save_uses_backend_artifact_delivery_when_available(
+    monkeypatch,
+    capsys,
+    tmp_path,
+    clean_agent_context_env,
+):
+    artifact_dir = tmp_path / "artifacts"
+    payload = _large_expert_digest_response()
+    backend_receipt = {
+        "kind": "agent_context_artifact",
+        "operation": "ask",
+        "request_id": payload["request_id"],
+        "mode": payload["mode"],
+        "result_url": f"/api/v1/agent/context/{payload['request_id']}/result",
+        "response_bytes": 12345,
+        "query": payload["query"],
+        "expert_count": 2,
+        "source_keys": [],
+        "warnings": [],
+    }
+    calls = {"post": [], "get": []}
+    monkeypatch.setenv("AGENT_CONTEXT_API_TOKEN", "secret-token")
+    monkeypatch.setenv("PANEX_ARTIFACT_DIR", str(artifact_dir))
+
+    def fake_post(url, *, headers, json, timeout):
+        calls["post"].append({"url": url, "json": json, "headers": headers})
+        return FakeResponse(payload=backend_receipt)
+
+    def fake_get(url, *, headers, timeout):
+        calls["get"].append({"url": url, "headers": headers})
+        return FakeResponse(payload=payload)
+
+    monkeypatch.setattr(panex.requests, "post", fake_post)
+    monkeypatch.setattr(panex.requests, "get", fake_get)
+
+    exit_code = panex.main(
+        [
+            "ask",
+            "--query",
+            "When should we use subagents?",
+            "--experts",
+            "refat,akimov",
+            "--save",
+            "--receipt-json",
+        ],
+        load_env=False,
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert calls["post"][0]["url"] == f"{panex.PRODUCTION_AGENT_CONTEXT_API_URL}/artifact"
+    assert calls["get"][0]["url"] == (
+        f"https://experts-panel.fly.dev/api/v1/agent/context/"
+        f"{payload['request_id']}/result"
+    )
+    receipt = json.loads(captured.out)
+    assert receipt["request_id"] == payload["request_id"]
+    assert receipt["backend_result_url"] == backend_receipt["result_url"]
+    assert receipt["backend_response_bytes"] == backend_receipt["response_bytes"]
+    assert json.loads(Path(receipt["artifact_path"]).read_text(encoding="utf-8")) == payload
+
+
 def test_panex_ask_save_uses_stable_default_artifact_dir(
     monkeypatch,
     capsys,

@@ -397,6 +397,21 @@ class AgentSourceExpandResponse(BaseModel):
     processing_time_ms: int = 0
 
 
+class AgentContextArtifactReceipt(BaseModel):
+    """Compact receipt for a saved Agent Context response artifact."""
+
+    kind: str = "agent_context_artifact"
+    operation: str
+    request_id: str
+    mode: str
+    result_url: str
+    response_bytes: int
+    query: Optional[str] = None
+    expert_count: int = 0
+    source_keys: List[str] = Field(default_factory=list)
+    warnings: List[str] = Field(default_factory=list)
+
+
 class AgentContextError(BaseModel):
     """Error response model for the Agent Context API."""
 

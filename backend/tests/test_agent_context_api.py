@@ -223,6 +223,49 @@ def test_agent_context_valid_token_returns_source_bundle_shape():
     assert "agent_context_source_pipeline_not_implemented" not in payload["warnings"]
 
 
+def test_agent_context_artifact_endpoint_saves_result_for_later_fetch(
+    monkeypatch,
+    tmp_path,
+):
+    monkeypatch.setattr(
+        config,
+        "AGENT_CONTEXT_RESULTS_DIR",
+        str(tmp_path / "agent-context-results"),
+    )
+
+    with TestClient(app) as client:
+        receipt_response = client.post(
+            "/api/v1/agent/context/artifact",
+            headers=_auth_headers(),
+            json=_agent_context_payload(expert_filter=["refat"]),
+        )
+
+        assert receipt_response.status_code == 200, receipt_response.text
+        receipt = receipt_response.json()
+        assert receipt["kind"] == "agent_context_artifact"
+        assert receipt["operation"] == "ask"
+        assert receipt["mode"] == "source_bundle"
+        assert receipt["expert_count"] == 1
+        assert receipt["response_bytes"] > 0
+        assert receipt["result_url"] == (
+            f"/api/v1/agent/context/{receipt['request_id']}/result"
+        )
+
+        unauthenticated = client.get(receipt["result_url"])
+        assert unauthenticated.status_code == 403
+
+        result_response = client.get(
+            receipt["result_url"],
+            headers=_auth_headers(),
+        )
+
+    assert result_response.status_code == 200, result_response.text
+    payload = result_response.json()
+    assert payload["request_id"] == receipt["request_id"]
+    assert payload["mode"] == "source_bundle"
+    assert [expert["expert_id"] for expert in payload["experts"]] == ["refat"]
+
+
 def test_agent_context_forces_embedding_hybrid_search_even_if_client_disables_toggle(
     monkeypatch,
 ):
@@ -1230,6 +1273,54 @@ def test_agent_context_expand_returns_raw_source_without_search_pipeline(monkeyp
     assert source["comments"]["community_comments"][0]["comment_text"] == "Community comment"
     assert source["evidence_quality"]["comment_signal"] == "mixed"
     assert source["evidence_quality"]["confidence"] in {"medium", "high"}
+
+
+def test_agent_context_expand_artifact_endpoint_saves_exact_source_result(
+    monkeypatch,
+    tmp_path,
+):
+    monkeypatch.setattr(
+        config,
+        "AGENT_CONTEXT_RESULTS_DIR",
+        str(tmp_path / "agent-context-results"),
+    )
+    fake_post = SimpleNamespace(
+        expert_id="refat",
+        telegram_message_id=101,
+        message_text="Refat raw source about exact expansion.",
+        author_name="Refat",
+        created_at=datetime.fromisoformat("2026-04-10T12:00:00"),
+    )
+    monkeypatch.setattr(
+        AgentContextService,
+        "_load_post_by_source_key",
+        lambda self, expert_id, telegram_message_id: fake_post,
+    )
+
+    with TestClient(app) as client:
+        receipt_response = client.post(
+            "/api/v1/agent/context/expand/artifact",
+            headers=_auth_headers(),
+            json={
+                "source_keys": ["refat:101"],
+                "include_comments": False,
+                "max_content_chars": 100,
+            },
+        )
+        assert receipt_response.status_code == 200, receipt_response.text
+        receipt = receipt_response.json()
+        assert receipt["kind"] == "agent_context_artifact"
+        assert receipt["operation"] == "expand"
+        assert receipt["mode"] == "source_expand"
+        assert receipt["source_keys"] == ["refat:101"]
+
+        result_response = client.get(receipt["result_url"], headers=_auth_headers())
+
+    assert result_response.status_code == 200, result_response.text
+    payload = result_response.json()
+    assert payload["request_id"] == receipt["request_id"]
+    assert payload["mode"] == "source_expand"
+    assert payload["sources"][0]["source_key"] == "refat:101"
 
 
 def test_agent_context_evidence_quality_calibration_distinguishes_practical_sources_from_announcements():

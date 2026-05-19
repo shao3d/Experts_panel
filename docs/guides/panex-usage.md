@@ -1,7 +1,7 @@
 # Panex Usage Guide
 
 **Status:** Active
-**Last updated:** 2026-05-16
+**Last updated:** 2026-05-19
 
 This is the human-facing quick guide for using Панэкс from Codex/Claude chats
 in any repo.
@@ -98,11 +98,15 @@ panex ask --query "..." --group tech_business --save --receipt-json
 ```
 
 This prevents large Панэкс responses from being truncated in tool output. The
-full API response is saved outside the current repo, under
-`PANEX_ARTIFACT_DIR` or, by default, `~/.local/share/panex/artifacts`. Stdout
-contains only a small receipt with `artifact_path`, `request_id`,
-`response_bytes`, warnings, and suggested `panex read` / `panex export`
-commands.
+backend first persists the completed Agent Context response and returns a compact
+server receipt. The CLI then fetches that saved backend result and writes a local
+copy outside the current repo, under `PANEX_ARTIFACT_DIR` or, by default,
+`~/.local/share/panex/artifacts`. Stdout contains only a small receipt with
+`artifact_path`, `request_id`, `response_bytes`, optional `backend_result_url`,
+warnings, and suggested `panex read` / `panex export` commands.
+
+This is transport hardening only. It does not add a new analysis mode and does
+not create a UI-style cross-expert meta-synthesis for Панэкс.
 
 Read saved results in slices:
 
@@ -126,6 +130,12 @@ The export writes:
 - `manifest.json` - compact machine-readable artifact passport;
 - `digest.md` - readable per-expert digest delivery with source handles;
 - `sources_index.tsv` - source handle index for targeted follow-up expansion.
+
+Backend artifact endpoints used by `panex --save`:
+
+- `POST /api/v1/agent/context/artifact` - build/save an `expert_digest` or `source_bundle` response and return a compact receipt;
+- `POST /api/v1/agent/context/expand/artifact` - build/save a `source_expand` response and return a compact receipt;
+- `GET /api/v1/agent/context/{request_id}/result` - fetch the saved backend result by `request_id`.
 
 ## Routing From Other Repos
 
