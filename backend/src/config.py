@@ -103,6 +103,9 @@ MODEL_DRIFT_ANALYSIS: str = os.getenv("MODEL_DRIFT_ANALYSIS", "gemini-3-flash-pr
 
 # --- Meta-Synthesis (Cross-Expert Analysis) ---
 MODEL_META_SYNTHESIS: str = os.getenv("MODEL_META_SYNTHESIS", "gemini-3-flash-preview")
+META_SYNTHESIS_TIMEOUT_SECONDS: float = float(
+    os.getenv("META_SYNTHESIS_TIMEOUT_SECONDS", "120")
+)
 
 # --- Embedding Configuration ---
 MODEL_EMBEDDING: str = os.getenv("MODEL_EMBEDDING", "gemini-embedding-001")
@@ -209,6 +212,7 @@ def get_runtime_config_log_lines() -> list[str]:
             f"  AI Scout:          {MODEL_SCOUT}",
             f"  Drift Analysis:    {MODEL_DRIFT_ANALYSIS}",
             f"  Meta-Synthesis:    {MODEL_META_SYNTHESIS}",
+            f"  Meta Timeout:      {META_SYNTHESIS_TIMEOUT_SECONDS:g}s",
             "--- Loaded limits configuration ---",
             f"  Map Max Parallel:      {MAP_MAX_PARALLEL}",
             f"  Max Concurrent Experts: {MAX_CONCURRENT_EXPERTS}",

@@ -1629,7 +1629,7 @@ async def event_generator_parallel(
                 # Meta-synthesis still running after Reddit completed — wait with keep-alive
                 logger.info("Waiting for meta-synthesis to complete...")
                 meta_wait_start = time.time()
-                meta_timeout = 30.0
+                meta_timeout = max(1.0, float(config.META_SYNTHESIS_TIMEOUT_SECONDS))
                 while (
                     not meta_task.done()
                     and (time.time() - meta_wait_start) < meta_timeout
@@ -1683,7 +1683,8 @@ async def event_generator_parallel(
                 # Timeout — cancel and proceed without
                 meta_task.cancel()
                 logger.warning(
-                    "Meta-synthesis timed out (30s), proceeding without"
+                    "Meta-synthesis timed out (%.0fs), proceeding without",
+                    meta_timeout,
                 )
                 try:
                     await meta_task
@@ -1695,7 +1696,7 @@ async def event_generator_parallel(
                     phase="meta_synthesis",
                     status="error",
                     message="Cross-expert analysis timed out",
-                    data={},
+                    data={"timeout_seconds": meta_timeout},
                 )
                 yield yield_event(event)
 
