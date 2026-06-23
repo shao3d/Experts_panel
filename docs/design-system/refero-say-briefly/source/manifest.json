@@ -1,0 +1,82 @@
+{
+  "retrievedAtUtc": "2026-06-23T11:41:14Z",
+  "referoStyleUrl": "https://styles.refero.design/style/8b91f4c9-74e5-4925-90a3-3dd31fd5725e",
+  "referoApiUrl": "https://styles.refero.design/api/styles/8b91f4c9-74e5-4925-90a3-3dd31fd5725e",
+  "style": {
+    "id": "8b91f4c9-74e5-4925-90a3-3dd31fd5725e",
+    "siteName": "Say Briefly",
+    "siteUrl": "https://saybriefly.com",
+    "colorScheme": "light",
+    "industry": "saas",
+    "createdAt": "2026-05-07T18:35:31.393Z"
+  },
+  "assets": {
+    "screenshotUrl": "https://images.refero.design/styles/refero.design/image/8f4126f7-517f-4e61-82d5-59ae0cf1c3a6.jpg",
+    "thumbnailUrl": "https://images.refero.design/styles/refero.design/image/c351e701-b007-4f9f-bda5-1d2b126e57ab.jpg",
+    "iconUrl": null,
+    "previewVideoUrl": "https://images.refero.design/styles/refero.design/video/810fda55-aa95-4138-b4b8-215228c62e72.mp4",
+    "previewVideoDetailUrl": "https://images.refero.design/styles/refero.design/video/a7059b6f-eb40-4185-aa75-1fd5ea1f1648.mp4"
+  },
+  "coverage": {
+    "referoTabs": [
+      "DESIGN.md",
+      "Tailwind v4",
+      "CSS Variables",
+      "Design Tokens"
+    ],
+    "sourcePayloads": [
+      "source/refero-style-api.json",
+      "source/refero-style-page.html"
+    ],
+    "generatedFiles": [
+      "DESIGN.md",
+      "tailwind-v4.css",
+      "tokens.css",
+      "design-tokens.json",
+      "README.md"
+    ],
+    "sourceAssets": [
+      "assets/screenshot.jpg",
+      "assets/thumbnail.jpg"
+    ]
+  },
+  "counts": {
+    "designSystemKeys": [
+      "colors",
+      "components",
+      "customSections",
+      "description",
+      "donts",
+      "dos",
+      "elevation",
+      "elevationPhilosophy",
+      "imagery",
+      "industry",
+      "layout",
+      "northStar",
+      "similar",
+      "spacing",
+      "surfaces",
+      "theme",
+      "typeScale",
+      "typography"
+    ],
+    "rawKeys": [
+      "colors",
+      "gradients",
+      "shapes",
+      "spacing",
+      "typography"
+    ],
+    "colors": 9,
+    "typography": 3,
+    "typeScale": 10,
+    "components": 13,
+    "dos": 7,
+    "donts": 7,
+    "customSections": 1,
+    "similarInDesignSystem": 4,
+    "similarFromApi": 20
+  },
+  "note": "Raw API and HTML snapshots are kept so the generated files can be audited or regenerated without relying on the live Refero UI."
+}
