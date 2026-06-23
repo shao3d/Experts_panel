@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import clsx from 'clsx';
 import QueryForm from './QueryForm';
 import ProgressSection from './ProgressSection';
@@ -13,13 +13,13 @@ interface QueryDeckStats {
 interface QueryDeckProps {
   onSubmit: (query: string) => void;
   disabled: boolean;
-  elapsedSeconds: number;
   selectedExperts: Set<string>;
   hasRedditEnabled: boolean;
   progressEvents: ProgressEvent[];
   stats?: QueryDeckStats;
   currentQuery: string;
   error?: string | null;
+  onStop?: () => void;
 }
 
 const PHASE_LABELS: Record<string, string> = {
@@ -59,22 +59,31 @@ function getActivePhaseLabel(progressEvents: ProgressEvent[]): string | null {
 const QueryDeck: React.FC<QueryDeckProps> = ({
   onSubmit,
   disabled,
-  elapsedSeconds,
   selectedExperts,
   hasRedditEnabled,
   progressEvents,
   stats,
   currentQuery,
   error,
+  onStop,
 }) => {
   const [draftQuery, setDraftQuery] = useState('');
   const [isExpanded, setIsExpanded] = useState(true);
+  const wasProcessingRef = useRef(false);
 
   useEffect(() => {
     if (error) {
       setIsExpanded(true);
     }
   }, [error]);
+
+  useEffect(() => {
+    if (wasProcessingRef.current && !disabled && !error && (currentQuery || stats)) {
+      setIsExpanded(false);
+    }
+
+    wasProcessingRef.current = disabled;
+  }, [currentQuery, disabled, error, stats]);
 
   const statusText = useMemo(() => {
     if (error) return 'Needs attention';
@@ -90,20 +99,14 @@ const QueryDeck: React.FC<QueryDeckProps> = ({
 
   const handleSubmit = (query: string) => {
     setDraftQuery(query);
-    setIsExpanded(false);
+    setIsExpanded(true);
     onSubmit(query);
   };
 
-  const handleEdit = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
-    setDraftQuery(currentQuery || draftQuery);
-    setIsExpanded(true);
-  };
-
-  const handleNewQuery = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
+  const handleStop = () => {
     setDraftQuery('');
     setIsExpanded(true);
+    onStop?.();
   };
 
   return (
@@ -114,11 +117,11 @@ const QueryDeck: React.FC<QueryDeckProps> = ({
             <QueryForm
               onSubmit={handleSubmit}
               disabled={disabled}
-              elapsedSeconds={elapsedSeconds}
               selectedExperts={selectedExperts}
               hasRedditEnabled={hasRedditEnabled}
               value={draftQuery}
               onChange={setDraftQuery}
+              onStop={handleStop}
             />
           </div>
 
@@ -156,28 +159,12 @@ const QueryDeck: React.FC<QueryDeckProps> = ({
           }}
           aria-label="Expand query panel"
         >
-          <span className="query-deck-compact-icon" aria-hidden="true">v</span>
           <span className="query-deck-compact-label">Query</span>
           <span className="query-deck-compact-query">{querySummary}</span>
           <span className={clsx('query-deck-compact-status', error && 'error')}>
             {statusText}
           </span>
-          <span className="query-deck-compact-actions">
-            <button
-              type="button"
-              className="query-deck-compact-action"
-              onClick={handleEdit}
-            >
-              Edit
-            </button>
-            <button
-              type="button"
-              className="query-deck-compact-action primary"
-              onClick={handleNewQuery}
-            >
-              New
-            </button>
-          </span>
+          <span className="query-deck-compact-icon" aria-hidden="true">v</span>
         </div>
       )}
     </section>

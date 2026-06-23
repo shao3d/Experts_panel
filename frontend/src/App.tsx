@@ -3,7 +3,7 @@
  * Connects all components and manages query state.
  */
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense, useRef } from 'react';
 import { QueryForm } from './components/QueryForm';
 import ExpertAccordion from './components/ExpertAccordion';
 import ProgressSection from './components/ProgressSection';
@@ -46,6 +46,9 @@ export const App: React.FC = () => {
   const [expandedExperts, setExpandedExperts] = useState<Set<string>>(new Set());
   const [currentQuery, setCurrentQuery] = useState<string>('');
   const [selectedExperts, setSelectedExperts] = useState<Set<string>>(new Set());
+  const [queryResetToken, setQueryResetToken] = useState(0);
+  const queryAbortControllerRef = useRef<AbortController | null>(null);
+  const activeQueryRunRef = useRef(0);
   
   // Search Options State (Lifted from QueryForm)
   const [useRecentOnly, setUseRecentOnly] = useState(false);
@@ -54,31 +57,6 @@ export const App: React.FC = () => {
   
   // Mobile Expert Selector Drawer State
   const [isExpertSelectorOpen, setIsExpertSelectorOpen] = useState(false);
-
-  // Timer state for processing time
-  const [startTime, setStartTime] = useState<number | null>(null);
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
-
-  // Timer management
-  useEffect(() => {
-    if (isProcessing && !startTime) {
-      setStartTime(Date.now());
-    }
-    if (!isProcessing) {
-      setStartTime(null);
-      setElapsedSeconds(0);
-    }
-  }, [isProcessing]);
-
-  useEffect(() => {
-    if (!isProcessing || !startTime) return;
-
-    const interval = setInterval(() => {
-      setElapsedSeconds(Math.floor((Date.now() - startTime) / 1000));
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [isProcessing, startTime]);
 
   // Load experts from API on mount
   useEffect(() => {
@@ -111,6 +89,12 @@ export const App: React.FC = () => {
    * Handle query submission
    */
   const handleQuerySubmit = async (query: string): Promise<void> => {
+    queryAbortControllerRef.current?.abort();
+    const queryRunId = activeQueryRunRef.current + 1;
+    activeQueryRunRef.current = queryRunId;
+    const abortController = new AbortController();
+    queryAbortControllerRef.current = abortController;
+
     // Reset state
     setIsProcessing(true);
     setProgressEvents([]);
@@ -127,10 +111,18 @@ export const App: React.FC = () => {
       const response = await apiClient.submitQuery(
         { query, expert_filter: experts, stream_progress: true, include_comments: true, include_comment_groups: true, use_recent_only: useRecentOnly, include_reddit: includeReddit, use_super_passport: useSuperPassport },
         (event: ProgressEvent) => {
+          if (abortController.signal.aborted || activeQueryRunRef.current !== queryRunId) {
+            return;
+          }
           // Add progress event to log
           setProgressEvents(prev => [...prev, event]);
-        }
+        },
+        abortController.signal
       );
+
+      if (abortController.signal.aborted || activeQueryRunRef.current !== queryRunId) {
+        return;
+      }
 
       // Set Reddit response if available
       if (response.reddit_response) {
@@ -172,12 +164,42 @@ export const App: React.FC = () => {
         setError('Failed to get experts response');
       }
     } catch (err) {
+      if (
+        abortController.signal.aborted ||
+        activeQueryRunRef.current !== queryRunId ||
+        (err instanceof Error && err.name === 'AbortError')
+      ) {
+        return;
+      }
+
       const errorMessage = err instanceof Error ? err.message : 'An error occurred';
       setError(errorMessage);
       console.error('Query failed:', err);
     } finally {
-      setIsProcessing(false);
+      if (activeQueryRunRef.current === queryRunId) {
+        setIsProcessing(false);
+        queryAbortControllerRef.current = null;
+      }
     }
+  };
+
+  /**
+   * Stop active query and reset the query surface for a fresh question.
+   */
+  const handleStopQuery = (): void => {
+    activeQueryRunRef.current += 1;
+    queryAbortControllerRef.current?.abort();
+    queryAbortControllerRef.current = null;
+
+    setIsProcessing(false);
+    setProgressEvents([]);
+    setExpertResponses([]);
+    setRedditResponse(null);
+    setMetaSynthesis(null);
+    setError(null);
+    setCurrentQuery('');
+    setIsExpertSelectorOpen(false);
+    setQueryResetToken(token => token + 1);
   };
 
   /**
@@ -242,13 +264,13 @@ export const App: React.FC = () => {
           <QueryDeck
             onSubmit={handleQuerySubmit}
             disabled={isProcessing}
-            elapsedSeconds={elapsedSeconds}
             selectedExperts={selectedExperts}
             hasRedditEnabled={includeReddit}
             progressEvents={progressEvents}
             stats={expertResponses.length > 0 ? getTotalStats() : undefined}
             currentQuery={currentQuery}
             error={error}
+            onStop={handleStopQuery}
           />
         </div>
 
@@ -358,9 +380,10 @@ export const App: React.FC = () => {
             <QueryForm
               onSubmit={handleQuerySubmit}
               disabled={isProcessing}
-              elapsedSeconds={elapsedSeconds}
               selectedExperts={selectedExperts}
               hasRedditEnabled={includeReddit}
+              onStop={handleStopQuery}
+              resetToken={queryResetToken}
             />
           </div>
         </div>

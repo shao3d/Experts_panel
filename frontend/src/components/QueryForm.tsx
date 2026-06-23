@@ -3,7 +3,7 @@
  * Simple textarea with submit button for MVP.
  */
 
-import React, { useState, FormEvent } from 'react';
+import React, { useEffect, useState, FormEvent } from 'react';
 
 interface QueryFormProps {
   /** Callback when query is submitted */
@@ -14,9 +14,6 @@ interface QueryFormProps {
 
   /** Placeholder text for input */
   placeholder?: string;
-
-  /** Elapsed processing time in seconds */
-  elapsedSeconds?: number;
 
   /** Set of selected expert IDs, used to disable submit button */
   selectedExperts?: Set<string>;
@@ -29,6 +26,12 @@ interface QueryFormProps {
 
   /** Controlled query change handler */
   onChange?: (value: string) => void;
+
+  /** Callback when active query should be stopped */
+  onStop?: () => void;
+
+  /** Token used to clear uncontrolled query value */
+  resetToken?: number;
 }
 
 /**
@@ -38,18 +41,30 @@ export const QueryForm: React.FC<QueryFormProps> = ({
   onSubmit,
   disabled = false,
   placeholder = "Ask experts about AI and related...",
-  elapsedSeconds = 0,
   selectedExperts = new Set(),
   hasRedditEnabled = true,
   value,
-  onChange
+  onChange,
+  onStop,
+  resetToken
 }) => {
   const [internalQuery, setInternalQuery] = useState('');
   const query = value ?? internalQuery;
   const setQuery = onChange ?? setInternalQuery;
 
+  useEffect(() => {
+    if (value === undefined) {
+      setInternalQuery('');
+    }
+  }, [resetToken, value]);
+
   const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
+
+    if (disabled) {
+      onStop?.();
+      return;
+    }
 
     const trimmed = query.trim();
     if (trimmed.length < 3) {
@@ -61,7 +76,7 @@ export const QueryForm: React.FC<QueryFormProps> = ({
   };
 
   const hasAnySource = selectedExperts.size > 0 || hasRedditEnabled;
-  const isButtonDisabled = disabled || query.trim().length < 3 || !hasAnySource;
+  const isButtonDisabled = !disabled && (query.trim().length < 3 || !hasAnySource);
 
   return (
     <form onSubmit={handleSubmit} className="query-form h-full">
@@ -83,9 +98,10 @@ export const QueryForm: React.FC<QueryFormProps> = ({
         <button
           type="submit"
           disabled={isButtonDisabled}
-          className="query-submit-button h-full"
+          className={`query-submit-button h-full ${disabled ? 'stop' : ''}`}
+          aria-label={disabled ? 'Stop current search' : 'Ask experts'}
         >
-          {disabled ? `${elapsedSeconds}s` : 'Ask'}
+          {disabled ? 'Stop' : 'Ask'}
         </button>
       </div>
     </form>

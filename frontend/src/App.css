@@ -936,14 +936,14 @@
 }
 
 .query-deck-collapse:hover,
-.query-deck-compact-action:hover {
+.query-deck-compact:hover .query-deck-compact-icon {
   background: var(--ep-yellow);
 }
 
 .query-deck-compact {
   min-height: 52px;
   display: grid;
-  grid-template-columns: auto auto minmax(160px, 1fr) auto auto;
+  grid-template-columns: auto minmax(160px, 1fr) auto auto;
   gap: 12px;
   align-items: center;
   padding: 8px 20px;
@@ -968,6 +968,7 @@
   border-radius: var(--ep-radius-button);
   background: var(--ep-cream);
   font-size: 18px;
+  justify-self: end;
 }
 
 .query-deck-compact-label {
@@ -996,33 +997,6 @@
 
 .query-deck-compact-status.error {
   color: var(--ep-danger);
-}
-
-.query-deck-compact-actions {
-  display: inline-flex;
-  gap: 6px;
-}
-
-.query-deck-compact-action {
-  border: 1px solid var(--ep-border);
-  border-radius: var(--ep-radius-button);
-  background: var(--ep-cream);
-  color: var(--ep-forest);
-  padding: 6px 10px;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.query-deck-compact-action.primary {
-  background: var(--ep-forest);
-  color: var(--ep-cream);
-  border-color: var(--ep-forest);
-}
-
-.query-deck-compact-action.primary:hover {
-  background: var(--ep-yellow);
-  color: var(--ep-forest);
 }
 
 /* Query form */
@@ -1062,6 +1036,15 @@
 
 .query-submit-button:hover {
   background: #244700;
+}
+
+.query-submit-button.stop {
+  background: var(--ep-danger);
+  color: var(--ep-cream);
+}
+
+.query-submit-button.stop:hover {
+  background: #8f1f18;
 }
 
 .query-submit-button:disabled {

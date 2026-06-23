@@ -123,7 +123,8 @@ export class APIClient {
    */
   async submitQuery(
     request: QueryRequest,
-    onProgress?: ProgressCallback
+    onProgress?: ProgressCallback,
+    signal?: AbortSignal
   ): Promise<QueryResponse> {
     // Enable streaming by default
     const requestBody: QueryRequest = {
@@ -138,6 +139,7 @@ export class APIClient {
           'Content-Type': 'application/json',
         }),
         body: JSON.stringify(requestBody),
+        signal,
       });
 
       if (!response.ok) {
@@ -159,7 +161,7 @@ export class APIClient {
 
       // Parse SSE stream. Keep the request id from response headers as the
       // recovery anchor in case the first or final SSE event is dropped.
-      return this.parseSSEStream(response, onProgress, response.headers.get('X-Request-ID'));
+      return this.parseSSEStream(response, onProgress, response.headers.get('X-Request-ID'), signal);
     } catch (err) {
       // Handle network errors (connection refused, timeout, DNS failure)
       if (err instanceof TypeError && err.message.includes('fetch')) {
@@ -249,10 +251,10 @@ export class APIClient {
    * server-side and referenced from the SSE completion event to avoid fragile
    * multi-megabyte SSE payloads.
    */
-  private async fetchSavedQueryResult(requestId: string): Promise<QueryResponse> {
+  private async fetchSavedQueryResult(requestId: string, signal?: AbortSignal): Promise<QueryResponse> {
     const response = await fetch(
       `${this.baseURL.replace(/\/$/, '')}/api/v1/query/${encodeURIComponent(requestId)}/result`,
-      { headers: this.buildHeaders() }
+      { headers: this.buildHeaders(), signal }
     );
 
     if (!response.ok) {
@@ -273,7 +275,8 @@ export class APIClient {
   private async parseSSEStream(
     response: Response,
     onProgress?: ProgressCallback,
-    initialRequestId?: string | null
+    initialRequestId?: string | null,
+    signal?: AbortSignal
   ): Promise<QueryResponse> {
     console.log('[API] Using robust SSE parser v2');
     const reader = response.body?.getReader();
@@ -323,7 +326,7 @@ export class APIClient {
           request_id: resultRequestId,
           result_url: event.data.result_url
         });
-        finalResponse = await this.fetchSavedQueryResult(String(resultRequestId));
+        finalResponse = await this.fetchSavedQueryResult(String(resultRequestId), signal);
       }
     };
 
@@ -423,7 +426,7 @@ export class APIClient {
         if (latestRequestId) {
           try {
             console.log('[SSE] Stream ended without complete event; trying saved result:', latestRequestId);
-            finalResponse = await this.fetchSavedQueryResult(latestRequestId);
+            finalResponse = await this.fetchSavedQueryResult(latestRequestId, signal);
           } catch (fetchError) {
             console.warn('[SSE] Saved result recovery failed:', fetchError);
           }
