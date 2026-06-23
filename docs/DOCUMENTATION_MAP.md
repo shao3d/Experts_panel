@@ -1,7 +1,7 @@
 # Карта Документации
 
 Status: Active
-Last updated: 2026-05-20
+Last updated: 2026-06-23
 
 Это навигационный слой проекта Experts Panel. Он должен отвечать на вопрос
 "куда смотреть?", а не пересказывать содержимое всех документов.
@@ -30,7 +30,8 @@ Last updated: 2026-05-20
 | Video Hub | `docs/architecture/video-hub-service.md` | `docs/guides/video-hub-operator.md` |
 | Reddit sidecar | `docs/architecture/reddit-service.md` | service code under `services/reddit-proxy/` |
 | Backend runtime / health / CLI bootstrap | `docs/roadmap/backend-runtime-cleanup.md` | `backend/CLAUDE.md` |
-| Frontend layout/state | `frontend/CLAUDE.md` | frontend source files |
+| Frontend layout/state | `frontend/CLAUDE.md` | `docs/design-system/refero-say-briefly/UX_INVARIANTS.md`, frontend source files |
+| UI visual system / redesign guardrails | `docs/design-system/refero-say-briefly/UX_INVARIANTS.md` | `docs/design-system/refero-say-briefly/README.md`, `frontend/CLAUDE.md` |
 
 ## Правила Навигации
 
@@ -50,6 +51,8 @@ Last updated: 2026-05-20
 | `docs/architecture/pipeline.md` | Главный backend pipeline: Map, Resolve, Reduce, Reddit, Video, Meta-Synthesis, SSE, durable UI delivery. |
 | `docs/architecture/super-passport-search.md` | Hybrid retrieval: Vector KNN, FTS5, RRF, AI Scout, punctuation hardening. |
 | `docs/architecture/current-expert-roster.md` | Актуальный roster, UI-группы, source-of-truth caveats. |
+| `docs/design-system/refero-say-briefly/UX_INVARIANTS.md` | Current UI shell/product guardrails: sidebar, Query Deck, result columns, source overflow, and Refero visual boundaries. |
+| `docs/design-system/refero-say-briefly/README.md` | Local snapshot index for the Refero Say Briefly design system assets/tokens. |
 | `CLAUDE.md` | Root project guide and repo-level operating notes. |
 | `backend/CLAUDE.md` | Backend services, commands, config, runtime notes. |
 | `frontend/CLAUDE.md` | Frontend structure, state, layout conventions. |
@@ -114,11 +117,23 @@ Generated artifacts лучше регенерировать скриптами, 
 | `docs/guides/video-hub-operator.md` | Операторский Video Hub workflow. |
 | `docs/guides/add-video.md` | Короткий flow добавления видео. |
 
+## UI And Design System
+
+| Файл | Роль |
+| --- | --- |
+| `frontend/CLAUDE.md` | Engineering guide for the current React layout/state/components. |
+| `docs/design-system/refero-say-briefly/UX_INVARIANTS.md` | Product/UX SSOT for the current UI shell and future redesign decisions. |
+| `docs/design-system/refero-say-briefly/README.md` | Refero snapshot index and source coverage. |
+| `docs/design-system/refero-say-briefly/DESIGN.md` | Refero `DESIGN.md` source material. |
+| `docs/design-system/refero-say-briefly/tokens.css` | CSS variables snapshot from Refero. |
+| `docs/design-system/refero-say-briefly/design-tokens.json` | Machine-readable design token snapshot. |
+
 ## Quality Docs
 
 | Файл | Роль |
 | --- | --- |
 | `docs/quality/panex-product-quality-rubric.md` | Рубрика качества ответа Панэкса. |
+| `docs/quality/expert-lens-review-rubric.md` | Рубрика качества parent-Codex Expert Lens review поверх Panex evidence. |
 | `docs/quality/panex-product-quality-dogfood-2026-05-07.md` | Product-quality dogfood snapshot. |
 | `docs/quality/panex-selector-expansion-dogfood-2026-05-07.md` | Selector expansion dogfood snapshot. |
 | `docs/quality/panex-portable-runner-dogfood-2026-05-07.md` | Portable runner dogfood snapshot. |
@@ -130,6 +145,7 @@ Quality docs - evidence snapshots and guardrails, not current API specs.
 | Файл/папка | Статус |
 | --- | --- |
 | `docs/concepts/ai-architect-mode.md` | Product concept, not runtime behavior. |
+| `docs/concepts/expert-lens-global-skill.md` | Draft concept for a global Codex skill that turns Panex evidence into bounded source-grounded expert-lens critique packets. |
 | `docs/roadmap/video-hub-scaling.md` | Active scaling roadmap for larger Video Hub usage. |
 | `docs/roadmap/scout-next-steps.md` | Historical metadata-enrichment plan; removed phases are not active. |
 | `hybrid_retrieval_plan.md` | Historical implemented plan; current retrieval SSOT is `super-passport-search.md`. |
@@ -148,7 +164,7 @@ Quality docs - evidence snapshots and guardrails, not current API specs.
 | Add/remove expert scripts | `docs/guides/add-expert.md` |
 | Video Hub behavior | `docs/architecture/video-hub-service.md`, `docs/guides/video-hub-operator.md` |
 | Reddit behavior | `docs/architecture/reddit-service.md`; maybe `CLAUDE.md` |
-| Frontend layout/state | `frontend/CLAUDE.md` |
+| Frontend layout/state / UI shell | `frontend/CLAUDE.md`, `docs/design-system/refero-say-briefly/UX_INVARIANTS.md` |
 | Backend runtime/health/CLI bootstrap | `docs/roadmap/backend-runtime-cleanup.md`, `backend/CLAUDE.md` |
 
 If a file or command is removed, run `rg` over Markdown docs for stale

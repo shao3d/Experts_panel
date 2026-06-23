@@ -1,6 +1,8 @@
-# Experts Panel UI Redesign Invariants
+# Experts Panel UI Invariants
 
-Source of truth for the upcoming UI redesign. These rules come from the accepted product framing in chat on 2026-06-23 and should be treated as constraints before any visual implementation work.
+Source of truth for the current Experts Panel UI shell and future visual work.
+These rules come from the accepted product framing in chat on 2026-06-23 and
+the first deployed redesign pass on the same date.
 
 ## Design Goal
 
@@ -46,16 +48,18 @@ Product name: `Collapsible Query Deck`.
 
 States:
 
-- `expanded`: full query textarea, large search button, full progress/statistics area;
+- `expanded`: full query textarea, single action button, full progress/statistics area, and a thin collapse handle below the whole deck;
 - `compact`: a thin top strip that keeps query context and status while freeing vertical space for results.
 
-Recommended desktop behavior:
+Current desktop behavior:
 
 - Default to `expanded` before the first query.
-- Automatically collapse to `compact` after query submit.
+- Do not collapse immediately on query submit; keep the deck stable while the query is starting.
+- Automatically collapse to `compact` only after processing completes successfully.
+- Keep the deck expanded on error so the user can correct or restart.
 - Keep the deck compact while the user is reading results.
 - Allow one-click expansion from the compact strip.
-- Expand when the user edits or starts a new query.
+- Allow manual collapse from the expanded state through the long lower handle.
 - Do not fully hide the panel.
 - Do not overlay results with a floating panel as the primary behavior; reclaim real layout height.
 
@@ -64,12 +68,23 @@ Recommended sizing:
 - expanded height: close to current top section, about 150-170px;
 - compact height: about 44-56px.
 
+Expanded deck layout:
+
+- left query textarea/card and right progress/statistics card must be equal-width work surfaces on desktop;
+- the central action column should stay narrow and stable: `120px` desktop, `112px` at the current tablet/mobile breakpoint;
+- left and right gaps around the action button should stay equal;
+- the action button is a single button: `Ask` when idle, `Stop` while processing;
+- `Stop` aborts the active query, clears the draft query, and returns the system to an expanded ready state;
+- do not reintroduce inline `Edit` / `New` buttons in the action column without a separate product decision;
+- the expanded collapse affordance is a long thin button under the whole top deck, using the same double-chevron SVG as the sidebar, rotated upward;
+- the collapse handle must not shift the left input, action button, or right progress card when it appears.
+
 Compact strip should include:
 
 - an expand/collapse affordance;
 - one-line current query summary with ellipsis;
 - processing phase or result statistics;
-- a compact action such as edit/new query when appropriate.
+- no separate `Edit` / `New` actions in the first deployed pass.
 
 ## Sidebar
 
@@ -119,18 +134,22 @@ Not allowed without separate approval:
 Recommended sequence:
 
 1. Add app-level design tokens and base surfaces.
-2. Redesign desktop shell: sidebar, top query deck, progress/statistics, empty/error states.
-3. Implement `Collapsible Query Deck`.
-4. Redesign result panels while preserving 50/50 structure.
-5. Migrate source/evidence components away from blocking inline styles.
+2. Redesign desktop shell: sidebar, top query deck, progress/statistics, empty/error states. Done in first pass.
+3. Implement `Collapsible Query Deck`. Done in first pass.
+4. Redesign result panels while preserving 50/50 structure. Done in first pass.
+5. Migrate source/evidence components away from blocking inline styles. Done for the known long-link overflow issue; keep watching source/evidence surfaces.
 6. Apply conservative mobile styling with existing mechanics.
-7. Verify desktop and mobile screenshots.
+7. Verify desktop and mobile screenshots or DOM layout metrics.
 
 ## Verification Checklist
 
 - Sidebar expands and collapses.
 - Expanded and compact top query deck both work.
 - Query can be submitted from the expected state.
+- `Ask` turns into `Stop` during processing.
+- `Stop` aborts the active query and clears the input.
+- The expanded deck has no `Edit` / `New` action buttons.
+- The lower collapse handle points upward and does not cause horizontal layout shift.
 - Results retain balanced answer/source columns.
 - Long links and long markdown tokens do not create horizontal page scroll.
 - Pixel office scene still renders and is visually unchanged.

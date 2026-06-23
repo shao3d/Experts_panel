@@ -27,7 +27,7 @@ The system uses an advanced **ten-phase pipeline** to provide accurate and conte
 
 ## ✨ Key Features
 
-- **🎨 Modern UI**: Clean, responsive interface built with React, Tailwind CSS, and a collapsible Sidebar.
+- **🎨 Refero-inspired UI shell**: Cream paper workspace with a collapsible Sidebar, collapsible Query Deck, balanced answer/source columns, and the existing pixel office scene.
 - **🧠 10-phase Map-Resolve-Reduce Architecture**: Advanced pipeline with differential HIGH/MEDIUM posts processing.
 - **🎯 Cost-Optimized Gemini Strategy**: Vertex AI with service-account auth.
 - **🔍 Smart Semantic Search**: Finds relevant posts by meaning using Hybrid Retrieval (Vector KNN + FTS5 + RRF).
@@ -69,7 +69,7 @@ Minimum required runtime variables:
 
 ## 🧰 Maintenance Scripts
 
-- `./scripts/update_production_db.sh`: loads `backend/.env`, runs sync, `backend/scripts/embed_posts.py --continuous`, and `backend/run_drift_service.py`. The embedding and drift steps use **Vertex AI**.
+- `./scripts/update_production_db.sh`: loads `backend/.env`, runs sync, `backend/scripts/embed_posts.py --continuous`, `backend/run_drift_service.py`, then deploys the verified compressed DB artifact to Fly. The embedding and drift steps use **Vertex AI**.
 - `./scripts/deploy_video.sh <json_path>`: imports prepared video JSON into SQLite and deploys the database artifact. The script itself does **not** call Gemini directly.
 - `python3 stress_test_gemini.py` and `python3 test_model.py`: standalone smoke tests that reuse the project's **Vertex AI** runtime from `backend/.env`.
 
@@ -77,9 +77,10 @@ Minimum required runtime variables:
 
 - [Documentation Map](docs/DOCUMENTATION_MAP.md) - start here for current SSOT routing.
 - [Pipeline Architecture](docs/architecture/pipeline.md) - **The Source of Truth** for the 10-phase pipeline.
+- [Refero UI Invariants](docs/design-system/refero-say-briefly/UX_INVARIANTS.md) - product guardrails for the current UI shell and future redesign work.
 - [Panex Usage Guide](docs/guides/panex-usage.md) - explicit-only agent/operator workflow.
 - [Expert Admission Control](docs/architecture/expert-admission-control.md) - semantic passports, knowledge matrix, and accept/reject doctrine.
-- [Frontend Guide](frontend/CLAUDE.md) - **NEW**: React + Tailwind architecture, Sidebar layout, and State management.
+- [Frontend Guide](frontend/CLAUDE.md) - React + Tailwind architecture, Sidebar, Query Deck, and state management.
 - [Backend Guide](backend/CLAUDE.md) - Services, Config, and API details.
 - [Reddit Integration](docs/architecture/reddit-service.md) - Details on smart targeting and ranking.
 
