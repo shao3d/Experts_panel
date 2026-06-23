@@ -37,7 +37,12 @@ const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments,
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        style={{ color: '#0066cc', textDecoration: 'underline' }}
+        style={{
+          color: '#0066cc',
+          textDecoration: 'underline',
+          overflowWrap: 'anywhere',
+          wordBreak: 'break-word',
+        }}
       >
         {children}
       </a>
@@ -49,7 +54,15 @@ const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments,
       <em style={{ fontStyle: 'italic' }}>{children}</em>
     ),
     code: ({ children }: any) => (
-      <code style={{ backgroundColor: '#f5f5f5', padding: '2px 4px', borderRadius: '3px', fontSize: '0.9em' }}>{children}</code>
+      <code style={{
+        backgroundColor: '#f5f5f5',
+        padding: '2px 4px',
+        borderRadius: '3px',
+        fontSize: '0.9em',
+        whiteSpace: 'pre-wrap',
+        overflowWrap: 'anywhere',
+        wordBreak: 'break-word',
+      }}>{children}</code>
     ),
     p: ({ children }: any) => (
       <p style={{ margin: '0 0 0.5em 0' }}>{children}</p>
@@ -75,6 +88,8 @@ const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments,
         backgroundColor: '#f8f9fa',
         borderLeft: '3px solid #6c757d',
         borderRadius: '4px',
+        minWidth: 0,
+        maxWidth: '100%',
       }}
     >
       {/* Comment Author & Date */}
@@ -88,7 +103,15 @@ const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments,
       </div>
 
       {/* Comment Text */}
-      <div style={{ fontSize: '14px', color: '#495057' }}>
+      <div
+        className="breakable-markdown"
+        style={{
+          fontSize: '14px',
+          color: '#495057',
+          minWidth: 0,
+          maxWidth: '100%',
+        }}
+      >
         <ReactMarkdown
           components={markdownComponents}
           remarkPlugins={[remarkGfm]}
@@ -115,12 +138,14 @@ const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments,
         borderRadius: '8px',
         border: isSelected ? '2px solid #ffc107' : '1px solid #dee2e6',
         transition: 'all 0.3s ease',
+        minWidth: 0,
+        maxWidth: '100%',
       }}
     >
       {/* Post Header */}
       <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0, flexWrap: 'wrap' }}>
+          <div style={{ minWidth: 0 }}>
             <span style={{
               fontWeight: 'bold',
               fontSize: '14px',
@@ -211,12 +236,17 @@ const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments,
       </div>
 
       {/* Post Content */}
-      <div style={{
-        fontSize: '15px',
-        lineHeight: '1.6',
-        color: '#212529',
-        marginBottom: hasComments ? '12px' : '0'
-      }}>
+      <div
+        className="breakable-markdown"
+        style={{
+          fontSize: '15px',
+          lineHeight: '1.6',
+          color: '#212529',
+          marginBottom: hasComments ? '12px' : '0',
+          minWidth: 0,
+          maxWidth: '100%',
+        }}
+      >
         <ReactMarkdown
           components={markdownComponents}
           remarkPlugins={[remarkGfm]}

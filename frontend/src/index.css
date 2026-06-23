@@ -28,6 +28,22 @@
   border-radius: 0.5rem;
 }
 
+.breakable-markdown,
+.breakable-markdown p,
+.breakable-markdown li,
+.breakable-markdown a,
+.breakable-markdown code {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.breakable-markdown pre {
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre-wrap;
+}
+
 /* Custom Scrollbar for Sidebar */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;

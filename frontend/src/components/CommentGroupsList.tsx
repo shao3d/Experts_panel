@@ -59,7 +59,9 @@ export const CommentGroupsList: React.FC<CommentGroupsListProps> = ({
       padding: '20px',
       backgroundColor: '#f8fafc',
       borderRadius: '8px',
-      border: '1px solid #e2e8f0'
+      border: '1px solid #e2e8f0',
+      minWidth: 0,
+      maxWidth: '100%'
     },
     header: {
       fontSize: '16px',
@@ -77,7 +79,9 @@ export const CommentGroupsList: React.FC<CommentGroupsListProps> = ({
       borderRadius: '8px',
       padding: '16px',
       marginBottom: '12px',
-      transition: 'border-color 0.2s'
+      transition: 'border-color 0.2s',
+      minWidth: 0,
+      maxWidth: '100%'
     },
     postHeader: {
       display: 'flex',
@@ -85,12 +89,16 @@ export const CommentGroupsList: React.FC<CommentGroupsListProps> = ({
       justifyContent: 'space-between',
       marginBottom: '12px',
       paddingBottom: '12px',
-      borderBottom: '1px solid #f1f5f9'
+      borderBottom: '1px solid #f1f5f9',
+      gap: '8px',
+      flexWrap: 'wrap' as const
     },
     postHeaderLeft: {
       display: 'flex',
       alignItems: 'center',
-      gap: '8px'
+      gap: '8px',
+      flexWrap: 'wrap' as const,
+      minWidth: 0
     },
     postId: {
       fontSize: '14px',
@@ -125,14 +133,20 @@ export const CommentGroupsList: React.FC<CommentGroupsListProps> = ({
       padding: '12px',
       backgroundColor: '#f8fafc',
       borderRadius: '6px',
-      border: '1px solid #e2e8f0'
+      border: '1px solid #e2e8f0',
+      minWidth: 0,
+      maxWidth: '100%'
     },
     postText: {
       fontSize: '14px',
       color: '#334155',
       lineHeight: '1.6',
       marginBottom: '8px',
-      whiteSpace: 'pre-wrap' as const
+      whiteSpace: 'pre-wrap' as const,
+      overflowWrap: 'anywhere' as const,
+      wordBreak: 'break-word' as const,
+      minWidth: 0,
+      maxWidth: '100%'
     },
     postMeta: {
       fontSize: '12px',
@@ -162,7 +176,9 @@ export const CommentGroupsList: React.FC<CommentGroupsListProps> = ({
       padding: '8px',
       backgroundColor: '#f8fafc',
       borderRadius: '4px',
-      borderLeft: '3px solid #3b82f6'
+      borderLeft: '3px solid #3b82f6',
+      minWidth: 0,
+      maxWidth: '100%'
     },
     commentAuthor: {
       fontSize: '13px',
@@ -173,7 +189,11 @@ export const CommentGroupsList: React.FC<CommentGroupsListProps> = ({
     commentText: {
       fontSize: '13px',
       color: '#475569',
-      lineHeight: '1.5'
+      lineHeight: '1.5',
+      overflowWrap: 'anywhere' as const,
+      wordBreak: 'break-word' as const,
+      minWidth: 0,
+      maxWidth: '100%'
     }
   };
 
@@ -241,7 +261,7 @@ export const CommentGroupsList: React.FC<CommentGroupsListProps> = ({
             {/* Expanded Post Content */}
             {isExpanded && (
               <div style={styles.expandedPost}>
-                <div style={styles.postText}>
+                <div className="breakable-markdown" style={styles.postText}>
                   <ReactMarkdown>{group.anchor_post.message_text}</ReactMarkdown>
                 </div>
               </div>
@@ -260,7 +280,7 @@ export const CommentGroupsList: React.FC<CommentGroupsListProps> = ({
               {commentsExpanded && group.comments.map((comment) => (
                 <div key={comment.comment_id} style={styles.comment}>
                   <div style={styles.commentAuthor}>💬 {comment.author_name}:</div>
-                  <div style={styles.commentText}>
+                  <div className="breakable-markdown" style={styles.commentText}>
                     <ReactMarkdown>{comment.comment_text}</ReactMarkdown>
                   </div>
                 </div>
