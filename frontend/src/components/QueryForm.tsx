@@ -30,6 +30,12 @@ interface QueryFormProps {
   /** Callback when active query should be stopped */
   onStop?: () => void;
 
+  /** Whether to show an inline collapse control below the submit button */
+  showCollapse?: boolean;
+
+  /** Callback when the query panel should collapse */
+  onCollapse?: () => void;
+
   /** Token used to clear uncontrolled query value */
   resetToken?: number;
 }
@@ -46,6 +52,8 @@ export const QueryForm: React.FC<QueryFormProps> = ({
   value,
   onChange,
   onStop,
+  showCollapse = false,
+  onCollapse,
   resetToken
 }) => {
   const [internalQuery, setInternalQuery] = useState('');
@@ -77,6 +85,19 @@ export const QueryForm: React.FC<QueryFormProps> = ({
 
   const hasAnySource = selectedExperts.size > 0 || hasRedditEnabled;
   const isButtonDisabled = !disabled && (query.trim().length < 3 || !hasAnySource);
+  const shouldShowCollapse = showCollapse && Boolean(onCollapse);
+  const submitLabel = disabled ? 'Stop' : 'Ask';
+  const submitAriaLabel = disabled ? 'Stop current search' : 'Ask experts';
+  const submitButton = (
+    <button
+      type="submit"
+      disabled={isButtonDisabled}
+      className={`query-submit-button h-full ${disabled ? 'stop' : ''}`}
+      aria-label={submitAriaLabel}
+    >
+      {submitLabel}
+    </button>
+  );
 
   return (
     <form onSubmit={handleSubmit} className="query-form h-full">
@@ -95,14 +116,22 @@ export const QueryForm: React.FC<QueryFormProps> = ({
           </span>
         </div>
 
-        <button
-          type="submit"
-          disabled={isButtonDisabled}
-          className={`query-submit-button h-full ${disabled ? 'stop' : ''}`}
-          aria-label={disabled ? 'Stop current search' : 'Ask experts'}
-        >
-          {disabled ? 'Stop' : 'Ask'}
-        </button>
+        {shouldShowCollapse ? (
+          <div className="query-action-stack h-full">
+            {submitButton}
+            <button
+              type="button"
+              className="query-inline-collapse-button"
+              onClick={onCollapse}
+              aria-label="Collapse query panel"
+              title="Collapse"
+            >
+              <span aria-hidden="true">^</span>
+            </button>
+          </div>
+        ) : (
+          submitButton
+        )}
       </div>
     </form>
   );

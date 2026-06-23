@@ -122,6 +122,8 @@ const QueryDeck: React.FC<QueryDeckProps> = ({
               value={draftQuery}
               onChange={setDraftQuery}
               onStop={handleStop}
+              showCollapse={Boolean(currentQuery || stats || disabled || error)}
+              onCollapse={() => setIsExpanded(false)}
             />
           </div>
 
@@ -132,18 +134,6 @@ const QueryDeck: React.FC<QueryDeckProps> = ({
               stats={stats}
             />
           </div>
-
-          {(currentQuery || stats || disabled) && (
-            <button
-              type="button"
-              className="query-deck-collapse"
-              onClick={() => setIsExpanded(false)}
-              aria-label="Collapse query panel"
-              title="Collapse"
-            >
-              <span aria-hidden="true">^</span>
-            </button>
-          )}
         </div>
       ) : (
         <div
