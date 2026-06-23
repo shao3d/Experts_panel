@@ -7,6 +7,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { QueryForm } from './components/QueryForm';
 import ExpertAccordion from './components/ExpertAccordion';
 import ProgressSection from './components/ProgressSection';
+import QueryDeck from './components/QueryDeck';
 // PixelMascot removed — no pixel office on mobile
 import { useMediaQuery } from './utils/useMediaQuery';
 import ExpertSelectionBar from './components/ExpertSelectionBar'; // Kept for Mobile
@@ -16,8 +17,8 @@ import { apiClient } from './services/api';
 import { ExpertResponse as ExpertResponseType, ProgressEvent, ExpertInfo, RedditResponse } from './types/api';
 import { MetaSynthesisSection } from './components/MetaSynthesisSection';
 import { transformExpertsForUI, EXPERT_UI_CONFIG } from './config/expertConfig';
-import './App.css';
 import './components/CommunityInsightsSection.css';
+import './App.css';
 
 const PixelOffice = React.lazy(() => import('./components/PixelOffice'));
 
@@ -206,7 +207,7 @@ export const App: React.FC = () => {
 
   return (
     // Main Container with Sidebar Layout
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="experts-app-shell flex h-screen overflow-hidden">
       
       {/* 1. Desktop Sidebar (Hidden on Mobile) */}
       <div className="hidden md:flex shrink-0 z-20 h-full">
@@ -237,28 +238,23 @@ export const App: React.FC = () => {
         </div>
 
         {/* Desktop Top Section (Query + Progress) */}
-        <div className="hidden md:flex flex-shrink-0 bg-white border-b border-gray-200 p-5 gap-5 min-h-[160px] h-auto">
-           <div className="flex-1 flex flex-col gap-2 overflow-visible">
-              <QueryForm
-                onSubmit={handleQuerySubmit}
-                disabled={isProcessing}
-                elapsedSeconds={elapsedSeconds}
-                selectedExperts={selectedExperts}
-                hasRedditEnabled={includeReddit}
-              />
-           </div>
-           <div className="flex-1 flex flex-col gap-2 overflow-hidden">
-              <ProgressSection
-                isProcessing={isProcessing}
-                progressEvents={progressEvents}
-                stats={expertResponses.length > 0 ? getTotalStats() : undefined}
-              />
-           </div>
+        <div className="hidden md:block flex-shrink-0">
+          <QueryDeck
+            onSubmit={handleQuerySubmit}
+            disabled={isProcessing}
+            elapsedSeconds={elapsedSeconds}
+            selectedExperts={selectedExperts}
+            hasRedditEnabled={includeReddit}
+            progressEvents={progressEvents}
+            stats={expertResponses.length > 0 ? getTotalStats() : undefined}
+            currentQuery={currentQuery}
+            error={error}
+          />
         </div>
 
         {/* Scrollable Results Area */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6" id="main-scroll-container">
-           <div className="max-w-[1600px] mx-auto w-full pb-24 md:pb-10">
+        <main className="experts-main-scroll flex-1 overflow-y-auto p-4 md:p-6" id="main-scroll-container">
+           <div className="experts-content-frame max-w-[1600px] mx-auto w-full pb-24 md:pb-10">
 
               {/* Pixel Office — desktop only, hidden on mobile */}
               {isDesktop && (
@@ -274,7 +270,7 @@ export const App: React.FC = () => {
               )}
 
               {error ? (
-                <div className="p-5 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                <div className="app-error-panel p-5">
                   <h3 className="font-bold mb-2">⚠️ Error</h3>
                   <p>{error}</p>
                 </div>

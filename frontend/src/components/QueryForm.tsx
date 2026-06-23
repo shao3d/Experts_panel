@@ -23,6 +23,12 @@ interface QueryFormProps {
 
   /** Whether Reddit search is enabled (for submit button validation) */
   hasRedditEnabled?: boolean;
+
+  /** Controlled query value, used by the collapsible query deck */
+  value?: string;
+
+  /** Controlled query change handler */
+  onChange?: (value: string) => void;
 }
 
 /**
@@ -34,9 +40,13 @@ export const QueryForm: React.FC<QueryFormProps> = ({
   placeholder = "Ask experts about AI and related...",
   elapsedSeconds = 0,
   selectedExperts = new Set(),
-  hasRedditEnabled = true
+  hasRedditEnabled = true,
+  value,
+  onChange
 }) => {
-  const [query, setQuery] = useState('');
+  const [internalQuery, setInternalQuery] = useState('');
+  const query = value ?? internalQuery;
+  const setQuery = onChange ?? setInternalQuery;
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
     e.preventDefault();

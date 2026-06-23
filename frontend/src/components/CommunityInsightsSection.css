@@ -145,7 +145,7 @@
   margin: 0;
   font-size: 1.1rem;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
 }
 
 .header-badge {
@@ -206,7 +206,7 @@
   font-weight: 700;
   color: #2c3e50;
   margin: 2rem 0 1rem;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
 }
 
 /* H4: Headers (Level 3 - Subsections) */
@@ -234,7 +234,7 @@
   color: #5d6778;
   margin: 1rem 0 0.5rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0;
 }
 
 /* Lists: Tighten up to look like a group */
@@ -280,6 +280,7 @@
   font-size: 0.9rem;
   overflow-x: auto;
   display: block; /* Allows horizontal scroll on small screens */
+  max-width: 100%;
 }
 
 .formatted-content th,
@@ -287,6 +288,8 @@
   padding: 0.75rem 1rem;
   text-align: left;
   border-bottom: 1px solid #e1e4e8;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .formatted-content th {

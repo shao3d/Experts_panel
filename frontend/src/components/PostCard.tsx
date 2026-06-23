@@ -38,8 +38,11 @@ const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments,
         target="_blank"
         rel="noopener noreferrer"
         style={{
-          color: '#0066cc',
+          color: 'var(--ep-forest)',
           textDecoration: 'underline',
+          textDecorationColor: 'var(--ep-yellow)',
+          textDecorationThickness: '0.16em',
+          textUnderlineOffset: '0.12em',
           overflowWrap: 'anywhere',
           wordBreak: 'break-word',
         }}
@@ -55,9 +58,9 @@ const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments,
     ),
     code: ({ children }: any) => (
       <code style={{
-        backgroundColor: '#f5f5f5',
+        backgroundColor: 'var(--ep-paper-muted)',
         padding: '2px 4px',
-        borderRadius: '3px',
+        borderRadius: 'var(--ep-radius-button)',
         fontSize: '0.9em',
         whiteSpace: 'pre-wrap',
         overflowWrap: 'anywhere',
@@ -85,9 +88,9 @@ const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments,
         padding: '12px',
         marginLeft: '20px',
         marginTop: '8px',
-        backgroundColor: '#f8f9fa',
-        borderLeft: '3px solid #6c757d',
-        borderRadius: '4px',
+        backgroundColor: 'var(--ep-paper-muted)',
+        borderLeft: '3px solid var(--ep-forest)',
+        borderRadius: 'var(--ep-radius-button)',
         minWidth: 0,
         maxWidth: '100%',
       }}
@@ -95,7 +98,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments,
       {/* Comment Author & Date */}
       <div style={{
         fontSize: '13px',
-        color: '#6c757d',
+        color: 'rgba(26, 51, 0, 0.62)',
         marginBottom: '6px',
         fontWeight: '500'
       }}>
@@ -107,7 +110,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments,
         className="breakable-markdown"
         style={{
           fontSize: '14px',
-          color: '#495057',
+          color: 'var(--ep-forest)',
           minWidth: 0,
           maxWidth: '100%',
         }}
@@ -134,9 +137,9 @@ const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments,
       style={{
         marginBottom: '16px',
         padding: '16px',
-        backgroundColor: isSelected ? '#fff3cd' : 'white',
-        borderRadius: '8px',
-        border: isSelected ? '2px solid #ffc107' : '1px solid #dee2e6',
+        backgroundColor: isSelected ? 'var(--ep-warning-bg)' : 'var(--ep-paper-raised)',
+        borderRadius: 'var(--ep-radius-card)',
+        border: isSelected ? '2px solid var(--ep-yellow)' : '1px solid rgba(26, 51, 0, 0.14)',
         transition: 'all 0.3s ease',
         minWidth: 0,
         maxWidth: '100%',
@@ -149,12 +152,12 @@ const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments,
             <span style={{
               fontWeight: 'bold',
               fontSize: '14px',
-              color: '#0066cc',
+              color: 'var(--ep-terracotta)',
               marginRight: '8px'
             }}>
               [{post.telegram_message_id}]
             </span>
-            <span style={{ fontSize: '14px', color: '#6c757d' }}>
+            <span style={{ fontSize: '14px', color: 'rgba(26, 51, 0, 0.62)' }}>
               <strong>{originalAuthor || post.author_name || 'Unknown'}</strong> • {formatDate(post.created_at)}
             </span>
           </div>
@@ -169,19 +172,21 @@ const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments,
                 alignItems: 'center',
                 gap: '4px',
                 padding: '4px 8px',
-                backgroundColor: '#0088cc',
-                color: 'white',
-                borderRadius: '4px',
+                backgroundColor: 'var(--ep-forest)',
+                color: 'var(--ep-cream)',
+                borderRadius: 'var(--ep-radius-button)',
                 textDecoration: 'none',
                 fontSize: '13px',
                 fontWeight: '500',
                 transition: 'background-color 0.2s',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#006699';
+                e.currentTarget.style.backgroundColor = 'var(--ep-yellow)';
+                e.currentTarget.style.color = 'var(--ep-forest)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#0088cc';
+                e.currentTarget.style.backgroundColor = 'var(--ep-forest)';
+                e.currentTarget.style.color = 'var(--ep-cream)';
               }}
             >
               <span style={{ fontSize: '16px' }}>📱</span>
@@ -199,19 +204,21 @@ const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments,
                 alignItems: 'center',
                 gap: '4px',
                 padding: '4px 8px',
-                backgroundColor: '#FF0000',
-                color: 'white',
-                borderRadius: '4px',
+                backgroundColor: 'var(--ep-terracotta)',
+                color: 'var(--ep-cream)',
+                borderRadius: 'var(--ep-radius-button)',
                 textDecoration: 'none',
                 fontSize: '13px',
                 fontWeight: '500',
                 transition: 'background-color 0.2s',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#CC0000';
+                e.currentTarget.style.backgroundColor = 'var(--ep-yellow)';
+                e.currentTarget.style.color = 'var(--ep-forest)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#FF0000';
+                e.currentTarget.style.backgroundColor = 'var(--ep-terracotta)';
+                e.currentTarget.style.color = 'var(--ep-cream)';
               }}
             >
               <span style={{ fontSize: '16px' }}>🎥</span>
@@ -223,11 +230,11 @@ const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments,
           <span style={{
             fontSize: '12px',
             padding: '4px 8px',
-            backgroundColor: post.relevance_score === 'HIGH' ? '#d4edda' :
-                           post.relevance_score === 'MEDIUM' ? '#fff3cd' : '#f8f9fa',
-            color: post.relevance_score === 'HIGH' ? '#155724' :
-                   post.relevance_score === 'MEDIUM' ? '#856404' : '#6c757d',
-            borderRadius: '4px',
+            backgroundColor: post.relevance_score === 'HIGH' ? 'var(--ep-success-bg)' :
+                           post.relevance_score === 'MEDIUM' ? 'var(--ep-warning-bg)' : 'var(--ep-paper-muted)',
+            color: post.relevance_score === 'HIGH' ? 'var(--ep-success)' :
+                   post.relevance_score === 'MEDIUM' ? 'var(--ep-warning)' : 'rgba(26, 51, 0, 0.62)',
+            borderRadius: 'var(--ep-radius-button)',
             fontWeight: 'bold',
           }}>
             {post.relevance_score}
@@ -241,7 +248,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments,
         style={{
           fontSize: '15px',
           lineHeight: '1.6',
-          color: '#212529',
+          color: 'var(--ep-forest)',
           marginBottom: hasComments ? '12px' : '0',
           minWidth: 0,
           maxWidth: '100%',
@@ -263,11 +270,11 @@ const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments,
             onClick={onToggleComments}
             style={{
               background: 'none',
-              border: '1px solid #dee2e6',
-              borderRadius: '4px',
+              border: '1px solid rgba(26, 51, 0, 0.18)',
+              borderRadius: 'var(--ep-radius-button)',
               padding: '6px 12px',
               fontSize: '14px',
-              color: '#495057',
+              color: 'var(--ep-forest)',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
@@ -275,7 +282,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments,
               transition: 'all 0.2s',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#f8f9fa';
+              e.currentTarget.style.backgroundColor = 'var(--ep-yellow)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = 'transparent';

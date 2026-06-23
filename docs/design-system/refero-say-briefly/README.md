@@ -20,6 +20,10 @@ This folder is a local snapshot of the Refero style reference for Say Briefly.
 | Raw API payload | `source/refero-style-api.json` |
 | Visual reference | `assets/screenshot.jpg`, `assets/thumbnail.jpg` |
 
+## Project UI Constraints
+
+The accepted Experts Panel UI redesign constraints are tracked in `UX_INVARIANTS.md`. Treat that file as the product/UX guardrail before applying the Refero visual system to the app.
+
 ## Counts
 
 - Design system keys: 18

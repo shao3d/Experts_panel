@@ -53,27 +53,7 @@ const ExpertResponse: React.FC<ExpertResponseProps> = ({ answer, sources, onPost
             <button
               key={`ref-${matchIndex}`}
               onClick={() => onPostClick(postId)}
-              style={{
-                backgroundColor: '#e6f2ff',
-                border: '1px solid #0066cc',
-                color: '#0066cc',
-                padding: '2px 6px',
-                borderRadius: '3px',
-                fontSize: 'inherit',
-                fontFamily: 'inherit',
-                margin: '0 2px',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                display: 'inline-block',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#0066cc';
-                e.currentTarget.style.color = 'white';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#e6f2ff';
-                e.currentTarget.style.color = '#0066cc';
-              }}
+              className="source-ref-button"
               title={`View post #${postId}`}
             >
               [{postId}]
@@ -95,27 +75,7 @@ const ExpertResponse: React.FC<ExpertResponseProps> = ({ answer, sources, onPost
               <button
                 key={`ref-${matchIndex}-${index}`}
                 onClick={() => onPostClick(postId)}
-                style={{
-                  backgroundColor: '#e6f2ff',
-                  border: '1px solid #0066cc',
-                  color: '#0066cc',
-                  padding: '2px 6px',
-                  borderRadius: '3px',
-                  fontSize: 'inherit',
-                  fontFamily: 'inherit',
-                  margin: '0 2px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  display: 'inline-block',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#0066cc';
-                  e.currentTarget.style.color = 'white';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#e6f2ff';
-                  e.currentTarget.style.color = '#0066cc';
-                }}
+                className="source-ref-button"
                 title={`View post #${postId}`}
               >
                 [{postId}]
@@ -193,23 +153,9 @@ const ExpertResponse: React.FC<ExpertResponseProps> = ({ answer, sources, onPost
   };
 
   return (
-    <div
-      style={{
-        padding: '20px',
-        backgroundColor: '#f8f9fa',
-        borderRadius: '8px',
-        border: '1px solid #dee2e6',
-        height: '100%',
-        overflowY: 'auto',
-      }}
-    >
+    <div className="expert-response-card">
       <div
-        style={{
-          fontSize: '16px',
-          lineHeight: '1.6',
-          color: '#212529',
-        }}
-        className="prose prose-base prose-blue max-w-none"
+        className="expert-response-markdown prose prose-base max-w-none breakable-markdown"
       >
         <ReactMarkdown
           components={markdownComponents}

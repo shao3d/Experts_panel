@@ -42,14 +42,14 @@ export const CommentGroupsList: React.FC<CommentGroupsListProps> = ({
     });
   };
 
-  const getRelevanceBadge = (relevance: string): { color: string; text: string } => {
+  const getRelevanceBadge = (relevance: string): { color: string; backgroundColor: string; text: string } => {
     switch (relevance) {
       case 'HIGH':
-        return { color: '#22c55e', text: 'High' };
+        return { color: 'var(--ep-success)', backgroundColor: 'var(--ep-success-bg)', text: 'High' };
       case 'MEDIUM':
-        return { color: '#f59e0b', text: 'Medium' };
+        return { color: 'var(--ep-warning)', backgroundColor: 'var(--ep-warning-bg)', text: 'Medium' };
       default:
-        return { color: '#94a3b8', text: 'Low' };
+        return { color: 'rgba(26, 51, 0, 0.62)', backgroundColor: 'var(--ep-paper-muted)', text: 'Low' };
     }
   };
 
@@ -57,9 +57,9 @@ export const CommentGroupsList: React.FC<CommentGroupsListProps> = ({
     container: {
       marginTop: '24px',
       padding: '20px',
-      backgroundColor: '#f8fafc',
-      borderRadius: '8px',
-      border: '1px solid #e2e8f0',
+      backgroundColor: 'var(--ep-paper-muted)',
+      borderRadius: 'var(--ep-radius-card)',
+      border: '1px solid rgba(26, 51, 0, 0.14)',
       minWidth: 0,
       maxWidth: '100%'
     },
@@ -67,16 +67,16 @@ export const CommentGroupsList: React.FC<CommentGroupsListProps> = ({
       fontSize: '16px',
       fontWeight: '600' as const,
       marginBottom: '16px',
-      color: '#495057',
+      color: 'var(--ep-forest)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       gap: '8px'
     },
     groupCard: {
-      backgroundColor: '#ffffff',
-      border: '1px solid #e2e8f0',
-      borderRadius: '8px',
+      backgroundColor: 'var(--ep-paper-raised)',
+      border: '1px solid rgba(26, 51, 0, 0.14)',
+      borderRadius: 'var(--ep-radius-card)',
       padding: '16px',
       marginBottom: '12px',
       transition: 'border-color 0.2s',
@@ -89,7 +89,7 @@ export const CommentGroupsList: React.FC<CommentGroupsListProps> = ({
       justifyContent: 'space-between',
       marginBottom: '12px',
       paddingBottom: '12px',
-      borderBottom: '1px solid #f1f5f9',
+      borderBottom: '1px solid rgba(26, 51, 0, 0.12)',
       gap: '8px',
       flexWrap: 'wrap' as const
     },
@@ -103,43 +103,43 @@ export const CommentGroupsList: React.FC<CommentGroupsListProps> = ({
     postId: {
       fontSize: '14px',
       fontWeight: '600' as const,
-      color: '#64748b'
+      color: 'var(--ep-terracotta)'
     },
     toggleButton: {
       backgroundColor: 'transparent',
-      border: 'none',
-      color: '#3b82f6',
+      border: '1px solid transparent',
+      color: 'var(--ep-forest)',
       fontSize: '14px',
-      fontWeight: '500' as const,
+      fontWeight: '600' as const,
       cursor: 'pointer',
       padding: '4px 8px',
-      borderRadius: '4px',
+      borderRadius: 'var(--ep-radius-button)',
       transition: 'background-color 0.2s',
       display: 'flex',
       alignItems: 'center',
       gap: '4px'
     },
-    relevanceBadge: (color: string) => ({
+    relevanceBadge: (color: string, backgroundColor: string) => ({
       display: 'inline-block',
       padding: '2px 8px',
-      borderRadius: '12px',
+      borderRadius: 'var(--ep-radius-button)',
       fontSize: '12px',
-      fontWeight: '500' as const,
-      backgroundColor: `${color}20`,
+      fontWeight: '600' as const,
+      backgroundColor,
       color: color
     }),
     expandedPost: {
       marginBottom: '12px',
       padding: '12px',
-      backgroundColor: '#f8fafc',
-      borderRadius: '6px',
-      border: '1px solid #e2e8f0',
+      backgroundColor: 'var(--ep-paper-muted)',
+      borderRadius: 'var(--ep-radius-button)',
+      border: '1px solid rgba(26, 51, 0, 0.14)',
       minWidth: 0,
       maxWidth: '100%'
     },
     postText: {
       fontSize: '14px',
-      color: '#334155',
+      color: 'var(--ep-forest)',
       lineHeight: '1.6',
       marginBottom: '8px',
       whiteSpace: 'pre-wrap' as const,
@@ -150,7 +150,7 @@ export const CommentGroupsList: React.FC<CommentGroupsListProps> = ({
     },
     postMeta: {
       fontSize: '12px',
-      color: '#94a3b8',
+      color: 'rgba(26, 51, 0, 0.48)',
       display: 'flex',
       gap: '12px'
     },
@@ -160,7 +160,7 @@ export const CommentGroupsList: React.FC<CommentGroupsListProps> = ({
     commentsCount: {
       fontSize: '13px',
       fontWeight: '600' as const,
-      color: '#64748b',
+      color: 'var(--ep-forest)',
       marginBottom: '8px',
       cursor: 'pointer',
       display: 'flex',
@@ -169,26 +169,26 @@ export const CommentGroupsList: React.FC<CommentGroupsListProps> = ({
     },
     commentsToggle: {
       fontSize: '12px',
-      color: '#3b82f6'
+      color: 'var(--ep-terracotta)'
     },
     comment: {
       marginBottom: '8px',
       padding: '8px',
-      backgroundColor: '#f8fafc',
-      borderRadius: '4px',
-      borderLeft: '3px solid #3b82f6',
+      backgroundColor: 'var(--ep-paper-muted)',
+      borderRadius: 'var(--ep-radius-button)',
+      borderLeft: '3px solid var(--ep-forest)',
       minWidth: 0,
       maxWidth: '100%'
     },
     commentAuthor: {
       fontSize: '13px',
       fontWeight: '600' as const,
-      color: '#1e293b',
+      color: 'var(--ep-forest)',
       marginBottom: '4px'
     },
     commentText: {
       fontSize: '13px',
-      color: '#475569',
+      color: 'var(--ep-forest)',
       lineHeight: '1.5',
       overflowWrap: 'anywhere' as const,
       wordBreak: 'break-word' as const,
@@ -219,7 +219,7 @@ export const CommentGroupsList: React.FC<CommentGroupsListProps> = ({
                   style={styles.toggleButton}
                   onClick={() => togglePost(group.parent_telegram_message_id)}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#eff6ff';
+                    e.currentTarget.style.backgroundColor = 'var(--ep-yellow)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = 'transparent';
@@ -229,9 +229,9 @@ export const CommentGroupsList: React.FC<CommentGroupsListProps> = ({
                   <span>{isExpanded ? 'Hide post' : 'Show post'}</span>
                 </button>
                 <span>•</span>
-                <span style={{ fontSize: '13px', color: '#64748b' }}>{group.anchor_post.author_name}</span>
+                <span style={{ fontSize: '13px', color: 'rgba(26, 51, 0, 0.62)' }}>{group.anchor_post.author_name}</span>
                 <span>•</span>
-                <span style={{ fontSize: '13px', color: '#64748b' }}>
+                <span style={{ fontSize: '13px', color: 'rgba(26, 51, 0, 0.62)' }}>
                   {new Date(group.anchor_post.created_at).toLocaleDateString('ru-RU')}
                 </span>
                 <span>•</span>
@@ -244,10 +244,10 @@ export const CommentGroupsList: React.FC<CommentGroupsListProps> = ({
                     alignItems: 'center',
                     gap: '4px',
                     padding: '4px 10px',
-                    backgroundColor: '#0088cc',
-                    color: 'white',
+                    backgroundColor: 'var(--ep-forest)',
+                    color: 'var(--ep-cream)',
                     textDecoration: 'none',
-                    borderRadius: '4px',
+                    borderRadius: 'var(--ep-radius-button)',
                     fontSize: '12px',
                     fontWeight: '500'
                   }}
@@ -255,7 +255,7 @@ export const CommentGroupsList: React.FC<CommentGroupsListProps> = ({
                   📱 Telegram
                 </a>
               </div>
-              <span style={styles.relevanceBadge(badge.color)}>{badge.text}</span>
+              <span style={styles.relevanceBadge(badge.color, badge.backgroundColor)}>{badge.text}</span>
             </div>
 
             {/* Expanded Post Content */}

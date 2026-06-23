@@ -36,7 +36,7 @@ const PostsList: React.FC<PostsListProps> = ({ posts, selectedPostId, expertId }
         // Add temporary highlight animation
         element.style.transition = 'background-color 0.3s ease';
         const originalBg = element.style.backgroundColor;
-        element.style.backgroundColor = '#fff3cd';
+        element.style.backgroundColor = 'var(--ep-warning-bg)';
         setTimeout(() => {
           element.style.backgroundColor = originalBg;
         }, 2000);
@@ -87,7 +87,7 @@ const PostsList: React.FC<PostsListProps> = ({ posts, selectedPostId, expertId }
         <div style={{
           textAlign: 'center',
           padding: '40px',
-          color: '#6c757d',
+          color: 'rgba(26, 51, 0, 0.58)',
           fontSize: '16px',
         }}>
           No posts loaded

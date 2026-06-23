@@ -181,10 +181,10 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
    */
   const getConfidenceColor = (confidence: string): string => {
     switch (confidence) {
-      case 'HIGH': return '#28a745';
-      case 'MEDIUM': return '#ffc107';
-      case 'LOW': return '#dc3545';
-      default: return '#6c757d';
+      case 'HIGH': return 'var(--ep-success)';
+      case 'MEDIUM': return 'var(--ep-yellow)';
+      case 'LOW': return 'var(--ep-danger)';
+      default: return 'var(--ep-pencil)';
     }
   };
 

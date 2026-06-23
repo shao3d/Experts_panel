@@ -11,9 +11,9 @@ const CommentSynthesis: React.FC<CommentSynthesisProps> = ({ synthesis }) => {
       style={{
         marginTop: '20px',
         padding: '16px',
-        backgroundColor: '#f8f9fa',
-        borderRadius: '8px',
-        border: '1px solid #e9ecef',
+        backgroundColor: 'var(--ep-paper-muted)',
+        borderRadius: 'var(--ep-radius-card)',
+        border: '1px solid rgba(26, 51, 0, 0.14)',
       }}
     >
       <div
@@ -29,7 +29,7 @@ const CommentSynthesis: React.FC<CommentSynthesisProps> = ({ synthesis }) => {
           style={{
             fontSize: '16px',
             fontWeight: '600',
-            color: '#495057',
+            color: 'var(--ep-forest)',
             margin: 0,
           }}
         >
@@ -40,7 +40,7 @@ const CommentSynthesis: React.FC<CommentSynthesisProps> = ({ synthesis }) => {
         style={{
           fontSize: '14px',
           lineHeight: '1.8',
-          color: '#212529',
+          color: 'var(--ep-forest)',
         }}
       >
         <style>{`

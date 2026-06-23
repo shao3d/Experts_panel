@@ -78,7 +78,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <div 
       className={clsx(
-        "flex flex-col bg-white text-gray-700 transition-all duration-300 ease-in-out border-r border-gray-200 shadow-sm z-20",
+        "experts-sidebar flex flex-col bg-white text-gray-700 transition-all duration-300 ease-in-out border-r border-gray-200 shadow-sm z-20",
         isCollapsed ? "w-16" : "w-72",
         className
       )}
