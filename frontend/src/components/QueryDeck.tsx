@@ -56,6 +56,24 @@ function getActivePhaseLabel(progressEvents: ProgressEvent[]): string | null {
   return PHASE_LABELS[latest.phase] || latest.message || null;
 }
 
+const DoubleChevronIcon: React.FC = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <polyline points="11 17 6 12 11 7" />
+    <polyline points="18 17 13 12 18 7" />
+  </svg>
+);
+
 const QueryDeck: React.FC<QueryDeckProps> = ({
   onSubmit,
   disabled,
@@ -122,8 +140,6 @@ const QueryDeck: React.FC<QueryDeckProps> = ({
               value={draftQuery}
               onChange={setDraftQuery}
               onStop={handleStop}
-              showCollapse={Boolean(currentQuery || stats || disabled || error)}
-              onCollapse={() => setIsExpanded(false)}
             />
           </div>
 
@@ -134,6 +150,18 @@ const QueryDeck: React.FC<QueryDeckProps> = ({
               stats={stats}
             />
           </div>
+
+          <button
+            type="button"
+            className="query-deck-handle"
+            onClick={() => setIsExpanded(false)}
+            aria-label="Collapse query panel"
+            title="Collapse query panel"
+          >
+            <span className="query-deck-handle-icon" aria-hidden="true">
+              <DoubleChevronIcon />
+            </span>
+          </button>
         </div>
       ) : (
         <div

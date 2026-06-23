@@ -901,7 +901,7 @@
 
 /* Query deck */
 .query-deck {
-  --query-action-width: 180px;
+  --query-action-width: 120px;
   background: var(--ep-cream);
   border-bottom: 1px solid var(--ep-border);
   color: var(--ep-forest);
@@ -912,9 +912,10 @@
   min-height: 160px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) var(--query-action-width) minmax(0, 1fr);
-  gap: 20px;
+  column-gap: 20px;
+  row-gap: 10px;
   align-items: stretch;
-  padding: 20px 20px 18px;
+  padding: 20px 20px 8px;
 }
 
 .query-deck-form,
@@ -936,36 +937,38 @@
   gap: 20px;
 }
 
-.query-deck-expanded .query-submit-button,
-.query-action-stack {
+.query-deck-expanded .query-submit-button {
   min-width: 0;
   width: 100%;
 }
 
-.query-action-stack {
-  display: grid;
-  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 8px;
-}
-
-.query-action-stack .query-submit-button {
-  height: 100%;
-  padding: 0 16px;
-}
-
-.query-inline-collapse-button {
-  border: 1px solid var(--ep-border);
-  border-radius: var(--ep-radius-button);
-  background: var(--ep-paper-raised);
+.query-deck-handle {
+  grid-column: 1 / -1;
+  height: 22px;
+  border: 0;
+  border-top: 1px solid rgba(26, 51, 0, 0.1);
+  border-radius: 0;
+  background: transparent;
   color: var(--ep-forest);
   cursor: pointer;
-  font-size: 18px;
-  line-height: 1;
-  box-shadow: var(--ep-shadow-soft);
-  transition: background-color 0.2s, border-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.58;
+  transition: background-color 0.2s, opacity 0.2s;
 }
 
-.query-inline-collapse-button:hover,
+.query-deck-handle:hover {
+  background: rgba(255, 233, 92, 0.34);
+  opacity: 1;
+}
+
+.query-deck-handle-icon {
+  display: inline-flex;
+  transform: rotate(90deg);
+  transform-origin: center;
+}
+
 .query-deck-compact:hover .query-deck-compact-icon {
   background: var(--ep-yellow);
 }
@@ -1393,7 +1396,7 @@
 
 @media (max-width: 900px) {
   .query-deck {
-    --query-action-width: 132px;
+    --query-action-width: 112px;
   }
 
   .query-deck-expanded {
