@@ -1,97 +1,103 @@
 # Experts Panel
 
-[![CI/CD](https://github.com/andreysazonov/Experts_panel/workflows/CI%2FCD/badge.svg)](https://github.com/andreysazonov/Experts_panel/actions)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://python.org)
-[![React](https://img.shields.io/badge/react-18-blue.svg)](https://reactjs.org)
-[![Tailwind](https://img.shields.io/badge/tailwind-3-38bdf8.svg)](https://tailwindcss.com)
+[![CI](https://github.com/shao3d/Experts_panel/actions/workflows/ci.yml/badge.svg)](https://github.com/shao3d/Experts_panel/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/) [![React 18](https://img.shields.io/badge/react-18-149eca.svg)](https://react.dev/)
 
-**Intelligent system for analyzing expert Telegram channels and Reddit communities using Google Gemini AI**
+**A source-grounded research system for comparing how practitioners think about AI and its application.**
 
-Experts Panel is a powerful tool for semantic search and analysis of content from expert Telegram channels and Reddit communities. The system uses an advanced **10-phase Map-Resolve-Reduce pipeline architecture** with Google Gemini on **Vertex AI** to provide accurate and contextually relevant answers.
+Choose one or more experts, ask a question in English or Russian, and get an answer built from their actual published material rather than from a generic model persona. Experts Panel finds the relevant source fragments, analyzes each expert separately, and, when several experts are selected, produces a cross-expert synthesis without hiding disagreement.
 
-## 🏗️ System Architecture
+[Open the live app](https://expa.beyondhorizon.dev/)
 
-The system uses an advanced **ten-phase pipeline** to provide accurate and contextually relevant answers. The architecture includes a Gemini-only strategy on **Vertex AI**, differential processing for posts based on relevance, and parallel pipelines for content and comment analysis.
+## What it does
 
-### Models Strategy (Gemini Only)
-- **Map Phase**: Gemini 2.5 Flash Lite (Speed & Instruction Following)
-- **Synthesis/Reduce**: Gemini 3 Flash Preview (Reasoning)
-- **AI Scout**: Gemini 3.1 Flash Lite Preview
-- **Validation/Analysis**: Gemini 2.5 Flash
+- Searches curated expert corpora with hybrid retrieval: vector KNN, FTS5, and Reciprocal Rank Fusion.
+- Runs a ten-phase Map-Resolve-Reduce pipeline for relevance scoring, source analysis, comment context, validation, and synthesis.
+- Keeps each expert's evidence isolated before producing a multi-expert view.
+- Adds optional Reddit research and a Video Hub source alongside Telegram material.
+- Streams progress and results to the React interface over Server-Sent Events.
+- Preserves source references so the result can be checked against the underlying material.
 
-### Runtime Notes
-- **LLM Runtime**: Vertex AI with service-account authentication (`VERTEX_AI_SERVICE_ACCOUNT_JSON` or `VERTEX_AI_SERVICE_ACCOUNT_JSON_PATH`)
-- **Gemini 3 Routing**: All `Gemini 3*` models are routed via the **Vertex global endpoint**
-- **Project-specific fallback**: This Vertex project does **not** expose `gemini-2.0-flash`, so analysis / medium scoring / comment groups run on `gemini-2.5-flash`
+## More than the web interface
 
-## ✨ Key Features
+The project also contains two workflows built on the same evidence layer:
 
-- **🎨 Refero-inspired UI shell**: Cream paper workspace with a collapsible Sidebar, collapsible Query Deck, balanced answer/source columns, and the existing pixel office scene.
-- **🧠 10-phase Map-Resolve-Reduce Architecture**: Advanced pipeline with differential HIGH/MEDIUM posts processing.
-- **🎯 Cost-Optimized Gemini Strategy**: Vertex AI with service-account auth.
-- **🔍 Smart Semantic Search**: Finds relevant posts by meaning using Hybrid Retrieval (Vector KNN + FTS5 + RRF).
-- **📊 Medium Posts Reranking**: Gemini-based scoring system with threshold ≥0.7.
-- **💬 Comment Groups & Synthesis**: Gemini pipeline for comment drift analysis.
-- **⚡ Real-time**: Server-Sent Events (SSE) for instant progress updates.
-- **👥 Multi-expert Support**: "Select All" groups, smart avatar initials, and complete data isolation.
-- **🕒 Smart Filters**: "Embs&Keys" (Hybrid Search), "Recent Only" (3 months), and "Reddit Search" toggles directly in the Sidebar.
-- **👽 Reddit Integration**: Parallel analysis via Sidecar Proxy (`experts-reddit-proxy`).
-- **🚀 Reddit-Only Mode**: Bypass expert analysis for broad community searches.
+- **Panex** is an explicit agent-facing API and CLI. It lets an AI coding agent request a source-backed digest from selected experts and inspect the exact supporting sources when needed.
+- **Expert admission control** uses semantic passports and a Knowledge Matrix to show current coverage, identify gaps or excessive overlap, and support a human decision before a new expert is added.
 
-## 🚀 Quick Start
+These are intentionally bounded tools. Panex retrieves and structures expert evidence; it does not impersonate an expert or make project decisions on their behalf. The Knowledge Matrix supports admission review; it is not an automatic judge.
 
-### Prerequisites
+## Architecture at a glance
+
+- **Backend:** FastAPI, SQLAlchemy, SQLite/FTS5, Google Gemini through Vertex AI.
+- **Frontend:** React 18, TypeScript, Vite, Tailwind CSS, TanStack Query.
+- **Retrieval:** Gemini embeddings, vector KNN, full-text search, RRF, and AI-assisted query expansion.
+- **Delivery:** SSE progress events plus durable result artifacts for long-running UI and agent requests.
+- **Integrations:** Telegram ingestion, Reddit sidecar, Video Hub, and the Panex agent surface.
+
+The detailed pipeline is documented in [Pipeline Architecture](docs/architecture/pipeline.md). Hybrid retrieval is covered in [Super Passport Search](docs/architecture/super-passport-search.md).
+
+## Local development
+
+Requirements:
 
 - Python 3.11+
-- Node.js 18+
-- Google Cloud project with Vertex AI enabled
-- Vertex AI service-account JSON or ADC-compatible credentials
+- Node.js 20+
+- a Google Cloud project with Vertex AI enabled
+- a local SQLite corpus
 
-For a guided setup experience, execute the `quickstart.sh` script located in the project root.
+Set up the backend:
 
 ```bash
-./quickstart.sh
+python3 -m venv backend/.venv
+source backend/.venv/bin/activate
+pip install -r backend/requirements.txt
+cp .env.example backend/.env
 ```
 
-For manual setup, copy `.env.example` to `backend/.env` and configure Vertex AI auth there:
+Fill in the Vertex AI settings and `DATABASE_URL` in `backend/.env`, then start the API:
 
 ```bash
 cd backend
-cp ../.env.example .env
+uvicorn src.api.main:app --reload --port 8000
 ```
 
-Minimum required runtime variables:
-- `VERTEX_AI_PROJECT_ID`
-- `VERTEX_AI_LOCATION`
-- `VERTEX_AI_SERVICE_ACCOUNT_JSON_PATH` for local development
-  or `VERTEX_AI_SERVICE_ACCOUNT_JSON` for managed environments
+In a second terminal, start the frontend:
 
-## 🧰 Maintenance Scripts
+```bash
+cd frontend
+npm ci
+npm run dev
+```
 
-- `./scripts/update_production_db.sh`: loads `backend/.env`, runs sync, `backend/scripts/embed_posts.py --continuous`, `backend/run_drift_service.py`, then deploys the verified compressed DB artifact to Fly. The embedding and drift steps use **Vertex AI**.
-- `./scripts/deploy_video.sh <json_path>`: imports prepared video JSON into SQLite and deploys the database artifact. The script itself does **not** call Gemini directly.
-- `python3 stress_test_gemini.py` and `python3 test_model.py`: standalone smoke tests that reuse the project's **Vertex AI** runtime from `backend/.env`.
+The frontend runs at `http://localhost:5173` and uses `http://localhost:8000` as the default development API.
 
-## 📚 Documentation
+The production corpus, Telegram sessions, service-account credentials, and other secrets are not part of this repository. Use `.env.example` as the configuration reference and import your own source data for a populated local instance.
 
-- [Documentation Map](docs/DOCUMENTATION_MAP.md) - start here for current SSOT routing.
-- [Pipeline Architecture](docs/architecture/pipeline.md) - **The Source of Truth** for the 10-phase pipeline.
-- [Refero UI Invariants](docs/design-system/refero-say-briefly/UX_INVARIANTS.md) - product guardrails for the current UI shell and future redesign work.
-- [Panex Usage Guide](docs/guides/panex-usage.md) - explicit-only agent/operator workflow.
-- [Expert Admission Control](docs/architecture/expert-admission-control.md) - semantic passports, knowledge matrix, and accept/reject doctrine.
-- [Frontend Guide](frontend/CLAUDE.md) - React + Tailwind architecture, Sidebar, Query Deck, and state management.
-- [Backend Guide](backend/CLAUDE.md) - Services, Config, and API details.
-- [Reddit Integration](docs/architecture/reddit-service.md) - Details on smart targeting and ranking.
+## Checks
 
-## 🤝 Contributing
+```bash
+cd backend
+python -m pytest
+```
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+```bash
+cd frontend
+npm run test:run
+npm run build
+```
 
-## 📄 License
+GitHub Actions also validates the backend, frontend build, and Docker configuration on pull requests and pushes to `main`.
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## Technical documentation
+
+- [Pipeline Architecture](docs/architecture/pipeline.md)
+- [Hybrid Retrieval](docs/architecture/super-passport-search.md)
+- [Panex Usage](docs/guides/panex-usage.md)
+- [Agent Context API](docs/architecture/agent-context-api.md)
+- [Expert Admission Control and Knowledge Matrix](docs/architecture/expert-admission-control.md)
+- [Reddit Integration](docs/architecture/reddit-service.md)
+- [Video Hub](docs/architecture/video-hub-service.md)
+
+## License
+
+This project is available under the [MIT License](LICENSE).
