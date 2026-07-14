@@ -118,10 +118,11 @@ class MediumScoringService:
                 logger.warning(f"[{expert_id}] Scored post ID {post_id} not found in input posts")
 
         # Ensure all input posts have scores (add default scores if missing)
+        missing_post_ids: List[int] = []
         for post in medium_posts:
             post_id = post["telegram_message_id"]
             if not any(sp.get("telegram_message_id") == post_id for sp in valid_scored_posts):
-                logger.warning(f"[{expert_id}] No score found for input post {post_id}, using default 0.0")
+                missing_post_ids.append(post_id)
                 # Preserve all original fields, add default score/reason
                 post_with_default_score = {
                     **post,  # All original fields including created_at, content, etc.
@@ -129,6 +130,20 @@ class MediumScoringService:
                     "reason": "Not scored by model"
                 }
                 valid_scored_posts.append(post_with_default_score)
+
+        # Aggregate diagnostic when posts are missing — gives ops full context
+        # in a single log line (instead of one WARNING per missing post).
+        # Likely causes: max_tokens truncation, markdown fence wrapping, or format drift.
+        if missing_post_ids:
+            missing_preview = missing_post_ids[:10]
+            missing_suffix = "..." if len(missing_post_ids) > 10 else ""
+            raw_preview = raw_content[:500].replace("\n", "\\n")
+            logger.warning(
+                f"[{expert_id}] {len(missing_post_ids)}/{len(medium_posts)} posts missing from "
+                f"medium-scoring response (possible max_tokens truncation or format drift). "
+                f"Missing IDs: {missing_preview}{missing_suffix}. "
+                f"Raw response (first 500 chars, newlines escaped): {raw_preview}"
+            )
 
         logger.info(f"[{expert_id}] Parsed {len(valid_scored_posts)} scored posts from text response")
         return {"scored_posts": valid_scored_posts}
@@ -169,7 +184,10 @@ class MediumScoringService:
                 model=model_name,
                 messages=messages,
                 temperature=0.3,
-                max_tokens=2048,
+                # Bumped 2048 -> 8192 to prevent silent truncation on verbose batches
+                # (e.g. ai_architect with ~28 technical MEDIUM posts + verbose Reason fields).
+                # Without this, last ~13 posts silently get default score=0.0.
+                max_tokens=8192,
                 # Note: We DON'T force json_object here because the prompt expects Markdown text output
             )
         raise ValueError("Vertex LLM client not initialized")
