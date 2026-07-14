@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from src.config import MODEL_DRIFT_ANALYSIS
 from .vertex_llm_client import get_vertex_llm_client, VertexLLMError
 from .embedding_service import get_embedding_service
-from .comment_group_map_service import build_drift_text
+from .comment_group_map_service import build_drift_text, _normalize_embedding_to_blob
 
 logger = logging.getLogger(__name__)
 
@@ -288,9 +288,18 @@ Return ONLY valid JSON:
                             embedding = await embedding_service.embed_text(
                                 text_repr, task_type="RETRIEVAL_DOCUMENT"
                             )
-                            drift_embedding_bytes = np.asarray(
-                                embedding, dtype=np.float32
-                            ).tobytes()
+                            # Storage contract: stored vectors must be unit-length
+                            # so _score_by_embedding can skip matrix normalize.
+                            try:
+                                drift_embedding_bytes = _normalize_embedding_to_blob(
+                                    embedding
+                                )
+                            except ValueError as norm_exc:
+                                logger.warning(
+                                    f"Skipping embedding for post "
+                                    f"{group['post_id']}: {norm_exc}"
+                                )
+                                drift_embedding_bytes = None
                         except Exception as embed_exc:
                             logger.warning(
                                 f"Failed to embed drift for post {group['post_id']}: {embed_exc}"

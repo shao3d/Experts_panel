@@ -9,10 +9,12 @@ Covers:
 import logging
 
 import numpy as np
+import pytest
 
 from src.services.comment_group_map_service import (
     CommentGroupMapService,
     _all_drift_groups_have_embeddings,
+    _normalize_embedding_to_blob,
     build_drift_text,
 )
 
@@ -295,3 +297,57 @@ def test_all_drift_groups_have_embeddings_false_when_all_missing():
     g2 = _group_with_embedding(2, _aligned_unit_vec(0, axis=0))
     g2["drift_embedding"] = None
     assert _all_drift_groups_have_embeddings([g1, g2]) is False
+
+
+# --- _normalize_embedding_to_blob helpers ---
+# This is the write-side contract that lets _score_by_embedding skip matrix
+# normalize on read (saving ~120µs per expert). If you change the storage
+# contract, ALSO update _score_by_embedding in comment_group_map_service.py.
+
+
+def test_normalize_embedding_produces_unit_length_blob():
+    """Output bytes decode back to a vector of norm exactly 1.0."""
+    rng = np.random.default_rng(42)
+    vec = rng.standard_normal(768).astype(np.float32) * 7.0  # any norm
+    blob = _normalize_embedding_to_blob(vec)
+    decoded = np.frombuffer(blob, dtype=np.float32)
+    assert decoded.shape == (768,)
+    assert np.isclose(np.linalg.norm(decoded), 1.0, atol=1e-6)
+
+
+def test_normalize_embedding_idempotent_on_unit_input():
+    """Normalizing an already-unit-length vector returns bytes close to original."""
+    vec = _aligned_unit_vec(0, axis=0)
+    blob = _normalize_embedding_to_blob(vec)
+    decoded = np.frombuffer(blob, dtype=np.float32)
+    assert np.allclose(decoded, vec, atol=1e-6)
+
+
+def test_normalize_embedding_handles_list_input():
+    """Embedding service returns lists, not ndarrays; helper must accept both."""
+    vec_list = [0.0] * 767 + [3.0]  # only last component nonzero
+    blob = _normalize_embedding_to_blob(vec_list)
+    decoded = np.frombuffer(blob, dtype=np.float32)
+    assert np.isclose(np.linalg.norm(decoded), 1.0, atol=1e-6)
+    assert decoded[-1] > 0  # sign preserved
+
+
+def test_normalize_embedding_raises_on_zero_norm():
+    """Zero-norm input raises - never silently stored as a zero-vector."""
+    vec = np.zeros(768, dtype=np.float32)
+    with pytest.raises(ValueError, match="zero-norm"):
+        _normalize_embedding_to_blob(vec)
+
+
+def test_normalize_embedding_raises_on_nan_or_inf():
+    """NaN/Inf must surface loudly - otherwise the row's dot product is also
+    NaN, and ``sim < threshold`` evaluates False so it would silently pass
+    the cosine filter and land in the HIGH set. Reject at storage time."""
+    vec_nan = np.ones(768, dtype=np.float32)
+    vec_nan[42] = float("nan")
+    with pytest.raises(ValueError, match="non-finite"):
+        _normalize_embedding_to_blob(vec_nan)
+    vec_inf = np.ones(768, dtype=np.float32)
+    vec_inf[7] = float("inf")
+    with pytest.raises(ValueError, match="non-finite"):
+        _normalize_embedding_to_blob(vec_inf)

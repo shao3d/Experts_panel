@@ -29,7 +29,10 @@ sys.path.insert(0, str(BACKEND_DIR))
 
 from src.models.base import SessionLocal  # noqa: E402
 from src.services.embedding_service import get_embedding_service  # noqa: E402
-from src.services.comment_group_map_service import build_drift_text  # noqa: E402
+from src.services.comment_group_map_service import (  # noqa: E402
+    build_drift_text,
+    _normalize_embedding_to_blob,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +82,13 @@ async def _embed_and_store_batch(
     for (row_id, _), embedding in zip(valid, embeddings):
         if not embedding:
             continue
-        blob = np.asarray(embedding, dtype=np.float32).tobytes()
+        # Storage contract: stored vectors must be unit-length so
+        # _score_by_embedding can skip matrix normalize on read.
+        try:
+            blob = _normalize_embedding_to_blob(embedding)
+        except ValueError as norm_exc:
+            logger.warning("Skipping row %s: %s", row_id, norm_exc)
+            continue
         db.execute(
             text(
                 """
