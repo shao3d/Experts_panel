@@ -15,6 +15,7 @@ os.environ.setdefault("BACKEND_LOG_FILE", str(BACKEND_DIR / "logs" / "backend.lo
 os.environ.setdefault("FRONTEND_LOG_FILE", str(BACKEND_DIR / "logs" / "frontend.log"))
 
 from src import config
+from src.services import health_probe_service as probe_module
 from src.services.health_probe_service import HealthProbeService
 from src.services.vertex_llm_client import VertexLLMError
 
@@ -43,7 +44,7 @@ class FakeLLMClient:
         self.calls.append(model)
         if model in self.failure_by_model:
             raise self.failure_by_model[model]
-        return _FakeResponse("OK")
+        return _FakeResponse('{"status":"ok"}')
 
 
 class FakeEmbeddingService:
@@ -216,3 +217,40 @@ def test_classify_exception_preserves_runtime_error_type():
     assert auth_error["error_type"] == "auth_error"
     assert rate_limit_error["error_type"] == "rate_limit"
     assert rate_limit_error["status_code"] == 429
+
+
+@pytest.mark.parametrize(
+    "content,expected_ok,expected_err",
+    [
+        # Happy paths: status==ok in any case/whitespace variant.
+        ('{"status":"ok"}', True, ""),
+        ('{"status":"OK"}', True, ""),
+        ('{"status":" ok "}', True, ""),
+        # Malformed JSON: text the model sometimes emits instead of JSON.
+        ("", False, "malformed_json"),
+        ("Sure, OK.", False, "malformed_json"),
+        ("```json\n{\"status\":\"ok\"}\n```", False, "malformed_json"),
+        ("not even close to JSON", False, "malformed_json"),
+        # Malformed JSON: wrong shape after parse -- list, scalar, bool.
+        ("[]", False, "malformed_json"),
+        ('"hello"', False, "malformed_json"),
+        ("42", False, "malformed_json"),
+        ("true", False, "malformed_json"),
+        # Wrong status: parsed cleanly but the field disagrees.
+        ('{"foo":"bar"}', False, "invalid_response"),
+        ('{"status":"error"}', False, "invalid_response"),
+        # Nested status must NOT count -- only top-level is honored.
+        ('{"meta":{"status":"ok"}}', False, "invalid_response"),
+    ],
+)
+def test_classify_probe_response(content, expected_ok, expected_err):
+    """The probe parser is the entire correctness of the JSON-mode fix.
+
+    Exercises the contract that ``_classify_probe_response`` distinguishes
+    ``malformed_json`` (parse/shape failure) from ``invalid_response``
+    (parseable JSON whose ``status`` field disagrees with the expected
+    "ok") and that nested ``status`` fields are intentionally ignored.
+    """
+    ok, err = probe_module._classify_probe_response(content)
+    assert ok is expected_ok
+    assert err == expected_err

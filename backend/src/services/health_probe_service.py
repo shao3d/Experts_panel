@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import asyncio
 import copy
+import json
 import logging
 import os
 import re
@@ -27,7 +28,41 @@ logger = logging.getLogger(__name__)
 
 _DEFAULT_CACHE_TTL_SECONDS = max(30, int(os.getenv("HEALTH_PROBE_TTL_SECONDS", "300")))
 _DEFAULT_GENERATION_MODEL = os.getenv("HEALTH_GENERATION_MODEL", config.MODEL_MAP)
-_GENERATION_PROMPT = "Respond with OK only."
+# Probe as a structured JSON acknowledgment so Gemini 2.5 and Gemini 3
+# families both answer with the same verifiable envelope. The earlier
+# text-only "Response with OK only." probe made Gemini 3 models emit
+# verbose acknowledgements ("Sure, OK." / "I'm here and ready.") which
+# failed the `startswith("OK")` check and falsely marked those models
+# as `unavailable`.
+_PROBE_JSON_PROMPT = (
+    "Return a single JSON object with a 'status' field set to 'ok'. "
+    'Example: {"status": "ok"}. No other text, no markdown fences.'
+)
+_PROBE_OK_STATUS = "ok"
+
+
+def _classify_probe_response(content: str) -> Tuple[bool, str]:
+    """Classify a probe response envelope.
+
+    Returns ``(ok, error_type)`` with ``error_type`` being one of:
+      - ``""`` (empty) when ``ok`` is True,
+      - ``"malformed_json"`` when JSON parsing or shape validation fails,
+      - ``"invalid_response"`` when JSON parsed cleanly but
+        ``status != "ok"``.
+
+    Always inspects the top-level ``status`` only — nested ``status``
+    fields are intentionally ignored.
+    """
+    try:
+        payload = json.loads((content or "").strip())
+    except (ValueError, TypeError):
+        return False, "malformed_json"
+    if not isinstance(payload, dict):
+        return False, "malformed_json"
+    status = str(payload.get("status", "")).strip().lower()
+    if status == _PROBE_OK_STATUS:
+        return True, ""
+    return False, "invalid_response"
 _EMBEDDING_PROBE_TEXT = "health probe"
 _STATUS_CODE_RE = re.compile(r"Error code:\s*(\d+)")
 
@@ -197,12 +232,13 @@ class HealthProbeService:
         try:
             response = await self._get_llm_client().chat_completions_create(
                 model=model,
-                messages=[{"role": "user", "content": _GENERATION_PROMPT}],
+                messages=[{"role": "user", "content": _PROBE_JSON_PROMPT}],
                 temperature=0,
-                max_tokens=8,
+                max_tokens=32,
+                response_format={"type": "json_object"},
             )
-            response_text = response.choices[0].message.content.strip()
-            ok = response_text.upper().startswith("OK")
+            content = response.choices[0].message.content or ""
+            ok, error_type = _classify_probe_response(content)
             latency_ms = round((time.perf_counter() - started_at) * 1000, 2)
             result = {
                 "ok": ok,
@@ -215,8 +251,8 @@ class HealthProbeService:
                 "status_code": None,
             }
             if not ok:
-                result["error_type"] = "invalid_response"
-                result["message"] = f"Unexpected probe response: {response_text[:120]}"
+                result["error_type"] = error_type
+                result["message"] = f"Unexpected probe response: {content[:120]}"
             return result
         except Exception as exc:
             details = self._classify_exception(exc)
