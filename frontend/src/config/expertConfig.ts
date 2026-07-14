@@ -16,6 +16,22 @@ export interface ExpertGroup {
 }
 
 /**
+ * Source-of-truth for experts hidden from UI selection surfaces
+ * (Sidebar, Mobile drawer, and default selection set).
+ *
+ * - Hidden ids are NOT rendered in any selection group.
+ * - Hidden ids are NOT included in the default-selected set on app boot.
+ * - Backend is NOT affected: requests that explicitly target a hidden expert
+ *   (e.g. via URL/API) still work, since the backend pipeline is unchanged.
+ *
+ * Add an id here to hide it everywhere; remove it to restore.
+ */
+export const HIDDEN_EXPERT_IDS: ReadonlySet<string> = new Set(['video_hub']);
+
+export const isExpertHidden = (expertId: string): boolean =>
+  HIDDEN_EXPERT_IDS.has(expertId);
+
+/**
  * Expert Groups Definition (Used in Sidebar and Mobile Selection)
  */
 export const EXPERT_GROUPS: ExpertGroup[] = [

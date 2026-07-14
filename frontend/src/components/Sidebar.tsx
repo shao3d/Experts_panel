@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ExpertInfo } from '../types/api';
-import { EXPERT_GROUPS, getExpertDisplayName } from '../config/expertConfig';
+import { EXPERT_GROUPS, getExpertDisplayName, isExpertHidden } from '../config/expertConfig';
 import clsx from 'clsx';
 
 interface SidebarProps {
@@ -247,7 +247,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {EXPERT_GROUPS.map((group) => {
           const groupExperts = group.expertIds
             .map(id => expertMap.get(id))
-            .filter((e): e is ExpertInfo => e !== undefined);
+            .filter((e): e is ExpertInfo => e !== undefined)
+            // Drop experts flagged in HIDDEN_EXPERT_IDS (e.g. video_hub). Doing this
+            // per-expert rather than per-group means a future mixed group with one
+            // hidden id won't leak; the empty-group check below also covers the
+            // pure-hidden case (e.g. Knowledge Hub → video_hub).
+            .filter(e => !isExpertHidden(e.expert_id));
 
           if (groupExperts.length === 0) return null;
           

@@ -16,7 +16,7 @@ import CommunityInsightsSection from './components/CommunityInsightsSection';
 import { apiClient } from './services/api';
 import { ExpertResponse as ExpertResponseType, ProgressEvent, ExpertInfo, RedditResponse } from './types/api';
 import { MetaSynthesisSection } from './components/MetaSynthesisSection';
-import { transformExpertsForUI, EXPERT_UI_CONFIG } from './config/expertConfig';
+import { transformExpertsForUI, EXPERT_UI_CONFIG, isExpertHidden } from './config/expertConfig';
 import './components/CommunityInsightsSection.css';
 import './App.css';
 
@@ -70,10 +70,15 @@ export const App: React.FC = () => {
         const transformedExperts = transformExpertsForUI(experts);
         console.log('[App] Transformed experts for UI:', transformedExperts);
 
-        setAvailableExperts(transformedExperts);
+        // Drop experts flagged in HIDDEN_EXPERT_IDS so the availableExperts length
+        // matches the default-selected count (avoids off-by-one in the mobile
+        // drawer counter "Select Experts (X/Y)").
+        const visibleExperts = transformedExperts.filter(e => !isExpertHidden(e.expert_id));
+        setAvailableExperts(visibleExperts);
 
-        // Initialize selection with all experts
-        const allExpertIds = new Set(transformedExperts.map(e => e.expert_id));
+        // Initialize selection with all VISIBLE experts (HIDDEN_EXPERT_IDS excluded by default).
+        // Derived from the same visibleExperts so the two filter chains can't drift.
+        const allExpertIds = new Set(visibleExperts.map(e => e.expert_id));
         setSelectedExperts(allExpertIds);
         setExpandedExperts(allExpertIds);
       } catch (err) {

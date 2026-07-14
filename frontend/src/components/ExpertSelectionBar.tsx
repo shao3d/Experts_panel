@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { ExpertInfo } from '../types/api';
-import { EXPERT_GROUPS, getExpertDisplayName } from '../config/expertConfig';
+import { EXPERT_GROUPS, getExpertDisplayName, isExpertHidden } from '../config/expertConfig';
 
 interface ExpertSelectionBarProps {
   availableExperts: ExpertInfo[];
@@ -115,9 +115,15 @@ const ExpertSelectionBar: React.FC<ExpertSelectionBarProps> = ({
         // Filter to only include experts that exist in availableExperts
         const groupExperts = group.expertIds
           .map(id => expertMap.get(id))
-          .filter((e): e is ExpertInfo => e !== undefined);
+          .filter((e): e is ExpertInfo => e !== undefined)
+          // Drop experts flagged in HIDDEN_EXPERT_IDS (e.g. video_hub). Per-expert
+          // filter keeps behavior correct even if a hidden id is later added to
+          // a mixed group.
+          .filter(e => !isExpertHidden(e.expert_id));
 
         if (groupExperts.length === 0) return null;
+        // Hide groups whose experts are all in HIDDEN_EXPERT_IDS (e.g. Knowledge Hub → video_hub).
+        if (group.expertIds.every(isExpertHidden)) return null;
 
         const allGroupSelected = groupExperts.every(e => selectedExperts.has(e.expert_id));
 
