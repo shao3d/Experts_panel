@@ -41,6 +41,10 @@
 
 ---
 
+## 🛠️ Setup: venv + dependencies
+
+Note: после clone/pull переустанови venv: cd backend && python -m venv .venv && .venv/bin/pip install -r requirements.txt. Без этого maintenance-скрипты типа backfill_drift_embeddings могут упасть на ModuleNotFoundError (numpy и др.).
+
 ## 🚀 Полная инструкция
 
 ### Step 1: Подготовьте данные
