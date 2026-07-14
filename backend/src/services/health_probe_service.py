@@ -265,11 +265,17 @@ class HealthProbeService:
     async def _run_generation_probe(self, model: str) -> Dict[str, Any]:
         started_at = time.perf_counter()
         try:
+            # max_tokens=128 leaves enough room for a chatty preamble like
+            # "Sure, here is your JSON: {...}" before the JSON envelope,
+            # which Gemini 2.5 (non-lite) and Gemini 3 families like to emit
+            # despite the response_mime_type=application/json hint. 32 was
+            # too tight and caused the response to be truncated mid-preamble
+            # on the first prod deploy of the depth-counter fix.
             response = await self._get_llm_client().chat_completions_create(
                 model=model,
                 messages=[{"role": "user", "content": _PROBE_JSON_PROMPT}],
                 temperature=0,
-                max_tokens=32,
+                max_tokens=128,
                 response_format={"type": "json_object"},
             )
             content = response.choices[0].message.content or ""
@@ -287,7 +293,11 @@ class HealthProbeService:
             }
             if not ok:
                 result["error_type"] = error_type
-                result["message"] = f"Unexpected probe response: {content[:120]}"
+                # Keep enough of the response to be diagnostically useful
+                # without bloating the cached summary on the wire. 500 chars
+                # is enough to see the chatty preamble + first line of JSON
+                # for any model family we have shipped.
+                result["message"] = f"Unexpected probe response: {content[:500]}"
             return result
         except Exception as exc:
             details = self._classify_exception(exc)
