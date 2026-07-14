@@ -94,13 +94,13 @@ export PYTHONPATH=$PYTHONPATH:$(pwd)/backend
 export DATABASE_URL="sqlite:///$ABS_DB_PATH"
 
 echo "========================================================"
-echo "🚀 STARTING PRODUCTION DB UPDATE SEQUENCE (9 steps)"
+echo "🚀 STARTING PRODUCTION DB UPDATE SEQUENCE (10 steps)"
 echo "========================================================"
 
 # 1. Local Backup
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 LOCAL_BACKUP_FILE="$BACKUP_DIR/experts_local_pre_sync_$TIMESTAMP.db"
-echo "📦 [1/9] Creating local backup..."
+echo "📦 [1/10] Creating local backup..."
 if [ -f "$DB_PATH" ]; then
     cp "$DB_PATH" "$LOCAL_BACKUP_FILE"
     echo "   ✅ Backup saved to: $LOCAL_BACKUP_FILE"
@@ -109,10 +109,10 @@ else
 fi
 
 if [ "${DB_UPLOAD_ONLY:-0}" = "1" ]; then
-    echo "⏭️  DB_UPLOAD_ONLY=1: skipping steps 2-5 (sync, migrations, vectorization, drift)."
+    echo "⏭️  DB_UPLOAD_ONLY=1: skipping steps 2-5 (sync, migrations, vectorization, drift backfill, drift analysis)."
 else
     # 2. Run Local Sync (Posts & Comments)
-    echo "🔄 [2/9] Running Local Sync (Posts & Comments)..."
+    echo "🔄 [2/10] Running Local Sync (Posts & Comments)..."
     if $PYTHON_CMD backend/sync_channel_multi_expert.py; then
         echo "   ✅ Local sync completed successfully."
     else
@@ -121,7 +121,7 @@ else
     fi
 
     # 3. Run Database Migrations (skip already-applied via marker files)
-    echo "🗄️  [3/9] Running pending database migrations..."
+    echo "🗄️  [3/10] Running pending database migrations..."
     MIGRATION_MARKER_DIR="$BACKUP_DIR/.migrations_applied"
     mkdir -p "$MIGRATION_MARKER_DIR"
     MIGRATIONS_APPLIED=0
@@ -152,15 +152,27 @@ else
     fi
 
     # 4. Vectorize New Posts (Embeddings for Hybrid Search)
-    echo "🧮 [4/9] Vectorizing new posts (embeddings)..."
+    echo "🧮 [4/10] Vectorizing new posts (embeddings)..."
     if $PYTHON_CMD backend/scripts/embed_posts.py --continuous; then
         echo "   ✅ Vectorization completed."
     else
         echo "   ⚠️ Vectorization failed (non-critical). Continuing..."
     fi
 
+    # 4.5. Backfill Drift Embeddings (legacy comment_group_drift rows)
+    #       Population runs once after migration 024 unlocks the fast
+    #       cosine-similarity drift scoring path in comment_group_map_service.
+    #       The script is idempotent: it only fills drift_embedding where NULL,
+    #       so repeat deploys do no extra work.
+    echo "🧩 [4.5/10] Backfilling drift embeddings for legacy comment_group_drift rows..."
+    if $PYTHON_CMD -m backend.scripts.maintenance.backfill_drift_embeddings; then
+        echo "   ✅ Drift embedding backfill completed."
+    else
+        echo "   ⚠️ Drift embedding backfill failed (non-critical). Continuing..."
+    fi
+
     # 5. Run Drift Analysis
-    echo "🧠 [5/9] Running Drift Analysis (Gemini)..."
+    echo "🧠 [5/10] Running Drift Analysis (Gemini)..."
     if $PYTHON_CMD backend/run_drift_service.py; then
         echo "   ✅ Drift analysis completed successfully."
     else
@@ -170,7 +182,7 @@ else
 fi
 
 # 6. Check/Wake up Fly.io Machine
-echo "🌤️  [6/9] Checking remote machine status..."
+echo "🌤️  [6/10] Checking remote machine status..."
 MACHINE_ID=$(get_machine_id)
 MACHINE_STATUS=$(get_machine_state)
 
@@ -188,7 +200,7 @@ disable_autostop_for_deploy "$MACHINE_ID"
 trap 'restore_autostop_after_deploy "$MACHINE_ID"; rm -rf "$UPLOAD_WORK_DIR"' EXIT
 
 # 7. Remote Backup
-echo "🛡️  [7/9] Creating remote backup on server..."
+echo "🛡️  [7/10] Creating remote backup on server..."
 REMOTE_BACKUP_CMD="if [ -f $REMOTE_DB_PATH ]; then rm -f $REMOTE_BACKUP_PATH && (ln $REMOTE_DB_PATH $REMOTE_BACKUP_PATH || cp $REMOTE_DB_PATH $REMOTE_BACKUP_PATH); else exit 2; fi"
 if fly ssh console -C "sh -lc '$REMOTE_BACKUP_CMD'"; then
     echo "   ✅ Remote backup created at $REMOTE_BACKUP_PATH"
@@ -203,7 +215,7 @@ else
 fi
 
 # 8. Upload New DB (Resumable Staged)
-echo "🚀 [8/9] Uploading fresh database (compressed staged upload)..."
+echo "🚀 [8/10] Uploading fresh database (compressed staged upload)..."
 
 UPLOAD_WORK_DIR=$(mktemp -d "${TMPDIR:-/tmp}/experts-db-upload.XXXXXX")
 LOCAL_GZ_PATH="$UPLOAD_WORK_DIR/experts.db.gz"
@@ -378,7 +390,7 @@ else
 fi
 
 # 9. Restart Application
-echo "🔄 [9/9] Restarting application to load new DB..."
+echo "🔄 [9/10] Restarting application to load new DB..."
 fly apps restart "$APP_NAME"
 echo "   ✅ Restart command sent."
 
