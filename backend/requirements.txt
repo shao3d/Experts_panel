@@ -45,6 +45,9 @@ pytest==8.3.3
 pytest-asyncio==0.24.0
 ruff==0.6.9
 
+# Numerical computing (cosine similarity for drift embedding scoring)
+numpy>=1.26.0
+
 # Optional: For better development experience
 ipython==8.28.0
 rich==13.8.1

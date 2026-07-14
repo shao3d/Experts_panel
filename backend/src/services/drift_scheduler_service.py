@@ -4,11 +4,14 @@ import time
 import logging
 from datetime import datetime
 from typing import List, Dict, Any, Optional
+import numpy as np
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from src.config import MODEL_DRIFT_ANALYSIS
 from .vertex_llm_client import get_vertex_llm_client, VertexLLMError
+from .embedding_service import get_embedding_service
+from .comment_group_map_service import build_drift_text
 
 logger = logging.getLogger(__name__)
 
@@ -198,8 +201,18 @@ Return ONLY valid JSON:
 
 
 
-    def update_group_status(self, post_id: int, analysis_result: Dict[str, Any]):
-        """Update database with analysis results."""
+    def update_group_status(
+        self,
+        post_id: int,
+        analysis_result: Dict[str, Any],
+        drift_embedding: Optional[bytes] = None,
+    ):
+        """Update database with analysis results.
+
+        ``drift_embedding`` is the pre-computed numpy.float32 vector
+        serialized via ``.tobytes()``. Stored as BLOB alongside ``drift_topics``
+        for fast cosine similarity at query time.
+        """
 
         has_drift = analysis_result.get("has_drift", False)
         drift_topics = analysis_result.get("drift_topics")
@@ -218,6 +231,7 @@ Return ONLY valid JSON:
             SET
                 has_drift = :has_drift,
                 drift_topics = :drift_topics,
+                drift_embedding = :drift_embedding,
                 analyzed_by = 'drift_checked_gemini',
                 analyzed_at = datetime('now')
             WHERE post_id = :post_id
@@ -226,7 +240,8 @@ Return ONLY valid JSON:
         self.db.execute(update_query, {
             "post_id": post_id,
             "has_drift": 1 if has_drift else 0,
-            "drift_topics": drift_topics_json
+            "drift_topics": drift_topics_json,
+            "drift_embedding": drift_embedding,
         })
         self.db.commit()
 
@@ -258,8 +273,33 @@ Return ONLY valid JSON:
                 logger.info(f"Analyzing post {group['post_id']} ({len(group['comments'])} comments)...")
                 result = await self.analyze_drift_async(group['post_text'], group['comments'])
 
+                # Embed drift_topics for fast query-time scoring (cosine similarity).
+                # Failures are non-fatal: row stays with drift_topics but no embedding,
+                # and the query path will fall back to the LLM chunked scoring.
+                drift_embedding_bytes: Optional[bytes] = None
+                if result.get("has_drift") and result.get("drift_topics"):
+                    text_repr = build_drift_text(json.dumps(
+                        {"has_drift": True, "drift_topics": result["drift_topics"]},
+                        ensure_ascii=False,
+                    ))
+                    if text_repr:
+                        try:
+                            embedding_service = get_embedding_service()
+                            embedding = await embedding_service.embed_text(
+                                text_repr, task_type="RETRIEVAL_DOCUMENT"
+                            )
+                            drift_embedding_bytes = np.asarray(
+                                embedding, dtype=np.float32
+                            ).tobytes()
+                        except Exception as embed_exc:
+                            logger.warning(
+                                f"Failed to embed drift for post {group['post_id']}: {embed_exc}"
+                            )
+
                 # Update DB
-                self.update_group_status(group['post_id'], result)
+                self.update_group_status(
+                    group['post_id'], result, drift_embedding=drift_embedding_bytes
+                )
                 success_count += 1
 
                 if result.get('has_drift'):

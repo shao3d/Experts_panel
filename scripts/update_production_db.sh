@@ -126,7 +126,7 @@ else
     mkdir -p "$MIGRATION_MARKER_DIR"
     MIGRATIONS_APPLIED=0
 
-    for MIGRATION_FILE in backend/migrations/023_fts5_remove_metadata.sql; do
+    for MIGRATION_FILE in backend/migrations/023_fts5_remove_metadata.sql backend/migrations/024_drift_embedding.sql; do
         MIGRATION_NAME=$(basename "$MIGRATION_FILE")
         MARKER_FILE="$MIGRATION_MARKER_DIR/$MIGRATION_NAME.done"
         if [ -f "$MARKER_FILE" ]; then

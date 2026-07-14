@@ -156,6 +156,16 @@ MEDIUM_MAX_SELECTED_POSTS: int = int(os.getenv("MEDIUM_MAX_SELECTED_POSTS", "5")
 # Hard limit on posts processed to prevent OOM
 MEDIUM_MAX_POSTS: int = int(os.getenv("MEDIUM_MAX_POSTS", "50"))
 
+# --- Drift Embedding Scoring (replaces LLM chunked scoring) ---
+# Cosine similarity threshold (RETRIEVAL_QUERY vs RETRIEVAL_DOCUMENT) above which
+# a drift group is marked HIGH. 0.75 is empirically safe for gemini-embedding-001;
+# tune via config / env in production.
+DRIFT_EMBEDDING_THRESHOLD: float = float(
+    os.getenv("DRIFT_EMBEDDING_THRESHOLD", "0.75")
+)
+# Max number of drift groups to return at query time (pre-merge dedup).
+DRIFT_EMBEDDING_TOP_K: int = int(os.getenv("DRIFT_EMBEDDING_TOP_K", "20"))
+
 # --- Лимиты (Rate Limiting) ---
 # For Tier 1 (paid) with 300-1000 RPM, 25 is optimal. For Free Tier with 15 RPM, use 8.
 MAP_MAX_PARALLEL: int = int(os.getenv("MAP_MAX_PARALLEL", "25"))

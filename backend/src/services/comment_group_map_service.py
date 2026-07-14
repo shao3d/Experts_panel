@@ -9,6 +9,7 @@ import logging
 from pathlib import Path
 from string import Template
 
+import numpy as np
 from sqlalchemy.orm import Session
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 import httpx
@@ -17,10 +18,82 @@ from ..models.post import Post
 from ..models.comment import Comment
 from ..models.database import comment_group_drift
 from .vertex_llm_client import get_vertex_llm_client, VertexLLMError
+from .embedding_service import get_embedding_service
+from .. import config
 from ..api.models import get_channel_username
 from ..utils.language_utils import prepare_prompt_with_language_instruction
 
 logger = logging.getLogger(__name__)
+
+
+def build_drift_text(drift_topics_json: str) -> str:
+    """Build a dense text representation of drift_topics for embedding.
+
+    Used in three places:
+    1. ``drift_scheduler_service`` — embed new drift_topics at sync time.
+    2. ``backfill_drift_embeddings.py`` — one-shot embed for legacy rows.
+    3. (Future) display or re-ranking.
+
+    Concatenates topic, keywords, key_phrases and context. Excludes the
+    anchor-post text on purpose: the embedding should represent *what the
+    comments drifted to*, not the original post topic.
+    """
+    if not drift_topics_json:
+        return ""
+    try:
+        if isinstance(drift_topics_json, bytes):
+            drift_topics_json = drift_topics_json.decode("utf-8")
+        data = json.loads(drift_topics_json)
+    except Exception:
+        return ""
+
+    if isinstance(data, dict) and "drift_topics" in data:
+        topics = data["drift_topics"]
+    elif isinstance(data, list):
+        topics = data
+    else:
+        return ""
+
+    # Guard against corrupted rows where ``drift_topics`` is a bare scalar
+    # (string / int). Iterating it would either yield characters or raise
+    # ``TypeError: 'int' object is not iterable``. The dispatch contract
+    # treats an empty embedding text as "skip this row, fall back to LLM"
+    # (one bad row poisons the batch — that's the correct conservative
+    # behavior during rollout).
+    if not isinstance(topics, list):
+        return ""
+
+    parts: List[str] = []
+    for t in topics:
+        if not isinstance(t, dict):
+            continue
+        topic = t.get("topic", "")
+        keywords = " ".join(t.get("keywords") or [])
+        key_phrases = " ".join(t.get("key_phrases") or [])
+        context = t.get("context", "")
+        if topic:
+            parts.append(str(topic))
+        if keywords:
+            parts.append(keywords)
+        if key_phrases:
+            parts.append(key_phrases)
+        if context:
+            parts.append(str(context))
+
+    return " ".join(parts).strip()
+
+
+def _all_drift_groups_have_embeddings(groups: List[Dict[str, Any]]) -> bool:
+    """True if every group carries a non-null ``drift_embedding`` BLOB.
+
+    Used as the dispatch predicate in ``score_drift_groups``: when True, the
+    fast cosine-similarity path is used; otherwise we fall back to the legacy
+    LLM chunked scoring. Empty list is treated as vacuously True so an empty
+    result short-circuits without an unnecessary fallback.
+    """
+    if not groups:
+        return True
+    return all(g.get("drift_embedding") is not None for g in groups)
 
 
 class CommentGroupMapService:
@@ -239,6 +312,7 @@ class CommentGroupMapService:
         query = db.query(
             comment_group_drift.c.post_id,
             comment_group_drift.c.drift_topics,
+            comment_group_drift.c.drift_embedding,
             Post.telegram_message_id,
             Post.message_text,
             Post.created_at,
@@ -261,7 +335,7 @@ class CommentGroupMapService:
 
         results = query.all()
         groups = []
-        for post_id, drift_topics_json, telegram_msg_id, message_text, created_at, author_name in results:
+        for post_id, drift_topics_json, drift_embedding, telegram_msg_id, message_text, created_at, author_name in results:
             if drift_topics_json:
                 try:
                     if isinstance(drift_topics_json, bytes):
@@ -314,7 +388,8 @@ class CommentGroupMapService:
                 },
                 "drift_topics": drift_topics,
                 "comments_count": len(comments),
-                "comments": comments
+                "comments": comments,
+                "drift_embedding": drift_embedding,
             })
 
         return groups
@@ -456,11 +531,17 @@ class CommentGroupMapService:
         exclude_post_ids: Optional[List[int]] = None,
         cutoff_date: Optional[datetime] = None,
         progress_callback: Optional[Callable] = None,
+        query_embedding: Optional[List[float]] = None,
     ) -> List[Dict[str, Any]]:
-        """Load drift groups and score them with LLM. Does NOT need main_sources.
+        """Load drift groups and score them. Does NOT need main_sources.
 
-        This is the expensive operation (DB queries + LLM scoring of chunks).
-        Can run in parallel with Reduce phase.
+        Fast path: when all groups have pre-computed ``drift_embedding`` BLOBs,
+        uses cosine similarity with the query embedding (~1ms per expert).
+
+        Fallback: if any group lacks an embedding, falls back to the legacy
+        LLM-chunked path (~80-130s per expert). This state is expected only
+        during the rollout window (between migration 024 and the backfill
+        script run).
 
         Returns:
             List of HIGH-relevance scored drift groups, sorted by date.
@@ -473,6 +554,23 @@ class CommentGroupMapService:
         if not all_groups:
             logger.info(f"[{expert_id}] Drift scoring: no drift groups found")
             return []
+
+        # Fast path: cosine similarity on pre-computed embeddings
+        all_have_embeddings = _all_drift_groups_have_embeddings(all_groups)
+        if all_have_embeddings:
+            if query_embedding is None:
+                embedding_service = get_embedding_service()
+                query_embedding = await embedding_service.embed_query(query)
+            return self._score_by_embedding(
+                all_groups, query_embedding, expert_id, t_start
+            )
+
+        # Fallback to LLM chunked path (any group without embedding triggers full LLM)
+        missing_count = sum(1 for g in all_groups if g.get("drift_embedding") is None)
+        logger.info(
+            f"[{expert_id}] Drift scoring: {missing_count}/{len(all_groups)} groups without "
+            f"drift_embedding, falling back to LLM chunked path (run backfill to enable fast path)"
+        )
 
         chunks = self._chunk_groups(all_groups)
         total_chunks = len(chunks)
@@ -532,6 +630,90 @@ class CommentGroupMapService:
             f"{len(all_groups)} groups -> {len(relevant_groups)} HIGH"
         )
 
+        return relevant_groups
+
+    def _score_by_embedding(
+        self,
+        groups: List[Dict[str, Any]],
+        query_embedding: List[float],
+        expert_id: str,
+        t_start: float,
+    ) -> List[Dict[str, Any]]:
+        """Score drift groups via cosine similarity. No LLM call.
+
+        ~1ms for hundreds of groups. Replaces ~80-130s LLM chunked scoring.
+        Returns HIGH-relevance groups only, sorted by date desc.
+        """
+        import time
+        threshold = config.DRIFT_EMBEDDING_THRESHOLD
+        top_k = config.DRIFT_EMBEDDING_TOP_K
+
+        # Normalize query vector
+        q_vec = np.asarray(query_embedding, dtype=np.float32)
+        q_norm = float(np.linalg.norm(q_vec))
+        if q_norm == 0.0:
+            logger.warning(f"[{expert_id}] Drift embedding: zero query vector, skipping")
+            return []
+        q_normalized = q_vec / q_norm
+
+        # Decode all drift embeddings; skip dimension mismatches
+        d_vecs: List[np.ndarray] = []
+        valid_groups: List[Dict[str, Any]] = []
+        for g in groups:
+            blob = g.get("drift_embedding")
+            if blob is None:
+                continue
+            d_vec = np.frombuffer(blob, dtype=np.float32)
+            if d_vec.shape[0] != q_vec.shape[0]:
+                logger.warning(
+                    f"[{expert_id}] Drift embedding dim mismatch: "
+                    f"expected {q_vec.shape[0]}, got {d_vec.shape[0]}. Skipping group."
+                )
+                continue
+            d_vecs.append(d_vec)
+            valid_groups.append(g)
+
+        if not valid_groups:
+            return []
+
+        d_matrix = np.stack(d_vecs)
+        d_norms = np.linalg.norm(d_matrix, axis=1, keepdims=True)
+        d_norms[d_norms == 0] = 1
+        d_normalized = d_matrix / d_norms
+
+        # Cosine similarity: (N, D) @ (D,) -> (N,)
+        similarities = d_normalized @ q_normalized
+
+        # Pair, sort by similarity desc, take top-K
+        scored = sorted(
+            zip(similarities.tolist(), valid_groups),
+            key=lambda x: x[0],
+            reverse=True,
+        )[:top_k]
+
+        relevant_groups: List[Dict[str, Any]] = []
+        for sim, group in scored:
+            if sim < threshold:
+                continue
+            # Shallow copy so we don't mutate the cached group from _load_drift_groups
+            out = dict(group)
+            out["relevance"] = "HIGH"
+            out["reason"] = f"Embedding similarity: {sim:.3f}"
+            out["matched_keywords"] = []
+            relevant_groups.append(out)
+
+        # Sort by date desc (consistent with LLM path)
+        relevant_groups.sort(
+            key=lambda x: x["anchor_post"].get("created_at", ""),
+            reverse=True,
+        )
+
+        duration_ms = int((time.time() - t_start) * 1000)
+        logger.info(
+            f"[{expert_id}] Drift Scoring END (embedding path): {duration_ms}ms, "
+            f"{len(valid_groups)} scored -> {len(relevant_groups)} HIGH "
+            f"(threshold={threshold}, top_k={top_k})"
+        )
         return relevant_groups
 
     def merge_with_main_sources(

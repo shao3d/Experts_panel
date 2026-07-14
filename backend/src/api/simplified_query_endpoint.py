@@ -617,7 +617,12 @@ async def process_expert_pipeline(
             return _reduce_results, _validation_results
 
         async def run_drift_scoring():
-            """Drift group loading + LLM scoring (no main_sources needed)."""
+            """Drift group loading + scoring (no main_sources needed).
+
+            Uses pre-computed embeddings + cosine similarity when available
+            (fast path: ~1ms). Falls back to LLM chunked scoring when the
+            backfill has not yet populated drift_embedding on all groups.
+            """
             t_drift = time.perf_counter()
             try:
                 scored = await cg_service.score_drift_groups(
@@ -627,6 +632,10 @@ async def process_expert_pipeline(
                     exclude_post_ids=None,
                     cutoff_date=cutoff_date,
                     progress_callback=cg_progress,
+                    # Pass pre-computed query embedding if available (Super-Passport
+                    # mode computes it during Scout phase). If None, score_drift_groups
+                    # computes it lazily via embedding_service.embed_query().
+                    query_embedding=query_embedding,
                 )
                 timings["drift_scoring"] = round((time.perf_counter() - t_drift) * 1000, 1)
                 return scored
