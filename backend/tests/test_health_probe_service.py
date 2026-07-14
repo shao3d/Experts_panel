@@ -222,34 +222,49 @@ def test_classify_exception_preserves_runtime_error_type():
 @pytest.mark.parametrize(
     "content,expected_ok,expected_err",
     [
-        # Happy paths: status==ok in any case/whitespace variant.
+        # === Happy paths: strict JSON, status==ok ===
         ('{"status":"ok"}', True, ""),
         ('{"status":"OK"}', True, ""),
         ('{"status":" ok "}', True, ""),
-        # Malformed JSON: text the model sometimes emits instead of JSON.
-        ("", False, "malformed_json"),
+        # === Depth-counter fallback: JSON wrapped in chatter or markdown ===
+        ('Sure, here is the JSON you requested: {"status":"ok"}', True, ""),
+        ('```json\n{"status":"ok"}\n```', True, ""),
+        ('Some preamble text. {"status":"ok"} trailing.', True, ""),
+        # Top-level key is NOT status, even though inner has ok.
+        ('{"outer": {"status":"ok"}}', False, "invalid_response"),
+        # === Empty: empty / whitespace-only (Vertex SAFETY/OTHER/MAX_TOKENS, quota) ===
+        ("", False, "empty_response"),
+        ("   ", False, "empty_response"),
+        # === Regression: production preamble pattern ===
+        ('Here is the JSON: {"status":"ok"}', True, ""),
+        # === Malformed: text that has no JSON envelope at all ===
         ("Sure, OK.", False, "malformed_json"),
-        ("```json\n{\"status\":\"ok\"}\n```", False, "malformed_json"),
         ("not even close to JSON", False, "malformed_json"),
-        # Malformed JSON: wrong shape after parse -- list, scalar, bool.
+        ('{"status": "ok" missing closing brace', False, "malformed_json"),
+        # === Wrong shape after parse: list, scalar, bool ===
         ("[]", False, "malformed_json"),
         ('"hello"', False, "malformed_json"),
         ("42", False, "malformed_json"),
         ("true", False, "malformed_json"),
-        # Wrong status: parsed cleanly but the field disagrees.
+        # === Wrong status: parsed cleanly but the field disagrees ===
         ('{"foo":"bar"}', False, "invalid_response"),
         ('{"status":"error"}', False, "invalid_response"),
-        # Nested status must NOT count -- only top-level is honored.
+        # === Nested status must NOT count -- only top-level is honored ===
         ('{"meta":{"status":"ok"}}', False, "invalid_response"),
     ],
 )
 def test_classify_probe_response(content, expected_ok, expected_err):
     """The probe parser is the entire correctness of the JSON-mode fix.
 
-    Exercises the contract that ``_classify_probe_response`` distinguishes
-    ``malformed_json`` (parse/shape failure) from ``invalid_response``
-    (parseable JSON whose ``status`` field disagrees with the expected
-    "ok") and that nested ``status`` fields are intentionally ignored.
+    Exercises the contract that ``_classify_probe_response``:
+    * returns ``(True, "")`` for the strict happy path,
+    * recovers from chatty preambles and markdown fences via a small
+      depth counter that respects JSON string boundaries and ignores
+      nested ``status`` fields,
+    * separates ``blocked`` (empty / whitespace -- typically Vertex
+      ``finish_reason=SAFETY``) from ``malformed_json`` (genuinely
+      garbage responses) and from ``invalid_response`` (parseable
+      JSON with the wrong ``status``).
     """
     ok, err = probe_module._classify_probe_response(content)
     assert ok is expected_ok

@@ -40,29 +40,64 @@ _PROBE_JSON_PROMPT = (
 )
 _PROBE_OK_STATUS = "ok"
 
+# Fallback regex: tolerate JSON wrapped in a chatty preamble or in
+# markdown fences. Captures a top-level {...} block that contains a
+# `"status": "ok"` pair anywhere (case-insensitive). Nested status is
+# ignored on purpose -- the top-level field is the contract.
+_PROBE_OK_PATTERN = re.compile(
+    r'\{[^{}]*"status"\s*:\s*"ok"[^{}]*\}',
+    re.IGNORECASE,
+)
+
 
 def _classify_probe_response(content: str) -> Tuple[bool, str]:
     """Classify a probe response envelope.
 
-    Returns ``(ok, error_type)`` with ``error_type`` being one of:
+    Returns ``(ok, error_type)`` where ``error_type`` is one of:
       - ``""`` (empty) when ``ok`` is True,
-      - ``"malformed_json"`` when JSON parsing or shape validation fails,
-      - ``"invalid_response"`` when JSON parsed cleanly but
-        ``status != "ok"``.
+      - ``"empty_response"`` when the response is empty / whitespace-only
+        (Vertex can return this for several reasons -- ``finish_reason``
+        in {SAFETY, OTHER, MAX_TOKENS} with empty body, quota exhaustion,
+        internal 5xx with no body -- the model is *not* necessarily
+        unreachable, it just didn't return a parseable body for this
+        particular probe prompt; ops should investigate the underlying
+        finish_reason via the Vertex response metadata, not assume
+        "safety policy"),
+      - ``"malformed_json"`` when no parseable JSON envelope can be
+        located in the response,
+      - ``"invalid_response"`` when a JSON envelope parsed cleanly but
+        ``status`` is missing or disagrees with "ok".
 
-    Always inspects the top-level ``status`` only — nested ``status``
-    fields are intentionally ignored.
+    The function deliberately inspects the **top-level** ``status`` only
+    -- nested ``status`` fields are intentionally ignored to keep the
+    contract stable across model families.
     """
+    text = (content or "").strip()
+    if not text:
+        # Empty / whitespace-only. Distinguish from genuinely garbage
+        # responses so ops can spot quota/SAFETY/OTHER causes vs. plain
+        # prompt-misformat.
+        return False, "empty_response"
+
+    # Preferred path: pure JSON envelope, exactly the shape the prompt
+    # asks for.
     try:
-        payload = json.loads((content or "").strip())
+        payload = json.loads(text)
+        if isinstance(payload, dict):
+            status = str(payload.get("status", "")).strip().lower()
+            if status == _PROBE_OK_STATUS:
+                return True, ""
+            return False, "invalid_response"
     except (ValueError, TypeError):
-        return False, "malformed_json"
-    if not isinstance(payload, dict):
-        return False, "malformed_json"
-    status = str(payload.get("status", "")).strip().lower()
-    if status == _PROBE_OK_STATUS:
+        pass
+
+    # Fallback: JSON wrapped in chatter ("Sure here is the JSON: {...}")
+    # or in markdown fences (```json\n{...}\n```). The regex only matches
+    # a single top-level {...} block, so nested objects cannot trick it.
+    if _PROBE_OK_PATTERN.search(text):
         return True, ""
-    return False, "invalid_response"
+
+    return False, "malformed_json"
 _EMBEDDING_PROBE_TEXT = "health probe"
 _STATUS_CODE_RE = re.compile(r"Error code:\s*(\d+)")
 
