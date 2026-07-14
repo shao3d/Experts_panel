@@ -120,7 +120,7 @@ git commit -m "feat: add new expert <expert_id>"
 git push
 ```
 
-`update_production_db.sh` сам грузит `backend/.env`, запускает `embed_posts.py --continuous` и `run_drift_service.py`, так что и embeddings, и drift идут через Vertex AI. Перед заменой production DB скрипт создаёт remote backup, проверяет свободное место на `/app/data`, сжимает локальную БД, загружает gzip маленькими SFTP-chunks, сверяет size/SHA/gzip, распаковывает во временный файл `/app/data/experts.db.tmp`, делает SQLite integrity check и только потом заменяет `/app/data/experts.db`.
+`update_production_db.sh` сам грузит `backend/.env`, запускает `embed_posts.py --continuous` и `run_drift_service.py`, так что и embeddings, и drift идут через Vertex AI. Перед заменой production DB скрипт создаёт remote backup, временно отключает Fly autostop на время DB upload, проверяет свободное место на `/app/data`, сжимает локальную БД, загружает gzip одним SFTP transfer с fallback на chunked upload, сверяет size/SHA/gzip, распаковывает во временный файл `/app/data/experts.db.tmp`, делает SQLite integrity check и только потом заменяет `/app/data/experts.db`.
 
 > **Важно про Fly:** `git push` сам по себе не меняет SQLite на mounted volume `/app/data/experts.db`. Он обновляет код и собранный frontend. Если менялись данные эксперта, обязательно обновите production DB через штатный DB deploy или отдельный targeted cleanup с backup.
 

@@ -19,7 +19,7 @@ the mounted SQLite database.
 | Local SQLite path | `backend/data/experts.db` |
 | Fly production SQLite path | `/app/data/experts.db` on the `experts_data` volume |
 
-Important: a normal `git push` updates code and the built frontend, but it does **not** update the mounted SQLite database on Fly. Any production roster/data change must also update the Fly volume or upload a fresh DB artifact. The standard full DB deploy path is `./scripts/update_production_db.sh`, which uploads a compressed DB in small chunks, verifies size/SHA/gzip/SQLite integrity, stages the result as `/app/data/experts.db.tmp`, and only then replaces `/app/data/experts.db`.
+Important: a normal `git push` updates code and the built frontend, but it does **not** update the mounted SQLite database on Fly. Any production roster/data change must also update the Fly volume or upload a fresh DB artifact. The standard full DB deploy path is `./scripts/update_production_db.sh`, which uploads a compressed DB as a staged artifact (direct SFTP first, chunked fallback), verifies size/SHA/gzip/SQLite integrity, stages the result as `/app/data/experts.db.tmp`, and only then replaces `/app/data/experts.db`.
 
 ---
 

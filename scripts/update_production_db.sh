@@ -19,6 +19,8 @@ REMOTE_CHUNK_PATH="/app/data/experts.db.upload_chunk"
 APP_NAME="experts-panel"
 UPLOAD_CHUNK_BYTES="${UPLOAD_CHUNK_BYTES:-2097152}"
 UPLOAD_CHUNK_RETRIES="${UPLOAD_CHUNK_RETRIES:-5}"
+RESTORE_AUTOSTOP="${RESTORE_AUTOSTOP:-stop}"
+export FLY_NO_UPDATE_CHECK=1
 
 # Ensure we are in project root
 if [ ! -f "fly.toml" ]; then
@@ -38,11 +40,35 @@ sha256_file() {
 }
 
 remote_stat_bytes() {
-    fly ssh console -C "stat -c %s $1 2>/dev/null || echo 0" | awk 'END {print $1}'
+    fly ssh console -C "sh -lc 'if [ -e \"$1\" ]; then stat -c %s \"$1\"; else echo 0; fi'" | awk 'END {print $1}'
 }
 
 cleanup_remote_upload_artifacts() {
-    fly ssh console -C "rm -f $REMOTE_TMP_PATH $REMOTE_GZ_TMP_PATH $REMOTE_CHUNK_PATH $REMOTE_DB_PATH.gz" || true
+    fly ssh console -C "sh -lc 'rm -f $REMOTE_TMP_PATH $REMOTE_GZ_TMP_PATH $REMOTE_CHUNK_PATH $REMOTE_DB_PATH.gz'" || true
+}
+
+get_machine_id() {
+    fly status --json | python3 -c "import sys, json; print(json.load(sys.stdin)['Machines'][0]['id'])"
+}
+
+get_machine_state() {
+    fly status --json | python3 -c "import sys, json; print(json.load(sys.stdin)['Machines'][0]['state'])"
+}
+
+disable_autostop_for_deploy() {
+    local machine_id="$1"
+    echo "   🧷 Temporarily disabling Fly autostop during DB upload..."
+    fly machine update "$machine_id" --app "$APP_NAME" --autostop=off --yes --skip-health-checks >/dev/null
+    echo "   ✅ Autostop disabled for upload."
+}
+
+restore_autostop_after_deploy() {
+    local machine_id="$1"
+    if [ -z "$machine_id" ]; then
+        return
+    fi
+    echo "   🧷 Restoring Fly autostop=$RESTORE_AUTOSTOP..."
+    fly machine update "$machine_id" --app "$APP_NAME" --autostop="$RESTORE_AUTOSTOP" --yes --skip-health-checks >/dev/null || true
 }
 
 # Create backup directory if not exists
@@ -82,76 +108,84 @@ else
     echo "   ⚠️ Local DB not found at $DB_PATH. Skipping backup."
 fi
 
-# 2. Run Local Sync (Posts & Comments)
-echo "🔄 [2/9] Running Local Sync (Posts & Comments)..."
-if $PYTHON_CMD backend/sync_channel_multi_expert.py; then
-    echo "   ✅ Local sync completed successfully."
+if [ "${DB_UPLOAD_ONLY:-0}" = "1" ]; then
+    echo "⏭️  DB_UPLOAD_ONLY=1: skipping steps 2-5 (sync, migrations, vectorization, drift)."
 else
-    echo "   ❌ Sync failed. Aborting deployment."
-    exit 1
-fi
-
-# 3. Run Database Migrations (skip already-applied via marker files)
-echo "🗄️  [3/9] Running pending database migrations..."
-MIGRATION_MARKER_DIR="$BACKUP_DIR/.migrations_applied"
-mkdir -p "$MIGRATION_MARKER_DIR"
-MIGRATIONS_APPLIED=0
-
-for MIGRATION_FILE in backend/migrations/023_fts5_remove_metadata.sql; do
-    MIGRATION_NAME=$(basename "$MIGRATION_FILE")
-    MARKER_FILE="$MIGRATION_MARKER_DIR/$MIGRATION_NAME.done"
-    if [ -f "$MARKER_FILE" ]; then
-        continue
+    # 2. Run Local Sync (Posts & Comments)
+    echo "🔄 [2/9] Running Local Sync (Posts & Comments)..."
+    if $PYTHON_CMD backend/sync_channel_multi_expert.py; then
+        echo "   ✅ Local sync completed successfully."
+    else
+        echo "   ❌ Sync failed. Aborting deployment."
+        exit 1
     fi
-    if [ -f "$MIGRATION_FILE" ]; then
-        echo "   📋 Applying $MIGRATION_NAME..."
-        if sqlite3 "$DB_PATH" < "$MIGRATION_FILE"; then
-            touch "$MARKER_FILE"
-            MIGRATIONS_APPLIED=$((MIGRATIONS_APPLIED + 1))
-            echo "   ✅ $MIGRATION_NAME applied."
-        else
-            echo "   ❌ $MIGRATION_NAME failed. Aborting."
-            exit 1
+
+    # 3. Run Database Migrations (skip already-applied via marker files)
+    echo "🗄️  [3/9] Running pending database migrations..."
+    MIGRATION_MARKER_DIR="$BACKUP_DIR/.migrations_applied"
+    mkdir -p "$MIGRATION_MARKER_DIR"
+    MIGRATIONS_APPLIED=0
+
+    for MIGRATION_FILE in backend/migrations/023_fts5_remove_metadata.sql; do
+        MIGRATION_NAME=$(basename "$MIGRATION_FILE")
+        MARKER_FILE="$MIGRATION_MARKER_DIR/$MIGRATION_NAME.done"
+        if [ -f "$MARKER_FILE" ]; then
+            continue
         fi
+        if [ -f "$MIGRATION_FILE" ]; then
+            echo "   📋 Applying $MIGRATION_NAME..."
+            if sqlite3 "$DB_PATH" < "$MIGRATION_FILE"; then
+                touch "$MARKER_FILE"
+                MIGRATIONS_APPLIED=$((MIGRATIONS_APPLIED + 1))
+                echo "   ✅ $MIGRATION_NAME applied."
+            else
+                echo "   ❌ $MIGRATION_NAME failed. Aborting."
+                exit 1
+            fi
+        fi
+    done
+
+    if [ "$MIGRATIONS_APPLIED" -eq 0 ]; then
+        echo "   ℹ️  No pending migrations."
+    else
+        echo "   ✅ $MIGRATIONS_APPLIED migration(s) applied."
     fi
-done
 
-if [ "$MIGRATIONS_APPLIED" -eq 0 ]; then
-    echo "   ℹ️  No pending migrations."
-else
-    echo "   ✅ $MIGRATIONS_APPLIED migration(s) applied."
-fi
+    # 4. Vectorize New Posts (Embeddings for Hybrid Search)
+    echo "🧮 [4/9] Vectorizing new posts (embeddings)..."
+    if $PYTHON_CMD backend/scripts/embed_posts.py --continuous; then
+        echo "   ✅ Vectorization completed."
+    else
+        echo "   ⚠️ Vectorization failed (non-critical). Continuing..."
+    fi
 
-# 4. Vectorize New Posts (Embeddings for Hybrid Search)
-echo "🧮 [4/9] Vectorizing new posts (embeddings)..."
-if $PYTHON_CMD backend/scripts/embed_posts.py --continuous; then
-    echo "   ✅ Vectorization completed."
-else
-    echo "   ⚠️ Vectorization failed (non-critical). Continuing..."
-fi
-
-# 5. Run Drift Analysis
-echo "🧠 [5/9] Running Drift Analysis (Gemini)..."
-if $PYTHON_CMD backend/run_drift_service.py; then
-    echo "   ✅ Drift analysis completed successfully."
-else
-    echo "   ❌ Drift analysis failed. Aborting deployment."
-    exit 1
+    # 5. Run Drift Analysis
+    echo "🧠 [5/9] Running Drift Analysis (Gemini)..."
+    if $PYTHON_CMD backend/run_drift_service.py; then
+        echo "   ✅ Drift analysis completed successfully."
+    else
+        echo "   ❌ Drift analysis failed. Aborting deployment."
+        exit 1
+    fi
 fi
 
 # 6. Check/Wake up Fly.io Machine
 echo "🌤️  [6/9] Checking remote machine status..."
-MACHINE_STATUS=$(fly status --json | python3 -c "import sys, json; print(json.load(sys.stdin)['Machines'][0]['state'])")
+MACHINE_ID=$(get_machine_id)
+MACHINE_STATUS=$(get_machine_state)
 
 if [ "$MACHINE_STATUS" == "stopped" ] || [ "$MACHINE_STATUS" == "suspended" ]; then
     echo "   💤 Machine is sleeping. Waking it up..."
     curl -s -o /dev/null --max-time 5 "https://$APP_NAME.fly.dev/health" || true
-    fly machine start $(fly status --json | python3 -c "import sys, json; print(json.load(sys.stdin)['Machines'][0]['id'])") > /dev/null 2>&1
+    fly machine start "$MACHINE_ID" > /dev/null 2>&1
     echo "   ✅ Wake-up signal sent. Waiting 10s for boot..."
     sleep 10
 else
     echo "   ✅ Machine is running."
 fi
+
+disable_autostop_for_deploy "$MACHINE_ID"
+trap 'restore_autostop_after_deploy "$MACHINE_ID"; rm -rf "$UPLOAD_WORK_DIR"' EXIT
 
 # 7. Remote Backup
 echo "🛡️  [7/9] Creating remote backup on server..."
@@ -169,12 +203,9 @@ else
 fi
 
 # 8. Upload New DB (Resumable Staged)
-echo "🚀 [8/9] Uploading fresh database (compressed chunked stage)..."
-# Disable update check to prevent hanging on old machines
-export FLY_NO_UPDATE_CHECK=1
+echo "🚀 [8/9] Uploading fresh database (compressed staged upload)..."
 
 UPLOAD_WORK_DIR=$(mktemp -d "${TMPDIR:-/tmp}/experts-db-upload.XXXXXX")
-trap 'rm -rf "$UPLOAD_WORK_DIR"' EXIT
 LOCAL_GZ_PATH="$UPLOAD_WORK_DIR/experts.db.gz"
 LOCAL_CHUNK_PATH="$UPLOAD_WORK_DIR/chunk.bin"
 
@@ -206,67 +237,89 @@ if [ "$REMOTE_FREE_KB" -lt "$MIN_FREE_KB" ]; then
     exit 1
 fi
 
-echo "   📤 Uploading gzip in $UPLOAD_CHUNK_BYTES-byte chunks..."
-fly ssh console -C "rm -f $REMOTE_GZ_TMP_PATH $REMOTE_CHUNK_PATH && : > $REMOTE_GZ_TMP_PATH"
+DIRECT_UPLOAD_OK=0
+if [ "${DB_UPLOAD_CHUNKED_ONLY:-0}" = "1" ]; then
+    echo "   ⏭️  DB_UPLOAD_CHUNKED_ONLY=1: skipping direct SFTP upload."
+else
+    echo "   📤 Uploading gzip in one SFTP transfer..."
+    fly ssh console -C "sh -lc 'rm -f $REMOTE_GZ_TMP_PATH $REMOTE_CHUNK_PATH'"
 
-UPLOADED_BYTES=0
-CHUNK_INDEX=0
-CHUNK_COUNT=$(( (LOCAL_GZ_BYTES + UPLOAD_CHUNK_BYTES - 1) / UPLOAD_CHUNK_BYTES ))
-
-while [ "$UPLOADED_BYTES" -lt "$LOCAL_GZ_BYTES" ]; do
-    dd if="$LOCAL_GZ_PATH" of="$LOCAL_CHUNK_PATH" bs="$UPLOAD_CHUNK_BYTES" skip="$CHUNK_INDEX" count=1 2>/dev/null
-    CHUNK_BYTES=$(wc -c < "$LOCAL_CHUNK_PATH" | tr -d ' ')
-    EXPECTED_AFTER=$(( UPLOADED_BYTES + CHUNK_BYTES ))
-    CHUNK_NUMBER=$(( CHUNK_INDEX + 1 ))
-    echo "      chunk $CHUNK_NUMBER/$CHUNK_COUNT: $CHUNK_BYTES bytes"
-
-    REMOTE_BEFORE=$(remote_stat_bytes "$REMOTE_GZ_TMP_PATH")
-    if [ "$REMOTE_BEFORE" != "$UPLOADED_BYTES" ]; then
-        echo "   ❌ Remote gzip stage size drifted. Expected $UPLOADED_BYTES bytes, got $REMOTE_BEFORE bytes."
-        cleanup_remote_upload_artifacts
-        exit 1
-    fi
-
-    ATTEMPT=1
-    CHUNK_OK=0
-    while [ "$ATTEMPT" -le "$UPLOAD_CHUNK_RETRIES" ]; do
-        if fly sftp put "$LOCAL_CHUNK_PATH" "$REMOTE_CHUNK_PATH"; then
-            REMOTE_CHUNK_BYTES=$(remote_stat_bytes "$REMOTE_CHUNK_PATH")
-            if [ "$REMOTE_CHUNK_BYTES" = "$CHUNK_BYTES" ] && fly ssh console -C "sh -lc 'cat $REMOTE_CHUNK_PATH >> $REMOTE_GZ_TMP_PATH && rm -f $REMOTE_CHUNK_PATH'"; then
-                REMOTE_AFTER=$(remote_stat_bytes "$REMOTE_GZ_TMP_PATH")
-                if [ "$REMOTE_AFTER" = "$EXPECTED_AFTER" ]; then
-                    CHUNK_OK=1
-                    break
-                fi
-                echo "      ⚠️ Remote staged size mismatch after append: expected $EXPECTED_AFTER, got $REMOTE_AFTER"
-            else
-                echo "      ⚠️ Chunk size verification or append failed."
-            fi
-
-            REMOTE_AFTER_FAILURE=$(remote_stat_bytes "$REMOTE_GZ_TMP_PATH")
-            if [ "$REMOTE_AFTER_FAILURE" != "$UPLOADED_BYTES" ]; then
-                echo "   ❌ Remote gzip stage changed during a failed append. Cleaning up to avoid a corrupted staged file."
-                cleanup_remote_upload_artifacts
-                exit 1
-            fi
+    if fly sftp put "$LOCAL_GZ_PATH" "$REMOTE_GZ_TMP_PATH"; then
+        REMOTE_GZ_BYTES=$(remote_stat_bytes "$REMOTE_GZ_TMP_PATH")
+        if [ "$REMOTE_GZ_BYTES" = "$LOCAL_GZ_BYTES" ]; then
+            DIRECT_UPLOAD_OK=1
+            echo "   ✅ Direct gzip upload completed."
         else
-            echo "      ⚠️ Chunk upload attempt $ATTEMPT failed."
+            echo "   ⚠️ Direct upload size mismatch. Expected $LOCAL_GZ_BYTES bytes, got $REMOTE_GZ_BYTES bytes."
+        fi
+    else
+        echo "   ⚠️ Direct gzip upload failed."
+    fi
+fi
+
+if [ "$DIRECT_UPLOAD_OK" -ne 1 ]; then
+    echo "   📤 Falling back to chunked upload in $UPLOAD_CHUNK_BYTES-byte chunks..."
+    fly ssh console -C "sh -lc 'rm -f $REMOTE_GZ_TMP_PATH $REMOTE_CHUNK_PATH && : > $REMOTE_GZ_TMP_PATH'"
+
+    UPLOADED_BYTES=0
+    CHUNK_INDEX=0
+    CHUNK_COUNT=$(( (LOCAL_GZ_BYTES + UPLOAD_CHUNK_BYTES - 1) / UPLOAD_CHUNK_BYTES ))
+
+    while [ "$UPLOADED_BYTES" -lt "$LOCAL_GZ_BYTES" ]; do
+        dd if="$LOCAL_GZ_PATH" of="$LOCAL_CHUNK_PATH" bs="$UPLOAD_CHUNK_BYTES" skip="$CHUNK_INDEX" count=1 2>/dev/null
+        CHUNK_BYTES=$(wc -c < "$LOCAL_CHUNK_PATH" | tr -d ' ')
+        EXPECTED_AFTER=$(( UPLOADED_BYTES + CHUNK_BYTES ))
+        CHUNK_NUMBER=$(( CHUNK_INDEX + 1 ))
+        echo "      chunk $CHUNK_NUMBER/$CHUNK_COUNT: $CHUNK_BYTES bytes"
+
+        REMOTE_BEFORE=$(remote_stat_bytes "$REMOTE_GZ_TMP_PATH")
+        if [ "$REMOTE_BEFORE" != "$UPLOADED_BYTES" ]; then
+            echo "   ❌ Remote gzip stage size drifted. Expected $UPLOADED_BYTES bytes, got $REMOTE_BEFORE bytes."
+            cleanup_remote_upload_artifacts
+            exit 1
         fi
 
-        fly ssh console -C "rm -f $REMOTE_CHUNK_PATH" || true
-        ATTEMPT=$(( ATTEMPT + 1 ))
-        sleep 2
+        ATTEMPT=1
+        CHUNK_OK=0
+        while [ "$ATTEMPT" -le "$UPLOAD_CHUNK_RETRIES" ]; do
+            if fly sftp put "$LOCAL_CHUNK_PATH" "$REMOTE_CHUNK_PATH"; then
+                REMOTE_CHUNK_BYTES=$(remote_stat_bytes "$REMOTE_CHUNK_PATH")
+                if [ "$REMOTE_CHUNK_BYTES" = "$CHUNK_BYTES" ] && fly ssh console -C "sh -lc 'cat $REMOTE_CHUNK_PATH >> $REMOTE_GZ_TMP_PATH && rm -f $REMOTE_CHUNK_PATH'"; then
+                    REMOTE_AFTER=$(remote_stat_bytes "$REMOTE_GZ_TMP_PATH")
+                    if [ "$REMOTE_AFTER" = "$EXPECTED_AFTER" ]; then
+                        CHUNK_OK=1
+                        break
+                    fi
+                    echo "      ⚠️ Remote staged size mismatch after append: expected $EXPECTED_AFTER, got $REMOTE_AFTER"
+                else
+                    echo "      ⚠️ Chunk size verification or append failed."
+                fi
+
+                REMOTE_AFTER_FAILURE=$(remote_stat_bytes "$REMOTE_GZ_TMP_PATH")
+                if [ "$REMOTE_AFTER_FAILURE" != "$UPLOADED_BYTES" ]; then
+                    echo "   ❌ Remote gzip stage changed during a failed append. Cleaning up to avoid a corrupted staged file."
+                    cleanup_remote_upload_artifacts
+                    exit 1
+                fi
+            else
+                echo "      ⚠️ Chunk upload attempt $ATTEMPT failed."
+            fi
+
+            fly ssh console -C "sh -lc 'rm -f $REMOTE_CHUNK_PATH'" || true
+            ATTEMPT=$(( ATTEMPT + 1 ))
+            sleep 2
+        done
+
+        if [ "$CHUNK_OK" -ne 1 ]; then
+            echo "   ❌ Failed to upload chunk $CHUNK_NUMBER after $UPLOAD_CHUNK_RETRIES attempt(s). Cleaning up..."
+            cleanup_remote_upload_artifacts
+            exit 1
+        fi
+
+        UPLOADED_BYTES=$EXPECTED_AFTER
+        CHUNK_INDEX=$(( CHUNK_INDEX + 1 ))
     done
-
-    if [ "$CHUNK_OK" -ne 1 ]; then
-        echo "   ❌ Failed to upload chunk $CHUNK_NUMBER after $UPLOAD_CHUNK_RETRIES attempt(s). Cleaning up..."
-        cleanup_remote_upload_artifacts
-        exit 1
-    fi
-
-    UPLOADED_BYTES=$EXPECTED_AFTER
-    CHUNK_INDEX=$(( CHUNK_INDEX + 1 ))
-done
+fi
 
 REMOTE_GZ_BYTES=$(remote_stat_bytes "$REMOTE_GZ_TMP_PATH")
 if [ "$REMOTE_GZ_BYTES" != "$LOCAL_GZ_BYTES" ]; then
@@ -275,7 +328,7 @@ if [ "$REMOTE_GZ_BYTES" != "$LOCAL_GZ_BYTES" ]; then
     exit 1
 fi
 
-REMOTE_GZ_SHA=$(fly ssh console -C "sha256sum $REMOTE_GZ_TMP_PATH | cut -d ' ' -f 1" | awk 'END {print $1}')
+REMOTE_GZ_SHA=$(fly ssh console -C "sh -lc 'sha256sum $REMOTE_GZ_TMP_PATH | cut -d \" \" -f 1'" | awk 'END {print $1}')
 if [ "$REMOTE_GZ_SHA" != "$LOCAL_GZ_SHA" ]; then
     echo "   ❌ Uploaded gzip SHA mismatch."
     echo "      Expected: $LOCAL_GZ_SHA"
