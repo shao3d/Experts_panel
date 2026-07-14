@@ -164,8 +164,15 @@ else
     #       cosine-similarity drift scoring path in comment_group_map_service.
     #       The script is idempotent: it only fills drift_embedding where NULL,
     #       so repeat deploys do no extra work.
-    echo "🧩 [4.5/10] Backfilling drift embeddings for legacy comment_group_drift rows..."
-    if $PYTHON_CMD -m backend.scripts.maintenance.backfill_drift_embeddings; then
+    #       --limit 2000 bounds worst-case Vertex latency to ~5 minutes per
+    #       deploy (measured ~0.2s per row / ~9s per 50-row batch on local
+    #       us-central1). Remaining legacy rows are picked up by subsequent
+    #       deploys (each applies the same --limit 2000 cap) until the legacy
+    #       pool drains. drift_scheduler_service.py writes embeddings for new
+    #       drift groups automatically, so only pre-migration-024 legacy rows
+    #       ever need this step.
+    echo "🧩 [4.5/10] Backfilling drift embeddings for legacy comment_group_drift rows (--limit 2000)..."
+    if $PYTHON_CMD -m backend.scripts.maintenance.backfill_drift_embeddings --limit 2000; then
         echo "   ✅ Drift embedding backfill completed."
     else
         echo "   ⚠️ Drift embedding backfill failed (non-critical). Continuing..."
