@@ -95,9 +95,9 @@ async def lifespan(app: FastAPI):
         # Don't prevent startup, but log the error
 
     try:
-        from ..services.health_probe_service import get_health_probe_service
+        from ..services.health_probe_service import log_critical_models_availability
 
-        await get_health_probe_service().warm_cache()
+        await log_critical_models_availability(logger)
         logger.info("Health diagnostics cache initialized")
     except Exception as exc:
         logger.error("Health diagnostics warmup failed: %s", exc, exc_info=True)

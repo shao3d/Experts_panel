@@ -511,7 +511,92 @@ def get_health_probe_service() -> HealthProbeService:
     return _probe_service_instance
 
 
+async def log_critical_models_availability(
+    logger: logging.Logger,
+    *,
+    timeout_seconds: float = 15.0,
+) -> Dict[str, str]:
+    """Probe tracked Gemini models and log a WARNING for any that are unavailable.
+
+    Designed for the FastAPI lifespan startup hook. Mirrors the active
+    readiness contract used by ``/health`` and ``/health/live`` so a broken
+    ``MODEL_*`` config is surfaced immediately at boot rather than the
+    first time a user runs a query many minutes later.
+
+    Fail-open: never raises. ``timeout_seconds`` bounds the whole probe so a
+    slow or cold-starting Vertex AI cannot stall FastAPI lifespan startup; on
+    timeout the helper logs a WARNING and returns ``{}``.
+    Returns ``{model_name: status}`` for tests and callers that want to
+    programmatically inspect the result.
+    """
+    auth_manager = get_vertex_ai_auth_manager()
+    if not auth_manager.is_configured():
+        logger.info(
+            "Vertex AI auth not configured at startup -- skipping critical-model "
+            "availability check"
+        )
+        return {}
+
+    try:
+        service = get_health_probe_service()
+        summary = await asyncio.wait_for(
+            service.warm_cache(), timeout=timeout_seconds
+        )
+    except asyncio.TimeoutError:
+        logger.warning(
+            "Critical-model availability probe timed out after %.1fs at startup; "
+            "skipping liveness check (probe will retry via /health later).",
+            timeout_seconds,
+        )
+        return {}
+    except Exception as exc:  # defensive: never let probe failure halt startup
+        logger.warning(
+            "Critical-model availability probe failed at startup: %s", exc
+        )
+        return {}
+
+    availability = summary.get("model_availability") or {}
+    result: Dict[str, str] = {}
+    for model, info in availability.items():
+        if not isinstance(info, dict):
+            continue
+        status = str(info.get("status") or "unknown")
+        result[model] = status
+        if status == "unavailable":
+            status_code = info.get("status_code")
+            code_hint = f" (status_code={status_code})" if status_code else ""
+            raw_message = str(info.get("message") or "").splitlines()[0]
+            message = raw_message[:240] or "no detail"
+            logger.warning(
+                "Vertex AI model unavailable at startup: %s%s -- %s. Queries "
+                "that reach this model will degrade until you either rename "
+                "the matching MODEL_* env var to a model exposed in your "
+                "Vertex AI model garden (https://console.cloud.google.com/"
+                "vertex-ai/model-garden) or unset the env var to inherit the "
+                "running default in backend/src/config.py.",
+                model, code_hint, message,
+            )
+        elif status == "unknown" and info.get("error_type"):
+            logger.info(
+                "Vertex AI model probe inconclusive at startup: %s "
+                "(error_type=%s)",
+                model,
+                info.get("error_type"),
+            )
+        # status == "available" is the happy path -- no log spam at INFO.
+
+    # Defensive: if Vertex auth was configured but the probe produced an empty
+    # summary for any reason, surface the gap instead of silently "all good".
+    if not result:
+        logger.warning(
+            "Critical-model availability probe returned no entries at startup; "
+            "check that MODEL_MAP and Vertex AI auth are configured."
+        )
+    return result
+
+
 __all__ = [
     "HealthProbeService",
     "get_health_probe_service",
+    "log_critical_models_availability",
 ]
