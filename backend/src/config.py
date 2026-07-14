@@ -99,7 +99,11 @@ MODEL_SYNTHESIS: str = os.getenv("MODEL_SYNTHESIS", "gemini-3-flash-preview")
 
 MODEL_ANALYSIS: str = os.getenv("MODEL_ANALYSIS", "gemini-2.5-flash")
 
-MODEL_SCOUT: str = os.getenv("MODEL_SCOUT", "gemini-3.1-flash-lite-preview")
+# Scout must use a Vertex-AI-available model. `gemini-3.1-flash-lite-preview`
+# returned HTTP 404 on Vertex AI for this project and degraded every Scout
+# call to a wide keyword fallback, which silently exploded downstream
+# retrieval latency. Pin to the same lightweight family that powers Map.
+MODEL_SCOUT: str = os.getenv("MODEL_SCOUT", "gemini-2.5-flash-lite")
 
 MODEL_MEDIUM_SCORING: str = os.getenv("MODEL_MEDIUM_SCORING", "gemini-2.5-flash")
 

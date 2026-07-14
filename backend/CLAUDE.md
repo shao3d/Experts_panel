@@ -13,7 +13,7 @@ The backend implements a sophisticated 10-phase query processing system. It uses
 ### Core Pipeline Services
 | Service | Phase | Model (Default) | Responsibility |
 |---------|-------|-----------------|----------------|
-| `ai_scout_service.py` | **0. Scout** | `gemini-3.1-flash-lite-preview` | Generates FTS5 MATCH queries (OR-only Entity Clouds). Runs **parallel** with Embedding. |
+| `ai_scout_service.py` | **0. Scout** | `gemini-2.5-flash-lite` | Generates FTS5 MATCH queries (OR-only Entity Clouds). Runs **parallel** with Embedding. |
 | `embedding_service.py`| **0. Embed**| `gemini-embedding-001` | Pre-computes query embedding once for all experts. Runs **parallel** with Scout. |
 | `hybrid_retrieval_service.py` | **0. Retrieval** | *None (SQLite)* | Embs&Keys Hybrid Search (Vector KNN + FTS5 + RRF). Freshness from SQL directly (no extra DB query). |
 | `fts5_retrieval_service.py` | **Internal** | *None* | Provides FTS5 query sanitization utils used by Hybrid Service. |
@@ -73,7 +73,7 @@ Defined in `.env`, loaded in `config.py`.
 - `MODEL_MEDIUM_SCORING`: `gemini-2.5-flash`
 - `MODEL_COMMENT_GROUPS`: `gemini-2.5-flash`
 - `MODEL_DRIFT_ANALYSIS`: `gemini-3-flash-preview`
-- `MODEL_SCOUT`: `gemini-3.1-flash-lite-preview` (AI Scout / FTS5)
+- `MODEL_SCOUT`: `gemini-2.5-flash-lite` (AI Scout / FTS5)
 - `MODEL_META_SYNTHESIS`: `gemini-3-flash-preview` (Cross-expert unified analysis)
 - `MODEL_EMBEDDING`: `gemini-embedding-001` (Hybrid Retrieval embeddings)
 - `MODEL_VIDEO_PRO`: `gemini-3.1-pro-preview` (Video Hub Digital Twin)

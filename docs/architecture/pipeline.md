@@ -137,7 +137,7 @@ The system processes user queries through an **ten-phase pipeline** using a **Ge
 | Comments | `MODEL_COMMENT_GROUPS` | `gemini-2.5-flash` | Project-compatible replacement for historical `2.0-flash`. |
 | Validation | `MODEL_ANALYSIS` | `gemini-2.5-flash` | Project-compatible replacement for historical `2.0-flash`. |
 | Drift (Offline) | `MODEL_DRIFT_ANALYSIS` | `gemini-3-flash-preview` | Deep offline analysis. |
-| AI Scout | `MODEL_SCOUT` | `gemini-3.1-flash-lite-preview` | Entity-centric FTS5 query expansion. |
+| AI Scout | `MODEL_SCOUT` | `gemini-2.5-flash-lite` | Entity-centric FTS5 query expansion. |
 | Meta-Synthesis | `MODEL_META_SYNTHESIS` | `gemini-3-flash-preview` | Cross-expert unified analysis (≥2 experts). |
 | Embedding | `MODEL_EMBEDDING` | `gemini-embedding-001` | Pre-computed in Orchestrator for Vector KNN search. |
 
@@ -149,7 +149,7 @@ The system processes user queries through an **ten-phase pipeline** using a **Ge
 
 ### Vertex Compatibility Notes
 - Historical target models were preserved as much as possible during the Vertex migration.
-- `gemini-3-flash-preview` and `gemini-3.1-flash-lite-preview` are active in production and require the Vertex `global` endpoint.
+- `gemini-3-flash-preview` and `gemini-3.1-pro-preview` are active in production and require the Vertex `global` endpoint. AI Scout intentionally stays on the gemini-2.5 family so it does not depend on `global` router availability.
 - `gemini-2.0-flash` is not exposed to the current GCP project, so `gemini-2.5-flash` is used in the three phases that previously depended on `2.0-flash`.
 - `gemini-3-pro-preview` is replaced by `gemini-3.1-pro-preview` for Video Hub synthesis.
 

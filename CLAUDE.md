@@ -132,7 +132,7 @@ Model configuration is managed via environment variables as defined in `.env.exa
 - **Medium Scoring** (`MODEL_MEDIUM_SCORING`): `gemini-2.5-flash` - Content scoring
 - **Comment Groups** (`MODEL_COMMENT_GROUPS`): `gemini-2.5-flash` - Comment relevance
 - **Drift Analysis** (`MODEL_DRIFT_ANALYSIS`): `gemini-3-flash-preview` - Advanced topic drift detection
-- **AI Scout** (`MODEL_SCOUT`): `gemini-3.1-flash-lite-preview` - Entity-centric FTS5 query generation
+- **AI Scout** (`MODEL_SCOUT`): `gemini-2.5-flash-lite` - Entity-centric FTS5 query generation
 - **Meta-Synthesis** (`MODEL_META_SYNTHESIS`): `gemini-3-flash-preview` - Cross-expert unified analysis (≥2 experts)
 - **Video Synthesis** (`MODEL_VIDEO_PRO`): `gemini-3.1-pro-preview` - Video Hub Digital Twin analysis
 - **Video Validation** (`MODEL_VIDEO_FLASH`): `gemini-3-flash-preview` - Video Hub language validation
