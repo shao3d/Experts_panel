@@ -109,7 +109,7 @@ else
 fi
 
 if [ "${DB_UPLOAD_ONLY:-0}" = "1" ]; then
-    echo "⏭️  DB_UPLOAD_ONLY=1: skipping steps 2-5.5 (sync, migrations, vectorization, drift backfill, drift analysis, drift cleanup)."
+    echo "⏭️  DB_UPLOAD_ONLY=1: skipping steps 2-5 (sync, migrations, vectorization, drift backfill, drift cleanup, drift analysis)."
 else
     # 2. Run Local Sync (Posts & Comments)
     echo "🔄 [2/11] Running Local Sync (Posts & Comments)..."
@@ -178,21 +178,17 @@ else
         echo "   ⚠️ Drift embedding backfill failed (non-critical). Continuing..."
     fi
 
-    # 5. Run Drift Analysis
-    echo "🧠 [5/11] Running Drift Analysis (Gemini)..."
-    if $PYTHON_CMD backend/run_drift_service.py; then
-        echo "   ✅ Drift analysis completed successfully."
-    else
-        echo "   ❌ Drift analysis failed. Aborting deployment."
-        exit 1
-    fi
-
-    # 5.5. Apply Drift Cleanup (legacy / newly-broken comment_group_drift rows)
+    # 4.7. Apply Drift Cleanup (legacy / newly-broken comment_group_drift rows)
     #       Runs cleanup_malformed_drift --apply to repair rows where
     #       drift_topics has unquoted JSON object keys (regex-fixable, then
     #       re-rendered strictly) and to NULL+has_drift=0 any rows whose
     #       JSON is unrecoverable (truncated strings, shell-expansion
     #       artifacts, etc.).
+    #       Placement: BETWEEN Step 4.5 (backfill drift embeddings) and
+    #       Step 5 (drift analysis) — runs cleanup BEFORE drift so the
+    #       drift service operates on already-clean drift_topics. (No
+    #       legacy broken JSON lurking in rows the drift pipeline might
+    #       touch.)
     #       The script is idempotent — running on an already-clean DB is a
     #       no-op. A JSON manifest is written to
     #       backend/data/backups/drift_cleanup_<ts>.json for audit regardless
@@ -201,11 +197,20 @@ else
     #       deploy continues, since broken rows are cosmetic (they exit the
     #       drift scoring chain via has_drift=0 either way, and a future
     #       deploy will re-attempt the cleanup).
-    echo "🧹 [5.5/11] Applying drift cleanup (--apply, repair-or-NULL malformed drift_topics)..."
+    echo "🧹 [4.7/11] Applying drift cleanup (--apply, repair-or-NULL malformed drift_topics)..."
     if $PYTHON_CMD -m backend.scripts.maintenance.cleanup_malformed_drift --apply; then
         echo "   ✅ Drift cleanup completed."
     else
         echo "   ⚠️ Drift cleanup failed (non-critical). Continuing..."
+    fi
+
+    # 5. Run Drift Analysis
+    echo "🧠 [5/11] Running Drift Analysis (Gemini)..."
+    if $PYTHON_CMD backend/run_drift_service.py; then
+        echo "   ✅ Drift analysis completed successfully."
+    else
+        echo "   ❌ Drift analysis failed. Aborting deployment."
+        exit 1
     fi
 fi
 
