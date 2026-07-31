@@ -310,8 +310,8 @@ def _build_health_response(
     probe_mode: str,
 ) -> Dict[str, Any]:
     """Build a backward-compatible health payload with richer diagnostics."""
-    vertex_auth = diagnostics["vertex_auth"]
-    auth_configured = vertex_auth["configured"]
+    openrouter_auth = diagnostics.get("openrouter_auth") or diagnostics["vertex_auth"]
+    auth_configured = openrouter_auth["configured"]
     database_status = database_details["status"]
 
     return {
@@ -323,7 +323,9 @@ def _build_health_response(
         "version": "1.0.0",
         "database": database_status,
         "auth_configured": auth_configured,
+        "openrouter_auth": openrouter_auth,
         "vertex_auth_configured": auth_configured,
+        "openrouter_auth_configured": auth_configured,
         "timestamp": time.time(),
         "diagnostics": {
             "mode": probe_mode,

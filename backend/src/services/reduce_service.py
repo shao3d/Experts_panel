@@ -33,9 +33,9 @@ class ReduceService:
         Args:
             use_personal_style: Use Refat's personal writing style (default True)
         """
-        # Use monitored Vertex LLM client
+        # Use the monitored OpenRouter LLM client.
         self.client = create_monitored_client()
-        logger.info("ReduceService initialized with monitored Vertex LLM client")
+        logger.info("ReduceService initialized with monitored OpenRouter LLM client")
 
         self.model = config.MODEL_SYNTHESIS
         self.use_personal_style = use_personal_style
@@ -190,7 +190,7 @@ class ReduceService:
                 logger.info("Successfully parsed JSON after fixing escape sequences")
             except json.JSONDecodeError as e2:
                 logger.error(f"JSON parsing failed even after fixes: {e2}")
-                logger.error(f"Full raw content: {raw_content}")
+                logger.error("Raw content preview (first 500 chars): %s", raw_content[:500])
                 raise ValueError(f"Failed to parse LLM response as JSON: {e}") from e
 
         # ALWAYS sanitize answer string to prevent frontend JSON parsing errors

@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { ExpertInfo } from '../types/api';
-import { EXPERT_GROUPS, getExpertDisplayName, isExpertHidden } from '../config/expertConfig';
+import { EXPERT_GROUPS, getExpertDisplayName, isExpertHidden, MAX_SELECTED_EXPERTS } from '../config/expertConfig';
 
 interface ExpertSelectionBarProps {
   availableExperts: ExpertInfo[];
@@ -30,7 +30,7 @@ const ExpertSelectionBar: React.FC<ExpertSelectionBarProps> = ({
     const newSelected = new Set(selectedExperts);
     if (newSelected.has(expertId)) {
       newSelected.delete(expertId);
-    } else {
+    } else if (newSelected.size < MAX_SELECTED_EXPERTS) {
       newSelected.add(expertId);
     }
     onExpertsChange(newSelected);
@@ -45,8 +45,14 @@ const ExpertSelectionBar: React.FC<ExpertSelectionBarProps> = ({
       // Deselect all
       groupIds.forEach(id => newSelected.delete(id));
     } else {
-      // Select all
-      groupIds.forEach(id => newSelected.add(id));
+      // Select up to the remaining product cap; never silently exceed it.
+      groupIds
+        .filter(id => expertMap.has(id) && !isExpertHidden(id))
+        .some(id => {
+          if (newSelected.size >= MAX_SELECTED_EXPERTS) return true;
+          newSelected.add(id);
+          return false;
+        });
     }
     onExpertsChange(newSelected);
   };
@@ -67,7 +73,7 @@ const ExpertSelectionBar: React.FC<ExpertSelectionBarProps> = ({
           type="checkbox"
           checked={selectedExperts.has(expert.expert_id)}
           onChange={() => handleToggleExpert(expert.expert_id)}
-          disabled={disabled}
+          disabled={disabled || (!selectedExperts.has(expert.expert_id) && selectedExperts.size >= MAX_SELECTED_EXPERTS)}
           style={{
             cursor: disabled ? 'not-allowed' : 'pointer'
           }}
@@ -133,7 +139,7 @@ const ExpertSelectionBar: React.FC<ExpertSelectionBarProps> = ({
               className="expert-group-label" 
               onClick={() => handleToggleGroup(group.expertIds)}
               style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
-              title="Click to toggle group"
+              title={`Click to toggle group (maximum ${MAX_SELECTED_EXPERTS} experts)`}
             >
               {group.label}
               <span style={{ fontSize: '10px', opacity: 0.6, fontWeight: 'normal' }}>

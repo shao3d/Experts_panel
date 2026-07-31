@@ -151,14 +151,14 @@ class CommentGroupMapService:
             chunk_size: Number of comment groups per chunk
             max_parallel: Maximum parallel API calls
         """
-        # Initialize Vertex LLM client
+        # Initialize the shared OpenRouter LLM client.
         self.llm_client = None
         try:
             self.llm_client = get_vertex_llm_client()
             if self.llm_client:
-                logger.info("CommentGroupMapService: Vertex LLM client initialized.")
+                logger.info("CommentGroupMapService: OpenRouter LLM client initialized.")
         except Exception as e:
-            logger.warning(f"CommentGroupMapService: Could not initialize Vertex LLM client: {e}")
+            logger.warning(f"CommentGroupMapService: Could not initialize OpenRouter LLM client: {e}")
 
         self.chunk_size = chunk_size
         self.primary_model = model
@@ -446,7 +446,7 @@ class CommentGroupMapService:
         return json.dumps(formatted_groups, ensure_ascii=False, indent=2)
 
     async def _call_llm(self, model_name: str, messages: List[Dict[str, str]]):
-        """Call the shared Vertex LLM client."""
+        """Call the shared OpenRouter LLM client."""
         if self.llm_client:
             return await self.llm_client.chat_completions_create(
                 model=model_name,
@@ -454,10 +454,10 @@ class CommentGroupMapService:
                 temperature=0.2,
                 response_format={"type": "json_object"}
             )
-        raise ValueError("Vertex LLM client not initialized")
+        raise ValueError("OpenRouter LLM client not initialized")
 
     def _validate_llm_client_availability(self) -> bool:
-        """Check if the shared Vertex LLM client is properly initialized."""
+        """Check whether the shared OpenRouter LLM client is initialized."""
         return self.llm_client is not None
 
     @retry(

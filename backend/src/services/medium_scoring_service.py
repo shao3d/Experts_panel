@@ -36,14 +36,14 @@ class MediumScoringService:
         Args:
             model: Model to use (Gemini)
         """
-        # Initialize Vertex LLM client
+        # Initialize the shared OpenRouter LLM client.
         self.llm_client = None
         try:
             self.llm_client = get_vertex_llm_client()
             if self.llm_client:
-                logger.info("MediumScoringService: Vertex LLM client initialized.")
+                logger.info("MediumScoringService: OpenRouter LLM client initialized.")
         except Exception as e:
-            logger.warning(f"MediumScoringService: Could not initialize Vertex LLM client: {e}")
+            logger.warning(f"MediumScoringService: Could not initialize OpenRouter LLM client: {e}")
 
         # Configure model
         self.primary_model = model
@@ -176,9 +176,9 @@ class MediumScoringService:
             raise
 
     async def _call_llm(self, model_name: str, messages: List[Dict[str, str]], expert_id: str):
-        """Call the shared Vertex LLM client."""
+        """Call the shared OpenRouter LLM client."""
         if self.llm_client:
-            logger.info(f"[{expert_id}] Calling Vertex LLM client ({model_name})...")
+            logger.info(f"[{expert_id}] Calling OpenRouter LLM client ({model_name})...")
             # The shared client handles auth and retry automatically.
             return await self.llm_client.chat_completions_create(
                 model=model_name,
@@ -190,7 +190,7 @@ class MediumScoringService:
                 max_tokens=8192,
                 # Note: We DON'T force json_object here because the prompt expects Markdown text output
             )
-        raise ValueError("Vertex LLM client not initialized")
+        raise ValueError("OpenRouter LLM client not initialized")
 
     @retry(
         stop=stop_after_attempt(3),

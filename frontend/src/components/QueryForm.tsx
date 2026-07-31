@@ -40,9 +40,8 @@ interface QueryFormProps {
 export const QueryForm: React.FC<QueryFormProps> = ({
   onSubmit,
   disabled = false,
-  placeholder = "Ask experts about AI and related...",
+  placeholder = "Select up to 5 experts to answer your question, then ask it here...",
   selectedExperts = new Set(),
-  hasRedditEnabled = true,
   value,
   onChange,
   onStop,
@@ -72,11 +71,16 @@ export const QueryForm: React.FC<QueryFormProps> = ({
       return;
     }
 
+    if (selectedExperts.size === 0) {
+      alert('Select at least one expert before asking a question');
+      return;
+    }
+
     onSubmit(trimmed);
   };
 
-  const hasAnySource = selectedExperts.size > 0 || hasRedditEnabled;
-  const isButtonDisabled = !disabled && (query.trim().length < 3 || !hasAnySource);
+  const hasSelectedExperts = selectedExperts.size > 0;
+  const isButtonDisabled = !disabled && (query.trim().length < 3 || !hasSelectedExperts);
   const submitLabel = disabled ? 'Stop' : 'Ask';
   const submitAriaLabel = disabled ? 'Stop current search' : 'Ask experts';
 

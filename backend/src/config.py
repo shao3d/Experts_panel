@@ -3,6 +3,7 @@
 import logging
 import os
 from pathlib import Path
+from typing import Optional
 
 
 # --- Вспомогательные функции ---
@@ -38,6 +39,16 @@ def _normalize_database_url(database_url: str) -> str:
 
 
 # --- API / Auth Configuration ---
+# Runtime AI traffic goes through OpenRouter. ``OPENAI_API_KEY`` remains an
+# intentional compatibility fallback for local/docker setups that used the
+# OpenAI-compatible variable name before this migration.
+OPENROUTER_API_KEY: Optional[str] = os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KEY")
+OPENROUTER_BASE_URL: str = os.getenv(
+    "OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"
+).rstrip("/")
+
+# Legacy Vertex settings are retained only for offline maintenance scripts
+# that have not been migrated. The query-time runtime must not depend on them.
 LEGACY_GOOGLE_AI_STUDIO_API_KEYS_STR = os.getenv("GOOGLE_AI_STUDIO_API_KEY")
 LEGACY_GOOGLE_AI_STUDIO_API_KEYS = [
     key.strip()
@@ -90,35 +101,34 @@ AGENT_CONTEXT_RESULTS_TTL_DAYS: float = float(
 )
 
 # --- Model Configuration ---
-# Only Gemini models on Vertex AI are supported.
-# Defined in .env or defaulting to stable versions here.
+# All query-time models are addressed by their OpenRouter slugs.
 
-MODEL_MAP: str = os.getenv("MODEL_MAP", "gemini-2.5-flash-lite")
+MODEL_MAP: str = os.getenv("MODEL_MAP", "google/gemini-2.5-flash-lite")
 
-MODEL_SYNTHESIS: str = os.getenv("MODEL_SYNTHESIS", "gemini-3-flash-preview")
+MODEL_SYNTHESIS: str = os.getenv("MODEL_SYNTHESIS", "google/gemini-3-flash-preview")
 
-MODEL_ANALYSIS: str = os.getenv("MODEL_ANALYSIS", "gemini-2.5-flash")
+MODEL_ANALYSIS: str = os.getenv("MODEL_ANALYSIS", "google/gemini-3.1-flash-lite")
 
 # Scout must use a Vertex-AI-available model. `gemini-3.1-flash-lite-preview`
 # returned HTTP 404 on Vertex AI for this project and degraded every Scout
 # call to a wide keyword fallback, which silently exploded downstream
 # retrieval latency. Pin to the same lightweight family that powers Map.
-MODEL_SCOUT: str = os.getenv("MODEL_SCOUT", "gemini-2.5-flash-lite")
+MODEL_SCOUT: str = os.getenv("MODEL_SCOUT", "google/gemini-3.1-flash-lite")
 
-MODEL_MEDIUM_SCORING: str = os.getenv("MODEL_MEDIUM_SCORING", "gemini-2.5-flash")
+MODEL_MEDIUM_SCORING: str = os.getenv("MODEL_MEDIUM_SCORING", "google/gemini-3.1-flash-lite")
 
-MODEL_COMMENT_GROUPS: str = os.getenv("MODEL_COMMENT_GROUPS", "gemini-2.5-flash")
+MODEL_COMMENT_GROUPS: str = os.getenv("MODEL_COMMENT_GROUPS", "google/gemini-3.1-flash-lite")
 
-MODEL_DRIFT_ANALYSIS: str = os.getenv("MODEL_DRIFT_ANALYSIS", "gemini-3-flash-preview")
+MODEL_DRIFT_ANALYSIS: str = os.getenv("MODEL_DRIFT_ANALYSIS", "google/gemini-3-flash-preview")
 
 # --- Meta-Synthesis (Cross-Expert Analysis) ---
-MODEL_META_SYNTHESIS: str = os.getenv("MODEL_META_SYNTHESIS", "gemini-3-flash-preview")
+MODEL_META_SYNTHESIS: str = os.getenv("MODEL_META_SYNTHESIS", "google/gemini-3-flash-preview")
 META_SYNTHESIS_TIMEOUT_SECONDS: float = float(
     os.getenv("META_SYNTHESIS_TIMEOUT_SECONDS", "120")
 )
 
 # --- Embedding Configuration ---
-MODEL_EMBEDDING: str = os.getenv("MODEL_EMBEDDING", "gemini-embedding-001")
+MODEL_EMBEDDING: str = os.getenv("MODEL_EMBEDDING", "google/gemini-embedding-001")
 EMBEDDING_DIMENSIONS: int = int(os.getenv("EMBEDDING_DIMENSIONS", "768"))
 
 # --- Reddit Search Configuration ---
@@ -210,18 +220,10 @@ def get_runtime_config_log_lines() -> list[str]:
 
     lines = ["--- Backend runtime configuration ---"]
 
-    if VERTEX_AI_SERVICE_ACCOUNT_JSON or VERTEX_AI_SERVICE_ACCOUNT_JSON_PATH or GOOGLE_APPLICATION_CREDENTIALS_PATH:
-        lines.append(
-            "  Vertex AI Auth: Configured "
-            f"(project={VERTEX_AI_PROJECT_ID or 'auto'}, location={VERTEX_AI_LOCATION})"
-        )
-    elif LEGACY_GOOGLE_AI_STUDIO_API_KEYS:
-        lines.append(
-            "  Legacy API keys: configured as migration fallback "
-            f"({len(LEGACY_GOOGLE_AI_STUDIO_API_KEYS)} keys)"
-        )
-    else:
-        lines.append("  Vertex AI Auth: Not configured")
+    lines.append(
+        "  OpenRouter API: "
+        f"{'Configured' if OPENROUTER_API_KEY else 'Not configured'}"
+    )
 
     lines.extend(
         [

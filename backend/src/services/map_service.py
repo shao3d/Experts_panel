@@ -46,14 +46,14 @@ class MapService:
             chunk_size: Number of posts per chunk
             max_parallel: Maximum parallel API calls (None = all chunks in parallel)
         """
-        # Initialize Vertex LLM client
+        # Initialize the shared OpenRouter LLM client.
         self.llm_client = None
         try:
             self.llm_client = get_vertex_llm_client()
             if self.llm_client:
-                logger.info("MapService: Vertex LLM client initialized.")
+                logger.info("MapService: OpenRouter LLM client initialized.")
         except Exception as e:
-            logger.warning(f"MapService: Could not initialize Vertex LLM client: {e}")
+            logger.warning(f"MapService: Could not initialize OpenRouter LLM client: {e}")
 
         self.chunk_size = chunk_size
         self.primary_model = model
@@ -160,9 +160,9 @@ class MapService:
         return json.dumps(formatted_posts, ensure_ascii=False, indent=2)
 
     async def _call_llm(self, model_name: str, prompt: str, system_message: str):
-        """Call the shared Vertex LLM client."""
+        """Call the shared OpenRouter LLM client."""
         if self.llm_client:
-            logger.info(f"Using Vertex LLM client for model: {model_name}")
+            logger.info(f"Using OpenRouter LLM client for model: {model_name}")
             return await self.llm_client.chat_completions_create(
                 model=model_name,
                 messages=[{"role": "system", "content": system_message}, {"role": "user", "content": prompt}],
@@ -170,7 +170,7 @@ class MapService:
                 response_format={"type": "json_object"},
                 max_tokens=4096
             )
-        raise ValueError("Vertex LLM client not initialized")
+        raise ValueError("OpenRouter LLM client not initialized")
 
     @retry(
         stop=stop_after_attempt(3),

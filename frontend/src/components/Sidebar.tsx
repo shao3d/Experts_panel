@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ExpertInfo } from '../types/api';
-import { EXPERT_GROUPS, getExpertDisplayName, isExpertHidden } from '../config/expertConfig';
+import { EXPERT_GROUPS, getExpertDisplayName, isExpertHidden, MAX_SELECTED_EXPERTS } from '../config/expertConfig';
 import clsx from 'clsx';
 
 interface SidebarProps {
@@ -12,7 +12,6 @@ interface SidebarProps {
   includeReddit: boolean;
   onIncludeRedditChange: (value: boolean) => void;
   useSuperPassport: boolean;
-  onUseSuperPassportChange: (value: boolean) => void;
   disabled?: boolean;
   className?: string;
 }
@@ -26,7 +25,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   includeReddit,
   onIncludeRedditChange,
   useSuperPassport,
-  onUseSuperPassportChange,
   disabled = false,
   className
 }) => {
@@ -38,7 +36,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     const newSelected = new Set(selectedExperts);
     if (newSelected.has(expertId)) {
       newSelected.delete(expertId);
-    } else {
+    } else if (newSelected.size < MAX_SELECTED_EXPERTS) {
       newSelected.add(expertId);
     }
     onExpertsChange(newSelected);
@@ -55,8 +53,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       // Deselect all
       groupIds.forEach(id => newSelected.delete(id));
     } else {
-      // Select all
-      groupIds.forEach(id => newSelected.add(id));
+      // Select only the remaining slots, keeping the product-level cap intact.
+      groupIds
+        .filter(id => expertMap.has(id) && !isExpertHidden(id))
+        .some(id => {
+          if (newSelected.size >= MAX_SELECTED_EXPERTS) return true;
+          newSelected.add(id);
+          return false;
+        });
     }
     onExpertsChange(newSelected);
   };
@@ -121,12 +125,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {/* Embs&Keys Search Toggle */}
             <div
               className={clsx(
-                "flex items-center rounded-lg cursor-pointer transition-colors group",
+                "flex items-center rounded-lg cursor-default transition-colors group",
                 isCollapsed ? "justify-center p-2" : "px-3 py-2",
                 useSuperPassport ? "bg-yellow-50 text-yellow-700" : "hover:bg-gray-50 text-gray-600"
               )}
-              onClick={() => !disabled && onUseSuperPassportChange(!useSuperPassport)}
-              title={isCollapsed ? "Embs&Keys Search" : undefined}
+              title="Embs&Keys Search is always enabled"
             >
               <div className={clsx("shrink-0", isCollapsed ? "" : "mr-3")}>
                 {useSuperPassport ? (
@@ -142,7 +145,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {!isCollapsed && (
                 <div className="flex flex-col">
                   <span className="text-sm font-medium">Embs&Keys</span>
-                  <span className="text-[10px] opacity-70">Hybrid Search</span>
+                  <span className="text-[10px] opacity-70">Hybrid Search · always on</span>
                 </div>
               )}
               {/* Toggle Switch (Desktop) */}
@@ -285,6 +288,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <div className="space-y-1">
                 {groupExperts.map((expert) => {
                   const isSelected = selectedExperts.has(expert.expert_id);
+                  const selectionLimitReached = !isSelected && selectedExperts.size >= MAX_SELECTED_EXPERTS;
                   const displayName = getExpertDisplayName(expert.expert_id, expert.display_name);
                   
                   return (
@@ -296,9 +300,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         isCollapsed ? "justify-center p-2" : "px-3 py-2",
                         !isCollapsed && isSelected && "bg-blue-50 text-blue-700",
                         !isCollapsed && !isSelected && "hover:bg-gray-50 text-gray-600 hover:text-gray-900",
-                        disabled && "opacity-50 cursor-not-allowed"
+                        (disabled || selectionLimitReached) && "opacity-50 cursor-not-allowed"
                       )}
-                      title={displayName}
+                      title={selectionLimitReached ? `Maximum ${MAX_SELECTED_EXPERTS} experts per query` : displayName}
                     >
                       {/* Collapsed State: Avatar Circle */}
                       {isCollapsed ? (

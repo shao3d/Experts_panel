@@ -16,7 +16,7 @@ import CommunityInsightsSection from './components/CommunityInsightsSection';
 import { apiClient } from './services/api';
 import { ExpertResponse as ExpertResponseType, ProgressEvent, ExpertInfo, RedditResponse } from './types/api';
 import { MetaSynthesisSection } from './components/MetaSynthesisSection';
-import { transformExpertsForUI, EXPERT_UI_CONFIG, isExpertHidden } from './config/expertConfig';
+import { transformExpertsForUI, EXPERT_UI_CONFIG, isExpertHidden, MAX_SELECTED_EXPERTS } from './config/expertConfig';
 import './components/CommunityInsightsSection.css';
 import './App.css';
 
@@ -52,8 +52,9 @@ export const App: React.FC = () => {
   
   // Search Options State (Lifted from QueryForm)
   const [useRecentOnly, setUseRecentOnly] = useState(false);
-  const [includeReddit, setIncludeReddit] = useState(true);
-  const [useSuperPassport, setUseSuperPassport] = useState(true);
+  const [includeReddit, setIncludeReddit] = useState(false);
+  // Hybrid retrieval is the required production path and must not be disabled from the UI.
+  const useSuperPassport = true;
   
   // Mobile Expert Selector Drawer State
   const [isExpertSelectorOpen, setIsExpertSelectorOpen] = useState(false);
@@ -76,11 +77,9 @@ export const App: React.FC = () => {
         const visibleExperts = transformedExperts.filter(e => !isExpertHidden(e.expert_id));
         setAvailableExperts(visibleExperts);
 
-        // Initialize selection with all VISIBLE experts (HIDDEN_EXPERT_IDS excluded by default).
-        // Derived from the same visibleExperts so the two filter chains can't drift.
-        const allExpertIds = new Set(visibleExperts.map(e => e.expert_id));
-        setSelectedExperts(allExpertIds);
-        setExpandedExperts(allExpertIds);
+        // A query must always begin with an explicit, small expert selection.
+        setSelectedExperts(new Set());
+        setExpandedExperts(new Set());
       } catch (err) {
         console.error('[App] Failed to load experts:', err);
         setError('Failed to load experts list. Please refresh the page.');
@@ -90,10 +89,23 @@ export const App: React.FC = () => {
     loadExperts();
   }, []);
 
+  const handleExpertsChange = (nextSelection: Set<string>) => {
+    if (nextSelection.size > MAX_SELECTED_EXPERTS) {
+      setError(`Select no more than ${MAX_SELECTED_EXPERTS} experts per query.`);
+      return;
+    }
+    setError(null);
+    setSelectedExperts(nextSelection);
+  };
+
   /**
    * Handle query submission
    */
   const handleQuerySubmit = async (query: string): Promise<void> => {
+    if (selectedExperts.size === 0 || selectedExperts.size > MAX_SELECTED_EXPERTS) {
+      setError(`Select from 1 to ${MAX_SELECTED_EXPERTS} experts before starting a query.`);
+      return;
+    }
     queryAbortControllerRef.current?.abort();
     const queryRunId = activeQueryRunRef.current + 1;
     activeQueryRunRef.current = queryRunId;
@@ -241,13 +253,12 @@ export const App: React.FC = () => {
         <Sidebar
           availableExperts={availableExperts}
           selectedExperts={selectedExperts}
-          onExpertsChange={setSelectedExperts}
+          onExpertsChange={handleExpertsChange}
           useRecentOnly={useRecentOnly}
           onUseRecentOnlyChange={setUseRecentOnly}
           includeReddit={includeReddit}
           onIncludeRedditChange={setIncludeReddit}
           useSuperPassport={useSuperPassport}
-          onUseSuperPassportChange={setUseSuperPassport}
           disabled={isProcessing}
         />
       </div>
@@ -350,7 +361,7 @@ export const App: React.FC = () => {
             onClick={() => setIsExpertSelectorOpen(!isExpertSelectorOpen)}
           >
             <span>
-              Select Experts ({selectedExperts.size}/{availableExperts.length})
+              Select Experts ({selectedExperts.size}/{MAX_SELECTED_EXPERTS} max)
             </span>
             <span className="toggle-icon">
               {isExpertSelectorOpen ? '▼' : '▲'}
@@ -361,14 +372,14 @@ export const App: React.FC = () => {
             <ExpertSelectionBar
               availableExperts={availableExperts}
               selectedExperts={selectedExperts}
-              onExpertsChange={setSelectedExperts}
+              onExpertsChange={handleExpertsChange}
               disabled={isProcessing}
             />
              {/* Simple filter toggles for mobile inside the drawer */}
              <div className="p-4 border-t border-gray-100 flex flex-col gap-3">
                 <label className="flex items-center gap-2">
-                  <input type="checkbox" checked={useSuperPassport} onChange={e => setUseSuperPassport(e.target.checked)} disabled={isProcessing} className="w-4 h-4 accent-yellow-500"/>
-                  <span className="text-sm font-medium text-gray-700">Embs&amp;Keys Search</span>
+                  <input type="checkbox" checked readOnly disabled className="w-4 h-4 accent-yellow-500"/>
+                  <span className="text-sm font-medium text-gray-700">Embs&amp;Keys Search (always on)</span>
                 </label>
                 <label className="flex items-center gap-2">
                   <input type="checkbox" checked={useRecentOnly} onChange={e => setUseRecentOnly(e.target.checked)} disabled={isProcessing} className="w-4 h-4 accent-blue-600"/>

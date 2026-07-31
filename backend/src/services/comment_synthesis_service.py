@@ -26,9 +26,9 @@ class CommentSynthesisService:
     def __init__(self):
         """Initialize CommentSynthesisService.
         """
-        # Use monitored Vertex LLM client
+        # Use the monitored OpenRouter LLM client.
         self.client = create_monitored_client()
-        logger.info("CommentSynthesisService initialized with monitored Vertex LLM client")
+        logger.info("CommentSynthesisService initialized with monitored OpenRouter LLM client")
 
         self.model = config.MODEL_SYNTHESIS
         self._prompt_template = self._load_prompt_template()

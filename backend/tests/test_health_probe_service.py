@@ -102,7 +102,7 @@ async def test_refresh_summary_reports_generation_embedding_and_availability():
     assert summary["generation_probe"]["status"] == "ok"
     assert summary["embedding_probe"]["status"] == "ok"
     assert summary["model_availability"][config.MODEL_MAP]["status"] == "available"
-    assert summary["model_availability"][config.MODEL_SYNTHESIS]["route_type"] == "global"
+    assert summary["model_availability"][config.MODEL_SYNTHESIS]["route_type"] == "openrouter"
     assert summary["model_availability"][config.MODEL_EMBEDDING]["status"] == "available"
 
 

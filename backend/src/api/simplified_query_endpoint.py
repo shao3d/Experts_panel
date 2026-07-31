@@ -1789,6 +1789,23 @@ async def process_simplified_query(
     Returns:
         SSE stream with multi-expert responses
     """
+    expert_filter = request.expert_filter
+    if not expert_filter:
+        raise HTTPException(
+            status_code=422,
+            detail="Select from 1 to 5 experts before starting a query.",
+        )
+    if len(expert_filter) > 5:
+        raise HTTPException(
+            status_code=422,
+            detail="A query can include no more than 5 experts.",
+        )
+    if len(set(expert_filter)) != len(expert_filter):
+        raise HTTPException(
+            status_code=422,
+            detail="Each selected expert must be unique.",
+        )
+
     request_id = str(uuid.uuid4())
     logger.info(f"Processing multi-expert query {request_id}: {request.query[:50]}...")
 

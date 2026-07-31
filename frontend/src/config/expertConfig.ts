@@ -5,6 +5,9 @@
 
 import { ExpertInfo } from '../types/api';
 
+/** Hard product cap for one interactive multi-expert query. */
+export const MAX_SELECTED_EXPERTS = 5;
+
 export interface ExpertUIConfig {
   displayNames: Record<string, string>;
   order: string[];

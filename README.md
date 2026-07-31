@@ -28,7 +28,7 @@ These are intentionally bounded tools. Panex retrieves and structures expert evi
 
 ## Architecture at a glance
 
-- **Backend:** FastAPI, SQLAlchemy, SQLite/FTS5, Google Gemini through Vertex AI.
+- **Backend:** FastAPI, SQLAlchemy, SQLite/FTS5, Google Gemini through OpenRouter.
 - **Frontend:** React 18, TypeScript, Vite, Tailwind CSS, TanStack Query.
 - **Retrieval:** Gemini embeddings, vector KNN, full-text search, RRF, and AI-assisted query expansion.
 - **Delivery:** SSE progress events plus durable result artifacts for long-running UI and agent requests.
@@ -42,7 +42,7 @@ Requirements:
 
 - Python 3.11+
 - Node.js 20+
-- a Google Cloud project with Vertex AI enabled
+- an OpenRouter API key
 - a local SQLite corpus
 
 Set up the backend:
@@ -54,7 +54,7 @@ pip install -r backend/requirements.txt
 cp .env.example backend/.env
 ```
 
-Fill in the Vertex AI settings and `DATABASE_URL` in `backend/.env`, then start the API:
+Fill in `OPENROUTER_API_KEY` and `DATABASE_URL` in `backend/.env`, then start the API:
 
 ```bash
 cd backend

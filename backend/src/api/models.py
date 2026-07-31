@@ -53,7 +53,7 @@ class QueryRequest(BaseModel):
     )
     expert_filter: Optional[List[str]] = Field(
         default=None,
-        description="Filter by specific expert IDs. None = all experts"
+        description="Explicit expert IDs for an interactive query. The endpoint requires 1-5 experts."
     )
     use_recent_only: Optional[bool] = Field(
         default=False,

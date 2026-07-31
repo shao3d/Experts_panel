@@ -60,18 +60,12 @@ def _reset_probe_singleton():
 
 
 @pytest.fixture
-def patch_auth_manager(monkeypatch):
-    """Swaps ``get_vertex_ai_auth_manager`` so the helper sees a fake manager.
+def patch_openrouter_key(monkeypatch):
+    """Set a non-secret test key for startup-probe gating."""
 
-    The helper imports and calls ``get_vertex_ai_auth_manager`` directly at
-    runtime, so injecting an unauthenticated FakeAuthManager via the
-    HealthProbeService constructor is not enough -- this fixture patches the
-    module-level binding that the helper actually uses.
-    """
-
-    def _patch(fake: FakeAuthManager) -> None:
+    def _patch(configured: bool = True) -> None:
         monkeypatch.setattr(
-            probe_module, "get_vertex_ai_auth_manager", lambda: fake
+            probe_module.config, "OPENROUTER_API_KEY", "test-openrouter-key" if configured else None
         )
 
     return _patch
@@ -79,7 +73,7 @@ def patch_auth_manager(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_returns_empty_dict_and_skips_probe_when_auth_not_configured(
-    caplog: pytest.LogCaptureFixture, patch_auth_manager
+    caplog: pytest.LogCaptureFixture, patch_openrouter_key
 ):
     """If Vertex auth is missing, helper must short-circuit with INFO and
     not call the LLM client or raise."""
@@ -98,9 +92,7 @@ async def test_returns_empty_dict_and_skips_probe_when_auth_not_configured(
         cache_ttl_seconds=300,
     )
     probe_module._probe_service_instance = service
-    patch_auth_manager(
-        FakeAuthManager(configured=False, project_id=None, source=None)
-    )
+    patch_openrouter_key(False)
 
     with caplog.at_level(logging.INFO):
         result = await log_critical_models_availability(logging.getLogger("test"))
@@ -115,7 +107,7 @@ async def test_returns_empty_dict_and_skips_probe_when_auth_not_configured(
 
 @pytest.mark.asyncio
 async def test_logs_warning_when_one_model_returns_404(
-    caplog: pytest.LogCaptureFixture, patch_auth_manager
+    caplog: pytest.LogCaptureFixture, patch_openrouter_key
 ):
     """A single 404 on MODEL_SCOUT must surface as a WARNING with the
     model name, error_type=model_unavailable, and a remediation hint."""
@@ -135,7 +127,7 @@ async def test_logs_warning_when_one_model_returns_404(
         generation_model=config.MODEL_SCOUT,
     )
     probe_module._probe_service_instance = service
-    patch_auth_manager(FakeAuthManager())
+    patch_openrouter_key()
 
     with caplog.at_level(logging.WARNING):
         result = await log_critical_models_availability(logging.getLogger("test"))
@@ -145,14 +137,14 @@ async def test_logs_warning_when_one_model_returns_404(
     assert any(config.MODEL_SCOUT in rec.message for rec in warnings), (
         "Expected a WARNING that names MODEL_SCOUT"
     )
-    assert any("model garden" in rec.message for rec in warnings), (
-        "Expected remediation hint (reference to Vertex AI model garden)"
+    assert any("OpenRouter" in rec.message for rec in warnings), (
+        "Expected OpenRouter remediation hint"
     )
 
 
 @pytest.mark.asyncio
 async def test_logs_warning_for_each_unavailable_model(
-    caplog: pytest.LogCaptureFixture, patch_auth_manager
+    caplog: pytest.LogCaptureFixture, patch_openrouter_key
 ):
     """Multiple unreachable models must each emit a separate WARNING."""
 
@@ -168,24 +160,24 @@ async def test_logs_warning_for_each_unavailable_model(
         cache_ttl_seconds=300,
     )
     probe_module._probe_service_instance = service
-    patch_auth_manager(FakeAuthManager())
+    patch_openrouter_key()
 
     with caplog.at_level(logging.WARNING):
         result = await log_critical_models_availability(logging.getLogger("test"))
 
     assert result.get(config.MODEL_SCOUT) == "unavailable"
-    assert result.get(config.MODEL_VIDEO_PRO) == "unavailable"
+    assert config.MODEL_VIDEO_PRO not in result
 
     warning_messages = " ".join(
         rec.message for rec in caplog.records if rec.levelno == logging.WARNING
     )
     assert config.MODEL_SCOUT in warning_messages
-    assert config.MODEL_VIDEO_PRO in warning_messages
+    assert config.MODEL_VIDEO_PRO not in warning_messages
 
 
 @pytest.mark.asyncio
 async def test_no_warning_on_happy_path(
-    caplog: pytest.LogCaptureFixture, patch_auth_manager
+    caplog: pytest.LogCaptureFixture, patch_openrouter_key
 ):
     """When all tracked models succeed, the helper must NOT emit WARNING
     (avoids log spam when running normally in production)."""
@@ -197,7 +189,7 @@ async def test_no_warning_on_happy_path(
         cache_ttl_seconds=300,
     )
     probe_module._probe_service_instance = service
-    patch_auth_manager(FakeAuthManager())
+    patch_openrouter_key()
 
     with caplog.at_level(logging.WARNING):
         result = await log_critical_models_availability(logging.getLogger("test"))
@@ -212,7 +204,7 @@ async def test_no_warning_on_happy_path(
 
 @pytest.mark.asyncio
 async def test_does_not_raise_when_probe_throws(
-    caplog: pytest.LogCaptureFixture, patch_auth_manager
+    caplog: pytest.LogCaptureFixture, patch_openrouter_key
 ):
     """If the underlying probe throws, the helper must swallow it, log a
     WARNING, and return an empty dict -- never break startup."""
@@ -222,7 +214,7 @@ async def test_does_not_raise_when_probe_throws(
             raise RuntimeError("simulated infra outage")
 
     probe_module._probe_service_instance = _BrokenService()  # type: ignore[assignment]
-    patch_auth_manager(FakeAuthManager())
+    patch_openrouter_key()
 
     with caplog.at_level(logging.WARNING):
         result = await log_critical_models_availability(logging.getLogger("test"))
@@ -236,7 +228,7 @@ async def test_does_not_raise_when_probe_throws(
 
 @pytest.mark.asyncio
 async def test_does_not_raise_and_returns_empty_on_timeout(
-    caplog: pytest.LogCaptureFixture, patch_auth_manager
+    caplog: pytest.LogCaptureFixture, patch_openrouter_key
 ):
     """If Vertex is slow / cold-starting, the helper must time out cleanly
     via its outer ``asyncio.wait_for`` and return ``{}`` -- never block
@@ -248,7 +240,7 @@ async def test_does_not_raise_and_returns_empty_on_timeout(
             return {"model_availability": {}}  # pragma: no cover
 
     probe_module._probe_service_instance = _SlowService()  # type: ignore[assignment]
-    patch_auth_manager(FakeAuthManager())
+    patch_openrouter_key()
 
     with caplog.at_level(logging.WARNING):
         # 0.5s is generous enough to survive event-loop scheduling lag on

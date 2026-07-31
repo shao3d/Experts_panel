@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class TranslationService:
-    """Service for translating posts to English using Gemini on Vertex AI."""
+    """Service for translating posts to English through OpenRouter."""
 
     def __init__(
         self,
@@ -31,14 +31,14 @@ class TranslationService:
         if model is None:
             from .. import config
             model = config.MODEL_ANALYSIS
-        # Initialize Vertex LLM client
+        # Initialize the shared OpenRouter LLM client.
         self.llm_client = None
         try:
             self.llm_client = get_vertex_llm_client()
             if self.llm_client:
-                logger.info("TranslationService: Vertex LLM client initialized.")
+                logger.info("TranslationService: OpenRouter LLM client initialized.")
         except Exception as e:
-            logger.warning(f"TranslationService: Could not initialize Vertex LLM client: {e}")
+            logger.warning(f"TranslationService: Could not initialize OpenRouter LLM client: {e}")
 
         self.primary_model = model
 
@@ -77,7 +77,7 @@ class TranslationService:
             self._cache.popitem(last=False)
 
     async def _call_llm(self, model_name: str, messages: List[Dict[str, str]]):
-        """Call the shared Vertex LLM client."""
+        """Call the shared OpenRouter LLM client."""
         if self.llm_client:
             # The shared client handles auth and retry automatically.
             return await self.llm_client.chat_completions_create(
@@ -85,7 +85,7 @@ class TranslationService:
                 messages=messages,
                 temperature=0.2
             )
-        raise ValueError("Vertex LLM client not initialized")
+        raise ValueError("OpenRouter LLM client not initialized")
 
     @retry(
         stop=stop_after_attempt(3),

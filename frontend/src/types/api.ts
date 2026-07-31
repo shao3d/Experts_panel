@@ -433,7 +433,7 @@ export interface HealthProbeDiagnostics {
 export interface HealthModelAvailabilityEntry {
   status: 'available' | 'unavailable' | 'unknown';
   kind: 'generation' | 'embedding';
-  route_type: 'global' | 'regional';
+  route_type: 'global' | 'regional' | 'openrouter';
   latency_ms?: number | null;
   error_type?: string | null;
   message?: string | null;
@@ -447,6 +447,7 @@ export interface HealthDiagnostics {
   database: HealthDatabaseDiagnostics;
   cache: HealthCacheDiagnostics;
   vertex_auth: HealthVertexAuthDiagnostics;
+  openrouter_auth: HealthVertexAuthDiagnostics;
   generation_probe: HealthProbeDiagnostics;
   embedding_probe: HealthProbeDiagnostics;
   model_availability: Record<string, HealthModelAvailabilityEntry>;
@@ -457,6 +458,7 @@ export interface HealthResponse {
   version: string;
   database: 'healthy' | 'unhealthy';
   auth_configured: boolean;
+  openrouter_auth?: HealthVertexAuthDiagnostics;
   vertex_auth_configured: boolean;
   timestamp: number;
   diagnostics?: HealthDiagnostics;

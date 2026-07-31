@@ -1,7 +1,4 @@
-"""Monitored Gemini LLM client.
-
-This module provides a monitored interface for Vertex AI.
-"""
+"""Monitored OpenRouter LLM client."""
 
 import logging
 import time
@@ -14,22 +11,22 @@ logger = logging.getLogger(__name__)
 
 
 class MonitoredLLMClient:
-    """LLM client that uses Vertex AI with monitoring."""
+    """LLM client that uses OpenRouter with monitoring."""
 
     def __init__(
         self
     ):
         """Initialize LLM client."""
-        self.vertex_available = True
+        self.openrouter_available = True
 
         self.llm_client = None
 
         try:
             self.llm_client = get_vertex_llm_client()
-            logger.info("LLM client initialized with Vertex AI")
+            logger.info("LLM client initialized with OpenRouter")
         except Exception as e:
-            logger.warning(f"Failed to initialize Vertex AI client: {e}")
-            self.vertex_available = False
+            logger.warning(f"Failed to initialize OpenRouter client: {e}")
+            self.openrouter_available = False
 
     async def chat_completions_create(
         self,
@@ -40,7 +37,7 @@ class MonitoredLLMClient:
         service_name: str = "unknown",
         **kwargs
     ) -> Any:
-        """Create chat completion using Vertex AI.
+        """Create a chat completion through OpenRouter.
 
         Args:
             model: Model name (e.g., "gemini-2.0-flash")
@@ -55,7 +52,7 @@ class MonitoredLLMClient:
         """
         
         if not self.llm_client:
-            raise RuntimeError(f"[{service_name}] Vertex AI client not initialized")
+            raise RuntimeError(f"[{service_name}] OpenRouter client not initialized")
 
         start_time = time.time()
         try:
@@ -69,7 +66,7 @@ class MonitoredLLMClient:
 
             log_api_call_with_timing(
                 service_name=service_name,
-                provider="vertex_ai",
+                provider="openrouter",
                 model=model,
                 start_time=start_time,
                 success=True,
@@ -81,13 +78,13 @@ class MonitoredLLMClient:
         except Exception as e:
             log_api_call_with_timing(
                 service_name=service_name,
-                provider="vertex_ai",
+                provider="openrouter",
                 model=model,
                 start_time=start_time,
                 success=False,
                 error=e
             )
-            logger.error(f"[{service_name}] Vertex AI API call failed: {e}")
+            logger.error(f"[{service_name}] OpenRouter API call failed: {e}")
             raise
 
     def get_status(self) -> Dict[str, Any]:
@@ -97,7 +94,7 @@ class MonitoredLLMClient:
             Dictionary with client status
         """
         return {
-            "vertex_ai_available": self.vertex_available
+            "openrouter_available": self.openrouter_available
         }
 
 

@@ -21,8 +21,7 @@ from typing import Any, Callable, Dict, Optional
 from .. import config
 from ..utils.api_error_detector import APIErrorDetector, ErrorType
 from .embedding_service import EmbeddingService, get_embedding_service
-from .vertex_ai_auth import VertexAIAuthManager, get_vertex_ai_auth_manager
-from .vertex_llm_client import VertexLLMClient, get_vertex_llm_client
+from .vertex_llm_client import OpenRouterLLMClient, get_openrouter_llm_client
 
 logger = logging.getLogger(__name__)
 
@@ -115,12 +114,12 @@ class HealthProbeService:
 
     def __init__(
         self,
-        llm_client: Optional[VertexLLMClient] = None,
+        llm_client: Optional[OpenRouterLLMClient] = None,
         embedding_service: Optional[EmbeddingService] = None,
-        auth_manager: Optional[VertexAIAuthManager] = None,
-        llm_client_factory: Optional[Callable[[], VertexLLMClient]] = None,
+        auth_manager: Optional[Any] = None,
+        llm_client_factory: Optional[Callable[[], OpenRouterLLMClient]] = None,
         embedding_service_factory: Optional[Callable[[], EmbeddingService]] = None,
-        auth_manager_factory: Optional[Callable[[], VertexAIAuthManager]] = None,
+        auth_manager_factory: Optional[Callable[[], Any]] = None,
         cache_ttl_seconds: int = _DEFAULT_CACHE_TTL_SECONDS,
         generation_model: str = _DEFAULT_GENERATION_MODEL,
         time_fn: Callable[[], float] = time.time,
@@ -128,11 +127,11 @@ class HealthProbeService:
         self._llm_client = llm_client
         self._embedding_service = embedding_service
         self._auth_manager = auth_manager
-        self._llm_client_factory = llm_client_factory or get_vertex_llm_client
+        self._llm_client_factory = llm_client_factory or get_openrouter_llm_client
         self._embedding_service_factory = (
             embedding_service_factory or get_embedding_service
         )
-        self._auth_manager_factory = auth_manager_factory or get_vertex_ai_auth_manager
+        self._auth_manager_factory = auth_manager_factory
         self._cache_ttl_seconds = cache_ttl_seconds
         self._generation_model = generation_model or config.MODEL_MAP
         self._time_fn = time_fn
@@ -148,8 +147,6 @@ class HealthProbeService:
             config.MODEL_COMMENT_GROUPS,
             config.MODEL_DRIFT_ANALYSIS,
             config.MODEL_META_SYNTHESIS,
-            config.MODEL_VIDEO_PRO,
-            config.MODEL_VIDEO_FLASH,
         )
         self._cached_summary = self._build_empty_summary()
 
@@ -165,6 +162,9 @@ class HealthProbeService:
             return self._snapshot(self._cached_summary)
 
         auth_summary = self._build_auth_summary()
+        self._cached_summary["openrouter_auth"] = auth_summary
+        # Compatibility for existing health consumers. Remove after they move
+        # to the canonical openrouter_auth field.
         self._cached_summary["vertex_auth"] = auth_summary
         return await self.refresh_summary(force=True)
 
@@ -190,11 +190,14 @@ class HealthProbeService:
                 "stale": True,
                 "refresh_in_progress": False,
             },
+            "openrouter_auth": {
+                "configured": False,
+                "provider": "openrouter",
+            },
+            # Deprecated compatibility alias for existing clients.
             "vertex_auth": {
                 "configured": False,
-                "project_id": config.VERTEX_AI_PROJECT_ID,
-                "location": config.VERTEX_AI_LOCATION,
-                "auth_source": None,
+                "provider": "openrouter",
             },
             "generation_probe": self._unknown_generation_probe(self._generation_model),
             "embedding_probe": self._unknown_embedding_probe(),
@@ -210,7 +213,7 @@ class HealthProbeService:
             embedding_probe = self._auth_failure_embedding_probe()
             model_availability = self._unknown_model_availability(
                 error_type="auth_error",
-                message="Vertex AI credentials are not configured",
+                message="OpenRouter API key is not configured",
             )
         else:
             generation_probe, embedding_probe = await asyncio.gather(
@@ -230,6 +233,8 @@ class HealthProbeService:
                 "stale": False,
                 "refresh_in_progress": False,
             },
+            "openrouter_auth": auth_summary,
+            # Deprecated compatibility alias for existing clients.
             "vertex_auth": auth_summary,
             "generation_probe": generation_probe,
             "embedding_probe": embedding_probe,
@@ -237,13 +242,11 @@ class HealthProbeService:
         }
 
     def _build_auth_summary(self) -> Dict[str, Any]:
-        auth_manager = self._get_auth_manager()
-        return {
-            "configured": auth_manager.is_configured(),
-            "project_id": auth_manager.configured_project_id,
-            "location": auth_manager.location,
-            "auth_source": auth_manager.source,
-        }
+        # ``auth_manager`` remains an optional test seam. Runtime health is
+        # determined only by the OpenRouter key/client.
+        if self._auth_manager is not None:
+            return {"configured": self._auth_manager.is_configured(), "provider": "openrouter"}
+        return {"configured": self._get_llm_client().is_configured(), "provider": "openrouter"}
 
     def _snapshot(self, summary: Dict[str, Any]) -> Dict[str, Any]:
         snapshot = copy.deepcopy(summary)
@@ -260,7 +263,7 @@ class HealthProbeService:
         return self._time_fn() >= expires_at
 
     def _route_type_for_model(self, model: str) -> str:
-        return "global" if model.startswith("gemini-3") else "regional"
+        return "openrouter"
 
     async def _run_generation_probe(self, model: str) -> Dict[str, Any]:
         started_at = time.perf_counter()
@@ -324,7 +327,7 @@ class HealthProbeService:
                 "ok": ok,
                 "status": "ok" if ok else "failed",
                 "model": config.MODEL_EMBEDDING,
-                "route_type": "regional",
+                "route_type": "openrouter",
                 "dimensions": dimensions,
                 "expected_dimensions": config.EMBEDDING_DIMENSIONS,
                 "latency_ms": latency_ms,
@@ -344,7 +347,7 @@ class HealthProbeService:
                 "ok": False,
                 "status": "failed",
                 "model": config.MODEL_EMBEDDING,
-                "route_type": "regional",
+                "route_type": "openrouter",
                 "dimensions": None,
                 "expected_dimensions": config.EMBEDDING_DIMENSIONS,
                 "latency_ms": round((time.perf_counter() - started_at) * 1000, 2),
@@ -415,7 +418,7 @@ class HealthProbeService:
             "ok": False,
             "status": "unknown",
             "model": config.MODEL_EMBEDDING,
-            "route_type": "regional",
+            "route_type": "openrouter",
             "dimensions": None,
             "expected_dimensions": config.EMBEDDING_DIMENSIONS,
             "latency_ms": None,
@@ -467,7 +470,7 @@ class HealthProbeService:
         availability[config.MODEL_EMBEDDING] = {
             "status": "unknown",
             "kind": "embedding",
-            "route_type": "regional",
+                "route_type": "openrouter",
             "latency_ms": None,
             "error_type": error_type,
             "message": message,
@@ -565,12 +568,7 @@ class HealthProbeService:
             return "billing_error"
         return error_type
 
-    def _get_auth_manager(self) -> VertexAIAuthManager:
-        if self._auth_manager is None:
-            self._auth_manager = self._auth_manager_factory()
-        return self._auth_manager
-
-    def _get_llm_client(self) -> VertexLLMClient:
+    def _get_llm_client(self) -> OpenRouterLLMClient:
         if self._llm_client is None:
             self._llm_client = self._llm_client_factory()
         return self._llm_client
@@ -605,15 +603,14 @@ async def log_critical_models_availability(
     first time a user runs a query many minutes later.
 
     Fail-open: never raises. ``timeout_seconds`` bounds the whole probe so a
-    slow or cold-starting Vertex AI cannot stall FastAPI lifespan startup; on
+    slow provider cannot stall FastAPI lifespan startup; on
     timeout the helper logs a WARNING and returns ``{}``.
     Returns ``{model_name: status}`` for tests and callers that want to
     programmatically inspect the result.
     """
-    auth_manager = get_vertex_ai_auth_manager()
-    if not auth_manager.is_configured():
+    if not config.OPENROUTER_API_KEY:
         logger.info(
-            "Vertex AI auth not configured at startup -- skipping critical-model "
+            "OpenRouter API key not configured at startup -- skipping critical-model "
             "availability check"
         )
         return {}
@@ -649,29 +646,28 @@ async def log_critical_models_availability(
             raw_message = str(info.get("message") or "").splitlines()[0]
             message = raw_message[:240] or "no detail"
             logger.warning(
-                "Vertex AI model unavailable at startup: %s%s -- %s. Queries "
+                "OpenRouter model unavailable at startup: %s%s -- %s. Queries "
                 "that reach this model will degrade until you either rename "
-                "the matching MODEL_* env var to a model exposed in your "
-                "Vertex AI model garden (https://console.cloud.google.com/"
-                "vertex-ai/model-garden) or unset the env var to inherit the "
+                "the matching MODEL_* env var to a model available through "
+                "OpenRouter or unset the env var to inherit the "
                 "running default in backend/src/config.py.",
                 model, code_hint, message,
             )
         elif status == "unknown" and info.get("error_type"):
             logger.info(
-                "Vertex AI model probe inconclusive at startup: %s "
+                "OpenRouter model probe inconclusive at startup: %s "
                 "(error_type=%s)",
                 model,
                 info.get("error_type"),
             )
         # status == "available" is the happy path -- no log spam at INFO.
 
-    # Defensive: if Vertex auth was configured but the probe produced an empty
+    # Defensive: if OpenRouter was configured but the probe produced an empty
     # summary for any reason, surface the gap instead of silently "all good".
     if not result:
         logger.warning(
             "Critical-model availability probe returned no entries at startup; "
-            "check that MODEL_MAP and Vertex AI auth are configured."
+            "check that MODEL_MAP and OPENROUTER_API_KEY are configured."
         )
     return result
 

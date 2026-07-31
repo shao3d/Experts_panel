@@ -6,23 +6,23 @@
 FastAPI backend service providing multi-expert query processing with Map-Resolve-Reduce pipeline, real-time SSE streaming, and Reddit integration.
 
 ## Narrative Summary
-The backend implements a sophisticated 10-phase query processing system. It uses a **Gemini-only** strategy on **Vertex AI** with a canonical client (`vertex_llm_client.py`) plus a legacy compatibility shim (`google_ai_studio_client.py`). `Gemini 3*` models are routed through the Vertex `global` endpoint.
+The backend implements a sophisticated 10-phase query processing system. It uses a **Gemini-only** strategy through **OpenRouter**. `vertex_llm_client.py` is retained as an import-compatibility filename, but its canonical runtime client is OpenRouter.
 
 ## Key Files & Responsibilities
 
 ### Core Pipeline Services
 | Service | Phase | Model (Default) | Responsibility |
 |---------|-------|-----------------|----------------|
-| `ai_scout_service.py` | **0. Scout** | `gemini-2.5-flash-lite` | Generates FTS5 MATCH queries (OR-only Entity Clouds). Runs **parallel** with Embedding. |
-| `embedding_service.py`| **0. Embed**| `gemini-embedding-001` | Pre-computes query embedding once for all experts. Runs **parallel** with Scout. |
+| `ai_scout_service.py` | **0. Scout** | `google/gemini-3.1-flash-lite` | Generates FTS5 MATCH queries (OR-only Entity Clouds). Runs **parallel** with Embedding. |
+| `embedding_service.py`| **0. Embed**| `google/gemini-embedding-001` | Pre-computes query embedding once for all experts. Runs **parallel** with Scout. |
 | `hybrid_retrieval_service.py` | **0. Retrieval** | *None (SQLite)* | Embs&Keys Hybrid Search (Vector KNN + FTS5 + RRF). Freshness from SQL directly (no extra DB query). |
 | `fts5_retrieval_service.py` | **Internal** | *None* | Provides FTS5 query sanitization utils used by Hybrid Service. |
 | `map_service.py` | **1. Map** | `gemini-2.5-flash-lite` | Chunks posts (50), scores relevance (HIGH/MEDIUM/LOW). 3-layer retry system. |
-| `medium_scoring_service.py` | **2. Score** | `gemini-2.5-flash` | Reranks MEDIUM posts. Keeps top 5 with score ≥ 0.7. |
+| `medium_scoring_service.py` | **2. Score** | `google/gemini-3.1-flash-lite` | Reranks MEDIUM posts. Keeps top 5 with score ≥ 0.7. |
 | `simple_resolve_service.py` | **3. Resolve** | *None (DB)* | Expands HIGH posts context (Depth 1). Bypassed for Medium posts. |
 | `reduce_service.py` | **4. Reduce** | `gemini-3-flash-preview` | Synthesizes final answer. Max 50 posts context. Validates references. |
-| `language_validation_service.py` | **5. Validate** | `gemini-2.5-flash` | Ensures response language matches query (RU/EN). |
-| `comment_group_map_service.py` | **6. Comments** | `gemini-2.5-flash` | Drift scoring runs **parallel** with Reduce. `score_drift_groups()` + `merge_with_main_sources()`. |
+| `language_validation_service.py` | **5. Validate** | `google/gemini-3.1-flash-lite` | Ensures response language matches query (RU/EN). |
+| `comment_group_map_service.py` | **6. Comments** | `google/gemini-3.1-flash-lite` | Drift scoring runs **parallel** with Reduce. `score_drift_groups()` + `merge_with_main_sources()`. |
 | `comment_synthesis_service.py` | **7. Synthesis** | `gemini-3-flash-preview` | Extracts insights into 4 sections (Expert/Community). Runs after Reduce + Drift complete. |
 | `video_hub_service.py` | **Video Sidecar** | `gemini-3.1-pro-preview` | **Digital Twin**. 4-phase video analysis (Map -> Resolve -> Synthesis -> Validation). |
 | `reddit_enhanced_service.py` | **8. Reddit** | `gemini-3-flash-preview` + HTTP Proxy | **Sidecar Orchestrator**. Reddit Search V2 runs precision-first candidate generation, early comment enrichment, and answerability-first reranking. |
@@ -33,9 +33,8 @@ The backend implements a sophisticated 10-phase query processing system. It uses
 - `src/api/simplified_query_endpoint.py`: **Main Orchestrator**. Manages parallel expert tasks, SSE streaming with `pipeline_state` tracking, and Reddit Sidecar (120s timeout).
 - `src/api/pipeline_state_tracker.py`: **Pipeline State Tracker**. Tracks aggregate phase statuses across all experts (per-expert + cross-cutting). Monotonic priority: pending→active→error/skipped→completed.
 - `src/config.py`: **Configuration Hub**. Reads all env vars.
-- `src/services/vertex_llm_client.py`: **Canonical Vertex LLM Client**. Handles Vertex routing, retries, and rate limits.
+- `src/services/vertex_llm_client.py`: **Canonical OpenRouter LLM Client** (legacy filename). Handles retries, provider capability routing, and rate limits.
 - `src/services/google_ai_studio_client.py`: Compatibility shim for legacy imports.
-- `src/services/vertex_ai_auth.py`: **Vertex Auth Layer**. Loads service-account JSON or ADC and refreshes OAuth access tokens.
 - `src/utils/error_handler.py`: **Error System**. Maps exceptions to user-friendly messages.
 
 ## API Endpoints
@@ -67,23 +66,22 @@ The backend implements a sophisticated 10-phase query processing system. It uses
 
 ### Models
 Defined in `.env`, loaded in `config.py`.
-- `MODEL_MAP`: `gemini-2.5-flash-lite`
-- `MODEL_SYNTHESIS`: `gemini-3-flash-preview`
-- `MODEL_ANALYSIS`: `gemini-2.5-flash`
-- `MODEL_MEDIUM_SCORING`: `gemini-2.5-flash`
-- `MODEL_COMMENT_GROUPS`: `gemini-2.5-flash`
-- `MODEL_DRIFT_ANALYSIS`: `gemini-3-flash-preview`
-- `MODEL_SCOUT`: `gemini-2.5-flash-lite` (AI Scout / FTS5)
-- `MODEL_META_SYNTHESIS`: `gemini-3-flash-preview` (Cross-expert unified analysis)
-- `MODEL_EMBEDDING`: `gemini-embedding-001` (Hybrid Retrieval embeddings)
+- `MODEL_MAP`: `google/gemini-2.5-flash-lite`
+- `MODEL_SYNTHESIS`: `google/gemini-3-flash-preview`
+- `MODEL_ANALYSIS`: `google/gemini-3.1-flash-lite`
+- `MODEL_MEDIUM_SCORING`: `google/gemini-3.1-flash-lite`
+- `MODEL_COMMENT_GROUPS`: `google/gemini-3.1-flash-lite`
+- `MODEL_DRIFT_ANALYSIS`: `google/gemini-3-flash-preview`
+- `MODEL_SCOUT`: `google/gemini-3.1-flash-lite` (AI Scout / FTS5)
+- `MODEL_META_SYNTHESIS`: `google/gemini-3-flash-preview` (Cross-expert unified analysis)
+- `MODEL_EMBEDDING`: `google/gemini-embedding-001` (Hybrid Retrieval embeddings)
 - `MODEL_VIDEO_PRO`: `gemini-3.1-pro-preview` (Video Hub Digital Twin)
 - `MODEL_VIDEO_FLASH`: `gemini-3-flash-preview` (Video Hub validation)
 
-### Vertex Runtime Notes
-- Preferred auth: `VERTEX_AI_SERVICE_ACCOUNT_JSON` or `VERTEX_AI_SERVICE_ACCOUNT_JSON_PATH`
-- `VERTEX_AI_PROJECT_ID` and `VERTEX_AI_LOCATION` are required for deterministic production config
-- `Gemini 3*` models must use Vertex `global` endpoint; the unified client handles this automatically
-- This GCP project does not expose `gemini-2.0-flash`, so the closest production replacement is `gemini-2.5-flash`
+### OpenRouter Runtime Notes
+- Required auth: `OPENROUTER_API_KEY` (or the compatibility fallback `OPENAI_API_KEY`)
+- JSON-producing calls use `provider.require_parameters=true`; providers that cannot honour the requested response format are excluded.
+- The Video Hub remains out of the normal runtime health probe and is not part of this migration.
 - Backend/API startup and operational CLI scripts explicitly load `backend/.env`; do not rely on the current working directory.
 
 ### Env Vars / Tunables
