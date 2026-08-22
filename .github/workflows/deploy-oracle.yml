@@ -1,0 +1,52 @@
+name: Deploy Experts Panel to Oracle
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: experts-panel-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Configure restricted SSH key
+        env:
+          EXPERTS_SSH_PRIVATE_KEY: ${{ secrets.EXPERTS_SSH_PRIVATE_KEY }}
+          EXPERTS_SSH_HOST: ${{ secrets.EXPERTS_SSH_HOST }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$EXPERTS_SSH_PRIVATE_KEY" > ~/.ssh/experts_deploy
+          chmod 600 ~/.ssh/experts_deploy
+          ssh-keyscan -H "$EXPERTS_SSH_HOST" >> ~/.ssh/known_hosts
+
+      - name: Pull, rebuild and health-check
+        env:
+          EXPERTS_SSH_HOST: ${{ secrets.EXPERTS_SSH_HOST }}
+        run: |
+          ssh -i ~/.ssh/experts_deploy -o BatchMode=yes -o IdentitiesOnly=yes \
+            ubuntu@"$EXPERTS_SSH_HOST" 'bash -s' <<'REMOTE'
+          set -euo pipefail
+          cd ~/apps/experts-panel/app
+          git pull --ff-only origin main
+          cd ~/apps/experts-panel
+          sudo docker compose -f docker-compose.vm.yml --env-file .env.panel up -d --build
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:8000/health > /dev/null; then
+              echo "Panel is healthy"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "HEALTH CHECK FAILED"
+          exit 1
+          REMOTE
