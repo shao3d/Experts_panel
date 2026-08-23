@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ExpertInfo } from '../types/api';
-import { EXPERT_GROUPS, getExpertDisplayName, isExpertHidden, MAX_SELECTED_EXPERTS } from '../config/expertConfig';
+import { EXPERT_GROUPS, getExpertDisplayName, isExpertHidden, MAX_SELECTED_EXPERTS, REDDIT_SEARCH_VISIBLE } from '../config/expertConfig';
 import clsx from 'clsx';
 
 interface SidebarProps {
@@ -203,8 +203,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
               )}
             </div>
 
-            {/* Reddit Toggle */}
-            <div 
+            {/* Reddit Toggle (hidden until Reddit search is reworked; see REDDIT_SEARCH_VISIBLE) */}
+            {REDDIT_SEARCH_VISIBLE && (
+            <div
               className={clsx(
                 "flex items-center rounded-lg cursor-pointer transition-colors group",
                 isCollapsed ? "justify-center p-2" : "px-3 py-2",
@@ -243,6 +244,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </div>
               )}
             </div>
+            )}
           </div>
         </div>
 

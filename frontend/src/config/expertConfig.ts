@@ -8,6 +8,14 @@ import { ExpertInfo } from '../types/api';
 /** Hard product cap for one interactive multi-expert query. */
 export const MAX_SELECTED_EXPERTS = 5;
 
+/**
+ * Whether the Reddit community search toggle is visible in the UI.
+ * The backend Reddit pipeline stays fully functional; while this is false
+ * the frontend keeps include_reddit=false (opt-in) for every query.
+ * Flip to true to re-expose the toggle.
+ */
+export const REDDIT_SEARCH_VISIBLE = false;
+
 export interface ExpertUIConfig {
   displayNames: Record<string, string>;
   order: string[];

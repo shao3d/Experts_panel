@@ -16,7 +16,7 @@ import CommunityInsightsSection from './components/CommunityInsightsSection';
 import { apiClient } from './services/api';
 import { ExpertResponse as ExpertResponseType, ProgressEvent, ExpertInfo, RedditResponse } from './types/api';
 import { MetaSynthesisSection } from './components/MetaSynthesisSection';
-import { transformExpertsForUI, EXPERT_UI_CONFIG, isExpertHidden, MAX_SELECTED_EXPERTS } from './config/expertConfig';
+import { transformExpertsForUI, EXPERT_UI_CONFIG, isExpertHidden, MAX_SELECTED_EXPERTS, REDDIT_SEARCH_VISIBLE } from './config/expertConfig';
 import './components/CommunityInsightsSection.css';
 import './App.css';
 
@@ -385,10 +385,12 @@ export const App: React.FC = () => {
                   <input type="checkbox" checked={useRecentOnly} onChange={e => setUseRecentOnly(e.target.checked)} disabled={isProcessing} className="w-4 h-4 accent-blue-600"/>
                   <span className="text-sm font-medium text-gray-700">Recent Only (3m)</span>
                 </label>
+                {REDDIT_SEARCH_VISIBLE && (
                 <label className="flex items-center gap-2">
                   <input type="checkbox" checked={includeReddit} onChange={e => setIncludeReddit(e.target.checked)} disabled={isProcessing} className="w-4 h-4 accent-orange-600"/>
                   <span className="text-sm font-medium text-gray-700">Search Reddit</span>
                 </label>
+                )}
              </div>
           </div>
           
