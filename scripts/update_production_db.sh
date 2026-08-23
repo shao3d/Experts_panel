@@ -384,8 +384,9 @@ do_deploy() {
         #       cosine-similarity drift scoring path in comment_group_map_service.
         #       The script is idempotent: it only fills drift_embedding where NULL,
         #       so repeat deploys do no extra work.
-        #       --limit 2000 bounds worst-case Vertex latency to ~5 minutes per
-        #       deploy. Remaining legacy rows are picked up by subsequent
+        #       --limit 2000 bounds worst-case embedding API latency to ~5
+        #       minutes per deploy (embeddings are served via OpenRouter,
+        #       not Vertex). Remaining legacy rows are picked up by subsequent
         #       deploys until the legacy pool drains. drift_scheduler_service.py
         #       writes embeddings for new drift groups automatically.
         echo "🧩 [5/12] Backfilling drift embeddings for legacy comment_group_drift rows (--limit 2000)..."
@@ -411,7 +412,7 @@ do_deploy() {
         fi
 
         # 7. Run Drift Analysis
-        echo "🧠 [7/12] Running Drift Analysis (Gemini)..."
+        echo "🧠 [7/12] Running Drift Analysis (Gemini via OpenRouter)..."
         if $PYTHON_CMD backend/run_drift_service.py; then
             echo "   ✅ Drift analysis completed successfully."
         else

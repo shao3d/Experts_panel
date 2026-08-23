@@ -91,6 +91,21 @@ def require_vertex_runtime() -> Any:
     return auth_manager
 
 
+def require_openrouter_runtime() -> None:
+    """Ensure OpenRouter API access is configured before running LLM/embedding CLI.
+
+    Deploy-pipeline model calls (post/drift embeddings, drift analysis) are
+    served through OpenRouter and do not need Vertex credentials.
+    """
+    from .. import config
+
+    if not config.OPENROUTER_API_KEY:
+        raise RuntimeError(
+            "OpenRouter runtime is not configured. "
+            "Set OPENROUTER_API_KEY (or OPENAI_API_KEY) in the environment."
+        )
+
+
 def set_default_sqlite_database_url(
     backend_dir: str | Path,
     *,

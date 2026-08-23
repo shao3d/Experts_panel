@@ -27,7 +27,7 @@ if str(BACKEND_DIR) not in sys.path:
 
 from src.cli.bootstrap import (
     bootstrap_cli,
-    require_vertex_runtime,
+    require_openrouter_runtime,
     set_default_sqlite_database_url,
 )
 
@@ -271,7 +271,7 @@ def main():
         "--delay", type=float, default=0.5, help="Delay between batches (default: 0.5s)"
     )
     args = parser.parse_args()
-    require_vertex_runtime()
+    require_openrouter_runtime()
     logger.info("Embedding script started (db=%s, batch_size=%s)", DB_PATH, args.batch_size)
 
     if args.continuous:

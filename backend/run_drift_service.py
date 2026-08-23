@@ -12,7 +12,7 @@ if str(BACKEND_DIR) not in sys.path:
 
 from src.cli.bootstrap import (
     bootstrap_cli,
-    require_vertex_runtime,
+    require_openrouter_runtime,
     run_async,
     set_default_sqlite_database_url,
 )
@@ -28,7 +28,7 @@ from src.services.drift_scheduler_service import DriftSchedulerService
 
 
 async def _run_cycle() -> None:
-    require_vertex_runtime()
+    require_openrouter_runtime()
 
     db = SessionLocal()
     try:
