@@ -4,10 +4,24 @@ import { CommentGroupResponse } from '../types/api';
 
 interface CommentGroupsListProps {
   commentGroups: CommentGroupResponse[];
+  /** Query language from the backend ("Russian" | "English"); drives UI string language */
+  detectedLanguage?: string;
+}
+
+function pluralizeComments(count: number, language: string): string {
+  if (language === 'English') {
+    return count === 1 ? 'comment' : 'comments';
+  }
+  const mod10 = count % 10;
+  const mod100 = count % 100;
+  if (mod10 === 1 && mod100 !== 11) return 'комментарий';
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return 'комментария';
+  return 'комментариев';
 }
 
 export const CommentGroupsList: React.FC<CommentGroupsListProps> = ({
-  commentGroups
+  commentGroups,
+  detectedLanguage = 'Russian'
 }) => {
   const [expandedPosts, setExpandedPosts] = useState<Set<number>>(new Set());
   const [expandedComments, setExpandedComments] = useState<Set<number>>(
@@ -274,7 +288,7 @@ export const CommentGroupsList: React.FC<CommentGroupsListProps> = ({
                 onClick={() => toggleComments(group.parent_telegram_message_id)}
               >
                 <span style={styles.commentsToggle}>{commentsExpanded ? '−' : '+'}</span>
-                <span>{group.comments_count} {group.comments_count === 1 ? 'комментарий' : 'комментариев'}</span>
+                <span>{group.comments_count} {pluralizeComments(group.comments_count, detectedLanguage)}</span>
               </div>
 
               {commentsExpanded && group.comments.map((comment) => (
