@@ -30,6 +30,7 @@ RUN_TIMEOUT_S = int(os.getenv("OPENCODE_RUN_TIMEOUT_S", "420"))
 FETCH_DEADLINE_S = int(os.getenv("OPENCODE_FETCH_DEADLINE_S", "90"))
 RETRY_BACKOFF = [int(x) for x in os.getenv(
     "OPENCODE_RETRY_BACKOFF", "15,30,60").split(",")]
+BATCH_SIZE = int(os.getenv("OPENCODE_DRIFT_BATCH_SIZE", "12"))
 
 
 def build_prompt(post_text: str, comments: List[Dict[str, str]]) -> str:
@@ -218,6 +219,125 @@ def _run_once(post_text: str, comments: List[Dict[str, str]]) -> Tuple[Optional[
     except (ValueError, json.JSONDecodeError) as e:
         return None, f"invalid JSON: {e}"
     return result, None
+
+
+def build_batch_prompt(groups: List[Dict[str, Any]]) -> str:
+    parts = [
+        f"Analyze {len(groups)} Telegram posts with their comments. "
+        f"For EACH group independently determine whether the comment discussion DRIFTED "
+        f"to topics NOT present in its own post."
+    ]
+    for g in groups:
+        comments_text = "\n".join(
+            f"- {c['author']}: {c['text']}" for c in g.get("comments") or [])
+        parts.append(
+            f"\n=== GROUP post_id={g['post_id']} ===\n"
+            f"POST:\n{(g.get('post_text') or '')[:700]}\n\n"
+            f"COMMENTS:\n{comments_text[:1800]}"
+        )
+    parts.append(
+        "\n=== TASK ===\n"
+        "For each group apply these criteria:\n"
+        "✅ DRIFT: comments discuss technologies/concepts not in that group's post; "
+        "discussion moves to another subject area; new specific questions with detailed answers\n"
+        "❌ NOT DRIFT: clarifications of the post content, generic reactions/thanks\n"
+        "confidence: high = clear drift, medium = partial, low = unclear\n\n"
+        "If a topic is borderline or uncertain, STILL report it with confidence=\"low\" "
+        "(coverage matters more than precision).\n\n"
+        "Return ONLY a valid JSON array — one object per group, SAME ORDER as above, "
+        "echoing post_id exactly:\n"
+        '[{"post_id": 123, "has_drift": true, "confidence": "medium", '
+        '"drift_topics": [{"topic": "...", "keywords": ["..."], "key_phrases": ["..."], '
+        '"context": "..."}]}, ...]\n'
+        "Use null for drift_topics when has_drift is false. No commentary outside the array."
+    )
+    return "\n".join(parts)
+
+
+def analyze_batch(groups: List[Dict[str, Any]]) -> Dict[int, Dict[str, Any]]:
+    """Analyze several groups in ONE opencode call.
+
+    Returns {post_id: parsed_verdict}. Groups missing from the response are
+    simply absent from the mapping — caller decides on individual retries.
+    """
+    os.makedirs(TASK_DIR, exist_ok=True)
+    title = f"driftb_{uuid.uuid4().hex[:12]}"
+    task_path = os.path.join(TASK_DIR, f"{title}.txt")
+
+    with open(task_path, "w", encoding="utf-8") as f:
+        f.write(build_batch_prompt(groups))
+
+    cmd = (
+        f'export PATH="$PATH:$HOME/.opencode/bin" && '
+        f"{OPENCODE_BIN} run --attach {OPENCODE_URL} "
+        f"--model {OPENCODE_MODEL} --agent {DRIFT_AGENT} "
+        f"--title {title} "
+        f"'Выполни пакетный анализ дрейфа из прикреплённого файла. Верни ТОЛЬКО валидный JSON-массив.' "
+        f"--file {task_path}"
+    )
+    try:
+        proc = subprocess.run(
+            ["bash", "-c", cmd], capture_output=True, text=True,
+            timeout=RUN_TIMEOUT_S + 30,
+        )
+        if proc.returncode != 0:
+            raise RuntimeError((proc.stderr or proc.stdout or "run failed").strip()[:300])
+    except subprocess.TimeoutExpired:
+        raise RuntimeError(f"batch run timeout after {RUN_TIMEOUT_S + 30}s")
+
+    deadline = time.time() + FETCH_DEADLINE_S
+    text, err = None, None
+    while time.time() < deadline:
+        sid = _session_id_by_title(title)
+        if sid:
+            text, err = _fetch_assistant_text(sid)
+            if text or err:
+                break
+        time.sleep(POLL_INTERVAL)
+
+    try:
+        os.remove(task_path)
+    except OSError:
+        pass
+
+    if err or not text:
+        raise RuntimeError(err or "empty response")
+
+    # Expect a JSON array; tolerate a bare object when only one group asked.
+    stripped = _strip_json_markdown(text)
+    parsed = None
+    try:
+        parsed = json.loads(stripped)
+    except json.JSONDecodeError:
+        arr_start = stripped.find("[")
+        arr_end = stripped.rfind("]")
+        obj_start = stripped.find("{")
+        if arr_start != -1 and arr_end > arr_start:
+            parsed = json.loads(stripped[arr_start:arr_end + 1])
+        elif obj_start != -1:
+            obj_end = stripped.rfind("}")
+            parsed = json.loads(stripped[obj_start:obj_end + 1])
+        else:
+            raise ValueError(f"No JSON in batch response: {stripped[:150]}")
+
+    by_pid: Dict[int, Dict[str, Any]] = {}
+    items = parsed if isinstance(parsed, list) else (
+        parsed.get("results") or parsed.get("items") or [])
+    if isinstance(items, dict) and len(groups) == 1:
+        items = [items]
+    for item in items:
+        if not isinstance(item, dict) or "post_id" not in item:
+            continue
+        try:
+            pid = int(item["post_id"])
+        except (TypeError, ValueError):
+            continue
+        if "has_drift" not in item:
+            continue
+        by_pid[pid] = item
+    if not by_pid:
+        raise ValueError(f"Batch response contained no usable verdicts: {str(parsed)[:200]}")
+    return by_pid
 
 
 def analyze(post_text: str, comments: List[Dict[str, str]]) -> Dict[str, Any]:

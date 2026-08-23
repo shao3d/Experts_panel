@@ -41,6 +41,9 @@ class DriftSchedulerService:
                 self.backend = "openrouter"
             else:
                 self._oc_analyze = _oc_analyze
+                from .opencode_drift_client import analyze_batch as _oc_batch
+                self._oc_batch = _oc_batch
+                self.oc_batch_size = max(1, int(_os.getenv("OPENCODE_DRIFT_BATCH_SIZE", "12")))
                 logger.info(
                     f"Drift backend: opencode ({_os.getenv('OPENCODE_DRIFT_MODEL', 'x-preview-f-free')}) "
                     f"concurrency={self.concurrency}"
@@ -300,17 +303,44 @@ Return ONLY valid JSON:
             import asyncio as _asyncio
             from concurrent.futures import ThreadPoolExecutor as _Pool
 
-            def _oc_worker(group):
+            batches = [todo[i:i + self.oc_batch_size]
+                       for i in range(0, len(todo), self.oc_batch_size)]
+            logger.info(f"Packing {len(todo)} groups into {len(batches)} "
+                        f"batch call(s) of <= {self.oc_batch_size}")
+
+            def _batch_worker(batch):
                 try:
-                    return group, self._oc_analyze(group['post_text'], group['comments'])
+                    return self._oc_batch(batch)
                 except Exception as exc:
-                    return group, exc
+                    logger.warning(f"Batch of {len(batch)} failed wholesale: {str(exc)[:120]}")
+                    return {}
 
             loop = _asyncio.get_running_loop()
             with _Pool(max_workers=self.concurrency) as pool:
-                llm_results = list(await asyncio.gather(*[
-                    loop.run_in_executor(pool, _oc_worker, g) for g in todo
+                batch_results = list(await asyncio.gather(*[
+                    loop.run_in_executor(pool, _batch_worker, b) for b in batches
                 ]))
+
+            merged: dict = {}
+            for br in batch_results:
+                merged.update(br or {})
+
+            # Groups the model skipped/mangled get an individual retry.
+            fallback = [g for g in todo if g['post_id'] not in merged]
+            if fallback:
+                logger.warning(f"{len(fallback)} group(s) missing from batch "
+                               f"responses — individual retry")
+                with _Pool(max_workers=self.concurrency) as pool:
+                    fb_results = list(await asyncio.gather(*[
+                        loop.run_in_executor(pool, _oc_safe_single, g) for g in fallback
+                    ]))
+
+            for g in todo:
+                r = merged.get(g['post_id'])
+                if r is not None:
+                    llm_results.append((g, r))
+            for g, r in (fb_results if fallback else []):
+                llm_results.append((g, r))
         else:
             for group in todo:
                 logger.info(f"Analyzing post {group['post_id']} ({len(group['comments'])} comments)...")
