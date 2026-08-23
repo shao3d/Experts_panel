@@ -332,7 +332,7 @@ Return ONLY valid JSON:
                                f"responses — individual retry")
                 with _Pool(max_workers=self.concurrency) as pool:
                     fb_results = list(await asyncio.gather(*[
-                        loop.run_in_executor(pool, _oc_safe_single, g) for g in fallback
+                        loop.run_in_executor(pool, self._oc_safe_single, g) for g in fallback
                     ]))
 
             for g in todo:
