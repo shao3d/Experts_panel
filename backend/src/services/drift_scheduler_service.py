@@ -99,6 +99,13 @@ class DriftSchedulerService:
 
         return groups
 
+    def _oc_safe_single(self, group):
+        """Single-group opencode retry for batch failures. Returns (group, dict|Exception)."""
+        try:
+            return group, self._oc_analyze(group['post_text'], group['comments'])
+        except Exception as exc:
+            return group, exc
+
     async def analyze_drift_async(self, post_text: str, comments: List[Dict[str, str]]) -> Dict[str, Any]:
         """
         Analyze drift using Gemini through the unified Vertex client.
