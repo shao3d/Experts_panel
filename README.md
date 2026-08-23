@@ -36,6 +36,33 @@ These are intentionally bounded tools. Panex retrieves and structures expert evi
 - **Delivery:** SSE progress events plus durable result artifacts for long-running UI and agent requests.
 - **Integrations:** Telegram ingestion, Reddit sidecar, Video Hub, and the Panex agent surface.
 
+```mermaid
+graph LR
+    subgraph S["Sources"]
+        TG["Telegram channels"]
+        RD["Reddit — hidden in UI"]
+        VH["Video Hub — hidden in UI"]
+    end
+    subgraph E["Evidence layer"]
+        AC["Expert admission control"]
+        EP["Hybrid retrieval + 10-phase synthesis"]
+    end
+    subgraph C["Consumers"]
+        UI["Web UI (React + SSE)"]
+        PX["Panex CLI / Agent Context API"]
+        SA["researcher subagent (Codex / Claude)"]
+        EL["Expert Lens skill (experimental)"]
+    end
+    TG --> AC
+    RD --> AC
+    VH --> AC
+    AC --> EP
+    EP --> UI
+    EP --> PX
+    PX --> SA
+    PX -.-> EL
+```
+
 The detailed pipeline is documented in [Pipeline Architecture](docs/architecture/pipeline.md). Hybrid retrieval is covered in [Super Passport Search](docs/architecture/super-passport-search.md).
 
 ## Local development
