@@ -72,14 +72,14 @@ The Video Hub runs as a dedicated stream in `event_generator_parallel`.
 -   **Model**: `gemini-3.1-pro-preview` (Config: `MODEL_VIDEO_PRO`).
 -   **Persona**: "Expert's Digital Twin".
 -   **Instruction**: "Reconstruct the expert's original reasoning flow and vocabulary. Use [FULL TRANSCRIPT] for details and [SUMMARY] to bridge the gaps."
+-   **Language**: The synthesis prompt requires output in the detected query language (Russian by default, English for English queries) — generating in the right language up front avoids a second, style-losing translation pass.
 -   **Visual Elements (`[НА ЭКРАНЕ]`)**: The model is strictly instructed to extract the *meaning* from visual markers and organically weave it into the narrative (as if the expert is speaking it), rather than mechanically quoting the metadata.
 -   **Citations**: MANDATORY `[post:ID]` format for deep-links. **All** segments provided in the context (both HIGH and MEDIUM) are included in the `main_sources` list, ensuring every cited link is clickable on the frontend.
 -   **Output Token Limit**: `max_tokens=8192` — increased from 4096 to prevent truncation on videos with 50+ segments (where the "DO NOT SUMMARIZE" instruction produces long outputs with many citations).
 
 ### 4. Style-Preserving Validation/Translation
--   **Model**: `gemini-3-flash-preview` (Config: `MODEL_VIDEO_FLASH`).
--   **Task**: Ensures response language matches user query (RU/EN).
--   **Specialty**: Preserves metaphors and 'vibe' during translation using transcript-derived glossary.
+-   **Service**: Shared `TranslationService` singleton (Model: `google/gemini-3.1-flash-lite`, Config: `MODEL_ANALYSIS`); results come from the persistent translation cache.
+-   **Task**: Safety net after synthesis — if the answer language does not match the query language (either direction), the answer is translated. With language-aware synthesis (Phase 3) this rarely triggers.
 
 ---
 

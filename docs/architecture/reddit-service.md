@@ -3,7 +3,9 @@
 **Статус:** Production (Precision-First V2)  
 **Архитектура:** Sidecar Proxy Pattern  
 **Логика:** AI Scout v2 + Precision-First Retrieval + Answerability Rerank  
-**Дата обновления:** 21.04.2026
+**Дата обновления:** 23.08.2026
+
+> **UI status:** Переключатель Reddit сейчас скрыт из интерфейса (флаг `REDDIT_SEARCH_VISIBLE` в `frontend/src/config/expertConfig.ts`, по умолчанию `false`). Бэкенд-пайплайн полностью функционален и остаётся opt-in; флаг нужно просто вернуть в `true`, когда интеграция снова понадобится в UI.
 
 ---
 

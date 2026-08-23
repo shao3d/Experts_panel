@@ -13,7 +13,8 @@ Choose one or more experts, ask a question in English or Russian, and get an ans
 - Searches curated expert corpora with hybrid retrieval: vector KNN, FTS5, and Reciprocal Rank Fusion.
 - Runs a ten-phase Map-Resolve-Reduce pipeline for relevance scoring, source analysis, comment context, validation, and synthesis.
 - Keeps each expert's evidence isolated before producing a multi-expert view.
-- Adds optional Reddit research and a Video Hub source alongside Telegram material.
+- Answers in the language of the question, Russian or English. For English questions, cited sources — posts, comments, and discussion groups — are translated too, with `[post:ID]` citations kept clickable; every translation is cached persistently so it is computed once ([Multilingual Support](docs/architecture/multilingual-support.md)).
+- Adds a Video Hub source (video transcript analysis) alongside Telegram material; a Reddit sidecar exists in the backend and is currently disabled in the UI.
 - Streams progress and results to the React interface over Server-Sent Events.
 - Preserves source references so the result can be checked against the underlying material.
 
@@ -92,6 +93,7 @@ GitHub Actions also validates the backend, frontend build, and Docker configurat
 
 - [Pipeline Architecture](docs/architecture/pipeline.md)
 - [Hybrid Retrieval](docs/architecture/super-passport-search.md)
+- [Multilingual Support](docs/architecture/multilingual-support.md)
 - [Panex Usage](docs/guides/panex-usage.md)
 - [Agent Context API](docs/architecture/agent-context-api.md)
 - [Expert Admission Control and Knowledge Matrix](docs/architecture/expert-admission-control.md)

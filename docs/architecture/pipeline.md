@@ -1,7 +1,7 @@
 # Pipeline Architecture Guide
 
 **The Single Source of Truth** for the Experts Panel 10-phase pipeline.
-*Last Verified against Codebase: 2026-05-19*
+*Last Verified against Codebase: 2026-08-23*
 
 ## 🏗️ High-Level Overview
 
@@ -75,8 +75,9 @@ The system processes user queries through an **ten-phase pipeline** using a **Ge
 ### 5. Language Validation Phase
 **Goal**: Ensure response language matches query language.
 - **Service**: `LanguageValidationService` (`backend/src/services/language_validation_service.py`)
-- **Model**: `google/gemini-3.1-flash-lite` (Config: `MODEL_ANALYSIS`)
-- **Logic**: If Query is EN and Response is RU -> Translate to EN (preserving formatting).
+- **Model**: `google/gemini-3.1-flash-lite` (Config: `MODEL_ANALYSIS`) via the shared `TranslationService` singleton
+- **Logic**: Bidirectional. If answer language ≠ query language (RU answer + EN query, or EN answer + RU query), the answer is translated, preserving `[post:ID]` citations and markdown links. Translations are cached persistently (see [Multilingual Support](./multilingual-support.md)).
+- **Detection**: One backend-wide detector (`detect_query_language`, Russian-first); the result is also returned to the frontend as `ExpertResponse.detected_language`.
 
 ### 6. Comment Groups Phase (Drift Scoring runs parallel with Reduce)
 **Goal**: Find relevant discussions in comments.
@@ -87,6 +88,7 @@ The system processes user queries through an **ten-phase pipeline** using a **Ge
     1.  **Author Clarifications**: Expert's own comments on Main Source posts (Bypass LLM, `HIGH` relevance, **no comment limit**).
     2.  **Community on Main Sources**: Community comments on Main Source posts (Bypass LLM, `HIGH` relevance, **no comment limit**).
     3.  **Drift Groups**: Topic-drift discussions from other posts (Filtered by LLM, HIGH only).
+- **Translation (English queries)**: Anchor posts and comments are translated to English after the merge, before the response is built (cache-backed; see [Multilingual Support](./multilingual-support.md)).
 
 ### 7. Comment Synthesis Phase
 **Goal**: Extract unique insights from comments.
@@ -103,6 +105,7 @@ The system processes user queries through an **ten-phase pipeline** using a **Ge
 ### 8. Reddit Pipeline (Parallel Sidecar)
 **Goal**: Provide community reality-check and engineering insights.
 - **Dedicated Architecture Document**: [See `reddit-service.md`](./reddit-service.md) for the full Single Source of Truth (SSOT).
+- **UI status**: The Reddit toggle is currently hidden in the UI behind `REDDIT_SEARCH_VISIBLE` (`frontend/src/config/expertConfig.ts`); the backend pipeline remains fully functional and opt-in.
 - **High-Level Summary**: Runs in parallel with the main pipeline. Uses an AI Scout (Gemini 3 Flash) to generate intent-based queries, searches Reddit via a dedicated Node.js Proxy, performs semantic deduplication and AI reranking, and synthesizes a "Staff Engineer" response from deep comment trees.
 - **UX Integration**: The backend emits dedicated Reddit phases (`reddit_search`, `reddit_synthesis`) into `pipeline_state`. The frontend groups them into a separate **Reddit** progress group; phase labels stay icon-free, while SSE message text is prefixed with `🌐 [Reddit] ...`.
 

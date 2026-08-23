@@ -1,7 +1,7 @@
 # Карта Документации
 
 Status: Active
-Last updated: 2026-06-23
+Last updated: 2026-08-23
 
 Это навигационный слой проекта Experts Panel. Он должен отвечать на вопрос
 "куда смотреть?", а не пересказывать содержимое всех документов.
@@ -20,7 +20,7 @@ Last updated: 2026-06-23
 | Задача | Сначала читать | Потом, если нужно |
 | --- | --- | --- |
 | Общая архитектура / pipeline | `docs/architecture/pipeline.md` | `CLAUDE.md`, `backend/CLAUDE.md` |
-| Retrieval / Embs&Keys / FTS5 | `docs/architecture/super-passport-search.md` | `hybrid_retrieval_plan.md` как историю |
+| Retrieval / Embs&Keys / FTS5 | `docs/architecture/super-passport-search.md` | `docs/archive/hybrid_retrieval_plan.md` как историю |
 | Панэкс как пользователь/оператор | `docs/guides/panex-usage.md` | `panex guide` |
 | Панэкс API / CLI / subagent | `docs/architecture/agent-context-api.md` | agent files ниже |
 | Новый эксперт / матрица знаний | `docs/architecture/expert-admission-control.md` | `output/expert_admission/admission_manifest.json` |
@@ -29,6 +29,7 @@ Last updated: 2026-06-23
 | Drift analysis | `docs/guides/drift-analysis.md` | drift scripts in `backend/scripts/` |
 | Video Hub | `docs/architecture/video-hub-service.md` | `docs/guides/video-hub-operator.md` |
 | Reddit sidecar | `docs/architecture/reddit-service.md` | service code under `services/reddit-proxy/` |
+| Языки / перевод RU-EN | `docs/architecture/multilingual-support.md` | `backend/src/utils/language_utils.py`, `backend/src/services/translation_service.py` |
 | Backend runtime / health / CLI bootstrap | `docs/roadmap/backend-runtime-cleanup.md` | `backend/CLAUDE.md` |
 | Frontend layout/state | `frontend/CLAUDE.md` | `docs/design-system/refero-say-briefly/UX_INVARIANTS.md`, frontend source files |
 | UI visual system / redesign guardrails | `docs/design-system/refero-say-briefly/UX_INVARIANTS.md` | `docs/design-system/refero-say-briefly/README.md`, `frontend/CLAUDE.md` |
@@ -148,7 +149,7 @@ Quality docs - evidence snapshots and guardrails, not current API specs.
 | `docs/concepts/expert-lens-global-skill.md` | Draft concept for a global Codex skill that turns Panex evidence into bounded source-grounded expert-lens critique packets. |
 | `docs/roadmap/video-hub-scaling.md` | Active scaling roadmap for larger Video Hub usage. |
 | `docs/roadmap/scout-next-steps.md` | Historical metadata-enrichment plan; removed phases are not active. |
-| `hybrid_retrieval_plan.md` | Historical implemented plan; current retrieval SSOT is `super-passport-search.md`. |
+| `docs/archive/hybrid_retrieval_plan.md` | Historical implemented plan; current retrieval SSOT is `super-passport-search.md`. |
 | `docs/archive/*` | Historical only. Do not route new implementation from archive docs. |
 
 ## Update Checklist
@@ -156,6 +157,7 @@ Quality docs - evidence snapshots and guardrails, not current API specs.
 | Change | Update |
 | --- | --- |
 | Pipeline/model/SSE/final delivery | `docs/architecture/pipeline.md`; maybe `CLAUDE.md`, `backend/CLAUDE.md` |
+| Языковая логика / перевод / кэш переводов | `docs/architecture/multilingual-support.md` |
 | Hybrid search / embeddings / FTS5 / Scout | `docs/architecture/super-passport-search.md`; maybe `pipeline.md` |
 | Панэкс CLI/API/subagent behavior | `docs/guides/panex-usage.md`, `docs/architecture/agent-context-api.md`, repo-local agent files, global Codex agent |
 | New env var | `.env.example`, `backend/CLAUDE.md`, relevant architecture doc |
