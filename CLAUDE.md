@@ -71,7 +71,7 @@ React 18 + TypeScript frontend with:
 
 ### Database & Data Management
 **Local location:** `backend/data/experts.db`
-**Production location:** `/app/data/experts.db` on the Fly.io `experts_data` volume
+**Production location:** `/home/ubuntu/apps/experts-panel/data/experts.db` on the Oracle VM (mounted into the `panel` container at `/app/data`)
 
 The database size changes as posts, comments, embeddings, and Video Hub segments are added. Do not treat historical size notes as a freshness signal.
 
@@ -106,16 +106,16 @@ To synchronize all experts, run drift analysis, and deploy the updated database 
 ```bash
 ./scripts/update_production_db.sh
 ```
-This "Cycle of Life" script handles (9 steps):
+This "Cycle of Life" script handles (12 steps):
 1.  **Backup**: Creates a local backup of `experts.db`.
 2.  **Sync**: Incrementally fetches new posts and comments for **all** experts.
-3.  **Migrations**: Applies pending database migrations (idempotent, marker-file tracked).
+3.  **Migrations**: Applies pending database migrations (tracked in the in-DB `schema_migrations` table).
 4.  **Vectorization**: Generates embeddings for new posts (`embed_posts.py --continuous`) for Hybrid Search via **Vertex AI**.
-5.  **Drift Analysis**: Analyzes new comments for topic drift via **Vertex AI**.
-6.  **Check/Wake Machine**: Verifies Fly.io machine status and wakes it if needed.
+5.  **Drift Analysis**: Analyzes new comments for topic drift via Vertex AI/OpenRouter.
+6.  **Check Remote Host**: Probes SSH connectivity to the Oracle VM (`ubuntu@82.70.251.73`).
 7.  **Remote Backup**: Creates backup of remote database on server.
-8.  **Upload Database**: Performs a staged Fly.io volume update: checks free space, uploads to `/app/data/experts.db.tmp`, verifies file size, then replaces `/app/data/experts.db` after the remote backup exists.
-9.  **Restart Application**: Restarts the app to load the new database.
+8.  **Upload Database**: Staged update via scp: checks free space, uploads gzipped DB to `~/apps/experts-panel/data/experts.db.tmp`, verifies size/SHA-256/gzip/SQLite integrity, then replaces `/home/ubuntu/apps/experts-panel/data/experts.db` after the remote backup exists.
+9.  **Restart Application**: Restarts the `panel` docker compose service and polls `/health`.
 
 The script loads `backend/.env` before running the Python steps, then overrides `DATABASE_URL` to the absolute local `backend/data/experts.db` path. Standalone embeddings and drift therefore use the same Vertex credentials as the backend while avoiding cwd-dependent SQLite paths.
 
@@ -196,7 +196,7 @@ Logs are the primary source for debugging. The log file locations are configured
 - **Environment variables**: Ensure `backend/.env` exists and contains the required Vertex AI credentials.
 - **Database location**: The active database is at `backend/data/experts.db`.
 - **Model configuration**: The model strategy is defined by environment variables in `.env.example` and implemented in `backend/src/config.py`.
-- **Production deployment**: For Fly.io deployments, ensure all required secrets are set correctly using `fly secrets list`.
+- **Production deployment**: Production runs on the Oracle VM; VM-side secrets live in `~/apps/experts-panel/.env.panel`, CI secrets are configured in GitHub repo Settings → Secrets.
 
 ### Debug Commands
 To debug the pipeline, monitor the backend log file for messages containing specific identifiers:

@@ -2,7 +2,8 @@
 
 # ==============================================================================
 # Script: update_production_db.sh
-# Purpose: Run local sync, vectorize, drift analysis, and deploy to Fly.io
+# Purpose: Run local sync, vectorize, drift analysis, and deploy the database
+#          to production on the Oracle VM (docker compose behind Caddy).
 # Author: Experts Panel Team
 #
 # Usage:
@@ -14,6 +15,9 @@
 # Migration state is tracked INSIDE the database (schema_migrations table).
 # Filesystem markers are deliberately not used: state must survive backups-dir
 # cleanup and must reset together with the database itself.
+#
+# Deployment target: ubuntu@82.70.251.73, data dir ~/apps/experts-panel/data,
+# app runs as docker compose service "panel" (uid 1000) behind Caddy.
 # ==============================================================================
 
 set -euo pipefail
@@ -22,25 +26,20 @@ set -euo pipefail
 DB_PATH="${DB_PATH:-backend/data/experts.db}"
 BACKUP_DIR="${BACKUP_DIR:-backend/data/backups}"
 MIGRATIONS_DIR="${MIGRATIONS_DIR:-backend/migrations}"
-REMOTE_DB_PATH="/app/data/experts.db"
-REMOTE_BACKUP_PATH="/app/data/experts.db.backup"
-REMOTE_TMP_PATH="/app/data/experts.db.tmp"
-REMOTE_GZ_TMP_PATH="/app/data/experts.db.gz.tmp"
-REMOTE_CHUNK_PATH="/app/data/experts.db.upload_chunk"
-APP_NAME="experts-panel"
-HEALTH_URL="${HEALTH_URL:-https://experts-panel.fly.dev/health}"
-UPLOAD_CHUNK_BYTES="${UPLOAD_CHUNK_BYTES:-2097152}"
-UPLOAD_CHUNK_RETRIES="${UPLOAD_CHUNK_RETRIES:-5}"
-RESTORE_AUTOSTOP="${RESTORE_AUTOSTOP:-stop}"       # fallback if current value can't be read
+REMOTE_HOST="${REMOTE_HOST:-ubuntu@82.70.251.73}"
+REMOTE_DB_DIR="/home/ubuntu/apps/experts-panel/data"
+REMOTE_DB_PATH="$REMOTE_DB_DIR/experts.db"
+REMOTE_BACKUP_PATH="$REMOTE_DB_DIR/experts.db.backup"
+REMOTE_TMP_PATH="$REMOTE_DB_DIR/experts.db.tmp"
+REMOTE_GZ_TMP_PATH="$REMOTE_DB_DIR/experts.db.gz.tmp"
+REMOTE_DATA_UID_GID="${REMOTE_DATA_UID_GID:-1000:1000}"   # container appuser
+HEALTH_URL="${HEALTH_URL:-https://expa.beyondhorizon.dev/health}"
 KEEP_LOCAL_BACKUPS="${KEEP_LOCAL_BACKUPS:-10}"     # deploy backups to keep locally
-WAKE_STATE_TIMEOUT="${WAKE_STATE_TIMEOUT:-60}"     # seconds to wait for machine start
-SSH_READY_RETRIES="${SSH_READY_RETRIES:-10}"       # ssh console probes after machine start
 RESTART_HEALTH_TIMEOUT="${RESTART_HEALTH_TIMEOUT:-180}" # seconds to wait for /health after restart
-export FLY_NO_UPDATE_CHECK=1
+SSH_CONNECT_RETRIES="${SSH_CONNECT_RETRIES:-3}"
 
-# MACHINE_ID / AUTOSTOP_RESTORE_VALUE / UPLOAD_WORK_DIR are set at runtime.
-MACHINE_ID=""
-AUTOSTOP_RESTORE_VALUE=""
+# UPLOAD_WORK_DIR is set at runtime and cleaned by the EXIT trap.
+UPLOAD_WORK_DIR=""
 
 sha256_file() {
     if command -v sha256sum >/dev/null 2>&1; then
@@ -50,103 +49,16 @@ sha256_file() {
     fi
 }
 
+remote_exec() {
+    ssh -o BatchMode=yes "$REMOTE_HOST" "$@"
+}
+
 remote_stat_bytes() {
-    fly ssh console -C "sh -lc 'if [ -e \"$1\" ]; then stat -c %s \"$1\"; else echo 0; fi'" | awk 'END {print $1}'
+    remote_exec "if [ -e \"$1\" ]; then stat -c %s \"$1\"; else echo 0; fi" | awk 'END {print $1}'
 }
 
 cleanup_remote_upload_artifacts() {
-    fly ssh console -C "sh -lc 'rm -f $REMOTE_TMP_PATH $REMOTE_GZ_TMP_PATH $REMOTE_CHUNK_PATH $REMOTE_DB_PATH.gz'" || true
-}
-
-# Prints the machine id; refuses to continue if the app does not have exactly
-# one machine — the DB upload targets a single machine's volume and would
-# silently miss the others.
-get_machine_id() {
-    fly status --json | python3 -c '
-import sys, json
-machines = json.load(sys.stdin).get("Machines") or []
-if len(machines) != 1:
-    sys.stderr.write("Expected exactly 1 Fly machine, found %d. "
-                     "DB upload targets a single machine/volume.\n" % len(machines))
-    sys.exit(1)
-print(machines[0]["id"])
-'
-}
-
-get_machine_state() {
-    fly status --json | python3 -c "import sys, json; print(json.load(sys.stdin)['Machines'][0]['state'])"
-}
-
-# Best-effort read of the machine's current autostop value ("stop"/"suspend"/"off").
-# Prints an empty string when it cannot be determined.
-get_machine_autostop() {
-    fly machine status --json "$1" --app "$APP_NAME" 2>/dev/null | python3 -c '
-import sys, json
-try:
-    cfg = (json.load(sys.stdin) or {}).get("config") or {}
-    print(cfg.get("autostop") or "")
-except Exception:
-    print("")
-' || true
-}
-
-disable_autostop_for_deploy() {
-    local machine_id="$1"
-    echo "   🧷 Temporarily disabling Fly autostop during DB upload..."
-    fly machine update "$machine_id" --app "$APP_NAME" --autostop=off --yes --skip-health-checks >/dev/null
-    echo "   ✅ Autostop disabled for upload."
-}
-
-# Restores the autostop value captured before the deploy (falls back to
-# RESTORE_AUTOSTOP if it could not be read), so a machine configured with
-# "suspend" does not silently become "stop".
-restore_autostop_after_deploy() {
-    local machine_id="$1"
-    local value="${AUTOSTOP_RESTORE_VALUE:-$RESTORE_AUTOSTOP}"
-    if [ -z "$machine_id" ]; then
-        return
-    fi
-    echo "   🧷 Restoring Fly autostop=$value..."
-    fly machine update "$machine_id" --app "$APP_NAME" --autostop="$value" --yes --skip-health-checks >/dev/null || true
-}
-
-# Wakes the machine if needed, waits for the 'started' state (polling instead
-# of a fixed sleep), then probes ssh console readiness.
-ensure_machine_awake() {
-    local machine_id="$1"
-    local state
-    state=$(get_machine_state)
-    echo "   🌡️  Machine state: $state"
-    if [ "$state" != "started" ]; then
-        echo "   💤 Machine is not running. Waking it up..."
-        curl -s -o /dev/null --max-time 5 "$HEALTH_URL" || true
-        fly machine start "$machine_id" --app "$APP_NAME" > /dev/null 2>&1 || true
-        local waited=0
-        while [ "$waited" -lt "$WAKE_STATE_TIMEOUT" ]; do
-            sleep 3
-            waited=$((waited + 3))
-            state=$(get_machine_state 2>/dev/null || echo unknown)
-            if [ "$state" = "started" ]; then
-                break
-            fi
-            echo "      ... waiting for machine to start (${waited}/${WAKE_STATE_TIMEOUT}s, state: $state)"
-        done
-    fi
-    state=$(get_machine_state)
-    if [ "$state" != "started" ]; then
-        echo "   ❌ Machine did not reach 'started' state within ${WAKE_STATE_TIMEOUT}s (state: $state). Aborting."
-        exit 1
-    fi
-    local probe=0
-    until fly ssh console -C "echo ok" >/dev/null 2>&1; do
-        probe=$((probe + 1))
-        if [ "$probe" -ge "$SSH_READY_RETRIES" ]; then
-            echo "   ❌ SSH console not ready after $SSH_READY_RETRIES probes. Aborting."
-            exit 1
-        fi
-        sleep 3
-    done
-    echo "   ✅ Machine is running and SSH-ready."
+    remote_exec "rm -f $REMOTE_TMP_PATH $REMOTE_GZ_TMP_PATH $REMOTE_DB_PATH.gz" || true
 }
 
 wait_for_health() {
@@ -169,14 +81,14 @@ wait_for_health() {
 restart_app_and_verify() {
     local context="$1"
     echo "🔄 Restarting application to load new DB..."
-    fly apps restart "$APP_NAME"
+    remote_exec "cd /home/ubuntu/apps/experts-panel && sudo docker compose -f docker-compose.vm.yml --env-file .env.panel up -d --no-deps panel"
     echo "   ✅ Restart command sent."
     echo "🩺 Verifying application health after $context..."
     if wait_for_health "$RESTART_HEALTH_TIMEOUT"; then
         return 0
     fi
     echo "   ❌ Application is NOT healthy after restart."
-    echo "      Inspect logs: fly logs --app $APP_NAME"
+    echo "      Inspect logs: ssh $REMOTE_HOST 'sudo docker logs --tail 100 \$(sudo docker ps -qf name=panel)'"
     echo "      Remote backup kept at: $REMOTE_BACKUP_PATH"
     echo "      Rollback with: ./scripts/update_production_db.sh --rollback"
     exit 1
@@ -282,21 +194,23 @@ check_local_integrity() {
     echo "   ✅ Local DB integrity: ok."
 }
 
-# Shared remote setup: single-machine check, wake, capture actual autostop
-# value, disable autostop, install EXIT trap (restore autostop + clean local
-# upload temp dir).
+# Shared remote setup: SSH connectivity probe, data dir bootstrap, EXIT trap
+# (clean local upload temp dir).
 prepare_remote_session() {
-    MACHINE_ID=$(get_machine_id)
-    ensure_machine_awake "$MACHINE_ID"
-    AUTOSTOP_RESTORE_VALUE="$(get_machine_autostop "$MACHINE_ID")"
-    if [ -z "$AUTOSTOP_RESTORE_VALUE" ]; then
-        echo "   ⚠️ Could not read current autostop; will restore '$RESTORE_AUTOSTOP' after deploy."
-        AUTOSTOP_RESTORE_VALUE="$RESTORE_AUTOSTOP"
-    else
-        echo "   🧷 Current autostop captured: $AUTOSTOP_RESTORE_VALUE"
-    fi
-    disable_autostop_for_deploy "$MACHINE_ID"
-    trap 'restore_autostop_after_deploy "$MACHINE_ID"; rm -rf "${UPLOAD_WORK_DIR:-}"' EXIT
+    echo "   🌐 Checking SSH connectivity to $REMOTE_HOST..."
+    local attempt=1
+    until remote_exec "echo ok" >/dev/null 2>&1; do
+        if [ "$attempt" -ge "$SSH_CONNECT_RETRIES" ]; then
+            echo "   ❌ Cannot reach $REMOTE_HOST via SSH after $SSH_CONNECT_RETRIES attempt(s). Aborting."
+            exit 1
+        fi
+        echo "      ... retry ($attempt/$SSH_CONNECT_RETRIES)"
+        attempt=$((attempt + 1))
+        sleep 3
+    done
+    remote_exec "mkdir -p $REMOTE_DB_DIR"
+    trap 'rm -rf "${UPLOAD_WORK_DIR:-}"' EXIT
+    echo "   ✅ Remote host reachable, data dir ready."
 }
 
 # ==============================================================================
@@ -421,14 +335,14 @@ do_deploy() {
         fi
     fi
 
-    # 8. Check/Wake up Fly.io Machine
-    echo "🌤️  [8/12] Preparing remote machine (single-machine check, wake, autostop)..."
+    # 8. Check remote host connectivity
+    echo "🌐 [8/12] Preparing remote host ($REMOTE_HOST)..."
     prepare_remote_session
 
     # 9. Remote Backup
     echo "🛡️  [9/12] Creating remote backup on server..."
     REMOTE_BACKUP_CMD="if [ -f $REMOTE_DB_PATH ]; then rm -f $REMOTE_BACKUP_PATH && (ln $REMOTE_DB_PATH $REMOTE_BACKUP_PATH || cp $REMOTE_DB_PATH $REMOTE_BACKUP_PATH); else exit 2; fi"
-    if fly ssh console -C "sh -lc '$REMOTE_BACKUP_CMD'"; then
+    if remote_exec "$REMOTE_BACKUP_CMD"; then
         echo "   ✅ Remote backup created at $REMOTE_BACKUP_PATH"
     else
         BACKUP_STATUS=$?
@@ -440,13 +354,12 @@ do_deploy() {
         fi
     fi
 
-    # 10. Upload New DB (Resumable Staged)
+    # 10. Upload New DB (staged, compressed)
     echo "🚀 [10/12] Uploading fresh database (compressed staged upload)..."
     check_local_integrity
 
     UPLOAD_WORK_DIR=$(mktemp -d "${TMPDIR:-/tmp}/experts-db-upload.XXXXXX")
     LOCAL_GZ_PATH="$UPLOAD_WORK_DIR/experts.db.gz"
-    LOCAL_CHUNK_PATH="$UPLOAD_WORK_DIR/chunk.bin"
 
     if command -v pigz >/dev/null 2>&1; then
         GZIP_BIN="pigz"
@@ -466,108 +379,27 @@ do_deploy() {
     # Clean up leftovers from previous failed uploads before checking space.
     cleanup_remote_upload_artifacts
 
-    REMOTE_FREE_KB=$(fly ssh console -C "df -Pk /app/data" | awk 'END {print $4}')
+    REMOTE_FREE_KB=$(remote_exec "df -Pk $REMOTE_DB_DIR" | awk 'END {print $4}')
 
     if ! [[ "$REMOTE_FREE_KB" =~ ^[0-9]+$ ]]; then
-        echo "   ❌ Could not determine free space on /app/data."
+        echo "   ❌ Could not determine free space on $REMOTE_DB_DIR."
         exit 1
     fi
 
     echo "   🧮 Remote free before upload: $(( REMOTE_FREE_KB / 1024 )) MiB; DB size: $(( LOCAL_DB_KB / 1024 )) MiB; gzip: $(( LOCAL_GZ_KB / 1024 )) MiB"
     if [ "$REMOTE_FREE_KB" -lt "$MIN_FREE_KB" ]; then
-        echo "   ❌ Not enough free space on /app/data for a staged upload."
+        echo "   ❌ Not enough free space on $REMOTE_DB_DIR for a staged upload."
         echo "      Need at least $(( MIN_FREE_KB / 1024 )) MiB free, found $(( REMOTE_FREE_KB / 1024 )) MiB."
-        echo "      Clean old backups/logs or increase the Fly volume before retrying."
+        echo "      Clean old backups/logs on the server before retrying."
         exit 1
     fi
 
-    DIRECT_UPLOAD_OK=0
-    if [ "${DB_UPLOAD_CHUNKED_ONLY:-0}" = "1" ]; then
-        echo "   ⏭️  DB_UPLOAD_CHUNKED_ONLY=1: skipping direct SFTP upload."
-    else
-        echo "   📤 Uploading gzip in one SFTP transfer..."
-        fly ssh console -C "sh -lc 'rm -f $REMOTE_GZ_TMP_PATH $REMOTE_CHUNK_PATH'"
-
-        if fly sftp put "$LOCAL_GZ_PATH" "$REMOTE_GZ_TMP_PATH"; then
-            REMOTE_GZ_BYTES=$(remote_stat_bytes "$REMOTE_GZ_TMP_PATH")
-            if [ "$REMOTE_GZ_BYTES" = "$LOCAL_GZ_BYTES" ]; then
-                DIRECT_UPLOAD_OK=1
-                echo "   ✅ Direct gzip upload completed."
-            else
-                echo "   ⚠️ Direct upload size mismatch. Expected $LOCAL_GZ_BYTES bytes, got $REMOTE_GZ_BYTES bytes."
-            fi
-        else
-            echo "   ⚠️ Direct gzip upload failed."
-        fi
-    fi
-
-    if [ "$DIRECT_UPLOAD_OK" -ne 1 ]; then
-        echo "   📤 Falling back to chunked upload in $UPLOAD_CHUNK_BYTES-byte chunks..."
-        fly ssh console -C "sh -lc 'rm -f $REMOTE_GZ_TMP_PATH $REMOTE_CHUNK_PATH && : > $REMOTE_GZ_TMP_PATH'"
-
-        UPLOADED_BYTES=0
-        CHUNK_INDEX=0
-        CHUNK_COUNT=$(( (LOCAL_GZ_BYTES + UPLOAD_CHUNK_BYTES - 1) / UPLOAD_CHUNK_BYTES ))
-
-        while [ "$UPLOADED_BYTES" -lt "$LOCAL_GZ_BYTES" ]; do
-            if ! dd if="$LOCAL_GZ_PATH" of="$LOCAL_CHUNK_PATH" bs="$UPLOAD_CHUNK_BYTES" skip="$CHUNK_INDEX" count=1 2>"$UPLOAD_WORK_DIR/dd_chunk.err"; then
-                echo "   ❌ Failed to read local chunk $((CHUNK_INDEX + 1))/$CHUNK_COUNT (dd error):"
-                cat "$UPLOAD_WORK_DIR/dd_chunk.err"
-                cleanup_remote_upload_artifacts
-                exit 1
-            fi
-            CHUNK_BYTES=$(wc -c < "$LOCAL_CHUNK_PATH" | tr -d ' ')
-            EXPECTED_AFTER=$(( UPLOADED_BYTES + CHUNK_BYTES ))
-            CHUNK_NUMBER=$(( CHUNK_INDEX + 1 ))
-            echo "      chunk $CHUNK_NUMBER/$CHUNK_COUNT: $CHUNK_BYTES bytes"
-
-            REMOTE_BEFORE=$(remote_stat_bytes "$REMOTE_GZ_TMP_PATH")
-            if [ "$REMOTE_BEFORE" != "$UPLOADED_BYTES" ]; then
-                echo "   ❌ Remote gzip stage size drifted. Expected $UPLOADED_BYTES bytes, got $REMOTE_BEFORE bytes."
-                cleanup_remote_upload_artifacts
-                exit 1
-            fi
-
-            ATTEMPT=1
-            CHUNK_OK=0
-            while [ "$ATTEMPT" -le "$UPLOAD_CHUNK_RETRIES" ]; do
-                if fly sftp put "$LOCAL_CHUNK_PATH" "$REMOTE_CHUNK_PATH"; then
-                    REMOTE_CHUNK_BYTES=$(remote_stat_bytes "$REMOTE_CHUNK_PATH")
-                    if [ "$REMOTE_CHUNK_BYTES" = "$CHUNK_BYTES" ] && fly ssh console -C "sh -lc 'cat $REMOTE_CHUNK_PATH >> $REMOTE_GZ_TMP_PATH && rm -f $REMOTE_CHUNK_PATH'"; then
-                        REMOTE_AFTER=$(remote_stat_bytes "$REMOTE_GZ_TMP_PATH")
-                        if [ "$REMOTE_AFTER" = "$EXPECTED_AFTER" ]; then
-                            CHUNK_OK=1
-                            break
-                        fi
-                        echo "      ⚠️ Remote staged size mismatch after append: expected $EXPECTED_AFTER, got $REMOTE_AFTER"
-                    else
-                        echo "      ⚠️ Chunk size verification or append failed."
-                    fi
-
-                    REMOTE_AFTER_FAILURE=$(remote_stat_bytes "$REMOTE_GZ_TMP_PATH")
-                    if [ "$REMOTE_AFTER_FAILURE" != "$UPLOADED_BYTES" ]; then
-                        echo "   ❌ Remote gzip stage changed during a failed append. Cleaning up to avoid a corrupted staged file."
-                        cleanup_remote_upload_artifacts
-                        exit 1
-                    fi
-                else
-                    echo "      ⚠️ Chunk upload attempt $ATTEMPT failed."
-                fi
-
-                fly ssh console -C "sh -lc 'rm -f $REMOTE_CHUNK_PATH'" || true
-                ATTEMPT=$(( ATTEMPT + 1 ))
-                sleep 2
-            done
-
-            if [ "$CHUNK_OK" -ne 1 ]; then
-                echo "   ❌ Failed to upload chunk $CHUNK_NUMBER after $UPLOAD_CHUNK_RETRIES attempt(s). Cleaning up..."
-                cleanup_remote_upload_artifacts
-                exit 1
-            fi
-
-            UPLOADED_BYTES=$EXPECTED_AFTER
-            CHUNK_INDEX=$(( CHUNK_INDEX + 1 ))
-        done
+    echo "   📤 Uploading gzip via scp..."
+    remote_exec "rm -f $REMOTE_GZ_TMP_PATH"
+    if ! scp -o BatchMode=yes -q "$LOCAL_GZ_PATH" "$REMOTE_HOST:$REMOTE_GZ_TMP_PATH"; then
+        echo "   ❌ Upload failed."
+        cleanup_remote_upload_artifacts
+        exit 1
     fi
 
     REMOTE_GZ_BYTES=$(remote_stat_bytes "$REMOTE_GZ_TMP_PATH")
@@ -577,7 +409,7 @@ do_deploy() {
         exit 1
     fi
 
-    REMOTE_GZ_SHA=$(fly ssh console -C "sh -lc 'sha256sum $REMOTE_GZ_TMP_PATH | cut -d \" \" -f 1'" | awk 'END {print $1}')
+    REMOTE_GZ_SHA=$(remote_exec "sha256sum $REMOTE_GZ_TMP_PATH | cut -d ' ' -f 1" | awk 'END {print $1}')
     if [ "$REMOTE_GZ_SHA" != "$LOCAL_GZ_SHA" ]; then
         echo "   ❌ Uploaded gzip SHA mismatch."
         echo "      Expected: $LOCAL_GZ_SHA"
@@ -586,7 +418,7 @@ do_deploy() {
         exit 1
     fi
 
-    if fly ssh console -C "gzip -t $REMOTE_GZ_TMP_PATH"; then
+    if remote_exec "gzip -t $REMOTE_GZ_TMP_PATH"; then
         echo "   ✅ Gzip upload verified by size, SHA, and gzip test."
     else
         echo "   ❌ Remote gzip validation failed."
@@ -594,8 +426,8 @@ do_deploy() {
         exit 1
     fi
 
-    echo "   📦 Decompressing staged DB on Fly..."
-    if fly ssh console -C "sh -lc 'rm -f $REMOTE_TMP_PATH && gzip -dc $REMOTE_GZ_TMP_PATH > $REMOTE_TMP_PATH'"; then
+    echo "   📦 Decompressing staged DB on the server..."
+    if remote_exec "rm -f $REMOTE_TMP_PATH && gzip -dc $REMOTE_GZ_TMP_PATH > $REMOTE_TMP_PATH"; then
         REMOTE_TMP_BYTES=$(remote_stat_bytes "$REMOTE_TMP_PATH")
     else
         echo "   ❌ Remote decompression failed."
@@ -610,7 +442,7 @@ do_deploy() {
     fi
 
     echo "   🔎 Running SQLite integrity check on staged DB..."
-    REMOTE_INTEGRITY=$(fly ssh console -C "python3 -c \"import sqlite3; con=sqlite3.connect('$REMOTE_TMP_PATH'); print(con.execute('PRAGMA integrity_check').fetchone()[0])\"" | awk 'END {print $1}')
+    REMOTE_INTEGRITY=$(remote_exec "python3 -c \"import sqlite3; con=sqlite3.connect('$REMOTE_TMP_PATH'); print(con.execute('PRAGMA integrity_check').fetchone()[0])\"" | awk 'END {print $1}')
     if [ "$REMOTE_INTEGRITY" != "ok" ]; then
         echo "   ❌ SQLite integrity check failed: $REMOTE_INTEGRITY"
         cleanup_remote_upload_artifacts
@@ -618,8 +450,8 @@ do_deploy() {
     fi
 
     echo "   🔁 Replacing production database..."
-    REMOTE_REPLACE_CMD="rm -f $REMOTE_DB_PATH-wal $REMOTE_DB_PATH-shm && mv -f $REMOTE_TMP_PATH $REMOTE_DB_PATH && chown appuser:appuser $REMOTE_DB_PATH && rm -f $REMOTE_GZ_TMP_PATH $REMOTE_CHUNK_PATH"
-    if fly ssh console -C "sh -lc '$REMOTE_REPLACE_CMD'"; then
+    REMOTE_REPLACE_CMD="rm -f $REMOTE_DB_PATH-wal $REMOTE_DB_PATH-shm && mv -f $REMOTE_TMP_PATH $REMOTE_DB_PATH && sudo chown $REMOTE_DATA_UID_GID $REMOTE_DB_PATH && rm -f $REMOTE_GZ_TMP_PATH"
+    if remote_exec "$REMOTE_REPLACE_CMD"; then
         echo "   ✅ Production database replaced."
     else
         echo "   ❌ Database replacement failed! Existing DB should still be available if mv did not run."
@@ -649,7 +481,7 @@ do_rollback() {
     echo "⏪ PRODUCTION DB ROLLBACK (restore from remote backup)"
     echo "========================================================"
 
-    echo "🌤️  Preparing remote machine..."
+    echo "🌐 Preparing remote host ($REMOTE_HOST)..."
     prepare_remote_session
 
     echo "🛡️ Checking remote backup..."
@@ -660,17 +492,17 @@ do_rollback() {
     fi
     echo "   ✅ Remote backup present ($REMOTE_BACKUP_BYTES bytes)."
 
-    PRE_ROLLBACK_SNAPSHOT="/app/data/experts.db.pre_rollback_$(date +%Y%m%d_%H%M%S)"
+    PRE_ROLLBACK_SNAPSHOT="$REMOTE_DB_DIR/experts.db.pre_rollback_$(date +%Y%m%d_%H%M%S)"
     echo "📸 Snapshotting current production DB to $(basename "$PRE_ROLLBACK_SNAPSHOT") before overwriting..."
-    if fly ssh console -C "sh -lc 'if [ -f $REMOTE_DB_PATH ]; then cp $REMOTE_DB_PATH $PRE_ROLLBACK_SNAPSHOT; fi'"; then
+    if remote_exec "if [ -f $REMOTE_DB_PATH ]; then cp $REMOTE_DB_PATH $PRE_ROLLBACK_SNAPSHOT; fi"; then
         echo "   ✅ Pre-rollback snapshot created."
     else
         echo "   ⚠️ Could not snapshot the current DB; continuing (the backup itself stays intact)."
     fi
 
     echo "🔁 Restoring backup over production DB..."
-    RESTORE_CMD="rm -f $REMOTE_DB_PATH-wal $REMOTE_DB_PATH-shm && cp $REMOTE_BACKUP_PATH $REMOTE_DB_PATH && chown appuser:appuser $REMOTE_DB_PATH"
-    if ! fly ssh console -C "sh -lc '$RESTORE_CMD'"; then
+    RESTORE_CMD="rm -f $REMOTE_DB_PATH-wal $REMOTE_DB_PATH-shm && cp $REMOTE_BACKUP_PATH $REMOTE_DB_PATH && sudo chown $REMOTE_DATA_UID_GID $REMOTE_DB_PATH"
+    if ! remote_exec "$RESTORE_CMD"; then
         echo "   ❌ Restore failed. Production DB was not modified."
         exit 1
     fi
@@ -691,6 +523,10 @@ Usage:
   ./scripts/update_production_db.sh                 Full pipeline deploy
   DB_UPLOAD_ONLY=1 ./scripts/update_production_db.sh  Skip local pipeline (upload only)
   ./scripts/update_production_db.sh --rollback      Restore prod DB from remote backup
+
+Environment overrides:
+  REMOTE_HOST=ubuntu@82.70.251.73     deployment target (default)
+  HEALTH_URL=https://expa.beyondhorizon.dev/health
 USAGE
 }
 
