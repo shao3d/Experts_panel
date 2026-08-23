@@ -20,10 +20,11 @@ Choose one or more experts, ask a question in English or Russian, and get an ans
 
 ## More than the web interface
 
-The project also contains two workflows built on the same evidence layer:
+The same evidence layer powers three additional workflows beyond the web UI:
 
-- **Panex** is an explicit agent-facing API and CLI. It lets an AI coding agent request a source-backed digest from selected experts and inspect the exact supporting sources when needed.
-- **Expert admission control** uses semantic passports and a Knowledge Matrix to show current coverage, identify gaps or excessive overlap, and support a human decision before a new expert is added.
+- **Panex** is an agent-facing bridge between an AI coding agent and the panel: a CLI (`panex`), an HTTP API ([Agent Context API](docs/architecture/agent-context-api.md)), and a read-only `experts_panel_researcher` subagent for Codex and Claude. Two extraction levels: `expert_digest` — a source-backed expert digest — and `source_bundle` — the full raw evidence for audit; `panex expand` reveals the exact sources behind a digest without rerunning the query ([Panex Usage](docs/guides/panex-usage.md)).
+- **Expert admission control** decides who gets into the panel. Every candidate goes through a multi-stage review: a semantic value passport, a Knowledge Matrix of topical coverage, quantitative metrics (coverage gap closure, semantic overlap, source depth), and one of four verdicts — accept, reject, watchlist, or limited scope. The final call stays human ([Expert Admission Control](docs/architecture/expert-admission-control.md)).
+- **Expert Lens** (experimental) — a Codex skill concept that requests a source-grounded second opinion on a bounded project question through one expert's corpus, without simulating the expert ([concept spec](docs/concepts/expert-lens-global-skill.md)).
 
 These are intentionally bounded tools. Panex retrieves and structures expert evidence; it does not impersonate an expert or make project decisions on their behalf. The Knowledge Matrix supports admission review; it is not an automatic judge.
 

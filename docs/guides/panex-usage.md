@@ -8,13 +8,13 @@ in any repo.
 
 ## What Панэкс Does
 
-Панэкс is an explicit-only bridge to Experts Panel on Fly.io. It helps a parent
+Панэкс is an explicit-only bridge to production Experts Panel. It helps a parent
 agent ask selected practitioners/experts for context, patterns, trade-offs, and
 source-backed signals, then delivers the Panel digest without a second summary.
 
 Default behavior:
 
-- uses production Fly.io;
+- uses production;
 - searches selected experts with forced hybrid/embedding retrieval;
 - returns `expert_digest`, not a giant raw bundle;
 - treats `expert_digest` as already reduced Panel output;
@@ -262,7 +262,7 @@ Default retention is 7 days. Override it with `PANEX_ARTIFACT_TTL_DAYS` or
 - Панэкс must be invoked explicitly.
 - Панэкс is not default web search.
 - Панэкс should not be called automatically for every trends/software/architecture question.
-- Production calls go to `https://experts-panel.fly.dev`.
+- Production calls go to `https://expa.beyondhorizon.dev`.
 - Localhost is used only through explicit `--local` or `--api-url`.
 - Saved artifacts live outside the current repo by default and may contain
   project-sensitive queries/responses.

@@ -29,10 +29,10 @@ from .bootstrap import bootstrap_cli, resolve_backend_dir
 
 
 PRODUCTION_AGENT_CONTEXT_API_URL = (
-    "https://experts-panel.fly.dev/api/v1/agent/context"
+    "https://expa.beyondhorizon.dev/api/v1/agent/context"
 )
 PRODUCTION_AGENT_CONTEXT_EXPAND_API_URL = (
-    "https://experts-panel.fly.dev/api/v1/agent/context/expand"
+    "https://expa.beyondhorizon.dev/api/v1/agent/context/expand"
 )
 LOCAL_AGENT_CONTEXT_API_URL = "http://localhost:8000/api/v1/agent/context"
 LOCAL_AGENT_CONTEXT_EXPAND_API_URL = (
@@ -425,7 +425,7 @@ def _add_common_network_args(parser: argparse.ArgumentParser) -> None:
     target = parser.add_mutually_exclusive_group()
     target.add_argument(
         "--api-url",
-        help="Explicit API URL. Without this, panex uses Fly.io production.",
+        help="Explicit API URL. Without this, panex uses the production API.",
     )
     target.add_argument(
         "--local",
@@ -1374,7 +1374,7 @@ def _print_guide() -> None:
         """Panex guide
 
 Что это:
-  Панэкс - явный помощник для запросов к Experts Panel на Fly.io.
+  Панэкс - явный помощник для запросов к production Experts Panel.
   Он приносит practitioner-opinion signals из постов экспертов, direct comments
   под выбранными источниками, source_key handles и evidence_quality calibration.
 
@@ -1430,7 +1430,7 @@ Artifact transport:
   panex cleanup
 
 Границы:
-  - production default: https://experts-panel.fly.dev
+  - production default: https://expa.beyondhorizon.dev
   - localhost только явно через --local или --api-url
   - external links не открываются и не суммаризируются автоматически
   - drift comment groups не выбираются в agent API default
