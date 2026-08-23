@@ -16,6 +16,6 @@ IMPORTANT REQUIREMENTS:
 
 Example of preserving links:
 Original: "Смотри [здесь](https://example.com) информацию"
-Translation: "Look [здесь](https://example.com) for information" (keep the link URL unchanged)
+Translation: "Look [here](https://example.com) for information" (translate the link TEXT, keep the URL unchanged)
 
 Translate the post now:
