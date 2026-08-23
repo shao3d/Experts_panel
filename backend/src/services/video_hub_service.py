@@ -13,6 +13,7 @@ from datetime import datetime
 from .. import config
 from .vertex_llm_client import get_vertex_llm_client
 from .language_validation_service import LanguageValidationService
+from ..utils.language_utils import detect_query_language
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +22,6 @@ class VideoHubService:
         self.llm_client = get_vertex_llm_client()
         self.map_model = config.MODEL_MAP
         self.synthesis_model = config.MODEL_VIDEO_PRO # gemini-3.0-pro
-        self.flash_model = config.MODEL_VIDEO_FLASH   # gemini-3.0-flash
 
     async def process(
         self,
@@ -66,7 +66,7 @@ class VideoHubService:
         if progress_callback:
             await progress_callback({"phase": "language_validation", "status": "processing", "message": "🎥 Style-aware translation..."})
         
-        validator = LanguageValidationService(model=self.flash_model)
+        validator = LanguageValidationService()
         validation_result = await validator.process(answer, query, expert_id)
         final_answer = validation_result.get("answer", answer)
 
@@ -192,7 +192,17 @@ Output JSON ONLY:
             
         formatted_context = "\n\n".join(formatted_parts)
 
-        system_prompt = """<?xml version="1.0" encoding="UTF-8"?>
+        # Match the synthesis language to the query language up front; the
+        # post-synthesis LanguageValidationService stays as a safety net, but
+        # generating in the right language avoids a second (style-losing) pass.
+        target_language = detect_query_language(query)
+        language_rule = (
+            "Output must be in Russian, matching the expert's original speaking style."
+            if target_language == "Russian"
+            else "Output must be in English regardless of the transcript language."
+        )
+
+        system_prompt = f"""<?xml version="1.0" encoding="UTF-8"?>
 <system_prompt>
     <role>You are the Expert's Digital Twin. Your task is to synthesize a full-text response in the expert's original style.</role>
     <context>
@@ -208,7 +218,7 @@ Output JSON ONLY:
         <rule priority="CRITICAL">MANDATORY CITATIONS: Cite sources using [post:ID] format where ID is the segment ID. Every technical claim or specific insight should be cited.</rule>
     </guardrails>
     <formatting>
-        <language>Output must be in Russian unless specified otherwise.</language>
+        <language>{language_rule}</language>
     </formatting>
 </system_prompt>"""
 

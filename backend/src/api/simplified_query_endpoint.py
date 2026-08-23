@@ -52,7 +52,7 @@ from ..services.reduce_service import ReduceService
 from ..services.comment_group_map_service import CommentGroupMapService
 from ..services.comment_synthesis_service import CommentSynthesisService
 from ..services.medium_scoring_service import MediumScoringService
-from ..services.translation_service import TranslationService
+from ..services.translation_service import get_translation_service
 from ..services.language_validation_service import LanguageValidationService
 from ..services.video_hub_service import VideoHubService
 from ..services.reddit_enhanced_service import search_reddit_enhanced
@@ -63,6 +63,7 @@ from ..services.ai_scout_service import AIScoutService
 from ..services.meta_synthesis_service import MetaSynthesisService
 from ..utils.error_handler import error_handler
 from ..utils.date_utils import get_cutoff_date
+from ..utils.language_utils import detect_query_language
 from .pipeline_state_tracker import PipelineStateTracker, VIDEO_PHASE_MAP
 from ..services.artifact_retention_service import query_results_dir
 
@@ -78,6 +79,37 @@ def _query_results_dir() -> Path:
     """Return the durable query-result directory for large UI responses."""
 
     return query_results_dir()
+
+
+async def _translate_comment_group_texts(comment_group_results: list) -> None:
+    """Translate anchor posts and comments of comment groups to English in place.
+
+    Anchor posts and comments come raw from the DB in Russian; without this an
+    English-language user gets an English answer next to Russian source text.
+    Cached texts (persistent translation cache) translate instantly.
+    """
+    if not comment_group_results:
+        return
+
+    texts = []
+    for group in comment_group_results:
+        texts.append(group.get("anchor_post", {}).get("message_text") or "")
+        texts.extend(c.get("comment_text") or "" for c in group.get("comments", []))
+
+    translation_service = get_translation_service()
+    translated = await translation_service.translate_texts_batch(
+        texts, source_lang="Russian", target_lang="English"
+    )
+
+    idx = 0
+    for group in comment_group_results:
+        if texts[idx]:
+            group["anchor_post"]["message_text"] = translated[idx]
+        idx += 1
+        for comment in group.get("comments", []):
+            if texts[idx]:
+                comment["comment_text"] = translated[idx]
+            idx += 1
 
 
 def _query_result_path(request_id: str) -> Path:
@@ -571,9 +603,10 @@ async def process_expert_pipeline(
     comment_groups = []
     comment_group_results = []
     comment_synthesis = None
+    detected_language = detect_query_language(request.query)
 
     reduce_service = ReduceService()
-    language_validation_service = LanguageValidationService(model=config.MODEL_ANALYSIS)
+    language_validation_service = LanguageValidationService()
 
     async def reduce_progress(data: dict):
         if progress_callback:
@@ -664,6 +697,14 @@ async def process_expert_pipeline(
             main_source_ids=main_sources,
         )
         timings["comment_merge"] = round((time.perf_counter() - t_merge) * 1000, 1)
+
+        # English queries: translate anchor posts + comments (cache-backed)
+        if detected_language == "English":
+            t_cg_translate = time.perf_counter()
+            await _translate_comment_group_texts(comment_group_results)
+            timings["comment_translation"] = round(
+                (time.perf_counter() - t_cg_translate) * 1000, 1
+            )
 
         # Convert to response format
         seen_parent_ids = set()
@@ -777,6 +818,7 @@ async def process_expert_pipeline(
         comment_groups_synthesis=sanitize_for_json(comment_synthesis)
         if comment_synthesis
         else None,
+        detected_language=detected_language,
     )
 
 
@@ -1892,7 +1934,8 @@ async def get_post_detail(
                 )
             )
 
-    # Determine if translation is needed
+    # Determine if translation is needed (same detector as the rest of the
+    # pipeline — the frontend relies on this consistency)
     should_translate = False
     logger.info(
         f"DEBUG: get_post_detail called with post_id={post_id}, expert_id={expert_id}, query='{query}', translate={translate}"
@@ -1904,9 +1947,7 @@ async def get_post_detail(
             f"DEBUG: Translation forced by translate=true flag for post {post_id}"
         )
     elif query:
-        # Use translation service to detect if query is in English
-        translation_service = TranslationService(model=config.MODEL_ANALYSIS)
-        should_translate = translation_service.should_translate(query)
+        should_translate = detect_query_language(query) == "English"
         logger.info(
             f"DEBUG: Translation check for post {post_id}: query='{query[:50]}...', should_translate={should_translate}"
         )
@@ -1924,8 +1965,8 @@ async def get_post_detail(
             f"DEBUG: Starting translation for post {post_id} with content length {len(message_text)}"
         )
         try:
-            # Use Gemini via Vertex AI for translation
-            translation_service = TranslationService(model=config.MODEL_ANALYSIS)
+            # Shared service instance: in-memory LRU + persistent DB cache
+            translation_service = get_translation_service()
             translated_text = await translation_service.translate_single_post(
                 message_text, post.author_name or "Unknown"
             )
@@ -1940,6 +1981,31 @@ async def get_post_detail(
         logger.info(
             f"DEBUG: Skipping translation for post {post_id} - should_translate={should_translate}, has_content={bool(message_text)}"
         )
+
+    # Translate comments too — otherwise English users see mixed-language posts
+    if should_translate and comments:
+        try:
+            translation_service = get_translation_service()
+            comment_texts = [c.comment_text or "" for c in comments]
+            translated_comments = await translation_service.translate_texts_batch(
+                comment_texts, source_lang="Russian", target_lang="English"
+            )
+            comments = [
+                CommentResponse(
+                    comment_id=c.comment_id,
+                    author_name=c.author_name,
+                    comment_text=translated_comments[i],
+                    created_at=c.created_at,
+                    updated_at=c.updated_at,
+                )
+                for i, c in enumerate(comments)
+            ]
+            logger.info(
+                f"DEBUG: Translated {len(comments)} comments for post {post_id}"
+            )
+        except Exception as e:
+            logger.error(f"DEBUG: Comment translation failed for post {post_id}: {e}")
+            # Keep original comments if translation fails
 
     # Get channel username from expert_id using helper function
     channel_username = (

@@ -822,6 +822,14 @@ class ExpertResponse(BaseModel):
         default=None,
         description="Synthesized insights from comment groups (optional)"
     )
+    detected_language: str = Field(
+        default="Russian",
+        description=(
+            "Language of the user query as detected by the backend "
+            "(Russian/English). Single source of truth for the frontend: "
+            "decides whether source posts/comments need translation."
+        )
+    )
 
 
 class RedditSource(BaseModel):

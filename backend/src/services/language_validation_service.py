@@ -3,57 +3,49 @@
 import logging
 from typing import Dict, Any, Optional, Callable
 import asyncio
-import httpx
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
 from ..utils.language_utils import detect_query_language
-from .translation_service import TranslationService
+from .translation_service import get_translation_service
 
 logger = logging.getLogger(__name__)
 
 
 class LanguageValidationService:
-    """Service for validating and ensuring language consistency of expert responses."""
+    """Service for validating and ensuring language consistency of expert responses.
 
-    def __init__(self, model: str = None):
-        """Initialize LanguageValidationService.
+    Bidirectional: translates the answer whenever its detected language does not
+    match the query language (Russian answer + English query -> English, and
+    English answer + Russian query -> Russian). Translations run through the
+    shared cache-backed TranslationService, so repeated corrections are free.
+    """
 
-        Args:
-            model: Model to use (Gemini). Defaults to MODEL_ANALYSIS from config.
-        """
-        if model is None:
-            from .. import config
-            model = config.MODEL_ANALYSIS
-        self.model = model
-        # Initialize internal translation service
-        self.translation_service = TranslationService(
-            model=model
-        )
+    def __init__(self):
+        """Initialize LanguageValidationService with the shared translation service."""
+        self.translation_service = get_translation_service()
 
-    @retry(
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=2, min=4, max=60),
-        retry=retry_if_exception_type((httpx.HTTPStatusError, ValueError)),
-        reraise=True
-    )
-    async def _translate_response(self, response_text: str, expert_id: str) -> str:
-        """Translate response from Russian to English.
+    async def _translate_response(
+        self, response_text: str, source_lang: str, target_lang: str, expert_id: str
+    ) -> str:
+        """Translate an expert response between Russian and English.
 
         Args:
-            response_text: Russian response text to translate
+            response_text: Response text to translate
+            source_lang: Detected language of the response
+            target_lang: Required language (query language)
             expert_id: Expert identifier for logging
 
         Returns:
-            Translated English response
+            Translated response (original text on failure)
         """
         try:
-            # Use existing translation service for consistency
-            translated_text = await self.translation_service.translate_single_post(
-                post_text=response_text,
-                author_name=expert_id
+            translated_text = await self.translation_service.translate_text(
+                text=response_text, source_lang=source_lang, target_lang=target_lang
             )
 
-            logger.debug(f"[{expert_id}] Translated response: {response_text[:100]}... -> {translated_text[:100]}...")
+            logger.debug(
+                f"[{expert_id}] Translated response: "
+                f"{response_text[:100]}... -> {translated_text[:100]}..."
+            )
             return translated_text
 
         except Exception as e:
@@ -116,21 +108,24 @@ class LanguageValidationService:
                     }
                 })
 
-            # Determine if translation is needed
+            # Determine if translation is needed (any direction)
             validation_applied = False
             translation_applied = False
             final_answer = answer
 
-            # Only translate Russian -> English when mismatch detected
-            if query_language == "English" and answer_language == "Russian":
+            languages_known = query_language in ("English", "Russian") and answer_language in ("English", "Russian")
+
+            if languages_known and query_language != answer_language:
                 if progress_callback:
                     await progress_callback({
                         "phase": "language_validation",
                         "status": "processing",
-                        "message": f"[{expert_id}] Language mismatch detected - translating Russian to English"
+                        "message": f"[{expert_id}] Language mismatch detected - translating {answer_language} to {query_language}"
                     })
 
-                final_answer = await self._translate_response(answer, expert_id)
+                final_answer = await self._translate_response(
+                    answer, answer_language, query_language, expert_id
+                )
                 validation_applied = True
                 translation_applied = True
 

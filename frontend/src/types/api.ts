@@ -165,6 +165,13 @@ export interface ExpertResponse {
 
   /** Synthesized insights from comment groups (optional) */
   comment_groups_synthesis?: string;
+
+  /**
+   * Query language as detected by the backend ("Russian" | "English").
+   * Single source of truth for whether posts/comments need translation;
+   * falls back to local detection for responses from older backends.
+   */
+  detected_language?: string;
 }
 
 /**

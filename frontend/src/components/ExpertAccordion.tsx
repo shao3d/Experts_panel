@@ -53,11 +53,15 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
     let cancelled = false;
     console.log(`[ExpertAccordion] Loading posts for ${expert.expert_id}:`, expert.main_sources);
 
-    // Check if this is an English query and show translation indicator
-    const needsTranslation = query && isEnglishQuery(query);
+    // Single source of truth: backend-detected query language. Local
+    // isEnglishQuery (70%-word heuristic) disagrees with the backend detector
+    // on mixed RU/EN queries and caused half-translated results.
+    const queryIsEnglish = expert.detected_language
+      ? expert.detected_language === 'English'
+      : (query ? isEnglishQuery(query) : false);
     const sourceCount = expert.main_sources.length;
 
-    if (needsTranslation && sourceCount > 0) {
+    if (queryIsEnglish && sourceCount > 0) {
       setIsTranslating(true);
       setTranslationProgress({ current: 0, total: sourceCount });
       console.log(`[ExpertAccordion] Starting progressive translation for ${sourceCount} posts`);
@@ -133,7 +137,9 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
       expert.expert_id,
       query,
       handlePostReady,
-      handleProgress
+      handleProgress,
+      undefined,
+      queryIsEnglish
     )
       .then(finalOrderedPosts => {
         if (!cancelled) {
@@ -165,7 +171,7 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
       }
       flushUpdates();
     };
-  }, [isExpanded, expert.main_sources, expert.expert_id, query]);
+  }, [isExpanded, expert.main_sources, expert.expert_id, expert.detected_language, query]);
 
   /**
    * Handle clicking on post reference in answer

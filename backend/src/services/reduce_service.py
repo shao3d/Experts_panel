@@ -13,7 +13,11 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 from .monitored_client import create_monitored_client
 from .. import config
 from ..models.base import SessionLocal
-from ..utils.language_utils import prepare_prompt_with_language_instruction, prepare_system_message_with_language
+from ..utils.language_utils import (
+    detect_query_language,
+    prepare_prompt_with_language_instruction,
+    prepare_system_message_with_language,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -292,8 +296,19 @@ class ReduceService:
         phase_start_time = time.time()
 
         if not enriched_posts:
+            # Empty-result message must match the query language, like real answers
+            if detect_query_language(query) == "English":
+                return {
+                    "answer": "Unfortunately, I don't have any highly relevant posts about this topic in my knowledge base.",
+                    "main_sources": [],
+                    "confidence": "LOW",
+                    "has_expert_comments": False,
+                    "language": "en",
+                    "posts_analyzed": 0,
+                    "summary": "No relevant posts found"
+                }
             return {
-                "answer": "Unfortunately, I don't have any highly relevant posts about this topic in my knowledge base.",
+                "answer": "К сожалению, в моей базе знаний нет высоко релевантных постов по этой теме.",
                 "main_sources": [],
                 "confidence": "LOW",
                 "has_expert_comments": False,

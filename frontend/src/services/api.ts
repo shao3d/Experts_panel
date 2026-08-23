@@ -544,6 +544,12 @@ export class APIClient {
    * @param postIds - Array of post IDs
    * @param expertId - Optional expert ID to filter posts (required for multi-expert)
    * @param query - Optional user query to determine if translation is needed
+   * @param onPostReady - Optional callback when individual post is ready
+   * @param onProgress - Optional progress callback (completed, total)
+   * @param onRetry - Optional retry notification callback
+   * @param needsTranslationOverride - When set, forces translation on/off,
+   *   bypassing local detection. Callers that already know the backend-detected
+   *   query language should pass it here so FE and BE never disagree.
    * @returns Array of post details
    */
   async getPostsByIdsProgressive(
@@ -552,12 +558,15 @@ export class APIClient {
     query?: string,
     onPostReady?: (post: PostDetailResponse) => void,
     onProgress?: (completed: number, total: number) => void,
-    onRetry?: (postId: number, attempt: number, maxRetries: number) => void
+    onRetry?: (postId: number, attempt: number, maxRetries: number) => void,
+    needsTranslationOverride?: boolean
   ): Promise<PostDetailResponse[]> {
     console.log('[API] Fetching posts progressively in parallel:', postIds, 'for expert:', expertId, 'with query:', query);
 
     // Determine if translation is needed
-    const needsTranslation = query ? isEnglishQuery(query) : false;
+    const needsTranslation = needsTranslationOverride !== undefined
+      ? needsTranslationOverride
+      : (query ? isEnglishQuery(query) : false);
     let completed = 0;
     const completedResults: any[] = [];
 
@@ -680,11 +689,14 @@ export class APIClient {
   async getPostsByIds(
     postIds: number[],
     expertId?: string,
-    query?: string
+    query?: string,
+    needsTranslationOverride?: boolean
   ): Promise<PostDetailResponse[]> {
     console.log('[API] Fetching posts by IDs:', postIds, 'for expert:', expertId, 'with query:', query);
     // Determine if translation is needed
-    const needsTranslation = query ? isEnglishQuery(query) : false;
+    const needsTranslation = needsTranslationOverride !== undefined
+      ? needsTranslationOverride
+      : (query ? isEnglishQuery(query) : false);
     const promises = postIds.map(id => this.getPostDetail(id, expertId, query, needsTranslation));
 
     // Fetch all posts in parallel

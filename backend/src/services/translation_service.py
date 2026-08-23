@@ -1,6 +1,7 @@
-"""Translation service for translating posts to English."""
+"""Translation service for translating posts and answers."""
 
 import asyncio
+import hashlib
 import logging
 from typing import List, Dict, Any, Optional
 from pathlib import Path
@@ -11,9 +12,21 @@ from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_excep
 import httpx
 
 from .vertex_llm_client import get_vertex_llm_client
-from ..utils.language_utils import detect_query_language
 
 logger = logging.getLogger(__name__)
+
+# Module-level singleton: keeps the in-memory LRU cache warm across requests
+# and shares one LLM client. Instances created ad-hoc (e.g. per HTTP request)
+# defeated the cache entirely, re-translating the same posts on every view.
+_shared_instance: Optional["TranslationService"] = None
+
+
+def get_translation_service() -> "TranslationService":
+    """Return the shared TranslationService instance."""
+    global _shared_instance
+    if _shared_instance is None:
+        _shared_instance = TranslationService()
+    return _shared_instance
 
 
 class TranslationService:
@@ -76,6 +89,62 @@ class TranslationService:
         if len(self._cache) > self._cache_max_size:
             self._cache.popitem(last=False)
 
+    @staticmethod
+    def _make_persistent_key(text: str, source_lang: str, target_lang: str) -> str:
+        """Build a stable cache key from normalized text and language pair."""
+        normalized = " ".join(text.split())
+        raw = f"{normalized}|{source_lang}->{target_lang}"
+        return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+    def _db_cache_get(self, text: str, source_lang: str, target_lang: str) -> Optional[str]:
+        """Look up a cached translation in the database (survives restarts)."""
+        key = self._make_persistent_key(text, source_lang, target_lang)
+        try:
+            from ..models.base import SessionLocal
+            from ..models.translation_cache import TranslationCache
+
+            with SessionLocal() as db:
+                row = (
+                    db.query(TranslationCache)
+                    .filter(TranslationCache.cache_key == key)
+                    .first()
+                )
+                if row:
+                    return row.translated_text
+        except Exception as e:
+            # Cache miss on infrastructure failure must never break translation.
+            logger.debug(f"Translation DB cache read failed: {e}")
+        return None
+
+    def _db_cache_set(
+        self, text: str, source_lang: str, target_lang: str, translated: str
+    ) -> None:
+        """Persist a translation to the database (idempotent per cache key)."""
+        key = self._make_persistent_key(text, source_lang, target_lang)
+        try:
+            from ..models.base import SessionLocal
+            from ..models.translation_cache import TranslationCache
+
+            with SessionLocal() as db:
+                exists = (
+                    db.query(TranslationCache.cache_key)
+                    .filter(TranslationCache.cache_key == key)
+                    .first()
+                )
+                if not exists:
+                    db.add(
+                        TranslationCache(
+                            cache_key=key,
+                            source_lang=source_lang,
+                            target_lang=target_lang,
+                            translated_text=translated,
+                            model=self.primary_model,
+                        )
+                    )
+                    db.commit()
+        except Exception as e:
+            logger.debug(f"Translation DB cache write failed: {e}")
+
     async def _call_llm(self, model_name: str, messages: List[Dict[str, str]]):
         """Call the shared OpenRouter LLM client."""
         if self.llm_client:
@@ -105,6 +174,12 @@ class TranslationService:
             if cached:
                 return cached
 
+            # Persistent cache (survives restarts; posts are static content)
+            persisted = self._db_cache_get(post_text, "Russian", "English")
+            if persisted:
+                self._add_to_cache(cache_key, persisted)
+                return persisted
+
             # Create prompt
             prompt = self._prompt_template.substitute(
                 post_text=post_text,
@@ -129,10 +204,11 @@ class TranslationService:
                 return post_text
 
             logger.debug(f"Translated post from {author_name} using Gemini")
-            
+
             # Update cache
             self._add_to_cache(cache_key, translated_text)
-            
+            self._db_cache_set(post_text, "Russian", "English", translated_text)
+
             return translated_text
 
         except Exception as e:
@@ -167,33 +243,72 @@ class TranslationService:
         cached = self._get_from_cache(cache_key)
         if cached:
             return cached
-        
+
+        # Persistent cache (survives restarts)
+        persisted = self._db_cache_get(text, source_lang, target_lang)
+        if persisted:
+            self._add_to_cache(cache_key, persisted)
+            return persisted
+
         try:
             messages = [
                 {
                     "role": "system",
-                    "content": f"You are a translator. Translate from {source_lang} to {target_lang}. Preserve meaning and technical terms. Return only the translation, no explanations."
+                    "content": (
+                        f"You are a professional translator. Translate from {source_lang} to {target_lang}. "
+                        "Preserve meaning, technical terms, and tone. "
+                        "CRITICAL: keep every [post:ID] citation marker EXACTLY as is (do not translate or renumber IDs), "
+                        "keep all markdown links [text](url) with their URLs unchanged, "
+                        "and preserve markdown formatting (bold, italic, lists, code blocks). "
+                        "Return only the translation, no explanations."
+                    ),
                 },
                 {
                     "role": "user",
                     "content": f"Translate this text from {source_lang} to {target_lang}:\n\n{text}"
                 }
             ]
-            
+
             response = await self._call_llm(self.primary_model, messages)
             translated = response.choices[0].message.content.strip()
-            
+
             if translated:
                 logger.debug(f"Translated text: {text[:50]}... -> {translated[:50]}...")
                 self._add_to_cache(cache_key, translated)
+                self._db_cache_set(text, source_lang, target_lang, translated)
                 return translated
             else:
                 logger.warning("Empty translation, returning original")
                 return text
-                
+
         except Exception as e:
             logger.error(f"Error translating text: {e}")
             return text
+
+    async def translate_texts_batch(
+        self,
+        texts: List[str],
+        source_lang: str = "Russian",
+        target_lang: str = "English",
+        concurrency: int = 5,
+    ) -> List[str]:
+        """Translate multiple texts concurrently, preserving input order.
+
+        Used for comment groups and comment lists where per-item LLM calls
+        are needed but the total latency should stay bounded. Cached texts
+        return instantly without an LLM call.
+        """
+        if not texts:
+            return []
+
+        semaphore = asyncio.Semaphore(concurrency)
+
+        async def translate_one(text_item: str) -> str:
+            async with semaphore:
+                return await self.translate_text(text_item, source_lang, target_lang)
+
+        results = await asyncio.gather(*[translate_one(t) for t in texts])
+        return list(results)
 
     async def translate_posts_batch(
         self,
@@ -255,10 +370,3 @@ class TranslationService:
             })
 
         return successful_posts
-
-    def should_translate(self, query: Optional[str]) -> bool:
-        """Check if posts should be translated based on query language."""
-        if not query or not query.strip():
-            return False
-        detected_language = detect_query_language(query)
-        return detected_language == "English"
