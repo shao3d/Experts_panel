@@ -145,6 +145,12 @@ Model configuration is managed via environment variables as defined in `.env.exa
 
 **Note:** This GCP project does not expose `gemini-2.0-flash`, so the three phases that historically used `2.0-flash` now run on `gemini-2.5-flash`.
 
+### Drift Analysis Backend
+Drift text analysis supports two backends via `DRIFT_BACKEND` env (`opencode` | `openrouter`, default `openrouter`):
+- **opencode** — headless local opencode serve (:4096), free model `x-preview-f-free`, parallel workers via `DRIFT_CONCURRENCY` (default 3). A/B vs Gemini: JSON 100%, has_drift agreement 82% on drift groups / 93% on no-drift groups, ~0 false positives.
+- **openrouter** — legacy paid path (`MODEL_DRIFT_ANALYSIS`), sequential.
+Embeddings for drift topics always go through the embedding service regardless of backend.
+
 ### Date Filtering (use_recent_only)
 The system supports filtering queries to only use recent data (last 3 months):
 

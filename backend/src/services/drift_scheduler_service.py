@@ -25,9 +25,28 @@ class DriftSchedulerService:
     """
 
     def __init__(self, db: Session):
+        import os as _os
         self.db = db
         self.client = get_vertex_llm_client()
         self.model_name = MODEL_DRIFT_ANALYSIS
+        self.backend = _os.getenv("DRIFT_BACKEND", "openrouter").lower()
+        self.concurrency = max(1, int(_os.getenv("DRIFT_CONCURRENCY", "3")))
+        if self.backend == "opencode":
+            from .opencode_drift_client import analyze as _oc_analyze, check_serve_health
+            if not check_serve_health():
+                logger.warning(
+                    "DRIFT_BACKEND=opencode, но opencode serve недоступен — "
+                    "fallback на openrouter для этого цикла"
+                )
+                self.backend = "openrouter"
+            else:
+                self._oc_analyze = _oc_analyze
+                logger.info(
+                    f"Drift backend: opencode ({_os.getenv('OPENCODE_DRIFT_MODEL', 'x-preview-f-free')}) "
+                    f"concurrency={self.concurrency}"
+                )
+        else:
+            logger.info(f"Drift backend: openrouter ({self.model_name})")
         # Rate limiting is handled by the shared Vertex client
         # which uses Tenacity with exponential backoff + jitter
         logger.info(f"DriftSchedulerService initialized with model: {self.model_name}")
@@ -206,6 +225,7 @@ Return ONLY valid JSON:
         post_id: int,
         analysis_result: Dict[str, Any],
         drift_embedding: Optional[bytes] = None,
+        analyzed_by_label: str = 'drift_checked_gemini',
     ):
         """Update database with analysis results.
 
@@ -232,7 +252,7 @@ Return ONLY valid JSON:
                 has_drift = :has_drift,
                 drift_topics = :drift_topics,
                 drift_embedding = :drift_embedding,
-                analyzed_by = 'drift_checked_gemini',
+                analyzed_by = :analyzed_by,
                 analyzed_at = datetime('now')
             WHERE post_id = :post_id
         """)
@@ -242,6 +262,7 @@ Return ONLY valid JSON:
             "has_drift": 1 if has_drift else 0,
             "drift_topics": drift_topics_json,
             "drift_embedding": drift_embedding,
+            "analyzed_by": analyzed_by_label,
         })
         self.db.commit()
 
@@ -253,25 +274,59 @@ Return ONLY valid JSON:
             logger.info("No pending groups found.")
             return 0
 
-        logger.info(f"Starting processing batch of {len(groups)} groups")
+        logger.info(f"Starting processing batch of {len(groups)} groups "
+                    f"(backend={self.backend}, concurrency={self.concurrency if self.backend == 'opencode' else 1})")
 
         success_count = 0
-        for group in groups:
-            try:
-                # Check if empty comments
-                if not group['comments']:
-                    logger.info(f"Post {group['post_id']} has no comments, marking no-comments")
-                    self.db.execute(text("""
-                        UPDATE comment_group_drift
-                        SET analyzed_by = 'no-comments', analyzed_at = datetime('now')
-                        WHERE post_id = :pid
-                    """), {"pid": group['post_id']})
-                    self.db.commit()
-                    continue
 
-                # Analyze
+        # Empty-comment groups: mark serially, they need no LLM.
+        todo = []
+        for group in groups:
+            if not group['comments']:
+                logger.info(f"Post {group['post_id']} has no comments, marking no-comments")
+                self.db.execute(text("""
+                    UPDATE comment_group_drift
+                    SET analyzed_by = 'no-comments', analyzed_at = datetime('now')
+                    WHERE post_id = :pid
+                """), {"pid": group['post_id']})
+                self.db.commit()
+                success_count += 1
+            else:
+                todo.append(group)
+
+        # ── LLM phase: parallel for opencode, sequential for openrouter ──
+        llm_results: list = []  # (group, dict_result | Exception)
+        if self.backend == "opencode":
+            import asyncio as _asyncio
+            from concurrent.futures import ThreadPoolExecutor as _Pool
+
+            def _oc_worker(group):
+                try:
+                    return group, self._oc_analyze(group['post_text'], group['comments'])
+                except Exception as exc:
+                    return group, exc
+
+            loop = _asyncio.get_running_loop()
+            with _Pool(max_workers=self.concurrency) as pool:
+                llm_results = list(await asyncio.gather(*[
+                    loop.run_in_executor(pool, _oc_worker, g) for g in todo
+                ]))
+        else:
+            for group in todo:
                 logger.info(f"Analyzing post {group['post_id']} ({len(group['comments'])} comments)...")
-                result = await self.analyze_drift_async(group['post_text'], group['comments'])
+                try:
+                    result = await self.analyze_drift_async(group['post_text'], group['comments'])
+                    llm_results.append((group, result))
+                except Exception as e:
+                    llm_results.append((group, e))
+
+        # ── DB phase: strictly serial (SQLite single-writer discipline) ──
+        backend_label = f'drift_checked_{self.backend}'
+        for group, res_or_exc in llm_results:
+            try:
+                if isinstance(res_or_exc, Exception):
+                    raise res_or_exc
+                result = res_or_exc
 
                 # Embed drift_topics for fast query-time scoring (cosine similarity).
                 # Failures are non-fatal: row stays with drift_topics but no embedding,
@@ -307,16 +362,12 @@ Return ONLY valid JSON:
 
                 # Update DB
                 self.update_group_status(
-                    group['post_id'], result, drift_embedding=drift_embedding_bytes
+                    group['post_id'], result, drift_embedding=drift_embedding_bytes,
+                    analyzed_by_label=backend_label,
                 )
-                success_count += 1
 
                 if result.get('has_drift'):
                     logger.info(f"✅ DRIFT DETECTED for post {group['post_id']}")
-
-                # Rate limiting is handled by the unified client
-                # Small delay to be safe
-                await asyncio.sleep(1.0)
 
             except Exception as e:
                 logger.error(f"❌ Error analyzing post {group['post_id']}: {str(e)}")
@@ -327,6 +378,9 @@ Return ONLY valid JSON:
                     WHERE post_id = :pid
                 """), {"pid": group['post_id']})
                 self.db.commit()
+                continue
+
+            success_count += 1
 
         logger.info(f"Batch complete. Processed {success_count}/{len(groups)} successfully.")
         return len(groups)
