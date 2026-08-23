@@ -70,7 +70,7 @@ If the script fails with this error after 45 seconds:
 ### "Permission denied" on DB
 The script automatically runs `chown appuser:appuser`. If you still see permission errors in logs:
 - Ensure the Dockerfile still creates the `appuser`.
-- Check if the volume mount path in `fly.toml` matches `/app/data`.
+- Check if the volume mount path in the VM's `docker-compose.vm.yml` matches `/app/data`.
 
 ---
 **Note:** This process updates the **entire** production database with your local version. Ensure your local DB is up-to-date before running this if other people are working on it (though usually you are the single source of truth).

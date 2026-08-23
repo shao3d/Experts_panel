@@ -181,4 +181,12 @@ cache/
 # =========================
 test_results/
 backend/test_results/
-*.test.dbtmp_fly_logs.txt
+*.test.db
+
+# =========================
+# LOCAL-ONLY ARTIFACTS (kept out of the public repo)
+# =========================
+output/
+.haft/
+sessions/
+.gemini-clipboard/

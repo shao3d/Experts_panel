@@ -45,7 +45,7 @@ if [ ! -f "$JSON_PATH" ]; then
 fi
 
 # Ensure we are in project root
-if [ ! -f "fly.toml" ]; then
+if [ ! -f "docker-compose.yml" ]; then
     error "Please run this script from the project root directory."
 fi
 

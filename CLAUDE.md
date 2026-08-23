@@ -180,11 +180,9 @@ To test the pipeline, use the interactive API documentation (available at `/api/
 
 ## 🚀 Production Deployment
 
-The application is configured for deployment on Fly.io using the `fly.toml` file.
+Production runs on an Oracle VM behind Caddy (live at `https://expa.beyondhorizon.dev/`). Every push to `main` triggers the `Deploy Experts Panel to Oracle` GitHub Actions workflow: it SSHes to the VM, pulls the latest commit, rebuilds with `docker compose` (`docker-compose.vm.yml`, lives on the VM), and runs a health check against `/health`.
 
-To deploy, use the Fly.io CLI (`flyctl`) and set the required secrets as defined in `.env.example`. For detailed instructions, please refer to the official Fly.io documentation.
-
-The `backend/CLAUDE.md` file also contains a more detailed guide specific to this project's production deployment.
+The required secrets are defined in `.env.example`; VM-side secrets live in `~/apps/experts-panel/.env.panel`. See `backend/CLAUDE.md` for more detailed runtime notes.
 
 ## 🔍 Troubleshooting
 

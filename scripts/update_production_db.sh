@@ -23,7 +23,7 @@ RESTORE_AUTOSTOP="${RESTORE_AUTOSTOP:-stop}"
 export FLY_NO_UPDATE_CHECK=1
 
 # Ensure we are in project root
-if [ ! -f "fly.toml" ]; then
+if [ ! -f "docker-compose.yml" ]; then
     echo "❌ Error: Please run this script from the project root directory."
     exit 1
 fi

@@ -27,7 +27,7 @@ USERNAME=$3
 JSON_PATH=$4
 
 # Ensure we are in project root
-if [ ! -f "fly.toml" ]; then
+if [ ! -f "docker-compose.yml" ]; then
     echo -e "${RED}❌ Error: Please run this script from the project root directory.${NC}"
     exit 1
 fi
