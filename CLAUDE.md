@@ -102,20 +102,25 @@ This script imports JSON into SQLite and deploys the database artifact. It does 
 See **[Video Hub Playbook](docs/guides/video-hub-operator.md)** for prompts, JSON format, and merge workflows.
 
 ### Updating Production & Data
-To synchronize all experts, run drift analysis, and deploy the updated database to production:
+To synchronize all experts, run drift analysis, and deploy the updated database to production, SSH into the Oracle VM and run:
 ```bash
-./scripts/update_production_db.sh
+ssh -t ubuntu@82.70.251.73
+cd ~/apps/experts-panel/app
+./scripts/update_production_db.sh          # full pipeline (long — use tmux)
+DB_UPLOAD_ONLY=1 ./scripts/update_production_db.sh   # deploy staging as-is
 ```
+The Mac is a thin client; the entire pipeline runs ON the VM against the
+staging DB (`app/backend/data/experts.db`), then promotes it into prod
+(`~/apps/experts-panel/data/experts.db`) and restarts the `panel` container.
 This "Cycle of Life" script handles (12 steps):
 1.  **Backup**: Creates a local backup of `experts.db`.
 2.  **Sync**: Incrementally fetches new posts and comments for **all** experts.
 3.  **Migrations**: Applies pending database migrations (tracked in the in-DB `schema_migrations` table).
 4.  **Vectorization**: Generates embeddings for new posts (`embed_posts.py --continuous`) for Hybrid Search via **Vertex AI**.
 5.  **Drift Analysis**: Analyzes new comments for topic drift via Vertex AI/OpenRouter.
-6.  **Check Remote Host**: Probes SSH connectivity to the Oracle VM (`ubuntu@82.70.251.73`).
-7.  **Remote Backup**: Creates backup of remote database on server.
-8.  **Upload Database**: Staged update via scp: checks free space, uploads gzipped DB to `~/apps/experts-panel/data/experts.db.tmp`, verifies size/SHA-256/gzip/SQLite integrity, then replaces `/home/ubuntu/apps/experts-panel/data/experts.db` after the remote backup exists.
-9.  **Restart Application**: Restarts the `panel` docker compose service and polls `/health`.
+6.  **Prod Backup**: Creates a backup of the production database.
+7.  **Staged Promotion**: Compresses the staging DB, copies into `~/apps/experts-panel/data/`, verifies size/SHA-256/gzip/SQLite integrity, then atomically replaces `experts.db` after the backup exists.
+8.  **Restart Application**: Restarts the `panel` docker compose service and polls `/health`.
 
 The script loads `backend/.env` before running the Python steps, then overrides `DATABASE_URL` to the absolute local `backend/data/experts.db` path. Standalone embeddings and drift therefore use the same Vertex credentials as the backend while avoiding cwd-dependent SQLite paths.
 

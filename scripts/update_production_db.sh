@@ -2,22 +2,31 @@
 
 # ==============================================================================
 # Script: update_production_db.sh
-# Purpose: Run local sync, vectorize, drift analysis, and deploy the database
-#          to production on the Oracle VM (docker compose behind Caddy).
-# Author: Experts Panel Team
+# Purpose: Run the full DB pipeline (sync, vectorize, drift analysis) ON the
+#          Oracle VM and deploy the result into the running panel container.
+#
+# Runs ENTIRELY on the Oracle VM (82.70.251.73). The Mac is a thin client:
+#   ssh ubuntu@82.70.251.73
+#   cd ~/apps/experts-panel/app && ./scripts/update_production_db.sh
+# For long runs use tmux/nohup.
 #
 # Usage:
 #   ./scripts/update_production_db.sh                     # full pipeline deploy
-#   DB_UPLOAD_ONLY=1 ./scripts/update_production_db.sh    # skip local pipeline
+#   DB_UPLOAD_ONLY=1 ./scripts/update_production_db.sh    # skip sync/vectorize/
+#                                                         # drift (deploy only)
 #   ./scripts/update_production_db.sh --rollback          # restore prod DB from
-#                                                         # the remote backup
+#                                                         # the backup
+#
+# Layout on the VM:
+#   ~/apps/experts-panel/app/backend/data/experts.db   — STAGING db (pipeline
+#                                                        works here)
+#   ~/apps/experts-panel/data/experts.db               — PROD db (mounted into
+#                                                        the "panel" container)
+#   ~/apps/experts-panel/docker-compose.vm.yml         — compose file
 #
 # Migration state is tracked INSIDE the database (schema_migrations table).
 # Filesystem markers are deliberately not used: state must survive backups-dir
 # cleanup and must reset together with the database itself.
-#
-# Deployment target: ubuntu@82.70.251.73, data dir ~/apps/experts-panel/data,
-# app runs as docker compose service "panel" (uid 1000) behind Caddy.
 # ==============================================================================
 
 set -euo pipefail
@@ -26,17 +35,15 @@ set -euo pipefail
 DB_PATH="${DB_PATH:-backend/data/experts.db}"
 BACKUP_DIR="${BACKUP_DIR:-backend/data/backups}"
 MIGRATIONS_DIR="${MIGRATIONS_DIR:-backend/migrations}"
-REMOTE_HOST="${REMOTE_HOST:-ubuntu@82.70.251.73}"
-REMOTE_DB_DIR="/home/ubuntu/apps/experts-panel/data"
-REMOTE_DB_PATH="$REMOTE_DB_DIR/experts.db"
-REMOTE_BACKUP_PATH="$REMOTE_DB_DIR/experts.db.backup"
-REMOTE_TMP_PATH="$REMOTE_DB_DIR/experts.db.tmp"
-REMOTE_GZ_TMP_PATH="$REMOTE_DB_DIR/experts.db.gz.tmp"
-REMOTE_DATA_UID_GID="${REMOTE_DATA_UID_GID:-1000:1000}"   # container appuser
+DEPLOY_DIR="/home/ubuntu/apps/experts-panel"
+PROD_DB_PATH="$DEPLOY_DIR/data/experts.db"
+PROD_BACKUP_PATH="$DEPLOY_DIR/data/experts.db.backup"
+PROD_TMP_PATH="$DEPLOY_DIR/data/experts.db.tmp"
+PROD_GZ_TMP_PATH="$DEPLOY_DIR/data/experts.db.gz.tmp"
+PROD_DATA_UID_GID="${PROD_DATA_UID_GID:-1000:1000}"   # container appuser
 HEALTH_URL="${HEALTH_URL:-https://expa.beyondhorizon.dev/health}"
 KEEP_LOCAL_BACKUPS="${KEEP_LOCAL_BACKUPS:-10}"     # deploy backups to keep locally
 RESTART_HEALTH_TIMEOUT="${RESTART_HEALTH_TIMEOUT:-180}" # seconds to wait for /health after restart
-SSH_CONNECT_RETRIES="${SSH_CONNECT_RETRIES:-3}"
 
 # UPLOAD_WORK_DIR is set at runtime and cleaned by the EXIT trap.
 UPLOAD_WORK_DIR=""
@@ -49,16 +56,8 @@ sha256_file() {
     fi
 }
 
-remote_exec() {
-    ssh -o BatchMode=yes "$REMOTE_HOST" "$@"
-}
-
-remote_stat_bytes() {
-    remote_exec "if [ -e \"$1\" ]; then stat -c %s \"$1\"; else echo 0; fi" | awk 'END {print $1}'
-}
-
-cleanup_remote_upload_artifacts() {
-    remote_exec "rm -f $REMOTE_TMP_PATH $REMOTE_GZ_TMP_PATH $REMOTE_DB_PATH.gz" || true
+cleanup_prod_upload_artifacts() {
+    sudo rm -f "$PROD_TMP_PATH" "$PROD_GZ_TMP_PATH" "$PROD_DB_PATH.gz" || true
 }
 
 wait_for_health() {
@@ -81,15 +80,16 @@ wait_for_health() {
 restart_app_and_verify() {
     local context="$1"
     echo "🔄 Restarting application to load new DB..."
-    remote_exec "cd /home/ubuntu/apps/experts-panel && sudo docker compose -f docker-compose.vm.yml --env-file .env.panel up -d --no-deps panel"
+    sudo docker compose -f "$DEPLOY_DIR/docker-compose.vm.yml" \
+        --env-file "$DEPLOY_DIR/.env.panel" up -d --no-deps panel
     echo "   ✅ Restart command sent."
     echo "🩺 Verifying application health after $context..."
     if wait_for_health "$RESTART_HEALTH_TIMEOUT"; then
         return 0
     fi
     echo "   ❌ Application is NOT healthy after restart."
-    echo "      Inspect logs: ssh $REMOTE_HOST 'sudo docker logs --tail 100 \$(sudo docker ps -qf name=panel)'"
-    echo "      Remote backup kept at: $REMOTE_BACKUP_PATH"
+    echo "      Inspect logs: sudo docker logs --tail 100 \$(sudo docker ps -qf name=panel-1)"
+    echo "      Backup kept at: $PROD_BACKUP_PATH"
     echo "      Rollback with: ./scripts/update_production_db.sh --rollback"
     exit 1
 }
@@ -194,32 +194,33 @@ check_local_integrity() {
     echo "   ✅ Local DB integrity: ok."
 }
 
-# Shared remote setup: SSH connectivity probe, data dir bootstrap, EXIT trap
-# (clean local upload temp dir).
-prepare_remote_session() {
-    echo "   🌐 Checking SSH connectivity to $REMOTE_HOST..."
-    local attempt=1
-    until remote_exec "echo ok" >/dev/null 2>&1; do
-        if [ "$attempt" -ge "$SSH_CONNECT_RETRIES" ]; then
-            echo "   ❌ Cannot reach $REMOTE_HOST via SSH after $SSH_CONNECT_RETRIES attempt(s). Aborting."
-            exit 1
-        fi
-        echo "      ... retry ($attempt/$SSH_CONNECT_RETRIES)"
-        attempt=$((attempt + 1))
-        sleep 3
-    done
-    remote_exec "mkdir -p $REMOTE_DB_DIR"
-    trap 'rm -rf "${UPLOAD_WORK_DIR:-}"' EXIT
-    echo "   ✅ Remote host reachable, data dir ready."
+# Guard: this script manages prod files under $DEPLOY_DIR and restarts the
+# docker compose service, so it only makes sense on the VM itself.
+ensure_running_on_vm() {
+    if [ ! -f "$DEPLOY_DIR/docker-compose.vm.yml" ] || [ "$(hostname)" != "oracle-marseille-arm-dev" ]; then
+        cat >&2 <<EOF
+❌ This script must run ON the Oracle VM (oracle-marseille-arm-dev).
+   From the Mac, use it as a thin client:
+
+     ssh -t ubuntu@82.70.251.73
+     cd ~/apps/experts-panel/app
+     ./scripts/update_production_db.sh          # or: DB_UPLOAD_ONLY=1 ...
+
+   Long runs: wrap in tmux (tmux new -A -s expadb).
+EOF
+        exit 1
+    fi
 }
 
 # ==============================================================================
 # Normal deploy
 # ==============================================================================
 do_deploy() {
+    ensure_running_on_vm
+
     # Ensure we are in project root
     if [ ! -f "docker-compose.yml" ]; then
-        echo "❌ Error: Please run this script from the project root directory."
+        echo "❌ Error: Please run this script from the project root directory ($DEPLOY_DIR/app)."
         exit 1
     fi
 
@@ -264,7 +265,12 @@ do_deploy() {
             cp "$DB_PATH" "$LOCAL_BACKUP_FILE"
         fi
     else
-        echo "   ⚠️ Local DB not found at $DB_PATH. Skipping backup."
+        echo "   ⚠️ Staging DB not found at $ABS_DB_PATH."
+        if [ "${DB_UPLOAD_ONLY:-0}" != "1" ]; then
+            echo "   ❌ Cannot run the pipeline without a staging DB. Aborting."
+            exit 1
+        fi
+        echo "   ⏭️  DB_UPLOAD_ONLY=1 without staging DB: will promote PROD as-is (no-op deploy)."
     fi
     rotate_local_backups "$KEEP_LOCAL_BACKUPS"
 
@@ -294,15 +300,6 @@ do_deploy() {
         fi
 
         # 5. Backfill Drift Embeddings (legacy comment_group_drift rows)
-        #       Population runs once after migration 024 unlocks the fast
-        #       cosine-similarity drift scoring path in comment_group_map_service.
-        #       The script is idempotent: it only fills drift_embedding where NULL,
-        #       so repeat deploys do no extra work.
-        #       --limit 2000 bounds worst-case embedding API latency to ~5
-        #       minutes per deploy (embeddings are served via OpenRouter,
-        #       not Vertex). Remaining legacy rows are picked up by subsequent
-        #       deploys until the legacy pool drains. drift_scheduler_service.py
-        #       writes embeddings for new drift groups automatically.
         echo "🧩 [5/12] Backfilling drift embeddings for legacy comment_group_drift rows (--limit 2000)..."
         if $PYTHON_CMD -m backend.scripts.maintenance.backfill_drift_embeddings --limit 2000; then
             echo "   ✅ Drift embedding backfill completed."
@@ -311,13 +308,6 @@ do_deploy() {
         fi
 
         # 6. Apply Drift Cleanup (legacy / newly-broken comment_group_drift rows)
-        #       Repairs rows where drift_topics has unquoted JSON object keys
-        #       and NULLs+has_drift=0 rows whose JSON is unrecoverable.
-        #       Runs BEFORE drift analysis so the drift service operates on
-        #       already-clean drift_topics. Idempotent; a JSON manifest is
-        #       written to backend/data/backups/drift_cleanup_<ts>.json for
-        #       audit. NON-CRITICAL: broken rows are cosmetic and a future
-        #       deploy re-attempts the cleanup.
         echo "🧹 [6/12] Applying drift cleanup (--apply, repair-or-NULL malformed drift_topics)..."
         if $PYTHON_CMD -m backend.scripts.maintenance.cleanup_malformed_drift --apply; then
             echo "   ✅ Drift cleanup completed."
@@ -335,27 +325,25 @@ do_deploy() {
         fi
     fi
 
-    # 8. Check remote host connectivity
-    echo "🌐 [8/12] Preparing remote host ($REMOTE_HOST)..."
-    prepare_remote_session
+    # 8. Verify staging DB exists (pipeline may have been skipped)
+    if [ "${DB_UPLOAD_ONLY:-0}" = "1" ] && [ ! -f "$ABS_DB_PATH" ]; then
+        ABS_DB_PATH="$PROD_DB_PATH"
+        echo "ℹ️  [8/12] No staging DB found; promoting current production DB unchanged (health/restart check only)."
+    fi
+    echo "🎯 [8/12] Staging DB ready: $ABS_DB_PATH ($(( $(wc -c < "$ABS_DB_PATH") / 1024 / 1024 )) MiB)"
 
-    # 9. Remote Backup
-    echo "🛡️  [9/12] Creating remote backup on server..."
-    REMOTE_BACKUP_CMD="if [ -f $REMOTE_DB_PATH ]; then rm -f $REMOTE_BACKUP_PATH && (ln $REMOTE_DB_PATH $REMOTE_BACKUP_PATH || cp $REMOTE_DB_PATH $REMOTE_BACKUP_PATH); else exit 2; fi"
-    if remote_exec "$REMOTE_BACKUP_CMD"; then
-        echo "   ✅ Remote backup created at $REMOTE_BACKUP_PATH"
+    # 9. Prod Backup
+    echo "🛡️  [9/12] Creating prod backup..."
+    if [ -f "$PROD_DB_PATH" ]; then
+        sudo rm -f "$PROD_BACKUP_PATH"
+        sudo ln "$PROD_DB_PATH" "$PROD_BACKUP_PATH" 2>/dev/null || sudo cp "$PROD_DB_PATH" "$PROD_BACKUP_PATH"
+        echo "   ✅ Prod backup created at $PROD_BACKUP_PATH"
     else
-        BACKUP_STATUS=$?
-        if [ "$BACKUP_STATUS" -eq 2 ]; then
-            echo "   ⚠️ Remote DB does not exist yet. Skipping backup."
-        else
-            echo "   ❌ Failed to create remote backup. Aborting before upload."
-            exit 1
-        fi
+        echo "   ⚠️ Prod DB does not exist yet. Skipping backup."
     fi
 
-    # 10. Upload New DB (staged, compressed)
-    echo "🚀 [10/12] Uploading fresh database (compressed staged upload)..."
+    # 10. Stage New DB into prod dir (same filesystem: copy + verify + atomic mv)
+    echo "🚀 [10/12] Promoting fresh database (compressed staged update)..."
     check_local_integrity
 
     UPLOAD_WORK_DIR=$(mktemp -d "${TMPDIR:-/tmp}/experts-db-upload.XXXXXX")
@@ -366,92 +354,90 @@ do_deploy() {
     else
         GZIP_BIN="gzip"
     fi
-    echo "   🗜️  Compressing local DB with $GZIP_BIN before upload..."
-    "$GZIP_BIN" -c "$DB_PATH" > "$LOCAL_GZ_PATH"
+    echo "   🗜️  Compressing staging DB with $GZIP_BIN..."
+    "$GZIP_BIN" -c "$ABS_DB_PATH" > "$LOCAL_GZ_PATH"
 
-    LOCAL_DB_BYTES=$(wc -c < "$DB_PATH" | tr -d ' ')
+    LOCAL_DB_BYTES=$(wc -c < "$ABS_DB_PATH" | tr -d ' ')
     LOCAL_GZ_BYTES=$(wc -c < "$LOCAL_GZ_PATH" | tr -d ' ')
     LOCAL_GZ_SHA=$(sha256_file "$LOCAL_GZ_PATH")
     LOCAL_DB_KB=$(( (LOCAL_DB_BYTES + 1023) / 1024 ))
     LOCAL_GZ_KB=$(( (LOCAL_GZ_BYTES + 1023) / 1024 ))
     MIN_FREE_KB=$(( LOCAL_DB_KB + LOCAL_GZ_KB + 51200 ))
 
-    # Clean up leftovers from previous failed uploads before checking space.
-    cleanup_remote_upload_artifacts
+    cleanup_prod_upload_artifacts
 
-    REMOTE_FREE_KB=$(remote_exec "df -Pk $REMOTE_DB_DIR" | awk 'END {print $4}')
+    REMOTE_FREE_KB=$(df -Pk "$DEPLOY_DIR/data" | awk 'END {print $4}')
 
     if ! [[ "$REMOTE_FREE_KB" =~ ^[0-9]+$ ]]; then
-        echo "   ❌ Could not determine free space on $REMOTE_DB_DIR."
+        echo "   ❌ Could not determine free space on $DEPLOY_DIR/data."
         exit 1
     fi
 
-    echo "   🧮 Remote free before upload: $(( REMOTE_FREE_KB / 1024 )) MiB; DB size: $(( LOCAL_DB_KB / 1024 )) MiB; gzip: $(( LOCAL_GZ_KB / 1024 )) MiB"
+    echo "   🧮 Free before deploy: $(( REMOTE_FREE_KB / 1024 )) MiB; DB size: $(( LOCAL_DB_KB / 1024 )) MiB; gzip: $(( LOCAL_GZ_KB / 1024 )) MiB"
     if [ "$REMOTE_FREE_KB" -lt "$MIN_FREE_KB" ]; then
-        echo "   ❌ Not enough free space on $REMOTE_DB_DIR for a staged upload."
+        echo "   ❌ Not enough free space on $DEPLOY_DIR/data for a staged update."
         echo "      Need at least $(( MIN_FREE_KB / 1024 )) MiB free, found $(( REMOTE_FREE_KB / 1024 )) MiB."
-        echo "      Clean old backups/logs on the server before retrying."
         exit 1
     fi
 
-    echo "   📤 Uploading gzip via scp..."
-    remote_exec "rm -f $REMOTE_GZ_TMP_PATH"
-    if ! scp -o BatchMode=yes -q "$LOCAL_GZ_PATH" "$REMOTE_HOST:$REMOTE_GZ_TMP_PATH"; then
-        echo "   ❌ Upload failed."
-        cleanup_remote_upload_artifacts
+    echo "   📤 Copying gzip into prod data dir..."
+    rm -f "$PROD_GZ_TMP_PATH"
+    if ! sudo cp "$LOCAL_GZ_PATH" "$PROD_GZ_TMP_PATH"; then
+        echo "   ❌ Copy failed."
+        cleanup_prod_upload_artifacts
         exit 1
     fi
 
-    REMOTE_GZ_BYTES=$(remote_stat_bytes "$REMOTE_GZ_TMP_PATH")
-    if [ "$REMOTE_GZ_BYTES" != "$LOCAL_GZ_BYTES" ]; then
-        echo "   ❌ Uploaded gzip size mismatch. Expected $LOCAL_GZ_BYTES bytes, got $REMOTE_GZ_BYTES bytes."
-        cleanup_remote_upload_artifacts
+    PROD_GZ_BYTES=$(sudo wc -c < "$PROD_GZ_TMP_PATH" | tr -d ' ')
+    if [ "$PROD_GZ_BYTES" != "$LOCAL_GZ_BYTES" ]; then
+        echo "   ❌ Copied gzip size mismatch. Expected $LOCAL_GZ_BYTES bytes, got $PROD_GZ_BYTES bytes."
+        cleanup_prod_upload_artifacts
         exit 1
     fi
 
-    REMOTE_GZ_SHA=$(remote_exec "sha256sum $REMOTE_GZ_TMP_PATH | cut -d ' ' -f 1" | awk 'END {print $1}')
-    if [ "$REMOTE_GZ_SHA" != "$LOCAL_GZ_SHA" ]; then
-        echo "   ❌ Uploaded gzip SHA mismatch."
+    PROD_GZ_SHA=$(sudo sha256sum "$PROD_GZ_TMP_PATH" | awk '{print $1}')
+    if [ "$PROD_GZ_SHA" != "$LOCAL_GZ_SHA" ]; then
+        echo "   ❌ Copied gzip SHA mismatch."
         echo "      Expected: $LOCAL_GZ_SHA"
-        echo "      Got:      $REMOTE_GZ_SHA"
-        cleanup_remote_upload_artifacts
+        echo "      Got:      $PROD_GZ_SHA"
+        cleanup_prod_upload_artifacts
         exit 1
     fi
 
-    if remote_exec "gzip -t $REMOTE_GZ_TMP_PATH"; then
-        echo "   ✅ Gzip upload verified by size, SHA, and gzip test."
+    if gzip -t "$PROD_GZ_TMP_PATH"; then
+        echo "   ✅ Gzip verified by size, SHA, and gzip test."
     else
-        echo "   ❌ Remote gzip validation failed."
-        cleanup_remote_upload_artifacts
+        echo "   ❌ Gzip validation failed."
+        cleanup_prod_upload_artifacts
         exit 1
     fi
 
-    echo "   📦 Decompressing staged DB on the server..."
-    if remote_exec "rm -f $REMOTE_TMP_PATH && gzip -dc $REMOTE_GZ_TMP_PATH > $REMOTE_TMP_PATH"; then
-        REMOTE_TMP_BYTES=$(remote_stat_bytes "$REMOTE_TMP_PATH")
+    echo "   📦 Decompressing staged DB..."
+    if sudo sh -c "rm -f $PROD_TMP_PATH && gzip -dc $PROD_GZ_TMP_PATH > $PROD_TMP_PATH"; then
+        PROD_TMP_BYTES=$(sudo wc -c < "$PROD_TMP_PATH" | tr -d ' ')
     else
-        echo "   ❌ Remote decompression failed."
-        cleanup_remote_upload_artifacts
+        echo "   ❌ Decompression failed."
+        cleanup_prod_upload_artifacts
         exit 1
     fi
 
-    if [ "$REMOTE_TMP_BYTES" != "$LOCAL_DB_BYTES" ]; then
-        echo "   ❌ Decompressed DB size mismatch. Expected $LOCAL_DB_BYTES bytes, got $REMOTE_TMP_BYTES bytes."
-        cleanup_remote_upload_artifacts
+    if [ "$PROD_TMP_BYTES" != "$LOCAL_DB_BYTES" ]; then
+        echo "   ❌ Decompressed DB size mismatch. Expected $LOCAL_DB_BYTES bytes, got $PROD_TMP_BYTES bytes."
+        cleanup_prod_upload_artifacts
         exit 1
     fi
 
     echo "   🔎 Running SQLite integrity check on staged DB..."
-    REMOTE_INTEGRITY=$(remote_exec "python3 -c \"import sqlite3; con=sqlite3.connect('$REMOTE_TMP_PATH'); print(con.execute('PRAGMA integrity_check').fetchone()[0])\"" | awk 'END {print $1}')
-    if [ "$REMOTE_INTEGRITY" != "ok" ]; then
-        echo "   ❌ SQLite integrity check failed: $REMOTE_INTEGRITY"
-        cleanup_remote_upload_artifacts
+    PROD_INTEGRITY=$(sudo python3 -c "import sqlite3; con=sqlite3.connect('$PROD_TMP_PATH'); print(con.execute('PRAGMA integrity_check').fetchone()[0])" | awk 'END {print $1}')
+    if [ "$PROD_INTEGRITY" != "ok" ]; then
+        echo "   ❌ SQLite integrity check failed: $PROD_INTEGRITY"
+        cleanup_prod_upload_artifacts
         exit 1
     fi
 
     echo "   🔁 Replacing production database..."
-    REMOTE_REPLACE_CMD="rm -f $REMOTE_DB_PATH-wal $REMOTE_DB_PATH-shm && mv -f $REMOTE_TMP_PATH $REMOTE_DB_PATH && sudo chown $REMOTE_DATA_UID_GID $REMOTE_DB_PATH && rm -f $REMOTE_GZ_TMP_PATH"
-    if remote_exec "$REMOTE_REPLACE_CMD"; then
+    REPLACE_CMD="sudo rm -f $PROD_DB_PATH-wal $PROD_DB_PATH-shm && sudo mv -f $PROD_TMP_PATH $PROD_DB_PATH && sudo chown $PROD_DATA_UID_GID $PROD_DB_PATH && sudo rm -f $PROD_GZ_TMP_PATH"
+    if bash -c "$REPLACE_CMD"; then
         echo "   ✅ Production database replaced."
     else
         echo "   ❌ Database replacement failed! Existing DB should still be available if mv did not run."
@@ -467,42 +453,36 @@ do_deploy() {
 }
 
 # ==============================================================================
-# Rollback: restore the remote backup created by the last deploy.
+# Rollback: restore the backup created by the last deploy.
 # The current production DB is snapshotted first, so the rollback itself
 # can be undone.
 # ==============================================================================
 do_rollback() {
-    if [ ! -f "docker-compose.yml" ]; then
-        echo "❌ Error: Please run this script from the project root directory."
-        exit 1
-    fi
+    ensure_running_on_vm
 
     echo "========================================================"
-    echo "⏪ PRODUCTION DB ROLLBACK (restore from remote backup)"
+    echo "⏪ PRODUCTION DB ROLLBACK (restore from backup)"
     echo "========================================================"
 
-    echo "🌐 Preparing remote host ($REMOTE_HOST)..."
-    prepare_remote_session
-
-    echo "🛡️ Checking remote backup..."
-    REMOTE_BACKUP_BYTES=$(remote_stat_bytes "$REMOTE_BACKUP_PATH")
-    if [ "$REMOTE_BACKUP_BYTES" = "0" ]; then
-        echo "   ❌ No remote backup found at $REMOTE_BACKUP_PATH. Nothing to roll back to."
+    echo "🛡️ Checking backup..."
+    if [ ! -f "$PROD_BACKUP_PATH" ] || [ ! -s "$PROD_BACKUP_PATH" ]; then
+        echo "   ❌ No backup found at $PROD_BACKUP_PATH. Nothing to roll back to."
         exit 1
     fi
-    echo "   ✅ Remote backup present ($REMOTE_BACKUP_BYTES bytes)."
+    echo "   ✅ Backup present ($(wc -c < "$PROD_BACKUP_PATH" | tr -d ' ') bytes)."
 
-    PRE_ROLLBACK_SNAPSHOT="$REMOTE_DB_DIR/experts.db.pre_rollback_$(date +%Y%m%d_%H%M%S)"
+    PRE_ROLLBACK_SNAPSHOT="$DEPLOY_DIR/data/experts.db.pre_rollback_$(date +%Y%m%d_%H%M%S)"
     echo "📸 Snapshotting current production DB to $(basename "$PRE_ROLLBACK_SNAPSHOT") before overwriting..."
-    if remote_exec "if [ -f $REMOTE_DB_PATH ]; then cp $REMOTE_DB_PATH $PRE_ROLLBACK_SNAPSHOT; fi"; then
+    if [ -f "$PROD_DB_PATH" ]; then
+        sudo cp "$PROD_DB_PATH" "$PRE_ROLLBACK_SNAPSHOT" && sudo chown ubuntu:ubuntu "$PRE_ROLLBACK_SNAPSHOT"
         echo "   ✅ Pre-rollback snapshot created."
     else
         echo "   ⚠️ Could not snapshot the current DB; continuing (the backup itself stays intact)."
     fi
 
     echo "🔁 Restoring backup over production DB..."
-    RESTORE_CMD="rm -f $REMOTE_DB_PATH-wal $REMOTE_DB_PATH-shm && cp $REMOTE_BACKUP_PATH $REMOTE_DB_PATH && sudo chown $REMOTE_DATA_UID_GID $REMOTE_DB_PATH"
-    if ! remote_exec "$RESTORE_CMD"; then
+    RESTORE_CMD="sudo rm -f $PROD_DB_PATH-wal $PROD_DB_PATH-shm && sudo cp $PROD_BACKUP_PATH $PROD_DB_PATH && sudo chown $PROD_DATA_UID_GID $PROD_DB_PATH"
+    if ! bash -c "$RESTORE_CMD"; then
         echo "   ❌ Restore failed. Production DB was not modified."
         exit 1
     fi
@@ -513,20 +493,19 @@ do_rollback() {
     echo "========================================================"
     echo "🎉 ROLLBACK COMPLETE. Production is serving the backup DB."
     echo "   Pre-rollback DB kept at: $PRE_ROLLBACK_SNAPSHOT"
-    echo "   Backup still intact at:  $REMOTE_BACKUP_PATH"
+    echo "   Backup still intact at:  $PROD_BACKUP_PATH"
     echo "========================================================"
 }
 
 usage() {
     cat <<'USAGE'
-Usage:
-  ./scripts/update_production_db.sh                 Full pipeline deploy
-  DB_UPLOAD_ONLY=1 ./scripts/update_production_db.sh  Skip local pipeline (upload only)
-  ./scripts/update_production_db.sh --rollback      Restore prod DB from remote backup
+Usage (run ON the Oracle VM; Mac is a thin client):
+  ssh -t ubuntu@82.70.251.73
+  cd ~/apps/experts-panel/app
 
-Environment overrides:
-  REMOTE_HOST=ubuntu@82.70.251.73     deployment target (default)
-  HEALTH_URL=https://expa.beyondhorizon.dev/health
+  ./scripts/update_production_db.sh                    Full pipeline deploy
+  DB_UPLOAD_ONLY=1 ./scripts/update_production_db.sh   Skip sync/vectorize/drift
+  ./scripts/update_production_db.sh --rollback         Restore prod DB from backup
 USAGE
 }
 
