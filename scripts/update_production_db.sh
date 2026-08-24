@@ -81,7 +81,7 @@ restart_app_and_verify() {
     local context="$1"
     echo "🔄 Restarting application to load new DB..."
     sudo docker compose -f "$DEPLOY_DIR/docker-compose.vm.yml" \
-        --env-file "$DEPLOY_DIR/.env.panel" up -d --no-deps panel
+        --env-file "$DEPLOY_DIR/.env.panel" restart panel
     echo "   ✅ Restart command sent."
     echo "🩺 Verifying application health after $context..."
     if wait_for_health "$RESTART_HEALTH_TIMEOUT"; then
