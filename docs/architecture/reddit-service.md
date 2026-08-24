@@ -32,7 +32,7 @@ graph LR
 
     Scout -- "queries + subreddit hints + keywords" --> Retrieval[Precision-First Retrieval]
     Retrieval -- "POST /search" --> Proxy[Reddit Proxy Service]
-    Proxy -- "search_reddit via MCP" --> Reddit[Reddit API]
+    Proxy -- "direct OAuth search" --> Reddit[Reddit API]
     Reddit --> Proxy
     Proxy --> Retrieval
 
@@ -140,7 +140,7 @@ Endpoints:
 
 Что делает:
 
-- ходит в Reddit через MCP
+- ходит в Reddit напрямую через OAuth API (search + details; MCP-слой убран 24.08.2026)
 - нормализует JSON
 - чистит контент
 - сохраняет кодовые блоки и структуру текста

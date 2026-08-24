@@ -1,16 +1,12 @@
 /**
- * Reddit MCP Proxy Service
- * 
- * Sidecar architecture for Experts Panel
- * Provides resilient Reddit search via MCP protocol with Watchdog pattern
+ * Reddit Proxy Service
+ *
+ * Sidecar architecture for Experts Panel.
+ * Talks to the Reddit OAuth API directly (no MCP layer): search + deep thread fetch,
+ * with sanitization that preserves code blocks.
  */
 
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
-import { spawn } from 'cross-spawn';
-import type { ChildProcess } from 'child_process';
 import Fastify from 'fastify';
-import PQueue from 'p-queue';
 import { LRUCache } from 'lru-cache';
 import { config } from 'dotenv';
 import { z } from 'zod';
@@ -23,13 +19,12 @@ config();
 // ============================================================================
 
 const PORT = parseInt(process.env.PORT || '3000');
-const MCP_TIMEOUT_MS = parseInt(process.env.MCP_TIMEOUT_MS || '15000');
-const REDDIT_USER_AGENT = process.env.REDDIT_USER_AGENT || 
+const REDDIT_USER_AGENT = process.env.REDDIT_USER_AGENT ||
   'android:com.experts.panel:v1.0 (by /u/External-Way5292)';
-const MCP_COMMAND = process.env.MCP_COMMAND || 'npx';
-const MCP_ARGS = (process.env.MCP_ARGS || '-y reddit-mcp-buddy').split(' ');
 const CACHE_TTL_MS = parseInt(process.env.CACHE_TTL_MS || '300000'); // 5 minutes
 const LOG_LEVEL = process.env.LOG_LEVEL || 'debug';
+
+const REDDIT_OAUTH_BASE = 'https://oauth.reddit.com';
 
 // ============================================================================
 // Types
@@ -59,6 +54,8 @@ interface SearchResponse {
     score: number;
     commentsCount: number;
     subreddit: string;
+    created_utc?: number;
+    [key: string]: unknown;
   }>;
   query: string;
   processingTimeMs: number;
@@ -81,10 +78,8 @@ const logger = {
 
 /**
  * Remove Zalgo text (combining characters)
- * Zalgo uses Unicode combining characters (U+0300–U+036F and beyond)
  */
 function sanitizeZalgo(text: string): string {
-  // Remove combining characters (Unicode ranges for diacritics)
   return text
     .replace(/[\u0300-\u036f]/g, '') // Combining Diacritical Marks
     .replace(/[\u1dc0-\u1dff]/g, '') // Combining Diacritical Marks Supplement
@@ -109,41 +104,22 @@ function normalizeWhitespace(text: string): string {
  */
 function sanitizeText(text: string): string {
   if (!text) return '';
-  
-  // First, remove Zalgo characters globally
+
   const noZalgo = sanitizeZalgo(text);
-  
-  // Split by markdown code blocks (```...```)
-  // The capturing group () ensures separators are included in the result array
+
+  // Split by markdown code blocks; keep them AS IS (preserve indentation)
   const parts = noZalgo.split(/(```[\s\S]*?```)/g);
-  
+
   return parts.map(part => {
-    // If it's a code block, keep it AS IS (preserve indentation)
     if (part.startsWith('```')) {
-       return part; 
+      return part;
     }
-    // If it's normal text, crush whitespaces to save tokens
     return normalizeWhitespace(part);
   }).join('');
 }
 
-/**
- * Escape markdown special characters for safe rendering
- */
-function escapeMarkdown(text: string): string {
-  return text
-    .replace(/\\/g, '\\\\')
-    .replace(/\*/g, '\\*')
-    .replace(/_/g, '\\_')
-    .replace(/\[/g, '\\[')
-    .replace(/\]/g, '\\]')
-    .replace(/\(/g, '\\(')
-    .replace(/\)/g, '\\)')
-    .replace(/`/g, '\\`');
-}
-
 // ============================================================================
-// Reddit Direct API Client (Bypassing limited MCP)
+// Reddit Direct API Client (OAuth password grant)
 // ============================================================================
 
 let redditAccessToken: string | null = null;
@@ -165,7 +141,7 @@ async function getRedditAccessToken(): Promise<string> {
   }
 
   const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
-  
+
   try {
     const response = await fetch('https://www.reddit.com/api/v1/access_token', {
       method: 'POST',
@@ -186,10 +162,10 @@ async function getRedditAccessToken(): Promise<string> {
     }
 
     const data = await response.json() as { access_token: string, expires_in: number };
-    
+
     redditAccessToken = data.access_token;
     redditTokenExpiresAt = Date.now() + (data.expires_in * 1000);
-    
+
     logger.info('✅ Acquired new Reddit Access Token');
     return redditAccessToken;
   } catch (e) {
@@ -198,17 +174,9 @@ async function getRedditAccessToken(): Promise<string> {
   }
 }
 
-async function fetchDeepThread(
-  postId: string, 
-  limit: number = 100, 
-  depth: number = 5
-): Promise<any> {
+async function redditGet(pathAndQuery: string): Promise<any> {
   const token = await getRedditAccessToken();
-  const url = `https://oauth.reddit.com/comments/${postId}?limit=${limit}&depth=${depth}&sort=confidence`;
-  
-  logger.info(`Fetching deep thread: ${url}`);
-  
-  const response = await fetch(url, {
+  const response = await fetch(`${REDDIT_OAUTH_BASE}${pathAndQuery}`, {
     headers: {
       'Authorization': `Bearer ${token}`,
       'User-Agent': REDDIT_USER_AGENT
@@ -216,10 +184,70 @@ async function fetchDeepThread(
   });
 
   if (!response.ok) {
-    throw new Error(`Reddit API error: ${response.status}`);
+    throw new Error(`Reddit API error: ${response.status} ${await response.text().catch(() => '')}`.slice(0, 300));
   }
 
-  const data = await response.json();
+  return response.json();
+}
+
+async function searchRedditDirect(
+  query: string,
+  options: {
+    subreddits?: string[];
+    sort: string;
+    time: string;
+    limit: number;
+  }
+): Promise<RedditSearchResult[]> {
+  const subs = (options.subreddits || []).map(s => s.trim()).filter(Boolean);
+  const params = new URLSearchParams({
+    q: query,
+    sort: options.sort,
+    t: options.time,
+    limit: String(Math.min(Math.max(options.limit, 1), 50)),
+    raw_json: '1',
+  });
+  // NOTE: '+' inside the subreddit list must be percent-encoded (%2B):
+  // a raw '+' makes oauth.reddit.com answer 301 -> https://www.reddit.com/
+  const subsPath = subs.map(s => encodeURIComponent(s)).join('%2B');
+  const path = subs.length > 0
+    ? `/r/${subsPath}/search?${params.toString()}&restrict_sr=1`
+    : `/search?${params.toString()}`;
+
+  logger.info(
+    `[Direct API] search: sort=${options.sort} t=${options.time} subs=[${subs.join(',') || '-'}] q="${query}"`
+  );
+
+  const data = await redditGet(path);
+  const children = data?.data?.children;
+  if (!Array.isArray(children)) {
+    throw new Error('Invalid Reddit search response format');
+  }
+
+  return children.map((c: any) => {
+    const d = c.data || {};
+    return {
+      id: String(d.id || ''),
+      title: d.title || '',
+      url: d.url || '',
+      score: typeof d.score === 'number' ? d.score : 0,
+      numComments: typeof d.num_comments === 'number' ? d.num_comments : 0,
+      subreddit: d.subreddit || '',
+      author: d.author || '',
+      createdUtc: typeof d.created_utc === 'number' ? d.created_utc : 0,
+      selftext: d.selftext || '',
+      permalink: d.permalink || '',
+    };
+  }).filter(r => r.id && r.title);
+}
+
+async function fetchDeepThread(
+  postId: string,
+  limit: number = 100,
+  depth: number = 5
+): Promise<any> {
+  const data = await redditGet(`/comments/${postId}?limit=${limit}&depth=${depth}&sort=confidence`);
+
   // Reddit returns array: [post_listing, comment_listing]
   if (!Array.isArray(data) || data.length < 2) {
     throw new Error('Invalid Reddit API response format');
@@ -232,232 +260,13 @@ async function fetchDeepThread(
 }
 
 // ============================================================================
-// Watchdog MCP Manager
-// ============================================================================
-
-class WatchdogMCPManager {
-  private client: Client | null = null;
-  private transport: StdioClientTransport | null = null;
-  private process: ChildProcess | null = null;
-  private queue: PQueue;
-  private isReady = false;
-  private restartCount = 0;
-  private readonly maxRestarts = 10;
-
-  constructor() {
-    this.queue = new PQueue({ concurrency: 1 });
-  }
-
-  /**
-   * Spawn the MCP server process with retry logic
-   */
-  async spawn(): Promise<void> {
-    if (this.restartCount >= this.maxRestarts) {
-      throw new Error(`Max restarts (${this.maxRestarts}) exceeded. MCP server unstable.`);
-    }
-
-    logger.info('Spawning MCP server:', MCP_COMMAND, MCP_ARGS.join(' '));
-    
-    // Clean up any existing resources before spawning
-    await this.cleanup();
-
-    // Spawn child process with environment
-    this.process = spawn(MCP_COMMAND, MCP_ARGS, {
-      env: {
-        ...process.env,
-        REDDIT_USER_AGENT,
-      },
-      stdio: ['pipe', 'pipe', 'pipe'],
-    });
-
-    if (!this.process.pid) {
-      throw new Error('Failed to spawn MCP server process');
-    }
-
-    this.restartCount++;
-    logger.info(`MCP process spawned with PID: ${this.process.pid}, restart #${this.restartCount}`);
-
-    // Log stderr for debugging
-    this.process.stderr?.on('data', (data: Buffer) => {
-      const message = data.toString().trim();
-      if (message) {
-        logger.debug('MCP stderr:', message);
-      }
-    });
-
-    // Handle process exit
-    this.process.on('exit', (code: number | null, signal: NodeJS.Signals | null) => {
-      logger.warn(`MCP process exited with code ${code}, signal ${signal}`);
-      this.isReady = false;
-    });
-
-    // Create transport with all Reddit credentials
-    this.transport = new StdioClientTransport({
-      command: MCP_COMMAND,
-      args: MCP_ARGS,
-      env: {
-        ...process.env,
-        REDDIT_USER_AGENT,
-        REDDIT_CLIENT_ID: process.env.REDDIT_CLIENT_ID || '',
-        REDDIT_CLIENT_SECRET: process.env.REDDIT_CLIENT_SECRET || '',
-        REDDIT_USERNAME: process.env.REDDIT_USERNAME || '',
-        REDDIT_PASSWORD: process.env.REDDIT_PASSWORD || '',
-      } as Record<string, string>,
-    });
-
-    // Create client
-    this.client = new Client(
-      {
-        name: 'experts-reddit-proxy',
-        version: '1.0.0',
-      },
-      {
-        capabilities: {},
-      }
-    );
-
-    // Connect
-    await this.client.connect(this.transport);
-    this.isReady = true;
-    logger.info('MCP client connected successfully');
-  }
-
-  /**
-   * Clean up resources without full reset
-   */
-  private async cleanup(): Promise<void> {
-    // Close client connection
-    if (this.client) {
-      try {
-        await this.client.close();
-      } catch (e) {
-        logger.debug('Error closing client during cleanup:', e);
-      }
-      this.client = null;
-    }
-
-    // Kill process if still running
-    if (this.process && !this.process.killed) {
-      this.process.kill('SIGKILL');
-      
-      // Wait for process to exit with timeout
-      await new Promise<void>((resolve) => {
-        const timeout = setTimeout(() => {
-          logger.warn('Force cleanup: process did not exit in time');
-          this.process?.kill('SIGTERM');
-          resolve();
-        }, 2000);
-
-        this.process?.once('exit', () => {
-          clearTimeout(timeout);
-          resolve();
-        });
-      });
-    }
-    this.process = null;
-    this.transport = null;
-  }
-
-  /**
-   * Kill the MCP process and reset state
-   */
-  async kill(): Promise<void> {
-    logger.warn('Killing MCP process...');
-    await this.cleanup();
-    this.isReady = false;
-    logger.info('MCP process killed');
-  }
-
-  /**
-   * Respawn the MCP process
-   */
-  async respawn(): Promise<void> {
-    logger.info('Respawning MCP process...');
-    await this.kill();
-    await this.spawn();
-  }
-
-  /**
-   * Execute MCP tool call with timeout and watchdog
-   */
-  async executeTool<T = unknown>(toolName: string, args: Record<string, unknown>): Promise<T> {
-    // Auto-restart if not ready
-    if (!this.isReady || !this.client) {
-      logger.warn('MCP client not ready, attempting respawn...');
-      try {
-        await this.respawn();
-      } catch (spawnError) {
-        logger.error('Failed to respawn MCP server:', spawnError);
-        throw new Error('MCP client not ready and respawn failed');
-      }
-    }
-
-    return this.queue.add(async () => {
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => {
-          reject(new Error(`MCP tool call timeout after ${MCP_TIMEOUT_MS}ms`));
-        }, MCP_TIMEOUT_MS);
-      });
-
-      const toolPromise = this.client!.callTool({
-        name: toolName,
-        arguments: args,
-      });
-
-      try {
-        const result = await Promise.race([toolPromise, timeoutPromise]);
-        
-        // Extract content from MCP result
-        if (result && result.content && Array.isArray(result.content)) {
-          const textContent = result.content
-            .filter((item: { type?: string; text?: string }) => item.type === 'text')
-            .map((item: { text?: string }) => item.text)
-            .join('\n');
-          
-          // Safely parse JSON with fallback
-          try {
-            return JSON.parse(textContent) as T;
-          } catch (parseError) {
-            logger.warn('JSON parse failed, returning raw text:', parseError);
-            // Return the text content wrapped in a predictable structure
-            return { rawText: textContent, _parseError: true } as unknown as T;
-          }
-        }
-        
-        return result as T;
-      } catch (error) {
-        // If timeout or error, respawn and rethrow
-        if (error instanceof Error && error.message.includes('timeout')) {
-          logger.error('Tool call timeout, triggering respawn...');
-          await this.respawn();
-        }
-        throw error;
-      }
-    }) as Promise<T>;
-  }
-
-  getClient(): Client | null {
-    return this.client;
-  }
-
-  get isHealthy(): boolean {
-    return this.isReady && this.process !== null && !this.process.killed;
-  }
-}
-
-// ============================================================================
 // Smart Aggregation
 // ============================================================================
 
 class RedditAggregator {
-  private mcp: WatchdogMCPManager;
-
-  constructor(mcp: WatchdogMCPManager) {
-    this.mcp = mcp;
-  }
 
   /**
-   * Smart Aggregation: Search x2 → Filter → Fetch → Sanitize
+   * Smart Aggregation: Search xN → Filter → Fetch → Sanitize
    */
   async aggregate(query: string, options: {
     limit?: number;
@@ -476,12 +285,12 @@ class RedditAggregator {
     logger.info('Starting aggregation for query:', query);
 
     try {
-      // Step 1: Search x2 (search for posts + get details)
+      // Step 1: Search (get more than needed to filter)
       const searchResults = await this.searchReddit(query, {
         subreddits,
         sort,
         time,
-        limit: Math.min(limit * 2, 25), // Get more to filter
+        limit: Math.min(limit * 2, 25),
       });
 
       logger.info(`Found ${searchResults.length} raw results`);
@@ -525,7 +334,9 @@ class RedditAggregator {
   }
 
   /**
-   * Search Reddit using MCP tool
+   * Search Reddit via the direct OAuth API.
+   * Note: Reddit only applies the query seriously with sort=relevance;
+   * sort=top/new drift toward popular/fresh content regardless of the query.
    */
   private async searchReddit(
     query: string,
@@ -536,92 +347,7 @@ class RedditAggregator {
       limit: number;
     }
   ): Promise<RedditSearchResult[]> {
-    // Always use search_reddit to ensure the query is respected.
-    // browse_subreddit ignores the query and just returns top posts, which is bad for specific searches.
-    
-    logger.info('Executing search_reddit for query:', query, 'subreddits:', options.subreddits);
-    const rawResult = await this.mcp.executeTool<unknown>('search_reddit', {
-      query,
-      subreddits: options.subreddits || [],
-      sort: options.sort,
-      time: options.time,
-      limit: options.limit,
-    });
-
-    // Check if result is valid and has posts
-    if (!rawResult || typeof rawResult !== 'object') {
-      logger.error('Invalid response from searchReddit:', rawResult);
-      throw new Error('Invalid response from Reddit MCP server');
-    }
-
-    // DEBUG: Log raw result structure
-    logger.debug('Raw search result:', JSON.stringify(rawResult, null, 2));
-
-    // Handle raw text fallback (when JSON parsing failed)
-    if ('_parseError' in rawResult && 'rawText' in rawResult) {
-      logger.error('MCP returned raw text instead of JSON:', rawResult.rawText);
-      throw new Error('Reddit MCP server returned unexpected format');
-    }
-
-    const result = rawResult as { 
-      posts?: Array<{
-        id: string;
-        title: string;
-        author: string;
-        score: number;
-        upvote_ratio: number;
-        num_comments: number;
-        created_utc: number;
-        url: string;
-        permalink: string;
-        subreddit: string;
-        is_video: boolean;
-        is_text_post: boolean;
-        content?: string;
-        nsfw: boolean;
-        stickied: boolean;
-        link_flair_text?: string;
-      }>;
-      results?: Array<{
-        id: string;
-        title: string;
-        author: string;
-        score: number;
-        upvote_ratio: number;
-        num_comments: number;
-        created_utc: number;
-        url: string;
-        permalink: string;
-        subreddit: string;
-        is_video: boolean;
-        is_text_post: boolean;
-        content?: string;
-        nsfw: boolean;
-        link_flair_text?: string;
-      }>;
-      total_posts?: number;
-      total_results?: number;
-    };
-
-    // Handle different response formats:
-    // - browse_subreddit returns { posts: [...], total_posts: N }
-    // - search_reddit returns { results: [...], total_results: N }
-    const postsArray = result.posts || result.results || [];
-    logger.info(`search_reddit found ${postsArray.length} posts (total_results: ${result.total_results || 0})`);
-
-    // Map to our internal format
-    return postsArray.map(post => ({
-      id: post.id,
-      title: post.title,
-      url: post.url,
-      score: post.score,
-      numComments: post.num_comments,
-      subreddit: post.subreddit,
-      author: post.author,
-      createdUtc: post.created_utc,
-      selftext: post.content,
-      permalink: post.permalink,
-    }));
+    return await searchRedditDirect(query, options);
   }
 
   /**
@@ -630,7 +356,7 @@ class RedditAggregator {
   private filterResults(results: RedditSearchResult[], targetCount: number): RedditSearchResult[] {
     // Score threshold: posts with negative or very low score are likely low quality
     const MIN_SCORE = 5;
-    
+
     const filtered = results
       .filter(r => r.score >= MIN_SCORE)
       .sort((a, b) => {
@@ -644,7 +370,7 @@ class RedditAggregator {
   }
 
   /**
-   * Enrich results with full content using get_post_details
+   * Enrich results with full content using direct thread fetch
    */
   private async enrichResults(results: RedditSearchResult[]): Promise<RedditSearchResult[]> {
     const enriched: RedditSearchResult[] = [];
@@ -654,20 +380,17 @@ class RedditAggregator {
 
     logger.info(`Enriching top ${topResults.length} posts with details...`);
 
-    // Process in parallel with concurrency limit
+    // Process in parallel
     const promises = topResults.map(async (post) => {
       try {
-        // Use our own getPostDetails method instead of MCP to ensure full metadata (flairs, etc.)
-        // and consistent sanitization.
-        // We request 50 comments with depth 3 for broad but reasonably deep context.
         const details = await this.getPostDetails(post.id, post.subreddit, 50, 3);
 
         if (details) {
-            return {
-                ...post,
-                selftext: details.selftext || post.selftext, // Update content if better
-                top_comments: details.top_comments // Add rich comments with flairs
-            };
+          return {
+            ...post,
+            selftext: details.selftext || post.selftext,
+            top_comments: details.top_comments
+          };
         }
       } catch (e) {
         logger.warn(`Failed to enrich post ${post.id}:`, e);
@@ -702,13 +425,12 @@ class RedditAggregator {
     }
 
     const sections = results.map((r, i) => {
-      // Fix: permalink might already contain full URL
-      const url = r.permalink.startsWith('http') 
-        ? r.permalink 
+      const url = r.permalink.startsWith('http')
+        ? r.permalink
         : `https://reddit.com${r.permalink}`;
       const content = r.selftext || r.body || '';
-      const truncatedContent = content.length > 500 
-        ? content.substring(0, 500) + '...' 
+      const truncatedContent = content.length > 500
+        ? content.substring(0, 500) + '...'
         : content;
 
       return `### ${i + 1}. ${r.title}
@@ -727,24 +449,21 @@ ${truncatedContent}
    * Fetch details for a single post
    */
   async getPostDetails(
-    postId: string, 
+    postId: string,
     subreddit?: string,
     comment_limit: number = 50,
     comment_depth: number = 3
   ): Promise<RedditSearchResult | null> {
     try {
       logger.info(`[Direct API] getPostDetails: id=${postId}, limit=${comment_limit}, depth=${comment_depth}`);
-      
-      // Use direct API fetch instead of MCP
+
       const rawData = await fetchDeepThread(postId, comment_limit, comment_depth);
-      
+
       if (!rawData || !rawData.post) return null;
 
       const post = rawData.post;
       const rawComments = rawData.comments || [];
 
-      // Recursive function to flatten/format comments
-      // We keep the structure but simplify fields
       function formatComments(comments: any[]): any[] {
         return comments
           .filter((c: any) => c.body && c.author !== '[deleted]')
@@ -760,15 +479,14 @@ ${truncatedContent}
             distinguished: c.distinguished ? sanitizeText(c.distinguished) : null,
             stickied: c.stickied,
             permalink: `https://reddit.com${c.permalink}`,
-            replies: (c.replies && c.replies.data && c.replies.data.children) 
+            replies: (c.replies && c.replies.data && c.replies.data.children)
               ? formatComments(c.replies.data.children.map((child: any) => child.data))
               : []
           }));
       }
 
       const formattedComments = formatComments(rawComments);
-      
-      // Calculate stats
+
       function countComments(comments: any[]): number {
         let count = comments.length;
         for (const c of comments) {
@@ -776,13 +494,13 @@ ${truncatedContent}
         }
         return count;
       }
-      
+
       const totalFetched = countComments(formattedComments);
       logger.info(`✅ Fetched deep thread: ${totalFetched} comments (requested limit: ${comment_limit})`);
 
       const result: RedditSearchResult = {
         id: post.id,
-        title: post.title || "Unknown Title", 
+        title: post.title || "Unknown Title",
         url: post.url,
         score: post.score,
         numComments: post.num_comments,
@@ -791,10 +509,9 @@ ${truncatedContent}
         createdUtc: post.created_utc,
         selftext: post.selftext || "",
         permalink: `https://reddit.com${post.permalink}`,
-        top_comments: formattedComments // Now contains nested replies!
+        top_comments: formattedComments
       };
-      
-      // Sanitize the result
+
       return this.sanitizeResults([result])[0];
 
     } catch (e) {
@@ -812,9 +529,7 @@ const fastify = Fastify({
   logger: LOG_LEVEL === 'debug',
 });
 
-// Initialize MCP and Aggregator
-const mcpManager = new WatchdogMCPManager();
-const aggregator = new RedditAggregator(mcpManager);
+const aggregator = new RedditAggregator();
 
 // Cache for search results
 const searchCache = new LRUCache<string, SearchResponse>({
@@ -841,8 +556,7 @@ const detailsRequestSchema = z.object({
 // Health check endpoint
 fastify.get('/health', async () => {
   return {
-    status: mcpManager.isHealthy ? 'healthy' : 'unhealthy',
-    mcpReady: mcpManager.isHealthy,
+    status: 'healthy',
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
   };
@@ -851,7 +565,7 @@ fastify.get('/health', async () => {
 // Search endpoint
 fastify.post('/search', async (request, reply) => {
   const parseResult = searchRequestSchema.safeParse(request.body);
-  
+
   if (!parseResult.success) {
     reply.code(400);
     return {
@@ -894,38 +608,38 @@ fastify.post('/search', async (request, reply) => {
 
 // Details endpoint
 fastify.post('/details', async (request, reply) => {
-    const parseResult = detailsRequestSchema.safeParse(request.body);
-    
-    if (!parseResult.success) {
-      reply.code(400);
+  const parseResult = detailsRequestSchema.safeParse(request.body);
+
+  if (!parseResult.success) {
+    reply.code(400);
+    return {
+      error: 'Invalid request',
+      details: parseResult.error.format(),
+    };
+  }
+
+  const { postId, subreddit, comment_limit, comment_depth } = parseResult.data;
+
+  try {
+    const result = await aggregator.getPostDetails(postId, subreddit, comment_limit, comment_depth);
+
+    if (!result) {
+      reply.code(404);
       return {
-        error: 'Invalid request',
-        details: parseResult.error.format(),
+        error: 'Post not found or details unavailable',
       };
     }
-  
-    const { postId, subreddit, comment_limit, comment_depth } = parseResult.data;
-    
-    try {
-      const result = await aggregator.getPostDetails(postId, subreddit, comment_limit, comment_depth);
-      
-      if (!result) {
-        reply.code(404);
-        return {
-          error: 'Post not found or details unavailable',
-        };
-      }
-  
-      return result;
-    } catch (error) {
-      logger.error('Details fetch failed:', error);
-      reply.code(500);
-      return {
-        error: 'Details fetch failed',
-        message: error instanceof Error ? error.message : 'Unknown error',
-      };
-    }
-  });
+
+    return result;
+  } catch (error) {
+    logger.error('Details fetch failed:', error);
+    reply.code(500);
+    return {
+      error: 'Details fetch failed',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+});
 
 // ============================================================================
 // Graceful Shutdown
@@ -933,10 +647,9 @@ fastify.post('/details', async (request, reply) => {
 
 async function shutdown(signal: string) {
   logger.info(`Received ${signal}, shutting down gracefully...`);
-  
+
   try {
     await fastify.close();
-    await mcpManager.kill();
     logger.info('Shutdown complete');
     process.exit(0);
   } catch (error) {
@@ -953,22 +666,16 @@ process.on('SIGINT', () => shutdown('SIGINT'));
 // ============================================================================
 
 async function main() {
-  logger.info('Starting Reddit MCP Proxy Service...');
+  logger.info('Starting Reddit Proxy Service (direct OAuth API)...');
   logger.info('Configuration:');
   logger.info(`  Port: ${PORT}`);
-  logger.info(`  MCP Timeout: ${MCP_TIMEOUT_MS}ms`);
   logger.info(`  Cache TTL: ${CACHE_TTL_MS}ms`);
 
   try {
-    // Initialize MCP
-    await mcpManager.spawn();
-    
-    // Start server
     await fastify.listen({ port: PORT, host: '::' });
     logger.info(`Server listening on port ${PORT}`);
   } catch (error) {
     logger.error('Failed to start:', error);
-    await mcpManager.kill();
     process.exit(1);
   }
 }

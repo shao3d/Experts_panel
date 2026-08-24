@@ -298,7 +298,7 @@ Output JSON structure:
             response = await self._llm_client.chat_completions_create(
                 model=MODEL_SCOUT,
                 messages=[{"role": "user", "content": prompt}],
-                temperature=0.1  # Deterministic
+                temperature=0.0  # Deterministic: stable plans across runs
             )
             
             content = response.choices[0].message.content.strip()
@@ -709,14 +709,10 @@ Output JSON structure:
                     strategy_subreddits=targeted_subs,
                 )
 
+        # Recency/quality sorts (top/new): Reddit only applies the query seriously
+        # with sort=relevance; global top/new drift into popular/fresh noise.
+        # Restrict them to targeted subreddits where they add value.
         if intent in {"troubleshooting", "news"}:
-            add_strategy(
-                "fresh_global_new",
-                original_query,
-                sort="new",
-                time="month",
-                limit=18,
-            )
             if targeted_subs:
                 add_strategy(
                     "fresh_targeted_new",
@@ -726,23 +722,15 @@ Output JSON structure:
                     limit=18,
                     strategy_subreddits=targeted_subs,
                 )
-        else:
+        elif targeted_subs:
             add_strategy(
-                "quality_global_top",
+                "quality_targeted_top",
                 original_query,
                 sort="top",
                 time="year",
                 limit=18,
+                strategy_subreddits=targeted_subs,
             )
-            if targeted_subs:
-                add_strategy(
-                    "quality_targeted_top",
-                    original_query,
-                    sort="top",
-                    time="year",
-                    limit=18,
-                    strategy_subreddits=targeted_subs,
-                )
 
         if intent == "comparison":
             if len(anchor_terms) >= 2:
