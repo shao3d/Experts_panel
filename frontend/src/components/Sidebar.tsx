@@ -7,6 +7,7 @@ interface SidebarProps {
   availableExperts: ExpertInfo[];
   selectedExperts: Set<string>;
   onExpertsChange: (selected: Set<string>) => void;
+  onCapReached?: () => void;
   useRecentOnly: boolean;
   onUseRecentOnlyChange: (value: boolean) => void;
   includeReddit: boolean;
@@ -20,6 +21,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   availableExperts,
   selectedExperts,
   onExpertsChange,
+  onCapReached,
   useRecentOnly,
   onUseRecentOnlyChange,
   includeReddit,
@@ -38,6 +40,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       newSelected.delete(expertId);
     } else if (newSelected.size < MAX_SELECTED_EXPERTS) {
       newSelected.add(expertId);
+    } else {
+      onCapReached?.();
+      return;
     }
     onExpertsChange(newSelected);
   };
@@ -48,19 +53,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
     if (disabled) return;
     const allSelected = groupIds.every(id => selectedExperts.has(id));
     const newSelected = new Set(selectedExperts);
-    
+
     if (allSelected) {
-      // Deselect all
       groupIds.forEach(id => newSelected.delete(id));
     } else {
-      // Select only the remaining slots, keeping the product-level cap intact.
-      groupIds
-        .filter(id => expertMap.has(id) && !isExpertHidden(id))
-        .some(id => {
-          if (newSelected.size >= MAX_SELECTED_EXPERTS) return true;
-          newSelected.add(id);
-          return false;
-        });
+      const visibleIds = groupIds.filter(id => expertMap.has(id) && !isExpertHidden(id));
+      const slotsLeft = MAX_SELECTED_EXPERTS - newSelected.size;
+      if (slotsLeft <= 0) {
+        onCapReached?.();
+        return;
+      }
+      visibleIds.slice(0, slotsLeft).forEach(id => newSelected.add(id));
     }
     onExpertsChange(newSelected);
   };

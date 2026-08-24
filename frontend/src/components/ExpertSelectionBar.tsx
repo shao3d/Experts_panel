@@ -12,6 +12,7 @@ interface ExpertSelectionBarProps {
   availableExperts: ExpertInfo[];
   selectedExperts: Set<string>;
   onExpertsChange: (selected: Set<string>) => void;
+  onCapReached?: () => void;
   disabled?: boolean;
 }
 
@@ -22,6 +23,7 @@ const ExpertSelectionBar: React.FC<ExpertSelectionBarProps> = ({
   availableExperts,
   selectedExperts,
   onExpertsChange,
+  onCapReached,
   disabled = false
 }) => {
   
@@ -32,6 +34,9 @@ const ExpertSelectionBar: React.FC<ExpertSelectionBarProps> = ({
       newSelected.delete(expertId);
     } else if (newSelected.size < MAX_SELECTED_EXPERTS) {
       newSelected.add(expertId);
+    } else {
+      onCapReached?.();
+      return;
     }
     onExpertsChange(newSelected);
   };
@@ -40,19 +45,17 @@ const ExpertSelectionBar: React.FC<ExpertSelectionBarProps> = ({
     if (disabled) return;
     const allSelected = groupIds.every(id => selectedExperts.has(id));
     const newSelected = new Set(selectedExperts);
-    
+
     if (allSelected) {
-      // Deselect all
       groupIds.forEach(id => newSelected.delete(id));
     } else {
-      // Select up to the remaining product cap; never silently exceed it.
-      groupIds
-        .filter(id => expertMap.has(id) && !isExpertHidden(id))
-        .some(id => {
-          if (newSelected.size >= MAX_SELECTED_EXPERTS) return true;
-          newSelected.add(id);
-          return false;
-        });
+      const visibleIds = groupIds.filter(id => expertMap.has(id) && !isExpertHidden(id));
+      const slotsLeft = MAX_SELECTED_EXPERTS - newSelected.size;
+      if (slotsLeft <= 0) {
+        onCapReached?.();
+        return;
+      }
+      visibleIds.slice(0, slotsLeft).forEach(id => newSelected.add(id));
     }
     onExpertsChange(newSelected);
   };

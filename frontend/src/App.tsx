@@ -254,6 +254,7 @@ export const App: React.FC = () => {
           availableExperts={availableExperts}
           selectedExperts={selectedExperts}
           onExpertsChange={handleExpertsChange}
+          onCapReached={() => setError(`Maximum ${MAX_SELECTED_EXPERTS} experts per query.`)}
           useRecentOnly={useRecentOnly}
           onUseRecentOnlyChange={setUseRecentOnly}
           includeReddit={includeReddit}
@@ -373,6 +374,7 @@ export const App: React.FC = () => {
               availableExperts={availableExperts}
               selectedExperts={selectedExperts}
               onExpertsChange={handleExpertsChange}
+              onCapReached={() => setError(`Maximum ${MAX_SELECTED_EXPERTS} experts per query.`)}
               disabled={isProcessing}
             />
              {/* Simple filter toggles for mobile inside the drawer */}
