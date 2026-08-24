@@ -51,12 +51,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const handleToggleGroup = (groupIds: string[]) => {
     if (disabled) return;
-    const allSelected = groupIds.every(id => selectedExperts.has(id));
     const newSelected = new Set(selectedExperts);
+    const someGroupSelected = groupIds.some(id => newSelected.has(id));
 
-    if (allSelected) {
+    if (someGroupSelected) {
+      // Deselect: clear every selected member of this group.
       groupIds.forEach(id => newSelected.delete(id));
     } else {
+      // Select: fill the group into remaining slots up to the product cap.
       const visibleIds = groupIds.filter(id => expertMap.has(id) && !isExpertHidden(id));
       const slotsLeft = MAX_SELECTED_EXPERTS - newSelected.size;
       if (slotsLeft <= 0) {
@@ -264,7 +266,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           if (groupExperts.length === 0) return null;
           
-          const allGroupSelected = groupExperts.every(e => selectedExperts.has(e.expert_id));
+          const groupSelectedCount = groupExperts.filter(e => selectedExperts.has(e.expert_id)).length;
 
           return (
             <div key={group.label} className={clsx("mb-6", isCollapsed ? "px-2" : "px-4")}>
@@ -278,7 +280,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     {group.label}
                   </span>
                   <span className="text-[10px] text-gray-400 group-hover/header:text-blue-500">
-                    {allGroupSelected ? 'Deselect' : 'Select'}
+                    {groupSelectedCount > 0 ? `Deselect · ${groupSelectedCount}/${MAX_SELECTED_EXPERTS}` : 'Select'}
                   </span>
                 </div>
               )}

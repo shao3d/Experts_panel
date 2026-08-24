@@ -134,7 +134,7 @@ const ExpertSelectionBar: React.FC<ExpertSelectionBarProps> = ({
         // Hide groups whose experts are all in HIDDEN_EXPERT_IDS (e.g. Knowledge Hub → video_hub).
         if (group.expertIds.every(isExpertHidden)) return null;
 
-        const allGroupSelected = groupExperts.every(e => selectedExperts.has(e.expert_id));
+        const groupSelectedCount = groupExperts.filter(e => selectedExperts.has(e.expert_id)).length;
 
         return (
           <div key={group.label} className="expert-group-row">
@@ -142,11 +142,11 @@ const ExpertSelectionBar: React.FC<ExpertSelectionBarProps> = ({
               className="expert-group-label" 
               onClick={() => handleToggleGroup(group.expertIds)}
               style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
-              title={`Click to toggle group (maximum ${MAX_SELECTED_EXPERTS} experts)`}
+              title={groupSelectedCount > 0 ? `Deselect ${groupSelectedCount} from ${group.label}` : `Select up to ${MAX_SELECTED_EXPERTS} experts`}
             >
               {group.label}
               <span style={{ fontSize: '10px', opacity: 0.6, fontWeight: 'normal' }}>
-                {allGroupSelected ? '(All)' : '(Select)'}
+                {groupSelectedCount > 0 ? `(Deselect · ${groupSelectedCount}/${MAX_SELECTED_EXPERTS})` : '(Select)'}
               </span>
             </span>
             <div className="expert-group-items">
