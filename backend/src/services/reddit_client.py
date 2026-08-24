@@ -6,6 +6,7 @@ Uses authenticated API for 60-100 req/min rate limit.
 
 import asyncio
 import logging
+import os
 from dataclasses import dataclass, field
 from typing import List, Optional
 from datetime import datetime
@@ -348,12 +349,15 @@ def get_target_subreddits(query: str) -> Optional[List[str]]:
     return SUBREDDIT_MAPPING["default"]
 
 
-# Reddit API credentials (from Fly.io secrets)
-REDDIT_CLIENT_ID = "-SPb2C1BNI82qJVWSej41Q"
-REDDIT_CLIENT_SECRET = "ry0Pvmuf9fEC-vgu4XFh5tDE82ehnQ"
-REDDIT_USERNAME = "External-Way5292"
-REDDIT_PASSWORD = "3dredditforce"
-REDDIT_USER_AGENT = "android:com.experts.panel:v1.0 (by /u/External-Way5292)"
+# Reddit API credentials (loaded from environment; never hardcode them here)
+REDDIT_CLIENT_ID = os.getenv("REDDIT_CLIENT_ID", "")
+REDDIT_CLIENT_SECRET = os.getenv("REDDIT_CLIENT_SECRET", "")
+REDDIT_USERNAME = os.getenv("REDDIT_USERNAME", "")
+REDDIT_PASSWORD = os.getenv("REDDIT_PASSWORD", "")
+REDDIT_USER_AGENT = os.getenv(
+    "REDDIT_USER_AGENT",
+    "android:com.experts.panel:v1.0 (by /u/External-Way5292)",
+)
 
 # Rate limiting
 MAX_REQUESTS_PER_MINUTE = 50  # Conservative, below 60-100 limit

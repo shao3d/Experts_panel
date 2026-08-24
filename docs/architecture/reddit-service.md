@@ -5,7 +5,7 @@
 **Логика:** AI Scout v2 + Precision-First Retrieval + Answerability Rerank  
 **Дата обновления:** 23.08.2026
 
-> **UI status:** Переключатель Reddit сейчас скрыт из интерфейса (флаг `REDDIT_SEARCH_VISIBLE` в `frontend/src/config/expertConfig.ts`, по умолчанию `false`). Бэкенд-пайплайн полностью функционален и остаётся opt-in; флаг нужно просто вернуть в `true`, когда интеграция снова понадобится в UI.
+> **UI status:** Переключатель Reddit снова виден в интерфейсе (`REDDIT_SEARCH_VISIBLE = true` в `frontend/src/config/expertConfig.ts`, включён 24.08.2026). Сайдкар работает на VM (`http://reddit-proxy:3000`, docker compose service `reddit-proxy`), URL настраивается через `REDDIT_PROXY_URL` в `backend/src/config.py`. Честный abstain V2 (0 постов после confidence-фильтра) помечается как `skipped`, а не как ошибка.
 
 ---
 

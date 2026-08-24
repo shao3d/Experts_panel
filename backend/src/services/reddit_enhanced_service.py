@@ -25,8 +25,8 @@ from .vertex_llm_client import get_vertex_llm_client
 logger = logging.getLogger(__name__)
 
 # Configuration
-REDDIT_PROXY_URL = "https://experts-reddit-proxy.fly.dev"
-DEFAULT_TIMEOUT = 60.0  # HTTP timeout - enough for Fly.io cold start (~30-45s) + search
+REDDIT_PROXY_URL = config.REDDIT_PROXY_URL
+DEFAULT_TIMEOUT = 60.0  # HTTP timeout - enough for sidecar MCP spawn + multi-strategy search
 MAX_RETRIES = 3
 RETRY_BACKOFF_BASE = 2.0
 

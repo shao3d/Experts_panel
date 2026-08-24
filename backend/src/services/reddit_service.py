@@ -14,10 +14,12 @@ from datetime import datetime
 
 import httpx
 
+from .. import config
+
 logger = logging.getLogger(__name__)
 
 # Configuration
-REDDIT_PROXY_URL = "https://experts-reddit-proxy.fly.dev"
+REDDIT_PROXY_URL = config.REDDIT_PROXY_URL
 DEFAULT_TIMEOUT = 15.0  # seconds
 MAX_RETRIES = 3
 RETRY_BACKOFF_BASE = 2.0  # exponential backoff base

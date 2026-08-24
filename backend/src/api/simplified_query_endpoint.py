@@ -1280,6 +1280,7 @@ async def event_generator_parallel(
         reddit_progress_queue = asyncio.Queue(maxsize=50)
         reddit_complete = False
         reddit_result: Optional[RedditResponse] = None
+        reddit_abstained = False
 
         async def reddit_progress_callback(data: dict):
             """Callback for Reddit pipeline progress."""
@@ -1305,7 +1306,8 @@ async def event_generator_parallel(
 
         async def run_reddit_pipeline():
             """Run Reddit pipeline and track completion."""
-            nonlocal reddit_complete, reddit_result
+            nonlocal reddit_complete, reddit_result, reddit_abstained
+            reddit_failed = False
             try:
                 reddit_result = await process_reddit_pipeline(
                     query=request.query, progress_callback=reddit_progress_callback
@@ -1313,12 +1315,18 @@ async def event_generator_parallel(
             except Exception as e:
                 logger.error(f"Reddit pipeline failed: {e}")
                 reddit_result = None
+                reddit_failed = True
             finally:
                 reddit_complete = True
-                # Update tracker
+                # Distinguish honest abstain (V2 confidence filter kept 0 posts)
+                # from a real pipeline failure. Only the latter is an error.
                 if reddit_result:
                     tracker.update(None, "reddit_search", "completed")
                     tracker.update(None, "reddit_synthesis", "completed")
+                elif not reddit_failed:
+                    reddit_abstained = True
+                    tracker.update(None, "reddit_search", "completed")
+                    tracker.update(None, "reddit_synthesis", "skipped")
                 else:
                     tracker.update(None, "reddit_search", "error")
                     tracker.update(None, "reddit_synthesis", "error")
@@ -1326,19 +1334,25 @@ async def event_generator_parallel(
                 try:
                     event = ProgressEvent(
                         event_type="reddit_complete"
-                        if reddit_result
+                        if reddit_result or reddit_abstained
                         else "reddit_error",
                         phase="reddit_pipeline",
-                        status="completed" if reddit_result else "error",
+                        status="completed"
+                        if (reddit_result or reddit_abstained)
+                        else "error",
                         message=f"Reddit analysis: {reddit_result.found_count if reddit_result else 0} posts found"
                         if reddit_result
-                        else "Reddit analysis failed",
+                        else (
+                            "No relevant Reddit discussions found"
+                            if reddit_abstained
+                            else "Reddit analysis failed"
+                        ),
                         data={
                             "source": "reddit",
                             "found_count": reddit_result.found_count
                             if reddit_result
                             else 0,
-                            "success": reddit_result is not None,
+                            "success": reddit_result is not None or reddit_abstained,
                         },
                     )
                     reddit_progress_queue.put_nowait(event)
@@ -1767,6 +1781,8 @@ async def event_generator_parallel(
         reddit_message = ""
         if reddit_result:
             reddit_message = f" | Reddit: {reddit_result.found_count} posts"
+        elif include_reddit and reddit_abstained:
+            reddit_message = " | Reddit: no relevant threads found"
         elif include_reddit and reddit_result is None and reddit_complete:
             # Only show "unavailable" if Reddit was enabled but failed/unavailable
             reddit_message = " | Reddit: unavailable"

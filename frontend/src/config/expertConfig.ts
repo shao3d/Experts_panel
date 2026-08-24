@@ -14,7 +14,7 @@ export const MAX_SELECTED_EXPERTS = 5;
  * the frontend keeps include_reddit=false (opt-in) for every query.
  * Flip to true to re-expose the toggle.
  */
-export const REDDIT_SEARCH_VISIBLE = false;
+export const REDDIT_SEARCH_VISIBLE = true;
 
 export interface ExpertUIConfig {
   displayNames: Record<string, string>;

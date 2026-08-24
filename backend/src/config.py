@@ -148,6 +148,8 @@ REDDIT_MIN_CONFIDENCE: float = float(
 REDDIT_SOFT_CONFIDENCE: float = float(
     os.getenv("REDDIT_SOFT_CONFIDENCE", "0.44")
 )
+# Reddit proxy sidecar (docker compose service on the same host/network)
+REDDIT_PROXY_URL: str = os.getenv("REDDIT_PROXY_URL", "http://reddit-proxy:3000")
 
 # --- Hybrid Retrieval ---
 HYBRID_VECTOR_TOP_K: int = int(os.getenv("HYBRID_VECTOR_TOP_K", "150"))
