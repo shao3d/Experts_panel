@@ -31,8 +31,8 @@ Complete FastAPI backend with:
 - 11+ specialized services for different phases with Gemini integration
 - Real-time SSE streaming for progress tracking with enhanced error handling
 - Vertex AI LLM integration via the canonical client (`vertex_llm_client.py`) with a legacy compatibility shim
-- SQLite database with 10+ migration scripts, precomputed embeddings, and a separate Fly.io mounted production volume
-- Production-ready Fly.io deployment with admin authentication
+- SQLite database with 10+ migration scripts, precomputed embeddings; production copy lives on the Oracle VM (`~/apps/experts-panel/data/experts.db`)
+- Production deployment on an Oracle VM (docker compose behind Caddy) with admin authentication
 - Dynamic expert loading from database with expert metadata centralization
 
 **Key Files:**
@@ -246,7 +246,7 @@ To debug the pipeline, monitor the backend log file for messages containing spec
 
 **Overview:** Real-time Reddit community analysis integrated into expert queries
 
-**Architecture:** Sidecar pattern - Reddit Proxy microservice (`experts-reddit-proxy.fly.dev`)
+**Architecture:** Sidecar pattern - Reddit Proxy microservice (runs on the same Oracle VM as the panel, `127.0.0.1:3000`, migrated from Fly.io; not yet wired into the backend)
 
 **Key Features:**
 - ✅ Parallel Reddit search with expert pipelines
@@ -262,7 +262,7 @@ To debug the pipeline, monitor the backend log file for messages containing spec
 - `RedditSynthesisService` - Gemini-powered community analysis with language detection
 - `TranslationService` - Query translation for non-English searches
 - `CommunityInsightsSection` - React component with neutral styling
-- Reddit Proxy - Node.js/Fastify microservice on Fly.io
+- Reddit Proxy - Node.js/Fastify microservice (docker compose service `reddit-proxy` on the VM)
 
 **Fail-Safe Design:**
 - Expert responses returned even if Reddit fails/times out
