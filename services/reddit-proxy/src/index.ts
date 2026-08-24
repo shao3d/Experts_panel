@@ -512,7 +512,8 @@ class RedditAggregator {
           commentsCount: r.numComments,
           subreddit: r.subreddit,
           selftext: r.selftext,
-          top_comments: r.top_comments
+          top_comments: r.top_comments,
+          created_utc: r.createdUtc
         })),
         query,
         processingTimeMs,

@@ -30,6 +30,10 @@ DEFAULT_TIMEOUT = 60.0  # HTTP timeout - enough for sidecar MCP spawn + multi-st
 MAX_RETRIES = 3
 RETRY_BACKOFF_BASE = 2.0
 
+# Hard recency window (days) applied when the user enables use_recent_only.
+# Reddit API only has coarse time buckets, so exact "last N months" is a post-filter.
+REDDIT_RECENT_WINDOW_DAYS = 90
+
 # Model for Subreddit Scouting
 # Use the shared config model so Vertex-compatible defaults apply everywhere.
 MODEL_SCOUT = config.MODEL_SCOUT
@@ -811,6 +815,7 @@ Output JSON structure:
         target_posts: int = 25,
         include_comments: bool = True,
         subreddits: Optional[List[str]] = None,
+        recent_only: bool = False,
     ) -> EnhancedSearchResult:
         """Precision-first Reddit retrieval with softer subreddit hints and richer rerank context."""
         start_time = datetime.utcnow()
@@ -836,6 +841,12 @@ Output JSON structure:
         if subreddits is None:
             search_plan = await self._plan_search_strategy(original_query)
             subreddits = search_plan.get("subreddits", [])
+
+        # Recency mandate: widen retrieval recall (never narrower than a year)
+        # and enforce the exact window via the created_utc post-filter below.
+        if recent_only and search_plan.get("time_filter", "all") == "all":
+            search_plan["time_filter"] = "year"
+            debug_trace["recent_only_time_bump"] = True
 
         target_keywords = search_plan.get("keywords", [])
         anchor_terms = self._extract_anchor_terms(original_query)
@@ -938,6 +949,28 @@ Output JSON structure:
                 logger.error(f"Fallback Reddit search failed: {e}")
 
         unique_posts = self._deduplicate_posts(list(all_posts.values()))
+
+        if recent_only:
+            cutoff_ts = datetime.utcnow().timestamp() - REDDIT_RECENT_WINDOW_DAYS * 86400
+            before_count = len(unique_posts)
+            kept_ids = {
+                p.id for p in unique_posts if (p.created_utc or 0) >= cutoff_ts
+            }
+            # Drop from the list AND from all_posts: the post-enrichment step
+            # rebuilds unique_posts from all_posts and would resurrect old posts.
+            unique_posts = [p for p in unique_posts if p.id in kept_ids]
+            for stale_id in list(all_posts.keys()):
+                if stale_id not in kept_ids:
+                    del all_posts[stale_id]
+            debug_trace["recent_only_filter"] = {
+                "window_days": REDDIT_RECENT_WINDOW_DAYS,
+                "before": before_count,
+                "after": len(unique_posts),
+            }
+            logger.info(
+                f"REDDIT recent_only: kept {len(unique_posts)}/{before_count} posts "
+                f"within {REDDIT_RECENT_WINDOW_DAYS}d window"
+            )
 
         for post in unique_posts:
             post.heuristic_score = self._score_post_v2(
@@ -1086,16 +1119,18 @@ Output JSON structure:
         query: str,
         target_posts: int = 25,
         include_comments: bool = True,
-        subreddits: Optional[List[str]] = None
+        subreddits: Optional[List[str]] = None,
+        recent_only: bool = False
     ) -> EnhancedSearchResult:
         """Execute enhanced Reddit search with multiple strategies.
-        
+
         Args:
             query: Search query
             target_posts: Target number of unique posts to return
             include_comments: Whether to fetch top comments for best posts
             subreddits: Optional list of specific subreddits to search
-        
+            recent_only: Hard-filter results to the last REDDIT_RECENT_WINDOW_DAYS days
+
         Returns:
             EnhancedSearchResult with posts from multiple search strategies
         """
@@ -1105,6 +1140,7 @@ Output JSON structure:
                 target_posts=target_posts,
                 include_comments=include_comments,
                 subreddits=subreddits,
+                recent_only=recent_only,
             )
 
         start_time = datetime.utcnow()
@@ -1772,16 +1808,18 @@ async def search_reddit_enhanced(
     query: str,
     target_posts: int = 25,
     include_comments: bool = True,
-    subreddits: Optional[List[str]] = None
+    subreddits: Optional[List[str]] = None,
+    recent_only: bool = False
 ) -> EnhancedSearchResult:
     """Convenience function for enhanced Reddit search.
-    
+
     Args:
         query: Search query
         target_posts: Target number of unique posts
         include_comments: Whether to fetch comments for top posts
         subreddits: Optional list of subreddits to search
-    
+        recent_only: Hard-filter results to the last REDDIT_RECENT_WINDOW_DAYS days
+
     Returns:
         EnhancedSearchResult
     """
@@ -1790,5 +1828,6 @@ async def search_reddit_enhanced(
         query=query,
         target_posts=target_posts,
         include_comments=include_comments,
-        subreddits=subreddits
+        subreddits=subreddits,
+        recent_only=recent_only
     )

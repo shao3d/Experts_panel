@@ -823,16 +823,19 @@ async def process_expert_pipeline(
 
 
 async def process_reddit_pipeline(
-    query: str, progress_callback: Optional[Callable] = None
+    query: str,
+    progress_callback: Optional[Callable] = None,
+    recent_only: bool = False,
 ) -> Optional[RedditResponse]:
     """Process Reddit community pipeline through the enhanced Reddit proxy.
 
-    The active path uses `reddit_enhanced_service.py` and the Fly.io Reddit
-    proxy, not the legacy direct `asyncpraw` client.
+    The active path uses `reddit_enhanced_service.py` and the local Reddit
+    proxy sidecar, not the legacy direct `asyncpraw` client.
 
     Args:
         query: User query (will be translated to English if Russian)
         progress_callback: Optional callback for progress updates
+        recent_only: Hard-filter Reddit results to the last 3 months
 
     Returns:
         RedditResponse with community insights or None if failed/no results
@@ -928,6 +931,7 @@ Search query:"""
             query=search_query,
             target_posts=25,
             include_comments=True,  # Will be populated when proxy supports it
+            recent_only=recent_only,
         )
 
         # Check if we found anything relevant
@@ -1310,7 +1314,9 @@ async def event_generator_parallel(
             reddit_failed = False
             try:
                 reddit_result = await process_reddit_pipeline(
-                    query=request.query, progress_callback=reddit_progress_callback
+                    query=request.query,
+                    progress_callback=reddit_progress_callback,
+                    recent_only=bool(request.use_recent_only),
                 )
             except Exception as e:
                 logger.error(f"Reddit pipeline failed: {e}")

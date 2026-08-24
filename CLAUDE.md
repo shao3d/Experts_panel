@@ -161,6 +161,7 @@ The system supports filtering queries to only use recent data (last 3 months):
   - Posts filtered by `created_at >= cutoff_date` in endpoint
   - Linked posts filtered in `SimpleResolveService`
   - Drift groups filtered in `CommentGroupMapService`
+  - Reddit results hard-filtered to `created_utc >= now - 90 days` (post-filter after dedup in `RedditEnhancedService`; Scout time window bumped from `all` to `year` for recall)
   - Cutoff date calculated as 3 months ago using `get_cutoff_date()` utility
 
 **Use cases:**
