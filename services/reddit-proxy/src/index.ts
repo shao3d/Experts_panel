@@ -124,13 +124,33 @@ function sanitizeText(text: string): string {
 
 let redditAccessToken: string | null = null;
 let redditTokenExpiresAt = 0;
+let tokenFetchInFlight: Promise<string> | null = null;
 
-async function getRedditAccessToken(): Promise<string> {
-  // Return cached token if valid (with 60s buffer)
-  if (redditAccessToken && Date.now() < redditTokenExpiresAt - 60000) {
-    return redditAccessToken;
+// Official allowance: 100 QPM per OAuth client (10-min average window).
+// Track X-Ratelimit-* headers and back off BEFORE exhausting the bucket.
+let rlRemaining: number | null = null;
+let rlResetAt = 0; // epoch ms
+
+const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+
+function updateRateLimit(headers: Headers): void {
+  const rem = headers.get('x-ratelimit-remaining');
+  const reset = headers.get('x-ratelimit-reset');
+  if (rem !== null && !Number.isNaN(parseFloat(rem))) rlRemaining = parseFloat(rem);
+  if (reset !== null && !Number.isNaN(parseFloat(reset))) {
+    rlResetAt = Date.now() + parseFloat(reset) * 1000;
   }
+}
 
+async function rateLimitGate(): Promise<void> {
+  if (rlRemaining !== null && rlRemaining <= 2 && Date.now() < rlResetAt) {
+    const waitMs = Math.min(Math.max(rlResetAt - Date.now(), 500), 15000);
+    logger.warn(`Reddit rate limit nearly exhausted (${rlRemaining} left), waiting ${Math.round(waitMs)}ms`);
+    await sleep(waitMs);
+  }
+}
+
+async function requestNewToken(): Promise<string> {
   const clientId = process.env.REDDIT_CLIENT_ID;
   const clientSecret = process.env.REDDIT_CLIENT_SECRET;
   const username = process.env.REDDIT_USERNAME;
@@ -174,20 +194,53 @@ async function getRedditAccessToken(): Promise<string> {
   }
 }
 
-async function redditGet(pathAndQuery: string): Promise<any> {
-  const token = await getRedditAccessToken();
-  const response = await fetch(`${REDDIT_OAUTH_BASE}${pathAndQuery}`, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'User-Agent': REDDIT_USER_AGENT
-    }
-  });
+async function getRedditAccessToken(): Promise<string> {
+  // Return cached token if valid (with 60s buffer)
+  if (redditAccessToken && Date.now() < redditTokenExpiresAt - 60000) {
+    return redditAccessToken;
+  }
+  // Single-flight: concurrent callers share one token request instead of stampeding
+  if (!tokenFetchInFlight) {
+    tokenFetchInFlight = requestNewToken().finally(() => { tokenFetchInFlight = null; });
+  }
+  return tokenFetchInFlight;
+}
 
-  if (!response.ok) {
-    throw new Error(`Reddit API error: ${response.status} ${await response.text().catch(() => '')}`.slice(0, 300));
+async function redditGet(pathAndQuery: string): Promise<any> {
+  const maxAttempts = 3;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    await rateLimitGate();
+
+    const token = await getRedditAccessToken();
+    const response = await fetch(`${REDDIT_OAUTH_BASE}${pathAndQuery}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'User-Agent': REDDIT_USER_AGENT
+      }
+    });
+
+    updateRateLimit(response.headers);
+
+    if (response.status === 429) {
+      const retryAfterSec = parseFloat(response.headers.get('retry-after') || '0');
+      const waitMs = Math.min(Math.max(retryAfterSec, 2) * 1000 * attempt, 45000);
+      logger.warn(`Reddit 429 (attempt ${attempt}/${maxAttempts}), backing off ${Math.round(waitMs)}ms`);
+      if (attempt < maxAttempts) {
+        await sleep(waitMs);
+        continue;
+      }
+      throw new Error('Reddit API rate limited (429) after retries');
+    }
+
+    if (!response.ok) {
+      throw new Error(`Reddit API error: ${response.status} ${await response.text().catch(() => '')}`.slice(0, 300));
+    }
+
+    return response.json();
   }
 
-  return response.json();
+  throw new Error('Reddit API:unreachable'); // unreachable, appeases TS control flow
 }
 
 async function searchRedditDirect(
@@ -559,6 +612,7 @@ fastify.get('/health', async () => {
     status: 'healthy',
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
+    redditRateLimitRemaining: rlRemaining,
   };
 });
 

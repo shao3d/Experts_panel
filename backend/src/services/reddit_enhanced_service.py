@@ -12,6 +12,7 @@ import logging
 import re
 import json
 import math
+import html
 from dataclasses import dataclass, field
 from typing import Optional, List, Dict, Any, Set
 from datetime import datetime
@@ -873,6 +874,22 @@ Output JSON structure:
             anchor_terms=anchor_terms,
         )
 
+        # External discovery channel (Google site:reddit.com). Runs in parallel
+        # with the Reddit-native channels; merged pre-dedup below.
+        if config.GOOGLE_CSE_API_KEY and config.GOOGLE_CSE_CX:
+            strategy_meta["google_cse_discovery"] = {
+                "query": original_query,
+                "source": "google_cse",
+            }
+            sort_tasks.append(
+                (
+                    "google_cse_discovery",
+                    self._search_google_cse(original_query, recent_only=recent_only),
+                )
+            )
+        else:
+            debug_trace["google_cse_discovery"] = "disabled (GOOGLE_CSE_API_KEY/CX not set)"
+
         results = await asyncio.gather(
             *[task for _, task in sort_tasks],
             return_exceptions=True,
@@ -941,9 +958,15 @@ Output JSON structure:
         if recent_only:
             cutoff_ts = datetime.utcnow().timestamp() - REDDIT_RECENT_WINDOW_DAYS * 86400
             before_count = len(unique_posts)
-            kept_ids = {
-                p.id for p in unique_posts if (p.created_utc or 0) >= cutoff_ts
-            }
+
+            def _is_fresh(p: RedditPost) -> bool:
+                if (p.created_utc or 0) >= cutoff_ts:
+                    return True
+                # CSE candidates carry no created_utc; their recency is already
+                # enforced upstream via Google dateRestrict.
+                return p.found_by_strategy == "google_cse_discovery"
+
+            kept_ids = {p.id for p in unique_posts if _is_fresh(p)}
             # Drop from the list AND from all_posts: the post-enrichment step
             # rebuilds unique_posts from all_posts and would resurrect old posts.
             unique_posts = [p for p in unique_posts if p.id in kept_ids]
@@ -1633,6 +1656,83 @@ Output JSON format ONLY:
             logger.error(f"Error in _ai_rerank_posts: {e}")
             return posts # Fallback to original order
     
+    _GOOGLE_CSE_ENDPOINT = "https://www.googleapis.com/customsearch/v1"
+
+    @staticmethod
+    def _clean_cse_text(text: str) -> str:
+        """CSE titles/snippets contain HTML tags and entities — strip them."""
+        if not text:
+            return ""
+        cleaned = html.unescape(re.sub(r"<[^>]+>", " ", text))
+        return re.sub(r"\s+", " ", cleaned).strip()
+
+    async def _search_google_cse(
+        self, query: str, recent_only: bool = False
+    ) -> List[RedditPost]:
+        """Discovery channel via Google Programmable Search restricted to reddit.com.
+
+        Community consensus (and our own A/B): Google ranks Reddit content better
+        than native search and indexes comments deeply. Returns lightweight
+        candidates (snippet-only, created_utc unknown) — the regular enrichment
+        pass fills them in later. Silently returns [] when unconfigured.
+
+        recent_only is enforced upstream via CSE dateRestrict (Google-side),
+        because these candidates have no created_utc yet.
+        """
+        if not (config.GOOGLE_CSE_API_KEY and config.GOOGLE_CSE_CX):
+            return []
+
+        params: Dict[str, Any] = {
+            "key": config.GOOGLE_CSE_API_KEY,
+            "cx": config.GOOGLE_CSE_CX,
+            "q": f"{query} site:reddit.com",
+            "num": max(1, min(config.GOOGLE_CSE_RESULTS, 10)),
+        }
+        if recent_only:
+            params["dateRestrict"] = f"d{REDDIT_RECENT_WINDOW_DAYS}"
+
+        try:
+            client = await self._get_client()
+            resp = await client.get(self._GOOGLE_CSE_ENDPOINT, params=params)
+            if resp.status_code != 200:
+                logger.warning(
+                    f"Google CSE error {resp.status_code}: {resp.text[:200]}"
+                )
+                return []
+            items = (resp.json() or {}).get("items") or []
+        except Exception as e:
+            logger.warning(f"Google CSE request failed: {e}")
+            return []
+
+        posts: List[RedditPost] = []
+        for item in items:
+            link = item.get("link") or ""
+            id_m = re.search(r"/comments/([a-z0-9]+)/", link, re.IGNORECASE)
+            sub_m = re.search(r"/r/([A-Za-z0-9_]+)/", link)
+            if not (id_m and sub_m):
+                continue  # not a post permalink (user page, search page, etc.)
+            posts.append(
+                RedditPost(
+                    id=id_m.group(1),
+                    title=self._clean_cse_text(item.get("title", "")),
+                    url=link,
+                    permalink=link,
+                    score=0,
+                    num_comments=0,
+                    subreddit=sub_m.group(1),
+                    author="unknown",
+                    created_utc=0,  # unknown; recency enforced via dateRestrict
+                    selftext=self._clean_cse_text(item.get("snippet", "")),
+                    found_by_strategy="google_cse_discovery",
+                    strategy_hits=["google_cse_discovery"],
+                )
+            )
+
+        logger.info(
+            f"🔍 Google CSE discovery: {len(posts)} candidates for '{query[:50]}'"
+        )
+        return posts
+
     async def _search_with_sort(
         self,
         query: str,

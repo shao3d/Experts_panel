@@ -141,9 +141,18 @@ Endpoints:
 Что делает:
 
 - ходит в Reddit напрямую через OAuth API (search + details; MCP-слой убран 24.08.2026)
+- читает `X-Ratelimit-*`, гейтит запросы перед исчерпанием бакета, бэкофф по `Retry-After` на 429
 - нормализует JSON
 - чистит контент
 - сохраняет кодовые блоки и структуру текста
+
+### Внешний дискавери (`google_cse_discovery`)
+
+Опциональный канал в `reddit_enhanced_service.py`: Google Programmable Search с `site:reddit.com`
+(консенсус практиков — Google ранжирует контент Reddit лучше нативного поиска и глубоко
+индексирует комментарии). Кандидаты без даты приходят snippet-only; свежесть для
+`use_recent_only` обеспечивается Google-side через `dateRestrict`. Включается ключами
+`GOOGLE_CSE_API_KEY` + `GOOGLE_CSE_CX`; без них канал молча пропускается.
 
 ### Synthesis (`backend/src/services/reddit_synthesis_service.py`)
 
