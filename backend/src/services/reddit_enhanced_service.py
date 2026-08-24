@@ -1567,9 +1567,10 @@ Output JSON format ONLY:
 }}
 """
         try:
-            # Use MODEL_SYNTHESIS (Gemini 3 Flash Preview) for intelligence
+            # Rerank is a scoring task, not a creative one: MODEL_ANALYSIS
+            # (flash-lite tier) is sufficient and much cheaper than SYNTHESIS.
             response = await self._llm_client.chat_completions_create(
-                model=config.MODEL_SYNTHESIS, 
+                model=config.MODEL_ANALYSIS,
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.0
             )

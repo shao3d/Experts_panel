@@ -255,10 +255,12 @@ class RedditSynthesisService:
         for i, src in enumerate(sources, 1):
             # Handle different content attributes (selftext vs content)
             raw_content = getattr(src, 'selftext', '') or getattr(src, 'content', '') or "[No content available]"
-            
-            # Increase limit to 15,000 chars to leverage Gemini's context window
-            content_preview = raw_content[:15000]
-            if len(raw_content) > 15000:
+
+            # 8k chars per source is plenty: the answer-bearing part of a thread
+            # sits in the opening body and top comments (added separately below).
+            SYNTH_SOURCE_CHAR_CAP = 8000
+            content_preview = raw_content[:SYNTH_SOURCE_CHAR_CAP]
+            if len(raw_content) > SYNTH_SOURCE_CHAR_CAP:
                 content_preview += "... (truncated)"
             
             # Format top comments with tree structure
