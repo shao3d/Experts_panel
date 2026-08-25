@@ -7,6 +7,7 @@ community discussions.
 
 import logging
 import html
+import time
 from typing import Optional, List, Dict, Any
 
 from .. import config
@@ -275,11 +276,22 @@ class RedditSynthesisService:
                 if comments_text:
                     comments_section = f"\n   - **Discussion Tree:**\n{comments_text}"
             
+            # Thread age: created_utc is present on RedditPost; discovery
+            # candidates (Serper) carry 0 → unknown age.
+            created_utc = getattr(src, 'created_utc', 0) or 0
+            if created_utc > 0:
+                age_days = max(1, int((time.time() - created_utc) / 86400))
+                age_label = f"{age_days} days ago"
+            else:
+                age_label = "unknown"
+            channel = getattr(src, 'found_by_strategy', None) or "native_search"
+
             context_parts.append(
                 f"{i}. **{src.title}** (r/{src.subreddit})\n"
                 f"   - Content: {content_preview}\n"
                 # Use getattr for stats to be safe
                 f"   - Stats: Score: {getattr(src, 'score', 0)} | Comments: {getattr(src, 'num_comments', getattr(src, 'comments_count', 0))}\n"
+                f"   - Age: {age_label} | Channel: {channel}\n"
                 f"   - URL: {src.url}"
                 f"{comments_section}"
             )
@@ -332,10 +344,16 @@ class RedditSynthesisService:
     </analysis_rules>
     <output_format>
         <section order="1">Executive Summary: Прямой ответ, консенсус 2026 года.</section>
-        <section order="2">Deep Dive: Код, конфиги, архитектура. Самая большая секция.</section>
-        <section order="3">Minority Report: Альтернативные мнения опытных инженеров (особенно с Flair), несогласные с мейнстримом.</section>
-        <section order="4">Battle-tested Edge Cases: Реальные баги и проблемы из продакшена.</section>
+        <section order="2" required="if_comparable">СРАВНИТЕЛЬНАЯ ТАБЛИЦА (обязательна, если в вопросе есть сопоставимые варианты): атрибуты, релевантные вопросу (цены/лимиты/VRAM/сроки/версии), в ячейках — КОНКРЕТНЫЕ ЧИСЛА из тредов. Каждая строка со ссылкой на номер источника в формате [S3] (номер = номер источника в базе знаний).</section>
+        <section order="3">Deep Dive: Код, конфиги, архитектура. Самая большая секция.</section>
+        <section order="4">Minority Report: Альтернативные мнения опытных инженеров (особенно с Flair), несогласные с мейнстримом.</section>
+        <section order="5">Battle-tested Edge Cases: Реальные баги и проблемы из продакшена.</section>
+        <section order="6" required="always">КУДА ИДИ (финальный блок, всегда): ранжированные действия 1→2→3 с условиями («если есть X → путь Y»; «если бюджет Z → вариант N»).</section>
         <style>Максимальная плотность информации. Без воды. Используйте Markdown таблицы для сравнения. Отвечайте ТОЛЬКО на русском языке.</style>
+        <style type="numbers">ИЗВЛЕКАЙ ЧИСЛА из тредов: цены, лимиты, VRAM, бенчмарки, сроки. Общие слова («быстрый», «дешёвый») без числа не считаются фактом.</style>
+        <style type="confidence">МАРКИРУЙ ДОСТОВЕРНОСТЬ ключевых утверждений: [подтверждено сообществом] — несколько независимых тредов или OP VERIFIED; [единичный отчёт] — один источник без подтверждения; [вывод автора анализа] — твой синтез без прямого подтверждения в тредах.</style>
+        <style type="freshness">Учитывай Age источника: для быстро меняющихся данных (цены, версии, лимиты) предпочитай свежие треды и помечай данные из старых тредов как возможно устаревшие.</style>
+        <style type="provenance">Учитывай Channel источника: serp_google_discovery = тред валидирован Google-ранжированием; arctic_targeted_archive = архивный поиск по сабам; *_relevance / fallback_top_year = нативный поиск Reddit.</style>
     </output_format>
 </system_prompt>"""
 
@@ -369,10 +387,16 @@ class RedditSynthesisService:
     </analysis_rules>
     <output_format>
         <section order="1">Executive Summary: Direct answer, 2026 consensus.</section>
-        <section order="2">Deep Dive: Code, configs, architecture. Largest section.</section>
-        <section order="3">Minority Report: Alternative views from experienced engineers (esp. with Flair) against the mainstream.</section>
-        <section order="4">Battle-tested Edge Cases: Real-world bugs and production issues.</section>
+        <section order="2" required="if_comparable">COMPARISON TABLE (mandatory whenever the question involves comparable options): attributes relevant to the question (pricing/limits/VRAM/timelines/versions), cells filled with CONCRETE NUMBERS from the threads. Every row references its source number as [S3] (number = source index in the knowledge base).</section>
+        <section order="3">Deep Dive: Code, configs, architecture. Largest section.</section>
+        <section order="4">Minority Report: Alternative views from experienced engineers (esp. with Flair) against the mainstream.</section>
+        <section order="5">Battle-tested Edge Cases: Real-world bugs and production issues.</section>
+        <section order="6" required="always">WHERE TO GO (final block, always): ranked next actions 1→2→3 with conditions ("if you have X → take path Y"; "if budget is Z → option N").</section>
         <style>Maximum information density. No fluff. Use Markdown tables for comparisons. Answer in English.</style>
+        <style type="numbers">EXTRACT NUMBERS from threads: prices, limits, VRAM, benchmarks, timelines. Vague wording ("fast", "cheap") without a number does not count as a fact.</style>
+        <style type="confidence">TAG CONFIDENCE of key claims: [community-confirmed] — multiple independent threads or OP VERIFIED; [single report] — one uncorroborated source; [analyst inference] — your synthesis without direct confirmation in threads.</style>
+        <style type="freshness">Respect source Age: for fast-moving data (prices, versions, limits) prefer fresh threads and flag data from old threads as possibly outdated.</style>
+        <style type="provenance">Respect source Channel: serp_google_discovery = thread validated by Google ranking; arctic_targeted_archive = subreddit archive search; *_relevance / fallback_top_year = native Reddit search.</style>
     </output_format>
 </system_prompt>"""
 
