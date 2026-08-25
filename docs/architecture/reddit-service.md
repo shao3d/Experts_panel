@@ -164,6 +164,14 @@ Endpoints:
 поиск требует сабреддит. Свежесть для `use_recent_only` — через параметр `after=90d`.
 Включён по умолчанию (`ARCTIC_SHIFT_ENABLED`), без сети деградирует молча.
 
+### Гугл-ранжирование (`serp_google_discovery`)
+
+Канал Serper.dev — программный доступ к настоящей выдаче Google по `site:reddit.com`
+(закрывает дыру закрытого CSE: ранжирование + индексация комментариев + терпимость к
+перефразировкам). Snippet-only кандидаты без created_utc; из недавнего окна
+`use_recent_only` не выкидываются осознанно. ≤10 результатов на вызов = 1 кредит
+(~$1/1000 запросов, фритир 2500). Без ключа `SERPER_API_KEY` канал спит.
+
 ### Synthesis (`backend/src/services/reddit_synthesis_service.py`)
 
 Берёт уже очищенный shortlist и делает Staff-Engineer synthesis:
