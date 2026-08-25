@@ -1,10 +1,7 @@
-# Reddit MCP Proxy Service
-# Production Dockerfile for Fly.io deployment
+# Reddit Proxy Service
+# Sidecar for Experts Panel (direct Reddit OAuth API)
 
 FROM node:20-alpine
-
-# Install global MCP server
-RUN npm install -g reddit-mcp-buddy
 
 # Create app directory
 WORKDIR /app

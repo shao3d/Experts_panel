@@ -37,7 +37,7 @@ REDDIT_RECENT_WINDOW_DAYS = 90
 
 # Discovery channels whose candidates arrive snippet-only: no created_utc and
 # no engagement signals. They are force-enriched before the AI rerank.
-_UNDATED_DISCOVERY_STRATEGIES = {"google_cse_discovery", "serp_google_discovery"}
+_UNDATED_DISCOVERY_STRATEGIES = {"serp_google_discovery"}
 
 # Model for Subreddit Scouting
 # Use the shared config model so Vertex-compatible defaults apply everywhere.
@@ -878,22 +878,6 @@ Output JSON structure:
             anchor_terms=anchor_terms,
         )
 
-        # External discovery channel (Google site:reddit.com). Runs in parallel
-        # with the Reddit-native channels; merged pre-dedup below.
-        if config.GOOGLE_CSE_API_KEY and config.GOOGLE_CSE_CX:
-            strategy_meta["google_cse_discovery"] = {
-                "query": original_query,
-                "source": "google_cse",
-            }
-            sort_tasks.append(
-                (
-                    "google_cse_discovery",
-                    self._search_google_cse(original_query, recent_only=recent_only),
-                )
-            )
-        else:
-            debug_trace["google_cse_discovery"] = "disabled (GOOGLE_CSE_API_KEY/CX not set)"
-
         # Google SERP discovery via Serper.dev (site:reddit.com).
         if config.SERPER_API_KEY:
             strategy_meta["serp_google_discovery"] = {
@@ -999,13 +983,9 @@ Output JSON structure:
             def _is_fresh(p: RedditPost) -> bool:
                 if (p.created_utc or 0) >= cutoff_ts:
                     return True
-                # External discovery candidates carry no created_utc; their
-                # recency is enforced upstream (CSE dateRestrict / Serper has
-                # no exact window, accepted trade-off for Google ranking).
-                return p.found_by_strategy in {
-                    "google_cse_discovery",
-                    "serp_google_discovery",
-                }
+                # Serper candidates carry no created_utc; no exact window
+                # exists Google-side. Accepted trade-off for Google ranking.
+                return p.found_by_strategy == "serp_google_discovery"
 
             kept_ids = {p.id for p in unique_posts if _is_fresh(p)}
             # Drop from the list AND from all_posts: the post-enrichment step
@@ -1709,10 +1689,8 @@ Output JSON format ONLY:
             logger.error(f"Error in _ai_rerank_posts: {e}")
             return posts # Fallback to original order
     
-    _GOOGLE_CSE_ENDPOINT = "https://www.googleapis.com/customsearch/v1"
-
     @staticmethod
-    def _clean_cse_text(text: str) -> str:
+    def _clean_serp_text(text: str) -> str:
         """CSE titles/snippets contain HTML tags and entities — strip them."""
         if not text:
             return ""
@@ -1764,7 +1742,7 @@ Output JSON format ONLY:
             posts.append(
                 RedditPost(
                     id=id_m.group(1),
-                    title=self._clean_cse_text(item.get("title", "")),
+                    title=self._clean_serp_text(item.get("title", "")),
                     url=link,
                     permalink=link,
                     score=0,
@@ -1772,7 +1750,7 @@ Output JSON format ONLY:
                     subreddit=sub_m.group(1),
                     author="unknown",
                     created_utc=0,  # unknown; see recent_only exemption
-                    selftext=self._clean_cse_text(item.get("snippet", ""))[:1000],
+                    selftext=self._clean_serp_text(item.get("snippet", ""))[:1000],
                     found_by_strategy="serp_google_discovery",
                     strategy_hits=["serp_google_discovery"],
                 )
@@ -1870,73 +1848,6 @@ Output JSON format ONLY:
                 f"r/{', r/'.join(subs)} for '{query[:50]}'"
             )
         return list(posts_by_id.values())
-
-    async def _search_google_cse(
-        self, query: str, recent_only: bool = False
-    ) -> List[RedditPost]:
-        """Discovery channel via Google Programmable Search restricted to reddit.com.
-
-        Community consensus (and our own A/B): Google ranks Reddit content better
-        than native search and indexes comments deeply. Returns lightweight
-        candidates (snippet-only, created_utc unknown) — the regular enrichment
-        pass fills them in later. Silently returns [] when unconfigured.
-
-        recent_only is enforced upstream via CSE dateRestrict (Google-side),
-        because these candidates have no created_utc yet.
-        """
-        if not (config.GOOGLE_CSE_API_KEY and config.GOOGLE_CSE_CX):
-            return []
-
-        params: Dict[str, Any] = {
-            "key": config.GOOGLE_CSE_API_KEY,
-            "cx": config.GOOGLE_CSE_CX,
-            "q": f"{query} site:reddit.com",
-            "num": max(1, min(config.GOOGLE_CSE_RESULTS, 10)),
-        }
-        if recent_only:
-            params["dateRestrict"] = f"d{REDDIT_RECENT_WINDOW_DAYS}"
-
-        try:
-            client = await self._get_client()
-            resp = await client.get(self._GOOGLE_CSE_ENDPOINT, params=params)
-            if resp.status_code != 200:
-                logger.warning(
-                    f"Google CSE error {resp.status_code}: {resp.text[:200]}"
-                )
-                return []
-            items = (resp.json() or {}).get("items") or []
-        except Exception as e:
-            logger.warning(f"Google CSE request failed: {e}")
-            return []
-
-        posts: List[RedditPost] = []
-        for item in items:
-            link = item.get("link") or ""
-            id_m = re.search(r"/comments/([a-z0-9]+)/", link, re.IGNORECASE)
-            sub_m = re.search(r"/r/([A-Za-z0-9_]+)/", link)
-            if not (id_m and sub_m):
-                continue  # not a post permalink (user page, search page, etc.)
-            posts.append(
-                RedditPost(
-                    id=id_m.group(1),
-                    title=self._clean_cse_text(item.get("title", "")),
-                    url=link,
-                    permalink=link,
-                    score=0,
-                    num_comments=0,
-                    subreddit=sub_m.group(1),
-                    author="unknown",
-                    created_utc=0,  # unknown; recency enforced via dateRestrict
-                    selftext=self._clean_cse_text(item.get("snippet", "")),
-                    found_by_strategy="google_cse_discovery",
-                    strategy_hits=["google_cse_discovery"],
-                )
-            )
-
-        logger.info(
-            f"🔍 Google CSE discovery: {len(posts)} candidates for '{query[:50]}'"
-        )
-        return posts
 
     async def _search_with_sort(
         self,

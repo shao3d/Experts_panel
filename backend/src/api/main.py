@@ -37,7 +37,7 @@ from ..services.artifact_retention_service import cleanup_result_artifacts
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 IS_PRODUCTION = ENVIRONMENT.lower() == "production"
 
-# Configure logging - FileHandler for local + StreamHandler for Fly.io (stdout)
+# Configure logging - FileHandler for files + StreamHandler for containers (stdout)
 root_logger = logging.getLogger()
 root_logger.setLevel(config.LOG_LEVEL.upper())
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -56,7 +56,7 @@ if not any(isinstance(h, logging.FileHandler) and
            for h in root_logger.handlers):
     root_logger.addHandler(file_handler)
 
-# Add StreamHandler for stdout (required for Fly.io: flyctl logs reads stdout/stderr)
+# Add StreamHandler for stdout (container logs read stdout/stderr)
 if not any(isinstance(h, logging.StreamHandler) and not isinstance(h, logging.FileHandler)
            for h in root_logger.handlers):
     stream_handler = logging.StreamHandler()

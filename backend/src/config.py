@@ -153,12 +153,6 @@ REDDIT_SOFT_CONFIDENCE: float = float(
 # Reddit proxy sidecar (docker compose service on the same host/network)
 REDDIT_PROXY_URL: str = os.getenv("REDDIT_PROXY_URL", "http://reddit-proxy:3000")
 
-# --- Google Programmable Search Engine (site:reddit.com discovery channel) ---
-# Optional: without both keys the channel is silently skipped.
-GOOGLE_CSE_API_KEY: str = os.getenv("GOOGLE_CSE_API_KEY", "")
-GOOGLE_CSE_CX: str = os.getenv("GOOGLE_CSE_CX", "")
-GOOGLE_CSE_RESULTS: int = int(os.getenv("GOOGLE_CSE_RESULTS", "8"))
-
 # --- Arctic Shift (exhaustive per-subreddit archive search) ---
 # Free community mirror with live ingestion; full-text search requires a
 # subreddit scope, so it complements scout-targeted retrieval only.

@@ -46,7 +46,6 @@ interface RedditSearchResult {
 }
 
 interface SearchResponse {
-  markdown: string;
   foundCount: number;
   sources: Array<{
     title: string;
@@ -360,12 +359,9 @@ class RedditAggregator {
       const sanitized = this.sanitizeResults(enriched);
       logger.info('Sanitized results');
 
-      // Build markdown
-      const markdown = this.buildMarkdown(sanitized, query);
       const processingTimeMs = Date.now() - startTime;
 
       return {
-        markdown,
         foundCount: sanitized.length,
         sources: sanitized.map(r => ({
           title: r.title,
@@ -467,35 +463,6 @@ class RedditAggregator {
       subreddit: sanitizeText(r.subreddit),
       author: sanitizeText(r.author),
     }));
-  }
-
-  /**
-   * Build markdown from results
-   */
-  private buildMarkdown(results: RedditSearchResult[], query: string): string {
-    if (results.length === 0) {
-      return `No Reddit discussions found for "${query}".`;
-    }
-
-    const sections = results.map((r, i) => {
-      const url = r.permalink.startsWith('http')
-        ? r.permalink
-        : `https://reddit.com${r.permalink}`;
-      const content = r.selftext || r.body || '';
-      const truncatedContent = content.length > 500
-        ? content.substring(0, 500) + '...'
-        : content;
-
-      return `### ${i + 1}. ${r.title}
-
-**r/${r.subreddit}** | Score: ${r.score} | Comments: ${r.numComments}
-
-${truncatedContent}
-
-[Read on Reddit](${url})`;
-    });
-
-    return sections.join('\n\n---\n\n');
   }
 
   /**
