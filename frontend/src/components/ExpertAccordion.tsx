@@ -8,6 +8,7 @@ import ExpertResponse from './ExpertResponse';
 import PostsList from './PostsList';
 import { CommentGroupsList } from './CommentGroupsList';
 import CommentSynthesis from './CommentSynthesis';
+import CopyButton from './CopyButton';
 import { apiClient, isEnglishQuery } from '../services/api';
 import { ExpertResponse as ExpertResponseType, PostDetailResponse } from '../types/api';
 
@@ -222,8 +223,13 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
         <div className="accordion-body flex flex-col md:flex-row border-t border-gray-200 bg-white h-auto min-h-[400px] max-h-[80vh]">
           {/* Left Column - Expert Response */}
           <div className="accordion-col-left flex-1 flex flex-col min-w-0 border-r border-gray-200 overflow-hidden">
-            <div className="col-header p-3 bg-gray-50 border-b border-gray-200 text-center font-semibold text-gray-600">
+            <div className="col-header p-3 bg-gray-50 border-b border-gray-200 text-center font-semibold text-gray-600 relative">
               <h2 className="column-title text-base m-0">Expert Response</h2>
+              {expert.answer && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <CopyButton text={expert.answer} />
+                </div>
+              )}
             </div>
 
             <div className="scrollable-content flex-1 overflow-y-auto p-6 custom-scrollbar">

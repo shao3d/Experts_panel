@@ -9,6 +9,7 @@
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import CopyButton from './CopyButton';
 
 interface MetaSynthesisSectionProps {
   metaSynthesis: string;
@@ -35,6 +36,9 @@ export const MetaSynthesisSection: React.FC<MetaSynthesisSectionProps> = ({
         <span className="accordion-icon">{isExpanded ? '▼' : '▶'}</span>
         <span className="expert-name">{title}</span>
         <span className="channel-name">{subtitle}</span>
+        <span className="ml-auto">
+          <CopyButton text={metaSynthesis} />
+        </span>
       </div>
 
       {/* Body - only when expanded */}

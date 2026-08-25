@@ -1310,6 +1310,52 @@
   color: var(--ep-cream);
 }
 
+.copy-answer-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--ep-forest);
+  background: var(--ep-paper-raised);
+  border: 1px solid rgba(26, 51, 0, 0.28);
+  border-radius: var(--ep-radius-button);
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease,
+    color 160ms ease, box-shadow 160ms ease;
+}
+
+.copy-answer-btn svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.copy-answer-btn:hover {
+  background: var(--ep-yellow);
+  border-color: var(--ep-forest);
+  box-shadow: var(--ep-shadow-soft);
+}
+
+.copy-answer-btn.copied {
+  background: var(--ep-success-bg);
+  border-color: var(--ep-success);
+  color: var(--ep-success);
+  cursor: default;
+}
+
+@media (max-width: 480px) {
+  .copy-answer-btn {
+    padding: 4px 8px;
+  }
+
+  .copy-answer-btn-label {
+    display: none;
+  }
+}
+
 .mobile-sources-toggle,
 .expert-toggle-bar {
   background-color: var(--ep-paper-muted);

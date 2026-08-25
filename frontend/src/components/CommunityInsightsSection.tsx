@@ -11,6 +11,7 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { RedditResponse } from '../types/api';
+import CopyButton from './CopyButton';
 
 interface CommunityInsightsSectionProps {
   redditResponse: RedditResponse | null | undefined;
@@ -136,6 +137,11 @@ export const CommunityInsightsSection: React.FC<CommunityInsightsSectionProps> =
             {redditResponse.found_count} posts from Reddit
           </span>
         </div>
+        {redditResponse.synthesis && (
+          <div className="header-actions">
+            <CopyButton text={redditResponse.synthesis} />
+          </div>
+        )}
       </div>
 
       {/* AI Synthesis */}
