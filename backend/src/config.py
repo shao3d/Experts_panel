@@ -157,6 +157,19 @@ GOOGLE_CSE_API_KEY: str = os.getenv("GOOGLE_CSE_API_KEY", "")
 GOOGLE_CSE_CX: str = os.getenv("GOOGLE_CSE_CX", "")
 GOOGLE_CSE_RESULTS: int = int(os.getenv("GOOGLE_CSE_RESULTS", "8"))
 
+# --- Arctic Shift (exhaustive per-subreddit archive search) ---
+# Free community mirror with live ingestion; full-text search requires a
+# subreddit scope, so it complements scout-targeted retrieval only.
+ARCTIC_SHIFT_ENABLED: bool = (
+    os.getenv("ARCTIC_SHIFT_ENABLED", "true").lower() == "true"
+)
+ARCTIC_SHIFT_ENDPOINT: str = os.getenv(
+    "ARCTIC_SHIFT_ENDPOINT",
+    "https://arctic-shift.photon-reddit.com/api/posts/search",
+)
+ARCTIC_TARGET_SUBREDDITS: int = int(os.getenv("ARCTIC_TARGET_SUBREDDITS", "2"))
+ARCTIC_LIMIT_PER_SUB: int = int(os.getenv("ARCTIC_LIMIT_PER_SUB", "12"))
+
 # --- Hybrid Retrieval ---
 HYBRID_VECTOR_TOP_K: int = int(os.getenv("HYBRID_VECTOR_TOP_K", "150"))
 HYBRID_FTS5_TOP_K: int = int(os.getenv("HYBRID_FTS5_TOP_K", "100"))

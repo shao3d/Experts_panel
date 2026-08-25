@@ -890,6 +890,24 @@ Output JSON structure:
         else:
             debug_trace["google_cse_discovery"] = "disabled (GOOGLE_CSE_API_KEY/CX not set)"
 
+        # Exhaustive archive recall within scout-suggested subreddits.
+        if config.ARCTIC_SHIFT_ENABLED and soft_target_subreddits:
+            strategy_meta["arctic_targeted_archive"] = {
+                "query": original_query,
+                "source": "arctic_shift",
+                "subreddits": soft_target_subreddits[: config.ARCTIC_TARGET_SUBREDDITS],
+            }
+            sort_tasks.append(
+                (
+                    "arctic_targeted_archive",
+                    self._search_arctic_shift(
+                        original_query,
+                        soft_target_subreddits,
+                        recent_only=recent_only,
+                    ),
+                )
+            )
+
         results = await asyncio.gather(
             *[task for _, task in sort_tasks],
             return_exceptions=True,
@@ -1665,6 +1683,94 @@ Output JSON format ONLY:
             return ""
         cleaned = html.unescape(re.sub(r"<[^>]+>", " ", text))
         return re.sub(r"\s+", " ", cleaned).strip()
+
+    async def _search_arctic_shift(
+        self,
+        query: str,
+        subreddits: List[str],
+        recent_only: bool = False,
+    ) -> List[RedditPost]:
+        """Exhaustive full-text recall within scout-suggested subreddits.
+
+        Arctic Shift is a free community mirror with live ingestion (minutes
+        of lag, verified 2026-08) and a COMPLETE per-subreddit index — unlike
+        native search it does not miss existing threads due to ranking quirks.
+        Limitation (by design): text search requires a subreddit scope.
+
+        Strategy: title-match on the top scout subreddits, newest first.
+        recent_only maps to Arctic's human-readable `after` window.
+        """
+        if not config.ARCTIC_SHIFT_ENABLED:
+            return []
+        subs = [
+            s.strip() for s in (subreddits or [])[: config.ARCTIC_TARGET_SUBREDDITS]
+            if s.strip()
+        ]
+        clean_query = (query or "").strip()
+        if not subs or not clean_query:
+            return []
+
+        async def fetch_one(sub: str, field: str) -> List[Dict[str, Any]]:
+            params: Dict[str, Any] = {
+                "subreddit": sub,
+                field: clean_query,
+                "limit": max(1, min(config.ARCTIC_LIMIT_PER_SUB, 100)),
+                "sort": "desc",
+            }
+            if recent_only:
+                params["after"] = f"{REDDIT_RECENT_WINDOW_DAYS}d"
+            client = await self._get_client()
+            resp = await client.get(config.ARCTIC_SHIFT_ENDPOINT, params=params)
+            if resp.status_code != 200:
+                logger.warning(
+                    f"Arctic Shift error {resp.status_code} for r/{sub}: "
+                    f"{resp.text[:150]}"
+                )
+                return []
+            return (resp.json() or {}).get("data") or []
+
+        try:
+            # Title matches are high-precision; selftext widens recall for
+            # questions whose answer lives in the post body, not the title.
+            results = await asyncio.gather(
+                *[fetch_one(s, f) for s in subs for f in ("title", "selftext")],
+                return_exceptions=True,
+            )
+        except Exception as e:  # pragma: no cover - gather rarely raises here
+            logger.warning(f"Arctic Shift request failed: {e}")
+            return []
+
+        posts_by_id: Dict[str, RedditPost] = {}
+        for result in results:
+            if isinstance(result, Exception):
+                logger.warning(f"Arctic Shift channel failed: {result}")
+                continue
+            for p in result:
+                pid = p.get("id")
+                if not pid or pid in posts_by_id:
+                    continue
+                permalink = p.get("permalink") or ""
+                posts_by_id[str(pid)] = RedditPost(
+                    id=str(pid),
+                    title=(p.get("title") or "").strip(),
+                    url=f"https://reddit.com{permalink}",
+                    permalink=f"https://reddit.com{permalink}",
+                    score=int(p.get("score") or 0),
+                    num_comments=int(p.get("num_comments") or 0),
+                    subreddit=p.get("subreddit") or "",
+                    author=p.get("author") or "",
+                    created_utc=int(p.get("created_utc") or 0),
+                    selftext=(p.get("selftext") or "")[:4000],
+                    found_by_strategy="arctic_targeted_archive",
+                    strategy_hits=["arctic_targeted_archive"],
+                )
+
+        if posts_by_id:
+            logger.info(
+                f"🔎 Arctic Shift: {len(posts_by_id)} candidates from "
+                f"r/{', r/'.join(subs)} for '{query[:50]}'"
+            )
+        return list(posts_by_id.values())
 
     async def _search_google_cse(
         self, query: str, recent_only: bool = False
