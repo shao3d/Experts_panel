@@ -35,6 +35,10 @@ RETRY_BACKOFF_BASE = 2.0
 # Reddit API only has coarse time buckets, so exact "last N months" is a post-filter.
 REDDIT_RECENT_WINDOW_DAYS = 90
 
+# Discovery channels whose candidates arrive snippet-only: no created_utc and
+# no engagement signals. They are force-enriched before the AI rerank.
+_UNDATED_DISCOVERY_STRATEGIES = {"google_cse_discovery", "serp_google_discovery"}
+
 # Model for Subreddit Scouting
 # Use the shared config model so Vertex-compatible defaults apply everywhere.
 MODEL_SCOUT = config.MODEL_SCOUT
@@ -1035,12 +1039,24 @@ Output JSON structure:
             reverse=True,
         )
 
-        enrich_limit = min(
-            config.REDDIT_PRE_RERANK_ENRICH_LIMIT,
-            len(heuristic_sorted),
-        )
-        if include_comments and enrich_limit > 0:
-            enrich_targets = heuristic_sorted[:enrich_limit]
+        # Fair enrichment: snippet-only discovery candidates (Serper/CSE)
+        # arrive without engagement signals, so heuristic ranking alone would
+        # starve them of full content + comments before the AI rerank —
+        # they are force-added to the enrichment set beyond the heuristic cut.
+        enrich_targets = heuristic_sorted[
+            : min(config.REDDIT_PRE_RERANK_ENRICH_LIMIT, len(heuristic_sorted))
+        ]
+        seen_target_ids = {p.id for p in enrich_targets}
+        for post in heuristic_sorted:
+            if len(enrich_targets) >= config.REDDIT_RERANK_CANDIDATES * 2:
+                break  # hard safety cap on /details calls
+            if post.id in seen_target_ids:
+                continue
+            if post.found_by_strategy in _UNDATED_DISCOVERY_STRATEGIES:
+                enrich_targets.append(post)
+                seen_target_ids.add(post.id)
+
+        if include_comments and enrich_targets:
             enriched_results = await asyncio.gather(
                 *[self._enrich_post_content(post) for post in enrich_targets],
                 return_exceptions=True,

@@ -109,7 +109,7 @@ Defined in `.env`, loaded in `config.py`.
 - `REDDIT_SEARCH_V2_ENABLED`: true
 - `REDDIT_SEARCH_DEBUG`: false
 - `REDDIT_RERANK_CANDIDATES`: 18
-- `REDDIT_PRE_RERANK_ENRICH_LIMIT`: 12
+- `REDDIT_PRE_RERANK_ENRICH_LIMIT`: 18 (aligned with RERANK_CANDIDATES; undated Serper/CSE candidates are force-enriched on top)
 - `REDDIT_MIN_CONFIDENCE`: 0.52
 - `REDDIT_SOFT_CONFIDENCE`: 0.44
 

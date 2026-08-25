@@ -139,8 +139,10 @@ REDDIT_SEARCH_DEBUG: bool = (
     os.getenv("REDDIT_SEARCH_DEBUG", "false").lower() == "true"
 )
 REDDIT_RERANK_CANDIDATES: int = int(os.getenv("REDDIT_RERANK_CANDIDATES", "18"))
+# Aligned with RERANK_CANDIDATES so every rerank candidate can carry
+# full content + comments into the AI scoring pass.
 REDDIT_PRE_RERANK_ENRICH_LIMIT: int = int(
-    os.getenv("REDDIT_PRE_RERANK_ENRICH_LIMIT", "12")
+    os.getenv("REDDIT_PRE_RERANK_ENRICH_LIMIT", "18")
 )
 REDDIT_MIN_CONFIDENCE: float = float(
     os.getenv("REDDIT_MIN_CONFIDENCE", "0.52")
