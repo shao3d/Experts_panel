@@ -122,6 +122,19 @@ PROMOTIONAL_MARKERS = [
     "consulting", "boilerplate", "template", "newsletter", "sponsored",
 ]
 
+# SEO/affiliate promo title mechanics: credit giveaways, signup bonuses,
+# ALL-CAPS FREE. Distinct from hands-on experience posts ("I tested X for a
+# month"), which carry none of these patterns.
+SPAM_TITLE_PATTERNS = [
+    re.compile(r"gives? you \d+", re.I),
+    re.compile(r"\d+\s*(free\s+)?credits?\b", re.I),
+    re.compile(r"free credits?", re.I),
+    re.compile(r"(sign[- ]?up|registration)\s+(bonus|promo|credit|deal)", re.I),
+    re.compile(r"promo code|coupon code|lifetime deal|affiliate", re.I),
+]
+# Subreddit name fragments observed as keyword-stuffed promo hubs.
+SPAM_SUBREDDIT_FRAGMENTS = ["seo"]
+
 GENERIC_ANCHOR_STOPWORDS = COMMON_QUERY_STOPWORDS | {
     "ai", "production", "system", "systems", "reduce", "improve", "prevent",
     "avoid", "prod", "tool", "tools", "model", "models", "strategy",
@@ -543,6 +556,10 @@ Output JSON structure:
         ):
             answerability += 0.18
         if intent == "comparison":
+            # NB: bonuses are NOT gated on engagement — fresh quality posts
+            # legitimately start with few comments. Starvation is passed as an
+            # explicit Engagement signal to the AI reranker, which judges
+            # whether a low-attention "vs" thread is bait or just new.
             if direct_comparison_hits > 0:
                 answerability += 0.16
             if title_body_anchor_matches >= 2:
@@ -580,6 +597,21 @@ Output JSON structure:
             penalty += 0.10
         if post.score <= 1 and post.num_comments <= 2 and len(body_lower) < 120:
             penalty += 0.12
+
+        # Anti-spam: SEO/affiliate posts stuff titles with query keywords
+        # ("Gives You 50 Free Credits") and carry no community validation.
+        # Base penalty scales with pattern hits; the engagement-starved combo
+        # (low score + no discussion) is near-certain ad and sinks hard.
+        spam_hits = sum(
+            1 for pattern in SPAM_TITLE_PATTERNS if pattern.search(title_lower)
+        )
+        if spam_hits:
+            penalty += 0.15 * min(spam_hits, 2)
+            if post.score <= 3 and post.num_comments <= 5:
+                penalty += 0.18
+        sub_lower = (post.subreddit or "").lower()
+        if any(frag in sub_lower for frag in SPAM_SUBREDDIT_FRAGMENTS):
+            penalty += 0.20
 
         raw_score = (lexical_score * 0.58) + keyword_bonus + answerability + quality_signal - penalty
         return max(0.0, min(raw_score, 1.4))
@@ -1238,6 +1270,7 @@ Output JSON structure:
             comments_block = " | ".join(comment_snippets) if comment_snippets else "None"
             posts_context.append(
                 f"ID: {i} | Title: {p.title} | Sub: {p.subreddit} | "
+                f"Engagement: score={p.score}, comments={p.num_comments} | "
                 f"Strategy: {','.join(p.strategy_hits[:3]) or p.found_by_strategy or 'unknown'} | "
                 f"TitleBodyAnchors: {p.title_body_anchor_matches}/{max(len(anchor_terms), 1)} | "
                 f"CommentAnchors: {p.comment_anchor_matches}/{max(len(anchor_terms), 1)} | "
@@ -1268,6 +1301,11 @@ For comparison queries:
 Penalize posts that are:
 - vague discussion without actionable substance
 - self-promotion, agency/freelancer marketing, SEO-style listicles
+- credit-giveaway / signup-promo pitches and keyword-stuffed titles with
+  no hands-on testing or community discussion behind them
+- starved engagement (score < ~5, almost no comments) on a listicle or
+  "A vs B vs C" style title is a strong SEO-bait signal — rank such posts
+  LOW unless the body/comments prove genuine hands-on detail
 - off-topic showcase/news when the user asked for a guide or fix
 - only weakly adjacent to the query
 
@@ -1283,10 +1321,17 @@ Output JSON format ONLY:
 }}
 """
         try:
+            # Adversarial categories (comparisons attract SEO "vs"-bait) need
+            # the discerning judge; everything else stays on cheap flash-lite.
+            rerank_model = (
+                config.MODEL_SYNTHESIS
+                if intent in {"comparison"}
+                else config.MODEL_ANALYSIS
+            )
             # Rerank is a scoring task, not a creative one: MODEL_ANALYSIS
             # (flash-lite tier) is sufficient and much cheaper than SYNTHESIS.
             response = await self._llm_client.chat_completions_create(
-                model=config.MODEL_ANALYSIS,
+                model=rerank_model,
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.0
             )
