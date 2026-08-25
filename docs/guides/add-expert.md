@@ -172,7 +172,7 @@ EXPERT_UI_CONFIG.order
 sqlite3 backend/data/experts.db "SELECT COUNT(*) FROM expert_metadata WHERE expert_id='<expert_id>';"
 sqlite3 backend/data/experts.db "PRAGMA foreign_key_check;"
 
-curl -sS https://experts-panel.fly.dev/api/v1/experts
+curl -sS https://expa.beyondhorizon.dev/api/v1/experts
 fly releases -a experts-panel
 fly status -a experts-panel
 ```

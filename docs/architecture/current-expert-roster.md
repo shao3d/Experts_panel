@@ -93,8 +93,8 @@ sqlite3 backend/data/experts.db "SELECT COUNT(*) FROM expert_metadata WHERE expe
 Production API:
 
 ```bash
-curl -sS https://experts-panel.fly.dev/api/v1/experts
-curl -sS https://experts-panel.fly.dev/health
+curl -sS https://expa.beyondhorizon.dev/api/v1/experts
+curl -sS https://expa.beyondhorizon.dev/health
 fly releases -a experts-panel
 fly status -a experts-panel
 ```
@@ -102,7 +102,7 @@ fly status -a experts-panel
 Frontend bundle sanity check:
 
 ```bash
-curl -sS https://experts-panel.fly.dev/ -o /tmp/experts-panel-index.html
+curl -sS https://expa.beyondhorizon.dev/ -o /tmp/experts-panel-index.html
 # Fetch the referenced /assets/index-*.js and verify:
 # - pashazloy/PashaZloy is present
 # - mkarpov/MKarpov is absent
