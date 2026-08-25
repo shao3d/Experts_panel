@@ -68,7 +68,8 @@ Scout (MODEL_SCOUT=gemini-3.1-flash-lite, temp=0)
          В контексте каждой строки: Engagement score/comments + правила SEO-bait
        ↓ confidence gates 0.52/0.44 (+anchor gates для comparison)
        ↓ abstain = graceful skip («no relevant threads»), НЕ ошибка
-Синтез (RedditSynthesisService, MODEL_SYNTHESIS, temp=0, max_tokens=4096):
+Синтез (RedditSynthesisService, MODEL_SYNTHESIS, temp=0.3, max_tokens=REDDIT_SYNTH_MAX_TOKENS=4096
+с одним автоперезапросом на 2x при finish_reason=length):
   контекст = топ-10 источников × (selftext ≤8000 симв + дерево комментов depth≤3,
   body≤2000 симв/коммент, теги [OP]/[MOD]/flair)
 ```

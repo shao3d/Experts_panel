@@ -105,8 +105,8 @@ The system processes user queries through an **ten-phase pipeline** using a **Ge
 ### 8. Reddit Pipeline (Parallel Sidecar)
 **Goal**: Provide community reality-check and engineering insights.
 - **Dedicated Architecture Document**: [See `reddit-service.md`](./reddit-service.md) for the full Single Source of Truth (SSOT).
-- **UI status**: The Reddit toggle is currently hidden in the UI behind `REDDIT_SEARCH_VISIBLE` (`frontend/src/config/expertConfig.ts`); the backend pipeline remains fully functional and opt-in.
-- **High-Level Summary**: Runs in parallel with the main pipeline. Uses an AI Scout (Gemini 3 Flash) to generate intent-based queries, searches Reddit via a dedicated Node.js Proxy, performs semantic deduplication and AI reranking, and synthesizes a "Staff Engineer" response from deep comment trees.
+- **UI status**: The Reddit toggle is user-visible (`REDDIT_SEARCH_VISIBLE = true` in `frontend/src/config/expertConfig.ts`) and enabled by default.
+- **High-Level Summary**: Runs in parallel with the main pipeline. Uses an AI Scout (Gemini 3 Flash) to generate intent-based queries, searches Reddit via a dedicated Node.js Proxy, performs semantic deduplication and AI reranking, and synthesizes a "Staff Engineer" response from deep comment trees (mandatory comparison table with [S#] source refs, WHERE TO GO action block, confidence tags; comment budget per source; auto-retry on token truncation).
 - **UX Integration**: The backend emits dedicated Reddit phases (`reddit_search`, `reddit_synthesis`) into `pipeline_state`. The frontend groups them into a separate **Reddit** progress group; phase labels stay icon-free, while SSE message text is prefixed with `🌐 [Reddit] ...`.
 
 ### 9. Video Hub Sidecar (Digital Twin)

@@ -250,10 +250,11 @@ To debug the pipeline, monitor the backend log file for messages containing spec
 **Architecture:** Sidecar pattern - Reddit Proxy microservice (docker compose service `reddit-proxy` on the Oracle VM, reachable at `http://reddit-proxy:3000`; wired into the backend via `REDDIT_PROXY_URL`)
 
 **Key Features:**
-- ✅ Parallel Reddit search with expert pipelines
-- ✅ AI-powered community synthesis (Reality Check, Hacks & Workarounds, Vibe Check)
+- ✅ Parallel Reddit search with expert pipelines (native relevance + Arctic Shift archive + Google SERP via Serper.dev)
+- ✅ Staff Engineer synthesis: mandatory comparison table with concrete numbers and `[S#]` source refs, WHERE TO GO action block, confidence tags ([подтверждено сообществом] / [единичный отчёт] / [вывод автора анализа])
+- ✅ Synthesis context hygiene: per-source age/channel provenance, comment budget (top-K roots by score, char cap), auto-retry with doubled max_tokens on finish_reason=length
 - ✅ Automatic query translation (RU → EN) for better Reddit search results
-- ✅ Multi-language synthesis (responses in query language)
+- ✅ Multi-language synthesis (responses in query language; RU/EN branches)
 - ✅ Source attribution with direct Reddit links
 - ✅ Circuit breaker pattern for reliability
 - ✅ User-toggleable (Искать на Reddit checkbox, default: enabled)
@@ -273,7 +274,7 @@ To debug the pipeline, monitor the backend log file for messages containing spec
 ---
 
 **Project Status:** Production-ready with active development
-**Last Updated:** 2026-04-21
+**Last Updated:** 2026-08-25
 **Architecture:** Multi-expert, Gemini-only LLM pipeline with unified client and real-time progress tracking
 **Key Features:** Parallel expert processing, unified `vertex_llm_client`, cost optimization with Gemini 3 Flash, language validation, comment synthesis, enhanced error handling, admin authentication, Reddit community insights, Pixel Office Engine (4-room Canvas office with CSS scaling)
 **Change History:** See `git log` for detailed history of all changes.
