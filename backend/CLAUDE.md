@@ -113,6 +113,7 @@ Defined in `.env`, loaded in `config.py`.
 - `REDDIT_SOFT_CONFIDENCE`: 0.44
 - `REDDIT_SYNTH_COMMENT_TOP_K`: 12 (top-scored comment roots per source in synthesis context)
 - `REDDIT_SYNTH_SOURCE_CHAR_CAP`: 15000 (per-source char cap shared between body and comment tree)
+- `REDDIT_SYNTH_MAX_TOKENS`: 4096 (synthesis output cap; finish_reason=length triggers ONE automatic retry at 2x)
 
 ### Hardcoded Runtime Limits
 - `Reddit wait after experts`: 120s hard limit in `simplified_query_endpoint.py`

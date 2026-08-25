@@ -300,6 +300,7 @@ Gemini rerank получает:
 - `REDDIT_SOFT_CONFIDENCE`
 - `REDDIT_SYNTH_COMMENT_TOP_K` — топ-K корневых комментариев по score на источник в синтезе
 - `REDDIT_SYNTH_SOURCE_CHAR_CAP` — кап символов на источник (тело + дерево комментариев)
+- `REDDIT_SYNTH_MAX_TOKENS` — бюджет вывода синтеза; при finish_reason=length один автоперезапрос с 2x бюджетом
 
 Практический смысл:
 

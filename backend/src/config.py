@@ -154,6 +154,9 @@ REDDIT_SYNTH_COMMENT_TOP_K: int = int(os.getenv("REDDIT_SYNTH_COMMENT_TOP_K", "1
 REDDIT_SYNTH_SOURCE_CHAR_CAP: int = int(
     os.getenv("REDDIT_SYNTH_SOURCE_CHAR_CAP", "15000")
 )
+# Synthesis output budget; finish_reason=length triggers one automatic
+# retry with a doubled budget (see reddit_synthesis_service).
+REDDIT_SYNTH_MAX_TOKENS: int = int(os.getenv("REDDIT_SYNTH_MAX_TOKENS", "4096"))
 # Reddit proxy sidecar (docker compose service on the same host/network)
 REDDIT_PROXY_URL: str = os.getenv("REDDIT_PROXY_URL", "http://reddit-proxy:3000")
 

@@ -23,6 +23,10 @@ DEFAULT_SYNTHESIS_MODEL = "gemini-3-flash-preview"
 # the discussion tree (the first root is always kept regardless).
 MIN_COMMENT_BUDGET_CHARS = 2000
 
+# Step 3 of the audit plan: never let an answer die mid-table silently.
+# finish_reason=length triggers exactly ONE retry with a doubled budget.
+SYNTH_ESCALATION_FACTOR = 2
+
 
 class RedditSynthesisService:
     """Service for synthesizing Reddit content via Gemini AI.
@@ -43,6 +47,26 @@ class RedditSynthesisService:
         # This matches the main synthesis model for expert responses
         self.model = model or config.MODEL_SYNTHESIS or DEFAULT_SYNTHESIS_MODEL
         self._client = get_vertex_llm_client()
+
+    async def _generate_completion(
+        self,
+        messages: List[Dict[str, str]],
+        max_tokens: int,
+    ):
+        """Single synthesis LLM call.
+
+        Returns:
+            Tuple (text, finish_reason); text may be empty on provider hiccups.
+        """
+        response = await self._client.chat_completions_create(
+            model=self.model,
+            messages=messages,
+            temperature=0.3,  # Lower temp for factual analysis
+            max_tokens=max_tokens,
+        )
+        choice = response.choices[0]
+        text = (getattr(choice.message, 'content', None) or "").strip()
+        return text, getattr(choice, 'finish_reason', 'stop') or 'stop'
     
     async def synthesize(
         self,
@@ -83,28 +107,52 @@ class RedditSynthesisService:
         messages = self._create_synthesis_prompt(query, context, query_language)
 
         try:
-            response = await self._client.chat_completions_create(
-                model=self.model,
-                messages=messages,
-                temperature=0.3,  # Lower temp for factual analysis
-                max_tokens=4096
+            # How many sources actually entered the context (for telemetry)
+            if hasattr(reddit_result, 'posts'):
+                context_source_count = min(
+                    len(reddit_result.posts or []), max_sources_in_context
+                )
+            else:
+                context_source_count = min(
+                    len(reddit_result.sources or []), max_sources_in_context
+                )
+
+            synthesis, finish_reason = await self._generate_completion(
+                messages, config.REDDIT_SYNTH_MAX_TOKENS
             )
-            
-            synthesis = response.choices[0].message.content.strip()
-            
+            used_max_tokens = config.REDDIT_SYNTH_MAX_TOKENS
+
+            # Auto-escalation (Step 3): a length-truncated answer is silently
+            # broken (cut mid-table / before the action block). Retry ONCE
+            # with a doubled budget instead of shipping the stump.
+            if finish_reason == "length":
+                used_max_tokens *= SYNTH_ESCALATION_FACTOR
+                logger.warning(
+                    f"Reddit synthesis truncated at {config.REDDIT_SYNTH_MAX_TOKENS} "
+                    f"tokens (finish_reason=length), retrying once with "
+                    f"{used_max_tokens}"
+                )
+                retry_text, retry_finish = await self._generate_completion(
+                    messages, used_max_tokens
+                )
+                if retry_text:
+                    synthesis, finish_reason = retry_text, retry_finish
+
             # Unified access for logging
             if hasattr(reddit_result, 'posts'):
                 count = reddit_result.total_found
             else:
                 count = reddit_result.found_count
-                
+
             logger.info(
                 f"Reddit synthesis completed for query: {query[:50]}... "
-                f"(found {count} posts)"
+                f"(found {count} posts) | telemetry: finish_reason={finish_reason} "
+                f"chars={len(synthesis)} max_tokens={used_max_tokens} "
+                f"context_sources={context_source_count}"
             )
-            
+
             return synthesis
-            
+
         except VertexLLMError as e:
             logger.error(f"Gemini synthesis failed: {e}")
             # Fallback: return raw markdown if synthesis fails
