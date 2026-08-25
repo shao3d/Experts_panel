@@ -46,7 +46,7 @@ The backend implements a sophisticated 10-phase query processing system. It uses
 ## Reddit Integration
 - **Active Client**: `src/services/reddit_enhanced_service.py` (Proxy Client).
 - **Architecture**: Hybrid Sidecar.
-    - **Search**: via Proxy `POST /search` (the proxy uses Reddit MCP `search_reddit` under the hood).
+    - **Search**: via Proxy `POST /search` (direct Reddit OAuth API inside the sidecar).
     - **Details**: via Proxy `POST /details` (deep fetch of 100 comments / depth 5).
 - **Search V2 (Precision-First)**:
     - **Soft Subreddit Hints**: Scout still proposes target communities, but backend no longer hard-locks retrieval to them by default.
@@ -60,7 +60,7 @@ The backend implements a sophisticated 10-phase query processing system. It uses
 - **Logic**: 
     - **Scout as Hint, not Gate**: topic detection shapes retrieval, but global search always remains available.
     - **Precision > Recall**: Returning fewer high-confidence threads is preferred over broad but noisy recall.
-- **Legacy**: `reddit_client.py` (Direct `asyncpraw`) - deprecated/fallback only.
+- **Legacy**: `reddit_client.py` removed 2026-08-25 (dead asyncpraw client; manual/legacy scripts that imported it are non-runtime artifacts).
 
 ## Configuration (Environment Variables)
 
@@ -109,7 +109,7 @@ Defined in `.env`, loaded in `config.py`.
 - `REDDIT_SEARCH_V2_ENABLED`: true
 - `REDDIT_SEARCH_DEBUG`: false
 - `REDDIT_RERANK_CANDIDATES`: 18
-- `REDDIT_PRE_RERANK_ENRICH_LIMIT`: 18 (aligned with RERANK_CANDIDATES; undated Serper/CSE candidates are force-enriched on top)
+- `REDDIT_PRE_RERANK_ENRICH_LIMIT`: 18 (aligned with RERANK_CANDIDATES; undated Serper discovery candidates are force-enriched on top)
 - `REDDIT_MIN_CONFIDENCE`: 0.52
 - `REDDIT_SOFT_CONFIDENCE`: 0.44
 

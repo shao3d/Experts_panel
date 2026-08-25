@@ -101,7 +101,7 @@ Use **Google AI Studio** or another Gemini UI to generate the source JSON.
 ### Common Issues
 1.  **"Timed out waiting for SSH connectivity"**:
     *   The deployment script waits 45s for the machine to wake up.
-    *   **Fix:** Just run the script again. Fly.io cold starts can be slow.
+    *   **Fix:** Just run the script again. Container cold starts can be slow.
 
 2.  **"JSON Parse Error"**:
     *   AI Studio sometimes outputs invalid JSON (trailing commas, missing brackets).

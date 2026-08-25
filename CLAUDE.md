@@ -15,7 +15,7 @@ The system uses an advanced **ten-phase pipeline** for analysis and a hybrid, co
 ### Key Architectural Principles
 - **Multi-Expert Architecture**: Complete data isolation between experts and parallel processing.
 - **Embs&Keys Hybrid Search**: Multi-stage retrieval using Vector KNN (sqlite-vec) and FTS5 with Reciprocal Rank Fusion (RRF), eliminating Semantic Gaps with pre-computed vector embeddings.
-- **Reddit Proxy Integration**: Sidecar microservice for community insights with multi-strategy search, smart subreddit targeting, and 120s cold start timeout.
+- **Reddit Proxy Integration**: Sidecar microservice for community insights with multi-strategy search (native relevance + Arctic Shift archive + Google SERP via Serper), smart subreddit targeting.
 - **Cost Optimization**: Gemini-only strategy with Tier 1 paid account (high rate limits).
 - **Real-time Progress**: SSE streaming with `pipeline_state` — aggregate phase tracking with Smart Grouping (Search, Analysis, Insights, Video, Synthesis, Reddit).
 - **Search Toggles**: Optional `use_recent_only` (last 3 months), `include_reddit` (Reddit search), and `use_super_passport` (Embs&Keys Hybrid search) parameters.
@@ -247,7 +247,7 @@ To debug the pipeline, monitor the backend log file for messages containing spec
 
 **Overview:** Real-time Reddit community analysis integrated into expert queries
 
-**Architecture:** Sidecar pattern - Reddit Proxy microservice (runs on the same Oracle VM as the panel, `127.0.0.1:3000`, migrated from Fly.io; not yet wired into the backend)
+**Architecture:** Sidecar pattern - Reddit Proxy microservice (docker compose service `reddit-proxy` on the Oracle VM, reachable at `http://reddit-proxy:3000`; wired into the backend via `REDDIT_PROXY_URL`)
 
 **Key Features:**
 - ✅ Parallel Reddit search with expert pipelines
