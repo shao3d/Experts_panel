@@ -53,7 +53,6 @@ interface SearchResponse {
     commentsCount: number;
     subreddit: string;
     created_utc?: number;
-    [key: string]: unknown;
   }>;
   query: string;
   processingTimeMs: number;
@@ -339,7 +338,7 @@ class RedditAggregator {
 
     try {
       // Step 1: Search (get more than needed to filter)
-      const searchResults = await this.searchReddit(query, {
+      const searchResults = await searchRedditDirect(query, {
         subreddits,
         sort,
         time,
@@ -384,21 +383,10 @@ class RedditAggregator {
   }
 
   /**
-   * Search Reddit via the direct OAuth API.
-   * Note: Reddit only applies the query seriously with sort=relevance;
-   * sort=top/new drift toward popular/fresh content regardless of the query.
+   * NOTE on Reddit semantics: the query is taken seriously only with
+   * sort=relevance; sort=top/new drift toward popular/fresh content
+   * regardless of the query — keep discovery channels relevance-first.
    */
-  private async searchReddit(
-    query: string,
-    options: {
-      subreddits?: string[];
-      sort: string;
-      time: string;
-      limit: number;
-    }
-  ): Promise<RedditSearchResult[]> {
-    return await searchRedditDirect(query, options);
-  }
 
   /**
    * Order results for the enrichment pass. No score threshold here:
@@ -430,7 +418,7 @@ class RedditAggregator {
     // Process in parallel
     const promises = topResults.map(async (post) => {
       try {
-        const details = await this.getPostDetails(post.id, post.subreddit, 50, 3);
+        const details = await this.getPostDetails(post.id, 50, 3);
 
         if (details) {
           return {
@@ -467,7 +455,6 @@ class RedditAggregator {
    */
   async getPostDetails(
     postId: string,
-    subreddit?: string,
     comment_limit: number = 50,
     comment_depth: number = 3
   ): Promise<RedditSearchResult | null> {
@@ -565,15 +552,22 @@ const searchRequestSchema = z.object({
 
 const detailsRequestSchema = z.object({
   postId: z.string().min(1),
-  subreddit: z.string().optional(),
+  // NB: no subreddit param — Reddit resolves a post by id alone.
   comment_limit: z.number().optional(),
   comment_depth: z.number().optional(),
 });
 
 // Health check endpoint
 fastify.get('/health', async () => {
+  const credsConfigured = Boolean(
+    process.env.REDDIT_CLIENT_ID &&
+    process.env.REDDIT_CLIENT_SECRET &&
+    process.env.REDDIT_USERNAME &&
+    process.env.REDDIT_PASSWORD
+  );
   return {
-    status: 'healthy',
+    status: credsConfigured ? 'healthy' : 'degraded',
+    redditCredsConfigured: credsConfigured,
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
     redditRateLimitRemaining: rlRemaining,
@@ -636,10 +630,10 @@ fastify.post('/details', async (request, reply) => {
     };
   }
 
-  const { postId, subreddit, comment_limit, comment_depth } = parseResult.data;
+  const { postId, comment_limit, comment_depth } = parseResult.data;
 
   try {
-    const result = await aggregator.getPostDetails(postId, subreddit, comment_limit, comment_depth);
+    const result = await aggregator.getPostDetails(postId, comment_limit, comment_depth);
 
     if (!result) {
       reply.code(404);

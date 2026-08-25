@@ -1612,9 +1612,9 @@ Output JSON format ONLY:
             
             payload = {
                 "postId": post.id,
-                "subreddit": post.subreddit,
-                "comment_limit": 100,  # CRITICAL: Get more comments for "30% more meat"
-                "comment_depth": 5     # CRITICAL: Go deeper into threads
+                # Reddit resolves a post by id alone; subreddit not needed here
+                "comment_limit": 100,  # more comments for "30% more meat"
+                "comment_depth": 5     # deeper into threads
             }
             
             # Using circuit breaker logic for robustness, though individual failures shouldn't stop the pipeline
