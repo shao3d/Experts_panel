@@ -106,7 +106,6 @@ Defined in `.env`, loaded in `config.py`.
 - `AGENT_CONTEXT_DIGEST_MAX_OUTPUT_TOKENS`: 16384
 - `PANEX_ARTIFACT_DIR`: optional local Panex CLI artifact directory
 - `PANEX_ARTIFACT_TTL_DAYS`: 7
-- `REDDIT_SEARCH_V2_ENABLED`: true
 - `REDDIT_SEARCH_DEBUG`: false
 - `REDDIT_RERANK_CANDIDATES`: 18
 - `REDDIT_PRE_RERANK_ENRICH_LIMIT`: 18 (aligned with RERANK_CANDIDATES; undated Serper discovery candidates are force-enriched on top)

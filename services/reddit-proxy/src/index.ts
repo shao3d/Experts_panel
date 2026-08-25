@@ -40,7 +40,6 @@ interface RedditSearchResult {
   author: string;
   createdUtc: number;
   selftext?: string;
-  body?: string;
   permalink: string;
   top_comments?: any[];
 }
@@ -143,7 +142,9 @@ function updateRateLimit(headers: Headers): void {
 
 async function rateLimitGate(): Promise<void> {
   if (rlRemaining !== null && rlRemaining <= 2 && Date.now() < rlResetAt) {
-    const waitMs = Math.min(Math.max(rlResetAt - Date.now(), 500), 15000);
+    // Jitter so concurrent waiters do not all stampede at the same instant
+    const waitMs = Math.min(Math.max(rlResetAt - Date.now(), 500), 15000)
+      + Math.floor(Math.random() * 750);
     logger.warn(`Reddit rate limit nearly exhausted (${rlRemaining} left), waiting ${Math.round(waitMs)}ms`);
     await sleep(waitMs);
   }
@@ -400,22 +401,19 @@ class RedditAggregator {
   }
 
   /**
-   * Filter results by quality criteria
+   * Order results for the enrichment pass. No score threshold here:
+   * fresh low-score threads are exactly what discovery needs — precision
+   * is enforced downstream by backend heuristic + AI rerank.
    */
   private filterResults(results: RedditSearchResult[], targetCount: number): RedditSearchResult[] {
-    // Score threshold: posts with negative or very low score are likely low quality
-    const MIN_SCORE = 5;
-
-    const filtered = results
-      .filter(r => r.score >= MIN_SCORE)
+    return [...results]
       .sort((a, b) => {
         // Combined scoring: balance upvotes and engagement
         const scoreA = a.score + a.numComments * 2;
         const scoreB = b.score + b.numComments * 2;
         return scoreB - scoreA;
-      });
-
-    return filtered.slice(0, targetCount);
+      })
+      .slice(0, targetCount);
   }
 
   /**
@@ -459,7 +457,6 @@ class RedditAggregator {
       ...r,
       title: sanitizeText(r.title),
       selftext: sanitizeText(r.selftext || ''),
-      body: sanitizeText(r.body || ''),
       subreddit: sanitizeText(r.subreddit),
       author: sanitizeText(r.author),
     }));

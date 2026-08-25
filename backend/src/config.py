@@ -132,9 +132,6 @@ MODEL_EMBEDDING: str = os.getenv("MODEL_EMBEDDING", "google/gemini-embedding-001
 EMBEDDING_DIMENSIONS: int = int(os.getenv("EMBEDDING_DIMENSIONS", "768"))
 
 # --- Reddit Search Configuration ---
-REDDIT_SEARCH_V2_ENABLED: bool = (
-    os.getenv("REDDIT_SEARCH_V2_ENABLED", "true").lower() == "true"
-)
 REDDIT_SEARCH_DEBUG: bool = (
     os.getenv("REDDIT_SEARCH_DEBUG", "false").lower() == "true"
 )

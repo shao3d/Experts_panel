@@ -279,7 +279,6 @@ Gemini rerank получает:
 
 В `backend/src/config.py`:
 
-- `REDDIT_SEARCH_V2_ENABLED`
 - `REDDIT_SEARCH_DEBUG`
 - `REDDIT_RERANK_CANDIDATES`
 - `REDDIT_PRE_RERANK_ENRICH_LIMIT`
