@@ -111,6 +111,8 @@ Defined in `.env`, loaded in `config.py`.
 - `REDDIT_PRE_RERANK_ENRICH_LIMIT`: 18 (aligned with RERANK_CANDIDATES; undated Serper discovery candidates are force-enriched on top)
 - `REDDIT_MIN_CONFIDENCE`: 0.52
 - `REDDIT_SOFT_CONFIDENCE`: 0.44
+- `REDDIT_SYNTH_COMMENT_TOP_K`: 12 (top-scored comment roots per source in synthesis context)
+- `REDDIT_SYNTH_SOURCE_CHAR_CAP`: 15000 (per-source char cap shared between body and comment tree)
 
 ### Hardcoded Runtime Limits
 - `Reddit wait after experts`: 120s hard limit in `simplified_query_endpoint.py`

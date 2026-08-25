@@ -147,6 +147,13 @@ REDDIT_MIN_CONFIDENCE: float = float(
 REDDIT_SOFT_CONFIDENCE: float = float(
     os.getenv("REDDIT_SOFT_CONFIDENCE", "0.44")
 )
+# Synthesis context budget (Step 2 of reddit search audit plan):
+# top-K highest-scored comment roots per source and a hard per-source
+# char cap shared between the post body and its comment tree.
+REDDIT_SYNTH_COMMENT_TOP_K: int = int(os.getenv("REDDIT_SYNTH_COMMENT_TOP_K", "12"))
+REDDIT_SYNTH_SOURCE_CHAR_CAP: int = int(
+    os.getenv("REDDIT_SYNTH_SOURCE_CHAR_CAP", "15000")
+)
 # Reddit proxy sidecar (docker compose service on the same host/network)
 REDDIT_PROXY_URL: str = os.getenv("REDDIT_PROXY_URL", "http://reddit-proxy:3000")
 

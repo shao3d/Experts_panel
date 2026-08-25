@@ -19,6 +19,10 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_SYNTHESIS_MODEL = "gemini-3-flash-preview"
 
+# Floor for the per-source comment budget: a huge body must not zero out
+# the discussion tree (the first root is always kept regardless).
+MIN_COMMENT_BUDGET_CHARS = 2000
+
 
 class RedditSynthesisService:
     """Service for synthesizing Reddit content via Gemini AI.
@@ -115,7 +119,7 @@ class RedditSynthesisService:
         "сработало", "спасибо", "решил"
     }
 
-    def _format_comments_recursive(self, comments: List[Dict[str, Any]], depth: int = 0, max_depth: int = 3, post_author: str = None) -> str:
+    def _format_comments_recursive(self, comments: List[Dict[str, Any]], depth: int = 0, max_depth: int = 3, post_author: str = None, start_number: int = 1) -> str:
         """Recursively format comments tree.
         
         Args:
@@ -123,6 +127,8 @@ class RedditSynthesisService:
             depth: Current nesting depth
             max_depth: Maximum recursion depth
             post_author: Username of the post author (OP) to detect verified solutions
+            start_number: Numbering seed for top-level entries (the budget
+                fitter renumbers roots after score-desc sorting)
         """
         if depth > max_depth or not comments:
             return ""
@@ -130,7 +136,7 @@ class RedditSynthesisService:
         output = []
         indent = "  " * (depth + 1)
         
-        for i, comment in enumerate(comments, 1):
+        for i, comment in enumerate(comments, start_number):
             # Handle different comment structures
             if isinstance(comment, str):
                 # Legacy format: simple string comment
@@ -229,6 +235,54 @@ class RedditSynthesisService:
         
         return "\n".join(output)
 
+    def _fit_comments_to_budget(
+        self,
+        comments: List[Any],
+        post_author: str,
+        budget_chars: int,
+    ):
+        """Fit the comment tree into a char budget (Step 2 of the audit plan).
+
+        Top-level roots are ranked by score desc and capped at
+        REDDIT_SYNTH_COMMENT_TOP_K. Whole roots (with their reply subtrees)
+        are appended while they fit into budget_chars — never truncated
+        mid-comment. The first root is always kept even if it alone exceeds
+        the budget, so a source can never lose all discussion.
+
+        Args:
+            comments: Top-level comment list (any supported shape)
+            post_author: Post author for OP verification detection
+            budget_chars: Char budget for the whole formatted tree
+
+        Returns:
+            Tuple (formatted_text, hit_budget) where hit_budget is True only
+            when the char budget stopped further roots from being added.
+        """
+        def _root_score(c: Any) -> int:
+            if isinstance(c, dict):
+                return c.get('score', 0) or 0
+            if isinstance(c, str):
+                return 0
+            return getattr(c, 'score', 0) or 0
+
+        top_k = max(1, config.REDDIT_SYNTH_COMMENT_TOP_K)
+        roots = sorted(comments, key=_root_score, reverse=True)[:top_k]
+
+        chunks: List[str] = []
+        used = 0
+        hit_budget = False
+        for i, root in enumerate(roots, 1):
+            chunk = self._format_comments_recursive(
+                [root], post_author=post_author, start_number=i
+            )
+            if chunks and used + len(chunk) > budget_chars:
+                hit_budget = True
+                break
+            chunks.append(chunk)
+            used += len(chunk)
+
+        return "\n".join(chunks), hit_budget
+
     def _build_context(
         self,
         reddit_result: Any, # Typed as Any to support both result types during migration
@@ -253,28 +307,40 @@ class RedditSynthesisService:
         logger.info(f"SYNTHESIS DEBUG: Building context from {len(sources)} sources")
         
         context_parts = []
+        budget_capped_sources = 0
         for i, src in enumerate(sources, 1):
             # Handle different content attributes (selftext vs content)
             raw_content = getattr(src, 'selftext', '') or getattr(src, 'content', '') or "[No content available]"
 
-            # 8k chars per source is plenty: the answer-bearing part of a thread
-            # sits in the opening body and top comments (added separately below).
+            # Body preview cap: the answer-bearing part sits in the opening
+            # body; the discussion tree below carries practitioner detail.
             SYNTH_SOURCE_CHAR_CAP = 8000
             content_preview = raw_content[:SYNTH_SOURCE_CHAR_CAP]
             if len(raw_content) > SYNTH_SOURCE_CHAR_CAP:
                 content_preview += "... (truncated)"
-            
-            # Format top comments with tree structure
+
+            # Comment budget (Step 2): score-desc top-K roots fitted into the
+            # per-source char cap shared between body and discussion tree.
             comments_section = ""
             # Handle comments attribute (top_comments vs comments)
             comments_data = getattr(src, 'top_comments', []) or getattr(src, 'comments', [])
-            
+
             if comments_data:
                 # Pass post author to recursive formatter for OP verification detection
                 post_author = getattr(src, 'author', 'unknown')
-                comments_text = self._format_comments_recursive(comments_data, post_author=post_author)
+                comment_budget = max(
+                    MIN_COMMENT_BUDGET_CHARS,
+                    config.REDDIT_SYNTH_SOURCE_CHAR_CAP - len(content_preview),
+                )
+                comments_text, hit_budget = self._fit_comments_to_budget(
+                    comments_data,
+                    post_author=post_author,
+                    budget_chars=comment_budget,
+                )
                 if comments_text:
                     comments_section = f"\n   - **Discussion Tree:**\n{comments_text}"
+                if hit_budget:
+                    budget_capped_sources += 1
             
             # Thread age: created_utc is present on RedditPost; discovery
             # candidates (Serper) carry 0 → unknown age.
@@ -295,7 +361,15 @@ class RedditSynthesisService:
                 f"   - URL: {src.url}"
                 f"{comments_section}"
             )
-        
+
+        if budget_capped_sources:
+            logger.info(
+                f"Comment budget: {budget_capped_sources}/{len(sources)} sources "
+                f"trimmed to fit REDDIT_SYNTH_SOURCE_CHAR_CAP="
+                f"{config.REDDIT_SYNTH_SOURCE_CHAR_CAP} "
+                f"(top_k={config.REDDIT_SYNTH_COMMENT_TOP_K})"
+            )
+
         return "\n\n".join(context_parts)
     
     def _create_synthesis_prompt(

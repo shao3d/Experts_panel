@@ -298,6 +298,8 @@ Gemini rerank получает:
 - `REDDIT_PRE_RERANK_ENRICH_LIMIT`
 - `REDDIT_MIN_CONFIDENCE`
 - `REDDIT_SOFT_CONFIDENCE`
+- `REDDIT_SYNTH_COMMENT_TOP_K` — топ-K корневых комментариев по score на источник в синтезе
+- `REDDIT_SYNTH_SOURCE_CHAR_CAP` — кап символов на источник (тело + дерево комментариев)
 
 Практический смысл:
 
