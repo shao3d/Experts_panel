@@ -890,6 +890,21 @@ Output JSON structure:
         else:
             debug_trace["google_cse_discovery"] = "disabled (GOOGLE_CSE_API_KEY/CX not set)"
 
+        # Google SERP discovery via Serper.dev (site:reddit.com).
+        if config.SERPER_API_KEY:
+            strategy_meta["serp_google_discovery"] = {
+                "query": original_query,
+                "source": "serper",
+            }
+            sort_tasks.append(
+                (
+                    "serp_google_discovery",
+                    self._search_serper(original_query, recent_only=recent_only),
+                )
+            )
+        else:
+            debug_trace["serp_google_discovery"] = "disabled (SERPER_API_KEY not set)"
+
         # Exhaustive archive recall within scout-suggested subreddits.
         if config.ARCTIC_SHIFT_ENABLED and soft_target_subreddits:
             strategy_meta["arctic_targeted_archive"] = {
@@ -980,9 +995,13 @@ Output JSON structure:
             def _is_fresh(p: RedditPost) -> bool:
                 if (p.created_utc or 0) >= cutoff_ts:
                     return True
-                # CSE candidates carry no created_utc; their recency is already
-                # enforced upstream via Google dateRestrict.
-                return p.found_by_strategy == "google_cse_discovery"
+                # External discovery candidates carry no created_utc; their
+                # recency is enforced upstream (CSE dateRestrict / Serper has
+                # no exact window, accepted trade-off for Google ranking).
+                return p.found_by_strategy in {
+                    "google_cse_discovery",
+                    "serp_google_discovery",
+                }
 
             kept_ids = {p.id for p in unique_posts if _is_fresh(p)}
             # Drop from the list AND from all_posts: the post-enrichment step
@@ -1683,6 +1702,70 @@ Output JSON format ONLY:
             return ""
         cleaned = html.unescape(re.sub(r"<[^>]+>", " ", text))
         return re.sub(r"\s+", " ", cleaned).strip()
+
+    async def _search_serper(
+        self, query: str, recent_only: bool = False
+    ) -> List[RedditPost]:
+        """Google SERP discovery via Serper.dev (site:reddit.com).
+
+        Brings Google-quality ranking and comment-level indexing that native
+        Reddit search lacks. Returns snippet-only candidates; created_utc is
+        unknown (exempt from the recent_only post-filter, same as CSE).
+        Silently returns [] when SERPER_API_KEY is not configured.
+        """
+        if not config.SERPER_API_KEY:
+            return []
+
+        payload: Dict[str, Any] = {
+            "q": f"{query} site:reddit.com",
+            # <=10 results keeps the call at 1 credit
+            "num": max(1, min(config.SERPER_RESULTS, 10)),
+        }
+        try:
+            client = await self._get_client()
+            resp = await client.post(
+                config.SERPER_ENDPOINT,
+                json=payload,
+                headers={"X-API-KEY": config.SERPER_API_KEY},
+            )
+            if resp.status_code != 200:
+                logger.warning(
+                    f"Serper error {resp.status_code}: {resp.text[:200]}"
+                )
+                return []
+            items = (resp.json() or {}).get("organic") or []
+        except Exception as e:
+            logger.warning(f"Serper request failed: {e}")
+            return []
+
+        posts: List[RedditPost] = []
+        for item in items:
+            link = item.get("link") or ""
+            id_m = re.search(r"/comments/([a-z0-9]+)/", link, re.IGNORECASE)
+            sub_m = re.search(r"/r/([A-Za-z0-9_]+)/", link)
+            if not (id_m and sub_m):
+                continue  # not a post permalink
+            posts.append(
+                RedditPost(
+                    id=id_m.group(1),
+                    title=self._clean_cse_text(item.get("title", "")),
+                    url=link,
+                    permalink=link,
+                    score=0,
+                    num_comments=0,
+                    subreddit=sub_m.group(1),
+                    author="unknown",
+                    created_utc=0,  # unknown; see recent_only exemption
+                    selftext=self._clean_cse_text(item.get("snippet", ""))[:1000],
+                    found_by_strategy="serp_google_discovery",
+                    strategy_hits=["serp_google_discovery"],
+                )
+            )
+
+        logger.info(
+            f"🌐 Serper Google discovery: {len(posts)} candidates for '{query[:50]}'"
+        )
+        return posts
 
     async def _search_arctic_shift(
         self,

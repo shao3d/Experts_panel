@@ -170,6 +170,16 @@ ARCTIC_SHIFT_ENDPOINT: str = os.getenv(
 ARCTIC_TARGET_SUBREDDITS: int = int(os.getenv("ARCTIC_TARGET_SUBREDDITS", "2"))
 ARCTIC_LIMIT_PER_SUB: int = int(os.getenv("ARCTIC_LIMIT_PER_SUB", "12"))
 
+# --- Serper.dev (Google SERP discovery: site:reddit.com via real Google) ---
+# Optional; without a key the channel is silently skipped.
+# 1 credit per search with <=10 results; free tier 2500 queries.
+SERPER_API_KEY: str = os.getenv("SERPER_API_KEY", "")
+SERPER_ENDPOINT: str = os.getenv(
+    "SERPER_ENDPOINT",
+    "https://google.serper.dev/search",
+)
+SERPER_RESULTS: int = int(os.getenv("SERPER_RESULTS", "8"))
+
 # --- Hybrid Retrieval ---
 HYBRID_VECTOR_TOP_K: int = int(os.getenv("HYBRID_VECTOR_TOP_K", "150"))
 HYBRID_FTS5_TOP_K: int = int(os.getenv("HYBRID_FTS5_TOP_K", "100"))
