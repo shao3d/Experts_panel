@@ -227,6 +227,15 @@ Backend не полагается на одну "умную" query.
 - quality signal по `score/comments`
 - penalties за promo/showcase/noise
 
+Антиспам-слой (детерминированный, только неоспоримые паттерны):
+
+- `SPAM_TITLE_PATTERNS`: кредитная механика (`gives you N`, `N free credits`,
+  signup bonus/promo) — базовый штраф растёт с числом совпадений
+- комбинация «паттерн + голодная вовлечённость» (score ≤3, комменты ≤5)
+  штрафуется дополнительно — это почти наверняка реклама
+- репутация сабреддита: фрагмент `seo` в имени — минус
+- принцип: паттерны убивают очевидное; спорное судит LLM
+
 Для comparison intent дополнительно учитываются:
 
 - прямые anchor matches в `title/body`
@@ -247,7 +256,12 @@ Gemini rerank получает:
 - preview/body
 - top comment snippets
 - strategy provenance
+- engagement (`score`, `num_comments`) — явный сигнал, чтобы судья сам
+  отличал SEO-приманку от свежего качественного поста
 - anchor / comparison metadata
+
+Модель судьи зависит от intent: сравнительные запросы (магнит «vs»-приманок)
+разбирает `MODEL_SYNTHESIS`, остальные — дешёвый `MODEL_ANALYSIS`.
 
 И ранжирует по answerability.
 
