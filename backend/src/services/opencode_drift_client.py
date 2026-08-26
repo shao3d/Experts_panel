@@ -140,6 +140,27 @@ def _session_id_by_title(title: str) -> Optional[str]:
     return None
 
 
+def _cleanup_session_by_title(title: str) -> None:
+    """Best-effort abort + delete so finished runs don't accumulate.
+
+    Without this the serve accumulates hundreds of finished drift sessions,
+    and quota-stalled ones sit in an endless server-side retry loop holding
+    model slots (observed 2026-08-26).
+    """
+    sid = _session_id_by_title(title)
+    if not sid:
+        return
+    for method, path in (("POST", f"/session/{sid}/abort"), ("DELETE", f"/session/{sid}")):
+        try:
+            subprocess.run(
+                ["curl", "-s", "--max-time", "5", "-X", method,
+                 f"{OPENCODE_URL}{path}"],
+                capture_output=True, text=True, timeout=10,
+            )
+        except Exception:
+            pass
+
+
 def _fetch_assistant_text(session_id: str) -> Tuple[Optional[str], Optional[str]]:
     """Returns (text, error). Mirrors live-navigator fetch_messages."""
     try:
@@ -176,49 +197,51 @@ def _run_once(post_text: str, comments: List[Dict[str, str]]) -> Tuple[Optional[
     with open(task_path, "w", encoding="utf-8") as f:
         f.write(build_prompt(post_text, comments))
 
-    cmd = (
-        f'export PATH="$PATH:$HOME/.opencode/bin" && '
-        f"{OPENCODE_BIN} run --attach {OPENCODE_URL} "
-        f"--model {OPENCODE_MODEL} --agent {DRIFT_AGENT} "
-        f"--title {title} "
-        f"'Выполни анализ дрейфа из прикреплённого файла. Верни ТОЛЬКО валидный JSON.' "
-        f"--file {task_path}"
-    )
     try:
-        proc = subprocess.run(
-            ["bash", "-c", cmd], capture_output=True, text=True,
-            timeout=RUN_TIMEOUT_S + 30,
+        cmd = (
+            f'export PATH="$PATH:$HOME/.opencode/bin" && '
+            f"{OPENCODE_BIN} run --attach {OPENCODE_URL} "
+            f"--model {OPENCODE_MODEL} --agent {DRIFT_AGENT} "
+            f"--title {title} "
+            f"'Выполни анализ дрейфа из прикреплённого файла. Верни ТОЛЬКО валидный JSON.' "
+            f"--file {task_path}"
         )
-        if proc.returncode != 0:
-            return None, (proc.stderr or proc.stdout or "run failed").strip()[:300]
-    except subprocess.TimeoutExpired:
-        return None, f"run timeout after {RUN_TIMEOUT_S + 30}s"
+        try:
+            proc = subprocess.run(
+                ["bash", "-c", cmd], capture_output=True, text=True,
+                timeout=RUN_TIMEOUT_S + 30,
+            )
+            if proc.returncode != 0:
+                return None, (proc.stderr or proc.stdout or "run failed").strip()[:300]
+        except subprocess.TimeoutExpired:
+            return None, f"run timeout after {RUN_TIMEOUT_S + 30}s"
 
-    # Attach client does not print the final answer; poll the API by title.
-    deadline = time.time() + FETCH_DEADLINE_S
-    while time.time() < deadline:
-        sid = _session_id_by_title(title)
-        if sid:
-            text, err = _fetch_assistant_text(sid)
-            if text or err:
-                break
-        time.sleep(POLL_INTERVAL)
-    else:
-        return None, f"no answer within {FETCH_DEADLINE_S}s"
+        # Attach client does not print the final answer; poll the API by title.
+        deadline = time.time() + FETCH_DEADLINE_S
+        while time.time() < deadline:
+            sid = _session_id_by_title(title)
+            if sid:
+                text, err = _fetch_assistant_text(sid)
+                if text or err:
+                    break
+            time.sleep(POLL_INTERVAL)
+        else:
+            return None, f"no answer within {FETCH_DEADLINE_S}s"
 
-    try:
-        os.remove(task_path)
-    except OSError:
-        pass
+        if err or not text:
+            return None, err or "empty response"
 
-    if err or not text:
-        return None, err or "empty response"
-
-    try:
-        result = _extract_json(text)
-    except (ValueError, json.JSONDecodeError) as e:
-        return None, f"invalid JSON: {e}"
-    return result, None
+        try:
+            result = _extract_json(text)
+        except (ValueError, json.JSONDecodeError) as e:
+            return None, f"invalid JSON: {e}"
+        return result, None
+    finally:
+        try:
+            os.remove(task_path)
+        except OSError:
+            pass
+        _cleanup_session_by_title(title)
 
 
 def build_batch_prompt(groups: List[Dict[str, Any]]) -> str:
@@ -264,80 +287,82 @@ def analyze_batch(groups: List[Dict[str, Any]]) -> Dict[int, Dict[str, Any]]:
     title = f"driftb_{uuid.uuid4().hex[:12]}"
     task_path = os.path.join(TASK_DIR, f"{title}.txt")
 
-    with open(task_path, "w", encoding="utf-8") as f:
-        f.write(build_batch_prompt(groups))
-
-    cmd = (
-        f'export PATH="$PATH:$HOME/.opencode/bin" && '
-        f"{OPENCODE_BIN} run --attach {OPENCODE_URL} "
-        f"--model {OPENCODE_MODEL} --agent {DRIFT_AGENT} "
-        f"--title {title} "
-        f"'Выполни пакетный анализ дрейфа из прикреплённого файла. Верни ТОЛЬКО валидный JSON-массив.' "
-        f"--file {task_path}"
-    )
     try:
-        proc = subprocess.run(
-            ["bash", "-c", cmd], capture_output=True, text=True,
-            timeout=RUN_TIMEOUT_S + 30,
+        with open(task_path, "w", encoding="utf-8") as f:
+            f.write(build_batch_prompt(groups))
+
+        cmd = (
+            f'export PATH="$PATH:$HOME/.opencode/bin" && '
+            f"{OPENCODE_BIN} run --attach {OPENCODE_URL} "
+            f"--model {OPENCODE_MODEL} --agent {DRIFT_AGENT} "
+            f"--title {title} "
+            f"'Выполни пакетный анализ дрейфа из прикреплённого файла. Верни ТОЛЬКО валидный JSON-массив.' "
+            f"--file {task_path}"
         )
-        if proc.returncode != 0:
-            raise RuntimeError((proc.stderr or proc.stdout or "run failed").strip()[:300])
-    except subprocess.TimeoutExpired:
-        raise RuntimeError(f"batch run timeout after {RUN_TIMEOUT_S + 30}s")
-
-    deadline = time.time() + FETCH_DEADLINE_S
-    text, err = None, None
-    while time.time() < deadline:
-        sid = _session_id_by_title(title)
-        if sid:
-            text, err = _fetch_assistant_text(sid)
-            if text or err:
-                break
-        time.sleep(POLL_INTERVAL)
-
-    try:
-        os.remove(task_path)
-    except OSError:
-        pass
-
-    if err or not text:
-        raise RuntimeError(err or "empty response")
-
-    # Expect a JSON array; tolerate a bare object when only one group asked.
-    stripped = _strip_json_markdown(text)
-    parsed = None
-    try:
-        parsed = json.loads(stripped)
-    except json.JSONDecodeError:
-        arr_start = stripped.find("[")
-        arr_end = stripped.rfind("]")
-        obj_start = stripped.find("{")
-        if arr_start != -1 and arr_end > arr_start:
-            parsed = json.loads(stripped[arr_start:arr_end + 1])
-        elif obj_start != -1:
-            obj_end = stripped.rfind("}")
-            parsed = json.loads(stripped[obj_start:obj_end + 1])
-        else:
-            raise ValueError(f"No JSON in batch response: {stripped[:150]}")
-
-    by_pid: Dict[int, Dict[str, Any]] = {}
-    items = parsed if isinstance(parsed, list) else (
-        parsed.get("results") or parsed.get("items") or [])
-    if isinstance(items, dict) and len(groups) == 1:
-        items = [items]
-    for item in items:
-        if not isinstance(item, dict) or "post_id" not in item:
-            continue
         try:
-            pid = int(item["post_id"])
-        except (TypeError, ValueError):
-            continue
-        if "has_drift" not in item:
-            continue
-        by_pid[pid] = item
-    if not by_pid:
-        raise ValueError(f"Batch response contained no usable verdicts: {str(parsed)[:200]}")
-    return by_pid
+            proc = subprocess.run(
+                ["bash", "-c", cmd], capture_output=True, text=True,
+                timeout=RUN_TIMEOUT_S + 30,
+            )
+            if proc.returncode != 0:
+                raise RuntimeError((proc.stderr or proc.stdout or "run failed").strip()[:300])
+        except subprocess.TimeoutExpired:
+            raise RuntimeError(f"batch run timeout after {RUN_TIMEOUT_S + 30}s")
+
+        deadline = time.time() + FETCH_DEADLINE_S
+        text, err = None, None
+        while time.time() < deadline:
+            sid = _session_id_by_title(title)
+            if sid:
+                text, err = _fetch_assistant_text(sid)
+                if text or err:
+                    break
+            time.sleep(POLL_INTERVAL)
+
+        if err or not text:
+            raise RuntimeError(err or "empty response")
+
+        # Expect a JSON array; tolerate a bare object when only one group asked.
+        stripped = _strip_json_markdown(text)
+        parsed = None
+        try:
+            parsed = json.loads(stripped)
+        except json.JSONDecodeError:
+            arr_start = stripped.find("[")
+            arr_end = stripped.rfind("]")
+            obj_start = stripped.find("{")
+            if arr_start != -1 and arr_end > arr_start:
+                parsed = json.loads(stripped[arr_start:arr_end + 1])
+            elif obj_start != -1:
+                obj_end = stripped.rfind("}")
+                parsed = json.loads(stripped[obj_start:obj_end + 1])
+            else:
+                raise ValueError(f"No JSON in batch response: {stripped[:150]}")
+
+        by_pid: Dict[int, Dict[str, Any]] = {}
+        items = parsed if isinstance(parsed, list) else (
+            parsed.get("results") or parsed.get("items") or [])
+        if isinstance(items, dict) and len(groups) == 1:
+            items = [items]
+        for item in items:
+            if not isinstance(item, dict) or "post_id" not in item:
+                continue
+            try:
+                pid = int(item["post_id"])
+            except (TypeError, ValueError):
+                continue
+            if "has_drift" not in item:
+                continue
+            by_pid[pid] = item
+        if not by_pid:
+            raise ValueError(f"Batch response contained no usable verdicts: {str(parsed)[:200]}")
+        return by_pid
+    finally:
+        try:
+            os.remove(task_path)
+        except OSError:
+            pass
+        _cleanup_session_by_title(title)
 
 
 def analyze(post_text: str, comments: List[Dict[str, str]]) -> Dict[str, Any]:
