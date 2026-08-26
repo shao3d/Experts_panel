@@ -45,6 +45,7 @@ The backend implements a sophisticated 10-phase query processing system. It uses
 
 ## Reddit Integration
 - **Active Client**: `src/services/reddit_enhanced_service.py` (Proxy Client).
+- **Synthesis backends**: `reddit_synthesis_service.py` dispatches on `REDDIT_SYNTH_BACKEND` - Gemini (default) or free headless opencode serve via pure-HTTP `opencode_synth_client.py` (no binary needed; works from the panel container and any host reaching the VM). opencode failures/timeouts always fall back to Gemini; `shadow` mode runs both and logs `[shadow]` telemetry without delaying the user.
 - **Architecture**: Hybrid Sidecar.
     - **Search**: via Proxy `POST /search` (direct Reddit OAuth API inside the sidecar).
     - **Details**: via Proxy `POST /details` (deep fetch of 100 comments / depth 5).
@@ -114,6 +115,14 @@ Defined in `.env`, loaded in `config.py`.
 - `REDDIT_SYNTH_COMMENT_TOP_K`: 12 (top-scored comment roots per source in synthesis context)
 - `REDDIT_SYNTH_SOURCE_CHAR_CAP`: 15000 (per-source char cap shared between body and comment tree)
 - `REDDIT_SYNTH_MAX_TOKENS`: 4096 (synthesis output cap; finish_reason=length triggers ONE automatic retry at 2x)
+- `REDDIT_SYNTH_BACKEND`: `gemini` (default) | `opencode` | `auto` | `shadow` - Reddit synthesis backend; free headless-opencode path with Gemini fallback
+- `OPENCODE_URL`: `http://127.0.0.1:4096` (headless opencode serve on the VM; from docker use `host.docker.internal:4096` via extra_hosts host-gateway)
+- `OPENCODE_SYNTH_MODEL`: `opencode/x-preview-f-free`
+- `OPENCODE_SYNTH_TIMEOUT_S`: 60 (budget before falling back to Gemini)
+- `OPENCODE_SYNTH_HEADSTART_S`: 20 (`auto` mode: free model runs alone this long, then Gemini joins the race; first complete answer wins)
+- `OPENCODE_SYNTH_CONCURRENCY`: 2 (serve is shared with drift workers)
+- Manual A/B check: `app/backend/manual/manual_reddit_opencode_ab.py`
+- Session hygiene: synth/drift clients delete their opencode sessions on completion; daily systemd timer `opencode-janitor.timer` runs `scripts/opencode_serve_janitor.py --apply` (kills quota-retry-stuck sessions, deletes stale machine sessions)
 
 ### Hardcoded Runtime Limits
 - `Reddit wait after experts`: 120s hard limit in `simplified_query_endpoint.py`

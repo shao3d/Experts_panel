@@ -157,6 +157,20 @@ REDDIT_SYNTH_SOURCE_CHAR_CAP: int = int(
 # Synthesis output budget; finish_reason=length triggers one automatic
 # retry with a doubled budget (see reddit_synthesis_service).
 REDDIT_SYNTH_MAX_TOKENS: int = int(os.getenv("REDDIT_SYNTH_MAX_TOKENS", "4096"))
+# Reddit synthesis backend: gemini | opencode | auto | shadow.
+#   gemini  - OpenRouter MODEL_SYNTHESIS only (current default, safe)
+#   opencode - headless opencode serve first, Gemini as failure fallback
+#   auto    - opencode within OPENCODE_SYNTH_TIMEOUT_S, else Gemini
+#   shadow  - both run concurrently; user gets Gemini, opencode logged for A/B
+REDDIT_SYNTH_BACKEND: str = os.getenv("REDDIT_SYNTH_BACKEND", "gemini").lower()
+if REDDIT_SYNTH_BACKEND not in {"gemini", "opencode", "auto", "shadow"}:
+    REDDIT_SYNTH_BACKEND = "gemini"
+OPENCODE_URL: str = os.getenv("OPENCODE_URL", "http://127.0.0.1:4096")
+OPENCODE_SYNTH_MODEL: str = os.getenv("OPENCODE_SYNTH_MODEL", "opencode/x-preview-f-free")
+OPENCODE_SYNTH_TIMEOUT_S: float = float(os.getenv("OPENCODE_SYNTH_TIMEOUT_S", "60"))
+# auto mode: seconds the free model gets alone before Gemini joins the race
+OPENCODE_SYNTH_HEADSTART_S: float = float(os.getenv("OPENCODE_SYNTH_HEADSTART_S", "20"))
+OPENCODE_SYNTH_CONCURRENCY: int = int(os.getenv("OPENCODE_SYNTH_CONCURRENCY", "2"))
 # Reddit proxy sidecar (docker compose service on the same host/network)
 REDDIT_PROXY_URL: str = os.getenv("REDDIT_PROXY_URL", "http://reddit-proxy:3000")
 

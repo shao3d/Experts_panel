@@ -261,7 +261,7 @@ To debug the pipeline, monitor the backend log file for messages containing spec
 
 **Components:**
 - `RedditEnhancedService` - active precision-first proxy client with early enrichment and answerability rerank
-- `RedditSynthesisService` - Gemini-powered community analysis with language detection
+- `RedditSynthesisService` - Gemini-powered community analysis with language detection; backend switchable via `REDDIT_SYNTH_BACKEND` (gemini | opencode | auto | shadow) with a free headless-opencode path (`opencode_synth_client.py`) that always falls back to Gemini
 - `TranslationService` - Query translation for non-English searches
 - `CommunityInsightsSection` - React component with neutral styling
 - Reddit Proxy - Node.js/Fastify microservice (docker compose service `reddit-proxy` on the VM)

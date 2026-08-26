@@ -5,6 +5,7 @@ Vertex AI to extract insights, sentiment, and actionable information from
 community discussions.
 """
 
+import asyncio
 import logging
 import html
 import time
@@ -14,6 +15,10 @@ from .. import config
 from ..utils.language_utils import detect_query_language
 from .reddit_service import RedditSearchResult, RedditSource
 from .vertex_llm_client import get_vertex_llm_client, VertexLLMError
+from .opencode_synth_client import (
+    OpenCodeSynthesisError,
+    synthesize_markdown,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +52,8 @@ class RedditSynthesisService:
         # This matches the main synthesis model for expert responses
         self.model = model or config.MODEL_SYNTHESIS or DEFAULT_SYNTHESIS_MODEL
         self._client = get_vertex_llm_client()
+        # Strong references to in-flight shadow runs (prevents task GC)
+        self._shadow_tasks: set = set()
 
     async def _generate_completion(
         self,
@@ -106,16 +113,143 @@ class RedditSynthesisService:
         # Create synthesis prompt in query language
         messages = self._create_synthesis_prompt(query, context, query_language)
 
+        backend = config.REDDIT_SYNTH_BACKEND
+        started_at = time.time()
+
+        if backend == "gemini":
+            return await self._synthesize_gemini(
+                query, messages, reddit_result, query_language,
+                max_sources_in_context, backend="gemini",
+            )
+
+        if backend == "shadow":
+            # User gets the proven Gemini answer; opencode outcome is logged
+            # in parallel for A/B evaluation only. The shadow run must NOT
+            # delay the user response: fire-and-forget with a kept reference.
+            gemini_task = asyncio.create_task(
+                self._synthesize_gemini(
+                    query, messages, reddit_result, query_language,
+                    max_sources_in_context, backend="gemini",
+                )
+            )
+            shadow_task = asyncio.create_task(
+                self._log_opencode_shadow(messages, query_language)
+            )
+            self._shadow_tasks.add(shadow_task)
+            shadow_task.add_done_callback(self._shadow_tasks.discard)
+            result = await gemini_task
+            return result
+
+        if backend == "opencode":
+            # Explicit opt-in: tolerate longer waits, sequential fallback.
+            try:
+                synthesis = await self._synthesize_opencode(
+                    messages, query_language,
+                    timeout_s=config.OPENCODE_SYNTH_TIMEOUT_S * 1.5,
+                )
+                logger.info(
+                    f"Reddit synthesis completed for query: {query[:50]}... | "
+                    f"telemetry: backend=opencode "
+                    f"model={config.OPENCODE_SYNTH_MODEL} chars={len(synthesis)} "
+                    f"latency_ms={int((time.time() - started_at) * 1000)}"
+                )
+                return synthesis
+            except Exception as e:
+                logger.warning(
+                    f"opencode synthesis unavailable ({e}); falling back to Gemini"
+                )
+            return await self._synthesize_gemini(
+                query, messages, reddit_result, query_language,
+                max_sources_in_context, backend="opencode->gemini_fallback",
+            )
+
+        # auto: head-start race. Free model starts immediately; if it has not
+        # finished within OPENCODE_SYNTH_HEADSTART_S, Gemini joins and the
+        # first complete answer wins. Worst-case latency is capped at roughly
+        # head-start + one Gemini call instead of full-timeout + Gemini.
+        oc_task = asyncio.create_task(
+            self._synthesize_opencode(
+                messages, query_language,
+                timeout_s=config.OPENCODE_SYNTH_TIMEOUT_S,
+            )
+        )
+        done, _ = await asyncio.wait(
+            {oc_task}, timeout=config.OPENCODE_SYNTH_HEADSTART_S
+        )
+        if done:
+            try:
+                synthesis = oc_task.result()
+                logger.info(
+                    f"Reddit synthesis completed for query: {query[:50]}... | "
+                    f"telemetry: backend=auto-opencode "
+                    f"model={config.OPENCODE_SYNTH_MODEL} chars={len(synthesis)} "
+                    f"latency_ms={int((time.time() - started_at) * 1000)}"
+                )
+                return synthesis
+            except Exception as e:
+                logger.warning(
+                    f"opencode synthesis failed fast ({e}); using Gemini"
+                )
+                return await self._synthesize_gemini(
+                    query, messages, reddit_result, query_language,
+                    max_sources_in_context, backend="auto->gemini_fallback",
+                )
+
+        logger.info("opencode synthesis missed the head-start window; racing Gemini")
+        gemini_task = asyncio.create_task(
+            self._synthesize_gemini(
+                query, messages, reddit_result, query_language,
+                max_sources_in_context, backend="auto-race",
+            )
+        )
+        winner: Optional[str] = None
+        pending_tasks = {oc_task, gemini_task}
+        while pending_tasks and winner is None:
+            done, pending_tasks = await asyncio.wait(
+                pending_tasks, return_when=asyncio.FIRST_COMPLETED
+            )
+            for finished in done:
+                if finished.cancelled():
+                    continue
+                exc = finished.exception()
+                if exc is None:
+                    winner = finished.result()
+                else:
+                    logger.warning(f"synthesis race participant failed: {exc}")
+        for leftover in pending_tasks:
+            leftover.cancel()  # opencode client cleans up its session
+        if winner is not None:
+            return winner
+
+        # Unreachable in practice: _synthesize_gemini never raises.
+        return await self._synthesize_gemini(
+            query, messages, reddit_result, query_language,
+            max_sources_in_context, backend="auto->gemini_last_resort",
+        )
+
+    async def _synthesize_gemini(
+        self,
+        query: str,
+        messages: List[Dict[str, str]],
+        reddit_result: Any,
+        query_language: str,
+        max_sources_in_context: int,
+        *,
+        backend: str,
+    ) -> str:
+        """Gemini/OpenRouter synthesis path (previous default behavior)."""
         try:
             # How many sources actually entered the context (for telemetry)
             if hasattr(reddit_result, 'posts'):
                 context_source_count = min(
                     len(reddit_result.posts or []), max_sources_in_context
                 )
+                count = reddit_result.total_found
             else:
                 context_source_count = min(
                     len(reddit_result.sources or []), max_sources_in_context
                 )
+                count = reddit_result.found_count
 
             synthesis, finish_reason = await self._generate_completion(
                 messages, config.REDDIT_SYNTH_MAX_TOKENS
@@ -138,15 +272,10 @@ class RedditSynthesisService:
                 if retry_text:
                     synthesis, finish_reason = retry_text, retry_finish
 
-            # Unified access for logging
-            if hasattr(reddit_result, 'posts'):
-                count = reddit_result.total_found
-            else:
-                count = reddit_result.found_count
-
             logger.info(
                 f"Reddit synthesis completed for query: {query[:50]}... "
-                f"(found {count} posts) | telemetry: finish_reason={finish_reason} "
+                f"(found {count} posts) | telemetry: backend={backend} "
+                f"finish_reason={finish_reason} "
                 f"chars={len(synthesis)} max_tokens={used_max_tokens} "
                 f"context_sources={context_source_count}"
             )
@@ -160,6 +289,69 @@ class RedditSynthesisService:
         except Exception as e:
             logger.error(f"Unexpected error in synthesis: {e}")
             return self._create_fallback_response(reddit_result, query_language)
+
+    @staticmethod
+    def _reject_opencode_output(text: str, query_language: str) -> Optional[str]:
+        """Return a rejection reason, or None when output is acceptable."""
+        if not text or not text.strip():
+            return "empty response"
+        lowered = text.lower()
+        refusal_markers = ("не найдено", "no relevant")
+        if any(marker in lowered for marker in refusal_markers):
+            return None  # honest abstain is a valid short answer
+        stripped = text.strip()
+        if len(stripped) < 200:
+            return f"suspiciously short ({len(stripped)} chars)"
+        final_marker = "КУДА ИДИ" if query_language == "Russian" else "WHERE TO GO"
+        if final_marker not in text:
+            return "final action block missing (likely truncation)"
+        return None
+
+    async def _synthesize_opencode(
+        self,
+        messages: List[Dict[str, str]],
+        query_language: str,
+        *,
+        timeout_s: float,
+    ) -> str:
+        """One headless-opencode attempt; raises on failure/rejection."""
+        system_prompt = next(
+            (m["content"] for m in messages if m["role"] == "system"), ""
+        )
+        user_prompt = next(
+            (m["content"] for m in messages if m["role"] == "user"), ""
+        )
+        text = await synthesize_markdown(
+            system_prompt, user_prompt, timeout_s=timeout_s
+        )
+        reason = self._reject_opencode_output(text, query_language)
+        if reason:
+            raise OpenCodeSynthesisError(f"output rejected: {reason}")
+        return text
+
+    async def _log_opencode_shadow(
+        self,
+        messages: List[Dict[str, str]],
+        query_language: str,
+    ) -> None:
+        """Run the free-model path for A/B telemetry; never raises."""
+        started_at = time.time()
+        try:
+            text = await self._synthesize_opencode(
+                messages,
+                query_language,
+                timeout_s=config.OPENCODE_SYNTH_TIMEOUT_S,
+            )
+            logger.info(
+                f"[shadow] opencode synthesis OK model="
+                f"{config.OPENCODE_SYNTH_MODEL} chars={len(text)} "
+                f"latency_ms={int((time.time() - started_at) * 1000)}"
+            )
+        except Exception as e:
+            logger.warning(
+                f"[shadow] opencode synthesis failed: {e} "
+                f"latency_ms={int((time.time() - started_at) * 1000)}"
+            )
     
     # High-signal keywords indicating the OP found the solution helpful
     VERIFICATION_KEYWORDS = {

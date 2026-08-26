@@ -178,6 +178,45 @@ Google программно).
 - practical takeaways
 - no fluff
 
+**Бэкенды синтеза (`REDDIT_SYNTH_BACKEND`):**
+
+- `gemini` (дефолт) — OpenRouter `MODEL_SYNTHESIS`, как раньше.
+- `opencode` — headless opencode serve на VM (`OPENCODE_URL`, systemd-юнит
+  `opencode-serve.service`), бесплатная модель `OPENCODE_SYNTH_MODEL`
+  (`opencode/x-preview-f-free`). Клиент `opencode_synth_client.py` ходит чистым
+  HTTP (создание сессии → sync prompt → abort/delete cleanup), без локального
+  бинарника — работает из panel-контейнера и с любой машины с доступом до VM.
+  Любая ошибка/таймаут → автоматический fallback на Gemini.
+- `auto` — opencode в рамках `OPENCODE_SYNTH_TIMEOUT_S`, иначе Gemini.
+- `shadow` — юзер получает Gemini; opencode гоняется параллельно
+  fire-and-forget только для телеметрии `[shadow]` (A/B латентности и качества).
+
+Валидация opencode-ответа: честный abstain принимается любым; остальное должно
+быть ≥200 символов и содержать финальный блок «КУДА ИДИ» / «WHERE TO GO»,
+иначе ответ отвергается → fallback. Конкурентность ограничена
+`OPENCODE_SYNTH_CONCURRENCY` (serve общий с drift-воркерами).
+
+**Режим `auto` — head-start race:** free-модель стартует сразу; если за
+`OPENCODE_SYNTH_HEADSTART_S` (20с) не закончила, к гонке присоединяется Gemini
+и побеждает первый готовый ответ (проигравший отменяется, его сессия чистится).
+Worst-case латентность ≈ head-start + один вызов Gemini, а не «полный таймаут +
+Gemini» как при последовательном fallback.
+
+**Замер 26.08.2026 (корень медленности — не зомби и не сервер):** оверхед
+сессии+TTFT ~10с, генерация x-preview-f-free ~7–12 ток/с → полный синтез
+(~1.5–2k токенов вывода) стабильно 79–90+с. Альтернативные бесплатные модели
+быстрее (mimo-v2.5-free ~25 ток/с), но на реальном промпте режут финальный блок;
+nemotron-lightning таймаутится. Вывод: интерактивный путь остаётся `gemini`,
+`shadow` меряет качество/латентность на живых запросах. Ниша opencode —
+неинтерактивные батчи (дрейф).
+
+**Гигиена сессий serve:** клиенты (`opencode_synth_client.py`,
+`opencode_drift_client.py`) сами abort+delete свои сессии после завершения.
+Хвост подчищает ежедневный systemd timer `opencode-janitor.timer`
+(скрипт `backend/scripts/opencode_serve_janitor.py`, dry-run без `--apply`):
+убивает зависшие в retry сессии и удаляет машинные сессии старше 6ч по
+префиксам drift_/driftb_/reddit_synth_/trans_/synth_/synthcl_/class_/parse_.
+
 ---
 
 ## Query Flow
@@ -301,6 +340,8 @@ Gemini rerank получает:
 - `REDDIT_SYNTH_COMMENT_TOP_K` — топ-K корневых комментариев по score на источник в синтезе
 - `REDDIT_SYNTH_SOURCE_CHAR_CAP` — кап символов на источник (тело + дерево комментариев)
 - `REDDIT_SYNTH_MAX_TOKENS` — бюджет вывода синтеза; при finish_reason=length один автоперезапрос с 2x бюджетом
+- `REDDIT_SYNTH_BACKEND` — бэкенд синтеза: gemini | opencode | auto | shadow (см. раздел Synthesis)
+- `OPENCODE_URL`, `OPENCODE_SYNTH_MODEL`, `OPENCODE_SYNTH_TIMEOUT_S`, `OPENCODE_SYNTH_CONCURRENCY` — параметры headless opencode serve
 
 Практический смысл:
 
