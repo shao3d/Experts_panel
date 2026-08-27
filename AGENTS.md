@@ -1,85 +1,55 @@
 # Experts Panel: правила для ИИ-агентов
 
-Этот файл обязателен для Codex, OpenCode, Freebuff и других ИИ-агентов.
-Он хранится в Git и одинаково действует на Mac и на development VM.
+Андрей всегда запускает агента из корня проекта. Не проси его выполнять Git,
+Docker, SSH или диагностические команды: технические проверки делает агент.
 
-## Перед любой работой
+## Единственное рабочее место
 
-1. Выполни `git status --short --branch`, `git remote -v` и
-   `git rev-parse --short HEAD`.
-2. Не трогай незнакомые изменения: это может быть работа человека или другого агента.
-3. Прочитай корневой `CLAUDE.md`. Для backend или frontend дополнительно прочитай
-   соответствующий `backend/CLAUDE.md` или `frontend/CLAUDE.md`.
-4. Для UI-изменений соблюдай
-   `docs/design-system/refero-say-briefly/UX_INVARIANTS.md`.
-
-## Где ведётся разработка
-
-- GitHub: `shao3d/Experts_panel`, ветка `main`.
-- Основной development checkout на VM:
-  `oracle-work:/home/ubuntu/apps/experts-panel/dev`.
-- Запасной checkout на Mac:
+- На VM работай только в `/home/ubuntu/apps/experts-panel/dev`.
+- На Mac запасной checkout:
   `/Users/andreysazonov/Documents/Projects/Experts_panel`.
-- Production checkout на той же VM:
-  `/home/ubuntu/apps/experts-panel/app`.
-  В нём запрещены обычная разработка, запуск ИИ-кодеров и ручное редактирование.
-- Production runtime и данные находятся уровнем выше checkout, в
-  `/home/ubuntu/apps/experts-panel/`; не изменяй их без профильного runbook и
-  явного разрешения владельца.
+- `/home/ubuntu/apps/experts-panel/app` — production checkout GitHub Actions.
+  Не редактируй его и не запускай там ИИ-кодеров или maintenance-команды.
+- GitHub `shao3d/Experts_panel`, ветка `main` — источник истины для commits.
+- В один момент времени пишет только один checkout: VM `dev` или Mac.
 
-GitHub — источник истины для закоммиченного кода. В один момент времени изменения
-вносит только один development checkout: VM `dev` или Mac. Не синхронизируй код
-через `scp`, `rsync` или ручное копирование.
+Перед работой сам проверь Git-состояние. Не трогай незнакомые изменения и не
+используй `reset --hard`, `clean`, rebase общей `main` или force-push.
 
-## Переключение между VM и Mac
+## Две операции владельца
 
-Перед сменой машины текущий агент обязан:
+### `выкатывай`
 
-1. Показать владельцу `git status` и отделить нужные изменения от чужих.
-2. Запустить проверки для изменённого scope.
-3. По явной команде владельца создать commit.
-4. Отдельно предупредить, что push в `main` запускает production-деплой, и не
-   пушить без явного разрешения.
-5. На второй машине проверить чистое tracked-состояние, затем выполнить
-   `git fetch origin` и `git pull --ff-only`.
+Это code release: проверки → commit → push `main` → GitHub Actions → `/health`.
+В него автоматически входит backend, frontend и Reddit search. Обычный push не
+обновляет production DB. Перед push требуется явная команда владельца.
 
-Если на исходной машине остались незакоммиченные изменения, переключение не
-завершено. Не начинай ту же задачу на второй машине без решения владельца.
+### `обнови базу`
 
-## Команды владельца и релиз
+Это отдельный data release. Только после явной команды владельца следуй
+`docs/operations.md` и запускай `scripts/update_production_db.sh` из VM `dev`.
+Не объединяй data release с обычным code release и не запускай его для проверки.
 
-- `проверь`, `разберись`, `подготовь` — без commit, push, deploy и restart.
-- `зафиксируй` — commit только в текущем development checkout, без push.
-- `выкатывай`, `опубликуй`, `закоммить и пушни main` — можно push в `main`,
-  дождаться `.github/workflows/deploy-oracle.yml` и проверить production `/health`.
+Команды `проверь`, `разберись`, `подготовь` не разрешают commit, push, deploy,
+restart или изменение production DB. `зафиксируй` разрешает только commit.
 
-Любой push в `main` считается production-деплоем. После push не редактируй
-production checkout и дождись окончания GitHub Actions. Никогда не выполняй
-force-push, rebase общей `main`, `git reset --hard` или `git clean` без отдельного
-явного разрешения владельца.
+## Проектные ограничения
 
-## Данные, секреты и опасные операции
+- Не читай, не печатай, не копируй и не коммить секреты, `.env`, ключи, токены,
+  базы данных, backups, логи и временные результаты.
+- Все запросы к данным эксперта сохраняют изоляцию по `expert_id`.
+- Синтез модели не является источником; ответы должны опираться на реальные
+  материалы экспертов.
+- Для документации начни с `docs/DOCUMENTATION_MAP.md`, затем читай только
+  указанный там профильный документ.
+- Для UI соблюдай `docs/design-system/refero-say-briefly/UX_INVARIANTS.md`.
 
-- Не читай, не печатай, не копируй и не коммить `.env`, ключи, токены,
-  авторизационные файлы и production-конфигурацию.
-- Production SQLite corpus не обновляется обычным code deploy. Синхронизация,
-  backup, promotion, rollback и миграции БД — отдельная операция с отдельным
-  разрешением владельца и профильным runbook.
-- Не добавляй в commit базы данных, backups, логи, временные результаты,
-  `review/` и случайные локальные файлы.
-- Все запросы к данным эксперта должны сохранять изоляцию по `expert_id`.
-- Не выдавай синтез модели за источник: ответы продукта должны оставаться
-  привязанными к реальным материалам экспертов.
+## Проверки и отчёт
 
-## Проверки
+Запускай минимальные проверки по изменённому scope. Backend-тесты находятся в
+`backend/tests/`; frontend-команды — в `frontend/package.json`; Reddit search —
+в `services/reddit-proxy/README.md`. Не запускай весь тяжёлый набор автоматически.
 
-Выбирай минимальные проверки по затронутому scope:
-
-- backend: релевантные тесты из `backend/tests/`;
-- frontend: `npm run type-check`, релевантный `npm run test:run`, при необходимости
-  `npm run build` из `frontend/`;
-- Reddit proxy: команды из `services/reddit-proxy/README.md`.
-
-Не запускай весь тяжёлый набор автоматически. Перед отчётом снова покажи
-`git status` и явно перечисли: что изменено, что проверено, что не проверено и
-требуется ли commit, push, deploy или отдельное обновление production DB.
+В финале сообщи простыми словами: что сделано, что проверено, что не проверено
+и требуется ли `выкатывай` или `обнови базу`. Не перекладывай инфраструктурные
+шаги на Андрея.

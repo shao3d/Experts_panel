@@ -221,7 +221,6 @@
 - `backend/src/services/llm_monitor.py`
 - `backend/src/api/simplified_query_endpoint.py`
 - `backend/CLAUDE.md`
-- `CLAUDE.md`
 - `docs/architecture/retry-strategy.md`
 - `docs/architecture/pipeline.md`
 

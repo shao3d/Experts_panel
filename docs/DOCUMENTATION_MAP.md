@@ -19,7 +19,7 @@ Last updated: 2026-08-23
 
 | Задача | Сначала читать | Потом, если нужно |
 | --- | --- | --- |
-| Общая архитектура / pipeline | `docs/architecture/pipeline.md` | `CLAUDE.md`, `backend/CLAUDE.md` |
+| Общая архитектура / pipeline | `docs/architecture/pipeline.md` | `backend/CLAUDE.md` |
 | Retrieval / Embs&Keys / FTS5 | `docs/architecture/super-passport-search.md` | `docs/archive/hybrid_retrieval_plan.md` как историю |
 | Панэкс как пользователь/оператор | `docs/guides/panex-usage.md` | `panex guide` |
 | Панэкс API / CLI / subagent | `docs/architecture/agent-context-api.md` | agent files ниже |
@@ -31,6 +31,7 @@ Last updated: 2026-08-23
 | Reddit sidecar | `docs/architecture/reddit-service.md` | service code under `services/reddit-proxy/` |
 | Языки / перевод RU-EN | `docs/architecture/multilingual-support.md` | `backend/src/utils/language_utils.py`, `backend/src/services/translation_service.py` |
 | Backend runtime / health / CLI bootstrap | `docs/roadmap/backend-runtime-cleanup.md` | `backend/CLAUDE.md` |
+| Code deploy / DB update / rollback | `docs/operations.md` | `scripts/update_production_db.sh`, `.github/workflows/deploy-oracle.yml` |
 | Frontend layout/state | `frontend/CLAUDE.md` | `docs/design-system/refero-say-briefly/UX_INVARIANTS.md`, frontend source files |
 | UI visual system / redesign guardrails | `docs/design-system/refero-say-briefly/UX_INVARIANTS.md` | `docs/design-system/refero-say-briefly/README.md`, `frontend/CLAUDE.md` |
 
@@ -54,7 +55,7 @@ Last updated: 2026-08-23
 | `docs/architecture/current-expert-roster.md` | Актуальный roster, UI-группы, source-of-truth caveats. |
 | `docs/design-system/refero-say-briefly/UX_INVARIANTS.md` | Current UI shell/product guardrails: sidebar, Query Deck, result columns, source overflow, and Refero visual boundaries. |
 | `docs/design-system/refero-say-briefly/README.md` | Local snapshot index for the Refero Say Briefly design system assets/tokens. |
-| `CLAUDE.md` | Root project guide and repo-level operating notes. |
+| `AGENTS.md` | Единые project, Git, VM, release и safety-правила для всех ИИ-агентов. |
 | `backend/CLAUDE.md` | Backend services, commands, config, runtime notes. |
 | `frontend/CLAUDE.md` | Frontend structure, state, layout conventions. |
 
@@ -156,7 +157,7 @@ Quality docs - evidence snapshots and guardrails, not current API specs.
 
 | Change | Update |
 | --- | --- |
-| Pipeline/model/SSE/final delivery | `docs/architecture/pipeline.md`; maybe `CLAUDE.md`, `backend/CLAUDE.md` |
+| Pipeline/model/SSE/final delivery | `docs/architecture/pipeline.md`; maybe `backend/CLAUDE.md` |
 | Языковая логика / перевод / кэш переводов | `docs/architecture/multilingual-support.md` |
 | Hybrid search / embeddings / FTS5 / Scout | `docs/architecture/super-passport-search.md`; maybe `pipeline.md` |
 | Панэкс CLI/API/subagent behavior | `docs/guides/panex-usage.md`, `docs/architecture/agent-context-api.md`, repo-local agent files, global Codex agent |
@@ -165,7 +166,7 @@ Quality docs - evidence snapshots and guardrails, not current API specs.
 | Expert admission doctrine / matrix workflow | `docs/architecture/expert-admission-control.md`; this map only if navigation changes |
 | Add/remove expert scripts | `docs/guides/add-expert.md` |
 | Video Hub behavior | `docs/architecture/video-hub-service.md`, `docs/guides/video-hub-operator.md` |
-| Reddit behavior | `docs/architecture/reddit-service.md`; maybe `CLAUDE.md` |
+| Reddit behavior | `docs/architecture/reddit-service.md` |
 | Frontend layout/state / UI shell | `frontend/CLAUDE.md`, `docs/design-system/refero-say-briefly/UX_INVARIANTS.md` |
 | Backend runtime/health/CLI bootstrap | `docs/roadmap/backend-runtime-cleanup.md`, `backend/CLAUDE.md` |
 

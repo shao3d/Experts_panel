@@ -7,7 +7,7 @@
 #
 # Runs ENTIRELY on the Oracle VM (82.70.251.73). The Mac is a thin client:
 #   ssh ubuntu@82.70.251.73
-#   cd ~/apps/experts-panel/app && ./scripts/update_production_db.sh
+#   cd ~/apps/experts-panel/dev && ./scripts/update_production_db.sh
 # For long runs use tmux/nohup.
 #
 # Usage:
@@ -18,7 +18,7 @@
 #                                                         # the backup
 #
 # Layout on the VM:
-#   ~/apps/experts-panel/app/backend/data/experts.db   — STAGING db (pipeline
+#   ~/apps/experts-panel/dev/backend/data/experts.db   — STAGING db (pipeline
 #                                                        works here)
 #   ~/apps/experts-panel/data/experts.db               — PROD db (mounted into
 #                                                        the "panel" container)
@@ -36,6 +36,7 @@ DB_PATH="${DB_PATH:-backend/data/experts.db}"
 BACKUP_DIR="${BACKUP_DIR:-backend/data/backups}"
 MIGRATIONS_DIR="${MIGRATIONS_DIR:-backend/migrations}"
 DEPLOY_DIR="/home/ubuntu/apps/experts-panel"
+DEV_CHECKOUT="$DEPLOY_DIR/dev"
 PROD_DB_PATH="$DEPLOY_DIR/data/experts.db"
 PROD_BACKUP_PATH="$DEPLOY_DIR/data/experts.db.backup"
 PROD_TMP_PATH="$DEPLOY_DIR/data/experts.db.tmp"
@@ -203,13 +204,62 @@ ensure_running_on_vm() {
    From the Mac, use it as a thin client:
 
      ssh -t ubuntu@82.70.251.73
-     cd ~/apps/experts-panel/app
+     cd ~/apps/experts-panel/dev
      ./scripts/update_production_db.sh          # or: DB_UPLOAD_ONLY=1 ...
 
    Long runs: wrap in tmux (tmux new -A -s expadb).
 EOF
         exit 1
     fi
+
+    if [ "$(pwd -P)" != "$DEV_CHECKOUT" ]; then
+        cat >&2 <<EOF
+❌ Run this maintenance command only from the development checkout:
+
+     cd $DEV_CHECKOUT
+     ./scripts/update_production_db.sh
+
+   The production checkout ($DEPLOY_DIR/app) is managed only by GitHub Actions.
+EOF
+        exit 1
+    fi
+}
+
+check_dev_runtime() {
+    ensure_running_on_vm
+
+    local required
+    for required in backend/.env backend/.venv/bin/python "$DB_PATH" \
+        "$MIGRATIONS_DIR" "$PROD_DB_PATH"; do
+        if [ ! -e "$required" ]; then
+            echo "❌ Required maintenance resource is missing: $required"
+            exit 1
+        fi
+    done
+
+    local python_version
+    python_version=$(backend/.venv/bin/python -c \
+        'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
+    if ! backend/.venv/bin/python -c \
+        'import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)'; then
+        echo "❌ Python 3.11+ is required; dev venv has $python_version."
+        exit 1
+    fi
+
+    check_local_integrity
+    local prod_integrity
+    prod_integrity=$(sqlite3 "$PROD_DB_PATH" "PRAGMA integrity_check;" 2>&1 | head -n 1)
+    if [ "$prod_integrity" != "ok" ]; then
+        echo "❌ Production SQLite integrity check failed: $prod_integrity"
+        exit 1
+    fi
+
+    echo "✅ DB maintenance preflight passed."
+    echo "   checkout: $(pwd -P)"
+    echo "   Python: $python_version"
+    echo "   staging DB: $DB_PATH"
+    echo "   production DB: $PROD_DB_PATH"
+    df -h "$DEPLOY_DIR/data" | tail -n 1
 }
 
 # ==============================================================================
@@ -220,7 +270,7 @@ do_deploy() {
 
     # Ensure we are in project root
     if [ ! -f "docker-compose.yml" ]; then
-        echo "❌ Error: Please run this script from the project root directory ($DEPLOY_DIR/app)."
+        echo "❌ Error: Please run this script from the project root directory ($DEV_CHECKOUT)."
         exit 1
     fi
 
@@ -501,11 +551,12 @@ usage() {
     cat <<'USAGE'
 Usage (run ON the Oracle VM; Mac is a thin client):
   ssh -t ubuntu@82.70.251.73
-  cd ~/apps/experts-panel/app
+  cd ~/apps/experts-panel/dev
 
   ./scripts/update_production_db.sh                    Full pipeline deploy
   DB_UPLOAD_ONLY=1 ./scripts/update_production_db.sh   Skip sync/vectorize/drift
   ./scripts/update_production_db.sh --rollback         Restore prod DB from backup
+  ./scripts/update_production_db.sh --check            Read-only maintenance preflight
 USAGE
 }
 
@@ -513,6 +564,9 @@ main() {
     case "${1:-}" in
         --rollback)
             do_rollback
+            ;;
+        --check)
+            check_dev_runtime
             ;;
         "")
             do_deploy

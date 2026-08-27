@@ -115,7 +115,7 @@ order: [..., '<expert_id>']
 ### Step 5: Деплой
 
 ```bash
-# 1. БД на Fly.io (включает Drift Analysis, если остались pending группы)
+# 1. Production БД на Oracle VM (включает Drift Analysis, если остались pending группы)
 ./scripts/update_production_db.sh
 
 # 2. Код на GitHub → автодеплой frontend
@@ -124,9 +124,16 @@ git commit -m "feat: add new expert <expert_id>"
 git push
 ```
 
-`update_production_db.sh` сам грузит `backend/.env`, запускает `embed_posts.py --continuous` и `run_drift_service.py`, так что и embeddings, и drift идут через Vertex AI. Перед заменой production DB скрипт создаёт remote backup, временно отключает Fly autostop на время DB upload, проверяет свободное место на `/app/data`, сжимает локальную БД, загружает gzip одним SFTP transfer с fallback на chunked upload, сверяет size/SHA/gzip, распаковывает во временный файл `/app/data/experts.db.tmp`, делает SQLite integrity check и только потом заменяет `/app/data/experts.db`.
+`update_production_db.sh` запускается из VM checkout `dev`, сам грузит
+`backend/.env`, запускает `embed_posts.py --continuous` и
+`run_drift_service.py`. Перед заменой production DB скрипт создаёт backup,
+проверяет свободное место, размер, SHA-256, gzip и SQLite integrity, затем
+атомарно заменяет `/home/ubuntu/apps/experts-panel/data/experts.db` и
+перезапускает контейнер `panel`.
 
-> **Важно про Fly:** `git push` сам по себе не меняет SQLite на mounted volume `/app/data/experts.db`. Он обновляет код и собранный frontend. Если менялись данные эксперта, обязательно обновите production DB через штатный DB deploy или отдельный targeted cleanup с backup.
+> **Важно:** `git push` сам по себе не меняет production SQLite. Он обновляет
+> код, frontend и Reddit search. Если менялись данные эксперта, отдельно
+> запустите штатный data release по `docs/operations.md`.
 
 ---
 

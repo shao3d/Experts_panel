@@ -325,7 +325,6 @@ Video Hub использует текущую Pro-модель `gemini-3.1-pro-p
 | Файл | Статус |
 |------|--------|
 | `.env.example` | Содержит `MODEL_VIDEO_PRO=gemini-3.1-pro-preview` и `MODEL_VIDEO_FLASH=gemini-3-flash-preview` |
-| `CLAUDE.md` (корень) | Секция "Current Production Models" включает Video модели |
 | `backend/CLAUDE.md` | Сервисная таблица и Configuration включают Video модели |
 | `docs/architecture/pipeline.md` | Vertex notes фиксируют замену `gemini-3-pro-preview` на `gemini-3.1-pro-preview` |
 | `docs/architecture/video-hub-service.md` | Architecture SSOT содержит Video Hub model table |
