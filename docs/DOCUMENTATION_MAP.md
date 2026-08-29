@@ -1,7 +1,7 @@
 # Карта Документации
 
 Status: Active
-Last updated: 2026-08-23
+Last updated: 2026-08-29
 
 Это навигационный слой проекта Experts Panel. Он должен отвечать на вопрос
 "куда смотреть?", а не пересказывать содержимое всех документов.
@@ -29,6 +29,7 @@ Last updated: 2026-08-23
 | Drift analysis | `docs/guides/drift-analysis.md` | drift scripts in `backend/scripts/` |
 | Video Hub | `docs/architecture/video-hub-service.md` | `docs/guides/video-hub-operator.md` |
 | Reddit sidecar | `docs/architecture/reddit-service.md` | service code under `services/reddit-proxy/` |
+| Реализовать agent-facing Reddit API | `docs/plans/2026-08-29-reddit-search-agent-api-handoff.md` | `docs/architecture/reddit-service.md`, затем `docs/architecture/agent-context-api.md` |
 | Языки / перевод RU-EN | `docs/architecture/multilingual-support.md` | `backend/src/utils/language_utils.py`, `backend/src/services/translation_service.py` |
 | Backend runtime / health / CLI bootstrap | `docs/roadmap/backend-runtime-cleanup.md` | `backend/CLAUDE.md` |
 | Code deploy / DB update / rollback | `docs/operations.md` | `scripts/update_production_db.sh`, `.github/workflows/deploy-oracle.yml` |
