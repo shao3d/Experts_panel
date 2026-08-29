@@ -373,6 +373,117 @@ Harness пишет:
 
 ---
 
+## Agent-facing API (`POST /api/v1/agent/reddit-search`)
+
+**Статус:** реализован (проверен контрактными тестами локально/в CI), production
+smoke — после явной команды `выкатывай`.
+
+### Назначение
+
+Стабильный программный вход для других проектов и ИИ-агентов, вызывающий **полный
+Reddit Search V2** (формулировка запроса + AI Scout + несколько discovery-каналов +
+enrichment + answerability rerank + confidence filtering + synthesis). Это **не**
+выставление наружу `reddit-proxy`: proxy делает только OAuth search/details и
+остаётся внутренним sidecar, сетевая граница не меняется.
+
+### Endpoint и аутентификация
+
+```http
+POST /api/v1/agent/reddit-search
+Authorization: Bearer <AGENT_CONTEXT_API_TOKEN>
+Content-Type: application/json
+```
+
+- Переиспользуются `verify_agent_context_token` (`backend/src/api/dependencies.py`)
+  и его per-token rate limit; второй secret/auth-схемы не вводится.
+- Таймаут переиспользует `AGENT_CONTEXT_TIMEOUT_SECONDS` (синхронный
+  `asyncio.wait_for`, тот же паттерн, что у Agent Context); таймаут → `504`.
+
+### Request
+
+```json
+{
+  "query": "What do practitioners say about Claude Code hooks?",
+  "use_recent_only": false
+}
+```
+
+- `query`: 3–1000 символов; пустой/слишком короткий/слишком длинный → `422`
+  (глобальный validation handler, `error=validation_error`).
+- Других tuning-параметров нет.
+
+### Response (200)
+
+```json
+{
+  "status": "completed",
+  "query": "What do practitioners say about Claude Code hooks?",
+  "answer": "Source-grounded synthesis",
+  "sources": [
+    {
+      "title": "Discussion title",
+      "url": "https://www.reddit.com/r/example/comments/example",
+      "subreddit": "example"
+    }
+  ],
+  "message": null,
+  "found_count": 2,
+  "processing_time_ms": 12345
+}
+```
+
+### Семантика
+
+| Сценарий | HTTP | status | answer / sources / message |
+|---|---|---|---|
+| V2 дал synthesis + высокоуверенные посты | 200 | `completed` | synthesis + реальные источники, `message=null` |
+| После confidence-фильтра V2 осталось 0 постов | 200 | `abstained` | `answer=null`, `sources=[]`, короткое `message` |
+| proxy недоступен / исключение pipeline | 502 | — | безопасный короткий `detail`, без внутреннего текста ошибки |
+| Превышен `AGENT_CONTEXT_TIMEOUT_SECONDS` | 504 | — | безопасный короткий `detail` |
+| Ошибка валидации query | 422 | — | глобальный validation handler (`error=validation_error`) |
+| Token отсутствует/неверен | 403 | — | та же семантика, что у Agent Context token |
+
+Техническая ошибка никогда не возвращается как `200 + status="failed"`; будущий CLI
+отображает такие ответы на своё состояние `failed` и ненулевой exit code.
+
+Response не содержит: chain-of-thought/скрытые prompts, tokens/credentials/env,
+внутренние stack traces, посторонние результаты experts/Telegram pipeline,
+выдуманные источники.
+
+### Реализация и границы
+
+- Endpoint находится в `backend/src/api/agent_context_endpoint.py` и через
+  `run_reddit_search_v2()` (`backend/src/api/simplified_query_endpoint.py`) попадает
+  в тот же V2 pipeline, что и Panel, — второй копии pipeline нет.
+- Общий вход `run_reddit_search_v2()` разделяет результат на три состояния:
+  `completed` / `abstained` / `failed`; Panel SSE-путь использует ту же базовую
+  логику через `process_reddit_pipeline`.
+- `reddit-proxy:3000` остаётся внутренним sidecar: порт не публикуется, network
+  boundary не меняется.
+- Синхронная модель наследует существующие контракты timeout/response-size Agent
+  Context; если будущий реальный smoke покажет, что синхронный ответ непригоден,
+  расширение архитектуры обсудим отдельно.
+
+### Будущая CLI-граница (не реализована)
+
+В отдельном следующем этапе будет добавлен минимальный CLI/portable runner (вида
+`reddit-search "..." --recent`, `reddit-search doctor`), который ходит только в этот
+API, берёт URL/token из безопасной конфигурации/env, не печатает token, различает
+completed/abstained/failed и возвращает ненулевой exit code только при технической
+ошибке. **Сейчас этих CLI-команд не существует**, и в этом документе они не
+описываются как готовые.
+
+### Проверки
+
+- Контрактные тесты: `backend/tests/test_agent_reddit_search.py` (auth, границы
+  query, completed/abstained, таймаут/ошибка upstream, отсутствие stack
+  trace/secret, доказательство использования общей логики).
+- Production-доказательство после `выкатывай`: authenticated production smoke
+  (реальные Reddit-ссылки) + smoke старого Panel Reddit flow + подтверждение, что
+  production DB не обновлялась.
+
+---
+
 ## Ограничения
 
 1. Reddit search сам по себе не является качественным эталоном.  
@@ -396,5 +507,8 @@ Harness пишет:
 - `services/reddit-proxy/src/index.ts`
 - `backend/scripts/eval_reddit_search_v2.py`
 - `backend/src/config.py`
+- `backend/src/api/simplified_query_endpoint.py` — `run_reddit_search_v2()` (общая трёх-состояная граница) и `process_reddit_pipeline`
+- `backend/src/api/agent_context_endpoint.py` — `POST /api/v1/agent/reddit-search`
+- `backend/tests/test_agent_reddit_search.py` — контрактные тесты
 
 Итог: Reddit Search V2 — это не "ещё больше AI-магии", а более строгий retrieval-пайплайн, где Scout только помогает, комментарии участвуют раньше, а нерелевантная выдача чаще отбрасывается вместо того, чтобы красиво синтезироваться.

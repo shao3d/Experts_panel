@@ -822,6 +822,68 @@ async def process_expert_pipeline(
     )
 
 
+class RedditSearchV2Outcome:
+    """Three-state outcome of one full Reddit Search V2 run.
+
+    Shared boundary between the Panel SSE path and the agent-facing
+    Reddit search API: both consume the same V2 pipeline through this
+    wrapper, so neither duplicates orchestration logic.
+
+    - status "completed": synthesis + real sources are available.
+    - status "abstained": the V2 confidence filter kept 0 posts; this is an
+      honest empty result, not an error.
+    - status "failed": a technical error occurred (proxy down, timeout, ...).
+    """
+
+    __slots__ = ("status", "response", "error")
+
+    def __init__(
+        self,
+        status: str,
+        response: Optional[RedditResponse] = None,
+        error: Optional[str] = None,
+    ) -> None:
+        self.status = status
+        self.response = response
+        self.error = error
+
+
+async def run_reddit_search_v2(
+    query: str,
+    recent_only: bool = False,
+    progress_callback: Optional[Callable] = None,
+) -> RedditSearchV2Outcome:
+    """Run the full Reddit Search V2 pipeline and classify the outcome.
+
+    This is the single reusable entry point for the V2 pipeline:
+
+    - the Panel SSE path calls it (via ``process_reddit_pipeline``);
+    - the agent-facing ``POST /api/v1/agent/reddit-search`` calls it directly.
+
+    It distinguishes the three states the Panel previously conflated into
+    ``None``: an honest abstain (0 posts after confidence filtering), a
+    completed run, and a technical failure.
+    """
+    start_time = time.time()
+    try:
+        response = await process_reddit_pipeline(
+            query=query,
+            progress_callback=progress_callback,
+            recent_only=recent_only,
+        )
+    except Exception as e:  # technical failure - never mask as abstain
+        logger.error(f"Reddit Search V2 failed: {e}")
+        return RedditSearchV2Outcome(status="failed", error=str(e))
+
+    if response is not None:
+        return RedditSearchV2Outcome(status="completed", response=response)
+
+    # process_reddit_pipeline returns None both for "no posts found" (abstain)
+    # and for "no synthesis produced". V2 treats an empty shortlist as an
+    # honest abstain; the synthesis stays empty.
+    return RedditSearchV2Outcome(status="abstained")
+
+
 async def process_reddit_pipeline(
     query: str,
     progress_callback: Optional[Callable] = None,
@@ -1096,7 +1158,10 @@ Search query:"""
                     "error": str(e),
                 }
             )
-        return None
+        # Re-raise so callers can distinguish a technical failure from an
+        # honest abstain (0 posts). The SSE caller already wraps this call in
+        # its own try/except and treats a raise as reddit_failed.
+        raise
 
 
 def _build_reddit_markdown(result) -> str:

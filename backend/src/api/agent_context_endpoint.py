@@ -18,6 +18,9 @@ from .models import (
     AgentContextArtifactReceipt,
     AgentContextRequest,
     AgentContextResponse,
+    AgentRedditSearchRequest,
+    AgentRedditSearchResponse,
+    AgentRedditSearchSource,
     AgentSourceExpandRequest,
     AgentSourceExpandResponse,
     SelectionUsed,
@@ -32,6 +35,7 @@ from ..services.agent_context_service import (
     SUPPORTED_AGENT_CONTEXT_RESPONSE_MODES,
 )
 from ..services.artifact_retention_service import agent_context_results_dir
+from .simplified_query_endpoint import run_reddit_search_v2
 
 
 AGENT_CONTEXT_EXPERT_GROUPS = {
@@ -548,4 +552,110 @@ async def expand_agent_context_sources_artifact(
         response=response,
         operation="expand",
         response_bytes=response_bytes,
+    )
+
+
+_REDDIT_SEARCH_ABSTAIN_MESSAGE = (
+    "No sufficiently reliable Reddit discussions were found for this query"
+)
+
+
+@router.post(
+    "/reddit-search",
+    response_model=AgentRedditSearchResponse,
+    dependencies=[Depends(verify_agent_context_token)],
+)
+async def reddit_search(request: AgentRedditSearchRequest) -> AgentRedditSearchResponse:
+    """Run the full Reddit Search V2 pipeline on behalf of an agent.
+
+    Thin, shared boundary: the pipeline itself (query formulation, Scout,
+    discovery channels, rerank, synthesis) lives in
+    `reddit_enhanced_service` / `reddit_synthesis_service` and is reached
+    here through `run_reddit_search_v2` — the same entry point the Panel SSE
+    path uses, so there is no second pipeline.
+
+    Contract (docs/architecture/reddit-service.md):
+
+    - 200 + status "completed" — synthesis + real sources.
+    - 200 + status "abstained" — honest empty result (confidence filter kept
+      0 posts); answer=None, sources=[].
+    - 400/401/403/413/422/500/503/504 — technical failure with a short safe
+      `detail`; never a 200 with a failed status.
+    """
+    start_time = time.perf_counter()
+    timeout_seconds = config.AGENT_CONTEXT_TIMEOUT_SECONDS
+    if timeout_seconds <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="AGENT_CONTEXT_TIMEOUT_SECONDS must be positive",
+        )
+
+    try:
+        outcome = await asyncio.wait_for(
+            run_reddit_search_v2(
+                query=request.query,
+                recent_only=request.use_recent_only,
+            ),
+            timeout=timeout_seconds,
+        )
+    except asyncio.TimeoutError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+            detail="Reddit Search API request exceeded configured timeout",
+        ) from exc
+    except Exception as exc:
+        # Technical failure: never leak the internal error text (it can carry
+        # proxy addresses, credentials, or stack details). A short safe detail
+        # is all a CLI needs to map this onto its own failed state.
+        logger.error(
+            "Agent reddit-search technical failure (detail suppressed): %s",
+            exc,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Reddit Search API request failed",
+        ) from exc
+
+    if outcome.status == "completed":
+        response = outcome.response
+        assert response is not None  # completed outcome carries a response
+        return AgentRedditSearchResponse(
+            status="completed",
+            query=request.query,
+            answer=response.synthesis,
+            sources=[
+                AgentRedditSearchSource(
+                    title=src.title,
+                    url=src.url,
+                    subreddit=src.subreddit,
+                )
+                for src in response.sources
+            ],
+            message=None,
+            found_count=response.found_count,
+            processing_time_ms=int((time.perf_counter() - start_time) * 1000),
+        )
+
+    if outcome.status == "failed":
+        # Technical failure: never leak the internal error text (it can carry
+        # proxy addresses, credentials, or stack details). A short safe detail
+        # is all a CLI needs to map this onto its own failed state.
+        logger.error(
+            "Agent reddit-search technical failure (detail suppressed): %s",
+            outcome.error,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Reddit Search API request failed",
+        )
+
+    # Honest abstain: the V2 confidence filter kept 0 posts. Not an error.
+    return AgentRedditSearchResponse(
+        status="abstained",
+        query=request.query,
+        answer=None,
+        sources=[],
+        message=_REDDIT_SEARCH_ABSTAIN_MESSAGE,
+        found_count=0,
+        processing_time_ms=int((time.perf_counter() - start_time) * 1000),
     )

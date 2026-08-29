@@ -890,6 +890,67 @@ class RedditResponse(BaseModel):
     )
 
 
+class AgentRedditSearchRequest(BaseModel):
+    """Request for the agent-facing full Reddit Search V2 API.
+
+    Deliberately minimal: internal limits, models, thresholds and discovery
+    strategies stay Experts Panel configuration, not caller tuning knobs.
+    """
+
+    query: str = Field(
+        ...,
+        description="User query for the full Reddit Search V2 pipeline",
+        min_length=3,
+        max_length=1000,
+    )
+    use_recent_only: bool = Field(
+        default=False,
+        description="Hard-filter Reddit results to the recent window (same meaning as the Panel toggle)",
+    )
+
+
+class AgentRedditSearchSource(BaseModel):
+    """One real Reddit thread in an agent-facing Reddit search response."""
+
+    title: str = Field(..., description="Discussion title")
+    url: str = Field(..., description="Real Reddit thread URL")
+    subreddit: str = Field(..., description="Subreddit name without the r/ prefix")
+
+
+class AgentRedditSearchResponse(BaseModel):
+    """Response for the agent-facing full Reddit Search V2 API.
+
+    status "completed" carries a source-grounded synthesis and the real
+    threads behind it. status "abstained" is an honest empty result: the V2
+    confidence filter kept nothing, so answer and sources stay null/empty and
+    a short message explains why. Technical failures never masquerade as a
+    200 with a failed status — they surface as HTTP 4xx/5xx with a safe detail.
+    """
+
+    status: str = Field(..., description="'completed' or 'abstained'")
+    query: str = Field(..., description="Original query as sent")
+    answer: Optional[str] = Field(
+        default=None,
+        description="Source-grounded synthesis when status is completed",
+    )
+    sources: List[AgentRedditSearchSource] = Field(
+        default_factory=list,
+        description="Real Reddit threads backing the synthesis",
+    )
+    message: Optional[str] = Field(
+        default=None,
+        description="Short diagnostic message; explains an abstain, null on success",
+    )
+    found_count: int = Field(
+        default=0,
+        description="Number of posts the V2 pipeline kept after confidence filtering",
+    )
+    processing_time_ms: int = Field(
+        default=0,
+        description="Wall-clock time the full V2 pipeline took",
+    )
+
+
 class MultiExpertQueryResponse(BaseModel):
     """Response containing results from multiple experts."""
 
