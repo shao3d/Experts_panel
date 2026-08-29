@@ -1,0 +1,4 @@
+interface:
+  display_name: "Reddit Search V2"
+  short_description: "Search practitioner discussions on Reddit with source links"
+  default_prompt: "Use $reddit-search for an explicit Reddit research question."

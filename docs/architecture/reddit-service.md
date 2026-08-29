@@ -483,8 +483,12 @@ python -m src.cli.reddit_search --doctor --api-url http://127.0.0.1:8000/api/v1/
 - `--json` — стабильный машинный вывод сырого JSON ответа API (exit 0).
 - `--doctor` — проверка достижимости `/health` и наличия token в env (token не
   требуется и не печатается); exit 1, если API недоступен или нездоров.
-- Глобальный Codex skill / установщик на Mac остаётся будущим отдельным этапом;
-  здесь реализован только CLI-модуль внутри backend.
+- Репозиторный шаблон глобального Codex skill находится в
+  `.codex/skills/reddit-search/`; portable runner и installer — в `scripts/`.
+  Установка выполняется отдельно в пользовательские `~/.codex` и `~/.local/bin`,
+  без копирования или вывода token.
+- Глобальный Codex skill не является частью production deploy: это локальная
+  пользовательская установка поверх уже опубликованного API.
 
 ### Проверки
 
@@ -525,5 +529,10 @@ python -m src.cli.reddit_search --doctor --api-url http://127.0.0.1:8000/api/v1/
 - `backend/tests/test_agent_reddit_search.py` — контрактные тесты API
 - `backend/src/cli/reddit_search.py` — минимальный CLI-обёртка над API
 - `backend/tests/test_reddit_search_cli.py` — контрактные тесты CLI
+- `.codex/skills/reddit-search/SKILL.md` — инструкции глобального Codex skill
+- `.codex/skills/reddit-search/agents/openai.yaml` — metadata skill
+- `scripts/reddit_search_runner.py` — переносимый stdlib-only runner
+- `scripts/install_reddit_search_skill.sh` — безопасный installer skill + runner
+- `backend/tests/test_reddit_search_runner.py` — контрактные тесты runner
 
 Итог: Reddit Search V2 — это не "ещё больше AI-магии", а более строгий retrieval-пайплайн, где Scout только помогает, комментарии участвуют раньше, а нерелевантная выдача чаще отбрасывается вместо того, чтобы красиво синтезироваться.
