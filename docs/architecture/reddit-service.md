@@ -464,14 +464,27 @@ Response не содержит: chain-of-thought/скрытые prompts, tokens/
   Context; если будущий реальный smoke покажет, что синхронный ответ непригоден,
   расширение архитектуры обсудим отдельно.
 
-### Будущая CLI-граница (не реализована)
+### CLI-граница (реализована, контракт проверен)
 
-В отдельном следующем этапе будет добавлен минимальный CLI/portable runner (вида
-`reddit-search "..." --recent`, `reddit-search doctor`), который ходит только в этот
-API, берёт URL/token из безопасной конфигурации/env, не печатает token, различает
-completed/abstained/failed и возвращает ненулевой exit code только при технической
-ошибке. **Сейчас этих CLI-команд не существует**, и в этом документе они не
-описываются как готовые.
+Минимальный CLI/portable runner реализован в `backend/src/cli/reddit_search.py`
+(запуск: `python -m src.cli.reddit_search "..."`). Он ходит только в этот API,
+берёт URL/token из env (`REDDIT_SEARCH_API_URL` / `AGENT_CONTEXT_API_TOKEN`),
+никогда не печатает token, различает completed/abstained/failed и возвращает
+ненулевой exit code только при технической ошибке (сетевая ошибка, 5xx, таймаут,
+отсутствие token). abstained — это exit 0 с человекочитаемым сообщением.
+
+```bash
+python -m src.cli.reddit_search "What do practitioners say about Claude Code hooks?"
+python -m src.cli.reddit_search "What changed in local LLMs" --recent
+python -m src.cli.reddit_search --json "What changed in local LLMs"
+python -m src.cli.reddit_search --doctor --api-url http://127.0.0.1:8000/api/v1/agent/reddit-search
+```
+
+- `--json` — стабильный машинный вывод сырого JSON ответа API (exit 0).
+- `--doctor` — проверка достижимости `/health` и наличия token в env (token не
+  требуется и не печатается); exit 1, если API недоступен или нездоров.
+- Глобальный Codex skill / установщик на Mac остаётся будущим отдельным этапом;
+  здесь реализован только CLI-модуль внутри backend.
 
 ### Проверки
 
@@ -509,6 +522,8 @@ completed/abstained/failed и возвращает ненулевой exit code 
 - `backend/src/config.py`
 - `backend/src/api/simplified_query_endpoint.py` — `run_reddit_search_v2()` (общая трёх-состояная граница) и `process_reddit_pipeline`
 - `backend/src/api/agent_context_endpoint.py` — `POST /api/v1/agent/reddit-search`
-- `backend/tests/test_agent_reddit_search.py` — контрактные тесты
+- `backend/tests/test_agent_reddit_search.py` — контрактные тесты API
+- `backend/src/cli/reddit_search.py` — минимальный CLI-обёртка над API
+- `backend/tests/test_reddit_search_cli.py` — контрактные тесты CLI
 
 Итог: Reddit Search V2 — это не "ещё больше AI-магии", а более строгий retrieval-пайплайн, где Scout только помогает, комментарии участвуют раньше, а нерелевантная выдача чаще отбрасывается вместо того, чтобы красиво синтезироваться.

@@ -29,7 +29,7 @@ Last updated: 2026-08-29
 | Drift analysis | `docs/guides/drift-analysis.md` | drift scripts in `backend/scripts/` |
 | Video Hub | `docs/architecture/video-hub-service.md` | `docs/guides/video-hub-operator.md` |
 | Reddit sidecar | `docs/architecture/reddit-service.md` | service code under `services/reddit-proxy/` |
-| Agent-facing Reddit API | `docs/architecture/reddit-service.md` (раздел "Agent-facing API") | handoff-история: `docs/plans/2026-08-29-reddit-search-agent-api-handoff.md` |
+| Agent-facing Reddit API + CLI | `docs/architecture/reddit-service.md` (разделы "Agent-facing API", "CLI-граница") | handoff-история: `docs/plans/2026-08-29-reddit-search-agent-api-handoff.md` |
 | Языки / перевод RU-EN | `docs/architecture/multilingual-support.md` | `backend/src/utils/language_utils.py`, `backend/src/services/translation_service.py` |
 | Backend runtime / health / CLI bootstrap | `docs/roadmap/backend-runtime-cleanup.md` | `backend/CLAUDE.md` |
 | Code deploy / DB update / rollback | `docs/operations.md` | `scripts/update_production_db.sh`, `.github/workflows/deploy-oracle.yml` |
