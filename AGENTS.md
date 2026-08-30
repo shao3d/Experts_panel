@@ -3,6 +3,22 @@
 Андрей всегда запускает агента из корня проекта. Не проси его выполнять Git,
 Docker, SSH или диагностические команды: технические проверки делает агент.
 
+## Язык общения: только русский или английский
+
+Вся коммуникация агента — ответы пользователю, прогресс-ноты между вызовами
+инструментов, комментарии в коде, commit message и документация — пишется
+**только на русском или на английском**. Китайский, японский, корейский и
+любые другие языки запрещены, включая короткие технические заметки и
+автоматические сообщения о прогрессе. Если заметил, что написал на другом
+языке, немедленно исправь текст и продолжай на русском или английском.
+
+(Language rule: All agent communication — user-facing replies, progress notes
+between tool calls, code comments, commit messages and documentation — must
+be written **only in Russian or English**. Chinese, Japanese, Korean and any
+other language are forbidden, including short technical notes and automatic
+progress messages. If you notice you wrote in another language, fix the text
+immediately and continue in Russian or English.)
+
 ## Единственное рабочее место
 
 - На VM работай только в `/home/ubuntu/apps/experts-panel/dev`.
