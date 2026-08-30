@@ -19,6 +19,41 @@ other language are forbidden, including short technical notes and automatic
 progress messages. If you notice you wrote in another language, fix the text
 immediately and continue in Russian or English.)
 
+## Reddit Search (обязательный механизм)
+
+Когда пользователь просит поискать что-то на Reddit, узнать мнение
+практикующего сообщества или проверить обсуждения — используй ТОЛЬКО
+официальный механизм Experts Panel, команду:
+
+```bash
+reddit-search "<вопрос пользователя>"          # обычный поиск
+reddit-search "<вопрос>" --recent              # свежие данные (последние темы)
+reddit-search --json "<вопрос>"                # машиночитаемый вывод
+reddit-search --doctor                         # проверка доступности API
+```
+
+Команда глобальная (`~/.local/bin/reddit-search`), работает из любой
+dиректории. Правила интерпретации:
+
+- `status: completed` — покажи синтез и 2–5 реальных Reddit-ссылок из вывода;
+- `status: abstained` — честно скажи, что надёжных обсуждений не найдено;
+  НЕ дополняй ответ выдумками или общими знаниями;
+- exit code 1 — техническая ошибка (нет токена, API недоступен, таймаут);
+  сообщи о ней как о технической проблеме, не выдавай за отсутствие
+  результатов.
+
+Запрещено: вызывать `reddit-proxy` напрямую, запускать pipeline локально,
+читать/печатать/копировать токен `AGENT_CONTEXT_API_TOKEN`. SSOT:
+`docs/architecture/reddit-service.md` (разделы "Agent-facing API",
+"CLI-граница").
+
+(Reddit Search rule: when the user asks to search Reddit or gather community
+sentiment, always run the global `reddit-search` command above — never call
+`reddit-proxy` directly, never run the pipeline locally, never print the
+`AGENT_CONTEXT_API_TOKEN` token. Report `completed` with real links, report
+`abstained` honestly without inventing content, and report exit code 1 as a
+technical failure.)
+
 ## Единственное рабочее место
 
 - На VM работай только в `/home/ubuntu/apps/experts-panel/dev`.
