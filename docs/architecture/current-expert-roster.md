@@ -1,7 +1,7 @@
 # Current Expert Roster
 
 **Status:** Active roster reference
-**Last updated:** 2026-05-20
+**Last updated:** 2026-08-31
 
 This file documents the intended active expert roster and the places that must
 stay in sync when experts are added, removed, or regrouped. For live production
@@ -23,6 +23,11 @@ Important: a normal `git push` updates code, frontend and Reddit search, but it
 does **not** update production SQLite. The standard data release runs
 `./scripts/update_production_db.sh` from the Oracle VM `dev` checkout; see
 `docs/operations.md`.
+
+> API-хост `expa.beyondhorizon.dev` — production Oracle VM (деплой через
+> `.github/workflows/deploy-oracle.yml`). Устаревшая инфраструктура Fly.io
+> удалена 24.08.2026: `fly releases` / `fly status` в этом документе больше
+> не используются.
 
 ---
 
@@ -93,13 +98,20 @@ sqlite3 backend/data/experts.db "SELECT expert_id FROM expert_metadata ORDER BY 
 sqlite3 backend/data/experts.db "SELECT COUNT(*) FROM expert_metadata WHERE expert_id='mkarpov' OR channel_username='todo2go';"
 ```
 
-Production API:
+Production API (Oracle VM, деплой через `.github/workflows/deploy-oracle.yml`):
 
 ```bash
 curl -sS https://expa.beyondhorizon.dev/api/v1/experts
 curl -sS https://expa.beyondhorizon.dev/health
-fly releases -a experts-panel
-fly status -a experts-panel
+```
+
+Production checkout и health на VM:
+
+```bash
+# на VM, production checkout `app` (не редактировать)
+cd ~/apps/experts-panel/app && git log -1 --oneline
+sudo docker compose -f ~/apps/experts-panel/docker-compose.vm.yml ps
+curl -sfS http://127.0.0.1:8000/health
 ```
 
 Frontend bundle sanity check:

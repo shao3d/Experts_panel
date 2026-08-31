@@ -99,9 +99,9 @@ Use **Google AI Studio** or another Gemini UI to generate the source JSON.
 ## 🐛 Troubleshooting
 
 ### Common Issues
-1.  **"Timed out waiting for SSH connectivity"**:
-    *   The deployment script waits 45s for the machine to wake up.
-    *   **Fix:** Just run the script again. Container cold starts can be slow.
+1.  **"This script must run ON the Oracle VM"**:
+    *   Video deploy — это production DB release. Запускай только на VM из dev
+        checkout (`cd ~/apps/experts-panel/dev`), см. `docs/guides/add-video.md`.
 
 2.  **"JSON Parse Error"**:
     *   AI Studio sometimes outputs invalid JSON (trailing commas, missing brackets).
@@ -111,11 +111,20 @@ Use **Google AI Studio** or another Gemini UI to generate the source JSON.
     *   If a video is long (60m+) and you try to do it in one pass, the output will be truncated.
     *   **Fix:** Use **Scenario B** immediately.
 
+4.  **Health-проверка падает после деплоя**:
+    *   `deploy_video.sh` вернёт ошибку, если `/health` не пройден. Проверь логи
+        контейнера (`sudo docker logs --tail 100 $(sudo docker ps -qf name=panel-1)`)
+        и при необходимости откатись:
+        `./scripts/update_production_db.sh --rollback` (из dev checkout).
+
 ---
 
 ## 🛠️ Maintenance
-- **Script Location:** `scripts/deploy_video.sh`
-- **Database:** `backend/data/experts.db` (Local & Prod synced via script)
+- **Script Location:** `scripts/deploy_video.sh` (Oracle VM, dev checkout)
+- **Database:** staging `backend/data/experts.db` → promoted to production via
+  `DB_UPLOAD_ONLY=1 ./scripts/update_production_db.sh` (= Production data release,
+  см. `docs/operations.md`). Устаревший Fly.io SFTP-путь удалён 24.08.2026.
 - **Runtime Auth:** Query-time Video Hub uses Vertex AI credentials from `backend/.env` / managed secrets.
-- **Important:** `deploy_video.sh` does **not** call Gemini directly and does **not** generate embeddings for new segments.
+- **Important:** `deploy_video.sh` does **not** call Gemini directly; it only asks
+  whether to generate embeddings for new segments.
 - **If immediate Hybrid Search is required:** run `python3 backend/scripts/embed_posts.py --continuous` after import.

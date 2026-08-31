@@ -1,18 +1,32 @@
 # Adding New Videos (The "Video Hub" Pipeline)
 
 **Pipeline:** `Map -> Resolve (Summary Bridging) -> Reduce (Digital Twin)`
+**Деплой: Oracle VM (Fly.io-процесс удалён 24.08.2026)**
 
 ## 🚀 Quick Command
-Use the automated deployment script to import JSON and update production safely:
+
+`deploy_video.sh` теперь работает как production DB release через проверенный
+путь `update_production_db.sh`. Запускай **только на Oracle VM из dev checkout**:
 
 ```bash
+ssh -t ubuntu@82.70.251.73
+cd ~/apps/experts-panel/dev
 ./scripts/deploy_video.sh path/to/video.json
 ```
 
-> **Важно:** `deploy_video.sh` сам по себе **не вызывает Gemini / Vertex AI**. Он импортирует готовый JSON в SQLite и выкатывает обновлённую БД. Сам Video Hub отвечает через Vertex AI уже позже, во время реального query runtime.
+> **Важно:** это production data release. Как и обычный `обнови базу`
+> (`docs/operations.md`), он затрагивает production DB, поэтому запускается
+> только на VM, из dev checkout, никогда — из `app`-checkout или с Mac.
+
+> **Важно:** `deploy_video.sh` сам по себе **не вызывает Gemini / Vertex AI**
+> для разметки. Он импортирует готовый JSON в staging SQLite и выкатывает
+> обновлённую БД. Сам Video Hub отвечает через Vertex AI уже позже, во время
+> реального query runtime.
 
 ## 📋 Prerequisite: JSON Format
+
 Ensure your JSON file follows the **Segmented Topic Structure**:
+
 - `topic_id`: Must change every 10-15 mins or at logical chapters.
 - `segments`: Must be granular (one thought per segment).
 
@@ -38,20 +52,30 @@ Ensure your JSON file follows the **Segmented Topic Structure**:
 ```
 
 ## 🛠️ What the script does
-1.  **Backup:** Creates a local backup in `backend/data/backups/`.
-2.  **Import:** Runs `backend/scripts/import_video_json.py` to add segments to local SQLite.
-3.  **Compress:** Gzips the updated database.
-4.  **Upload:** SFTPs the database to Fly.io (`/app/data/experts.db.gz`).
-5.  **Deploy:** Atomic operation on server:
-    *   Deletes old WAL/SHM files (prevents corruption).
-    *   Unzips new DB over old one.
-    *   Fixes permissions (`chown appuser:appuser`).
-    *   Restarts the app.
+
+1.  **Guards**: проверяет, что запущен на Oracle VM в dev checkout.
+2.  **Import**: runs `backend/scripts/import_video_json.py` to add segments to
+    the **staging** SQLite (`backend/data/experts.db`). Staging DB не меняется
+    только там, где импорт прошёл успешно (иначе abort до деплоя).
+3.  **Integrity**: `PRAGMA integrity_check` на staging DB перед продвижением.
+4.  **Embeddings (optional)**: спрашивает, векторизовать ли свежие сегменты
+    сразу (`embed_posts.py --continuous`); `N` — пропустить и сделать позже.
+5.  **Promote**: вызывает `DB_UPLOAD_ONLY=1 ./scripts/update_production_db.sh`,
+    который: делает production backup, stage + verify (размер/SHA/gzip/integrity),
+    атомарно заменяет production DB, перезапускает `panel` и ждёт `/health`.
+
+### Что с этого убрали
+
+- Процесс SFTP-загрузки на Fly.io (`/app/data/experts.db.gz`) + `fly ssh`
+  + `fly apps restart` удалён как неактуальный.
+- Rollback теперь через штатный `./scripts/update_production_db.sh --rollback`
+  (из dev checkout на VM).
 
 ## 🔎 Important Runtime Note
 
-- `deploy_video.sh` does **not** generate embeddings for fresh video segments.
-- If you need new video segments to participate in Hybrid Search immediately, run:
+- `deploy_video.sh` **does not** generate embeddings for fresh video segments
+  (it only asks optionally). If you need new video segments to participate in
+  Hybrid Search immediately, run:
 
 ```bash
 python3 backend/scripts/embed_posts.py --continuous
@@ -61,16 +85,30 @@ python3 backend/scripts/embed_posts.py --continuous
 
 ## 🐛 Troubleshooting
 
-### "Timed out waiting for SSH connectivity"
-If the script fails with this error after 45 seconds:
-1.  **Check Status:** Run `fly status` manually. The machine might be in a crash loop.
-2.  **Check Logs:** Run `fly logs` to see if the app is starting correctly.
-3.  **Retry:** Sometimes Fly.io instances take longer to wake up. Just run the script again.
+### "This script must run ON the Oracle VM"
+Скрипт не запускается с другой машины или из неверной директории. Зайди на VM
+и запусти из `~/apps/experts-panel/dev`.
 
-### "Permission denied" on DB
-The script automatically runs `chown appuser:appuser`. If you still see permission errors in logs:
-- Ensure the Dockerfile still creates the `appuser`.
-- Check if the volume mount path in the VM's `docker-compose.vm.yml` matches `/app/data`.
+### Health-проверка после деплоя падает
+`deploy_video.sh` упадёт, если `update_production_db.sh` не получит здоровый
+`/health`. Подожди и проверь логи контейнера:
+
+```bash
+sudo docker logs --tail 100 $(sudo docker ps -qf name=panel-1)
+```
+
+Если application greenlit и нужно вернуть прошлую БД:
+
+```bash
+cd ~/apps/experts-panel/dev
+./scripts/update_production_db.sh --rollback
+```
+
+### "No staging DB found"
+Первый полный деплой БД ещё не делался (`backend/data/experts.db` отсутствует).
+Сначала выполни полноценный sync/pipeline по `docs/operations.md`.
 
 ---
-**Note:** This process updates the **entire** production database with your local version. Ensure your local DB is up-to-date before running this if other people are working on it (though usually you are the single source of truth).
+**Note:** This process promotes the **entire** production database from your
+staging copy, so keep the staging DB up to date (run the normal sync) before
+deploying video if other data changed since the last DB release.

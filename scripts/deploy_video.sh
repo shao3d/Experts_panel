@@ -2,25 +2,38 @@
 
 # ==============================================================================
 # Script: deploy_video.sh
-# Purpose: Import a video JSON into local DB and safely deploy to Production
+# Purpose: Import a video JSON into the staging DB and safely promote it to
+#          Production on the Oracle VM, reusing the tested production DB
+#          deploy path.
 # Usage: ./scripts/deploy_video.sh <path_to_json>
-# Author: Gemini Architecture Team
+#
+# Runs ENTIRELY on the Oracle VM, from the dev checkout:
+#   ssh -t ubuntu@82.70.251.73
+#   cd ~/apps/experts-panel/dev
+#   ./scripts/deploy_video.sh path/to/video.json
+#
+# What it does:
+#   1. Validates the JSON and importable input.
+#   2. Imports segments into the STAGING DB (backend/data/experts.db) via
+#      backend/scripts/import_video_json.py.
+#   3. Optionally vectorizes fresh segments (embed_posts.py --continuous) so
+#      hybrid search sees them immediately.
+#   4. Delegates the actual production swap to the proven
+#      ./scripts/update_production_db.sh DB_UPLOAD_ONLY=1 path, which backs up
+#      prod, stages + verifies the DB (size/SHA/gzip/integrity), atomically
+#      replaces it, restarts `panel` and waits for /health.
+#
+# This replaces the old Fly.io SFTP flow (upload to /app/data, fly ssh, fly
+# apps restart), which is obsolete since production moved to the Oracle VM in
+# 08.2026. Never run pipeline steps from the `app` checkout or from the Mac.
 # ==============================================================================
 
-set -e # Exit immediately if a command exits with a non-zero status
+set -euo pipefail
 
-# Configuration
-JSON_PATH="$1"
-DB_PATH="backend/data/experts.db"
-REMOTE_DB_PATH="/app/data/experts.db"
-APP_NAME="experts-panel"
-BACKUP_DIR="backend/data/backups"
-
-# Colors for output
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+JSON_PATH="${1:-}"
+DB_PATH="${DB_PATH:-backend/data/experts.db}"
+DEPLOY_DIR="/home/ubuntu/apps/experts-panel"
+DEV_CHECKOUT="$DEPLOY_DIR/dev"
 
 log() {
     echo -e "${GREEN}[$(date +'%H:%M:%S')] $1${NC}"
@@ -35,137 +48,105 @@ error() {
     exit 1
 }
 
-# 0. Validate Input
-if [ -z "$JSON_PATH" ]; then
-    error "Usage: ./scripts/deploy_video.sh <path_to_json>"
-fi
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
 
+# ----------------------------------------------------------------------------
+# Guards (mirror update_production_db.sh): video deploy is a production DB swap,
+# so it only makes sense on the VM, from the dev checkout, in the project root.
+# ----------------------------------------------------------------------------
+ensure_running_on_vm() {
+    if [ ! -f "$DEPLOY_DIR/docker-compose.vm.yml" ] || [ "$(hostname)" != "oracle-marseille-arm-dev" ]; then
+        cat >&2 <<EOF
+❌ This script must run ON the Oracle VM (oracle-marseille-arm-dev).
+   From the Mac / other host, use it as a thin client:
+
+     ssh -t ubuntu@82.70.251.73
+     cd ~/apps/experts-panel/dev
+     ./scripts/deploy_video.sh <path_to_json>
+EOF
+        exit 1
+    fi
+    if [ "$(pwd -P)" != "$DEV_CHECKOUT" ]; then
+        cat >&2 <<EOF
+❌ Run this command only from the development checkout:
+
+     cd $DEV_CHECKOUT
+     ./scripts/deploy_video.sh <path_to_json>
+
+   The production checkout ($DEPLOY_DIR/app) is managed only by GitHub Actions.
+EOF
+        exit 1
+    fi
+    if [ ! -f "docker-compose.yml" ]; then
+        error "Please run this script from the project root directory ($DEV_CHECKOUT)."
+    fi
+}
+
+# 0. Validate input + guards
+if [ -z "$JSON_PATH" ]; then
+    echo "Usage: ./scripts/deploy_video.sh <path_to_json>"
+    exit 1
+fi
 if [ ! -f "$JSON_PATH" ]; then
     error "JSON file not found: $JSON_PATH"
 fi
+ensure_running_on_vm
 
-# Ensure we are in project root
-if [ ! -f "docker-compose.yml" ]; then
-    error "Please run this script from the project root directory."
-fi
-
-mkdir -p "$BACKUP_DIR"
-
-log "🚀 STARTING VIDEO DEPLOYMENT PIPELINE"
-log "📂 Input File: $JSON_PATH"
-
-# 1. Local Backup
-TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-LOCAL_BACKUP="$BACKUP_DIR/experts_pre_video_$TIMESTAMP.db"
-log "📦 [1/5] Creating local backup..."
-if [ -f "$DB_PATH" ]; then
-    cp "$DB_PATH" "$LOCAL_BACKUP"
-    log "   ✅ Backup saved: $LOCAL_BACKUP"
-else
-    warn "Local DB not found at $DB_PATH. Creating new one during import."
-fi
-
-# 2. Run Import Script
-log "🧠 [2/5] Importing Video JSON into Local DB..."
-# Check python command
 PYTHON_CMD="python3"
 if [ -f "backend/.venv/bin/python" ]; then
     PYTHON_CMD="backend/.venv/bin/python"
 fi
+export PYTHONPATH="${PYTHONPATH:-}:$(pwd)/backend"
 
-export PYTHONPATH=$PYTHONPATH:$(pwd)/backend
+if [ ! -f "$DB_PATH" ]; then
+    error "Staging DB not found at $DB_PATH. Run a full sync first (see docs/operations.md)."
+fi
 
-if $PYTHON_CMD backend/scripts/import_video_json.py "$JSON_PATH"; then
-    log "   ✅ Import successful."
-else
-    error "Import script failed! Restoring backup..."
-    if [ -f "$LOCAL_BACKUP" ]; then
-        cp "$LOCAL_BACKUP" "$DB_PATH"
-        warn "   Restored database from backup."
+log "🚀 STARTING VIDEO DEPLOYMENT PIPELINE (Oracle VM)"
+log "📂 Input File: $JSON_PATH"
+log "🗄️  Staging DB: $DB_PATH"
+
+# 1. Import Video JSON into staging DB
+log "🧠 [1/4] Importing Video JSON into staging DB..."
+if ! "$PYTHON_CMD" backend/scripts/import_video_json.py "$JSON_PATH"; then
+    error "Import script failed. Staging DB left unchanged. Nothing was pushed to production."
+fi
+log "   ✅ Import successful."
+
+# 2. Local integrity check before any promotion
+log "🩺 [2/4] SQLite integrity check on staging DB..."
+merge_integrity_ok=$(sqlite3 "$DB_PATH" "PRAGMA integrity_check;" 2>&1 | head -n 1)
+if [ "$merge_integrity_ok" != "ok" ]; then
+    error "Staging DB integrity check failed: $merge_integrity_ok. Aborting before deploy."
+fi
+log "   ✅ Staging DB integrity: ok."
+
+# 3. Optionally vectorize the fresh video segments so hybrid search finds them
+echo ""
+read -r -p "🔎 Generate embeddings for new video segments now? (y/N) " do_embed
+if [[ "${do_embed:-n}" =~ ^[Yy]$ ]]; then
+    log "🧮 [3/4] Running embed_posts.py --continuous..."
+    if "$PYTHON_CMD" backend/scripts/embed_posts.py --continuous; then
+        log "   ✅ Vectorization completed."
+    else
+        warn "   ⚠️ Vectorization failed (non-critical). Hybrid search may be degraded until the next full DB deploy."
     fi
-    exit 1
-fi
-
-# 3. Compress DB for Upload
-log "🗜️  [3/5] Compressing Database for Upload..."
-GZ_PATH="$DB_PATH.gz"
-gzip -c "$DB_PATH" > "$GZ_PATH"
-log "   ✅ Database compressed: $(ls -lh $GZ_PATH | awk '{print $5}')"
-
-# 4. Upload to Production
-log "☁️  [4/5] Uploading to Fly.io Production..."
-
-# Check machine status
-try_machine_id=$(fly status --json | python3 -c "import sys, json; data=json.load(sys.stdin); print(data['Machines'][0]['id']) if data.get('Machines') else print('')")
-try_machine_state=$(fly status --json | python3 -c "import sys, json; data=json.load(sys.stdin); print(data['Machines'][0]['state']) if data.get('Machines') else print('')")
-
-if [ -z "$try_machine_id" ]; then
-    error "No machines found in Fly.io app '$APP_NAME'. Is it deployed?"
-fi
-
-if [ "$try_machine_state" != "started" ]; then
-    log "   💤 Machine is $try_machine_state. Waking it up..."
-    fly machine start "$try_machine_id" > /dev/null
-    log "   ✅ Start signal sent."
-fi
-
-# Robust SSH Wait Function
-wait_for_ssh() {
-    local max_retries=15
-    local wait_sec=3
-    log "   ⏳ Waiting for SSH connectivity..."
-    
-    for i in $(seq 1 $max_retries); do
-        if fly ssh console -C "echo ready" > /dev/null 2>&1; then
-            log "   ✅ SSH is ready."
-            return 0
-        fi
-        echo -n "."
-        sleep $wait_sec
-    done
-    
-    echo ""
-    error "Timed out waiting for SSH connectivity ($((max_retries * wait_sec))s). Check fly logs."
-}
-
-# Always verify SSH before SFTP
-wait_for_ssh
-
-log "   📤 Uploading compressed DB..."
-if fly sftp put "$GZ_PATH" "$REMOTE_DB_PATH.gz"; then
-    log "   ✅ Upload successful."
 else
-    rm -f "$GZ_PATH"
-    error "SFTP Upload failed."
+    log "⏭️  [3/4] Skipping embedding step. Run manually later if needed:"
+    log "      python3 backend/scripts/embed_posts.py --continuous"
 fi
 
-# 5. Deploy (Unzip & Restart)
-log "🔄 [5/5] Finalizing Deployment (Unzip & Restart)..."
+# 4. Promote staging DB to production via the tested upload-only path.
+#    update_production_db.sh handles prod backup, staged copy + verification
+#    (size/SHA/gzip/integrity), atomic replace, `panel` restart and /health.
+log "🚀 [4/4] Promoting staging DB to Production (update_production_db.sh DB_UPLOAD_ONLY=1)..."
+DB_UPLOAD_ONLY=1 ./scripts/update_production_db.sh
 
-log "   📦 Cleaning up old WAL files & Unzipping..."
-# Critical: 
-# 1. Delete WAL/SHM files to prevent corruption on DB swap
-# 2. Gunzip (overwrite)
-# 3. Fix permissions for appuser
-REMOTE_CMD="rm -f $REMOTE_DB_PATH-wal $REMOTE_DB_PATH-shm && gunzip -f $REMOTE_DB_PATH.gz && chown appuser:appuser $REMOTE_DB_PATH"
-
-if fly ssh console -C "$REMOTE_CMD"; then
-    log "   ✅ Cleanup, Unzip & Permissions Fix successful."
-else
-    rm -f "$GZ_PATH"
-    error "Remote operations failed."
-fi
-
-log "   🔄 Restarting application..."
-if fly apps restart "$APP_NAME"; then
-    log "   ✅ Restart command sent."
-else
-    warn "Restart command might have failed, check fly status."
-fi
-
-# Cleanup
-rm -f "$GZ_PATH"
-
-log "========================================================"
-log "🎉 SUCCESS! Video imported and deployed to Production."
-log "========================================================"
+log "=========================================================="
+log "🎉 SUCCESS! Video imported and promoted to Production."
+log "   Run './scripts/update_production_db.sh --rollback' to restore the"
+log "   production DB from the backup created just before this deploy."
+log "=========================================================="

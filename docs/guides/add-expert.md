@@ -1,7 +1,7 @@
 # 🚀 Добавление нового эксперта (Полный алгоритм)
 
-**Версия:** 7.3 (Admission-first + Single Config + Staged Fly DB Deploy)
-**Дата:** 2026-05-20
+**Версия:** 7.4 (Admission-first + Single Config + Staged Oracle VM DB Deploy)
+**Дата:** 2026-08-31
 **Статус:** Актуально
 
 ---
@@ -171,7 +171,11 @@ EXPERT_UI_CONFIG.order
 
 ### 3. Обновите production DB отдельно
 
-Для Fly production volume сначала создайте backup `/app/data/experts.db`, потом выполните targeted cleanup на `/app/data/experts.db` или загрузите свежую проверенную DB. Обычный deploy `vNNN` не удалит строки из mounted volume.
+For Oracle production (`/home/ubuntu/apps/experts-panel/data/experts.db` на
+VM): сначала сделайте backup, потом выполните targeted cleanup или загрузите
+свежую проверенную DB через `./scripts/update_production_db.sh`. Обычный
+git push не удалит строки из production SQLite. (Устаревшая Fly-инструкция
+про `/app/data/experts.db` и `vNNN` неактуальна с 24.08.2026.)
 
 ### 4. Проверка после удаления
 
@@ -180,8 +184,9 @@ sqlite3 backend/data/experts.db "SELECT COUNT(*) FROM expert_metadata WHERE expe
 sqlite3 backend/data/experts.db "PRAGMA foreign_key_check;"
 
 curl -sS https://expa.beyondhorizon.dev/api/v1/experts
-fly releases -a experts-panel
-fly status -a experts-panel
+# production checkout на VM
+cd ~/apps/experts-panel/app && git log -1 --oneline
+curl -sS https://expa.beyondhorizon.dev/health
 ```
 
 Для frontend sanity check скачайте production bundle и проверьте, что удалённого `expert_id`/display name там нет.
