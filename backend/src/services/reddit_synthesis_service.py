@@ -642,7 +642,7 @@ class RedditSynthesisService:
     <context>
         <date>СЕГОДНЯ: {current_date_str}. Учитывайте, что мы в 2026 году.</date>
     </context>
-    <task>Синтезировать ИСЧЕРПЫВАЮЩИЙ технический ответ (+30% деталей по сравнению с обычным summary).</task>
+    <task>Синтезировать плотный технический ответ без повторов и необязательных деталей. Сначала дать решение и действия, затем — подтверждающие подробности.</task>
     <evaluation_criteria>
         <signal type="authority">FLAIRS: Доверяйте пользователям с плашками типа "Maintainer", "Dev", "Contributor".</signal>
         <signal type="verification" priority="highest">OP VERIFICATION: Решения, помеченные `[✅ OP VERIFIED SOLUTION]`, имеют наивысший приоритет (автор подтвердил, что это сработало).</signal>
@@ -653,17 +653,18 @@ class RedditSynthesisService:
         <rule type="alternative">CONTROVERSIAL TAKES: Если есть сильные аргументы ПРОТИВ популярного мнения — вы обязаны их привести.</rule>
         <rule type="context">VERSION SPECIFIC: Указывайте версии библиотек/софта, о которых идет речь.</rule>
         <rule type="citation">LINK PRIORITY: Ссылки на GitHub/HuggingFace = [PRIMARY SOURCE].</rule>
-        <rule type="trend">PIVOT ALERT: Если сообщество меняет стандарт (например, "LangChain умер, бери LangGraph") — начните с блока `🚨 **СМЕНА ТРЕНДА**`.</rule>
+        <rule type="evidence_language" priority="highest">EVIDENCE LANGUAGE: Слова «консенсус», «стандарт» и «смена тренда» разрешены только когда утверждение независимо подтверждают минимум два разных релевантных источника [S#]. В том же предложении приведите обе ссылки. Иначе пишите «в одном обсуждении», «несколько пользователей» или «данных недостаточно».</rule>
+        <rule type="trend">PIVOT ALERT: Блок `🚨 **СМЕНА ТРЕНДА**` разрешён только при выполнении правила EVIDENCE LANGUAGE и явном сравнении прежней и новой практики в источниках. Не добавляйте его для привлечения внимания.</rule>
         <rule type="relevance_gate" priority="highest">РЕЛЕВАНТНОСТЬ: Перед синтезом проверьте — найденные посты ДЕЙСТВИТЕЛЬНО отвечают на вопрос пользователя? Если посты не по теме (например, вопрос про Claude Code Skills, а посты про Unix CLI), честно скажите: "Релевантных обсуждений на Reddit по этой конкретной теме не найдено." НЕ синтезируйте нерелевантный контент как будто он отвечает на вопрос.</rule>
     </analysis_rules>
     <output_format>
-        <section order="1">Executive Summary: Прямой ответ, консенсус 2026 года.</section>
-        <section order="2" required="if_comparable">СРАВНИТЕЛЬНАЯ ТАБЛИЦА (обязательна, если в вопросе есть сопоставимые варианты): атрибуты, релевантные вопросу (цены/лимиты/VRAM/сроки/версии), в ячейках — КОНКРЕТНЫЕ ЧИСЛА из тредов. Каждая строка со ссылкой на номер источника в формате [S3] (номер = номер источника в базе знаний).</section>
-        <section order="3">Deep Dive: Код, конфиги, архитектура. Самая большая секция.</section>
-        <section order="4">Minority Report: Альтернативные мнения опытных инженеров (особенно с Flair), несогласные с мейнстримом.</section>
-        <section order="5">Battle-tested Edge Cases: Реальные баги и проблемы из продакшена.</section>
-        <section order="6" required="always">КУДА ИДИ (финальный блок, всегда): ранжированные действия 1→2→3 с условиями («если есть X → путь Y»; «если бюджет Z → вариант N»).</section>
-        <style>Максимальная плотность информации. Без воды. Используйте Markdown таблицы для сравнения. Отвечайте ТОЛЬКО на русском языке.</style>
+        <section order="1" max_words="120">Executive Summary: прямой ответ с уровнем уверенности, без объявления консенсуса по умолчанию.</section>
+        <section order="2" required="always" max_words="150">КУДА ИДТИ: ранжированные действия 1→2→3 с условиями («если есть X → путь Y»; «если бюджет Z → вариант N»). Этот итоговый блок обязан идти ДО Deep Dive, чтобы ответ оставался полезным при обрыве генерации.</section>
+        <section order="3" required="only_if_enough_numeric_evidence" max_rows="6">СРАВНИТЕЛЬНАЯ ТАБЛИЦА: добавляйте только если источники дают минимум две содержательные строки сравнения с конкретными числами. Каждая строка должна иметь ссылку [S#]. Если чисел недостаточно, используйте короткий маркированный список или пропустите сравнение; не заполняйте таблицу общими словами.</section>
+        <section order="4" max_words="600">Deep Dive: только код, конфиги, архитектура и причинно-следственные детали, которые непосредственно отвечают на вопрос.</section>
+        <section order="5" max_words="180">Minority Report: только реально представленное в источниках альтернативное мнение; пропустите секцию, если такого мнения нет.</section>
+        <section order="6" max_words="220">Battle-tested Edge Cases: только реальные баги и проблемы из источников; пропустите секцию, если данных нет.</section>
+        <style>Максимальная плотность информации без повторов. Соблюдайте лимиты секций. Не повторяйте Executive Summary или КУДА ИДТИ в конце. Отвечайте ТОЛЬКО на русском языке.</style>
         <style type="numbers">ИЗВЛЕКАЙ ЧИСЛА из тредов: цены, лимиты, VRAM, бенчмарки, сроки. Общие слова («быстрый», «дешёвый») без числа не считаются фактом.</style>
         <style type="confidence">МАРКИРУЙ ДОСТОВЕРНОСТЬ ключевых утверждений: [подтверждено сообществом] — несколько независимых тредов или OP VERIFIED; [единичный отчёт] — один источник без подтверждения; [вывод автора анализа] — твой синтез без прямого подтверждения в тредах.</style>
         <style type="freshness">Учитывай Age источника: для быстро меняющихся данных (цены, версии, лимиты) предпочитай свежие треды и помечай данные из старых тредов как возможно устаревшие.</style>
@@ -685,7 +686,7 @@ class RedditSynthesisService:
     <context>
         <date>TODAY IS: {current_date_str}. Keep in mind we are in 2026.</date>
     </context>
-    <task>Synthesize a COMPREHENSIVE technical answer (+30% detail density compared to standard summary).</task>
+    <task>Synthesize a dense technical answer without repetition or optional detail. Give the decision and actions first, then supporting detail.</task>
     <evaluation_criteria>
         <signal type="authority">FLAIRS: Trust users with flairs like "Maintainer", "Dev", "Contributor".</signal>
         <signal type="verification" priority="highest">OP VERIFICATION: Solutions marked `[✅ OP VERIFIED SOLUTION]` have highest priority (author confirmed it worked).</signal>
@@ -696,17 +697,18 @@ class RedditSynthesisService:
         <rule type="alternative">CONTROVERSIAL TAKES: If there are strong arguments AGAINST the popular opinion, you MUST include them.</rule>
         <rule type="context">VERSION SPECIFIC: Mention library/software versions discussed.</rule>
         <rule type="citation">LINK PRIORITY: Links to GitHub/HuggingFace = [PRIMARY SOURCE].</rule>
-        <rule type="trend">PIVOT ALERT: If the community is shifting standards (e.g., "LangChain is dead, use LangGraph") — start with a `🚨 **COMMUNITY PIVOT**` block.</rule>
+        <rule type="evidence_language" priority="highest">EVIDENCE LANGUAGE: The terms "consensus", "standard", and "community pivot" may be used only when at least two distinct relevant sources [S#] independently support the claim. Cite both sources in the same sentence. Otherwise say "one discussion", "several users", or "the evidence is insufficient".</rule>
+        <rule type="trend">PIVOT ALERT: A `🚨 **COMMUNITY PIVOT**` block is allowed only when the EVIDENCE LANGUAGE rule is satisfied and the sources explicitly contrast an earlier and a newer practice. Never add it merely for emphasis.</rule>
         <rule type="relevance_gate" priority="highest">RELEVANCE CHECK: Before synthesizing, verify that the posts actually answer the user's question. If posts are off-topic (e.g., question is about Claude Code Skills but posts discuss Unix CLI), honestly state: "No relevant Reddit discussions found for this specific topic." Do NOT synthesize irrelevant content as if it answers the question.</rule>
     </analysis_rules>
     <output_format>
-        <section order="1">Executive Summary: Direct answer, 2026 consensus.</section>
-        <section order="2" required="if_comparable">COMPARISON TABLE (mandatory whenever the question involves comparable options): attributes relevant to the question (pricing/limits/VRAM/timelines/versions), cells filled with CONCRETE NUMBERS from the threads. Every row references its source number as [S3] (number = source index in the knowledge base).</section>
-        <section order="3">Deep Dive: Code, configs, architecture. Largest section.</section>
-        <section order="4">Minority Report: Alternative views from experienced engineers (esp. with Flair) against the mainstream.</section>
-        <section order="5">Battle-tested Edge Cases: Real-world bugs and production issues.</section>
-        <section order="6" required="always">WHERE TO GO (final block, always): ranked next actions 1→2→3 with conditions ("if you have X → take path Y"; "if budget is Z → option N").</section>
-        <style>Maximum information density. No fluff. Use Markdown tables for comparisons. Answer in English.</style>
+        <section order="1" max_words="120">Executive Summary: direct answer with confidence level; do not declare consensus by default.</section>
+        <section order="2" required="always" max_words="150">WHERE TO GO: ranked actions 1→2→3 with conditions ("if X → path Y"; "if budget Z → option N"). This final recommendation block must appear BEFORE the Deep Dive so the answer remains useful if generation is truncated.</section>
+        <section order="3" required="only_if_enough_numeric_evidence" max_rows="6">COMPARISON TABLE: include it only when the sources provide at least two meaningful comparison rows with concrete numbers. Cite [S#] in every row. If numeric evidence is insufficient, use a short bullet list or omit the comparison; never fill a table with generic wording.</section>
+        <section order="4" max_words="600">Deep Dive: only code, configuration, architecture, and causal details that directly answer the question.</section>
+        <section order="5" max_words="180">Minority Report: only an alternative view actually present in the sources; omit the section when none exists.</section>
+        <section order="6" max_words="220">Battle-tested Edge Cases: only real bugs and production issues found in the sources; omit the section when evidence is absent.</section>
+        <style>Maximum information density without repetition. Respect every section limit. Do not repeat the Executive Summary or WHERE TO GO at the end. Answer in English.</style>
         <style type="numbers">EXTRACT NUMBERS from threads: prices, limits, VRAM, benchmarks, timelines. Vague wording ("fast", "cheap") without a number does not count as a fact.</style>
         <style type="confidence">TAG CONFIDENCE of key claims: [community-confirmed] — multiple independent threads or OP VERIFIED; [single report] — one uncorroborated source; [analyst inference] — your synthesis without direct confirmation in threads.</style>
         <style type="freshness">Respect source Age: for fast-moving data (prices, versions, limits) prefer fresh threads and flag data from old threads as possibly outdated.</style>
