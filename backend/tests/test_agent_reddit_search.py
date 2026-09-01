@@ -45,6 +45,9 @@ _ENDPOINT = "/api/v1/agent/reddit-search"
 @pytest.fixture(autouse=True)
 def reddit_search_test_config(monkeypatch):
     monkeypatch.setattr(config, "AGENT_CONTEXT_API_TOKEN", "valid-agent-token")
+    monkeypatch.setattr(
+        config, "REDDIT_SEARCH_CLIENT_TOKENS", ["valid-reddit-client-token"]
+    )
     monkeypatch.setattr(config, "AGENT_CONTEXT_RATE_LIMIT_PER_MINUTE", 100)
     monkeypatch.setattr(config, "AGENT_CONTEXT_TIMEOUT_SECONDS", 90)
     monkeypatch.setattr(config, "AGENT_CONTEXT_MAX_RESPONSE_BYTES", 500000)
@@ -128,6 +131,41 @@ def test_reddit_search_wrong_token_returns_403():
             json={"query": "What do practitioners say about hooks?"},
         )
     assert response.status_code == 403, response.text
+
+
+def test_reddit_search_dedicated_client_token_is_accepted(mock_pipeline):
+    from src.api.main import app
+
+    with TestClient(app) as client:
+        response = _post(
+            client,
+            None,
+            token="valid-reddit-client-token",
+        )
+
+    assert response.status_code == 200, response.text
+    assert response.json()["status"] == "completed"
+
+
+def test_reddit_client_token_does_not_grant_agent_context_access():
+    with pytest.raises(Exception) as exc_info:
+        dependencies.verify_agent_context_token(
+            authorization="Bearer valid-reddit-client-token"
+        )
+
+    assert getattr(exc_info.value, "status_code", None) == 403
+
+
+def test_reddit_search_without_any_configured_token_returns_500(monkeypatch):
+    from src.api.main import app
+
+    monkeypatch.setattr(config, "AGENT_CONTEXT_API_TOKEN", None)
+    monkeypatch.setattr(config, "REDDIT_SEARCH_CLIENT_TOKENS", [])
+    with TestClient(app) as client:
+        response = _post(client, monkeypatch, token="any-token")
+
+    assert response.status_code == 500, response.text
+    assert "reddit search api token" in response.json()["message"].lower()
 
 
 # ---------------------------------------------------------------------------

@@ -30,6 +30,7 @@ Last updated: 2026-08-29
 | Video Hub | `docs/architecture/video-hub-service.md` | `docs/guides/video-hub-operator.md` |
 | Reddit sidecar | `docs/architecture/reddit-service.md` | service code under `services/reddit-proxy/` |
 | Agent-facing Reddit API + CLI + Codex skill | `docs/architecture/reddit-service.md` (разделы "Agent-facing API", "CLI-граница") | `.codex/skills/reddit-search/`, `scripts/install_reddit_search_skill.sh`, handoff-история: `docs/plans/2026-08-29-reddit-search-agent-api-handoff.md` |
+| Generic Reddit Search client | `docs/guides/reddit-search-generic-client.md` | `clients/reddit-search-generic/`, `scripts/build_reddit_search_generic_client.sh` |
 | Языки / перевод RU-EN | `docs/architecture/multilingual-support.md` | `backend/src/utils/language_utils.py`, `backend/src/services/translation_service.py` |
 | Backend runtime / health / CLI bootstrap | `docs/roadmap/backend-runtime-cleanup.md` | `backend/CLAUDE.md` |
 | Code deploy / DB update / rollback | `docs/operations.md` | `scripts/update_production_db.sh`, `.github/workflows/deploy-oracle.yml` |

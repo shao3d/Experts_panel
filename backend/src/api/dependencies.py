@@ -83,3 +83,37 @@ def verify_agent_context_token(authorization: str = Header(default=None)) -> Non
         )
 
     _check_agent_context_rate_limit(supplied_token)
+
+
+def verify_reddit_search_token(authorization: str = Header(default=None)) -> None:
+    """Allow Reddit-only client tokens without granting Agent Context access."""
+    configured_tokens = list(config.REDDIT_SEARCH_CLIENT_TOKENS)
+    if config.AGENT_CONTEXT_API_TOKEN:
+        configured_tokens.append(config.AGENT_CONTEXT_API_TOKEN)
+
+    if not configured_tokens:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Reddit Search API token is not configured",
+        )
+
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Invalid Reddit Search token",
+        )
+
+    supplied_token = authorization.removeprefix("Bearer ").strip()
+    is_valid = False
+    for configured_token in configured_tokens:
+        is_valid |= bool(
+            supplied_token
+            and secrets.compare_digest(supplied_token, configured_token)
+        )
+    if not is_valid:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Invalid Reddit Search token",
+        )
+
+    _check_agent_context_rate_limit(supplied_token)

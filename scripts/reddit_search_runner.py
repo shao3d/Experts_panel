@@ -56,9 +56,12 @@ def timeout(args: argparse.Namespace) -> float:
 
 
 def token() -> str:
-    value = os.getenv("AGENT_CONTEXT_API_TOKEN", "").strip()
+    value = (
+        os.getenv("REDDIT_SEARCH_API_TOKEN", "").strip()
+        or os.getenv("AGENT_CONTEXT_API_TOKEN", "").strip()
+    )
     if not value:
-        raise RunnerError("AGENT_CONTEXT_API_TOKEN is required")
+        raise RunnerError("REDDIT_SEARCH_API_TOKEN is required")
     return value
 
 
@@ -103,7 +106,10 @@ def doctor(args: argparse.Namespace) -> dict[str, Any]:
         "api_url": url,
         "health_status": payload.get("status", "unknown"),
         "database": database.get("status") or payload.get("database", "unknown"),
-        "token_configured": bool(os.getenv("AGENT_CONTEXT_API_TOKEN", "").strip()),
+        "token_configured": bool(
+            os.getenv("REDDIT_SEARCH_API_TOKEN", "").strip()
+            or os.getenv("AGENT_CONTEXT_API_TOKEN", "").strip()
+        ),
     }
 
 

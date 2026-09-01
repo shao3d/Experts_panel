@@ -63,6 +63,11 @@ VERTEX_AI_LOCATION = os.getenv("VERTEX_AI_LOCATION", "us-central1")
 
 # --- Agent Context API ---
 AGENT_CONTEXT_API_TOKEN: str | None = os.getenv("AGENT_CONTEXT_API_TOKEN")
+REDDIT_SEARCH_CLIENT_TOKENS: list[str] = [
+    token.strip()
+    for token in os.getenv("REDDIT_SEARCH_CLIENT_TOKENS", "").split(",")
+    if token.strip()
+]
 AGENT_CONTEXT_RATE_LIMIT_PER_MINUTE: int = int(
     os.getenv("AGENT_CONTEXT_RATE_LIMIT_PER_MINUTE", "10")
 )

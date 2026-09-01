@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from .dependencies import verify_agent_context_token
+from .dependencies import verify_agent_context_token, verify_reddit_search_token
 from .models import (
     AgentContextArtifactReceipt,
     AgentContextRequest,
@@ -563,7 +563,7 @@ _REDDIT_SEARCH_ABSTAIN_MESSAGE = (
 @router.post(
     "/reddit-search",
     response_model=AgentRedditSearchResponse,
-    dependencies=[Depends(verify_agent_context_token)],
+    dependencies=[Depends(verify_reddit_search_token)],
 )
 async def reddit_search(request: AgentRedditSearchRequest) -> AgentRedditSearchResponse:
     """Run the full Reddit Search V2 pipeline on behalf of an agent.

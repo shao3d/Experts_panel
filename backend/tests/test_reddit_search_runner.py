@@ -39,7 +39,7 @@ def test_requires_query():
 def test_requires_token_for_search():
     result = run_runner("hooks", env={"PATH": os.environ.get("PATH", "")})
     assert result.returncode == 1
-    assert "AGENT_CONTEXT_API_TOKEN" in result.stderr
+    assert "REDDIT_SEARCH_API_TOKEN" in result.stderr
 
 
 def test_doctor_uses_health_endpoint():

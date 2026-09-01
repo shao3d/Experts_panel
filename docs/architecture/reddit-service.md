@@ -390,12 +390,16 @@ enrichment + answerability rerank + confidence filtering + synthesis). Это **
 
 ```http
 POST /api/v1/agent/reddit-search
-Authorization: Bearer <AGENT_CONTEXT_API_TOKEN>
+Authorization: Bearer <REDDIT_SEARCH_API_TOKEN>
 Content-Type: application/json
 ```
 
-- Переиспользуются `verify_agent_context_token` (`backend/src/api/dependencies.py`)
-  и его per-token rate limit; второй secret/auth-схемы не вводится.
+- Внешним generic-клиентам выдаются отдельные Reddit-only токены из
+  `REDDIT_SEARCH_CLIENT_TOKENS` (comma-separated server env). Они не проходят
+  `verify_agent_context_token` и не дают доступ к Панэксу/Agent Context API.
+- Владелец сохраняет обратную совместимость: `AGENT_CONTEXT_API_TOKEN` также
+  принимается этим endpoint, но не распространяется внешним пользователям.
+- Rate limit остаётся per-token, поэтому клиенты не делят один bucket.
 - Таймаут переиспользует `AGENT_CONTEXT_TIMEOUT_SECONDS` (синхронный
   `asyncio.wait_for`, тот же паттерн, что у Agent Context); таймаут → `504`.
 
@@ -468,7 +472,8 @@ Response не содержит: chain-of-thought/скрытые prompts, tokens/
 
 Минимальный CLI/portable runner реализован в `backend/src/cli/reddit_search.py`
 (запуск: `python -m src.cli.reddit_search "..."`). Он ходит только в этот API,
-берёт URL/token из env (`REDDIT_SEARCH_API_URL` / `AGENT_CONTEXT_API_TOKEN`),
+берёт URL/token из env (`REDDIT_SEARCH_API_URL` / `REDDIT_SEARCH_API_TOKEN`;
+legacy owner fallback — `AGENT_CONTEXT_API_TOKEN`),
 никогда не печатает token, различает completed/abstained/failed и возвращает
 ненулевой exit code только при технической ошибке (сетевая ошибка, 5xx, таймаут,
 отсутствие token). abstained — это exit 0 с человекочитаемым сообщением.
@@ -487,6 +492,9 @@ python -m src.cli.reddit_search --doctor --api-url http://127.0.0.1:8000/api/v1/
   `.codex/skills/reddit-search/`; portable runner и installer — в `scripts/`.
   Установка выполняется отдельно в пользовательские `~/.codex` и `~/.local/bin`,
   без копирования или вывода token.
+- Универсальный пакет для сторонних CLI собирается командой
+  `scripts/build_reddit_search_generic_client.sh`; инструкция для пользователя —
+  `docs/guides/reddit-search-generic-client.md`.
 - Глобальный Codex skill не является частью production deploy: это локальная
   пользовательская установка поверх уже опубликованного API.
 

@@ -24,9 +24,10 @@ installation report. Do not run the repository backend module and do not call
 `reddit-proxy` directly.
 
 The runner uses `REDDIT_SEARCH_API_URL` when set; otherwise it uses the configured
-Experts Panel production endpoint. It reads `AGENT_CONTEXT_API_TOKEN` from the
-process environment. Never print, echo, inspect, copy, or include the token in a
-prompt, response, artifact, or log.
+Experts Panel production endpoint. It reads the Reddit-only
+`REDDIT_SEARCH_API_TOKEN`, with `AGENT_CONTEXT_API_TOKEN` retained only as a
+backward-compatible owner fallback. Never print, echo, inspect, copy, or include
+either token in a prompt, response, artifact, or log.
 
 ## Query handling
 
