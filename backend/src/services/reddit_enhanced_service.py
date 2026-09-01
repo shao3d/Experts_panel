@@ -135,6 +135,20 @@ SPAM_TITLE_PATTERNS = [
 # Subreddit name fragments observed as keyword-stuffed promo hubs.
 SPAM_SUBREDDIT_FRAGMENTS = ["seo"]
 
+PRACTITIONER_DISCOVERY_INTENTS = {
+    "use_cases",
+    "practitioner_examples",
+}
+
+# Unambiguous solicitation/job-board patterns. Do not treat "I built ..." as
+# spam: first-person build reports are often the best practitioner evidence.
+JOB_SOLICITATION_PATTERNS = [
+    re.compile(r"\bfor hire\b", re.I),
+    re.compile(r"\bhiring\b", re.I),
+    re.compile(r"\bopen to (?:work|remote|roles|opportunities)\b", re.I),
+    re.compile(r"\blooking for (?:work|clients|a job|roles)\b", re.I),
+]
+
 GENERIC_ANCHOR_STOPWORDS = COMMON_QUERY_STOPWORDS | {
     "ai", "production", "system", "systems", "reduce", "improve", "prevent",
     "avoid", "prod", "tool", "tools", "model", "models", "strategy",
@@ -256,7 +270,14 @@ class RedditEnhancedService:
         # Perform single-pass substitution using global pre-compiled pattern
         return _EXPANSION_PATTERN.sub(replace_callback, query)
     
-    async def _plan_search_strategy(self, query: str) -> Dict[str, Any]:
+    async def _plan_search_strategy(
+        self,
+        query: str,
+        *,
+        original_user_query: Optional[str] = None,
+        user_intent: Optional[str] = None,
+        must_keep_terms: Optional[List[str]] = None,
+    ) -> Dict[str, Any]:
         """Use Gemini 3 Flash to create a search plan (Subreddits + Intent-based Queries).
         
         Returns:
@@ -269,7 +290,10 @@ class RedditEnhancedService:
         """
         try:
             prompt = f"""You are an expert Reddit OSINT Navigator.
-User Query: "{query}"
+Reddit Search Query: "{query}"
+Original User Question: "{original_user_query or query}"
+Preferred Intent: "{user_intent or 'infer from the question'}"
+Must-Keep Meaning Anchors: {must_keep_terms or ["none"]}
 
 Task: Create a precise Search Plan.
 1. Identify 3-7 relevant technical subreddits.
@@ -278,9 +302,15 @@ Task: Create a precise Search Plan.
 4. Assess Temporal Context:
    - Is this a fast-moving topic (AI, News, Bugs)? -> "month" or "year"
    - Is this evergreen (Concepts, Algorithms)? -> "all"
-5. Classify Intent: how_to, comparison, troubleshooting, news, discussion.
+5. Classify Intent: how_to, comparison, troubleshooting, news, discussion,
+   recommendation, use_cases, or practitioner_examples. Preserve Preferred
+   Intent when it fits the Original User Question.
 6. Search queries must be plain Reddit keywords only.
 7. DO NOT use web-search syntax like site:, subreddit:, r/, quotes, or boolean operators.
+8. Every search query must preserve the must-keep meaning anchors where they
+   materially distinguish relevant posts. For practitioner_examples/use_cases,
+   search for concrete things people built, custom features, commands,
+   shortcuts, and automations rather than generic architecture or latency.
 
 Output JSON structure:
 {{
@@ -568,6 +598,17 @@ Output JSON structure:
                 answerability += 0.24
         if intent == "discussion" and post.num_comments >= 10:
             answerability += 0.05
+        if intent in PRACTITIONER_DISCOVERY_INTENTS:
+            if any(
+                marker in combined_lower
+                for marker in [
+                    "i built", "i made", "my setup", "my workflow",
+                    "use case", "custom command", "shortcut", "automation",
+                ]
+            ):
+                answerability += 0.12
+            if post.top_comments:
+                answerability += 0.05
         if post.top_comments:
             answerability += 0.07
 
@@ -593,6 +634,10 @@ Output JSON structure:
                 penalty += 0.08
         if any(marker in title_lower for marker in PROMOTIONAL_MARKERS):
             penalty += 0.35
+        if intent in PRACTITIONER_DISCOVERY_INTENTS and any(
+            pattern.search(title_lower) for pattern in JOB_SOLICITATION_PATTERNS
+        ):
+            penalty += 0.75
         if "showcase" in title_lower and intent in {"how_to", "troubleshooting"}:
             penalty += 0.10
         if post.score <= 1 and post.num_comments <= 2 and len(body_lower) < 120:
@@ -789,6 +834,11 @@ Output JSON structure:
         def is_allowed(post: RedditPost, threshold: float) -> bool:
             if post.final_score < threshold:
                 return False
+            if intent in PRACTITIONER_DISCOVERY_INTENTS and any(
+                pattern.search(post.title or "")
+                for pattern in JOB_SOLICITATION_PATTERNS
+            ):
+                return False
             if require_anchor_match and post.anchor_matches == 0:
                 return False
             if intent == "comparison":
@@ -820,6 +870,9 @@ Output JSON structure:
         include_comments: bool = True,
         subreddits: Optional[List[str]] = None,
         recent_only: bool = False,
+        original_user_query: Optional[str] = None,
+        user_intent: Optional[str] = None,
+        must_keep_terms: Optional[List[str]] = None,
     ) -> EnhancedSearchResult:
         """Precision-first Reddit retrieval with softer subreddit hints and richer rerank context."""
         start_time = datetime.utcnow()
@@ -843,8 +896,16 @@ Output JSON structure:
         }
 
         if subreddits is None:
-            search_plan = await self._plan_search_strategy(original_query)
+            search_plan = await self._plan_search_strategy(
+                original_query,
+                original_user_query=original_user_query,
+                user_intent=user_intent,
+                must_keep_terms=must_keep_terms,
+            )
             subreddits = search_plan.get("subreddits", [])
+
+        if user_intent:
+            search_plan["intent"] = user_intent
 
         # Recency mandate: widen retrieval recall (never narrower than a year)
         # and enforce the exact window via the created_utc post-filter below.
@@ -854,6 +915,10 @@ Output JSON structure:
 
         target_keywords = search_plan.get("keywords", [])
         anchor_terms = self._extract_anchor_terms(original_query)
+        for term in must_keep_terms or []:
+            cleaned = self._sanitize_scout_query(term).lower()
+            if cleaned and cleaned not in anchor_terms:
+                anchor_terms.append(cleaned)
         query_terms = self._tokenize_query_terms(
             original_query,
             extra_terms=target_keywords,
@@ -870,6 +935,9 @@ Output JSON structure:
             "how_to",
             "troubleshooting",
             "comparison",
+            "recommendation",
+            "use_cases",
+            "practitioner_examples",
         }:
             soft_target_subreddits = self._select_soft_target_subreddits(
                 subreddits or [],
@@ -1086,6 +1154,8 @@ Output JSON structure:
                     candidates_for_rerank,
                     intent=search_plan.get("intent", "discussion"),
                     anchor_terms=anchor_terms,
+                    original_user_query=original_user_query,
+                    must_keep_terms=must_keep_terms,
                 )
             except Exception as e:
                 logger.error(f"AI reranking failed in V2: {e}")
@@ -1175,7 +1245,10 @@ Output JSON structure:
         target_posts: int = 25,
         include_comments: bool = True,
         subreddits: Optional[List[str]] = None,
-        recent_only: bool = False
+        recent_only: bool = False,
+        original_user_query: Optional[str] = None,
+        user_intent: Optional[str] = None,
+        must_keep_terms: Optional[List[str]] = None,
     ) -> EnhancedSearchResult:
         """Execute enhanced Reddit search with multiple strategies.
 
@@ -1195,6 +1268,9 @@ Output JSON structure:
             include_comments=include_comments,
             subreddits=subreddits,
             recent_only=recent_only,
+            original_user_query=original_user_query,
+            user_intent=user_intent,
+            must_keep_terms=must_keep_terms,
         )
 
     def _deduplicate_posts(self, posts: List[RedditPost]) -> List[RedditPost]:
@@ -1254,6 +1330,8 @@ Output JSON structure:
         *,
         intent: str = "discussion",
         anchor_terms: Optional[List[str]] = None,
+        original_user_query: Optional[str] = None,
+        must_keep_terms: Optional[List[str]] = None,
     ) -> List[RedditPost]:
         """Rerank posts using Gemini 3 Flash based on semantic relevance."""
         if not posts:
@@ -1282,8 +1360,10 @@ Output JSON structure:
         
         prompt = f"""You are a Reddit Retrieval Ranking Engine.
 Query: "{query}"
+Original User Question: "{original_user_query or query}"
 Intent: "{intent}"
 Anchor terms that should appear directly in the post when relevant: {anchor_terms or ["none"]}
+Must-Keep Meaning Anchors: {must_keep_terms or ["none"]}
 
 Task: Rate each Reddit post for ANSWERABILITY, not just topical similarity.
 
@@ -1291,6 +1371,14 @@ Prefer posts that:
 - directly solve the user's problem
 - contain concrete setup steps, configs, trade-offs, benchmarks, or troubleshooting fixes
 - include useful practitioner detail in the post body or top comments
+- preserve the Original User Question's platform, audience, and requested
+  evidence type; do not rank a merely adjacent use of the same technology high
+
+For use_cases and practitioner_examples queries:
+- prefer concrete features, commands, shortcuts, automations, and things users
+  actually built or repeatedly use
+- penalize generic architecture, futurism, unrelated business automation, job
+  postings, and a showcase whose body/comments contain no reusable detail
 
 For comparison queries:
 - strongly prefer posts that compare the requested tools directly in the title or body
@@ -1719,7 +1807,10 @@ async def search_reddit_enhanced(
     target_posts: int = 25,
     include_comments: bool = True,
     subreddits: Optional[List[str]] = None,
-    recent_only: bool = False
+    recent_only: bool = False,
+    original_user_query: Optional[str] = None,
+    user_intent: Optional[str] = None,
+    must_keep_terms: Optional[List[str]] = None,
 ) -> EnhancedSearchResult:
     """Convenience function for enhanced Reddit search.
 
@@ -1739,5 +1830,8 @@ async def search_reddit_enhanced(
         target_posts=target_posts,
         include_comments=include_comments,
         subreddits=subreddits,
-        recent_only=recent_only
+        recent_only=recent_only,
+        original_user_query=original_user_query,
+        user_intent=user_intent,
+        must_keep_terms=must_keep_terms,
     )

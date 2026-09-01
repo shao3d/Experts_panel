@@ -235,8 +235,11 @@ nemotron-lightning таймаутится. Вывод: интерактивны�
 Важно:
 
 - named entities сохраняются
+- platform/device, пользовательская цель и тип искомого evidence не теряются
 - тех. термины не "переводятся красиво", а остаются в рабочем виде
 - формулировка делается под community-search, а не под SEO/web search
+- formulation возвращает `search_query`, `user_intent` и `must_keep` anchors;
+  оригинальный вопрос и anchors передаются дальше в Scout и rerank
 
 Пример:
 
@@ -252,6 +255,11 @@ Scout возвращает:
 - `keywords`
 - `intent`
 - `time_filter`
+
+Intent taxonomy включает `recommendation`, `use_cases` и
+`practitioner_examples`. Для них Scout ищет конкретные функции, команды,
+shortcuts и automations, которые люди реально собрали или используют, а не
+общую архитектуру по соседней теме.
 
 V2 дополнительно санитизирует scout queries, чтобы LLM не тащил веб-поисковые артефакты вроде `site:reddit.com`, `r/...`, кавычек и boolean-шума.
 
@@ -305,6 +313,12 @@ Gemini rerank получает:
 - engagement (`score`, `num_comments`) — явный сигнал, чтобы судья сам
   отличал SEO-приманку от свежего качественного поста
 - anchor / comparison metadata
+- оригинальный пользовательский вопрос, formulation intent и must-keep anchors
+
+Для `use_cases` / `practitioner_examples` однозначные job solicitations
+(`For Hire`, `looking for work`) отсекаются детерминированно. First-person build reports
+вроде `I built ...` не считаются спамом автоматически: это часто лучший
+practitioner evidence.
 
 Модель судьи зависит от intent: сравнительные запросы (магнит «vs»-приманок)
 разбирает `MODEL_SYNTHESIS`, остальные — дешёвый `MODEL_ANALYSIS`.

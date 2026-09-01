@@ -74,6 +74,66 @@ router = APIRouter(prefix="/api/v1", tags=["query"])
 
 _REQUEST_ID_RE = re.compile(r"^[a-f0-9-]{36}$")
 
+_REDDIT_QUERY_INTENTS = {
+    "how_to",
+    "comparison",
+    "troubleshooting",
+    "news",
+    "discussion",
+    "recommendation",
+    "use_cases",
+    "practitioner_examples",
+}
+
+
+def _parse_reddit_query_plan(content: str, fallback_query: str) -> dict:
+    """Parse a bounded search plan without losing the user's original intent."""
+    try:
+        start_idx = content.find("{")
+        end_idx = content.rfind("}")
+        if start_idx == -1 or end_idx <= start_idx:
+            raise ValueError("no JSON object")
+        payload = json.loads(content[start_idx : end_idx + 1])
+        if not isinstance(payload, dict):
+            raise TypeError("JSON payload must be an object")
+    except (ValueError, TypeError, json.JSONDecodeError):
+        return {
+            "search_query": fallback_query,
+            "user_intent": None,
+            "must_keep": [],
+        }
+
+    search_query = re.sub(
+        r"\s+",
+        " ",
+        str(payload.get("search_query") or fallback_query).strip(" \"'"),
+    )
+    if not search_query or len(search_query) > 240:
+        search_query = fallback_query
+
+    user_intent = str(payload.get("user_intent") or "").strip().lower() or None
+    if user_intent not in _REDDIT_QUERY_INTENTS:
+        user_intent = None
+
+    must_keep = []
+    raw_must_keep = payload.get("must_keep") or []
+    if not isinstance(raw_must_keep, list):
+        raw_must_keep = []
+    for value in raw_must_keep:
+        if not isinstance(value, str):
+            continue
+        cleaned = re.sub(r"\s+", " ", value.strip().lower())
+        if 2 <= len(cleaned) <= 48 and cleaned not in must_keep:
+            must_keep.append(cleaned)
+        if len(must_keep) == 5:
+            break
+
+    return {
+        "search_query": search_query,
+        "user_intent": user_intent,
+        "must_keep": must_keep,
+    }
+
 
 def _query_results_dir() -> Path:
     """Return the durable query-result directory for large UI responses."""
@@ -911,39 +971,38 @@ async def process_reddit_pipeline(
 
     query_language = detect_query_language(query)
 
-    search_query = query
+    query_plan = {
+        "search_query": query,
+        "user_intent": None,
+        "must_keep": [],
+    }
     if query_language == "Russian":
         try:
             from ..services.vertex_llm_client import get_vertex_llm_client
 
             client = get_vertex_llm_client()
 
-            prompt = f"""Convert this Russian question into an optimal English search query for Reddit.
+            prompt = f"""Convert this Russian question into a compact, lossless Reddit search plan.
 
 Domain: This query comes from an AI Experts Panel — a system focused on everything AI-related: LLM tools and workflows (Claude Code, Codex, Cursor, Copilot), AI/ML infrastructure (RAG, embeddings, vector search, fine-tuning), AI agents and orchestration (MCP, skills, hooks, multi-agent systems), and AI-assisted software development. When the query is ambiguous, always bias toward the AI ecosystem and its specific tools — not generic software engineering or OS-level concepts.
 
 Rules:
 1. PRESERVE named entities exactly: product names (Claude Code, Cursor, Copilot), feature names (Skills, MCP, hooks, CLAUDE.md), model names (GPT, Gemini, Llama), tech terms (RAG, LoRA, GGUF, FTS5).
-2. Translate ONLY the descriptive/connective parts to English.
-3. Output a concise Reddit-optimized search query (4-8 words). Reddit search works best with specific terms, not long phrases.
+2. Preserve the user's concrete constraints and goal: device/platform, personal vs business use, desired evidence type, and whether they want fixes, comparisons, recommendations, or examples people actually built.
+3. Produce a concise Reddit-optimized search query, normally 5-12 words. Do not shorten it by deleting a constraint that changes which posts answer the question.
 4. Use terms that Reddit communities actually use (e.g. "setup" not "configuration", "workflow" not "methodology").
 5. If the query mentions a specific tool or product, ALWAYS include that name in the search query.
+6. Choose user_intent from: how_to, comparison, troubleshooting, news, discussion, recommendation, use_cases, practitioner_examples.
+7. must_keep contains 1-5 short English anchors whose loss would change the answer. Do not add generic words such as AI, best, workflow, setup, or ideas unless they are genuinely indispensable.
 
-Examples:
-- "Как настроить Skills внутри Claude Code?" -> "Claude Code skills setup workflow"
-- "Лучшая модель для RAG в 2026?" -> "best model for RAG 2026"
-- "Как готовить доки для поиска?" -> "RAG documentation chunking strategy"
-- "Промпты для кодинга с AI" -> "best system prompts AI coding"
-- "MCP серверы для Claude Code" -> "Claude Code MCP server setup"
-- "Сравнение Cursor и Claude Code" -> "Cursor vs Claude Code comparison"
-- "Как работают хуки в AI агентах?" -> "AI coding agent hooks workflow"
-- "Файн-тюнинг Llama для чатбота" -> "Llama fine-tuning chatbot LoRA"
-- "Что такое Agentic RAG?" -> "agentic RAG architecture pattern"
-- "Локальные модели для кодинга" -> "local LLM coding best model"
+Example:
+Question: "Делаю личного голосового ассистента на телефон. Какие интересные функции пользователи реально добавляют?"
+Output: {{"search_query":"personal mobile voice assistant custom features people built","user_intent":"practitioner_examples","must_keep":["personal","mobile","features people built"]}}
 
 Question: {query}
 
-Search query:"""
+Output one JSON object only:
+{{"search_query":"...","user_intent":"...","must_keep":["..."]}}"""
 
             response = await client.chat_completions_create(
                 model=config.MODEL_SCOUT,
@@ -951,18 +1010,28 @@ Search query:"""
                 temperature=0.1,
             )
 
-            search_query = response.choices[0].message.content.strip()
-            search_query = search_query.strip("\"'")
-            # Remove common prefixes if Gemini adds them
-            if search_query.lower().startswith("search query:"):
-                search_query = search_query[13:].strip()
+            query_plan = _parse_reddit_query_plan(
+                response.choices[0].message.content.strip(),
+                fallback_query=query,
+            )
 
             logger.info(
-                f"Gemini formulated Reddit query: '{query[:50]}...' -> '{search_query}'"
+                "Gemini formulated Reddit query: '%s...' -> '%s' "
+                "intent=%s anchors=%s",
+                query[:50],
+                query_plan["search_query"],
+                query_plan["user_intent"],
+                query_plan["must_keep"],
             )
         except Exception as e:
             logger.warning(f"Failed to formulate Reddit query: {e}")
-            search_query = query
+            query_plan = {
+                "search_query": query,
+                "user_intent": None,
+                "must_keep": [],
+            }
+
+    search_query = query_plan["search_query"]
 
     try:
         # Report start
@@ -994,6 +1063,9 @@ Search query:"""
             target_posts=25,
             include_comments=True,  # Will be populated when proxy supports it
             recent_only=recent_only,
+            original_user_query=query,
+            user_intent=query_plan["user_intent"],
+            must_keep_terms=query_plan["must_keep"],
         )
 
         # Check if we found anything relevant
