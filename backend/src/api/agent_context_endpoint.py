@@ -578,7 +578,7 @@ async def reddit_search(request: AgentRedditSearchRequest) -> AgentRedditSearchR
 
     - 200 + status "completed" — synthesis + real sources.
     - 200 + status "abstained" — honest empty result (confidence filter kept
-      0 posts); answer=None, sources=[].
+      0 posts or synthesis rejected the shortlist); answer=None, sources=[].
     - 400/401/403/413/422/500/503/504 — technical failure with a short safe
       `detail`; never a 200 with a failed status.
     """
@@ -649,7 +649,7 @@ async def reddit_search(request: AgentRedditSearchRequest) -> AgentRedditSearchR
             detail="Reddit Search API request failed",
         )
 
-    # Honest abstain: the V2 confidence filter kept 0 posts. Not an error.
+    # Honest retrieval/synthesis abstain. Not an error.
     return AgentRedditSearchResponse(
         status="abstained",
         query=request.query,

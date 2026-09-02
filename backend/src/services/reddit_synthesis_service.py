@@ -291,13 +291,21 @@ class RedditSynthesisService:
             return self._create_fallback_response(reddit_result, query_language)
 
     @staticmethod
+    def is_explicit_abstention(text: str) -> bool:
+        """Recognize only the canonical, standalone synthesis abstention."""
+        normalized = (text or "").strip().lstrip("#>*_- \t\r\n").lower()
+        normalized = normalized.rstrip(".!?。 ")
+        return normalized in {
+            "релевантных обсуждений на reddit по этой конкретной теме не найдено",
+            "no relevant reddit discussions found for this specific topic",
+        }
+
+    @staticmethod
     def _reject_opencode_output(text: str, query_language: str) -> Optional[str]:
         """Return a rejection reason, or None when output is acceptable."""
         if not text or not text.strip():
             return "empty response"
-        lowered = text.lower()
-        refusal_markers = ("не найдено", "no relevant")
-        if any(marker in lowered for marker in refusal_markers):
+        if RedditSynthesisService.is_explicit_abstention(text):
             return None  # honest abstain is a valid short answer
         stripped = text.strip()
         if len(stripped) < 200:
@@ -655,7 +663,7 @@ class RedditSynthesisService:
         <rule type="citation">LINK PRIORITY: Ссылки на GitHub/HuggingFace = [PRIMARY SOURCE].</rule>
         <rule type="evidence_language" priority="highest">EVIDENCE LANGUAGE: Слова «консенсус», «стандарт» и «смена тренда» разрешены только когда утверждение независимо подтверждают минимум два разных релевантных источника [S#]. В том же предложении приведите обе ссылки. Иначе пишите «в одном обсуждении», «несколько пользователей» или «данных недостаточно».</rule>
         <rule type="trend">PIVOT ALERT: Блок `🚨 **СМЕНА ТРЕНДА**` разрешён только при выполнении правила EVIDENCE LANGUAGE и явном сравнении прежней и новой практики в источниках. Не добавляйте его для привлечения внимания.</rule>
-        <rule type="relevance_gate" priority="highest">РЕЛЕВАНТНОСТЬ: Перед синтезом проверьте — найденные посты ДЕЙСТВИТЕЛЬНО отвечают на вопрос пользователя? Если посты не по теме (например, вопрос про Claude Code Skills, а посты про Unix CLI), честно скажите: "Релевантных обсуждений на Reddit по этой конкретной теме не найдено." НЕ синтезируйте нерелевантный контент как будто он отвечает на вопрос.</rule>
+        <rule type="relevance_gate" priority="highest">РЕЛЕВАНТНОСТЬ: Перед синтезом проверьте — найденные посты ДЕЙСТВИТЕЛЬНО отвечают на вопрос пользователя? Если посты не по теме (например, вопрос про Claude Code Skills, а посты про Unix CLI), верните ровно одно предложение и больше ничего: "Релевантных обсуждений на Reddit по этой конкретной теме не найдено." НЕ синтезируйте нерелевантный контент как будто он отвечает на вопрос.</rule>
     </analysis_rules>
     <output_format>
         <section order="1" max_words="120">Executive Summary: прямой ответ с уровнем уверенности, без объявления консенсуса по умолчанию.</section>
@@ -699,7 +707,7 @@ class RedditSynthesisService:
         <rule type="citation">LINK PRIORITY: Links to GitHub/HuggingFace = [PRIMARY SOURCE].</rule>
         <rule type="evidence_language" priority="highest">EVIDENCE LANGUAGE: The terms "consensus", "standard", and "community pivot" may be used only when at least two distinct relevant sources [S#] independently support the claim. Cite both sources in the same sentence. Otherwise say "one discussion", "several users", or "the evidence is insufficient".</rule>
         <rule type="trend">PIVOT ALERT: A `🚨 **COMMUNITY PIVOT**` block is allowed only when the EVIDENCE LANGUAGE rule is satisfied and the sources explicitly contrast an earlier and a newer practice. Never add it merely for emphasis.</rule>
-        <rule type="relevance_gate" priority="highest">RELEVANCE CHECK: Before synthesizing, verify that the posts actually answer the user's question. If posts are off-topic (e.g., question is about Claude Code Skills but posts discuss Unix CLI), honestly state: "No relevant Reddit discussions found for this specific topic." Do NOT synthesize irrelevant content as if it answers the question.</rule>
+        <rule type="relevance_gate" priority="highest">RELEVANCE CHECK: Before synthesizing, verify that the posts actually answer the user's question. If posts are off-topic (e.g., question is about Claude Code Skills but posts discuss Unix CLI), return exactly one sentence and nothing else: "No relevant Reddit discussions found for this specific topic." Do NOT synthesize irrelevant content as if it answers the question.</rule>
     </analysis_rules>
     <output_format>
         <section order="1" max_words="120">Executive Summary: direct answer with confidence level; do not declare consensus by default.</section>

@@ -118,7 +118,7 @@ DIRECT_COMPARISON_MARKERS = [
 ]
 
 PROMOTIONAL_MARKERS = [
-    "for hire", "top companies", "best companies", "agency", "services",
+    "for hire", "top companies", "best companies", "agency",
     "consulting", "boilerplate", "template", "newsletter", "sponsored",
 ]
 
@@ -1130,6 +1130,27 @@ Output JSON structure:
                 all_posts[result.id] = result
 
             unique_posts = self._deduplicate_posts(list(all_posts.values()))
+
+            if recent_only:
+                # /details supplies the exact Reddit creation timestamp even
+                # for snippet-only discovery candidates. Enforce the requested
+                # hard window after enrichment; unknown dates do not qualify.
+                before_post_enrichment_filter = len(unique_posts)
+                unique_posts = [
+                    post
+                    for post in unique_posts
+                    if (post.created_utc or 0) >= cutoff_ts
+                ]
+                kept_ids = {post.id for post in unique_posts}
+                for stale_id in list(all_posts.keys()):
+                    if stale_id not in kept_ids:
+                        del all_posts[stale_id]
+                debug_trace["recent_only_post_enrichment_filter"] = {
+                    "window_days": REDDIT_RECENT_WINDOW_DAYS,
+                    "before": before_post_enrichment_filter,
+                    "after": len(unique_posts),
+                }
+
             for post in unique_posts:
                 post.heuristic_score = self._score_post_v2(
                     post,
@@ -1746,7 +1767,7 @@ Output JSON format ONLY:
             payload = {
                 "postId": post.id,
                 # Reddit resolves a post by id alone; subreddit not needed here
-                "comment_limit": 100,  # more comments for "30% more meat"
+                "comment_limit": 100,
                 "comment_depth": 5     # deeper into threads
             }
             
@@ -1761,6 +1782,12 @@ Output JSON format ONLY:
                 full_text = data.get("selftext") or data.get("body") or ""
                 post.full_content = full_text
                 post.top_comments = data.get("top_comments") or []
+                post.created_utc = int(
+                    data.get("created_utc")
+                    or data.get("createdUtc")
+                    or post.created_utc
+                    or 0
+                )
                 
                 # Update basic fields if better data available
                 # If original selftext was truncated or missing, update it

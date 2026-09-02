@@ -85,6 +85,42 @@ _REDDIT_QUERY_INTENTS = {
     "practitioner_examples",
 }
 
+_REDDIT_SOURCE_CITATION_RE = re.compile(r"\[S(\d+)\]", re.IGNORECASE)
+
+
+def _is_explicit_reddit_synthesis_abstention(text: str) -> bool:
+    """Recognize only the canonical, standalone synthesis abstention."""
+    return RedditSynthesisService.is_explicit_abstention(text)
+
+
+def _sanitize_reddit_source_citations(
+    text: str,
+    *,
+    max_source_index: int,
+    query_language: str,
+) -> tuple[str, list[int]]:
+    """Remove impossible [S#] markers and disclose that validation failed."""
+    invalid_indices = sorted(
+        {
+            int(match.group(1))
+            for match in _REDDIT_SOURCE_CITATION_RE.finditer(text or "")
+            if not 1 <= int(match.group(1)) <= max_source_index
+        }
+    )
+    if not invalid_indices:
+        return text, []
+
+    def replace_invalid(match: re.Match) -> str:
+        index = int(match.group(1))
+        return match.group(0) if 1 <= index <= max_source_index else ""
+
+    cleaned = _REDDIT_SOURCE_CITATION_RE.sub(replace_invalid, text).rstrip()
+    notice = (
+        "> Некоторые ссылки модели не прошли проверку и были удалены."
+        if query_language == "Russian"
+        else "> Some model-generated source references failed validation and were removed."
+    )
+    return f"{cleaned}\n\n{notice}", invalid_indices
 
 def _parse_reddit_query_plan(content: str, fallback_query: str) -> dict:
     """Parse a bounded search plan without losing the user's original intent."""
@@ -890,8 +926,8 @@ class RedditSearchV2Outcome:
     wrapper, so neither duplicates orchestration logic.
 
     - status "completed": synthesis + real sources are available.
-    - status "abstained": the V2 confidence filter kept 0 posts; this is an
-      honest empty result, not an error.
+    - status "abstained": the confidence filter kept 0 posts or synthesis
+      explicitly rejected the shortlist as off-topic; this is not an error.
     - status "failed": a technical error occurred (proxy down, timeout, ...).
     """
 
@@ -921,8 +957,8 @@ async def run_reddit_search_v2(
     - the agent-facing ``POST /api/v1/agent/reddit-search`` calls it directly.
 
     It distinguishes the three states the Panel previously conflated into
-    ``None``: an honest abstain (0 posts after confidence filtering), a
-    completed run, and a technical failure.
+    ``None``: an honest retrieval/synthesis abstain, a completed run, and a
+    technical failure.
     """
     start_time = time.time()
     try:
@@ -1162,6 +1198,23 @@ Output one JSON object only:
         # allowing _format_comments_recursive to do its job.
         # Passing 'search_result' (RedditSearchResult with Pydantic sources) would flatten comments into string.
         synthesis = await synthesis_service.synthesize(query, reddit_result)
+
+        if _is_explicit_reddit_synthesis_abstention(synthesis):
+            logger.info("Reddit synthesis explicitly abstained after relevance check")
+            return None
+
+        # Synthesis currently receives at most ten shortlist entries. Never
+        # expose an [S#] marker that points outside that actual context.
+        synthesis, invalid_citations = _sanitize_reddit_source_citations(
+            synthesis,
+            max_source_index=min(len(reddit_result.posts), 10),
+            query_language=query_language,
+        )
+        if invalid_citations:
+            logger.warning(
+                "Removed out-of-range Reddit synthesis citations: %s",
+                invalid_citations,
+            )
 
         # We still need search_result for the legacy 'found_count' logic below if needed,
         # but for synthesis we must use the rich object.

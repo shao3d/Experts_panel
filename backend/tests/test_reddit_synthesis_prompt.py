@@ -28,6 +28,7 @@ def test_russian_prompt_is_bounded_and_decision_first():
     assert "минимум две содержательные строки" in prompt
     assert "минимум два разных релевантных источника" in prompt
     assert "Не добавляйте его для привлечения внимания" in prompt
+    assert "верните ровно одно предложение и больше ничего" in prompt
 
 
 def test_english_prompt_is_bounded_and_decision_first():
@@ -41,3 +42,15 @@ def test_english_prompt_is_bounded_and_decision_first():
     assert "at least two meaningful comparison rows" in prompt
     assert "at least two distinct relevant sources" in prompt
     assert "Never add it merely for emphasis" in prompt
+    assert "return exactly one sentence and nothing else" in prompt
+
+
+def test_opencode_accepts_only_standalone_canonical_abstention():
+    assert RedditSynthesisService._reject_opencode_output(
+        "No relevant Reddit discussions found for this specific topic.",
+        "English",
+    ) is None
+    assert RedditSynthesisService._reject_opencode_output(
+        "No relevant benchmarks were found, but this answer is truncated.",
+        "English",
+    ).startswith("suspiciously short")
