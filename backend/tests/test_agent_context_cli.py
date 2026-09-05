@@ -1209,6 +1209,11 @@ def test_panex_doctor_reports_setup_without_printing_token(
 
 
 def test_panex_install_script_writes_user_level_shim_without_token(tmp_path):
+    if not (BACKEND_DIR / ".venv" / "bin" / "python").exists():
+        pytest.skip(
+            "install_panex_runner.sh requires backend/.venv, which CI does not create"
+        )
+
     install_dir = tmp_path / "bin"
     env = os.environ.copy()
     env["PANEX_INSTALL_DIR"] = str(install_dir)
