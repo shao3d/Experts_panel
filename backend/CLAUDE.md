@@ -101,6 +101,9 @@ Defined in `.env`, loaded in `config.py`.
 - `META_SYNTHESIS_TIMEOUT_SECONDS`: 120
 - `QUERY_RESULTS_DIR`: optional durable UI query result directory
 - `QUERY_RESULTS_TTL_DAYS`: 7
+- `QUERY_RATE_LIMIT_ENABLED`: true — per-IP sliding-window guard on the public `POST /api/v1/query`
+- `QUERY_RATE_LIMIT_PER_HOUR`: 12 — queries per client IP per hour (0 disables)
+- `DAILY_QUERY_BUDGET`: 200 — global queries per UTC day on `POST /api/v1/query` (0 disables); both guards are in-process, reset on restart, and 429 responses carry `Retry-After` (`src/services/query_rate_limit_service.py`)
 - `AGENT_CONTEXT_RESULTS_DIR`: optional backend-saved Panex artifact directory
 - `AGENT_CONTEXT_RESULTS_TTL_DAYS`: 7
 - `REDDIT_SEARCH_CLIENT_TOKENS`: optional comma-separated Reddit-only client tokens; authorize only `POST /api/v1/agent/reddit-search`

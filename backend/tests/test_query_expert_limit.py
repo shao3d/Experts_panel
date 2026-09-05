@@ -13,6 +13,15 @@ from src.api.models import QueryRequest
 from src.api.simplified_query_endpoint import process_simplified_query
 
 
+class _FakeHttpRequest:
+    """Minimal request stub; validation rejects before abuse guards touch it."""
+
+    class client:
+        host = "testclient"
+
+    headers = {}
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "expert_filter, expected_detail",
@@ -27,7 +36,9 @@ async def test_query_rejects_unbounded_or_invalid_expert_selection(expert_filter
     request = QueryRequest(query="How should a team adopt AI?", expert_filter=expert_filter)
 
     with pytest.raises(HTTPException) as exc_info:
-        await process_simplified_query(request, db=object())
+        await process_simplified_query(
+            request, http_request=_FakeHttpRequest(), db=object()
+        )
 
     assert exc_info.value.status_code == 422
     assert expected_detail in str(exc_info.value.detail)

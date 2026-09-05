@@ -641,7 +641,7 @@ def test_panex_ask_save_uses_backend_artifact_delivery_when_available(
     assert exit_code == 0
     assert calls["post"][0]["url"] == f"{panex.PRODUCTION_AGENT_CONTEXT_API_URL}/artifact"
     assert calls["get"][0]["url"] == (
-        f"https://experts-panel.fly.dev/api/v1/agent/context/"
+        f"{panex.PRODUCTION_AGENT_CONTEXT_API_URL}/"
         f"{payload['request_id']}/result"
     )
     receipt = json.loads(captured.out)

@@ -19,7 +19,7 @@ import os
 from pathlib import Path
 import re
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import func
@@ -61,6 +61,11 @@ from ..services.reddit_service import RedditSearchResult, RedditSource as RS
 from ..services.hybrid_retrieval_service import HybridRetrievalService
 from ..services.ai_scout_service import AIScoutService
 from ..services.meta_synthesis_service import MetaSynthesisService
+from ..services.query_rate_limit_service import (
+    check_and_consume_daily_budget,
+    check_query_rate_limit,
+    resolve_client_ip,
+)
 from ..utils.error_handler import error_handler
 from ..utils.date_utils import get_cutoff_date
 from ..utils.language_utils import detect_query_language
@@ -2029,7 +2034,7 @@ async def event_generator_parallel(
 
 @router.post("/query")
 async def process_simplified_query(
-    request: QueryRequest, db: Session = Depends(get_db)
+    request: QueryRequest, http_request: Request, db: Session = Depends(get_db)
 ):
     """Process a query through parallel multi-expert pipeline with SSE streaming.
 
@@ -2038,6 +2043,7 @@ async def process_simplified_query(
 
     Args:
         request: Query request with user's question
+        http_request: Raw request, used to resolve the client IP for abuse guards
         db: Database session
 
     Returns:
@@ -2059,6 +2065,12 @@ async def process_simplified_query(
             status_code=422,
             detail="Each selected expert must be unique.",
         )
+
+    # Abuse guards for the unauthenticated public endpoint. Rate limit first so
+    # an abusive client cannot exhaust the shared daily budget.
+    client_ip = resolve_client_ip(http_request)
+    check_query_rate_limit(client_ip)
+    check_and_consume_daily_budget()
 
     request_id = str(uuid.uuid4())
     logger.info(f"Processing multi-expert query {request_id}: {request.query[:50]}...")

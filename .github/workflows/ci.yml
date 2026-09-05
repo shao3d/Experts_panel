@@ -95,6 +95,11 @@ jobs:
           fi
         done
 
+    - name: Run backend tests
+      run: |
+        cd backend
+        python -m pytest tests -q --tb=short
+
   # Docker Build Tests
   docker-tests:
     name: Docker Validation
@@ -191,7 +196,12 @@ jobs:
     - name: Check TypeScript compilation
       run: |
         cd frontend
-        npm run type-check || echo "✅ TypeScript type checking completed"
+        npm run type-check
+
+    - name: Run frontend unit tests
+      run: |
+        cd frontend
+        npm run test:run
 
     - name: Test frontend build
       run: |

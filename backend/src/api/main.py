@@ -192,6 +192,8 @@ async def add_request_id(request: Request, call_next):
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     """Handle HTTP exceptions."""
     request_id = getattr(request.state, "request_id", "unknown")
+    # Preserve exception headers (e.g. Retry-After on 429) alongside our own.
+    headers = {"X-Request-ID": request_id, **(exc.headers or {})}
     return JSONResponse(
         status_code=exc.status_code,
         content={
@@ -199,7 +201,7 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
             "message": exc.detail,
             "request_id": request_id
         },
-        headers={"X-Request-ID": request_id}
+        headers=headers
     )
 
 

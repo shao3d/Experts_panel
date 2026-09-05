@@ -106,6 +106,9 @@ class FakeHealthProbeService:
 def test_health_returns_cached_diagnostics(monkeypatch):
     fake_service = FakeHealthProbeService()
     monkeypatch.setattr(health_probe_module, "get_health_probe_service", lambda: fake_service)
+    # Startup warmup runs only when an OpenRouter key is configured; keep the
+    # test hermetic regardless of the local backend/.env contents.
+    monkeypatch.setattr(config, "OPENROUTER_API_KEY", "test-key-for-startup-warmup")
 
     with TestClient(app) as client:
         response = client.get("/health")
@@ -124,6 +127,8 @@ def test_health_returns_cached_diagnostics(monkeypatch):
 def test_health_live_requires_admin_secret(monkeypatch):
     fake_service = FakeHealthProbeService()
     monkeypatch.setattr(health_probe_module, "get_health_probe_service", lambda: fake_service)
+    # See test_health_returns_cached_diagnostics: startup warmup needs a key.
+    monkeypatch.setattr(config, "OPENROUTER_API_KEY", "test-key-for-startup-warmup")
     monkeypatch.setenv("ADMIN_SECRET", "top-secret")
 
     with TestClient(app) as client:

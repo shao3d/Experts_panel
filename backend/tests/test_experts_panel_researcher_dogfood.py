@@ -145,7 +145,7 @@ def test_agents_have_actionable_readiness_failure_guidance():
     assert "production token" in normalized
     assert "invalid agent context token" in normalized
     assert "nameresolutionerror" in normalized
-    assert "fly endpoint" in normalized
+    assert "unreachable production endpoint" in normalized
     assert "unreachable local backend" in normalized
     assert "agent context api endpoint is unreachable" in normalized
     assert "video_hub" in normalized
@@ -153,7 +153,7 @@ def test_agents_have_actionable_readiness_failure_guidance():
     assert "tell the parent what setup/action is needed" in normalized
 
 
-def test_real_subagent_calls_pin_fly_without_relying_on_local_default():
+def test_real_subagent_calls_pin_production_without_relying_on_local_default():
     cli_source = _read(CLI_PATH)
     panex_source = _read(PANEX_CLI_PATH)
     dogfood_text = "\n".join(
@@ -166,13 +166,13 @@ def test_real_subagent_calls_pin_fly_without_relying_on_local_default():
 
     assert 'DEFAULT_AGENT_CONTEXT_API_URL = "http://localhost:8000/api/v1/agent/context"' in cli_source
     assert "PRODUCTION_AGENT_CONTEXT_API_URL" in panex_source
-    assert "https://experts-panel.fly.dev/api/v1/agent/context" in panex_source
+    assert "https://expa.beyondhorizon.dev/api/v1/agent/context" in panex_source
     assert "http://localhost:8000/api/v1/agent/context" in dogfood_text
-    assert "https://experts-panel.fly.dev/api/v1/agent/context" in _agent_instructions()
+    assert "https://expa.beyondhorizon.dev/api/v1/agent/context" in _agent_instructions()
     assert "panex ask" in _agent_instructions()
     assert "panex expand" in _agent_instructions()
     assert "--response-mode source_bundle" in _agent_instructions()
-    assert "defaults to the fly.io urls" in _normalize(_agent_instructions())
+    assert "defaults to the production urls" in _normalize(_agent_instructions())
     assert "ignores ambient local" in _normalize(_agent_instructions())
     assert "do not use the lower-level" in _normalize(_agent_instructions())
     assert "localhost only when" in _normalize(_agent_instructions())

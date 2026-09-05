@@ -49,9 +49,16 @@ def test_parse_posts_skips_service_and_empty_messages():
         ],
     }
 
-    posts = module.parse_posts(data, max_posts=None)
+    posts, comments_by_post_id, parse_stats = module.parse_posts_and_comments(
+        data,
+        max_posts=None,
+        include_reply_messages_as_comments=False,
+        min_date=None,
+        max_date=None,
+    )
 
     assert len(posts) == 1
+    assert comments_by_post_id == {posts[0].post_id: []}
     assert posts[0].source_ref == "P0001"
     assert posts[0].telegram_message_id == 3
     assert posts[0].view_count == 12

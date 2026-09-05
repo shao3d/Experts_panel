@@ -178,13 +178,13 @@ def test_agents_wait_patiently_after_submitting_long_running_panex_request():
     assert "single in-flight request" in normalized
     assert "do not start a duplicate" in normalized
     assert "reset state" in normalized
-    assert "restart fly machines" in normalized
+    assert "restart production machines" in normalized
     assert "rerun update scripts" in normalized
     assert "read-only monitoring" in normalized
-    assert "fly status --app experts-panel" in combined
-    assert "timeout 10 fly logs --app experts-panel" in combined
-    assert "https://experts-panel.fly.dev/api/info" in combined
-    assert "https://experts-panel.fly.dev/api/v1/experts" in combined
+    assert "check the public info/health endpoints" in normalized
+    assert "container logs" in normalized
+    assert "https://expa.beyondhorizon.dev/api/info" in combined
+    assert "https://expa.beyondhorizon.dev/api/v1/experts" in combined
     assert "no more than once every 30-60 seconds" in normalized
     assert "still processing" in normalized
     assert "do not retry without explicit parent approval" in normalized
@@ -266,16 +266,15 @@ def test_agents_normalize_human_expert_names_but_ask_on_ambiguity():
     assert "ask one clarification before calling the cli" in normalized
 
 
-def test_agents_pin_production_fly_endpoint_for_real_calls():
+def test_agents_pin_production_endpoint_for_real_calls():
     combined = "\n".join([_read(CLAUDE_AGENT_PATH), _codex_agent_config()["developer_instructions"]])
     normalized = _normalize(combined)
 
-    assert "https://experts-panel.fly.dev/api/v1/agent/context" in combined
+    assert "https://expa.beyondhorizon.dev/api/v1/agent/context" in combined
     assert "panex ask" in combined
     assert "panex" in normalized
-    assert "defaults to the fly.io urls" in normalized
+    assert "defaults to the production urls" in normalized
     assert "ignores ambient local" in normalized
-    assert "fly.io" in normalized
     assert "lower-level" in normalized
     assert "src.cli.agent_context" in combined
     assert "defaults for real user calls" in normalized
@@ -289,7 +288,7 @@ def test_agents_use_source_expand_for_explicit_raw_source_requests():
     normalized = _normalize(combined)
 
     assert "panex expand" in combined
-    assert "https://experts-panel.fly.dev/api/v1/agent/context/expand" in combined
+    assert "https://expa.beyondhorizon.dev/api/v1/agent/context/expand" in combined
     assert "source_expand" in combined
     assert "source_index" in combined
     assert "source_keys_sent" in combined

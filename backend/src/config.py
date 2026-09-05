@@ -105,6 +105,16 @@ AGENT_CONTEXT_RESULTS_TTL_DAYS: float = float(
     os.getenv("AGENT_CONTEXT_RESULTS_TTL_DAYS", "7")
 )
 
+# --- Public query endpoint protection ---
+# The Panel UI endpoint is unauthenticated, so these in-process guards are the
+# only protection for the OpenRouter budget. Both reset on restart; production
+# runs a single uvicorn worker, so in-memory state is sufficient.
+QUERY_RATE_LIMIT_ENABLED: bool = os.getenv(
+    "QUERY_RATE_LIMIT_ENABLED", "true"
+).strip().lower() in {"1", "true", "yes", "on"}
+QUERY_RATE_LIMIT_PER_HOUR: int = int(os.getenv("QUERY_RATE_LIMIT_PER_HOUR", "12"))
+DAILY_QUERY_BUDGET: int = int(os.getenv("DAILY_QUERY_BUDGET", "200"))
+
 # --- Model Configuration ---
 # All query-time models are addressed by their OpenRouter slugs.
 
