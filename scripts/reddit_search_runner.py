@@ -126,7 +126,13 @@ def search(args: argparse.Namespace) -> dict[str, Any]:
 def print_human(payload: dict[str, Any]) -> int:
     status = payload.get("status")
     if status == "completed":
-        print(f"status: completed ({payload.get('found_count', 0)} posts kept)")
+        # found_count is the number of unique candidates that reached ranking;
+        # sources are the posts the confidence filter actually kept.
+        kept = len(payload.get("sources") or [])
+        found = payload.get("found_count")
+        if not isinstance(found, int) or found < kept:
+            found = kept
+        print(f"status: completed (kept {kept} of {found} ranked candidates)")
         print(payload.get("answer") or "")
         print("\nsources:")
         for source in payload.get("sources") or []:

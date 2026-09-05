@@ -10,7 +10,8 @@ Minimal, per docs/architecture/reddit-service.md (section "Agent-facing API"):
 Contract:
 - works from any project directory (no repo coupling beyond stdlib+requests);
 - talks ONLY to the official API (POST /api/v1/agent/reddit-search);
-- takes URL/token from env (REDDIT_SEARCH_API_URL / AGENT_CONTEXT_API_TOKEN);
+- takes URL/token from env (REDDIT_SEARCH_API_URL / REDDIT_SEARCH_API_TOKEN;
+  legacy owner fallback — AGENT_CONTEXT_API_TOKEN);
 - never prints the token;
 - distinguishes completed / abstained / failed;
 - nonzero exit code ONLY for real technical errors (network, 5xx, timeout,
@@ -93,10 +94,14 @@ def resolve_timeout(args: argparse.Namespace) -> float:
 
 
 def _require_token() -> str:
-    token = os.getenv("AGENT_CONTEXT_API_TOKEN")
+    token = (
+        os.getenv("REDDIT_SEARCH_API_TOKEN", "").strip()
+        or os.getenv("AGENT_CONTEXT_API_TOKEN", "").strip()
+    )
     if not token:
         raise RedditSearchCliError(
-            "AGENT_CONTEXT_API_TOKEN is required for the reddit-search CLI"
+            "Reddit Search API token is required: set REDDIT_SEARCH_API_TOKEN "
+            "(or legacy AGENT_CONTEXT_API_TOKEN)"
         )
     return token
 
@@ -117,7 +122,10 @@ def doctor(api_url: str, timeout_seconds: float) -> dict[str, Any]:
         "health_status": payload.get("status", "unknown"),
         "database": (payload.get("diagnostics") or {}).get("database", {}).get("status")
         or payload.get("database", "unknown"),
-        "token_configured": bool(os.getenv("AGENT_CONTEXT_API_TOKEN")),
+        "token_configured": bool(
+            os.getenv("REDDIT_SEARCH_API_TOKEN", "").strip()
+            or os.getenv("AGENT_CONTEXT_API_TOKEN", "").strip()
+        ),
     }
 
 
@@ -163,7 +171,13 @@ def print_summary(payload: dict[str, Any]) -> int:
     """Human-readable output. Returns process exit code."""
     status = payload.get("status")
     if status == "completed":
-        print(f"status: completed ({payload.get('found_count', 0)} posts kept)")
+        # found_count is the number of unique candidates that reached ranking;
+        # sources are the posts the confidence filter actually kept.
+        kept = len(payload.get("sources") or [])
+        found = payload.get("found_count")
+        if not isinstance(found, int) or found < kept:
+            found = kept
+        print(f"status: completed (kept {kept} of {found} ranked candidates)")
         print(payload.get("answer") or "")
         print()
         print("sources:")

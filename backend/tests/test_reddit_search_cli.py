@@ -72,6 +72,19 @@ def test_completed_summary_exit_0(capsys):
     assert "https://reddit.com/r/ClaudeCode" in out
 
 
+def test_completed_summary_reports_kept_of_candidates(capsys):
+    # found_count counts candidates that reached ranking; sources are what the
+    # confidence filter kept. The summary must not call candidates "kept".
+    payload = _completed_payload()
+    payload["found_count"] = 23
+    payload["sources"] = payload["sources"][:1]
+    code = cli.print_summary(payload)
+    out = capsys.readouterr().out
+    assert code == 0
+    assert "kept 1 of 23 ranked candidates" in out
+    assert "posts kept" not in out
+
+
 def test_abstained_summary_exit_0(capsys):
     code = cli.print_summary({"status": "abstained", "message": "no reliable results"})
     out = capsys.readouterr().out
@@ -92,8 +105,44 @@ def test_unknown_status_exit_1(capsys):
 
 def test_missing_token_raises():
     with mock.patch.dict("os.environ", {}, clear=True):
-        with pytest.raises(cli.RedditSearchCliError, match="AGENT_CONTEXT_API_TOKEN"):
+        with pytest.raises(cli.RedditSearchCliError, match="token is required"):
             cli.call_reddit_search(cli.parse_args(["query text"]))
+
+
+def test_reddit_search_token_env_preferred(monkeypatch):
+    calls = {}
+
+    def fake_post(url, **kwargs):
+        calls["headers"] = kwargs.get("headers")
+        return FakeResponse(200, _completed_payload())
+
+    monkeypatch.setattr(cli.requests, "post", fake_post)
+    with mock.patch.dict(
+        "os.environ",
+        {
+            "REDDIT_SEARCH_API_TOKEN": "reddit-only-token",
+            "AGENT_CONTEXT_API_TOKEN": "legacy-owner-token",
+        },
+    ):
+        cli.call_reddit_search(cli.parse_args(["hooks"]))
+
+    assert calls["headers"] == {"Authorization": "Bearer reddit-only-token"}
+
+
+def test_reddit_search_token_env_without_legacy(monkeypatch):
+    calls = {}
+
+    def fake_post(url, **kwargs):
+        calls["headers"] = kwargs.get("headers")
+        return FakeResponse(200, _completed_payload())
+
+    monkeypatch.setattr(cli.requests, "post", fake_post)
+    with mock.patch.dict(
+        "os.environ", {"REDDIT_SEARCH_API_TOKEN": "reddit-only-token"}, clear=True
+    ):
+        cli.call_reddit_search(cli.parse_args(["hooks"]))
+
+    assert calls["headers"] == {"Authorization": "Bearer reddit-only-token"}
 
 
 def test_completed_call(monkeypatch):
@@ -194,7 +243,7 @@ def test_main_missing_token_exit_1(capsys, monkeypatch):
         code = cli.main(["hooks"], load_env=False)
     captured = capsys.readouterr()
     assert code == 1
-    assert "AGENT_CONTEXT_API_TOKEN is required" in captured.err
+    assert "token is required" in captured.err
 
 
 def test_main_no_query_exit_1(capsys, monkeypatch):
@@ -221,6 +270,21 @@ def test_doctor_healthy(monkeypatch, capsys):
     assert code == 0
     report = json.loads(out)
     assert report["health_status"] == "healthy"
+    assert report["token_configured"] is True
+
+
+def test_doctor_token_configured_via_reddit_search_token(monkeypatch, capsys):
+    def fake_get(url, timeout=None):
+        return FakeResponse(200, {"status": "healthy"})
+
+    monkeypatch.setattr(cli.requests, "get", fake_get)
+    with mock.patch.dict(
+        "os.environ", {"REDDIT_SEARCH_API_TOKEN": "tok"}, clear=True
+    ):
+        code = cli.main(["--doctor"], load_env=False)
+    out = capsys.readouterr().out
+    assert code == 0
+    report = json.loads(out)
     assert report["token_configured"] is True
 
 

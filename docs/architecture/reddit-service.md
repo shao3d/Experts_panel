@@ -460,10 +460,15 @@ Content-Type: application/json
     }
   ],
   "message": null,
-  "found_count": 2,
+  "found_count": 23,
   "processing_time_ms": 12345
 }
 ```
+
+- `sources` — только высокоуверенные посты, которые прошёл confidence-фильтр.
+- `found_count` — число уникальных кандидатов, дошедших до ранжирования
+  (до confidence-фильтра); поэтому оно может быть (и обычно бывает) больше
+  числа `sources`.
 
 ### Семантика
 

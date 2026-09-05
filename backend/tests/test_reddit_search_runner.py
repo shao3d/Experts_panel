@@ -90,6 +90,32 @@ def test_print_human_completed(capsys):
     assert code == 0
     assert "Useful answer" in out
     assert "https://reddit.com/r/test" in out
+    assert "kept 1 of 2 ranked candidates" in out
+    assert "posts kept" not in out
+
+
+def test_print_human_completed_distinguishes_candidates_from_kept(capsys):
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("reddit_search_runner", RUNNER)
+    runner = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(runner)
+
+    code = runner.print_human(
+        {
+            "status": "completed",
+            "answer": "Useful answer",
+            "found_count": 78,
+            "sources": [
+                {"title": "Thread", "url": "https://reddit.com/r/test/comments/a", "subreddit": "test"},
+                {"title": "Other", "url": "https://reddit.com/r/test/comments/b", "subreddit": "test"},
+            ],
+        }
+    )
+    out = capsys.readouterr().out
+    assert code == 0
+    assert "kept 2 of 78 ranked candidates" in out
 
 
 def test_print_human_abstained_is_success(capsys):
