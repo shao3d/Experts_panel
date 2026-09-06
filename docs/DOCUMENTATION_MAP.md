@@ -19,6 +19,7 @@ Last updated: 2026-08-29
 
 | Задача | Сначала читать | Потом, если нужно |
 | --- | --- | --- |
+| Что улучшать дальше / статус обзора | `docs/roadmap/2026-09-system-review.md` | `docs/architecture/pipeline.md` для фазы 5b (citation verification) |
 | Общая архитектура / pipeline | `docs/architecture/pipeline.md` | `backend/CLAUDE.md` |
 | Retrieval / Embs&Keys / FTS5 | `docs/architecture/super-passport-search.md` | `docs/archive/hybrid_retrieval_plan.md` как историю |
 | Панэкс как пользователь/оператор | `docs/guides/panex-usage.md` | `panex guide` |
@@ -148,6 +149,7 @@ Quality docs - evidence snapshots and guardrails, not current API specs.
 
 | Файл/папка | Статус |
 | --- | --- |
+| `docs/roadmap/2026-09-system-review.md` | Active roadmap: ценностные фичи и техздоровье по большому обзору 09.2026, со статусами (сделано/осталось). Начинай отсюда при планировании следующих шагов. |
 | `docs/concepts/ai-architect-mode.md` | Product concept, not runtime behavior. |
 | `docs/concepts/expert-lens-global-skill.md` | Draft concept for a global Codex skill that turns Panex evidence into bounded source-grounded expert-lens critique packets. |
 | `docs/roadmap/video-hub-scaling.md` | Active scaling roadmap for larger Video Hub usage. |
@@ -159,6 +161,7 @@ Quality docs - evidence snapshots and guardrails, not current API specs.
 
 | Change | Update |
 | --- | --- |
+| Статус пунктов обзора (фича сделана/болячка закрыта) | `docs/roadmap/2026-09-system-review.md` |
 | Pipeline/model/SSE/final delivery | `docs/architecture/pipeline.md`; maybe `backend/CLAUDE.md` |
 | Языковая логика / перевод / кэш переводов | `docs/architecture/multilingual-support.md` |
 | Hybrid search / embeddings / FTS5 / Scout | `docs/architecture/super-passport-search.md`; maybe `pipeline.md` |
