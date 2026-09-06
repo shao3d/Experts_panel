@@ -239,6 +239,8 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
                     answer={expert.answer}
                     sources={expert.main_sources}
                     onPostClick={handlePostClick}
+                    verification={expert.citation_verification}
+                    language={expert.detected_language}
                   />
                   {expert.comment_groups_synthesis && (
                     <CommentSynthesis synthesis={expert.comment_groups_synthesis} />
@@ -296,6 +298,7 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
                         posts={posts}
                         selectedPostId={selectedPostId}
                         expertId={expert.expert_id}
+                        evidenceByPostId={expert.citation_verification?.evidence}
                       />
                     </div>
                   )}
@@ -310,6 +313,7 @@ const ExpertAccordion: React.FC<ExpertAccordionProps> = ({
                       posts={posts}
                       selectedPostId={selectedPostId}
                       expertId={expert.expert_id}
+                      evidenceByPostId={expert.citation_verification?.evidence}
                     />
                   )}
 

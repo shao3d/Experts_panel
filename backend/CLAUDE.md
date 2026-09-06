@@ -104,6 +104,10 @@ Defined in `.env`, loaded in `config.py`.
 - `QUERY_RATE_LIMIT_ENABLED`: true — per-IP sliding-window guard on the public `POST /api/v1/query`
 - `QUERY_RATE_LIMIT_PER_HOUR`: 12 — queries per client IP per hour (0 disables)
 - `DAILY_QUERY_BUDGET`: 200 — global queries per UTC day on `POST /api/v1/query` (0 disables); both guards are in-process, reset on restart, and 429 responses carry `Retry-After` (`src/services/query_rate_limit_service.py`)
+- `CITATION_VERIFICATION_ENABLED`: true — verify that `[post:ID]` claims are supported by the cited post text (`src/services/citation_verification_service.py`)
+- `CITATION_VERIFICATION_USE_LLM`: true — batched LLM judge (MODEL_ANALYSIS) on top of the lexical layer; on failure falls back to lexical-only
+- `CITATION_VERIFICATION_MAX_PAIRS`: 24 — claim/source pairs per answer in one judge call
+- `CITATION_VERIFICATION_SOURCE_CHAR_CAP`: 4000 — source text chars per pair in the judge prompt
 - `AGENT_CONTEXT_RESULTS_DIR`: optional backend-saved Panex artifact directory
 - `AGENT_CONTEXT_RESULTS_TTL_DAYS`: 7
 - `REDDIT_SEARCH_CLIENT_TOKENS`: optional comma-separated Reddit-only client tokens; authorize only `POST /api/v1/agent/reddit-search`

@@ -1,13 +1,48 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
+import { CitationVerificationReport } from '../types/api';
 
 interface ExpertResponseProps {
   answer: string;
   sources: number[];
   onPostClick: (postId: number) => void;
+  verification?: CitationVerificationReport;
+  language?: string;
 }
 
-const ExpertResponse: React.FC<ExpertResponseProps> = ({ answer, sources, onPostClick }) => {
+const ExpertResponse: React.FC<ExpertResponseProps> = ({ answer, sources, onPostClick, verification, language }) => {
+  const isEnglish = language === 'English';
+
+  const renderVerificationBadge = (): React.ReactNode => {
+    if (!verification || verification.total_count === 0) {
+      return null;
+    }
+    const { verified_count, partial_count, unsupported_count, total_count } = verification;
+    const parts = [
+      isEnglish
+        ? `${verified_count}/${total_count} citations verified against sources`
+        : `${verified_count}/${total_count} цитат подтверждено источниками`,
+    ];
+    if (partial_count > 0) {
+      parts.push(isEnglish ? `${partial_count} partial` : `${partial_count} частично`);
+    }
+    if (unsupported_count > 0) {
+      parts.push(isEnglish ? `${unsupported_count} unsupported` : `${unsupported_count} не подтверждено`);
+    }
+    return (
+      <div
+        className="citation-verification-badge"
+        title={
+          isEnglish
+            ? `Server-side check that each cited source supports the claim next to its citation (method: ${verification.method}). The lexical method matches the author's own words; the LLM judge also accepts faithful paraphrase.`
+            : `Серверная проверка: указанный источник поддерживает утверждение рядом с цитатой (метод: ${verification.method}). Лексический метод ищет слова автора в источнике; LLM-судья принимает и близкий пересказ.`
+        }
+      >
+        ✅ {parts.join(' · ')}
+      </div>
+    );
+  };
+
   // Process text nodes to handle [post:ID], [ID] and multiple [post:ID, post:ID2] references
   const processTextNode = (text: string): React.ReactNode[] => {
     // Match both single [post:ID] and multiple [post:ID, post:ID2, ID3] formats
@@ -154,6 +189,7 @@ const ExpertResponse: React.FC<ExpertResponseProps> = ({ answer, sources, onPost
 
   return (
     <div className="expert-response-card">
+      {renderVerificationBadge()}
       <div
         className="expert-response-markdown prose prose-base max-w-none breakable-markdown"
       >

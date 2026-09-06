@@ -172,6 +172,60 @@ export interface ExpertResponse {
    * falls back to local detection for responses from older backends.
    */
   detected_language?: string;
+
+  /**
+   * Server-side check that answer citations are supported by their cited
+   * source texts. Absent when verification was disabled, not applicable,
+   * or failed (fail-open).
+   */
+  citation_verification?: CitationVerificationReport;
+}
+
+/**
+ * Citation verification report (matches backend CitationVerificationReport).
+ */
+export interface CitationVerificationReport {
+  /** Number of distinct cited posts that were checked */
+  total_count: number;
+
+  /** Citations whose source text supports the claim */
+  verified_count: number;
+
+  /** Citations whose source text only partially supports the claim */
+  partial_count: number;
+
+  /** Citations whose substance is absent from the source text */
+  unsupported_count: number;
+
+  /** Per-citation verdict keyed by telegram_message_id */
+  verdicts: Record<string, 'supported' | 'partial' | 'unsupported' | 'unverified'>;
+
+  /**
+   * Per-citation word-level anchor keyed by telegram_message_id: the source
+   * passage that supports the claim. Absent when there is no lexical anchor
+   * (e.g. LLM-confirmed paraphrase) or the source text is missing.
+   */
+  evidence?: Record<string, CitationEvidence>;
+
+  /** Verification method used: lexical | lexical+llm */
+  method: string;
+}
+
+/**
+ * Word-level anchor (matches backend CitationEvidence).
+ */
+export interface CitationEvidence {
+  /** Fragment start offset in the original source text */
+  start: number;
+
+  /** Fragment end offset in the original source text */
+  end: number;
+
+  /** Fragment substring of the source text to highlight */
+  text: string;
+
+  /** Source words (original surface forms) that match the claim */
+  matched_terms: string[];
 }
 
 /**

@@ -1,7 +1,8 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { CommentResponse, PostDetailResponse } from '../types/api';
+import { CitationEvidence, CommentResponse, PostDetailResponse } from '../types/api';
+import { splitByFragment } from '../utils/highlightEvidence';
 
 // Extend PostDetailResponse to include relevance_score from Map phase
 interface PostWithRelevance extends PostDetailResponse {
@@ -14,9 +15,11 @@ interface PostCardProps {
   onToggleComments: () => void;
   isSelected?: boolean;
   expertId?: string;
+  /** Word-level citation anchor for this post, when verification found one */
+  evidence?: CitationEvidence;
 }
 
-const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments, isSelected = false, expertId }) => {
+const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments, isSelected = false, expertId, evidence }) => {
   const hasComments = post.comments && post.comments.length > 0;
 
   const formatDate = (dateStr: string) => {
@@ -242,7 +245,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments,
         )}
       </div>
 
-      {/* Post Content */}
+      {/* Post Content (with highlighted citation evidence when available) */}
       <div
         className="breakable-markdown"
         style={{
@@ -254,13 +257,53 @@ const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments,
           maxWidth: '100%',
         }}
       >
-        <ReactMarkdown
-          components={markdownComponents}
-          remarkPlugins={[remarkGfm]}
-          urlTransform={(url) => url}
-        >
-          {post.message_text || ''}
-        </ReactMarkdown>
+        {(() => {
+          const content = post.message_text || '';
+          const parts = evidence ? splitByFragment(content, evidence.text) : null;
+
+          if (!parts) {
+            return (
+              <ReactMarkdown
+                components={markdownComponents}
+                remarkPlugins={[remarkGfm]}
+                urlTransform={(url) => url}
+              >
+                {content}
+              </ReactMarkdown>
+            );
+          }
+
+          return (
+            <>
+              <ReactMarkdown
+                components={markdownComponents}
+                remarkPlugins={[remarkGfm]}
+                urlTransform={(url) => url}
+              >
+                {parts.before}
+              </ReactMarkdown>
+              <div
+                className="citation-evidence-block"
+                title={evidence!.matched_terms.join(', ')}
+              >
+                <ReactMarkdown
+                  components={markdownComponents}
+                  remarkPlugins={[remarkGfm]}
+                  urlTransform={(url) => url}
+                >
+                  {parts.fragment}
+                </ReactMarkdown>
+              </div>
+              <ReactMarkdown
+                components={markdownComponents}
+                remarkPlugins={[remarkGfm]}
+                urlTransform={(url) => url}
+              >
+                {parts.after}
+              </ReactMarkdown>
+            </>
+          );
+        })()}
       </div>
 
       {/* Comments Toggle */}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import PostCard from './PostCard';
-import { PostDetailResponse } from '../types/api';
+import { CitationEvidence, PostDetailResponse } from '../types/api';
 
 // Extend PostDetailResponse to include relevance_score from Map phase
 interface PostWithRelevance extends PostDetailResponse {
@@ -11,9 +11,11 @@ interface PostsListProps {
   posts: PostWithRelevance[];
   selectedPostId?: number | null;
   expertId?: string;
+  /** Word-level citation anchors keyed by telegram_message_id */
+  evidenceByPostId?: Record<string, CitationEvidence>;
 }
 
-const PostsList: React.FC<PostsListProps> = ({ posts, selectedPostId, expertId }) => {
+const PostsList: React.FC<PostsListProps> = ({ posts, selectedPostId, expertId, evidenceByPostId }) => {
   // Track which posts have expanded comments
   const [expandedPosts, setExpandedPosts] = useState<Set<number>>(new Set());
   const containerRef = useRef<HTMLDivElement>(null);
@@ -80,6 +82,7 @@ const PostsList: React.FC<PostsListProps> = ({ posts, selectedPostId, expertId }
           onToggleComments={() => toggleComments(post.telegram_message_id)}
           isSelected={post.telegram_message_id === selectedPostId}
           expertId={expertId}
+          evidence={evidenceByPostId?.[String(post.telegram_message_id)]}
         />
       ))}
 

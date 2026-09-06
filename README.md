@@ -13,6 +13,7 @@ Choose one or more experts, ask a question in English or Russian, and get an ans
 - Searches curated expert corpora with hybrid retrieval: vector KNN, FTS5, and Reciprocal Rank Fusion.
 - Runs a ten-phase Map-Resolve-Reduce pipeline for relevance scoring, source analysis, comment context, validation, and synthesis.
 - Keeps each expert's evidence isolated before producing a multi-expert view.
+- Verifies its own citations: every `[post:ID]` claim is checked against the cited post text (deterministic lexical layer plus a cheap LLM judge), and the answer card shows how many citations were confirmed by their sources.
 - Answers in the language of the question, Russian or English. For English questions, cited posts, comments, and discussion groups are translated too, with `[post:ID]` citations kept clickable. Every translation is cached persistently so it is computed once ([Multilingual Support](docs/architecture/multilingual-support.md)).
 - Adds an optional Reddit community search in the public UI. Reddit results stay separate from expert answers and may be omitted when the available discussions are too weak.
 - Keeps the Video Hub transcript pipeline available through the backend while its source is hidden from the current UI selection surface.

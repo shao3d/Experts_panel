@@ -115,6 +115,23 @@ QUERY_RATE_LIMIT_ENABLED: bool = os.getenv(
 QUERY_RATE_LIMIT_PER_HOUR: int = int(os.getenv("QUERY_RATE_LIMIT_PER_HOUR", "12"))
 DAILY_QUERY_BUDGET: int = int(os.getenv("DAILY_QUERY_BUDGET", "200"))
 
+# --- Citation verification (trust badge on expert answers) ---
+# Checks that claims citing [post:ID] are supported by the cited post text:
+# deterministic lexical layer + optional cheap LLM judge. Fail-open: on any
+# error the report is omitted and the UI shows no badge.
+CITATION_VERIFICATION_ENABLED: bool = os.getenv(
+    "CITATION_VERIFICATION_ENABLED", "true"
+).strip().lower() in {"1", "true", "yes", "on"}
+CITATION_VERIFICATION_USE_LLM: bool = os.getenv(
+    "CITATION_VERIFICATION_USE_LLM", "true"
+).strip().lower() in {"1", "true", "yes", "on"}
+CITATION_VERIFICATION_MAX_PAIRS: int = int(
+    os.getenv("CITATION_VERIFICATION_MAX_PAIRS", "24")
+)
+CITATION_VERIFICATION_SOURCE_CHAR_CAP: int = int(
+    os.getenv("CITATION_VERIFICATION_SOURCE_CHAR_CAP", "4000")
+)
+
 # --- Model Configuration ---
 # All query-time models are addressed by their OpenRouter slugs.
 

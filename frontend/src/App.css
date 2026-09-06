@@ -1266,6 +1266,28 @@
   border-radius: var(--ep-radius-card);
 }
 
+.citation-verification-badge {
+  display: inline-block;
+  margin-bottom: 12px;
+  padding: 3px 10px;
+  border: 1px solid var(--ep-border);
+  border-radius: var(--ep-radius-button);
+  background: var(--ep-cream);
+  color: var(--ep-forest);
+  font-size: 12.5px;
+  line-height: 1.4;
+  cursor: help;
+}
+
+.citation-evidence-block {
+  margin: 6px 0;
+  padding: 8px 12px;
+  background: var(--ep-warning-bg);
+  border-left: 3px solid var(--ep-yellow);
+  border-radius: var(--ep-radius-button);
+  cursor: help;
+}
+
 .expert-response-markdown {
   font-size: 16px;
   line-height: 1.65;

@@ -79,6 +79,20 @@ The system processes user queries through an **ten-phase pipeline** using a **Ge
 - **Logic**: Bidirectional. If answer language ≠ query language (RU answer + EN query, or EN answer + RU query), the answer is translated, preserving `[post:ID]` citations and markdown links. Translations are cached persistently (see [Multilingual Support](./multilingual-support.md)).
 - **Detection**: One backend-wide detector (`detect_query_language`, Russian-first); the result is also returned to the frontend as `ExpertResponse.detected_language`.
 
+### 5b. Citation Verification Phase (trust badge)
+**Goal**: Prove that the answer's citations actually support their claims.
+- **Service**: `CitationVerificationService` (`backend/src/services/citation_verification_service.py`)
+- **Model**: `MODEL_ANALYSIS` for the optional LLM judge; the lexical layer needs no model.
+- **When**: Launched as an `asyncio.create_task` right after Reduce returns (overlapping comment merge/translation/synthesis) in both the comment-groups and sequential paths; awaited just before the `ExpertResponse` is built.
+- **Input**: The **pre-translation** Reduce answer plus `posts_by_id` built from `enriched_posts` (the same context Reduce saw). Verdicts are keyed by `telegram_message_id`, so they remain valid for the translated answer the user sees.
+- **Process**:
+  1. Split the answer into claims: text fragments carrying `[post:ID]` citations (single and multi-citation formats; markdown links never match).
+  2. **Lexical layer**: normalized token containment (RU/EN stopwords, light stemming, numbers kept) between claim and cited source text → supported (≥0.6) / partial (≥0.3) / unsupported. For every pair it also computes a **word-level anchor**: the tightest cluster of source words that match the claim's tokens (`start`/`end` offsets, the fragment substring, and the matched surface forms).
+  3. **LLM layer** (one batched call, `CITATION_VERIFICATION_MAX_PAIRS` pairs, per-pair char cap): judges substance over wording, including across RU/EN; overrides lexical verdicts per pair.
+  4. Per-citation verdicts collapse to one verdict per post — the **weakest** wins, so the report never overstates support.
+- **Output**: `ExpertResponse.citation_verification` (`CitationVerificationReport`): `verified_count`/`total_count`, per-citation verdicts, per-citation `evidence` anchors (strongest lexical fragment per post), and the method used (`lexical` | `lexical+llm`). The frontend renders the counts as a badge on the expert answer card, and the evidence fragment is highlighted inside the source post when the user opens it (substring-anchored, so it degrades gracefully on translated texts). Evidence is never fabricated: pairs with no word match (e.g. an LLM-confirmed paraphrase) carry no anchor.
+- **Fail-open**: disabled via config, no citations, or any error → field is `None` and the UI shows no badge. Verification errors never break an answer.
+
 ### 6. Comment Groups Phase (Drift Scoring runs parallel with Reduce)
 **Goal**: Find relevant discussions in comments.
 - **Service**: `CommentGroupMapService` (`backend/src/services/comment_group_map_service.py`)

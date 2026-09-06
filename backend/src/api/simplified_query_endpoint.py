@@ -66,6 +66,7 @@ from ..services.query_rate_limit_service import (
     check_query_rate_limit,
     resolve_client_ip,
 )
+from ..services.citation_verification_service import CitationVerificationService
 from ..utils.error_handler import error_handler
 from ..utils.date_utils import get_cutoff_date
 from ..utils.language_utils import detect_query_language
@@ -180,6 +181,27 @@ def _query_results_dir() -> Path:
     """Return the durable query-result directory for large UI responses."""
 
     return query_results_dir()
+
+
+async def _run_citation_verification(
+    expert_id: str, answer: str, posts_by_id: dict
+) -> Optional[dict]:
+    """Verify answer citations against their sources; None on any failure.
+
+    Fail-open by design: a verification error must never break an answer.
+    Verdicts are keyed by telegram_message_id, so they remain valid for the
+    translated answer shown to the user.
+    """
+    if not config.CITATION_VERIFICATION_ENABLED or not answer:
+        return None
+    try:
+        service = CitationVerificationService()
+        return await service.verify(answer, posts_by_id, expert_id=expert_id)
+    except Exception as e:
+        logger.warning(
+            f"[{expert_id}] Citation verification failed (non-fatal): {e}"
+        )
+        return None
 
 
 async def _translate_comment_group_texts(comment_group_results: list) -> None:
@@ -705,6 +727,15 @@ async def process_expert_pipeline(
     comment_group_results = []
     comment_synthesis = None
     detected_language = detect_query_language(request.query)
+    citation_verification_task = None
+
+    # Citation verification sources: text of every post the answer may cite,
+    # keyed by telegram_message_id (the id used in [post:ID] citations).
+    posts_by_id = {
+        p.get("telegram_message_id"): (p.get("content") or "")
+        for p in enriched_posts
+        if p.get("telegram_message_id") is not None
+    }
 
     reduce_service = ReduceService()
     language_validation_service = LanguageValidationService()
@@ -782,6 +813,17 @@ async def process_expert_pipeline(
         (reduce_results, validation_results), scored_drift_groups = await asyncio.gather(
             run_reduce_chain(),
             run_drift_scoring(),
+        )
+
+        # Overlap citation verification with comment merge/translation/synthesis.
+        # Verified against the pre-translation answer: verdicts are keyed by
+        # telegram_message_id, so they hold for the translated text as well.
+        citation_verification_task = asyncio.create_task(
+            _run_citation_verification(
+                expert_id=expert_id,
+                answer=reduce_results.get("answer", ""),
+                posts_by_id=posts_by_id,
+            )
         )
 
         validated_answer = validation_results.get(
@@ -883,6 +925,14 @@ async def process_expert_pipeline(
             "answer", reduce_results.get("answer", "")
         )
 
+        citation_verification_task = asyncio.create_task(
+            _run_citation_verification(
+                expert_id=expert_id,
+                answer=reduce_results.get("answer", ""),
+                posts_by_id=posts_by_id,
+            )
+        )
+
     # 7. Build response
     processing_time = int((time.time() - start_time) * 1000)
 
@@ -906,6 +956,10 @@ async def process_expert_pipeline(
         f"{timings_str} | total={processing_time}ms"
     )
 
+    citation_verification = (
+        await citation_verification_task if citation_verification_task else None
+    )
+
     return ExpertResponse(
         expert_id=expert_id,
         expert_name=get_expert_name(expert_id),
@@ -920,6 +974,7 @@ async def process_expert_pipeline(
         if comment_synthesis
         else None,
         detected_language=detected_language,
+        citation_verification=citation_verification,
     )
 
 

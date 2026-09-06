@@ -779,6 +779,68 @@ class PostDetailResponse(BaseModel):
     )
 
 
+class CitationEvidence(BaseModel):
+    """Word-level anchor: the author's passage a citation claim rests on."""
+
+    start: int = Field(
+        ...,
+        description="Fragment start offset in the original source text"
+    )
+    end: int = Field(
+        ...,
+        description="Fragment end offset in the original source text"
+    )
+    text: str = Field(
+        ...,
+        description="Fragment substring of the source text to highlight"
+    )
+    matched_terms: List[str] = Field(
+        default_factory=list,
+        description="Source words (original surface forms) that match the claim"
+    )
+
+
+class CitationVerificationReport(BaseModel):
+    """Result of checking answer citations against their cited sources."""
+
+    total_count: int = Field(
+        ...,
+        description="Number of distinct cited posts that were checked"
+    )
+    verified_count: int = Field(
+        ...,
+        description="Citations whose source text supports the claim"
+    )
+    partial_count: int = Field(
+        default=0,
+        description="Citations whose source text only partially supports the claim"
+    )
+    unsupported_count: int = Field(
+        default=0,
+        description="Citations whose substance is absent from the source text"
+    )
+    verdicts: Dict[str, str] = Field(
+        default_factory=dict,
+        description=(
+            "Per-citation verdict keyed by telegram_message_id: "
+            "supported | partial | unsupported | unverified"
+        )
+    )
+    evidence: Dict[str, CitationEvidence] = Field(
+        default_factory=dict,
+        description=(
+            "Per-citation word-level anchor keyed by telegram_message_id: "
+            "the source passage that supports the claim. Absent for citations "
+            "with no lexical anchor (e.g. LLM-confirmed paraphrase) or "
+            "missing sources."
+        )
+    )
+    method: str = Field(
+        default="lexical",
+        description="Verification method used: lexical | lexical+llm"
+    )
+
+
 class ExpertResponse(BaseModel):
     """Response from a single expert."""
 
@@ -828,6 +890,14 @@ class ExpertResponse(BaseModel):
             "Language of the user query as detected by the backend "
             "(Russian/English). Single source of truth for the frontend: "
             "decides whether source posts/comments need translation."
+        )
+    )
+    citation_verification: Optional[CitationVerificationReport] = Field(
+        default=None,
+        description=(
+            "Server-side check that answer citations are supported by their "
+            "cited source texts. None when verification was disabled, not "
+            "applicable (no citations), or failed (fail-open)."
         )
     )
 
