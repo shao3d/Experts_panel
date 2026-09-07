@@ -22,23 +22,19 @@ Every expert answer card carries a server-verified citations badge, and clicking
 
 ## What it does
 
-- Searches curated expert corpora with hybrid retrieval: vector KNN, FTS5, and Reciprocal Rank Fusion.
-- Runs a ten-phase Map-Resolve-Reduce pipeline for relevance scoring, source analysis, comment context, validation, and synthesis.
-- Keeps each expert's evidence isolated before producing a multi-expert view.
-- Verifies its own citations: every `[post:ID]` claim is checked against the cited post text (deterministic lexical layer plus a cheap LLM judge), and the answer card shows how many citations were confirmed by their sources.
-- Answers in the language of the question, Russian or English. For English questions, cited posts, comments, and discussion groups are translated too, with `[post:ID]` citations kept clickable. Every translation is cached persistently so it is computed once ([Multilingual Support](docs/architecture/multilingual-support.md)).
-- Adds an optional Reddit community search in the public UI. Reddit results stay separate from expert answers and may be omitted when the available discussions are too weak.
-- Keeps the Video Hub transcript pipeline available through the backend while its source is hidden from the current UI selection surface.
-- Streams progress and results to the React interface over Server-Sent Events.
-- Preserves source references so the result can be checked against the underlying material.
+- Searches curated expert corpora with hybrid retrieval: vector KNN, SQLite FTS5, and Reciprocal Rank Fusion.
+- Runs a ten-phase Map–Resolve–Reduce pipeline per expert: relevance scoring, differential context expansion, synthesis with `[post:ID]` citations, and language validation.
+- Keeps each expert's evidence isolated, then produces a cross-expert analysis that surfaces consensus, disagreement, and what only one expert mentioned.
+- Verifies its own citations: every `[post:ID]` claim is checked against the cited post text (deterministic lexical layer plus a cheap LLM judge), and the answer card reports how many citations were confirmed.
+- Answers in the language of the question, Russian or English. For English questions, cited posts, comments, and discussion groups are translated too, with citations kept clickable. Every translation is cached persistently so it is computed once ([Multilingual Support](docs/architecture/multilingual-support.md)).
+- Runs a Video Hub transcript sidecar in the backend for video-based expert material; its sources are currently hidden from the web UI selection.
+- Streams progress and results to the React interface over Server-Sent Events, and keeps every claim traceable to its source post.
 
 ## Community evidence sidecar
 
-The Reddit path is a separate production sidecar, not another expert persona. It searches live discussions, enriches promising threads with post bodies and comment trees, ranks them by whether they can answer the user's question, and synthesizes the surviving evidence with links back to Reddit. A weak candidate set produces an honest empty result instead of a plausible filler answer.
+The Reddit path is a separate production sidecar, not another expert persona. It searches live discussions through Reddit OAuth, the Arctic Shift archive, and optional Google-ranked discovery, enriches promising threads with post bodies and comment trees, ranks them by whether they can actually answer the question, and synthesizes the surviving evidence with links back to Reddit. Comment budgets keep one large discussion from displacing the rest of the evidence, and a weak candidate set produces an honest empty result instead of a plausible filler answer.
 
-Candidate discovery combines direct Reddit OAuth search with targeted archive search through Arctic Shift and optional Google-ranked discovery through Serper.dev. The backend deduplicates candidates, removes clear promotional noise, enriches comments before the final answerability rerank, and keeps thread age and discovery provenance in the synthesis context. Comment budgets prevent one large discussion from displacing the rest of the evidence. Synthesis telemetry records output length and finish reason, and a length-truncated answer receives one controlled retry.
-
-The sidecar runs beside the expert pipeline and degrades independently. A Reddit timeout, unavailable discovery channel, or empty result does not remove completed expert answers. The detailed behavior and current limitations are documented in [Reddit Integration](docs/architecture/reddit-service.md).
+The sidecar runs beside the expert pipeline and degrades independently: a Reddit timeout, unavailable discovery channel, or empty result never removes completed expert answers. The detailed behavior and current limitations are documented in [Reddit Integration](docs/architecture/reddit-service.md).
 
 ## More than the web interface
 
@@ -148,6 +144,16 @@ The corpus has a separate release path because code deployment does not update p
 
 ## Local development
 
+Fastest path to a local stack:
+
+```bash
+./quickstart.sh
+```
+
+The script creates the backend virtualenv, installs Python and Node dependencies, scaffolds `backend/.env` from `.env.example`, and prepares an empty SQLite database. You still need to fill in `OPENROUTER_API_KEY` and import your own source data.
+
+Manual setup, if you prefer:
+
 Requirements:
 
 - Python 3.11+
@@ -215,6 +221,8 @@ npm run build
 GitHub Actions also validates the backend, frontend build, and Docker configuration on pull requests and pushes to `main`.
 
 ## Technical documentation
+
+Start with the [Documentation Map](docs/DOCUMENTATION_MAP.md) — it routes to the current SSOT for every subsystem. The per-topic entry points:
 
 - [Pipeline Architecture](docs/architecture/pipeline.md)
 - [Hybrid Retrieval](docs/architecture/super-passport-search.md)

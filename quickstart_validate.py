@@ -236,13 +236,13 @@ class QuickstartValidator:
                 self.print_warning(".env not found, but .env.example exists")
                 print(f"\n{YELLOW}To create .env:{RESET}")
                 print("cp backend/.env.example backend/.env")
-                print("Then edit backend/.env and add your OPENAI_API_KEY")
+                print("Then edit backend/.env and add your OPENROUTER_API_KEY")
             else:
                 self.print_error("No .env or .env.example found")
             return False
 
         # Check for required variables
-        required_vars = ["OPENAI_API_KEY"]
+        required_vars = ["OPENROUTER_API_KEY"]
         found_vars = {}
 
         with open(backend_env, 'r') as f:
@@ -256,8 +256,8 @@ class QuickstartValidator:
         for var in required_vars:
             if var in found_vars:
                 value = found_vars[var]
-                if value and value != "your_openai_api_key_here":
-                    if var == "OPENAI_API_KEY":
+                if value and value != "your_openrouter_api_key_here":
+                    if var == "OPENROUTER_API_KEY":
                         # Mask the API key
                         masked = value[:7] + "..." + value[-4:] if len(value) > 11 else "***"
                         self.print_success(f"{var} = {masked} ✓")

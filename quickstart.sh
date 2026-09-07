@@ -69,17 +69,17 @@ if [ ! -f ".env" ]; then
     if [ -f ".env.example" ]; then
         cp .env.example .env
         echo -e "${YELLOW}⚠${NC} Created .env from .env.example"
-        echo -e "${YELLOW}   Please edit backend/.env and add your OPENAI_API_KEY${NC}"
+        echo -e "${YELLOW}   Please edit backend/.env and add your OPENROUTER_API_KEY${NC}"
     else
         echo -e "${YELLOW}⚠${NC} Creating default .env file"
         cat > .env << EOF
 # Backend environment variables
-OPENAI_API_KEY=your_openai_api_key_here
+OPENROUTER_API_KEY=your_openrouter_api_key_here
 DATABASE_URL=sqlite:///data/experts.db
 ENVIRONMENT=development
 LOG_LEVEL=INFO
 EOF
-        echo -e "${YELLOW}   Please edit backend/.env and add your OPENAI_API_KEY${NC}"
+        echo -e "${YELLOW}   Please edit backend/.env and add your OPENROUTER_API_KEY${NC}"
     fi
 else
     echo -e "${GREEN}✓${NC} .env file exists"
@@ -201,6 +201,6 @@ echo ""
 echo "3. Open your browser:"
 echo "   http://localhost:5173"
 echo ""
-echo -e "${YELLOW}Remember to set your OPENAI_API_KEY in backend/.env!${NC}"
+echo -e "${YELLOW}Remember to set your OPENROUTER_API_KEY in backend/.env!${NC}"
 echo ""
 echo -e "${GREEN}Happy coding! 🚀${NC}"

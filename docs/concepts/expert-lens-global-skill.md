@@ -1,7 +1,7 @@
 # Expert Lens Global Skill Spec
 
 Status: Draft v0.4 / global skill MVP installed 2026-05-28 / quality-gated
-Owner: Андрей + Codex
+Owner: Andrey + Codex
 Target skill name: `expert-lens-review`
 Target install path: `~/.codex/skills/expert-lens-review/SKILL.md`
 Installed files:
@@ -57,7 +57,8 @@ The skill is not:
 
 ## 3. Trigger Conditions
 
-Use the skill when the user asks for any of these shapes:
+Use the skill when the user asks for any of these shapes (trigger phrases
+are matched literally, including Russian wordings):
 
 - "посмотри через линзу Рефата";
 - "сделай expert lens по <expert>";
@@ -90,6 +91,9 @@ ask one short clarification before calling Panex:
 
 > Запускать Панэкс по корпусу эксперта или сделать обычный Codex review в этом
 > стиле без внешнего вызова?
+>
+> (English: "Run Panex against the expert's corpus, or do an ordinary Codex
+> review in this style without an external call?")
 
 ## 4. Required Inputs And Defaults
 
@@ -345,7 +349,7 @@ evidence is too weak.
 Default answer structure:
 
 ```text
-Короткий вывод
+Короткий вывод (short verdict)
 <1-3 sentences. Include whether the lens produced useful signal.>
 
 Scope

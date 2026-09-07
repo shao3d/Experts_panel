@@ -1,28 +1,28 @@
 # Reddit Integration (Search V2)
 
-**Статус:** Production (Precision-First V2)  
-**Архитектура:** Sidecar Proxy Pattern  
-**Логика:** AI Scout v2 + Precision-First Retrieval + Answerability Rerank  
-**Дата обновления:** 23.08.2026
+**Status:** Production (Precision-First V2)  
+**Architecture:** Sidecar Proxy Pattern  
+**Logic:** AI Scout v2 + Precision-First Retrieval + Answerability Rerank  
+**Last updated:** 23.08.2026
 
-> **UI status:** Переключатель Reddit снова виден в интерфейсе (`REDDIT_SEARCH_VISIBLE = true` в `frontend/src/config/expertConfig.ts`, включён 24.08.2026). Сайдкар работает на VM (`http://reddit-proxy:3000`, docker compose service `reddit-proxy`), URL настраивается через `REDDIT_PROXY_URL` в `backend/src/config.py`. Честный abstain V2 (0 постов после confidence-фильтра) помечается как `skipped`, а не как ошибка.
-
----
-
-## Коротко
-
-Reddit больше не работает в режиме "найти как можно больше и потом надеяться, что LLM всё разрулит".  
-Текущая версия Reddit Search V2 предпочитает:
-
-1. собрать небольшой, но более чистый candidate pool;
-2. не запирать поиск в выбранных LLM сабреддитах;
-3. подтянуть комментарии раньше;
-4. ранжировать по answerability, а не по шумной популярности;
-5. лучше вернуть меньше постов, чем подсунуть пользователю тематически похожий, но нерелевантный мусор.
+> **UI status:** The Reddit toggle is visible in the UI again (`REDDIT_SEARCH_VISIBLE = true` in `frontend/src/config/expertConfig.ts`, enabled on 24.08.2026). The sidecar runs on the VM (`http://reddit-proxy:3000`, docker compose service `reddit-proxy`); the URL is configured via `REDDIT_PROXY_URL` in `backend/src/config.py`. An honest V2 abstain (0 posts after the confidence filter) is marked as `skipped`, not as an error.
 
 ---
 
-## Архитектура
+## Summary
+
+Reddit no longer runs in "grab as much as possible and hope the LLM sorts it out" mode.  
+The current version, Reddit Search V2, prefers to:
+
+1. assemble a small but cleaner candidate pool;
+2. not lock the search into Scout-selected LLM subreddits;
+3. pull comments in earlier;
+4. rank by answerability rather than by noisy popularity;
+5. return fewer posts rather than feed the user topically adjacent but irrelevant junk.
+
+---
+
+## Architecture
 
 ```mermaid
 graph LR
@@ -43,93 +43,93 @@ graph LR
 
 ---
 
-## Основная идея V2
+## The Main Idea of V2
 
-### 1. Scout больше не является жёстким gatekeeper
+### 1. Scout is no longer a hard gatekeeper
 
-Scout всё ещё полезен, но его роль изменилась:
+Scout is still useful, but its role has changed:
 
-- он предлагает `subreddits`
-- строит 2-3 `queries`
-- подсказывает `keywords`
-- определяет intent (`how_to`, `comparison`, `troubleshooting`, `news`, `discussion`)
+- it proposes `subreddits`
+- builds 2-3 `queries`
+- suggests `keywords`
+- determines intent (`how_to`, `comparison`, `troubleshooting`, `news`, `discussion`)
 
-Но backend **не считает эти сабреддиты обязательной истиной**.  
-Если Reddit retrieval зациклить только в них, система слишком легко начинает пропускать реальные полезные треды.
+But the backend **does not treat these subreddits as mandatory truth**.  
+If Reddit retrieval is locked into them only, the system starts missing genuinely useful threads far too easily.
 
-### 2. Retrieval стал проще
+### 2. Retrieval got simpler
 
-V2 использует небольшой набор базовых стратегий:
+V2 uses a small set of base strategies:
 
 - `literal_global_relevance`
 - `expanded_global_relevance`
 - `scout_global_relevance`
 - `quality_global_top`
-- `fresh_global_new` для troubleshooting/news
-- маленький targeted-channel по 1-2 лучшим subreddit hints для узких `how_to`, `troubleshooting`, `comparison` intents
+- `fresh_global_new` for troubleshooting/news
+- a small targeted-channel pass over 1-2 best subreddit hints for narrow `how_to`, `troubleshooting`, `comparison` intents
 
-Это важно:
+This matters:
 
-- V2 **не** возвращается к старому strict mode;
-- но и не игнорирует хорошие community hints полностью;
-- если Scout хорошо попал в `ollama`, `nginx`, `ClaudeAI`, `mcp`, backend может добавить маленький targeted retrieval без блокировки global search.
+- V2 does **not** return to the old strict mode;
+- but it does not fully ignore good community hints either;
+- if Scout nailed `ollama`, `nginx`, `ClaudeAI`, `mcp`, the backend may add a small targeted retrieval without blocking global search.
 
-Для comparison intent добавляются отдельные comparison-oriented запросы, но без прежнего "монструозного" набора search hacks.
+For comparison intent, separate comparison-oriented queries are added, but without the former "monstrous" set of search hacks.
 
-### 3. Ранний deep fetch
+### 3. Early deep fetch
 
-Раньше комментарии слишком поздно попадали в ranking.  
-Теперь top-кандидаты проходят раннее enrichment через `POST /details`, чтобы финальный rerank видел:
+Previously, comments entered ranking too late.  
+Now top candidates go through early enrichment via `POST /details`, so the final rerank sees:
 
-- тело поста
-- практические комментарии
-- сигналы типа "это реально решило проблему"
+- the post body
+- practical comments
+- signals such as "this actually solved the problem"
 
 ### 4. Answerability-first rerank
 
-Gemini оценивает не просто "тематически похоже", а:
+Gemini evaluates not just "topically similar" but:
 
-- отвечает ли тред на вопрос пользователя
-- есть ли config / setup / fix / benchmark / trade-off
-- есть ли полезные комментарии практиков
-- не является ли это новостью, self-promo или showcase-шумихой
+- whether the thread answers the user's question
+- whether there is config / setup / fix / benchmark / trade-off
+- whether there are useful practitioner comments
+- whether it is not news, self-promo, or showcase hype
 
 ### 5. Confidence thresholds
 
-V2 умеет **не возвращать** слабые Reddit-результаты.
+V2 knows how **not to return** weak Reddit results.
 
-Если найденные посты:
+If the found posts:
 
-- слишком adjacent
-- не держат anchor terms
-- не дают high-confidence answerability
+- are too adjacent
+- do not hold anchor terms
+- do not give high-confidence answerability
 
-то они отбрасываются. Это сознательный tradeoff в пользу precision.
+then they are dropped. This is a deliberate tradeoff in favor of precision.
 
-Финальный synthesis также может честно abstain, если shortlist формально прошёл
-ranking, но в совокупности не отвечает на вопрос. Такой результат возвращается
-наружу как `abstained`, а не как противоречивый `completed` с пустым ответом.
+The final synthesis can also honestly abstain if the shortlist formally passed
+ranking but collectively does not answer the question. Such a result is returned
+as `abstained`, not as a contradictory `completed` with an empty answer.
 
-Ссылки `[S#]` проверяются относительно реально переданного synthesis-контекста.
-Индексы вне диапазона удаляются из ответа с явным уведомлением пользователя.
+`[S#]` citations are validated against the synthesis context that was actually passed.
+Out-of-range indexes are removed from the answer with an explicit user notification.
 
 ---
 
-## Компоненты
+## Components
 
 ### Backend (`backend/src/services/reddit_enhanced_service.py`)
 
-Отвечает за:
+Responsible for:
 
-- query formulation и scout plan
+- query formulation and scout plan
 - candidate generation
-- дедупликацию
-- раннее enrichment постов
+- deduplication
+- early post enrichment
 - heuristic scoring
 - AI rerank
 - confidence filtering
 
-Ключевые принципы:
+Key principles:
 
 - `precision > recall`
 - `subreddits as hints, not gates`
@@ -138,125 +138,123 @@ ranking, но в совокупности не отвечает на вопро�
 
 ### Proxy (`services/reddit-proxy`)
 
-Sidecar на Node.js / Fastify.
+A Node.js / Fastify sidecar.
 
 Endpoints:
 
 - `POST /search`
 - `POST /details`
 
-Что делает:
+What it does:
 
-- ходит в Reddit напрямую через OAuth API (search + details; MCP-слой убран 24.08.2026)
-- читает `X-Ratelimit-*`, гейтит запросы перед исчерпанием бакета, бэкофф по `Retry-After` на 429
-- нормализует JSON
-- чистит контент
-- сохраняет кодовые блоки и структуру текста
+- talks to Reddit directly via the OAuth API (search + details; the MCP layer was removed on 24.08.2026)
+- reads `X-Ratelimit-*`, gates requests before the bucket is exhausted, backs off per `Retry-After` on 429
+- normalizes JSON
+- cleans content
+- preserves code blocks and text structure
 
-### Историческая справка: Google CSE
+### Historical note: Google CSE
 
-Канал на Custom Search JSON API был реализован и удалён 25.08.2026: Гугл закрыл API
-для новых проектов (закат сервиса 01.2027), наш проект получил 403 вне зависимости от
-конфигурации. Его роль выполняет `serp_google_discovery` (Serper.dev — та же выдача
-Google программно).
+A channel based on the Custom Search JSON API was implemented and removed on 25.08.2026: Google closed the API
+for new projects (service sunset 01.2027), and our project received 403 regardless of
+configuration. Its role is now covered by `serp_google_discovery` (Serper.dev — the same
+Google results, programmatically).
 
-### Архивный дискавери (`arctic_targeted_archive`)
+### Archive discovery (`arctic_targeted_archive`)
 
-Канал Arctic Shift (бесплатное зеркало с живой инжестацией, лаг ~минуты): исчерпывающий
-полнотекстовый поиск `title` + `selftext` внутри top-сабреддитов Скаута — добывает треды,
-которые нативный поиск пропускает из-за причуд ранжирования. Ограничение сервиса: текстовый
-поиск требует сабреддит. Свежесть для `use_recent_only` — через параметр `after=90d`.
-Включён по умолчанию (`ARCTIC_SHIFT_ENABLED`), без сети деградирует молча.
+The Arctic Shift channel (a free mirror with live ingestion, lag of ~minutes): exhaustive
+full-text search over `title` + `selftext` inside the Scout's top subreddits — it surfaces threads
+that native search misses due to ranking quirks. Service limitation: text
+search requires a subreddit. Freshness for `use_recent_only` is via the `after=90d` parameter.
+Enabled by default (`ARCTIC_SHIFT_ENABLED`); degrades silently without network.
 
-### Гугл-ранжирование (`serp_google_discovery`)
+### Google ranking (`serp_google_discovery`)
 
-Канал Serper.dev — программный доступ к настоящей выдаче Google по `site:reddit.com`
-(закрывает дыру закрытого CSE: ранжирование + индексация комментариев + терпимость к
-перефразировкам). Snippet-only кандидаты получают `created_utc` через обязательный
-`/details` enrichment; при `use_recent_only` кандидаты со старой или всё ещё
-неизвестной датой отбрасываются. ≤10 результатов на вызов = 1 кредит
-(~$1/1000 запросов, фритир 2500). Без ключа `SERPER_API_KEY` канал спит.
+The Serper.dev channel — programmatic access to the real Google results for `site:reddit.com`
+(closing the hole left by the discontinued CSE: ranking + comment indexing + tolerance for
+rephrasing). Snippet-only candidates get `created_utc` via a mandatory
+`/details` enrichment; under `use_recent_only`, candidates with an old or still
+unknown date are dropped. ≤10 results per call = 1 credit
+(~$1/1000 queries, 2500 free tier). Without a `SERPER_API_KEY` the channel sleeps.
 
 ### Synthesis (`backend/src/services/reddit_synthesis_service.py`)
 
-Берёт уже очищенный shortlist и делает Staff-Engineer synthesis:
+Takes the already cleaned shortlist and produces a Staff-Engineer synthesis:
 
 - hidden gems
 - minority reports
 - practical takeaways
 - no fluff
 
-Ответ строится decision-first: краткий вывод и `КУДА ИДТИ` / `WHERE TO GO`
-идут до Deep Dive, а секции имеют явные лимиты объёма. Сравнительная таблица
-добавляется только при наличии минимум двух содержательных числовых строк.
-Формулировки «консенсус», «стандарт» и «смена тренда» допустимы только при
-независимом подтверждении минимум двумя релевантными источниками с обеими
-ссылками в том же утверждении.
+The answer is built decision-first: the brief conclusion and `КУДА ИДТИ` / `WHERE TO GO` (where to go) come before the Deep Dive, and sections have explicit length limits. A comparison table
+is added only when there are at least two meaningful numeric rows.
+Wording such as «консенсус» (consensus), «стандарт» (standard) and «смена тренда» (trend shift) is allowed only with
+independent confirmation by at least two relevant sources, with both
+links in the same statement.
 
-**Бэкенды синтеза (`REDDIT_SYNTH_BACKEND`):**
+**Synthesis backends (`REDDIT_SYNTH_BACKEND`):**
 
-- `gemini` (дефолт) — OpenRouter `MODEL_SYNTHESIS`, как раньше.
-- `opencode` — headless opencode serve на VM (`OPENCODE_URL`, systemd-юнит
-  `opencode-serve.service`), бесплатная модель `OPENCODE_SYNTH_MODEL`
-  (`opencode/x-preview-f-free`). Клиент `opencode_synth_client.py` ходит чистым
-  HTTP (создание сессии → sync prompt → abort/delete cleanup), без локального
-  бинарника — работает из panel-контейнера и с любой машины с доступом до VM.
-  Любая ошибка/таймаут → автоматический fallback на Gemini.
-- `auto` — opencode в рамках `OPENCODE_SYNTH_TIMEOUT_S`, иначе Gemini.
-- `shadow` — юзер получает Gemini; opencode гоняется параллельно
-  fire-and-forget только для телеметрии `[shadow]` (A/B латентности и качества).
+- `gemini` (default) — OpenRouter `MODEL_SYNTHESIS`, as before.
+- `opencode` — headless opencode serve on the VM (`OPENCODE_URL`, systemd unit
+  `opencode-serve.service`), free model `OPENCODE_SYNTH_MODEL`
+  (`opencode/x-preview-f-free`). The client `opencode_synth_client.py` speaks plain
+  HTTP (create session → sync prompt → abort/delete cleanup), without a local
+  binary — it works from the panel container and from any machine with access to the VM.
+  Any error/timeout → automatic fallback to Gemini.
+- `auto` — opencode within `OPENCODE_SYNTH_TIMEOUT_S`, otherwise Gemini.
+- `shadow` — the user gets Gemini; opencode runs in parallel
+  fire-and-forget for `[shadow]` telemetry only (A/B on latency and quality).
 
-Валидация opencode-ответа: честный abstain принимается любым; остальное должно
-быть ≥200 символов и содержать финальный блок «КУДА ИДИ» / «WHERE TO GO»,
-иначе ответ отвергается → fallback. Конкурентность ограничена
-`OPENCODE_SYNTH_CONCURRENCY` (serve общий с drift-воркерами).
+opencode response validation: an honest abstain is accepted from any backend; everything else must
+be ≥200 characters and contain a final «КУДА ИДИ» / `WHERE TO GO` block,
+otherwise the answer is rejected → fallback. Concurrency is limited by
+`OPENCODE_SYNTH_CONCURRENCY` (the serve is shared with drift workers).
 
-**Режим `auto` — head-start race:** free-модель стартует сразу; если за
-`OPENCODE_SYNTH_HEADSTART_S` (20с) не закончила, к гонке присоединяется Gemini
-и побеждает первый готовый ответ (проигравший отменяется, его сессия чистится).
-Worst-case латентность ≈ head-start + один вызов Gemini, а не «полный таймаут +
-Gemini» как при последовательном fallback.
+**`auto` mode — head-start race:** the free model starts immediately; if it has not finished within
+`OPENCODE_SYNTH_HEADSTART_S` (20s), Gemini joins the race
+and the first ready answer wins (the loser is cancelled and its session is cleaned up).
+Worst-case latency ≈ head-start + one Gemini call, not "full timeout +
+Gemini" as with sequential fallback.
 
-**Замер 26.08.2026 (корень медленности — не зомби и не сервер):** оверхед
-сессии+TTFT ~10с, генерация x-preview-f-free ~7–12 ток/с → полный синтез
-(~1.5–2k токенов вывода) стабильно 79–90+с. Альтернативные бесплатные модели
-быстрее (mimo-v2.5-free ~25 ток/с), но на реальном промпте режут финальный блок;
-nemotron-lightning таймаутится. Вывод: интерактивный путь остаётся `gemini`,
-`shadow` меряет качество/латентность на живых запросах. Ниша opencode —
-неинтерактивные батчи (дрейф).
+**Measurement of 26.08.2026 (the root of the slowness is neither zombies nor the server):** session+TTFT overhead ~10s, generation on x-preview-f-free ~7–12 tok/s → full synthesis
+(~1.5–2k output tokens) consistently takes 79–90+s. Alternative free models
+are faster (mimo-v2.5-free ~25 tok/s), but on the real prompt they truncate the final block;
+nemotron-lightning times out. Conclusion: the interactive path remains `gemini`;
+`shadow` measures quality/latency on live requests. opencode's niche is
+non-interactive batches (drift).
 
-**Гигиена сессий serve:** клиенты (`opencode_synth_client.py`,
-`opencode_drift_client.py`) сами abort+delete свои сессии после завершения.
-Хвост подчищает ежедневный systemd timer `opencode-janitor.timer`
-(скрипт `backend/scripts/opencode_serve_janitor.py`, dry-run без `--apply`):
-убивает зависшие в retry сессии и удаляет машинные сессии старше 6ч по
-префиксам drift_/driftb_/reddit_synth_/trans_/synth_/synthcl_/class_/parse_.
+**Serve session hygiene:** clients (`opencode_synth_client.py`,
+`opencode_drift_client.py`) abort+delete their own sessions after completion.
+The tail is cleaned up by the daily systemd timer `opencode-janitor.timer`
+(script `backend/scripts/opencode_serve_janitor.py`, dry-run without `--apply`):
+it kills sessions stuck in retry and deletes machine sessions older than 6h by
+the prefixes drift_/driftb_/reddit_synth_/trans_/synth_/synthcl_/class_/parse_.
 
 ---
 
 ## Query Flow
 
-### Шаг 1. Формулировка Reddit-запроса
+### Step 1. Reddit query formulation
 
-Русский пользовательский запрос сначала превращается в короткий английский Reddit-friendly query.
+The Russian user query is first turned into a short English Reddit-friendly query.
 
-Важно:
+Important:
 
-- named entities сохраняются
-- platform/device, пользовательская цель и тип искомого evidence не теряются
-- тех. термины не "переводятся красиво", а остаются в рабочем виде
-- формулировка делается под community-search, а не под SEO/web search
-- formulation возвращает `search_query`, `user_intent` и `must_keep` anchors;
-  оригинальный вопрос и anchors передаются дальше в Scout и rerank
+- named entities are preserved
+- platform/device, the user's goal, and the type of evidence sought are not lost
+- technical terms are not "prettified in translation" but stay in working form
+- the formulation targets community search, not SEO/web search
+- formulation returns `search_query`, `user_intent` and `must_keep` anchors;
+  the original question and anchors are passed on to Scout and rerank
 
-Пример:
+Example:
 
-`Как настроить MCP в Claude Code?`  
+`Как настроить MCP в Claude Code?` (How do I set up MCP in Claude Code?)  
 → `Claude Code MCP server setup`
 
-### Шаг 2. Scout Plan
+### Step 2. Scout Plan
 
-Scout возвращает:
+Scout returns:
 
 - `subreddits`
 - `queries`
@@ -264,94 +262,94 @@ Scout возвращает:
 - `intent`
 - `time_filter`
 
-Intent taxonomy включает `recommendation`, `use_cases` и
-`practitioner_examples`. Для них Scout ищет конкретные функции, команды,
-shortcuts и automations, которые люди реально собрали или используют, а не
-общую архитектуру по соседней теме.
+The intent taxonomy includes `recommendation`, `use_cases` and
+`practitioner_examples`. For them, Scout looks for specific features, commands,
+shortcuts and automations that people have actually assembled or use, not
+general architecture on an adjacent topic.
 
-V2 дополнительно санитизирует scout queries, чтобы LLM не тащил веб-поисковые артефакты вроде `site:reddit.com`, `r/...`, кавычек и boolean-шума.
+V2 additionally sanitizes scout queries so the LLM does not drag in web-search artifacts like `site:reddit.com`, `r/...`, quotation marks and boolean noise.
 
-### Шаг 3. Candidate Generation
+### Step 3. Candidate Generation
 
-Backend не полагается на одну "умную" query.  
-Он строит компактный пул из нескольких search channels и потом объединяет результаты.
+The backend does not rely on a single "smart" query.  
+It builds a compact pool from several search channels and then merges the results.
 
-### Шаг 4. Heuristic Score
+### Step 4. Heuristic Score
 
-До LLM rerank у каждого поста считается precision-first score.
+Before the LLM rerank, each post gets a precision-first score.
 
-Сигналы:
+Signals:
 
-- lexical overlap по `title/body/comments`
+- lexical overlap over `title/body/comments`
 - target keywords
 - answerability markers
 - technical guide markers
-- quality signal по `score/comments`
-- penalties за promo/showcase/noise
+- quality signal over `score/comments`
+- penalties for promo/showcase/noise
 
-Антиспам-слой (детерминированный, только неоспоримые паттерны):
+Anti-spam layer (deterministic, only indisputable patterns):
 
-- `SPAM_TITLE_PATTERNS`: кредитная механика (`gives you N`, `N free credits`,
-  signup bonus/promo) — базовый штраф растёт с числом совпадений
-- комбинация «паттерн + голодная вовлечённость» (score ≤3, комменты ≤5)
-  штрафуется дополнительно — это почти наверняка реклама
-- репутация сабреддита: фрагмент `seo` в имени — минус
-- принцип: паттерны убивают очевидное; спорное судит LLM
+- `SPAM_TITLE_PATTERNS`: credit mechanics (`gives you N`, `N free credits`,
+  signup bonus/promo) — the base penalty grows with the number of matches
+- the combination of "spam pattern + starved engagement" (score ≤3, comments ≤5)
+  gets an additional penalty — this is almost certainly an ad
+- subreddit reputation: an `seo` fragment in the name is a minus
+- principle: patterns kill the obvious; the LLM judges the questionable
 
-Для comparison intent дополнительно учитываются:
+For comparison intent, additionally taken into account:
 
-- прямые anchor matches в `title/body`
+- direct anchor matches in `title/body`
 - direct comparison markers (`vs`, `comparison`, `benchmark`, `migrated`, `overhead`)
-- штрафы за случаи, когда якоря встречаются только в комментариях
+- penalties for cases where anchors appear only in comments
 
-Для `how_to` / `troubleshooting` V2 также аккуратно отсекает слишком общие anchor terms, чтобы слова вроде `reverse`, `proxy`, `setup`, `fix` не работали как ложные "жёсткие сущности".
+For `how_to` / `troubleshooting`, V2 also carefully prunes overly generic anchor terms so that words like `reverse`, `proxy`, `setup`, `fix` do not act as false "hard entities".
 
-### Шаг 5. Early Enrichment
+### Step 5. Early Enrichment
 
-Лучшие кандидаты получают `full_content` и top comments ещё до финального AI rerank.
+The best candidates receive `full_content` and top comments even before the final AI rerank.
 
-### Шаг 6. AI Rerank
+### Step 6. AI Rerank
 
-Gemini rerank получает:
+The Gemini rerank receives:
 
 - title
 - preview/body
 - top comment snippets
 - strategy provenance
-- engagement (`score`, `num_comments`) — явный сигнал, чтобы судья сам
-  отличал SEO-приманку от свежего качественного поста
+- engagement (`score`, `num_comments`) — an explicit signal so the judge can
+  itself tell SEO bait apart from a fresh high-quality post
 - anchor / comparison metadata
-- оригинальный пользовательский вопрос, formulation intent и must-keep anchors
+- the original user question, formulation intent and must-keep anchors
 
-Для `use_cases` / `practitioner_examples` однозначные job solicitations
-(`For Hire`, `looking for work`) отсекаются детерминированно. First-person build reports
-вроде `I built ...` не считаются спамом автоматически: это часто лучший
+For `use_cases` / `practitioner_examples`, unambiguous job solicitations
+(`For Hire`, `looking for work`) are cut off deterministically. First-person build reports
+like `I built ...` are not automatically treated as spam: this is often the best
 practitioner evidence.
 
-Модель судьи зависит от intent: сравнительные запросы (магнит «vs»-приманок)
-разбирает `MODEL_SYNTHESIS`, остальные — дешёвый `MODEL_ANALYSIS`.
+The judge model depends on intent: comparison queries (a magnet for "vs"-bait)
+are handled by `MODEL_SYNTHESIS`, the rest by the cheap `MODEL_ANALYSIS`.
 
-И ранжирует по answerability.
+And it ranks by answerability.
 
-### Шаг 7. Confidence Filter
+### Step 7. Confidence Filter
 
-После rerank включается финальный фильтр:
+After the rerank, the final filter kicks in:
 
-- строгий threshold
-- мягкий fallback threshold
-- для comparison intent более жёсткий anchor/control gate
+- a strict threshold
+- a soft fallback threshold
+- for comparison intent, a stricter anchor/control gate
 
 ---
 
-## Что улучшает V2
+## What V2 Improves
 
-По сравнению со старой схемой:
+Compared to the old scheme:
 
-- меньше зависимость от случайно выбранных сабреддитов
-- меньше шумных "почти по теме" постов
-- меньше popularity bias
-- лучше качество на `how_to`, `best practices`, `comparison`
-- возможность нормально дебажить retrieval через trace
+- less dependence on randomly chosen subreddits
+- fewer noisy "almost on topic" posts
+- less popularity bias
+- better quality on `how_to`, `best practices`, `comparison`
+- the ability to debug retrieval properly via trace
 
 ---
 
@@ -359,63 +357,63 @@ practitioner evidence.
 
 ### Feature Flags
 
-В `backend/src/config.py`:
+In `backend/src/config.py`:
 
 - `REDDIT_SEARCH_DEBUG`
 - `REDDIT_RERANK_CANDIDATES`
 - `REDDIT_PRE_RERANK_ENRICH_LIMIT`
 - `REDDIT_MIN_CONFIDENCE`
 - `REDDIT_SOFT_CONFIDENCE`
-- `REDDIT_SYNTH_COMMENT_TOP_K` — топ-K корневых комментариев по score на источник в синтезе
-- `REDDIT_SYNTH_SOURCE_CHAR_CAP` — кап символов на источник (тело + дерево комментариев)
-- `REDDIT_SYNTH_MAX_TOKENS` — бюджет вывода синтеза; при finish_reason=length один автоперезапрос с 2x бюджетом
-- `REDDIT_SYNTH_BACKEND` — бэкенд синтеза: gemini | opencode | auto | shadow (см. раздел Synthesis)
-- `OPENCODE_URL`, `OPENCODE_SYNTH_MODEL`, `OPENCODE_SYNTH_TIMEOUT_S`, `OPENCODE_SYNTH_CONCURRENCY` — параметры headless opencode serve
+- `REDDIT_SYNTH_COMMENT_TOP_K` — top-K root comments by score per source in synthesis
+- `REDDIT_SYNTH_SOURCE_CHAR_CAP` — character cap per source (body + comment tree)
+- `REDDIT_SYNTH_MAX_TOKENS` — synthesis output budget; on finish_reason=length, one automatic re-request with a 2x budget
+- `REDDIT_SYNTH_BACKEND` — synthesis backend: gemini | opencode | auto | shadow (see the Synthesis section)
+- `OPENCODE_URL`, `OPENCODE_SYNTH_MODEL`, `OPENCODE_SYNTH_TIMEOUT_S`, `OPENCODE_SYNTH_CONCURRENCY` — headless opencode serve parameters
 
-Практический смысл:
+Practical meaning:
 
-- V2 можно дебажить и калибровать без ручного перебора каждого запроса;
-- harness позволяет быстро увидеть, не стало ли "больше стратегий" ценой латентности;
-- в одной из live-проверок дополнительный scout channel дал почти нулевой выигрыш, но разогнал latency до ~216s, поэтому он сознательно **не** был оставлен в runtime.
+- V2 can be debugged and calibrated without manually retrying every query;
+- the harness quickly shows whether "more strategies" came at the cost of latency;
+- in one of the live checks, an extra scout channel gave almost zero gain but pushed latency to ~216s, so it was deliberately **not** kept in runtime.
 
 ### Eval Harness
 
-Для локального сравнения и regression-check используется:
+For local comparison and regression checks:
 
 ```bash
 python3 backend/scripts/eval_reddit_search_v2.py
 ```
 
-Для одного запроса:
+For a single query:
 
 ```bash
 python3 backend/scripts/eval_reddit_search_v2.py --query "Claude Code MCP server setup"
 ```
 
-Harness пишет:
+The harness writes:
 
 - strategies used
 - total candidates
 - returned high-confidence posts
 - debug trace
-- top results с heuristic / ai / final score
+- top results with heuristic / ai / final score
 
 ---
 
 ## Agent-facing API (`POST /api/v1/agent/reddit-search`)
 
-**Статус:** реализован (проверен контрактными тестами локально/в CI), production
-smoke — после явной команды `выкатывай`.
+**Status:** implemented (verified by contract tests locally/in CI); production
+smoke — after an explicit `выкатывай` (release) command from the owner.
 
-### Назначение
+### Purpose
 
-Стабильный программный вход для других проектов и ИИ-агентов, вызывающий **полный
-Reddit Search V2** (формулировка запроса + AI Scout + несколько discovery-каналов +
-enrichment + answerability rerank + confidence filtering + synthesis). Это **не**
-выставление наружу `reddit-proxy`: proxy делает только OAuth search/details и
-остаётся внутренним sidecar, сетевая граница не меняется.
+A stable programmatic entry point for other projects and AI agents that runs the **full
+Reddit Search V2** (query formulation + AI Scout + several discovery channels +
+enrichment + answerability rerank + confidence filtering + synthesis). This is **not**
+an external exposure of `reddit-proxy`: the proxy only does OAuth search/details and
+remains an internal sidecar; the network boundary does not change.
 
-### Endpoint и аутентификация
+### Endpoint and authentication
 
 ```http
 POST /api/v1/agent/reddit-search
@@ -423,14 +421,14 @@ Authorization: Bearer <REDDIT_SEARCH_API_TOKEN>
 Content-Type: application/json
 ```
 
-- Внешним generic-клиентам выдаются отдельные Reddit-only токены из
-  `REDDIT_SEARCH_CLIENT_TOKENS` (comma-separated server env). Они не проходят
-  `verify_agent_context_token` и не дают доступ к Панэксу/Agent Context API.
-- Владелец сохраняет обратную совместимость: `AGENT_CONTEXT_API_TOKEN` также
-  принимается этим endpoint, но не распространяется внешним пользователям.
-- Rate limit остаётся per-token, поэтому клиенты не делят один bucket.
-- Таймаут переиспользует `AGENT_CONTEXT_TIMEOUT_SECONDS` (синхронный
-  `asyncio.wait_for`, тот же паттерн, что у Agent Context); таймаут → `504`.
+- Generic external clients receive separate Reddit-only tokens from
+  `REDDIT_SEARCH_CLIENT_TOKENS` (comma-separated server env). They do not pass
+  `verify_agent_context_token` and do not grant access to Panex / Agent Context API.
+- The owner keeps backward compatibility: `AGENT_CONTEXT_API_TOKEN` is also
+  accepted by this endpoint but is not distributed to external users.
+- Rate limiting remains per-token, so clients do not share a single bucket.
+- The timeout reuses `AGENT_CONTEXT_TIMEOUT_SECONDS` (synchronous
+  `asyncio.wait_for`, the same pattern as Agent Context); timeout → `504`.
 
 ### Request
 
@@ -441,9 +439,9 @@ Content-Type: application/json
 }
 ```
 
-- `query`: 3–1000 символов; пустой/слишком короткий/слишком длинный → `422`
-  (глобальный validation handler, `error=validation_error`).
-- Других tuning-параметров нет.
+- `query`: 3–1000 characters; empty/too short/too long → `422`
+  (global validation handler, `error=validation_error`).
+- There are no other tuning parameters.
 
 ### Response (200)
 
@@ -465,52 +463,51 @@ Content-Type: application/json
 }
 ```
 
-- `sources` — только высокоуверенные посты, которые прошёл confidence-фильтр.
-- `found_count` — число уникальных кандидатов, дошедших до ранжирования
-  (до confidence-фильтра); поэтому оно может быть (и обычно бывает) больше
-  числа `sources`.
+- `sources` — only high-confidence posts that passed the confidence filter.
+- `found_count` — the number of unique candidates that reached ranking
+  (before the confidence filter); therefore it can be (and usually is) larger
+  than the number of `sources`.
 
-### Семантика
+### Semantics
 
-| Сценарий | HTTP | status | answer / sources / message |
+| Scenario | HTTP | status | answer / sources / message |
 |---|---|---|---|
-| V2 дал synthesis + высокоуверенные посты | 200 | `completed` | synthesis + реальные источники, `message=null` |
-| После confidence-фильтра V2 осталось 0 постов | 200 | `abstained` | `answer=null`, `sources=[]`, короткое `message` |
-| proxy недоступен / исключение pipeline | 502 | — | безопасный короткий `detail`, без внутреннего текста ошибки |
-| Превышен `AGENT_CONTEXT_TIMEOUT_SECONDS` | 504 | — | безопасный короткий `detail` |
-| Ошибка валидации query | 422 | — | глобальный validation handler (`error=validation_error`) |
-| Token отсутствует/неверен | 403 | — | та же семантика, что у Agent Context token |
+| V2 produced synthesis + high-confidence posts | 200 | `completed` | synthesis + real sources, `message=null` |
+| After the confidence filter V2 has 0 posts left | 200 | `abstained` | `answer=null`, `sources=[]`, short `message` |
+| proxy unavailable / pipeline exception | 502 | — | safe short `detail`, no internal error text |
+| `AGENT_CONTEXT_TIMEOUT_SECONDS` exceeded | 504 | — | safe short `detail` |
+| Query validation error | 422 | — | global validation handler (`error=validation_error`) |
+| Token missing/invalid | 403 | — | same semantics as the Agent Context token |
 
-Техническая ошибка никогда не возвращается как `200 + status="failed"`; будущий CLI
-отображает такие ответы на своё состояние `failed` и ненулевой exit code.
+A technical error is never returned as `200 + status="failed"`; the future CLI
+maps such responses onto its own `failed` state and a non-zero exit code.
 
-Response не содержит: chain-of-thought/скрытые prompts, tokens/credentials/env,
-внутренние stack traces, посторонние результаты experts/Telegram pipeline,
-выдуманные источники.
+The response contains none of: chain-of-thought/hidden prompts, tokens/credentials/env,
+internal stack traces, results from the experts/Telegram pipeline,
+invented sources.
 
-### Реализация и границы
+### Implementation and boundaries
 
-- Endpoint находится в `backend/src/api/agent_context_endpoint.py` и через
-  `run_reddit_search_v2()` (`backend/src/api/simplified_query_endpoint.py`) попадает
-  в тот же V2 pipeline, что и Panel, — второй копии pipeline нет.
-- Общий вход `run_reddit_search_v2()` разделяет результат на три состояния:
-  `completed` / `abstained` / `failed`; Panel SSE-путь использует ту же базовую
-  логику через `process_reddit_pipeline`.
-- `reddit-proxy:3000` остаётся внутренним sidecar: порт не публикуется, network
-  boundary не меняется.
-- Синхронная модель наследует существующие контракты timeout/response-size Agent
-  Context; если будущий реальный smoke покажет, что синхронный ответ непригоден,
-  расширение архитектуры обсудим отдельно.
+- The endpoint lives in `backend/src/api/agent_context_endpoint.py` and, via
+  `run_reddit_search_v2()` (`backend/src/api/simplified_query_endpoint.py`), goes into
+  the same V2 pipeline as the Panel — there is no second copy of the pipeline.
+- The shared entry `run_reddit_search_v2()` splits the result into three states:
+  `completed` / `abstained` / `failed`; the Panel SSE path uses the same base
+  logic via `process_reddit_pipeline`.
+- `reddit-proxy:3000` remains an internal sidecar: the port is not published, the network
+  boundary does not change.
+- The synchronous model inherits the existing Agent Context timeout/response-size contracts; if a future real smoke shows that a synchronous response is unusable,
+  extending the architecture will be discussed separately.
 
-### CLI-граница (реализована, контракт проверен)
+### CLI boundary (implemented, contract verified)
 
-Минимальный CLI/portable runner реализован в `backend/src/cli/reddit_search.py`
-(запуск: `python -m src.cli.reddit_search "..."`). Он ходит только в этот API,
-берёт URL/token из env (`REDDIT_SEARCH_API_URL` / `REDDIT_SEARCH_API_TOKEN`;
+A minimal CLI/portable runner is implemented in `backend/src/cli/reddit_search.py`
+(run: `python -m src.cli.reddit_search "..."`). It talks only to this API,
+takes the URL/token from env (`REDDIT_SEARCH_API_URL` / `REDDIT_SEARCH_API_TOKEN`;
 legacy owner fallback — `AGENT_CONTEXT_API_TOKEN`),
-никогда не печатает token, различает completed/abstained/failed и возвращает
-ненулевой exit code только при технической ошибке (сетевая ошибка, 5xx, таймаут,
-отсутствие token). abstained — это exit 0 с человекочитаемым сообщением.
+never prints the token, distinguishes completed/abstained/failed and returns
+a non-zero exit code only on a technical error (network error, 5xx, timeout,
+missing token). abstained is exit 0 with a human-readable message.
 
 ```bash
 python -m src.cli.reddit_search "What do practitioners say about Claude Code hooks?"
@@ -519,62 +516,62 @@ python -m src.cli.reddit_search --json "What changed in local LLMs"
 python -m src.cli.reddit_search --doctor --api-url http://127.0.0.1:8000/api/v1/agent/reddit-search
 ```
 
-- `--json` — стабильный машинный вывод сырого JSON ответа API (exit 0).
-- `--doctor` — проверка достижимости `/health` и наличия token в env (token не
-  требуется и не печатается); exit 1, если API недоступен или нездоров.
-- Репозиторный шаблон глобального Codex skill находится в
-  `.codex/skills/reddit-search/`; portable runner и installer — в `scripts/`.
-  Установка выполняется отдельно в пользовательские `~/.codex` и `~/.local/bin`,
-  без копирования или вывода token.
-- Универсальный пакет для сторонних CLI собирается командой
-  `scripts/build_reddit_search_generic_client.sh`; инструкция для пользователя —
+- `--json` — stable machine-readable output of the raw API JSON response (exit 0).
+- `--doctor` — checks `/health` reachability and token presence in env (the token is
+  not required and not printed); exit 1 if the API is unreachable or unhealthy.
+- The repository template of the global Codex skill lives in
+  `.codex/skills/reddit-search/`; the portable runner and installer are in `scripts/`.
+  Installation is performed separately into the user's `~/.codex` and `~/.local/bin`,
+  without copying or printing the token.
+- A universal package for third-party CLIs is built with
+  `scripts/build_reddit_search_generic_client.sh`; the user guide is
   `docs/guides/reddit-search-generic-client.md`.
-- Глобальный Codex skill не является частью production deploy: это локальная
-  пользовательская установка поверх уже опубликованного API.
+- The global Codex skill is not part of the production deploy: it is a local
+  user-side installation on top of the already published API.
 
-### Проверки
+### Verification
 
-- Контрактные тесты: `backend/tests/test_agent_reddit_search.py` (auth, границы
-  query, completed/abstained, таймаут/ошибка upstream, отсутствие stack
-  trace/secret, доказательство использования общей логики).
-- Production-доказательство после `выкатывай`: authenticated production smoke
-  (реальные Reddit-ссылки) + smoke старого Panel Reddit flow + подтверждение, что
-  production DB не обновлялась.
-
----
-
-## Ограничения
-
-1. Reddit search сам по себе не является качественным эталоном.  
-   Поэтому V2 оптимизируется не "под Reddit native search", а под релевантные Reddit-discussions.
-
-2. Comparison intent остаётся самым сложным типом запроса.  
-   Там легче всего поймать соседние benchmark/news посты.
-
-3. Scout остаётся LLM-шагом.  
-   V2 уменьшает его вред при промахах, но не убирает его полностью.
-
-4. Узкие infra/how-to кейсы могут честно возвращать маленький shortlist.  
-   Это лучше, чем заполнять выдачу смежными self-hosted / homelab тредами без прямого ответа.
+- Contract tests: `backend/tests/test_agent_reddit_search.py` (auth, query
+  boundaries, completed/abstained, upstream timeout/error, absence of stack
+  traces/secrets, proof that the shared logic is used).
+- Production proof after `выкатывай` (release): authenticated production smoke
+  (real Reddit links) + smoke of the old Panel Reddit flow + confirmation that
+  the production DB was not updated.
 
 ---
 
-## Файлы
+## Limitations
+
+1. Reddit search by itself is not a quality ground truth.  
+   Therefore V2 is optimized not "for Reddit native search" but for relevant Reddit discussions.
+
+2. Comparison intent remains the hardest query type.  
+   It is the easiest place to catch adjacent benchmark/news posts.
+
+3. Scout remains an LLM step.  
+   V2 reduces its harm on misses but does not remove it entirely.
+
+4. Narrow infra/how-to cases may honestly return a small shortlist.  
+   That is better than filling the results with adjacent self-hosted / homelab threads without a direct answer.
+
+---
+
+## Files
 
 - `backend/src/services/reddit_enhanced_service.py`
 - `backend/src/services/reddit_synthesis_service.py`
 - `services/reddit-proxy/src/index.ts`
 - `backend/scripts/eval_reddit_search_v2.py`
 - `backend/src/config.py`
-- `backend/src/api/simplified_query_endpoint.py` — `run_reddit_search_v2()` (общая трёх-состояная граница) и `process_reddit_pipeline`
+- `backend/src/api/simplified_query_endpoint.py` — `run_reddit_search_v2()` (shared three-state boundary) and `process_reddit_pipeline`
 - `backend/src/api/agent_context_endpoint.py` — `POST /api/v1/agent/reddit-search`
-- `backend/tests/test_agent_reddit_search.py` — контрактные тесты API
-- `backend/src/cli/reddit_search.py` — минимальный CLI-обёртка над API
-- `backend/tests/test_reddit_search_cli.py` — контрактные тесты CLI
-- `.codex/skills/reddit-search/SKILL.md` — инструкции глобального Codex skill
-- `.codex/skills/reddit-search/agents/openai.yaml` — metadata skill
-- `scripts/reddit_search_runner.py` — переносимый stdlib-only runner
-- `scripts/install_reddit_search_skill.sh` — безопасный installer skill + runner
-- `backend/tests/test_reddit_search_runner.py` — контрактные тесты runner
+- `backend/tests/test_agent_reddit_search.py` — API contract tests
+- `backend/src/cli/reddit_search.py` — minimal CLI wrapper over the API
+- `backend/tests/test_reddit_search_cli.py` — CLI contract tests
+- `.codex/skills/reddit-search/SKILL.md` — global Codex skill instructions
+- `.codex/skills/reddit-search/agents/openai.yaml` — skill metadata
+- `scripts/reddit_search_runner.py` — portable stdlib-only runner
+- `scripts/install_reddit_search_skill.sh` — safe installer for skill + runner
+- `backend/tests/test_reddit_search_runner.py` — runner contract tests
 
-Итог: Reddit Search V2 — это не "ещё больше AI-магии", а более строгий retrieval-пайплайн, где Scout только помогает, комментарии участвуют раньше, а нерелевантная выдача чаще отбрасывается вместо того, чтобы красиво синтезироваться.
+Bottom line: Reddit Search V2 is not "even more AI magic" but a stricter retrieval pipeline, where Scout only assists, comments participate earlier, and irrelevant results are more often dropped instead of being beautifully synthesized.

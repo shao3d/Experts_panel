@@ -1,65 +1,65 @@
 # Super-Passport Search Architecture (Experts Panel v2.0)
 
 > [!NOTE]
-> **Эволюция Фичи:** Данная архитектура эволюционировала. Текущая реализация (Embs&Keys Search) объединяет описанный здесь Entity-Centric FTS5 подход с **векторным поиском (`sqlite-vec`)** и сливает их через алгоритм *Reciprocal Rank Fusion (RRF)*. См. `hybrid_retrieval_plan.md` и исходный код `hybrid_retrieval_service.py` как актуальный SSOT.
+> **Feature Evolution:** This architecture has evolved. The current implementation (Embs&Keys Search) combines the Entity-Centric FTS5 approach described here with **vector search (`sqlite-vec`)** and merges them via the *Reciprocal Rank Fusion (RRF)* algorithm. See `hybrid_retrieval_plan.md` and the source code of `hybrid_retrieval_service.py` as the current SSOT.
 
-**Статус:** ✅ Эволюционировало в Hybrid Retrieval (Updated 2026-05-06)
-**Feature Flag:** `use_super_passport` (доступно через UI чекбокс "Embs&Keys"; backend default = `false`, текущий frontend init = `true`)
-**Цель:** Масштабирование предфильтрации постов для Map Phase через гибридный сплит (Vector + FTS5), предотвращение OOM/CPU spikes.
+**Status:** ✅ Evolved into Hybrid Retrieval (Updated 2026-05-06)
+**Feature Flag:** `use_super_passport` (exposed via the "Embs&Keys" UI checkbox; backend default = `false`, current frontend init = `true`)
+**Goal:** Scale the pre-filtering of posts for the Map Phase via a hybrid split (Vector + FTS5) and prevent OOM/CPU spikes.
 
 ---
 
-## 📊 Текущая архитектура (из кода и БД)
+## 📊 Current Architecture (from code and DB)
 
-Решение базируется на трёх столпах:
-1. **Паттерн Bulkhead:** Глобальное ограничение параллельности (`MAX_CONCURRENT_EXPERTS=5`) → спасти сервер от OOM.
-2. **Двухэтапная воронка (FTS5 + Vector KNN):** Pre-filter постов через SQLite FTS5 + Vector KNN (sqlite-vec) с RRF → снижение входа в Map Phase на 70–90%.
-3. **AI Scout (Entity-Centric v3):** LLM генерирует OR-only облака сущностей (например, `rag OR retrieval OR vector`) с билингвальным расширением, игнорируя глаголы, чтобы не забивать BM25 мусором.
+The solution rests on three pillars:
+1. **Bulkhead Pattern:** A global concurrency cap (`MAX_CONCURRENT_EXPERTS=5`) → protects the server from OOM.
+2. **Two-stage funnel (FTS5 + Vector KNN):** Pre-filtering of posts via SQLite FTS5 + Vector KNN (sqlite-vec) with RRF → reduces the input to the Map Phase by 70–90%.
+3. **AI Scout (Entity-Centric v3):** The LLM generates OR-only entity clouds (e.g., `rag OR retrieval OR vector`) with bilingual expansion, ignoring verbs so they do not pollute BM25 with noise.
 
-### Полный пайплайн (6+ фаз)
+### Full Pipeline (6+ Phases)
 
-FTS5 влияет ТОЛЬКО на шаг 1. Все остальные фазы работают с результатом Map, не с исходными постами.
+FTS5 affects ONLY step 1. All other phases operate on the Map output, not on the original posts.
 
 ```
-1. AI Scout генерирует FTS5 MATCH-запрос (OR-only Entity Cloud), параллельно оркестратор считает query embedding.
-2. Загрузка постов:
-   - FTS5 ищет совпадения по `message_text`; перед SQL общий sanitizer нормализует опасные токены (`file-fist*`, `метод?*`, незакрытые кавычки) в safe OR-only запрос.
-   - Vector KNN ищет по предвычисленным эмбеддингам (`sqlite-vec`).
-   - RRF с Soft Freshness Decay сливает результаты в единый shortlist.
-   - Если hybrid retrieval не дал usable shortlist, сервис откатывается к стандартной загрузке всех постов эксперта.
-3. Map Phase (LLM-чанки по 50 постов)
-4. HIGH/MEDIUM split → Medium Scoring (второй LLM)
-5. Resolve (link expansion из links table)
-6. Reduce (финальный синтез)
+1. AI Scout generates the FTS5 MATCH query (OR-only Entity Cloud); in parallel, the orchestrator computes the query embedding.
+2. Post loading:
+   - FTS5 searches for matches in `message_text`; before SQL, a shared sanitizer normalizes dangerous tokens (`file-fist*`, `метод?*`, unbalanced quotes) into a safe OR-only query.
+   - Vector KNN searches over pre-computed embeddings (`sqlite-vec`).
+   - RRF with Soft Freshness Decay merges the results into a single shortlist.
+   - If hybrid retrieval does not produce a usable shortlist, the service falls back to the standard loading of all expert posts.
+3. Map Phase (LLM chunks of 50 posts)
+4. HIGH/MEDIUM split → Medium Scoring (second LLM)
+5. Resolve (link expansion from the links table)
+6. Reduce (final synthesis)
 7. Language Validation
 8. Comment Groups (drift analysis)
 ```
 
 ---
 
-## 🔬 Эволюция пайплайна (A/B тесты)
+## 🔬 Pipeline Evolution (A/B Tests)
 
-### Проблема v1: AND-фильтр убивал Recall
-Первая версия Скаута генерировала запросы с `AND` (например: `(rag OR вектор*) AND (настрой* OR config*)`). 
-Это отсеивало 87% релевантных постов, потому что эксперты редко используют оба типа слов в одном посте. **Recall падал до 15%**.
+### v1 Problem: The AND Filter Killed Recall
+The first Scout version generated queries with `AND` (e.g., `(rag OR вектор*) AND (настрой* OR config*)`). 
+It filtered out 87% of relevant posts, because experts rarely use both word types in a single post. **Recall dropped to 15%**.
 
-### Решение v2: Entity-Centric Scout
-Сделан переход на OR-only запросы. AI Scout теперь выделяет только технические сущности и разворачивает их в широкое облако (`rag OR retrieval* OR вектор* OR эмбеддинг*`).
-*Результат:* Recall вырос до **70%**. FTS5 работает как широкий "пылесос", а Map Phase семантически фильтрует мусор.
+### v2 Solution: Entity-Centric Scout
+The Scout was switched to OR-only queries. AI Scout now extracts only technical entities and expands them into a broad cloud (`rag OR retrieval* OR вектор* OR эмбеддинг*`).
+*Result:* Recall rose to **70%**. FTS5 works as a wide "vacuum", while the Map Phase filters the noise out semantically.
 
-### Проблема v2: Semantic Gap
-FTS5 — это лексический поиск. Пост эксперта: *"Отличный гайд по подаче данных в модель по документам"* семантически относится к RAG, но FTS5 его никогда не найдет, так как там нет слова "RAG" или "вектор".
+### v2 Problem: Semantic Gap
+FTS5 is lexical search. An expert post — *"Отличный гайд по подаче данных в модель по документам"* — is semantically about RAG, but FTS5 will never find it, since it contains neither the word "RAG" nor "вектор".
 
-### Финальное решение: Hybrid Retrieval (Vector KNN + FTS5 + RRF)
+### Final Solution: Hybrid Retrieval (Vector KNN + FTS5 + RRF)
 
-> **Примечание:** Промежуточное решение через Pre-computed Metadata (`enrich_post_metadata.py`) было удалено в марте 2026. AI Scout v3 с билингвальными OR-запросами и вайлдкартами полностью закрывает Semantic Gap на стороне FTS5, а Vector KNN (`sqlite-vec`) добавляет семантический поиск по эмбеддингам.
+> **Note:** The intermediate solution based on Pre-computed Metadata (`enrich_post_metadata.py`) was removed in March 2026. AI Scout v3 with bilingual OR-queries and wildcards fully closes the Semantic Gap on the FTS5 side, while Vector KNN (`sqlite-vec`) adds semantic search over embeddings.
 
-Текущая архитектура:
-1. **AI Scout v3** генерирует OR-only Entity Cloud (`rag OR retrieval* OR вектор* OR эмбеддинг*`) с билингвальным расширением.
-2. **FTS5** ищет по чистому `message_text` (без LLM-метаданных, миграция 023).
-3. **Vector KNN** (`sqlite-vec`) ищет по предвычисленным эмбеддингам (`embed_posts.py`).
-4. **RRF** сливает результаты FTS5 и Vector KNN с Soft Freshness Decay.
-5. **Smart Fallback** возвращает стандартную выборку постов эксперта, если hybrid path не даёт достаточного результата.
+The current architecture:
+1. **AI Scout v3** generates an OR-only Entity Cloud (`rag OR retrieval* OR вектор* OR эмбеддинг*`) with bilingual expansion.
+2. **FTS5** searches the raw `message_text` (no LLM metadata; migration 023).
+3. **Vector KNN** (`sqlite-vec`) searches over pre-computed embeddings (`embed_posts.py`).
+4. **RRF** merges the FTS5 and Vector KNN results with Soft Freshness Decay.
+5. **Smart Fallback** returns the standard selection of expert posts if the hybrid path does not produce a sufficient result.
 
 ### Sanitation hardening (2026-05-06)
 
@@ -80,20 +80,20 @@ such as `no such column: fist`; the Vector KNN side remains available either way
 
 ---
 
-## 🛡️ Защиты и Edge Cases
+## 🛡️ Safeguards and Edge Cases
 
-| # | Edge Case | Серьёзность | Решение |
+| # | Edge Case | Severity | Mitigation |
 |---|-----------|-------------|---------|
-| 1 | FTS5 Syntax Error на спецсимволах, дефисах, punctuation и кавычках | 🔴 | Скаут переводит `C++` в `cpp OR "си плюс плюс"`. Fallback и общий sanitizer не выпускают `C++*`, `file-fist*`, `метод?*` или незакрытые фразы в FTS5. |
-| 2 | BM25 Pollution (мусор в выдаче) | 🔴 | Промпт Скаута строго запрещает использование глаголов и общих слов (настройка, опыт). |
-| 3 | Hybrid path не дал usable shortlist | 🟡 | Smart Fallback: возврат к стандартной загрузке постов эксперта (например, если нет эмбеддингов или retrieval не дал пригодного shortlist). |
-| 4 | Semantic Gap | 🟡 | Решено через Vector KNN (sqlite-vec) + AI Scout v3 билингвальное расширение. |
-| 5 | Video Hub несовместим | 🟡 | Явное исключение `if expert_id == "video_hub"`. Видео-сайдкар работает независимо. |
-| 6 | I/O взрыв Map Phase | 🟡 | Глобальный `Semaphore(MAX_CONCURRENT_EXPERTS=5)`. |
-| 7 | Ошибки JSON в Map Phase | 🟡 | `MAP_CHUNK_SIZE` снижен со 100 до 50 для стабильности генерации длинных JSON ответов. |
+| 1 | FTS5 Syntax Error on special characters, hyphens, punctuation, and quotes | 🔴 | The Scout translates `C++` into `cpp OR "си плюс плюс"`. The fallback and the shared sanitizer never release `C++*`, `file-fist*`, `метод?*`, or unbalanced phrases into FTS5. |
+| 2 | BM25 Pollution (noise in results) | 🔴 | The Scout prompt strictly forbids verbs and generic words (настройка, опыт). |
+| 3 | Hybrid path produced no usable shortlist | 🟡 | Smart Fallback: fall back to the standard loading of expert posts (e.g., when there are no embeddings or retrieval yields no usable shortlist). |
+| 4 | Semantic Gap | 🟡 | Solved via Vector KNN (sqlite-vec) + AI Scout v3 bilingual expansion. |
+| 5 | Video Hub incompatibility | 🟡 | Explicit exclusion `if expert_id == "video_hub"`. The video sidecar runs independently. |
+| 6 | Map Phase I/O explosion | 🟡 | Global `Semaphore(MAX_CONCURRENT_EXPERTS=5)`. |
+| 7 | JSON errors in Map Phase | 🟡 | `MAP_CHUNK_SIZE` reduced from 100 to 50 for stable generation of long JSON responses. |
 
 ---
 
-## 🚀 Планы на будущее
+## 🚀 Future Plans
 
-Semantic Gap полностью закрыт через Hybrid Retrieval (Vector KNN + FTS5 + RRF). Metadata enrichment и Hybrid Mode (рандомное подмешивание) удалены как избыточные.
+The Semantic Gap is fully closed by Hybrid Retrieval (Vector KNN + FTS5 + RRF). Metadata enrichment and Hybrid Mode (random interleaving) were removed as redundant.
