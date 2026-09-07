@@ -483,7 +483,7 @@ def test_spec_records_and9_and_delivery_frame_contract():
     spec = _read(SPEC_PATH)
     normalized = _normalize(spec)
 
-    assert "AND-9 `experts_panel_researcher` / `Панэкс` subagent contract" in spec
+    assert "AND-9 `experts_panel_researcher` / `Panex` subagent contract" in spec
     assert "Панэкс" in spec
     assert "Панэнкс" in spec
     assert "UI/display labels" in spec
