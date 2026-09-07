@@ -164,10 +164,10 @@ type-check больше не глотается через `|| echo`. Попут
 
 `AGENT_CONTEXT_API_TOKEN` засветился в логах чат-агентов на VM
 (`~/.config/manicode/projects/dev/chats/*`); ротация требует действий владельца
-(env на VM + перевыдача). Отдельно: на Mac `reddit-search` нерабочий (токен не
-сконфигурирован; `--doctor` → `token_configured: false`) — настройка по
-`docs/guides/reddit-search-mac-setup.md`. После перехода на VM-first workflow
-(см. ниже) мак-токен стал менее актуальным.
+(env на VM + перевыдача). Mac-доступ к Reddit Search исправлен 2026-09-07:
+выдан отдельный Reddit-only client token, runner читает его из login Keychain,
+`--doctor` и живой V2-поиск проходят без token env. Ротация широкого owner-токена
+остаётся отдельной открытой задачей.
 
 ### 4. `/api/v1/log-batch` — ⬜
 

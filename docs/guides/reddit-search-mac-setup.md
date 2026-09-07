@@ -6,7 +6,7 @@
 
 1. синхронизировать Mac checkout с `main`;
 2. запустить штатный installer из репозитория;
-3. один раз настроить локальный `AGENT_CONTEXT_API_TOKEN` безопасным способом;
+3. один раз сохранить отдельный `REDDIT_SEARCH_API_TOKEN` в macOS Keychain;
 4. проверить `reddit-search --doctor`;
 5. перезапустить Codex и попросить его прочитать `AGENTS.md` и этот документ.
 
@@ -66,17 +66,22 @@ https://expa.beyondhorizon.dev/api/v1/agent/reddit-search
 ```
 
 URL можно переопределить через `REDDIT_SEARCH_API_URL`, но обычно это не требуется.
-Для поиска нужен `AGENT_CONTEXT_API_TOKEN`. Значение токена нельзя помещать в:
+Для поиска нужен отдельный `REDDIT_SEARCH_API_TOKEN`. Portable runner сначала
+проверяет env, а на macOS затем ищет его в Keychain как service
+`com.experts-panel.reddit-search`, account `reddit-search`. Значение токена нельзя
+помещать в:
 
 - этот документ;
 - `AGENTS.md` или `SKILL.md`;
 - GitHub, commit, issue или prompt;
 - shell history, логи или вывод команд.
 
-Настрой токен через локальный секретный механизм, который уже принят на Mac. Не
-выводи его на экран и не вставляй в чат. Если токен ещё не выдан, его нужно получить
-у владельца/оператора Experts Panel безопасным каналом; не брать его из репозитория,
-`.env`, логов или production checkout.
+Сохрани выданный Reddit-only токен в login Keychain через
+`security add-generic-password`; передавай значение через безопасный prompt, чтобы
+оно не попало в shell history и список процессов. Не выводи его на экран и не
+вставляй в чат. Не используй здесь owner-токен
+`AGENT_CONTEXT_API_TOKEN`, не бери секреты из репозитория, логов или production
+checkout.
 
 ## Проверка
 

@@ -504,7 +504,9 @@ invented sources.
 A minimal CLI/portable runner is implemented in `backend/src/cli/reddit_search.py`
 (run: `python -m src.cli.reddit_search "..."`). It talks only to this API,
 takes the URL/token from env (`REDDIT_SEARCH_API_URL` / `REDDIT_SEARCH_API_TOKEN`;
-legacy owner fallback — `AGENT_CONTEXT_API_TOKEN`),
+legacy owner fallback — `AGENT_CONTEXT_API_TOKEN`), and on macOS supports a
+safe login-Keychain fallback for a dedicated Reddit-only token (service
+`com.experts-panel.reddit-search`, account `reddit-search`),
 never prints the token, distinguishes completed/abstained/failed and returns
 a non-zero exit code only on a technical error (network error, 5xx, timeout,
 missing token). abstained is exit 0 with a human-readable message.

@@ -21,5 +21,5 @@ chmod 755 "$BIN_DIR/reddit-search"
 
 printf 'Installed global Codex skill: %s\n' "$SKILL_DIR"
 printf 'Installed command: %s/reddit-search\n' "$BIN_DIR"
-printf '%s\n' 'Set AGENT_CONTEXT_API_TOKEN in your user environment before searching.'
+printf '%s\n' 'Configure REDDIT_SEARCH_API_TOKEN in env or the documented macOS Keychain item before searching.'
 printf '%s\n' 'No token was created, copied, or printed by this installer.'
