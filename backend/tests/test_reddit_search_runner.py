@@ -37,9 +37,30 @@ def test_requires_query():
 
 
 def test_requires_token_for_search():
-    result = run_runner("hooks", env={"PATH": os.environ.get("PATH", "")})
+    result = run_runner(
+        "hooks",
+        env={"PATH": os.environ.get("PATH", ""), "REDDIT_SEARCH_DISABLE_KEYCHAIN": "1"},
+    )
     assert result.returncode == 1
     assert "REDDIT_SEARCH_API_TOKEN" in result.stderr
+
+
+def test_token_falls_back_to_macos_keychain():
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("reddit_search_runner", RUNNER)
+    runner = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(runner)
+
+    completed = subprocess.CompletedProcess([], 0, stdout="reddit-only-token\n", stderr="")
+    with (
+        patch.dict(runner.os.environ, {}, clear=True),
+        patch.object(runner.platform, "system", return_value="Darwin"),
+        patch.object(runner.subprocess, "run", return_value=completed) as run,
+    ):
+        assert runner.configured_token() == "reddit-only-token"
+    assert run.call_args.args[0][:3] == ["security", "find-generic-password", "-s"]
 
 
 def test_doctor_uses_health_endpoint():

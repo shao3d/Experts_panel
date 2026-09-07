@@ -508,6 +508,9 @@ Response не содержит: chain-of-thought/скрытые prompts, tokens/
 (запуск: `python -m src.cli.reddit_search "..."`). Он ходит только в этот API,
 берёт URL/token из env (`REDDIT_SEARCH_API_URL` / `REDDIT_SEARCH_API_TOKEN`;
 legacy owner fallback — `AGENT_CONTEXT_API_TOKEN`),
+а на macOS поддерживает безопасный fallback к login Keychain для отдельного
+Reddit-only токена (service `com.experts-panel.reddit-search`, account
+`reddit-search`),
 никогда не печатает token, различает completed/abstained/failed и возвращает
 ненулевой exit code только при технической ошибке (сетевая ошибка, 5xx, таймаут,
 отсутствие token). abstained — это exit 0 с человекочитаемым сообщением.

@@ -11,6 +11,8 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import platform
+import subprocess
 import sys
 import urllib.error
 import urllib.request
@@ -18,6 +20,8 @@ from typing import Any
 
 DEFAULT_API_URL = "https://expa.beyondhorizon.dev/api/v1/agent/reddit-search"
 DEFAULT_TIMEOUT = 600.0
+DEFAULT_KEYCHAIN_SERVICE = "com.experts-panel.reddit-search"
+DEFAULT_KEYCHAIN_ACCOUNT = "reddit-search"
 
 
 class RunnerError(Exception):
@@ -55,11 +59,40 @@ def timeout(args: argparse.Namespace) -> float:
     return value
 
 
-def token() -> str:
-    value = (
+def keychain_token() -> str:
+    """Read the dedicated Reddit token from macOS Keychain without printing it."""
+    if platform.system() != "Darwin" or os.getenv("REDDIT_SEARCH_DISABLE_KEYCHAIN") == "1":
+        return ""
+    try:
+        result = subprocess.run(
+            [
+                "security",
+                "find-generic-password",
+                "-s",
+                os.getenv("REDDIT_SEARCH_KEYCHAIN_SERVICE", DEFAULT_KEYCHAIN_SERVICE),
+                "-a",
+                os.getenv("REDDIT_SEARCH_KEYCHAIN_ACCOUNT", DEFAULT_KEYCHAIN_ACCOUNT),
+                "-w",
+            ],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+    except OSError:
+        return ""
+    return result.stdout.strip() if result.returncode == 0 else ""
+
+
+def configured_token() -> str:
+    return (
         os.getenv("REDDIT_SEARCH_API_TOKEN", "").strip()
         or os.getenv("AGENT_CONTEXT_API_TOKEN", "").strip()
+        or keychain_token()
     )
+
+
+def token() -> str:
+    value = configured_token()
     if not value:
         raise RunnerError("REDDIT_SEARCH_API_TOKEN is required")
     return value
@@ -106,10 +139,7 @@ def doctor(args: argparse.Namespace) -> dict[str, Any]:
         "api_url": url,
         "health_status": payload.get("status", "unknown"),
         "database": database.get("status") or payload.get("database", "unknown"),
-        "token_configured": bool(
-            os.getenv("REDDIT_SEARCH_API_TOKEN", "").strip()
-            or os.getenv("AGENT_CONTEXT_API_TOKEN", "").strip()
-        ),
+        "token_configured": bool(configured_token()),
     }
 
 
