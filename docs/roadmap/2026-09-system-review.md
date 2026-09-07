@@ -1,7 +1,7 @@
 # Обзор системы и roadmap: ценностные фичи + техздоровье (2026-09)
 
 Status: Active roadmap
-Last updated: 2026-09-06
+Last updated: 2026-09-07
 Origin: большой обзор системы в Mac-сессии 05–06.09.2026 (птичий полёт по докам,
 код-dig backend/frontend/reddit-proxy, 4 живых Reddit-поиска через `reddit-search`,
 2 веб-поиска). Документ фиксирует выводы обзора и текущий статус каждого пункта.
@@ -49,7 +49,7 @@ Origin: большой обзор системы в Mac-сессии 05–06.09.
 | 2 | Evidence Viewer (подсветка улики в посте) | ✅ Сделано (03b1e4f) |
 | 3 | Golden-set eval harness с LLM-судьёй и baseline-diff | ⬜ Не начато |
 | 4 | Демо-корпус: `scripts/seed_demo.py` | ⬜ Не начато |
-| 5 | README-упаковка: скриншоты/GIF, диаграммы, example-запросы | 🟡 Частично |
+| 5 | README-упаковка: скриншоты/GIF, диаграммы, example-запросы | 🟡 Остались только example-запросы |
 | 6 | Feedback 👍/👎 → eval-сет | ⬜ Не начато |
 | 7 | Saved Searches + Telegram-дайджест | ⬜ Не начато |
 | 8 | Hacker News сайдкар (Algolia API) | ⬜ Не начато |
@@ -93,12 +93,17 @@ Origin: большой обзор системы в Mac-сессии 05–06.09.
 `test_agent_context_custom_accepts_database_expert_outside_static_groups`, которые
 сейчас пропускаются на пустой CI-БД.)
 
-### 5. README-упаковка — 🟡
+### 5. README-упаковка — 🟡 остались только example-запросы
 
-Фичевые bullets актуализированы (verified citations описаны). Осталось:
-скриншоты UI, GIF «вопрос → SSE-прогресс → ответ с бейджем → клик → подсветка»,
-рендер диаграмм (заготовки лежат в локальной `review/`, в git не входят), кнопки
-«Try example query», реплеящие сохранённые `query_results/*.json`.
+Сделано (2026-09-07): секция «See it in action» с GIF «вопрос → SSE-прогресс →
+ответ с бейджем → клик → подсветка улики» (`docs/assets/readme/demo.gif`,
+снят с живого прода: эксперты AI_Arch + Ostrikov, запрос про AI-агентов),
+стоп-кадры (задать вопрос / cross-expert synthesis / verified citations) и две
+mermaid-диаграммы в «Architecture at a glance» (query flow + citation
+verification, рендерятся нативно на GitHub — заготовки из мак-локальной
+`review/` не понадобились). Осталось: кнопки «Try example query», реплеящие
+сохранённые `query_results/*.json` — это маленькая фича во фронтенде, а не
+упаковка.
 
 ### 6. Feedback-петля 👍/👎 — ⬜
 

@@ -8,6 +8,18 @@ Choose one or more experts, ask a question in English or Russian, and get an ans
 
 [Open the live app](https://expa.beyondhorizon.dev/)
 
+## See it in action
+
+![Demo run: two experts answer a question about AI coding agents while pipeline progress streams in; clicking a citation opens the source post with the supporting words highlighted](docs/assets/readme/demo.gif)
+
+Every expert answer card carries a server-verified citations badge, and clicking any `[post:ID]` citation opens the source post with the exact supporting words highlighted:
+
+![Clicking a citation opens the source post and highlights the words that support the claim](docs/assets/readme/citation-verification.png)
+
+| Ask a question | Cross-expert synthesis |
+| --- | --- |
+| ![Ask a question: select experts and type it in English or Russian](docs/assets/readme/ask-question.png) | ![Cross-expert analysis: consensus, disagreements, and what only one expert mentioned](docs/assets/readme/cross-expert-analysis.png) |
+
 ## What it does
 
 - Searches curated expert corpora with hybrid retrieval: vector KNN, FTS5, and Reciprocal Rank Fusion.
@@ -79,6 +91,54 @@ graph LR
 ```
 
 The detailed pipeline is documented in [Pipeline Architecture](docs/architecture/pipeline.md). Hybrid retrieval is covered in [Super Passport Search](docs/architecture/super-passport-search.md).
+
+### Query flow
+
+Each selected expert runs the same pipeline in isolation, so answers never cross expert boundaries. Citation verification, comment analysis, and the Reddit sidecar all run in parallel with the main chain instead of stretching it:
+
+```mermaid
+flowchart TD
+    Q["User question (RU/EN)"] --> H["Hybrid retrieval<br/>Vector KNN + FTS5 + RRF<br/>AI Scout query expansion"]
+    H --> MAP["1 · Map — relevance scoring<br/>HIGH / MEDIUM / LOW"]
+    MAP --> MED["2 · Medium rerank<br/>rescue top MEDIUM posts"]
+    MED --> RES["3 · Resolve — expand<br/>HIGH posts with linked context"]
+    RES --> RED["4 · Reduce — expert synthesis<br/>with [post:ID] citations"]
+    RED --> LV["5 · Language validation<br/>translate answer if needed"]
+    RED -. parallel .-> CV["5b · Citation verification<br/>lexical layer + LLM judge"]
+    RED -. parallel .-> COM["6–7 · Comment groups<br/>+ comment synthesis"]
+    LV --> RESP["Expert answer card<br/>with verification badge"]
+    CV --> RESP
+    COM --> RESP
+    RESP --> META["10 · Meta-synthesis<br/>cross-expert analysis"]
+    META --> SSE["SSE progress + durable result<br/>fetched by request_id"]
+    RD["8 · Reddit sidecar — independent,<br/>degrades on its own"] -.-> ROUT["Separate community section,<br/>or an honest empty result"]
+    ROUT --> SSE
+```
+
+### How citation verification works
+
+The badge is not a self-report from the model that wrote the answer. Every claim with a `[post:ID]` citation is checked against the cited post by a deterministic lexical layer, then a cheap LLM judge refines the verdicts where wording alone is misleading:
+
+```mermaid
+flowchart LR
+    ANS["Answer text with<br/>[post:ID] citations"] --> SPLIT["Split into claims"]
+    SPLIT --> LEX["Lexical layer:<br/>normalized tokens, RU/EN stopwords,<br/>light stemming, numbers kept"]
+    LEX --> SCORE{"Containment score"}
+    SCORE -->|"≥ 0.6"| V["verified"]
+    SCORE -->|"≥ 0.3"| P["partial"]
+    SCORE -->|"< 0.3"| U["unsupported"]
+    SPLIT --> JUDGE["LLM judge, one batched call:<br/>substance over wording, across RU/EN"]
+    JUDGE --> OVR["Overrides the lexical<br/>verdict per claim"]
+    LEX --> EV["Word-level evidence anchor:<br/>offsets + fragment + matched forms"]
+    V --> POST["One verdict per post —<br/>the weakest citation wins"]
+    P --> POST
+    U --> POST
+    OVR --> POST
+    EV --> UI["Badge on the answer card +<br/>highlighted evidence in the source post"]
+    POST --> UI
+```
+
+Verification runs on the pre-translation answer against the same post context the synthesizer saw; verdicts are keyed by source post ID, so they stay valid for the translated text. Fail-open: any error means no badge, never a false one.
 
 ## Production and data updates
 
