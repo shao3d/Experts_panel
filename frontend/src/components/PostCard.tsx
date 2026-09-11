@@ -245,6 +245,23 @@ const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments,
         )}
       </div>
 
+      {/* Honest notice when the requested translation is unavailable */}
+      {post.translation_status === 'failed' && (
+        <div
+          style={{
+            marginBottom: '12px',
+            padding: '8px 12px',
+            backgroundColor: 'var(--ep-warning-bg)',
+            border: '1px solid var(--ep-yellow)',
+            borderRadius: 'var(--ep-radius-button)',
+            fontSize: '13px',
+            color: 'var(--ep-forest)',
+          }}
+        >
+          Translation temporarily unavailable — showing the original text.
+        </div>
+      )}
+
       {/* Post Content (with highlighted citation evidence when available) */}
       <div
         className="breakable-markdown"

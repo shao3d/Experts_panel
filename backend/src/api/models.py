@@ -700,6 +700,15 @@ class SimplifiedPostDetailResponse(BaseModel):
         default=None,
         description="Relevance score if available"
     )
+    translation_status: Optional[str] = Field(
+        default=None,
+        description=(
+            "Translation outcome for this request: 'translated' (message_text "
+            "is the English translation), 'original' (translation was not "
+            "requested), 'failed' (translation was requested but is currently "
+            "unavailable; message_text is the original Russian text)"
+        )
+    )
 
 
 class PostDetailResponse(BaseModel):

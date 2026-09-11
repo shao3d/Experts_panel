@@ -452,7 +452,8 @@ class CommentGroupMapService:
                 model=model_name,
                 messages=messages,
                 temperature=0.2,
-                response_format={"type": "json_object"}
+                response_format={"type": "json_object"},
+                max_tokens=4096,  # Group-mapping JSON; 402 guard
             )
         raise ValueError("OpenRouter LLM client not initialized")
 

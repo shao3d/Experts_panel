@@ -25,7 +25,7 @@ The frontend source code is located in `frontend/src/`:
   - **`QueryDeck.tsx`**: Desktop top query shell. Owns expanded/compact state, query summary, progress status text, lower collapse handle, and the `QueryForm` + `ProgressSection` grid.
   - **`QueryForm.tsx`**: Controlled query textarea and single `Ask` / `Stop` action button. Search toggles live in `Sidebar` (desktop) and the mobile expert drawer.
   - **`ExpertAccordion.tsx`**: Specialized view for expert and video insights (🎥 icons, "Video Archive" labels).
-  - **`PostCard.tsx`**: Renders Telegram posts and Video segments (YouTube deep-links via `media_metadata`).
+  - **`PostCard.tsx`**: Renders Telegram posts and Video segments (YouTube deep-links via `media_metadata`). Highlights the citation evidence fragment (substring-anchored) and shows a "Translation temporarily unavailable" notice when the backend reports `translation_status: 'failed'`.
   - **`ExpertResponse.tsx`**: Renders the AI answer with source citations.
   - **`MetaSynthesisSection.tsx`**: Cross-expert unified analysis (above expert accordions, ≥2 experts). Bilingual title: "Сводный анализ" / "Cross-Expert Analysis".
   - **`CommunityInsightsSection.tsx`**: Reddit analysis display.

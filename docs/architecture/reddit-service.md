@@ -106,6 +106,15 @@ If the found posts:
 
 then they are dropped. This is a deliberate tradeoff in favor of precision.
 
+If the AI rerank call itself fails (LLM outage, exhausted provider balance),
+the pipeline does **not** abstain on everything: candidates fall back to
+heuristic scoring with a neutral AI component (0.5, the same value an unrated
+post gets on a parse failure), so an outage degrades ranking quality — it
+never turns real results into a false "nothing found". Scout and rerank LLM
+calls also pass explicit `max_tokens` caps (1024/2048): their outputs are
+small JSON plans, and bounded requests stay affordable for low OpenRouter
+balances that reject the model-default 65536-token headroom with 402.
+
 The final synthesis can also honestly abstain if the shortlist formally passed
 ranking but collectively does not answer the question. Such a result is returned
 as `abstained`, not as a contradictory `completed` with an empty answer.

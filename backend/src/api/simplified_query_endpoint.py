@@ -66,7 +66,10 @@ from ..services.query_rate_limit_service import (
     check_query_rate_limit,
     resolve_client_ip,
 )
-from ..services.citation_verification_service import CitationVerificationService
+from ..services.citation_verification_service import (
+    CitationVerificationService,
+    extract_citation_claims,
+)
 from ..utils.error_handler import error_handler
 from ..utils.date_utils import get_cutoff_date
 from ..utils.language_utils import detect_query_language
@@ -183,18 +186,69 @@ def _query_results_dir() -> Path:
     return query_results_dir()
 
 
-async def _run_citation_verification(
+async def _translate_verification_sources(
     expert_id: str, answer: str, posts_by_id: dict
+) -> dict:
+    """Translate cited source texts with the shared cached translator.
+
+    Uses the same translation service (and therefore the same persistent
+    cache) as the post-detail endpoint, so the evidence fragments produced
+    from these texts are substrings of exactly what the source panel shows.
+    Posts whose translation fails keep their original text (fail-open).
+    """
+    cited_ids = {
+        post_id
+        for claim in extract_citation_claims(answer)
+        for post_id in claim["post_ids"]
+    }
+    texts = [
+        (post_id, posts_by_id[post_id])
+        for post_id in sorted(cited_ids)
+        if posts_by_id.get(post_id)
+    ]
+    if not texts:
+        return posts_by_id
+
+    translation_service = get_translation_service()
+    results = await asyncio.gather(
+        *[translation_service.translate_single_post(text) for _, text in texts],
+        return_exceptions=True,
+    )
+    translated = dict(posts_by_id)
+    for (post_id, _), result in zip(texts, results):
+        if isinstance(result, Exception):
+            logger.debug(
+                f"[{expert_id}] Verification source {post_id} translation "
+                f"failed, verifying against original text: {result}"
+            )
+            continue
+        translated[post_id] = result
+    return translated
+
+
+async def _run_citation_verification(
+    expert_id: str,
+    answer: str,
+    posts_by_id: dict,
+    translate_sources: bool = False,
 ) -> Optional[dict]:
     """Verify answer citations against their sources; None on any failure.
 
     Fail-open by design: a verification error must never break an answer.
     Verdicts are keyed by telegram_message_id, so they remain valid for the
     translated answer shown to the user.
+
+    With translate_sources=True (English queries) cited sources are verified
+    against the cached English translations the source panel displays, so
+    lexical evidence fragments anchor in the text the user actually sees.
     """
     if not config.CITATION_VERIFICATION_ENABLED or not answer:
         return None
     try:
+        if translate_sources and posts_by_id:
+            posts_by_id = await _translate_verification_sources(
+                expert_id, answer, posts_by_id
+            )
         service = CitationVerificationService()
         return await service.verify(answer, posts_by_id, expert_id=expert_id)
     except Exception as e:
@@ -823,6 +877,9 @@ async def process_expert_pipeline(
                 expert_id=expert_id,
                 answer=reduce_results.get("answer", ""),
                 posts_by_id=posts_by_id,
+                # English queries show translated posts: verify against the
+                # same cached translations so evidence fragments anchor.
+                translate_sources=(detected_language == "English"),
             )
         )
 
@@ -930,6 +987,9 @@ async def process_expert_pipeline(
                 expert_id=expert_id,
                 answer=reduce_results.get("answer", ""),
                 posts_by_id=posts_by_id,
+                # English queries show translated posts: verify against the
+                # same cached translations so evidence fragments anchor.
+                translate_sources=(detected_language == "English"),
             )
         )
 
@@ -1104,6 +1164,7 @@ Output one JSON object only:
                 model=config.MODEL_SCOUT,
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.1,
+                max_tokens=1024,  # Query-plan JSON is tiny; 402 guard
             )
 
             query_plan = _parse_reddit_query_plan(
@@ -2239,6 +2300,9 @@ async def get_post_detail(
         f"DEBUG: Before translation - should_translate={should_translate}, message_text_length={len(message_text)}"
     )
 
+    # Translation outcome reported to the frontend so it can tell the user
+    # when the displayed text is the original (translation unavailable).
+    translation_status = "original"
     if should_translate and message_text:
         logger.info(
             f"DEBUG: Starting translation for post {post_id} with content length {len(message_text)}"
@@ -2250,12 +2314,16 @@ async def get_post_detail(
                 message_text, post.author_name or "Unknown"
             )
             message_text = translated_text
+            translation_status = "translated"
             logger.info(
                 f"DEBUG: Successfully translated post {post_id} to English for query: {query[:50]}..."
             )
         except Exception as e:
-            logger.error(f"DEBUG: Translation failed for post {post_id}: {e}")
-            # Keep original text if translation fails
+            translation_status = "failed"
+            logger.error(
+                f"DEBUG: Translation failed for post {post_id}, returning "
+                f"original text: {e}"
+            )
     else:
         logger.info(
             f"DEBUG: Skipping translation for post {post_id} - should_translate={should_translate}, has_content={bool(message_text)}"
@@ -2300,4 +2368,5 @@ async def get_post_detail(
         channel_name=channel_username,  # Use username for Telegram links
         comments=comments,
         relevance_score=None,  # Not available for individual post fetch
+        translation_status=translation_status,
     )

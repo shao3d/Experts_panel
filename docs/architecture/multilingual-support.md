@@ -2,7 +2,7 @@
 
 **Status:** Production
 **Scope:** Query language detection, answer language enforcement, source translation, persistent translation cache.
-**Last verified against codebase: 2026-08-23**
+**Last verified against codebase: 2026-09-11**
 
 Experts Panel answers in the language of the question — Russian or English — regardless of the language the source material was written in. This document is the single source of truth for how that works.
 
@@ -30,9 +30,10 @@ Translation preserves `[post:ID]` citation markers and markdown links exactly, s
 
 Expert corpora are Russian. When the query is English, the cited sources are translated to English too:
 
-- **Source posts** — translated on fetch in `GET /api/v1/query` post details; the frontend loads them progressively with a translation progress indicator.
+- **Source posts** — translated on fetch in `GET /api/v1/posts/{id}`; the frontend loads them progressively with a translation progress indicator.
 - **Comments on source posts** — translated together with the post.
 - **Comment groups** (anchor posts + community comments) — translated in the expert pipeline before the response is returned.
+- **Citation verification sources** — for English queries the cited posts are translated (through the same shared cache) before verification, so word-level evidence fragments are substrings of exactly the translated text the source panel displays (see Pipeline, phase 5b).
 
 Proper names (author names, channel names) are intentionally left untranslated.
 
@@ -52,8 +53,11 @@ Translations are deterministic and source posts are static, so every translation
 
 ## Translation model
 
-Translations use `MODEL_ANALYSIS` (default `google/gemini-3.1-flash-lite` via OpenRouter): the cheapest, fastest tier — translation quality is not bottlenecked by the model, and source translation adds latency inside the pipeline for English queries, where speed matters. Overridable via the `MODEL_ANALYSIS` environment variable.
+Translations use `MODEL_ANALYSIS` (default `google/gemini-3.1-flash-lite` via OpenRouter): the cheapest, fastest tier — translation quality is not bottlenecked by the model, and source translation adds latency inside the pipeline for English queries, where speed matters. Overridable via the `MODEL_ANALYSIS` environment variable. Calls pass an explicit `max_tokens` cap (8192): without it the model default (65536) makes requests unaffordable for low OpenRouter balances, which answers them with 402.
 
 ## Failure behavior
 
-All translation paths degrade gracefully: on any failure the original text is returned untranslated and the query still succeeds. The language of the answer is enforced first by prompts; validation/translation is the safety net, not a hard gate.
+Translation failures never break a query, but they are not hidden either:
+
+- **Source posts** (`GET /api/v1/posts/{id}`): `translate_single_post` **raises** on LLM failure or an empty response. The endpoint keeps the original text and reports `translation_status: "failed"`; the source panel renders a "Translation temporarily unavailable" notice instead of silently displaying Russian under an English query. Successful translations report `"translated"`, posts that needed none report `"original"`.
+- **Comments and answer-level validation** stay fail-open: on failure the original text is returned without a flag. The answer language is enforced first by prompts; validation/translation is the safety net, not a hard gate.

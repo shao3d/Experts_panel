@@ -149,10 +149,14 @@ class TranslationService:
         """Call the shared OpenRouter LLM client."""
         if self.llm_client:
             # The shared client handles auth and retry automatically.
+            # Translations are prose bounded by the source post length; the
+            # explicit cap keeps requests affordable on low OpenRouter
+            # balances (without it the model default 65536 triggers 402).
             return await self.llm_client.chat_completions_create(
                 model=model_name,
                 messages=messages,
-                temperature=0.2
+                temperature=0.2,
+                max_tokens=8192,
             )
         raise ValueError("OpenRouter LLM client not initialized")
 
@@ -163,57 +167,55 @@ class TranslationService:
         reraise=True
     )
     async def translate_single_post(self, post_text: str, author_name: str = "Unknown") -> str:
-        """Translate a single post from Russian to English."""
-        try:
-            if not post_text or not post_text.strip():
-                return post_text
-                
-            # Check cache
-            cache_key = f"post:{post_text}:{author_name}"
-            cached = self._get_from_cache(cache_key)
-            if cached:
-                return cached
+        """Translate a single post from Russian to English.
 
-            # Persistent cache (survives restarts; posts are static content)
-            persisted = self._db_cache_get(post_text, "Russian", "English")
-            if persisted:
-                self._add_to_cache(cache_key, persisted)
-                return persisted
-
-            # Create prompt
-            prompt = self._prompt_template.substitute(
-                post_text=post_text,
-                author_name=author_name
-            )
-
-            messages = [
-                {"role": "system", "content": "You are a helpful translator. Translate Russian Telegram posts to natural English while preserving all links and formatting."},
-                {"role": "user", "content": prompt}
-            ]
-
-            response = None
-
-            # Direct call to the shared Vertex model
-            response = await self._call_llm(self.primary_model, messages)
-
-            # Get translated text
-            translated_text = response.choices[0].message.content.strip()
-
-            if not translated_text:
-                logger.warning("Empty translation response, returning original text")
-                return post_text
-
-            logger.debug(f"Translated post from {author_name} using Gemini")
-
-            # Update cache
-            self._add_to_cache(cache_key, translated_text)
-            self._db_cache_set(post_text, "Russian", "English", translated_text)
-
-            return translated_text
-
-        except Exception as e:
-            logger.error(f"Error translating post: {str(e)}")
+        Raises on translation failure (LLM error, empty response) so callers
+        can tell the user the translation is unavailable instead of silently
+        showing the untranslated text. Cached texts return instantly.
+        """
+        if not post_text or not post_text.strip():
             return post_text
+
+        # Check cache
+        cache_key = f"post:{post_text}:{author_name}"
+        cached = self._get_from_cache(cache_key)
+        if cached:
+            return cached
+
+        # Persistent cache (survives restarts; posts are static content)
+        persisted = self._db_cache_get(post_text, "Russian", "English")
+        if persisted:
+            self._add_to_cache(cache_key, persisted)
+            return persisted
+
+        # Create prompt
+        prompt = self._prompt_template.substitute(
+            post_text=post_text,
+            author_name=author_name
+        )
+
+        messages = [
+            {"role": "system", "content": "You are a helpful translator. Translate Russian Telegram posts to natural English while preserving all links and formatting."},
+            {"role": "user", "content": prompt}
+        ]
+
+        response = await self._call_llm(self.primary_model, messages)
+
+        # Get translated text
+        translated_text = response.choices[0].message.content.strip()
+
+        if not translated_text:
+            # ValueError is in the retry list: a blank response is worth one
+            # more attempt before the caller reports the failure.
+            raise ValueError("Empty translation response")
+
+        logger.debug(f"Translated post from {author_name} using Gemini")
+
+        # Update cache
+        self._add_to_cache(cache_key, translated_text)
+        self._db_cache_set(post_text, "Russian", "English", translated_text)
+
+        return translated_text
 
     async def translate_text(
         self,

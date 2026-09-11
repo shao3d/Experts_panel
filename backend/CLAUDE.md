@@ -54,7 +54,7 @@ The backend implements a sophisticated 10-phase query processing system. It uses
     - **Tiny Targeted Channel**: For narrow `how_to` / `troubleshooting` / `comparison` intents, backend may add a very small targeted retrieval on the strongest subreddit hints, while keeping global search active.
     - **Smaller Candidate Set**: Backend favors literal query + scout query + freshness/quality channels instead of many additive search hacks.
     - **Early Enrichment**: Top candidates fetch comments before final rerank so answer-bearing comments can influence ranking.
-    - **Answerability Rerank**: Gemini scores "does this answer the question?" rather than mere topical similarity.
+    - **Answerability Rerank**: Gemini scores "does this answer the question?" rather than mere topical similarity. On rerank LLM failure (outage, provider 402) candidates fall back to heuristic scoring with a neutral AI component — ranking degrades, results never collapse to a false "nothing found".
     - **Stronger Comparison Gate**: `comparison` queries prefer direct title/body matches and explicit comparison markers instead of comment-only overlaps.
     - **Confidence Thresholds**: Low-confidence Reddit results are dropped instead of filling the UI with adjacent noise.
     - **Debug Trace**: Optional structured trace via `REDDIT_SEARCH_DEBUG=true`.

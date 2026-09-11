@@ -167,7 +167,8 @@ Return ONLY valid JSON:
                 model=self.model_name,
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.2,
-                response_format={"type": "json_object"}
+                response_format={"type": "json_object"},
+                max_tokens=2048,  # Drift-topics JSON; 402 guard
             )
 
             # Parse OpenAI-compatible response format

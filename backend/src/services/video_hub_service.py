@@ -119,7 +119,8 @@ Output JSON ONLY:
                 model=self.map_model,
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.1,
-                response_format={"type": "json_object"}
+                response_format={"type": "json_object"},
+                max_tokens=4096,  # Scores JSON; 402 guard
             )
             data = json.loads(response.choices[0].message.content)
             return data.get("scores", [])

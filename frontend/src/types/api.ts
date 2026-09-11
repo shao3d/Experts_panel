@@ -435,6 +435,12 @@ export interface PostDetailResponse {
   comments: CommentResponse[];
   incoming_links: LinkResponse[];
   outgoing_links: LinkResponse[];
+  /**
+   * Translation outcome for this request: 'translated' (message_text is the
+   * English translation), 'original' (translation not requested), 'failed'
+   * (translation unavailable; message_text is the original Russian text).
+   */
+  translation_status?: 'translated' | 'original' | 'failed';
 }
 
 // ============================================================================

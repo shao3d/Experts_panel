@@ -325,7 +325,9 @@ Output JSON structure:
             response = await self._llm_client.chat_completions_create(
                 model=MODEL_SCOUT,
                 messages=[{"role": "user", "content": prompt}],
-                temperature=0.0  # Deterministic: stable plans across runs
+                temperature=0.0,  # Deterministic: stable plans across runs
+                max_tokens=1024  # Plan JSON is tiny; explicit cap keeps the
+                # request affordable for low OpenRouter balances (402 guard)
             )
             
             content = response.choices[0].message.content.strip()
@@ -1442,7 +1444,8 @@ Output JSON format ONLY:
             response = await self._llm_client.chat_completions_create(
                 model=rerank_model,
                 messages=[{"role": "user", "content": prompt}],
-                temperature=0.0
+                temperature=0.0,
+                max_tokens=2048  # Ratings JSON for <=18 posts; 402 guard
             )
             
             content = response.choices[0].message.content.strip()
@@ -1501,7 +1504,34 @@ Output JSON format ONLY:
             
         except Exception as e:
             logger.error(f"Error in _ai_rerank_posts: {e}")
-            return posts # Fallback to original order
+            return self._score_without_ai(posts)
+
+    def _score_without_ai(self, posts: List[RedditPost]) -> List[RedditPost]:
+        """Heuristic-only scoring for when the AI rerank call failed.
+
+        Without AI scores every post would keep ``final_score = 0.0`` and the
+        confidence filter would abstain on the whole candidate set, turning an
+        LLM outage into a false "nothing found". A neutral AI score (0.5, the
+        same value an unrated post gets when the rerank JSON fails to parse)
+        keeps the calibrated threshold semantics while letting strong
+        heuristic matches through.
+        """
+        scored_posts = []
+        for post in posts:
+            heuristic_component = min(post.heuristic_score / 1.4, 1.0)
+            engagement = max(post.score, 0) + post.num_comments
+            norm_engagement = min(math.log1p(engagement) / 8.0, 1.0)
+            final_score = (
+                (0.5 * 0.72)
+                + (heuristic_component * 0.23)
+                + (norm_engagement * 0.05)
+            )
+            post.ai_score = 0.5
+            post.final_score = final_score
+            post.ranking_reason = "LLM rerank unavailable"
+            scored_posts.append((post, final_score))
+        scored_posts.sort(key=lambda x: x[1], reverse=True)
+        return [p for p, _ in scored_posts]
     
     @staticmethod
     def _clean_serp_text(text: str) -> str:
