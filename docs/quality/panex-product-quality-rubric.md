@@ -9,7 +9,7 @@ returned `expert_digest` or `source_expand` data.
 
 It is intentionally separate from API contract tests:
 
-- API tests prove that Fly.io, auth, selection, retrieval, digest shape,
+- API tests prove that production auth, selection, retrieval, digest shape,
   `source_refs`, `source_index`, and `evidence_quality` work.
 - Delivery-quality eval checks whether the subagent faithfully delivers the
   Panel's digest/source expansion without becoming a second summarizer.
@@ -94,7 +94,7 @@ because a Request passport would imply that the agent actually called the API.
 ## AND-28 Relay-Only Digest Delivery
 
 AND-28 changes default `expert_digest` output from synthesis to delivery.
-Панэкс is still useful as the safe cross-repo protocol layer: it calls Fly.io,
+Панэкс is still useful as the safe cross-repo protocol layer: it calls production,
 saves artifacts, reads slices, preserves scope/warnings, and exposes source
 handles. It should not add another semantic reduce pass over the digest.
 
@@ -166,7 +166,7 @@ backend/.venv/bin/python backend/scripts/panex_quality_eval.py \
   --report-path backend/test_results/panex_quality_eval/latest.json
 ```
 
-For production dogfood, add `--live` and pass the Fly endpoint explicitly only
+For production dogfood, add `--live` and pass the production endpoint explicitly only
 when you intentionally want a fresh production digest:
 
 ```bash
@@ -174,7 +174,7 @@ backend/.venv/bin/python backend/scripts/panex_quality_eval.py \
   --scenario-id subagents_tradeoff \
   --answer-file /path/to/panex_answer.md \
   --live \
-  --api-url https://experts-panel.fly.dev/api/v1/agent/context \
+  --api-url https://expa.beyondhorizon.dev/api/v1/agent/context \
   --report-path backend/test_results/panex_quality_eval/latest.json
 ```
 

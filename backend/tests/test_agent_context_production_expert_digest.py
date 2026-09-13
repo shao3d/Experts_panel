@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Production BDD checks for Agent Context expert_digest on Fly.io.
+"""Production BDD checks for Agent Context expert_digest on production.
 
 These tests intentionally hit the deployed Experts Panel API. They are skipped
 unless AGENT_CONTEXT_PRODUCTION_LIVE=1 is set, so normal local/CI test runs do
@@ -22,8 +22,8 @@ sys.path.insert(0, str(BACKEND_DIR))
 from src.cli.bootstrap import load_backend_env
 
 
-PRODUCTION_API_URL = "https://experts-panel.fly.dev/api/v1/agent/context"
-PRODUCTION_EXPAND_API_URL = "https://experts-panel.fly.dev/api/v1/agent/context/expand"
+PRODUCTION_API_URL = "https://expa.beyondhorizon.dev/api/v1/agent/context"
+PRODUCTION_EXPAND_API_URL = "https://expa.beyondhorizon.dev/api/v1/agent/context/expand"
 PRODUCTION_TIMEOUT_SECONDS = float(
     os.getenv("AGENT_CONTEXT_PRODUCTION_TIMEOUT_SECONDS", "3600")
 )
@@ -67,7 +67,7 @@ class RedactedToken(str):
 @pytest.fixture(scope="session")
 def production_token() -> RedactedToken:
     if os.getenv("AGENT_CONTEXT_PRODUCTION_LIVE") != "1":
-        pytest.skip("Set AGENT_CONTEXT_PRODUCTION_LIVE=1 to hit production Fly.io")
+        pytest.skip("Set AGENT_CONTEXT_PRODUCTION_LIVE=1 to hit production")
 
     load_backend_env(BACKEND_DIR / ".env")
     token = os.getenv("AGENT_CONTEXT_API_TOKEN", "").strip()

@@ -21,7 +21,7 @@ if str(BACKEND_DIR) not in sys.path:
 from src.cli.bootstrap import load_backend_env
 
 
-PRODUCTION_API_URL = "https://experts-panel.fly.dev/api/v1/agent/context"
+PRODUCTION_API_URL = "https://expa.beyondhorizon.dev/api/v1/agent/context"
 DEFAULT_TIMEOUT_SECONDS = 3600.0
 DEFAULT_SCENARIOS_PATH = (
     BACKEND_DIR / "tests" / "fixtures" / "panex_quality_scenarios.json"

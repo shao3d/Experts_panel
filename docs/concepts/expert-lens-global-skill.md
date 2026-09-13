@@ -164,7 +164,7 @@ Panex digest and any expanded sources.
 After one `panex ask` or `panex expand` is submitted, treat it as the only
 in-flight request for that review.
 
-Do not start a duplicate request, broaden scope, restart Fly, update databases,
+Do not start a duplicate request, broaden scope, restart the production service, update databases,
 or run recovery mutations just because the request is slow, quiet, locally
 timed out, or progress is unclear. If submission status is ambiguous, ask the
 user before retrying.
@@ -173,8 +173,8 @@ Allowed read-only checks while waiting:
 
 ```bash
 fly status --app experts-panel
-curl --max-time 8 https://experts-panel.fly.dev/api/info
-curl --max-time 8 https://experts-panel.fly.dev/api/v1/experts
+curl --max-time 8 https://expa.beyondhorizon.dev/api/info
+curl --max-time 8 https://expa.beyondhorizon.dev/api/v1/experts
 ```
 
 For logs, use `timeout 10 fly logs --app experts-panel` when `timeout` exists,

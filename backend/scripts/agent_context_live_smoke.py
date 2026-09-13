@@ -342,7 +342,7 @@ def _normalize_api_url(raw_api_url: str) -> str:
     if parsed.scheme not in {"http", "https"} or not parsed.netloc:
         raise ValueError(
             "--api-url must be an absolute http(s) URL, for example "
-            "https://experts-panel.fly.dev/api/v1/agent/context."
+            "https://expa.beyondhorizon.dev/api/v1/agent/context."
         )
     return api_url.rstrip("/")
 
@@ -356,7 +356,7 @@ def _health_failure_message(target_mode: str) -> str:
     if target_mode == "external":
         return (
             "External Agent Context backend did not become healthy before timeout. "
-            "Check the Fly deployment, /health endpoint, and the explicit --api-url."
+            "Check the production deployment, /health endpoint, and the explicit --api-url."
         )
     return (
         "Local backend did not become healthy before timeout. "

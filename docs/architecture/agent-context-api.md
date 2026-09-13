@@ -2,7 +2,15 @@
 
 **Status:** Accepted / AND-5..AND-33 implemented / backend-durable artifact delivery deployed
 **Decision:** `.haft/decisions/dec-20260504-b2539c3d.md`
-**Last updated:** 2026-05-20
+**Last updated:** 2026-09-13
+
+> **Infrastructure update (2026-09-13):** Fly.io was retired on 2026-08-24.
+> Production Agent Context / Panex now runs on the Oracle VM and is reachable at
+> `https://expa.beyondhorizon.dev` (deploy via `.github/workflows/deploy-oracle.yml`).
+> Forward-looking targets and copy-pasteable URLs below were updated accordingly.
+> Historical "Fly.io" / "Fly release" mentions that are tied to dated measured
+> evidence (release numbers, deploy runs, past smoke results) are kept as
+> historical record and do not describe the current runtime target.
 
 This spec defines the first agent-facing surface for Experts Panel: an explicit-only research/context API for Codex, Claude Code, and similar coding/research agents.
 
@@ -18,7 +26,7 @@ Current state as of 2026-05-20:
 | AND-6 real `source_bundle` pipeline | Done | The endpoint now returns selected source bundles instead of the placeholder `experts=[]` response. It runs retrieval, Map, MEDIUM scoring, HIGH resolve, source selection, and main-source comment loading. |
 | AND-7 local CLI wrapper | Done | `src.cli.agent_context` calls the endpoint over HTTP with safe source-bundle defaults, keeps the token in the Authorization header, supports all/group/custom selection, and prints agent-readable summaries or raw JSON. |
 | AND-8 BDD acceptance hardening | Done | In-process CLI -> HTTP -> FastAPI -> `source_bundle` acceptance tests cover explicit expert selection, safe defaults, no full synthesis, source evidence shape, token boundary, and actionable API failures. |
-| AND-9 `experts_panel_researcher` / `Panex` subagent contract | Done | Repo-local Claude/Codex agent instructions and the user-level Codex shortcut exist, stay read-only, require explicit triggers, call the Agent Context CLI/wrapper only, pin real user calls to the production Fly.io endpoint, translate UI/Russian expert names to `expert_id`, accept human Russian trigger phrases without requiring API jargon, and return practitioner-opinion intelligence with a compact Request passport. |
+| AND-9 `experts_panel_researcher` / `Panex` subagent contract | Done | Repo-local Claude/Codex agent instructions and the user-level Codex shortcut exist, stay read-only, require explicit triggers, call the Agent Context CLI/wrapper only, pin real user calls to the production endpoint (`expa.beyondhorizon.dev`), translate UI/Russian expert names to `expert_id`, accept human Russian trigger phrases without requiring API jargon, and return practitioner-opinion intelligence with a compact Request passport. |
 | AND-10 local dogfood for `experts_panel_researcher` | Done | A synthetic source_bundle fixture and dogfood tests verify that readiness failures are actionable, local smoke remains explicit-only, and source evidence is usable for delivery/evidence-note workflows. |
 | AND-11 live local dogfood smoke | Done | `backend/scripts/agent_context_live_smoke.py` can preflight local readiness, start Experts Panel on a free localhost port, call the CLI with explicit `--api-url`, validate `source_bundle`, and write a sanitized report with `passed`/`skipped`/`failed` status. |
 | AND-12 paid local live smoke | Done | Paid local smoke passed with the default `refat,akimov` query and returned a valid real `source_bundle`. Runtime defaults are intentionally large (`3600s` / `100000000` bytes) because all-expert source-bundle requests are naturally long and bulky. |
@@ -33,7 +41,7 @@ Current state as of 2026-05-20:
 | AND-21 Panex delivery-quality eval scaffold | Done locally | Added a separate delivery-quality evaluation layer for final Panex answers, intentionally distinct from API contract tests. `docs/quality/panex-product-quality-rubric.md` defines the human-readable rubric; `backend/tests/fixtures/panex_quality_scenarios.json` defines golden scenarios; `backend/scripts/panex_quality_eval.py` scores a final answer against request fidelity, source grounding, signal honesty, coverage, relay delivery, brevity, expansion path, and external-link boundary checks. The evaluator is deterministic guardrail + human-review support, not an oracle for answer quality. |
 | AND-22 Panex adversarial delivery dogfood | Done locally + production dogfood | Added five BDD-heavy product scenarios for compact default behavior, weak-signal honesty, human Russian source expansion follow-up, external-link boundary, and exact expert-scope discipline. Production Panex dogfood against Fly.io passed all five new scenarios; the full delivery-quality evaluator run passed `11` scenarios with `0` failures. |
 | AND-23 selector-based expansion UX | Done locally + production dogfood | Panex instructions now map human follow-up selectors such as "раскрой по Рефату" ("expand for Refat"), "этот вывод" ("this conclusion"), "самый спорный источник" ("the most controversial source"), "что там в комментариях" ("what about the comments there"), and "слабые места" ("weak spots") onto exact source handles from the previous `expert_digest`. Default expansion stays small: top 1 per named expert, top 1-2 generic strongest sources, and never all sources unless explicitly requested. Ambiguous selectors and missing previous digest context must ask one clarification or request a main Panex question first instead of guessing handles or running a new search. Production dogfood on Fly.io passed digest -> named-expert expansion (`refat:239`) and comments/weak-source expansion (`doronin:73`) without rerunning a new digest/source_bundle. |
-| AND-24 cross-repo Panex portable runner | Done locally + production dogfood | Added the global/user-level `panex` runner contract for calling Panex from any repo/cwd. `panex ask` defaults to production Fly.io and `response_mode=expert_digest`, ignores ambient local `AGENT_CONTEXT_API_URL` unless `--local` or `--api-url` is explicit, keeps `source_bundle` as opt-in raw/audit mode through `--response-mode source_bundle`, and `panex expand` targets production `source_expand` by default. `panex doctor` verifies setup without printing secrets; `scripts/install_panex_runner.sh` installs `~/.local/bin/panex` without storing the API token. Production dogfood from `/private/tmp` passed `panex ask` for `refat` and `panex expand refat:238` against Fly.io. |
+| AND-24 cross-repo Panex portable runner | Done locally + production dogfood | Added the global/user-level `panex` runner contract for calling Panex from any repo/cwd. `panex ask` defaults to production (`expa.beyondhorizon.dev`) and `response_mode=expert_digest`, ignores ambient local `AGENT_CONTEXT_API_URL` unless `--local` or `--api-url` is explicit, keeps `source_bundle` as opt-in raw/audit mode through `--response-mode source_bundle`, and `panex expand` targets production `source_expand` by default. `panex doctor` verifies setup without printing secrets; `scripts/install_panex_runner.sh` installs `~/.local/bin/panex` without storing the API token. Production dogfood from `/private/tmp` passed `panex ask` for `refat` and `panex expand refat:238` against Fly.io. |
 | AND-31 DB-synced all-experts scope + faithful digest delivery | Done locally | Agent Context `expert_scope=all` now resolves from `expert_metadata` at request time instead of the static 17-expert group union, while still excluding unsupported special sources such as `video_hub`. Default `expert_digest` caps are opt-in (`0` = all selected evidence/signals), the Panel-side digest LLM gets a `16384` output-token budget per expert, and Panex instructions require clean delivery of the backend digest without shortening, reranking, or second-summarizing it. |
 | AND-32 artifact-first wide digest delivery | Done locally | All-experts `panex ask` now requires `--save` or `--output`, saved artifacts default to `~/.local/share/panex/artifacts`, receipts point to `panex read` and `panex export`, and `panex export` writes deterministic `manifest.json`, `digest.md`, and `sources_index.tsv`. This keeps the old UI Reduce/MetaSynthesis untouched and avoids adding a second backend panel-digest path. |
 | AND-33 backend-durable Panex artifact delivery | Done + deployed | `panex ask --save` and `panex expand --save` now use backend artifact endpoints first: `/api/v1/agent/context/artifact` and `/api/v1/agent/context/expand/artifact` build and persist the full Agent Context result server-side, then return a compact receipt with `result_url`; the CLI fetches `/api/v1/agent/context/{request_id}/result` and saves the local artifact. Backend-saved Agent Context artifacts are cleaned on startup after `AGENT_CONTEXT_RESULTS_TTL_DAYS` (default: 7 days). This hardens transport for large/long requests without adding a new analysis mode or Panex-side meta-synthesis. |
@@ -46,7 +54,7 @@ Current state as of 2026-05-20:
 | AND-30 LLM JSON parse hardening | Done locally | Production logs showed repeated `JSONDecodeError` in Map and `expert_digest` reduce when Gemini returned fenced, repaired-but-not-strict, control-character, or truncated JSON despite JSON-mode prompting. `parse_llm_json()` now centralizes strict parse, fenced/extracted JSON, and `json_repair` fallback for LLM JSON surfaces. Plain safety/error text still fails closed into existing fallback behavior. Map prompt also stops asking for `LOW` items because downstream Agent Context ignores them, reducing long JSON responses that are prone to truncation. |
 | Forced embedding search for Agent Context | Done | Agent Context always forces Embs&Keys hybrid retrieval: CLI sends `use_super_passport=true`, API records `selection_used.use_super_passport=true`, and service prepares one query embedding for all selected experts before bounded parallel expert processing. UI toggle state does not apply to subagent/API calls. |
 | FTS5 query sanitation hardening | Done | Production logs for the Panex query about `file-fist` showed AI Scout returning an invalid FTS5 query and then fallback producing unsafe terms such as `file-fist*`, which made the FTS5 side of hybrid retrieval fail with `no such column: fist` while vector retrieval still worked. `AIScoutService` fallback and `sanitize_fts5_query()` now normalize hyphens, punctuation, and unbalanced Scout quotes into safe OR-only FTS5 terms such as `file* OR fist*`. Fallback slang expansion also avoids treating short particles like Russian `а` ("and/but") as substring slang matches while preserving exact short tech terms such as `бд` ("db"), `c#`, `c++`, and `.net`. |
-| Production Fly exposure | Done for explicit smoke and default subagent target | `https://experts-panel.fly.dev/api/v1/agent/context` is callable with the separate production bearer token and large source-bundle budgets. The global `panex` runner now pins Fly.io as the default real-request target for `ask` and `expand`; localhost is only for explicit `--local` smoke/debug. |
+| Production exposure | Done for explicit smoke and default subagent target | `https://expa.beyondhorizon.dev/api/v1/agent/context` is callable with the separate production bearer token and large source-bundle budgets. The global `panex` runner now pins production (`expa.beyondhorizon.dev`) as the default real-request target for `ask` and `expand`; localhost is only for explicit `--local` smoke/debug. |
 
 Implemented code paths:
 
@@ -123,7 +131,7 @@ cd backend && .venv/bin/python scripts/agent_context_live_smoke.py --require-liv
 # warnings: []
 # no lingering local backend process observed after helper shutdown
 
-cd backend && AGENT_CONTEXT_API_TOKEN=<production token> .venv/bin/python scripts/agent_context_live_smoke.py --require-live --api-url https://experts-panel.fly.dev/api/v1/agent/context --experts refat,akimov --timeout 3600
+cd backend && AGENT_CONTEXT_API_TOKEN=<production token> .venv/bin/python scripts/agent_context_live_smoke.py --require-live --api-url https://expa.beyondhorizon.dev/api/v1/agent/context --experts refat,akimov --timeout 3600
 # passed: source_bundle_valid
 # target_mode: external
 # selection_used.use_super_passport: true
@@ -284,12 +292,12 @@ panex doctor
 # backend_dir: /Users/andreysazonov/Documents/Projects/Experts_panel/backend
 # global_command: /Users/andreysazonov/.local/bin/panex
 # token_configured: True
-# production_api_url: https://experts-panel.fly.dev/api/v1/agent/context
-# production_expand_api_url: https://experts-panel.fly.dev/api/v1/agent/context/expand
+# production_api_url: https://expa.beyondhorizon.dev/api/v1/agent/context
+# production_expand_api_url: https://expa.beyondhorizon.dev/api/v1/agent/context/expand
 
 cd /private/tmp && panex ask --query "Когда subagents помогают в AI-разработке?" --experts refat --json --timeout 3600
 # AND-24 production cross-repo ask smoke
-# target: https://experts-panel.fly.dev/api/v1/agent/context
+# target: https://expa.beyondhorizon.dev/api/v1/agent/context
 # mode: expert_digest
 # selection_used.expert_filter: refat
 # include_reddit: false
@@ -301,7 +309,7 @@ cd /private/tmp && panex ask --query "Когда subagents помогают в A
 
 cd /private/tmp && panex expand --source-keys refat:238 --json --max-content-chars 1200 --max-comments-per-source 3 --timeout 3600
 # AND-24 production cross-repo expand smoke
-# target: https://experts-panel.fly.dev/api/v1/agent/context/expand
+# target: https://expa.beyondhorizon.dev/api/v1/agent/context/expand
 # mode: source_expand
 # source_key: refat:238
 # not_found: []
@@ -317,7 +325,7 @@ Panex production dogfood on Fly.io for query "Когда subagents реальн�
 # follow-up "что там в комментариях по самому спорному или слабому источнику?" -> source_expand doronin:73, latency 15ms
 # no new expert_digest/source_bundle for follow-ups; external links not fetched
 
-cd backend && .venv/bin/python -m src.cli.agent_context_expand --api-url https://experts-panel.fly.dev/api/v1/agent/context/expand --source-keys refat:220 --max-content-chars 1200 --max-comments-per-source 3 --timeout 3600 --json
+cd backend && .venv/bin/python -m src.cli.agent_context_expand --api-url https://expa.beyondhorizon.dev/api/v1/agent/context/expand --source-keys refat:220 --max-content-chars 1200 --max-comments-per-source 3 --timeout 3600 --json
 # AND-19 production source_expand smoke after Fly deploy
 # mode: source_expand
 # source_key: refat:220
@@ -327,7 +335,7 @@ cd backend && .venv/bin/python -m src.cli.agent_context_expand --api-url https:/
 # truncation: content_truncated=true, comments_truncated=true
 # processing_time_ms: 92
 
-cd backend && .venv/bin/python -m src.cli.agent_context --query "Когда стоит использовать subagents?" --experts refat --response-mode expert_digest --api-url https://experts-panel.fly.dev/api/v1/agent/context
+cd backend && .venv/bin/python -m src.cli.agent_context --query "Когда стоит использовать subagents?" --experts refat --response-mode expert_digest --api-url https://expa.beyondhorizon.dev/api/v1/agent/context
 # mode: expert_digest
 # selected_sources_count: refat=17
 # source_refs: 8
@@ -354,7 +362,7 @@ panex read --path <artifact_path> --source-key refat:234 --json
 panex cleanup
 ```
 
-Important boundary: Fly.io is now the default target for real subagent research
+Important boundary: production (`expa.beyondhorizon.dev`) is now the default target for real subagent research
 calls through `panex`. The lower-level `src.cli.agent_context` and
 `src.cli.agent_context_expand` remain useful for local backend/debug work, but
 real cross-repo Panex calls should use the global `panex` command. Production
@@ -524,7 +532,7 @@ Required fields are:
 query_sent: exact query string sent in the API payload
 experts_sent: selected expert ids, group, or all
 response_mode: expert_digest or source_bundle
-target: Fly.io production or explicit local smoke/debug URL
+target: production (`expa.beyondhorizon.dev`) or explicit local smoke/debug URL
 warnings: none, or important top-level API warnings
 ```
 
@@ -1272,9 +1280,17 @@ experts_panel_researcher / wrapper
   - read-only
 ```
 
-## 12. Fly.io Deployment Impact
+## 12. Deployment Impact (historical: Fly.io)
 
-Yes, current Fly.io deployment constraints affect this design.
+> **Superseded 2026-08-24.** Fly.io was retired; production now runs on the
+> Oracle VM (`https://expa.beyondhorizon.dev`) and is deployed by
+> `.github/workflows/deploy-oracle.yml`. This section is kept as historical
+> design rationale. Design consequences 1-5 (no full synthesis by default,
+> opt-in Reddit, no automatic background calls, timeouts/size limits, per-token
+> rate limits) still hold; consequences 6-8 about Fly machines, cold starts and
+> billing no longer apply.
+
+Historically, Fly.io deployment constraints shaped this design.
 
 Current repo config:
 
@@ -1410,7 +1426,7 @@ panex export --path <artifact_path> --json
 panex doctor
 ```
 
-`panex ask` defaults to `response_mode=expert_digest` and production Fly.io.
+`panex ask` defaults to `response_mode=expert_digest` and production (`expa.beyondhorizon.dev`).
 Raw/audit source-bundle mode is still available, but must be explicit:
 
 ```text
@@ -1420,8 +1436,8 @@ panex ask --query "<query>" --experts refat,akimov --response-mode source_bundle
 Wrapper responsibilities:
 
 - hold the API token outside the broad main-agent prompt;
-- target production Fly.io by default for real subagent calls:
-  `https://experts-panel.fly.dev/api/v1/agent/context`;
+- target production (`expa.beyondhorizon.dev`) by default for real subagent calls:
+  `https://expa.beyondhorizon.dev/api/v1/agent/context`;
 - ignore ambient local `AGENT_CONTEXT_API_URL` / `AGENT_CONTEXT_EXPAND_API_URL`
   unless `--local` or `--api-url` is explicitly provided;
 - keep local development as an explicit smoke/debug mode only;
@@ -1434,9 +1450,9 @@ Wrapper responsibilities:
 - keep `include_reddit = false`, `include_main_source_comments = true`, `include_drift_comment_groups = false`, and `synthesis_level = none` unless explicitly overridden by the caller;
 - print `selection_used`, warnings, and source packet metadata.
 
-Production Fly usage is allowed because endpoint auth, rate limiting, timeout,
+Production usage is allowed because endpoint auth, rate limiting, timeout,
 response-size limits, and basic request logging are implemented and covered by
-tests. Agents copied into other repositories must keep the same Fly URL and
+tests. Agents copied into other repositories must keep the same production URL and
 must not fall back to random `localhost` services.
 
 Add durable instructions for Codex/Claude Code integration:
@@ -1463,7 +1479,7 @@ The first subagent lives in repo-local Claude/Codex configuration, next to this
 spec and the CLI wrapper. A global user-level Codex subagent also exists as a
 stable shortcut at `~/.codex/agents/experts_panel_researcher.toml`; it uses the
 canonical local Experts Panel backend checkout as the `panex` wrapper host and
-keeps the production Fly URL pinned for real research calls.
+keeps the production URL pinned for real research calls.
 
 ### Step 5.5 - Local Dogfood
 
@@ -1515,7 +1531,7 @@ http://localhost:8000/api/v1/agent/context
 ```
 
 Do not use the lower-level CLI local default for real subagent calls. Use
-`panex` instead; it defaults to Fly.io and ignores ambient local API URLs unless
+`panex` instead; it defaults to production and ignores ambient local API URLs unless
 `--local` or `--api-url` is explicit.
 
 Delivery frame checklist:
@@ -1535,7 +1551,7 @@ Failure handling:
 
 - missing `AGENT_CONTEXT_API_TOKEN`: explain that the production token must be configured;
 - `HTTP 403` / invalid token: explain that the configured token is not the production Agent Context token;
-- DNS/`NameResolutionError`/unreachable Fly endpoint: explain that production network access is blocked or unavailable;
+- DNS/`NameResolutionError`/unreachable production endpoint: explain that production network access is blocked or unavailable;
 - unreachable local backend during explicit local smoke: ask to start backend or check `AGENT_CONTEXT_API_URL`;
 - `video_hub`/`501`: report unsupported source_bundle adapter;
 - unknown expert: ask one clarification before retrying.
@@ -1601,7 +1617,7 @@ running/deployed backend:
 cd backend
 .venv/bin/python scripts/agent_context_live_smoke.py \
   --require-live \
-  --api-url https://experts-panel.fly.dev/api/v1/agent/context \
+  --api-url https://expa.beyondhorizon.dev/api/v1/agent/context \
   --experts refat,akimov
 ```
 
@@ -1614,7 +1630,7 @@ In external mode the helper:
 - calls the Agent Context CLI with that explicit API URL;
 - writes `target_mode = "external"` into the sanitized report.
 
-### Step 5.7 - Production Fly Smoke
+### Step 5.7 - Production Smoke
 
 Status: **Done in AND-15 for the first explicit production smoke. Extended in AND-24 with the global `panex` runner as the default cross-repo production target.**
 
@@ -1623,15 +1639,17 @@ First production smoke scope is intentionally narrow:
 ```text
 experts = refat,akimov
 query = AI agents for sales
-api_url = https://experts-panel.fly.dev/api/v1/agent/context
+api_url = https://expa.beyondhorizon.dev/api/v1/agent/context
 ```
 
 Production prerequisites:
 
-- set a separate production `AGENT_CONTEXT_API_TOKEN` in Fly secrets;
+- set a separate production `AGENT_CONTEXT_API_TOKEN` in the production environment
+  (VM env applied by the Oracle deploy);
 - keep `AGENT_CONTEXT_TIMEOUT_SECONDS = 3600`;
 - keep `AGENT_CONTEXT_MAX_RESPONSE_BYTES = 100000000`;
-- deploy the committed AND-15 helper/API code through the normal Fly path;
+- deploy the committed AND-15 helper/API code through the normal Oracle deploy path
+  (`.github/workflows/deploy-oracle.yml`);
 - verify `/health`;
 - run the explicit external smoke command above.
 
@@ -1655,10 +1673,10 @@ Earlier production smoke evidence before forced Embs&Keys retrieval used Fly
 release `v333`; the accepted current proof is the rerun after commit `5023e56`
 deployed and the production token was rotated.
 
-The subagent now treats Fly.io as the safe real-request target. It should call
-production through `panex ask` / `panex expand`, which default to the Fly.io
-Agent Context URLs. Localhost/default lower-level CLI usage is reserved for
-explicit local smoke or backend debugging.
+The subagent treats production (`expa.beyondhorizon.dev`) as the safe real-request
+target. It should call production through `panex ask` / `panex expand`, which
+default to the production Agent Context URLs. Localhost/default lower-level CLI
+usage is reserved for explicit local smoke or backend debugging.
 
 ### Step 6 - Verification
 
@@ -1709,16 +1727,16 @@ Minimum tests:
 - CLI -> HTTP -> FastAPI -> source_expand flow reveals exact source keys without rerunning search/digest;
 - CLI acceptance path does not leak the API token into request body, stdout, or stderr;
 - unsupported `video_hub` request fails with an actionable API message;
-- repo-local Claude/Codex subagent instructions are read-only, explicit-only, token-safe, pin production Fly.io for real calls, use relay-only digest delivery instead of a second summary, start with a compact Request passport, and keep project applicability in the parent chat;
+- repo-local Claude/Codex subagent instructions are read-only, explicit-only, token-safe, pin production (`expa.beyondhorizon.dev`) for real calls, use relay-only digest delivery instead of a second summary, start with a compact Request passport, and keep project applicability in the parent chat;
 - local dogfood fixture and instructions verify actionable readiness failures, explicit local smoke, and delivery/evidence-note usability;
 - live local smoke helper can preflight, skip/fail/pass cleanly, use a free port, call CLI with explicit `--api-url`, and write a sanitized report;
-- external smoke helper mode can call an explicit production/Fly URL without starting a local backend;
-- default local smoke ignores ambient `AGENT_CONTEXT_API_URL`; subagent real-call instructions bypass lower-level local defaults by using `panex`, whose default target is Fly.io;
-- `panex ask` from a foreign cwd defaults to Fly.io `expert_digest`, ignores ambient local `AGENT_CONTEXT_API_URL`, keeps `source_bundle` as explicit opt-in, and never prints the token;
-- `panex expand` from a foreign cwd defaults to Fly.io `source_expand`, ignores ambient local `AGENT_CONTEXT_EXPAND_API_URL`, and expands exact handles without rerunning search/digest;
+- external smoke helper mode can call an explicit production URL without starting a local backend;
+- default local smoke ignores ambient `AGENT_CONTEXT_API_URL`; subagent real-call instructions bypass lower-level local defaults by using `panex`, whose default target is production;
+- `panex ask` from a foreign cwd defaults to production `expert_digest`, ignores ambient local `AGENT_CONTEXT_API_URL`, keeps `source_bundle` as explicit opt-in, and never prints the token;
+- `panex expand` from a foreign cwd defaults to production `source_expand`, ignores ambient local `AGENT_CONTEXT_EXPAND_API_URL`, and expands exact handles without rerunning search/digest;
 - `panex doctor` reports setup, production URLs, and token presence without printing the token;
 - `scripts/install_panex_runner.sh` installs an executable user-level shim without embedding the API token;
-- production-live expert_digest tests can hit Fly.io directly with `AGENT_CONTEXT_PRODUCTION_LIVE=1`, validate two/three-expert digest contracts, assert no raw `main_sources`/`comment_id` leakage, compare compact digest transport against raw `source_bundle`, verify comments-off digest behavior, cover realistic Panex query styles (casual Russian with typo, mixed RU/EN punctuation, multiline PM-style query, full `tech_business` group scope, recent-only LLM caching query), verify capped multi-source `source_expand`, and check cheap bad-input failures before digest work;
+- production-live expert_digest tests can hit production directly with `AGENT_CONTEXT_PRODUCTION_LIVE=1`, validate two/three-expert digest contracts, assert no raw `main_sources`/`comment_id` leakage, compare compact digest transport against raw `source_bundle`, verify comments-off digest behavior, cover realistic Panex query styles (casual Russian with typo, mixed RU/EN punctuation, multiline PM-style query, full `tech_business` group scope, recent-only LLM caching query), verify capped multi-source `source_expand`, and check cheap bad-input failures before digest work;
 - existing `/api/v1/query` smoke still passes.
 
 ## 14. Acceptance Criteria Status
@@ -1739,18 +1757,18 @@ Backend source-bundle MVP status:
 | production exposure is blocked until auth, rate, timeout, and audit logging exist | Done for explicit smoke: auth/rate/timeout/size gates exist, production bearer token is separate, Fly `/health` passed, and external `refat,akimov` source_bundle smoke passed |
 | local CLI wrapper works before production Fly usage is enabled | Done |
 | BDD acceptance checks cover the CLI -> API -> source_bundle boundary | Done |
-| first subagent is repo-local and explicit-only | Done; real research calls pin the production Fly.io endpoint |
-| Panex can be called from other repos without cwd/env confusion | Done locally + production dogfood: `backend/src/cli/panex.py` and `scripts/install_panex_runner.sh` provide a global `panex` command. `panex ask` defaults to Fly.io `expert_digest`, `panex expand` defaults to Fly.io `source_expand`, ambient local API URLs are ignored unless explicit, `panex doctor` checks setup without printing secrets, and production smoke from `/private/tmp` passed `ask` and `expand`. |
+| first subagent is repo-local and explicit-only | Done; real research calls pin the production endpoint |
+| Panex can be called from other repos without cwd/env confusion | Done locally + production dogfood: `backend/src/cli/panex.py` and `scripts/install_panex_runner.sh` provide a global `panex` command. `panex ask` defaults to production `expert_digest`, `panex expand` defaults to production `source_expand`, ambient local API URLs are ignored unless explicit, `panex doctor` checks setup without printing secrets, and production smoke from `/private/tmp` passed `ask` and `expand`. |
 | local dogfood can evaluate source_bundle evidence for delivery/evidence-note workflows | Done |
 | live local smoke helper verifies real local CLI/API readiness without Fly | Done |
-| external smoke helper can target production Fly only when explicitly requested | Done: `--api-url` enables `target_mode = "external"`, default local mode ignores ambient `AGENT_CONTEXT_API_URL`, live Fly smoke passed, and subagent instructions now use `panex` for real calls so the lower-level local default is bypassed |
+| external smoke helper can target production only when explicitly requested | Done: `--api-url` enables `target_mode = "external"`, default local mode ignores ambient `AGENT_CONTEXT_API_URL`, live production smoke passed, and subagent instructions now use `panex` for real calls so the lower-level local default is bypassed |
 | portable production runner works from a foreign cwd | Done: `panex doctor` passed with global command `/Users/andreysazonov/.local/bin/panex`; `cd /private/tmp && panex ask --query "Когда subagents помогают в AI-разработке?" --experts refat --json --timeout 3600` returned `mode=expert_digest`, `selected_sources_count=28`, `warnings=[]`; `cd /private/tmp && panex expand --source-keys refat:238 --json --max-content-chars 1200 --max-comments-per-source 3 --timeout 3600` returned `mode=source_expand`, direct comments, external link metadata, `not_found=[]`, `warnings=[]`. |
 | Agent Context inherits bounded parallel expert processing | Done: selected experts run behind `MAX_CONCURRENT_EXPERTS`, response order stays stable |
 | first paid local live smoke returns a valid real source_bundle | Done: after forced Embs&Keys retrieval, default `refat,akimov` query passed with `refat=42`, `akimov=67`, `response_bytes=1081305`, `processing_time_ms=57321`, no warnings |
 | all-experts paid local smoke returns a valid real source_bundle | Done: after forced Embs&Keys retrieval, full MVP Telegram roster passed with `17` experts, `response_bytes=7462364`, `processing_time_ms=275622`, no warnings |
 | first production Fly smoke returns a valid real source_bundle | Done after forced Embs&Keys retrieval: explicit `refat,akimov` production smoke passed with `selection_used.use_super_passport=true`, `response_bytes=438663`, `processing_time_ms=140105`, no warnings |
 | subagent/CLI/API retrieval always uses embeddings | Done: CLI sends `use_super_passport=true`, API normalizes `selection_used.use_super_passport=true`, and service passes a precomputed query embedding into `HybridRetrievalService` for every selected expert |
-| selected source external links are surfaced without automatic browsing | Done: `main_sources[].external_links` carries author-supplied references with `fetch_status=not_fetched`; CLI summary prints link counts; subagent instructions forbid opening/fetching/crawling/cloning/summarizing external URLs unless explicitly requested; local live dogfood for `neuraldeep` found 40 real external links across 11 selected sources, all `not_fetched`, with `bad_suffix_links_count=0`; production public endpoint verification on `https://experts-panel.fly.dev/api/v1/agent/context` found 99 real external links across 23 selected sources, all `not_fetched`, with `bad_suffix_links_count=0` |
+| selected source external links are surfaced without automatic browsing | Done: `main_sources[].external_links` carries author-supplied references with `fetch_status=not_fetched`; CLI summary prints link counts; subagent instructions forbid opening/fetching/crawling/cloning/summarizing external URLs unless explicitly requested; local live dogfood for `neuraldeep` found 40 real external links across 11 selected sources, all `not_fetched`, with `bad_suffix_links_count=0`; production public endpoint verification on `https://expa.beyondhorizon.dev/api/v1/agent/context` found 99 real external links across 23 selected sources, all `not_fetched`, with `bad_suffix_links_count=0` |
 | subagent default response is relay-only digest delivery | Done locally: `response_mode=expert_digest` returns `digest` fields with source refs/source index/comment counts/omitted counts and clears raw `main_sources` from the transport response; Panex instructions use `--response-mode expert_digest` by default and deliver backend digest fields without a second summary |
 | Panex can reveal specific digest sources without a new search query | Done locally: `POST /api/v1/agent/context/expand` and `src.cli.agent_context_expand` expand concrete `source_key` handles into raw/capped source evidence, comments, external links, truncation metadata, and `not_found`; tests assert search/Map/Resolve/Reduce/digest are not called |
 | subagent responses expose the actual request scope | Done: Panex instructions require a compact Request passport with `query_sent`, `experts_sent`, `response_mode`, `target`, and `warnings` at the start of the answer |
@@ -1765,10 +1783,10 @@ Backend source-bundle MVP status:
 These decisions close the remaining open questions for the MVP implementation:
 
 1. `CONTEXT` association uses explicit resolve provenance only. If provenance is missing, return the linked item in `unattached_linked_context` with a warning.
-2. Build and use a local CLI wrapper before enabling production Fly usage.
-3. Keep the first `experts_panel_researcher` subagent repo-local, but pin real research calls to the production Fly.io endpoint so the same agent contract can be copied into other repositories. Add the user-level Codex shortcut as `Panex` only after the API and wrapper contract are stable.
+2. Build and use a local CLI wrapper before enabling production usage.
+3. Keep the first `experts_panel_researcher` subagent repo-local, but pin real research calls to the production endpoint (`expa.beyondhorizon.dev`) so the same agent contract can be copied into other repositories. Add the user-level Codex shortcut as `Panex` only after the API and wrapper contract are stable.
 4. Treat external URLs found in selected source posts as references-only in default `source_bundle`. Surface them under `main_sources[].external_links` but do not fetch or summarize them without an explicit future enrichment mode.
 5. Use `expert_digest` as the default Panex/subagent response mode. It is a narrow panel-side reduce over selected sources and direct main-source comments, not the old full UI Reduce/Meta/Comment synthesis pipeline. Keep `source_bundle` as explicit raw evidence/audit/debug mode.
 6. Use exact `source_key` expansion as the second-step raw evidence path. `source_expand` is a lookup over `digest.source_refs` / `digest.source_index` handles, not a new `expert_digest` or `source_bundle` search.
-7. Use the global `panex` portable runner as the day-to-day cross-repo interface. It defaults to production Fly.io for `ask` and `expand`, ignores ambient local API URLs unless explicit, keeps `expert_digest` as default, and requires `--response-mode source_bundle` for raw/audit mode.
+7. Use the global `panex` portable runner as the day-to-day cross-repo interface. It defaults to production (`expa.beyondhorizon.dev`) for `ask` and `expand`, ignores ambient local API URLs unless explicit, keeps `expert_digest` as default, and requires `--response-mode source_bundle` for raw/audit mode.
 8. Keep wide delivery artifact-first. Wide means `--all`, `--group`, or 6+ explicit experts. The backend still returns per-expert `expert_digest`; the delivery layer preserves it via saved `response.json`, sliced `panex read`, and deterministic `panex export` files. Do not add a second backend panel-digest path unless the artifact-first flow proves insufficient in real use.

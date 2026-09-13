@@ -479,7 +479,7 @@ def _good_subagents_answer() -> str:
 - query_sent: Когда стоит использовать subagents, а когда они только усложняют систему?
 - experts_sent: refat, akimov, doronin
 - response_mode: expert_digest
-- target: https://experts-panel.fly.dev/api/v1/agent/context
+- target: https://expa.beyondhorizon.dev/api/v1/agent/context
 - warnings: none
 
 Короткий вывод: по этим источникам subagents выглядят полезны не как мода,
@@ -551,7 +551,7 @@ def _good_source_expand_answer() -> str:
 **Request passport**
 
 - source_keys_sent: refat:238, doronin:1066
-- target: https://experts-panel.fly.dev/api/v1/agent/context/expand
+- target: https://expa.beyondhorizon.dev/api/v1/agent/context/expand
 - mode: source_expand
 - warnings: none
 
@@ -576,7 +576,7 @@ def _good_and22_compact_answer() -> str:
 - query_sent: Когда subagents реально помогают в разработке, а когда это просто лишняя сложность?
 - experts_sent: refat, akimov, doronin
 - response_mode: expert_digest
-- target: https://experts-panel.fly.dev/api/v1/agent/context
+- target: https://expa.beyondhorizon.dev/api/v1/agent/context
 - warnings: none
 
 Короткий вывод: по этим источникам subagents полезны, когда работа естественно
@@ -601,7 +601,7 @@ def _good_and22_weak_signal_answer() -> str:
 - query_sent: Есть ли сильный сигнал, что subagents нужны для маленьких однофайловых задач?
 - experts_sent: refat, akimov, kornish
 - response_mode: expert_digest
-- target: https://experts-panel.fly.dev/api/v1/agent/context
+- target: https://expa.beyondhorizon.dev/api/v1/agent/context
 - warnings: none
 
 Короткий вывод: сильный сигнал не видно. По источникам скорее есть слабый
@@ -624,7 +624,7 @@ def _good_and22_human_expansion_answer() -> str:
 **Request passport**
 
 - source_keys_sent: refat:101, akimov:201, doronin:301
-- target: https://experts-panel.fly.dev/api/v1/agent/context/expand
+- target: https://expa.beyondhorizon.dev/api/v1/agent/context/expand
 - mode: source_expand
 - warnings: none
 
@@ -647,7 +647,7 @@ def _good_and22_external_links_answer() -> str:
 - query_sent: Какие инструменты, ссылки или GitHub-репозитории эксперты упоминают для AI coding workflows?
 - experts_sent: neuraldeep, kornish
 - response_mode: expert_digest
-- target: https://experts-panel.fly.dev/api/v1/agent/context
+- target: https://expa.beyondhorizon.dev/api/v1/agent/context
 - warnings: none
 
 Короткий вывод: по источникам видны упоминания инструментов и внешних ссылок,
@@ -671,7 +671,7 @@ def _good_and22_scope_answer() -> str:
 - query_sent: Что сейчас полезно знать про кеширование в LLM? Ответь только по Рефату и Акимову, не добавляй других экспертов.
 - experts_sent: refat, akimov
 - response_mode: expert_digest
-- target: https://experts-panel.fly.dev/api/v1/agent/context
+- target: https://expa.beyondhorizon.dev/api/v1/agent/context
 - warnings: none
 
 Короткий вывод: только по Refat и Akimov кеширование в LLM выглядит полезным
@@ -691,7 +691,7 @@ def _good_and23_named_expert_expansion() -> str:
 **Request passport**
 
 - source_keys_sent: refat:101
-- target: https://experts-panel.fly.dev/api/v1/agent/context/expand
+- target: https://expa.beyondhorizon.dev/api/v1/agent/context/expand
 - mode: source_expand
 - warnings: none
 
@@ -714,7 +714,7 @@ def _good_and23_claim_expansion() -> str:
 **Request passport**
 
 - source_keys_sent: refat:101, akimov:201
-- target: https://experts-panel.fly.dev/api/v1/agent/context/expand
+- target: https://expa.beyondhorizon.dev/api/v1/agent/context/expand
 - mode: source_expand
 - warnings: none
 
@@ -737,7 +737,7 @@ def _good_and23_comments_expansion() -> str:
 **Request passport**
 
 - source_keys_sent: doronin:101
-- target: https://experts-panel.fly.dev/api/v1/agent/context/expand
+- target: https://expa.beyondhorizon.dev/api/v1/agent/context/expand
 - mode: source_expand
 - warnings: none
 
@@ -760,7 +760,7 @@ def _good_and23_weak_sources_expansion() -> str:
 **Request passport**
 
 - source_keys_sent: refat:101, akimov:201
-- target: https://experts-panel.fly.dev/api/v1/agent/context/expand
+- target: https://expa.beyondhorizon.dev/api/v1/agent/context/expand
 - mode: source_expand
 - warnings: none
 

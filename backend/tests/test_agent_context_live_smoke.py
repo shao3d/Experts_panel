@@ -160,7 +160,7 @@ def test_live_smoke_ignores_env_api_url_without_explicit_api_url(tmp_path, monke
     monkeypatch.setenv("AGENT_CONTEXT_API_TOKEN", "secret-live-token")
     monkeypatch.setenv(
         "AGENT_CONTEXT_API_URL",
-        "https://experts-panel.fly.dev/api/v1/agent/context",
+        "https://expa.beyondhorizon.dev/api/v1/agent/context",
     )
     monkeypatch.setattr(live_smoke, "_find_free_port", lambda: 54328)
     monkeypatch.setattr(live_smoke, "_start_backend", lambda port: None)
@@ -192,7 +192,7 @@ def test_external_smoke_uses_explicit_api_url_without_local_backend(
 ):
     report_path = tmp_path / "latest.json"
     observed = {}
-    production_api_url = "https://experts-panel.fly.dev/api/v1/agent/context"
+    production_api_url = "https://expa.beyondhorizon.dev/api/v1/agent/context"
     monkeypatch.setattr(live_smoke, "load_backend_env", lambda path: path)
     monkeypatch.setenv("AGENT_CONTEXT_API_TOKEN", "secret-production-token")
     monkeypatch.setattr(
@@ -237,7 +237,7 @@ def test_external_smoke_uses_explicit_api_url_without_local_backend(
     report = json.loads(report_path.read_text())
     serialized = json.dumps(report)
     assert exit_code == 0
-    assert observed["health_url"] == "https://experts-panel.fly.dev"
+    assert observed["health_url"] == "https://expa.beyondhorizon.dev"
     assert observed["health_timeout_seconds"] == 3600.0
     assert observed["api_url"] == production_api_url
     assert observed["experts"] == "refat,akimov"
@@ -252,7 +252,7 @@ def test_external_require_live_missing_token_fails_without_local_backend(
     tmp_path, monkeypatch
 ):
     report_path = tmp_path / "latest.json"
-    production_api_url = "https://experts-panel.fly.dev/api/v1/agent/context"
+    production_api_url = "https://expa.beyondhorizon.dev/api/v1/agent/context"
     monkeypatch.setattr(live_smoke, "load_backend_env", lambda path: path)
     monkeypatch.delenv("AGENT_CONTEXT_API_TOKEN", raising=False)
     monkeypatch.setattr(
@@ -481,10 +481,10 @@ def test_live_smoke_command_and_statuses_are_documented():
     assert "scripts/agent_context_live_smoke.py" in combined
     assert "--require-live" in combined
     assert "--api-url" in combined
-    assert "https://experts-panel.fly.dev/api/v1/agent/context" in combined
+    assert "https://expa.beyondhorizon.dev/api/v1/agent/context" in combined
     assert "passed" in normalized
     assert "skipped" in normalized
     assert "failed" in normalized
     assert "backend/test_results/agent_context_live_smoke/latest.json" in combined
-    assert "production fly" in normalized
+    assert "production" in normalized
     assert "not" in normalized

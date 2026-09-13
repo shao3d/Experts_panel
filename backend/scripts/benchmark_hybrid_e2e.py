@@ -5,14 +5,14 @@ Connects to the running backend as an SSE client, sends identical queries
 with use_super_passport=true and false, records per-phase timestamps
 from SSE events, and prints a comparative timing table.
 
-Works against both local (http://localhost:8000) and production (https://experts-panel.fly.dev).
+Works against both local (http://localhost:8000) and production (https://expa.beyondhorizon.dev).
 
 Usage:
     # Against local backend (start it first with: cd backend && python -m src.api.main)
     python backend/scripts/benchmark_hybrid_e2e.py
 
     # Against production
-    python backend/scripts/benchmark_hybrid_e2e.py --url https://experts-panel.fly.dev
+    python backend/scripts/benchmark_hybrid_e2e.py --url https://expa.beyondhorizon.dev
 
     # Custom query and experts
     python backend/scripts/benchmark_hybrid_e2e.py --query "Как настроить RAG?" --experts doronin silicbag akimov

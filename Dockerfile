@@ -5,7 +5,7 @@ COPY frontend/package.json frontend/package-lock.json ./
 RUN npm install
 
 # Set API URL for frontend build
-ARG VITE_API_URL=https://experts-panel.fly.dev
+ARG VITE_API_URL=https://expa.beyondhorizon.dev
 ENV VITE_API_URL=$VITE_API_URL
 
 COPY frontend/ .
