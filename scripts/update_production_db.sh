@@ -366,7 +366,7 @@ do_deploy() {
         fi
 
         # 7. Run Drift Analysis
-        echo "🧠 [7/12] Running Drift Analysis (Gemini via OpenRouter)..."
+        echo "🧠 [7/12] Running Drift Analysis (opencode/Muse)..."
         if $PYTHON_CMD backend/run_drift_service.py; then
             echo "   ✅ Drift analysis completed successfully."
         else

@@ -17,11 +17,15 @@ logger = logging.getLogger(__name__)
 
 class DriftSchedulerService:
     """
-    Service for processing 'pending' comment groups using Gemini on Vertex AI.
-    Designed for Cron Job execution with strict rate limiting.
+    Service for processing 'pending' comment groups with headless opencode.
 
-    Uses the unified Vertex LLM client for consistent API access with
-    automatic retry logic and OpenAI-compatible response format.
+    Drift runs exclusively through the opencode serve (DRIFT_BACKEND=opencode,
+    model OPENCODE_DRIFT_MODEL). Gemini/OpenRouter drift generation is disabled:
+    if the serve is unavailable the groups stay 'pending' instead of falling
+    back to Gemini.
+
+    Query-time and drift-topic embeddings still use the shared
+    EmbeddingService (OpenRouter gemini-embedding-001, 768d).
     """
 
     def __init__(self, db: Session):
@@ -29,16 +33,20 @@ class DriftSchedulerService:
         self.db = db
         self.client = get_vertex_llm_client()
         self.model_name = MODEL_DRIFT_ANALYSIS
-        self.backend = _os.getenv("DRIFT_BACKEND", "openrouter").lower()
+        # Gemini is forbidden for drift. The only allowed backend is headless
+        # opencode (Muse on the OpenCode Go subscription). Any other value, or
+        # an unreachable serve, leaves groups pending instead of falling back
+        # to Gemini/OpenRouter.
+        self.backend = _os.getenv("DRIFT_BACKEND", "opencode").lower()
         self.concurrency = max(1, int(_os.getenv("DRIFT_CONCURRENCY", "3")))
         if self.backend == "opencode":
             from .opencode_drift_client import analyze as _oc_analyze, check_serve_health
             if not check_serve_health():
-                logger.warning(
+                logger.error(
                     "DRIFT_BACKEND=opencode, но opencode serve недоступен — "
-                    "fallback на openrouter для этого цикла"
+                    "drift останется pending (Gemini fallback запрещён)"
                 )
-                self.backend = "openrouter"
+                self.backend = "paused"
             else:
                 self._oc_analyze = _oc_analyze
                 from .opencode_drift_client import analyze_batch as _oc_batch
@@ -49,7 +57,12 @@ class DriftSchedulerService:
                     f"concurrency={self.concurrency}"
                 )
         else:
-            logger.info(f"Drift backend: openrouter ({self.model_name})")
+            logger.error(
+                "DRIFT_BACKEND=%s запрещён: drift работает только через opencode "
+                "(Gemini fallback отключён); группы останутся pending",
+                self.backend,
+            )
+            self.backend = "paused"
         # Rate limiting is handled by the shared Vertex client
         # which uses Tenacity with exponential backoff + jitter
         logger.info(f"DriftSchedulerService initialized with model: {self.model_name}")
@@ -279,6 +292,14 @@ Return ONLY valid JSON:
 
     async def process_batch(self, batch_size: int = 10):
         """Process a batch of pending groups."""
+        if self.backend != "opencode":
+            logger.error(
+                "Drift backend '%s' недоступен: оставляю pending группы без "
+                "обработки (Gemini fallback запрещён).",
+                self.backend,
+            )
+            return 0
+
         groups = self.get_pending_groups(limit=batch_size)
 
         if not groups:

@@ -1,7 +1,7 @@
 # Current Expert Roster
 
 **Status:** Active roster reference
-**Last updated:** 2026-08-31
+**Last updated:** 2026-09-13
 
 This file documents the intended active expert roster and the places that must
 stay in sync when experts are added, removed, or regrouped. For live production
@@ -71,13 +71,22 @@ spellings to backend `expert_id` values before calling the Agent Context CLI.
 | `kornish` | Kornishev | `NGI_ru` |
 | `aimasters_me` | Aimasters | `aimastersme` |
 
+### Visual
+
+Visual production group: generative image/video/audio content, not coding or
+RAG. Admitted as `limited_scope` after passport + matrix preflight; they fill
+the previously empty `creative_multimodal` taxonomy area.
+
+| expert_id | UI label | Telegram channel |
+|-----------|----------|------------------|
+| `strangedalle` | Molodca | `strangedalle` |
+| `acidcrunch` | AcidCrunch | `AcidCrunch` |
+
 ### Knowledge Hub
 
 | expert_id | UI label | Runtime role |
 |-----------|----------|--------------|
-| `video_hub` | Video_Hub | Isolated video sidecar, not a Telegram-sync expert |
-
----
+| `video_hub` | Video_Hub | Isolated video sidecar, not a Telegram-sync expert |---
 
 ## Removed Experts
 

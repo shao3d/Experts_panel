@@ -129,6 +129,10 @@ Defined in `.env`, loaded in `config.py`.
 - `OPENCODE_SYNTH_TIMEOUT_S`: 60 (budget before falling back to Gemini)
 - `OPENCODE_SYNTH_HEADSTART_S`: 20 (`auto` mode: free model runs alone this long, then Gemini joins the race; first complete answer wins)
 - `OPENCODE_SYNTH_CONCURRENCY`: 2 (serve is shared with drift workers)
+- `DRIFT_BACKEND`: `opencode` (only allowed value) - drift analysis runs via headless opencode; Gemini/OpenRouter drift generation is disabled, and an unreachable serve leaves groups `pending` instead of falling back
+- `OPENCODE_DRIFT_MODEL`: `opencode-go/muse-spark-1.3-contributor` - drift model on the OpenCode Go subscription
+- `OPENCODE_DRIFT_BATCH_SIZE`: 12 - groups per batched opencode drift call
+- `DRIFT_CONCURRENCY`: 3 - parallel opencode batch workers (serve budget shared with Reddit synthesis)
 - Manual A/B check: `app/backend/manual/manual_reddit_opencode_ab.py`
 - Session hygiene: synth/drift clients delete their opencode sessions on completion; daily systemd timer `opencode-janitor.timer` runs `scripts/opencode_serve_janitor.py --apply` (kills quota-retry-stuck sessions, deletes stale machine sessions)
 

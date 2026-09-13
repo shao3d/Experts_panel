@@ -33,11 +33,9 @@
    - `TELEGRAM_API_HASH`
    - `TELEGRAM_SESSION_NAME`
 
-3. **Vertex AI runtime** (в `backend/.env`) для эмбеддингов и дрифта:
-   - `VERTEX_AI_PROJECT_ID`
-   - `VERTEX_AI_LOCATION`
-   - `VERTEX_AI_SERVICE_ACCOUNT_JSON_PATH` локально
-     или `VERTEX_AI_SERVICE_ACCOUNT_JSON` в managed runtime
+3. **LLM runtime** (в `backend/.env`):
+   - `OPENROUTER_API_KEY` — эмбеддинги (`MODEL_EMBEDDING=google/gemini-embedding-001`, 768d) и рантайм пайплайна.
+   - Drift-анализ идёт через headless opencode: `DRIFT_BACKEND=opencode`, `OPENCODE_DRIFT_MODEL=opencode-go/muse-spark-1.3-contributor`, живой `OPENCODE_URL`. Gemini для drift не используется.
 
 ---
 
@@ -103,14 +101,17 @@ order: [..., '<expert_id>']
 **Вариант А: Автоматический (при деплое)**
 Если вы планируете сразу деплоить (`Step 5`), скрипт `./scripts/update_production_db.sh` **сам запустит** анализ дрифта для всех pending групп.
 *   **Плюс:** Полная автоматизация.
-*   **Минус:** Расходует Vertex AI квоту.
+*   **Минус:** Занимает время serve opencode (модель Muse на подписке OpenCode Go).
 
-**Вариант Б: Ручной (бесплатный/Dev)**
-Если хотите сэкономить квоту или проверить результат локально перед деплоем:
-1.  Запустите Gemini CLI с промптом из `prompts/gemini_cli_drift_prompt.md`.
-2.  Или используйте скрипт: `python3 backend/run_drift_service.py`
+**Вариант Б: Ручной (Dev)**
+Если хотите проверить результат локально перед деплоем:
+1.  Убедитесь, что opencode serve поднят.
+2.  Запустите: `backend/.venv/bin/python backend/run_drift_service.py`
 
-> **Важно:** `backend/run_drift_service.py` теперь сам подхватывает `backend/.env` и ожидает Vertex credentials из этого файла.
+> **Важно:** `backend/run_drift_service.py` подхватывает `backend/.env` и требует
+> `OPENROUTER_API_KEY` (для эмбеддингов дрейфа) и живой opencode serve
+> (`DRIFT_BACKEND=opencode`). Gemini для drift не используется: при недоступном
+> serve группы остаются `pending`.
 
 ### Step 5: Деплой
 
