@@ -68,6 +68,10 @@ technical failure.)
 expert-scout "<вопрос>"
 ```
 
+Фраза «задействуй Скаута …» маршрутизируется на неё глобальным скиллом
+`.codex/skills/expert-scout/` (установка: `scripts/install_expert_scout_skill.sh`,
+на Маке — с `--with-shim`).
+
 Под капотом: Mac-shim (`~/.local/bin/expert-scout`) → SSH на VM →
 `scripts/expert_scout.sh` → агент `expert-scout` в opencode → read-only хелпер.
 У агента нет shell (bash запрещён полностью): единственный инструмент —

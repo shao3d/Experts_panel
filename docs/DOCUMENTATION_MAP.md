@@ -32,7 +32,7 @@ Last updated: 2026-09-13
 | Reddit sidecar | `docs/architecture/reddit-service.md` | service code under `services/reddit-proxy/` |
 | Agent-facing Reddit API + CLI + Codex skill | `docs/architecture/reddit-service.md` (разделы "Agent-facing API", "CLI-граница") | `.codex/skills/reddit-search/`, `scripts/install_reddit_search_skill.sh`, handoff-история: `docs/plans/2026-08-29-reddit-search-agent-api-handoff.md` |
 | Generic Reddit Search client | `docs/guides/reddit-search-generic-client.md` | `clients/reddit-search-generic/`, `scripts/build_reddit_search_generic_client.sh` |
-| Agentic read-only поиск по корпусу (Expert Scout) | `docs/guides/expert-scout.md` | `backend/scripts/expert_scout.py`, `.opencode/agents/expert-scout.md`, `.opencode/plugins/expert-scout-tools.ts`, `scripts/expert_scout.sh` |
+| Agentic read-only поиск по корпусу (Expert Scout) | `docs/guides/expert-scout.md` | `backend/scripts/expert_scout.py`, `.opencode/agents/expert-scout.md`, `.opencode/plugins/expert-scout-tools.ts`, `.codex/skills/expert-scout/`, `scripts/expert_scout.sh`, `scripts/install_expert_scout_skill.sh` |
 | Языки / перевод RU-EN | `docs/architecture/multilingual-support.md` | `backend/src/utils/language_utils.py`, `backend/src/services/translation_service.py` |
 | Backend runtime / health / CLI bootstrap | `docs/roadmap/backend-runtime-cleanup.md` | `backend/CLAUDE.md` |
 | Code deploy / DB update / rollback | `docs/operations.md` | `scripts/update_production_db.sh`, `.github/workflows/deploy-oracle.yml` |
@@ -168,7 +168,7 @@ Quality docs - evidence snapshots and guardrails, not current API specs.
 | Языковая логика / перевод / кэш переводов | `docs/architecture/multilingual-support.md` |
 | Hybrid search / embeddings / FTS5 / Scout | `docs/architecture/super-passport-search.md`; maybe `pipeline.md` |
 | Панэкс CLI/API/subagent behavior | `docs/guides/panex-usage.md`, `docs/architecture/agent-context-api.md`, repo-local agent files, global Codex agent |
-| Expert Scout behavior / boundaries | `docs/guides/expert-scout.md`, `AGENTS.md` |
+| Expert Scout behavior / boundaries | `docs/guides/expert-scout.md`, `AGENTS.md`, `.codex/skills/expert-scout/SKILL.md` |
 | New env var | `.env.example`, `backend/CLAUDE.md`, relevant architecture doc |
 | Expert roster/groups | `docs/architecture/current-expert-roster.md`, `docs/guides/add-expert.md`, frontend config if UI changes |
 | Expert admission doctrine / matrix workflow | `docs/architecture/expert-admission-control.md`; this map only if navigation changes |

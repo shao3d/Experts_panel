@@ -49,6 +49,7 @@ video edit», «чем платят за консистентность») **age
 | 8 | `AGENTS.md` (раздел «Expert Scout») | Явное read-only исключение к правилу «не читать БД». |
 | 9 | `~/.local/bin/expert-scout` (на Маке, вне git) | Мостик: base64 вопроса → SSH на VM → обёртка. |
 | 10 | `.opencode/package.json` + `package-lock.json` | Зависимость плагина `@opencode-ai/plugin`; восстановление `cd .opencode && npm ci`. |
+| 11 | `.codex/skills/expert-scout/` + `scripts/install_expert_scout_skill.sh` | Глобальный скилл-роутер («задействуй Скаута») для Codex и opencode; установщик ставит скиллы и Mac-мостик. |
 
 Коммиты: `2173720` (исходная реализация), `0c10a5f` (доки), `be88b1f`
 (no-shell plugin tool + hardening). Этот бриф — рабочий артефакт.

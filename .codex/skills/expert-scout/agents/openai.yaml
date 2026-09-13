@@ -1,0 +1,4 @@
+interface:
+  display_name: "Expert Scout"
+  short_description: "Agentic read-only mining over the Experts Panel Telegram corpus"
+  default_prompt: "Use $expert-scout for an explicit raw expert-corpus research question."

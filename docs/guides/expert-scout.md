@@ -18,6 +18,25 @@ expert-scout "Какие приёмы сохраняют камеру при vid
 Владелец может вызвать её сам или попросить Codex выполнить её как обычную
 bash-команду.
 
+## Глобальный скилл (Codex + opencode)
+
+Чтобы фраза «задействуй Скаута ...» работала в любой сессии, установлен скилл
+`expert-scout`, который маршрутизирует такие запросы на команду:
+триггеры — «Скаут», «expert-scout», «задействуй Скаута», «сырой поиск по
+экспертам». «По визуалам» скилл передаёт как явное ограничение
+`acidcrunch,strangedalle` внутри вопроса (у скаута нет флага группы).
+
+Установка (на Маке — для Codex, на VM — для opencode):
+
+```bash
+scripts/install_expert_scout_skill.sh              # только скиллы
+scripts/install_expert_scout_skill.sh --with-shim  # + Mac-мостик
+```
+
+Исходник скилла — `.codex/skills/expert-scout/`; глобально ставится в
+`~/.codex/skills/expert-scout/` (Codex) и
+`~/.config/opencode/skills/expert-scout/` (opencode).
+
 ## Как это устроено
 
 ```
@@ -25,6 +44,7 @@ Mac: ~/.local/bin/expert-scout "вопрос"
   -> SSH (ubuntu@82.70.251.73)
   -> VM: scripts/expert_scout.sh
   -> opencode run --agent expert-scout
+  -> plugin tool `scout` (argv-массив, без shell)
   -> backend/scripts/expert_scout.py   (read-only: experts / search / show)
   -> backend/data/experts.db           (mode=ro, query_only=ON)
 ```
@@ -118,25 +138,15 @@ Scout не заменяет два других канала и не выдаё�
 
 ## Восстановление Mac-shim
 
+На Маке из checkout репозитория:
+
 ```bash
-mkdir -p ~/.local/bin
-cat > ~/.local/bin/expert-scout <<'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-if [[ $# -lt 1 || -z "${1// }" ]]; then
-  echo "usage: expert-scout \"<question>\"" >&2
-  exit 2
-fi
-REMOTE="${EXPERT_SCOUT_REMOTE:-ubuntu@82.70.251.73}"
-REPO="${EXPERT_SCOUT_REPO:-/home/ubuntu/apps/experts-panel/dev}"
-Q=$(printf '%s' "$*" | base64 | tr -d '\n')
-exec ssh -o BatchMode=yes -o ConnectTimeout=10 \
-  -o ServerAliveInterval=30 -o ServerAliveCountMax=10 \
-  "$REMOTE" \
-  "cd '$REPO' && ./scripts/expert_scout.sh \"\$(printf '%s' '$Q' | base64 -d)\""
-EOF
-chmod +x ~/.local/bin/expert-scout
+scripts/install_expert_scout_skill.sh --with-shim
 ```
+
+Установщик — источник истины для содержимого мостика: он же переустанавливает
+скиллы и перезаписывает `~/.local/bin/expert-scout`. Мостик форвардит
+`EXPERT_SCOUT_TIMEOUT` с Мака на VM (по умолчанию 300 секунд).
 
 ## Диагностика
 
