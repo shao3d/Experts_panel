@@ -172,13 +172,14 @@ user before retrying.
 Allowed read-only checks while waiting:
 
 ```bash
-fly status --app experts-panel
 curl --max-time 8 https://expa.beyondhorizon.dev/api/info
 curl --max-time 8 https://expa.beyondhorizon.dev/api/v1/experts
+curl --max-time 8 https://expa.beyondhorizon.dev/health
 ```
 
-For logs, use `timeout 10 fly logs --app experts-panel` when `timeout` exists,
-`gtimeout` when GNU coreutils provides it, or a short manual `fly logs` check.
+Container logs are only reachable from the VM production host (Oracle), for
+example through `docker-compose.vm.yml`; from the Mac use the read-only HTTP
+probes above instead of a retired Fly logs command.
 
 ### 5.2 Passport Boundary
 
