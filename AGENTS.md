@@ -54,6 +54,36 @@ sentiment, always run the global `reddit-search` command above — never call
 `abstained` honestly without inventing content, and report exit code 1 as a
 technical failure.)
 
+## Expert Scout (agentic read-only поиск по корпусу)
+
+Владелец явно разрешил отдельный контур: агент-«скаут» может **только читать**
+локальный dev-корпус `backend/data/experts.db` через
+`backend/scripts/expert_scout.py` (открытие `mode=ro`, `PRAGMA query_only=ON`,
+изоляция по `expert_id`, без записи, копирования и печати секретов). Это узкое
+исключение к запрету на чтение баз данных из раздела ниже — только для скаута.
+
+Запуск с Мака одной командой:
+
+```bash
+expert-scout "<вопрос>"
+```
+
+Под капотом: Mac-shim (`~/.local/bin/expert-scout`) → SSH на VM →
+`scripts/expert_scout.sh` → агент `expert-scout` в opencode → read-only хелпер.
+Агент сам перебирает фасеты и anti-pattern формулировки, читает первоисточники
+через `show` и возвращает находки с `source_key` и честные пробелы. Полное
+описание и границы — `docs/guides/expert-scout.md`.
+
+Запрещено: писать в корпус, трогать production DB, копировать/выгружать БД,
+выводить секреты. Scout не заменяет `reddit-search` (сообщество) и Панэкс
+(готовый дайджест); это третий, «сырой» канал.
+
+(Expert Scout rule: the owner authorized a narrow read-only exception — the
+scout agent may read the local dev corpus through `backend/scripts/expert_scout.py`
+only. Never write to the corpus, never touch the production DB, never copy or
+dump the database, never print secrets. Run it from the Mac as
+`expert-scout "<question>"`.)
+
 ## Единственное рабочее место
 
 - На VM работай только в `/home/ubuntu/apps/experts-panel/dev`.
@@ -87,7 +117,8 @@ restart или изменение production DB. `зафиксируй` разр
 ## Проектные ограничения
 
 - Не читай, не печатай, не копируй и не коммить секреты, `.env`, ключи, токены,
-  базы данных, backups, логи и временные результаты.
+  базы данных, backups, логи и временные результаты. Единственное исключение —
+  read-only Expert Scout по dev-корпусу (см. раздел «Expert Scout» выше).
 - Все запросы к данным эксперта сохраняют изоляцию по `expert_id`.
 - Синтез модели не является источником; ответы должны опираться на реальные
   материалы экспертов.
