@@ -1,7 +1,7 @@
 # Карта Документации
 
 Status: Active
-Last updated: 2026-08-29
+Last updated: 2026-09-13
 
 Это навигационный слой проекта Experts Panel. Он должен отвечать на вопрос
 "куда смотреть?", а не пересказывать содержимое всех документов.
@@ -168,6 +168,7 @@ Quality docs - evidence snapshots and guardrails, not current API specs.
 | Языковая логика / перевод / кэш переводов | `docs/architecture/multilingual-support.md` |
 | Hybrid search / embeddings / FTS5 / Scout | `docs/architecture/super-passport-search.md`; maybe `pipeline.md` |
 | Панэкс CLI/API/subagent behavior | `docs/guides/panex-usage.md`, `docs/architecture/agent-context-api.md`, repo-local agent files, global Codex agent |
+| Expert Scout behavior / boundaries | `docs/guides/expert-scout.md`, `AGENTS.md` |
 | New env var | `.env.example`, `backend/CLAUDE.md`, relevant architecture doc |
 | Expert roster/groups | `docs/architecture/current-expert-roster.md`, `docs/guides/add-expert.md`, frontend config if UI changes |
 | Expert admission doctrine / matrix workflow | `docs/architecture/expert-admission-control.md`; this map only if navigation changes |

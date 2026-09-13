@@ -1,7 +1,7 @@
 # Обзор системы и roadmap: ценностные фичи + техздоровье (2026-09)
 
 Status: Active roadmap
-Last updated: 2026-09-07
+Last updated: 2026-09-13
 Origin: большой обзор системы в Mac-сессии 05–06.09.2026 (птичий полёт по докам,
 код-dig backend/frontend/reddit-proxy, 4 живых Reddit-поиска через `reddit-search`,
 2 веб-поиска). Документ фиксирует выводы обзора и текущий статус каждого пункта.
@@ -54,6 +54,7 @@ Origin: большой обзор системы в Mac-сессии 05–06.09.
 | 7 | Saved Searches + Telegram-дайджест | ⬜ Не начато |
 | 8 | Hacker News сайдкар (Algolia API) | ⬜ Не начато |
 | 9 | Рефакторинг оркестратора | ⬜ По остаточному принципу |
+| 10 | Expert Scout: agentic read-only поиск по корпусу | ✅ Сделано (2173720) |
 
 ### 1–2. Verified Citations + Evidence Viewer — ✅ сделано
 
@@ -127,6 +128,24 @@ Algolia HN Search API: бесплатный, без auth. Обобщает Reddi
 `simplified_query_endpoint.py` ~2300 строк. Полезно для поддерживаемости,
 портфолио-эффект минимальный. Делать маленькими шагами в последнюю очередь.
 
+### 10. Expert Scout — ✅ сделано (2026-09-13)
+
+Agentic-поиск по корпусу из Кодекса: агент сам перебирает фасеты и
+anti-pattern формулировки, читает первоисточники и приносит находки с
+`source_key`, датами и честными пробелами.
+
+- Канал: `expert-scout "<вопрос>"` с Мака → SSH на VM → агент opencode
+  (deepseek-v4.1-flash, `variant: max`) → read-only хелпер
+  `backend/scripts/expert_scout.py` (FTS5 + vector + RRF; `mode=ro`, только
+  dev-корпус, guard на prod-путь).
+- Границы: только чтение, без записи/копирования БД; агент ограничен
+  bash-allowlist на хелпер (read/grep/glob/сеть запрещены).
+- Сравнение с Panex `expert_digest` (n=1, «Kling элементы», acidcrunch+doronin):
+  латентность паритетна (32с vs 35с); скаут дал компактный ответ с цитатами,
+  Panex — структурированный артефакт, но на широком эксперте **61 сигнал, из
+  которых релевантных 2–3**. Вывод: digest хорош для узкого эксперта, скаут —
+  для точной техники/цитаты; digest с caps=0 на широком корпусе шумит.
+
 ---
 
 ## B. Технические болячки (по убыванию критичности)
@@ -137,7 +156,7 @@ Algolia HN Search API: бесплатный, без auth. Обобщает Reddi
 | 2 | CI не гоняет тесты, type-check глотался | ✅ Исправлено (9932db5, cc9db68) |
 | 3 | Токен в логах чат-агентов на VM; Mac без токена | 🟡 Открыто (владелец) |
 | 4 | `POST /api/v1/log-batch` без auth и лимитов | ⬜ Открыто |
-| 5 | fly.dev-остатки в операционных скриптах | ⬜ Открыто |
+| 5 | fly.dev-остатки в операционных скриптах | ✅ Исправлено (fbfd7c0) |
 | 6 | Core-пайплайн без unit-тестов | 🟡 Частично |
 | 7 | Монолитные модули | ⬜ Открыто (низкий) |
 | 8 | Локальный мусор на Mac | ⬜ Косметика |
@@ -174,12 +193,14 @@ type-check больше не глотается через `|| echo`. Попут
 Принимает произвольные логи с `data: Any` без auth и лимитов — спам-вектор на
 диск. Лечение: кап на размер батча/message, per-IP throttle. Час работы.
 
-### 5. fly.dev-остатки — ⬜
+### 5. fly.dev-остатки — ✅ исправлено
 
-Runtime-код чист, но операционные скрипты стучатся в мёртвый эндпоинт:
-`backend/scripts/panex_quality_eval.py`, `backend/scripts/agent_context_live_smoke.py`,
-`backend/scripts/benchmark_hybrid_e2e.py` (+ их тесты). Поправить заодно с A.3 —
-эти скрипты станут основой eval-харнесса.
+Runtime-код был чист, но операционные скрипты и тесты стучались в мёртвый
+эндпоинт. Исправлено в `fbfd7c0`: `backend/scripts/panex_quality_eval.py`,
+`backend/scripts/agent_context_live_smoke.py`, `backend/scripts/benchmark_hybrid_e2e.py`,
+их тесты, `Dockerfile` и доки переведены на `expa.beyondhorizon.dev`.
+Остались только датированные evidence-снапшоты (`docs/quality/*dogfood*`,
+`docs/session-logs/*`) — история, не рантайм.
 
 ### 6. Покрытие core-пайплайна — 🟡
 

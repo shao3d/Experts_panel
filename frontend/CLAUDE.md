@@ -48,7 +48,7 @@ The frontend source code is located in `frontend/src/`:
 The application uses a responsive two-pane layout:
 - **Left Sidebar**:
   - Contains **Search Options** (Top to bottom: "Embs&Keys", "Recent Only", "Reddit").
-  - Displays **Expert Groups** (Tech, Tech & Business, Knowledge Hub) with "Select All" functionality.
+  - Displays **Expert Groups** (Tech, Tech & Business, Visual, Knowledge Hub). Each group header has a chevron that collapses/expands its expert list, and a right-side `Select` / `Deselect · n/5` action; a collapsed group with selected members shows a count badge.
   - Collapsible: Shows smart **Initials Avatars** when collapsed (e.g., "AI_Arch" -> "AA").
 - **Main Content**:
   - Top: `Collapsible Query Deck` with equal-width query and progress/statistics panels, a narrow stable action column, and a thin lower collapse handle.
