@@ -462,6 +462,24 @@ def test_agent_context_group_tech_resolves_expected_roster():
     assert payload["selection_used"]["expert_filter"] == AGENT_CONTEXT_EXPERT_GROUPS["tech"]
 
 
+def test_agent_context_group_visual_resolves_expected_roster():
+    with TestClient(app) as client:
+        response = client.post(
+            "/api/v1/agent/context",
+            headers=_auth_headers(),
+            json=_agent_context_payload(
+                expert_scope="group",
+                expert_group="visual",
+                expert_filter=None,
+            ),
+        )
+
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert [expert["expert_id"] for expert in payload["experts"]] == AGENT_CONTEXT_EXPERT_GROUPS["visual"]
+    assert payload["selection_used"]["expert_filter"] == AGENT_CONTEXT_EXPERT_GROUPS["visual"]
+
+
 def test_agent_context_all_excludes_video_hub():
     with TestClient(app) as client:
         response = client.post(

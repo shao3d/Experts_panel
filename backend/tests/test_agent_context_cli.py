@@ -791,6 +791,14 @@ def test_panex_wide_ask_requires_artifact_transport(
     assert "wide/all-experts panex ask requires --save or --output" in captured.err
 
 
+def test_panex_group_choices_include_visual():
+    args = panex.parse_args(["ask", "--query", "visual query", "--group", "visual"])
+    assert args.group == "visual"
+
+    with pytest.raises(SystemExit):
+        panex.parse_args(["ask", "--query", "visual query", "--group", "unknown"])
+
+
 def test_panex_custom_five_experts_can_use_json_for_manual_small_boundary(
     monkeypatch,
     capsys,
@@ -1414,6 +1422,10 @@ def test_cli_default_timeout_matches_live_source_bundle_budget(
         (
             ["--query", "AI agents", "--group", "tech"],
             {"expert_scope": "group", "expert_group": "tech", "expert_filter": None},
+        ),
+        (
+            ["--query", "AI agents", "--group", "visual"],
+            {"expert_scope": "group", "expert_group": "visual", "expert_filter": None},
         ),
         (
             ["--query", "AI agents", "--experts", "refat,akimov", "--recent"],

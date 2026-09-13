@@ -38,7 +38,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     selection.add_argument(
         "--group",
-        choices=["tech", "tech_business"],
+        choices=["tech", "tech_business", "visual"],
         help="Known expert group to query.",
     )
 

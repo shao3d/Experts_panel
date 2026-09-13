@@ -60,6 +60,10 @@ AGENT_CONTEXT_EXPERT_GROUPS = {
         "silicbag",
         "kornish",
     ],
+    "visual": [
+        "strangedalle",
+        "acidcrunch",
+    ],
 }
 
 _KNOWN_AGENT_CONTEXT_EXPERT_IDS = {

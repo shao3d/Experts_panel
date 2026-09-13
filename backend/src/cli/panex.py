@@ -74,7 +74,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     selection.add_argument(
         "--group",
-        choices=["tech", "tech_business"],
+        choices=["tech", "tech_business", "visual"],
         help="Known expert group to query.",
     )
     selection.add_argument(
@@ -1393,6 +1393,7 @@ def _print_guide() -> None:
   --experts refat,akimov       конкретные expert_id
   --group tech                 группа tech
   --group tech_business        группа Tech & Business
+  --group visual               группа Visual
   --all                        все текущие эксперты из БД, кроме специальных источников
 
 Режимы ответа:

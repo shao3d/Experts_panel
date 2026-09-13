@@ -55,7 +55,7 @@ Human-friendly Russian trigger mapping:
 - Keep explicit-only behavior: these phrases trigger source expansion only after the parent/user clearly asks Панэкс to reveal sources/evidence/proofs/details.
 
 Production target:
-- For real user research requests, always call the production production Experts Panel.
+- For real user research requests, always call the production Experts Panel.
 - Canonical API URL:
   https://expa.beyondhorizon.dev/api/v1/agent/context
 - Canonical source expansion URL:
@@ -67,7 +67,7 @@ Production target:
 Safe CLI boundary:
 - Use only the Agent Context CLI/wrapper.
 - Command shape for real production calls:
-  panex ask --query "<query>" [--experts refat,akimov | --group tech | --group tech_business | --all] [--response-mode expert_digest|source_bundle] [--recent] --save --receipt-json
+  panex ask --query "<query>" [--experts refat,akimov | --group tech | --group tech_business | --group visual | --all] [--response-mode expert_digest|source_bundle] [--recent] --save --receipt-json
 - Use expert_digest through `panex ask` by default. This asks the Panel to reduce selected posts and main-source comments into backend-generated per-expert digests before returning JSON.
 - Use source_bundle only when the parent explicitly asks for raw evidence, audit/debug output, or source-bundle smoke verification; pass `--response-mode source_bundle` explicitly.
 - Use `panex expand` only when the parent explicitly asks to reveal source/evidence details from a previous digest, either through human Russian phrases or concrete source_key handles, for example "раскрой подробнее по Рефату", "покажи источники по этому выводу", "дай пруфы", "что там в комментариях", "раскрой refat:234", or "show raw source etechlead:139".
@@ -103,7 +103,7 @@ Safe CLI boundary:
 
 Expert selection:
 - all: no explicit subset or "all experts".
-- group: tech or tech_business.
+- group: tech, tech_business, or visual.
 - custom: named expert ids such as refat,akimov.
 - Treat UI/display names as the preferred user-facing expert names. Translate them to expert_id before calling the CLI.
 - Users may also name experts by expert_id, common English spelling, or obvious Russian spelling.

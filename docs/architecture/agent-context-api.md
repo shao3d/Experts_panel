@@ -586,6 +586,7 @@ Supported selection modes:
 | "по всем" ("everyone/all") / no subset | `expert_scope = "all"`, `expert_filter = null` |
 | "по технарям" ("tech people") / "Tech" | `expert_scope = "group"`, `expert_group = "tech"` |
 | "по бизнесовым" ("business people") / "Tech & Business" | `expert_scope = "group"`, `expert_group = "tech_business"` |
+| "по вижуалам" ("visual people") / "Visual" | `expert_scope = "group"`, `expert_group = "visual"` |
 | "по видео" ("video") / "Video Hub" | `expert_scope = "custom"`, `expert_filter = ["video_hub"]` |
 | named experts using UI labels, Russian names, or `expert_id` | `expert_scope = "custom"`, `expert_filter = [...]` |
 | "только Reddit/community" ("only Reddit/community") | `expert_scope = "none"`, `include_reddit = true` |
@@ -623,10 +624,14 @@ AGENT_CONTEXT_EXPERT_GROUPS = {
         "silicbag",
         "kornish",
     ],
+    "visual": [
+        "strangedalle",
+        "acidcrunch",
+    ],
 }
 ```
 
-`all` for MVP is `tech + tech_business`, filtered to experts that exist in runtime data. If any configured expert has no runtime data, return a warning rather than failing the whole request.
+`all` resolves at request time from the runtime `expert_metadata` table (excluding unsupported special sources such as `video_hub`), so it also covers the Visual group. The `visual` group is a static map because those experts were admitted as a `limited_scope` production group. If any configured expert has no runtime data, return a warning rather than failing the whole request.
 
 Every response must include `selection_used`, so the caller can see exactly what was queried.
 

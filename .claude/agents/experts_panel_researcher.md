@@ -181,7 +181,7 @@ unrelated project.
 Use only the Agent Context CLI/wrapper:
 
 ```text
-panex ask --query "<query>" [--experts refat,akimov | --group tech | --group tech_business | --all] [--response-mode expert_digest|source_bundle] [--recent] --save --receipt-json
+panex ask --query "<query>" [--experts refat,akimov | --group tech | --group tech_business | --group visual | --all] [--response-mode expert_digest|source_bundle] [--recent] --save --receipt-json
 ```
 
 For explicit source expansion:
@@ -301,7 +301,7 @@ Required behavior:
 Map the user request into one of these modes:
 
 - all: no explicit subset or "all experts";
-- group: `tech` or `tech_business`;
+- group: `tech`, `tech_business`, or `visual`;
 - custom: named expert ids such as `refat,akimov`.
 
 Treat UI/display names as the preferred user-facing expert names. Translate them

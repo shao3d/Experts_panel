@@ -81,6 +81,16 @@ Ask a group:
 panex ask --query "Что такое context rot?" --group tech_business --save --receipt-json
 ```
 
+Ask the Visual group (generative image/video/audio experts):
+
+```text
+Панэкс, спроси группу visual: какие модели/сервисы практики используют для image-to-video?
+```
+
+```bash
+panex ask --query "Какие image-to-video сервисы используют практики?" --group visual --save --receipt-json
+```
+
 Ask all current database experts except unsupported special sources such as `video_hub`:
 
 ```bash
