@@ -72,7 +72,7 @@ Defined in `.env`, loaded in `config.py`.
 - `MODEL_ANALYSIS`: `google/gemini-3.1-flash-lite`
 - `MODEL_MEDIUM_SCORING`: `google/gemini-3.1-flash-lite`
 - `MODEL_COMMENT_GROUPS`: `google/gemini-3.1-flash-lite`
-- `MODEL_DRIFT_ANALYSIS`: `google/gemini-3-flash-preview`
+- `MODEL_DRIFT_ANALYSIS`: `google/gemini-3-flash-preview` (legacy; no longer used for drift — drift runs through `OPENCODE_DRIFT_MODEL`)
 - `MODEL_SCOUT`: `google/gemini-3.1-flash-lite` (AI Scout / FTS5)
 - `MODEL_META_SYNTHESIS`: `google/gemini-3-flash-preview` (Cross-expert unified analysis)
 - `MODEL_EMBEDDING`: `google/gemini-embedding-001` (Hybrid Retrieval embeddings)

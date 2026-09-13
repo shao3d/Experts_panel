@@ -1002,6 +1002,44 @@ manifest, and repair missing strong/signature `matrix_export.cells` from
 `matrix_cells` without changing the semantic judgments. Validation exposes
 `matrix_export_incomplete` when matrix-worthy cells would otherwise be lost.
 
+### `backend/scripts/run_semantic_passport_opencode.py`
+
+Purpose: run a prepared semantic passport packet through headless opencode when
+Vertex AI is unavailable. Preferred path when the owner's Vertex/Gemini is not in
+use; it reuses the same validation/normalization logic as the Vertex runner, so
+all downstream matrix steps are unchanged.
+
+Status: implemented; used for the 2026-09 Visual candidates
+(`strangedalle`, `acidcrunch`).
+
+Inputs:
+
+- a packet directory produced by either export script;
+- a running `opencode serve` (`OPENCODE_URL`) with access to the model
+  (`--model`, default `opencode-go/muse-spark-1.3-contributor`, or
+  `OPENCODE_PASSPORT_MODEL`).
+
+Outputs: the same passport/receipt/validation artifacts as the Vertex runner,
+plus `<expert_id>_opencode_response.json`. Receipts record
+`backend: opencode_serve` and the model instead of Vertex project/location.
+
+Commands:
+
+```bash
+backend/.venv/bin/python backend/scripts/run_semantic_passport_opencode.py \
+  --packet-dir output/expert_admission/semantic_passports/<id>/input --count-only
+backend/.venv/bin/python backend/scripts/run_semantic_passport_opencode.py \
+  --packet-dir output/expert_admission/semantic_passports/<id>/input
+backend/.venv/bin/python backend/scripts/run_semantic_passport_opencode.py \
+  --packet-dir output/expert_admission/semantic_passports/<id>/input --normalize-existing
+```
+
+Implementation note: the serve has no `countTokens` or
+`responseMimeType: application/json`, so `--count-only` only reports prompt
+chars, and JSON reliability comes from the prompt plus the shared markdown
+extraction and `matrix_export` repair. Context is not truncated server-side by
+this script; the Muse model offers a 1M-token window.
+
 ### `backend/scripts/build_knowledge_matrix.py`
 
 Purpose: aggregate normalized semantic passports into the current knowledge

@@ -119,129 +119,26 @@ class DriftSchedulerService:
         except Exception as exc:
             return group, exc
 
-    async def analyze_drift_async(self, post_text: str, comments: List[Dict[str, str]]) -> Dict[str, Any]:
+    async def analyze_one_async(self, post_text: str, comments: List[Dict[str, str]]) -> Dict[str, Any]:
+        """Analyze a single group through the opencode backend.
+
+        Raises when the opencode backend is unavailable. There is deliberately
+        no Gemini/OpenRouter fallback.
         """
-        Analyze drift using Gemini through the unified Vertex client.
-        Returns parsed JSON result.
-
-        This is an async method that uses the unified Vertex LLM client
-        which handles retry logic and OpenAI-compatible response format.
-        """
-        comments_text = "\n".join([f"- {c['author']}: {c['text']}" for c in comments])
-
-        prompt = f"""Analyze this Telegram post and its comments to determine if the discussion DRIFTED to other topics.
-
-POST (anchor):
-{post_text[:1000]}...
-
-COMMENTS:
-{comments_text[:3000]}
-
-TASK:
-1. Determine if comments discuss topics NOT mentioned in the post
-2. If yes (drift detected), extract drift topics with:
-   - topic: General theme (1-2 sentences)
-   - keywords: Specific terms, technologies, names (array)
-   - key_phrases: Direct quotes from comments (array, 1-3 phrases)
-   - context: Brief explanation (1 sentence)
-
-CRITERIA FOR DRIFT:
-✅ DRIFT:
-- Comments ask about/discuss technologies/concepts not in post
-- Discussion moves to different subject area
-- New specific questions with detailed answers
-
-❌ NOT DRIFT:
-- Comments just expand on post topic
-- Questions clarifying post content
-- Generic reactions/thanks
-
-CONFIDENCE:
-- high: Clear drift, obvious new topics
-- medium: Partial drift, some new elements
-- low: Unclear if drift or just expansion
-
-Return ONLY valid JSON:
-{{
-  "has_drift": true/false,
-  "confidence": "high|medium|low",
-  "drift_topics": [
-    {{
-      "topic": "...",
-      "keywords": ["..."],
-      "key_phrases": ["..."],
-      "context": "..."
-    }}
-  ] or null
-}}"""
-
-        try:
-            response = await self.client.chat_completions_create(
-                model=self.model_name,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.2,
-                response_format={"type": "json_object"},
-                max_tokens=2048,  # Drift-topics JSON; 402 guard
+        if self.backend != "opencode":
+            raise RuntimeError(
+                "Drift backend unavailable (serve down or DRIFT_BACKEND != opencode); "
+                "Gemini fallback is disabled."
             )
+        import asyncio as _asyncio
+        loop = _asyncio.get_running_loop()
+        return await loop.run_in_executor(None, self._oc_analyze, post_text, comments)
 
-            # Parse OpenAI-compatible response format
-            text_response = response.choices[0].message.content.strip()
-
-            # Robust JSON extraction (same as original)
-            try:
-                parsed = json.loads(text_response)
-            except json.JSONDecodeError:
-                # Heuristic extraction
-                idx_brace = text_response.find('{')
-                idx_bracket = text_response.find('[')
-
-                start_idx = -1
-                end_idx = -1
-
-                if idx_brace != -1 and idx_bracket != -1:
-                    if idx_brace < idx_bracket:
-                        start_idx = idx_brace
-                        end_idx = text_response.rfind('}')
-                    else:
-                        start_idx = idx_bracket
-                        end_idx = text_response.rfind(']')
-                elif idx_brace != -1:
-                    start_idx = idx_brace
-                    end_idx = text_response.rfind('}')
-                elif idx_bracket != -1:
-                    start_idx = idx_bracket
-                    end_idx = text_response.rfind(']')
-
-                if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
-                    json_str = text_response[start_idx : end_idx + 1]
-                    try:
-                        parsed = json.loads(json_str)
-                    except json.JSONDecodeError as e:
-                        logger.error(f"Failed to parse extracted JSON: {json_str[:100]}... Error: {e}")
-                        raise ValueError(f"Gemini returned invalid JSON structure even after extraction.")
-                else:
-                    raise ValueError(f"Could not find valid JSON object in response: {text_response[:100]}")
-
-            # Validate structure
-            if isinstance(parsed, list):
-                if len(parsed) > 0 and isinstance(parsed[0], dict):
-                    return parsed[0]
-                raise ValueError(f"Gemini returned invalid list structure: {str(parsed)[:100]}")
-
-            if not isinstance(parsed, dict):
-                raise ValueError(f"Gemini returned non-dict JSON: {type(parsed)}")
-
-            return parsed
-
-        except VertexLLMError as e:
-            # The unified client handles rate limit retries automatically
-            # If we still get an error here, log and re-raise
-            if e.is_rate_limit:
-                logger.error(f"Rate limit error after retries: {str(e)}")
-            else:
-                logger.error(f"Vertex LLM error: {str(e)}")
-            raise
-
+    async def analyze_drift_async(self, post_text: str, comments: List[Dict[str, str]]) -> Dict[str, Any]:
+        """Legacy Gemini path. Disabled: drift must run through opencode."""
+        raise RuntimeError(
+            "Gemini drift generation is disabled. Use analyze_one_async (opencode)."
+        )
 
 
     def update_group_status(

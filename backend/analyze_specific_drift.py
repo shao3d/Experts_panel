@@ -15,7 +15,7 @@ if str(BACKEND_DIR) not in sys.path:
 
 from src.cli.bootstrap import (
     bootstrap_cli,
-    require_vertex_runtime,
+    require_openrouter_runtime,
     run_async,
     set_default_sqlite_database_url,
 )
@@ -31,7 +31,7 @@ from src.services.drift_scheduler_service import DriftSchedulerService
 
 
 async def analyze_single_post(post_id: int) -> None:
-    require_vertex_runtime()
+    require_openrouter_runtime()
 
     logger.info("Analyzing drift for post_id=%s (db=%s)", post_id, DB_PATH)
 
@@ -76,8 +76,10 @@ async def analyze_single_post(post_id: int) -> None:
             logger.warning("No comments found for post_id=%s; skipping drift analysis", post_id)
             return
 
-        result = await service.analyze_drift_async(row.post_text, comments_list)
-        service.update_group_status(post_id, result)
+        result = await service.analyze_one_async(row.post_text, comments_list)
+        service.update_group_status(
+            post_id, result, analyzed_by_label=f"drift_checked_{service.backend}"
+        )
 
         logger.info(
             "Drift analysis complete for post_id=%s has_drift=%s topics=%s",

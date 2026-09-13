@@ -38,18 +38,18 @@ Use these files as your Source of Truth. Do NOT trust `plan_*.md` files in archi
 | **Synthesis** | `gemini-3-flash-preview` | `MODEL_SYNTHESIS` |
 | **Validation** | `gemini-2.5-flash` | `MODEL_ANALYSIS` |
 | **Comment Groups** | `gemini-2.5-flash` | `MODEL_COMMENT_GROUPS` |
-| **Drift** | `gemini-3-flash-preview` | `MODEL_DRIFT_ANALYSIS` |
+| **Drift** | `opencode-go/muse-spark-1.3-contributor` | `OPENCODE_DRIFT_MODEL` |
 | **AI Scout** | `gemini-3.1-flash-lite-preview` | `MODEL_SCOUT` |
 | **Scoring** | `gemini-2.5-flash` | `MODEL_MEDIUM_SCORING` |
 | **Meta-Synthesis** | `gemini-3-flash-preview` | `MODEL_META_SYNTHESIS` |
 | **Embedding** | `gemini-embedding-001` | `MODEL_EMBEDDING` |
 | **Video Twin** | `gemini-3.1-pro-preview` | `MODEL_VIDEO_PRO` |
 | **Video Validation** | `gemini-3-flash-preview` | `MODEL_VIDEO_FLASH` |
-| **Reddit Proxy** | `https://experts-reddit-proxy.fly.dev` | Hardcoded in Reddit services |
+| **Reddit Proxy** | `http://reddit-proxy:3000` (VM docker sidecar) | Compose/env, see `docs/architecture/reddit-service.md` |
 
 ## 🚨 Operational Rules
-1.  **Drift Analysis:** ALWAYS use `run_drift_service.py` (CLI wrapper) or `./scripts/update_production_db.sh`.
-2.  **Expert Roster:** ALWAYS update `frontend/src/config/expertConfig.ts` and `docs/architecture/current-expert-roster.md` when adding/removing experts; update Fly SQLite volume separately from code deploy.
+1.  **Drift Analysis:** ALWAYS use `backend/run_drift_service.py` (opencode/Muse, `DRIFT_BACKEND=opencode`) or `./scripts/update_production_db.sh`. Never route drift to Gemini.
+2.  **Expert Roster:** ALWAYS update `frontend/src/config/expertConfig.ts` and `docs/architecture/current-expert-roster.md` when adding/removing experts; production SQLite is updated separately via `./scripts/update_production_db.sh` (Oracle VM).
 3.  **Video Hub:** Ensure `topic_id` in JSON changes every 10-15 mins (logical chapters) for proper Summary Bridging context.
 4.  **Reddit Proxy:** Do not modify `services/reddit-proxy` unless explicitly asked (it's a separate microservice).
 5.  **No Hallucinations:** If a file is in `docs/archive/`, treat it as history, not current truth.
