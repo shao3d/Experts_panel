@@ -63,7 +63,9 @@ export const ExpertScoutTools: Plugin = async () => {
             .positive()
             .max(100)
             .optional()
-            .describe("Max comments per source for show (default 20)"),
+            .describe(
+              "Max comments per window per source for show: author and community windows are capped separately (default 20 each)",
+            ),
         },
         async execute(args, context) {
           if (context.agent !== SCOUT_AGENT) {

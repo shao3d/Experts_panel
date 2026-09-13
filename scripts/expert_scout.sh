@@ -59,5 +59,6 @@ elif [[ "$OPENCODE_EXIT" -ne 0 ]]; then
   echo "scout: opencode failed (exit ${OPENCODE_EXIT}); events at ${RUN_DIR}/events.jsonl" >&2
   exit "$OPENCODE_EXIT"
 else
-  echo "scout: empty answer; events at ${RUN_DIR}/events.jsonl" >&2
+  echo "scout: empty answer (agent produced no text); events at ${RUN_DIR}/events.jsonl" >&2
+  exit 3
 fi

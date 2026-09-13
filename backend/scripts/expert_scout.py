@@ -567,7 +567,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     show = subparsers.add_parser("show", help="Show full source(s) with comments and linked context")
     show.add_argument("source_keys", nargs="+", help="source_key values like refat:238")
-    show.add_argument("--comments-limit", type=int, default=DEFAULT_COMMENTS_LIMIT, help=f"Max comments per source (default {DEFAULT_COMMENTS_LIMIT})")
+    show.add_argument("--comments-limit", type=int, default=DEFAULT_COMMENTS_LIMIT, help=f"Max comments per window (author / community) per source (default {DEFAULT_COMMENTS_LIMIT})")
     show.add_argument("--json", action="store_true", help="Machine-readable JSON output")
 
     return parser
