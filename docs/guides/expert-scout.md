@@ -30,11 +30,32 @@ Mac: ~/.local/bin/expert-scout "вопрос"
 ```
 
 - Агент — `.opencode/agents/expert-scout.md` (модель
-  `opencode-go/deepseek-v4.1-flash`, `variant: max`).
-- Хелпер — `backend/scripts/expert_scout.py`: гибрид FTS5 + vector (RRF) и
-  точное раскрытие источника по `source_key`.
+  `opencode-go/deepseek-v4.1-flash`, `variant: max`). Shell ему недоступен
+  (bash запрещён полностью): единственный инструмент — read-only `scout` из
+  плагина `.opencode/plugins/expert-scout-tools.ts`, который запускает хелпер
+  через argv-массив без shell, поэтому подстановки `$( )`/backticks в
+  аргументах инертны (проверено пробой 2026-09-13).
+- Хелпер — `backend/scripts/expert_scout.py`: гибрид FTS5 + vector
+  (soft-freshness + RRF, как в `HybridRetrievalService`) и точное раскрытие
+  источника по `source_key` с раздельной выборкой авторских комментариев.
 - Ответ возвращается без промежуточных прогресс-нот
-  (`scripts/expert_scout_filter.py`).
+  (`scripts/expert_scout_filter.py`); если агент не выдал финальный ответ,
+  fallback-нарратив помечается явным `# WARNING`.
+
+## Прогон: таймаут и артефакты
+
+Обёртка `scripts/expert_scout.sh`:
+
+- hard-timeout на весь агентный прогон: переменная `EXPERT_SCOUT_TIMEOUT`
+  (секунд, по умолчанию 300);
+- артефакты каждого прогона в `output/scout_runs/<timestamp>/`:
+  `question.txt`, `events.jsonl` (сырой поток opencode), `answer.md`
+  (финальный ответ), `meta.txt` (вопрос, длительность, exit-код, число
+  tool-вызовов);
+- в stderr печатается строка `# scout-run: ...` с длительностью и числом
+  вызовов.
+
+Каталог `output/` игнорируется git; старые прогоны можно удалять вручную.
 
 ## Хелпер: команды
 
@@ -48,6 +69,8 @@ backend/.venv/bin/python backend/scripts/expert_scout.py show <expert:message_id
 
 - **Только чтение**: `mode=ro` + `PRAGMA query_only=ON`; скаут не пишет в
   корпус и не меняет репозиторий.
+- **Без shell**: у агента нет bash; `scout`-инструмент вызывает хелпер напрямую
+  через argv-массив, инъекция команд через аргументы невозможна.
 - **Только dev-корпус** `backend/data/experts.db`; production DB не трогается.
 - Изоляция по `expert_id` сохраняется; возвращаются только реальные материалы
   экспертов.
@@ -69,6 +92,8 @@ backend/.venv/bin/python backend/scripts/expert_scout.py show <expert:message_id
 
 Вывод: для точной техники/цитаты — скаут; для быстрого структурированного
 обзора по узкому эксперту — Panex. Это одно наблюдение, не статистика.
+Второй замер (review-прогон того же дня, другой вопрос): 77 с — латентность
+сильно зависит от вопроса; считайте таблицу иллюстрацией, а не паритетом.
 
 ## Когда использовать
 
@@ -107,5 +132,11 @@ chmod +x ~/.local/bin/expert-scout
 - «opencode not found» / «backend python not found» — проверить
   `~/.opencode/bin/opencode` и `backend/.venv` на VM.
 - «Permission denied» — проверить SSH-ключ Mac → VM.
-- Пустой ответ — агент не нашёл сигнала; вывод всё равно содержит список
+- «scout: opencode failed (exit 124)» — сработал hard-timeout обёртки
+  (`EXPERT_SCOUT_TIMEOUT`); частичный поток смотреть в `events.jsonl`
+  артефактов прогона.
+- `# WARNING` в начале ответа — агент не выдал финальный ответ после
+  последнего tool-вызова; ниже идёт промежуточный нарратив, ему нельзя
+  доверять как ответу.
+- Пустой ответ — агент не нашёл сигнала; артефакты прогона содержат список
   запросов и пробелы.

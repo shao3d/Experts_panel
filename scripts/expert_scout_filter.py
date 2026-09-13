@@ -2,7 +2,8 @@
 """Reduce `opencode run --format json` JSONL into the final agent answer.
 
 Keeps only text parts emitted after the last tool call (falling back to all
-text parts when no tools were used), grouped by assistant message.
+text parts — explicitly marked with a # WARNING — when the run ended without
+a post-tool answer), grouped by assistant message.
 """
 
 from __future__ import annotations
@@ -40,7 +41,9 @@ def main() -> int:
         if text:
             text_parts.append((message_id, text))
 
+    used_fallback = False
     if not text_parts:
+        used_fallback = True
         for index, event in enumerate(events):
             if event.get("type") != "text":
                 continue
@@ -54,6 +57,12 @@ def main() -> int:
         grouped.append("".join(text for _, text in group))
 
     answer = "\n\n".join(grouped).strip()
+    if answer and used_fallback and last_tool_index >= 0:
+        answer = (
+            "# WARNING: scout did not emit a final answer after the last tool call; "
+            "the text below is intermediate narration and may be incomplete.\n\n"
+            + answer
+        )
     if answer:
         print(answer)
     return 0

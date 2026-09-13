@@ -136,10 +136,16 @@ anti-pattern формулировки, читает первоисточники
 
 - Канал: `expert-scout "<вопрос>"` с Мака → SSH на VM → агент opencode
   (deepseek-v4.1-flash, `variant: max`) → read-only хелпер
-  `backend/scripts/expert_scout.py` (FTS5 + vector + RRF; `mode=ro`, только
-  dev-корпус, guard на prod-путь).
-- Границы: только чтение, без записи/копирования БД; агент ограничен
-  bash-allowlist на хелпер (read/grep/glob/сеть запрещены).
+  `backend/scripts/expert_scout.py` (FTS5 + vector + soft-freshness + RRF;
+  `mode=ro`, только dev-корпус, guard на prod-путь).
+- Границы: только чтение, без записи/копирования БД; у агента нет shell
+  (bash запрещён полностью), единственный инструмент — read-only `scout`
+  (плагин, argv без shell; read/grep/glob/сеть запрещены).
+- External review (2026-09-13): пробитие bash-allowlist подстановкой `$( )`
+  найдено пробой и закрыто кастомным tool-плагином; в обёртке — hard-timeout
+  (`EXPERT_SCOUT_TIMEOUT`) и артефакты `output/scout_runs/`; в хелпере —
+  soft-freshness перед RRF и раздельная выборка авторских комментариев;
+  юнит-тесты расширены (13).
 - Сравнение с Panex `expert_digest` (n=1, «Kling элементы», acidcrunch+doronin):
   латентность паритетна (32с vs 35с); скаут дал компактный ответ с цитатами,
   Panex — структурированный артефакт, но на широком эксперте **61 сигнал, из

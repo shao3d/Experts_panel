@@ -70,9 +70,13 @@ expert-scout "<вопрос>"
 
 Под капотом: Mac-shim (`~/.local/bin/expert-scout`) → SSH на VM →
 `scripts/expert_scout.sh` → агент `expert-scout` в opencode → read-only хелпер.
-Агент сам перебирает фасеты и anti-pattern формулировки, читает первоисточники
-через `show` и возвращает находки с `source_key` и честные пробелы. Полное
-описание и границы — `docs/guides/expert-scout.md`.
+У агента нет shell (bash запрещён полностью): единственный инструмент —
+read-only `scout` из плагина `.opencode/plugins/expert-scout-tools.ts`,
+который запускает хелпер argv-массивом без shell, поэтому инъекции команд
+через аргументы невозможны. Агент сам перебирает фасеты и anti-pattern
+формулировки, читает первоисточники через `show` и возвращает находки с
+`source_key` и честные пробелы. Полное описание и границы —
+`docs/guides/expert-scout.md`.
 
 Запрещено: писать в корпус, трогать production DB, копировать/выгружать БД,
 выводить секреты. Scout не заменяет `reddit-search` (сообщество) и Панэкс
@@ -80,9 +84,11 @@ expert-scout "<вопрос>"
 
 (Expert Scout rule: the owner authorized a narrow read-only exception — the
 scout agent may read the local dev corpus through `backend/scripts/expert_scout.py`
-only. Never write to the corpus, never touch the production DB, never copy or
-dump the database, never print secrets. Run it from the Mac as
-`expert-scout "<question>"`.)
+only. The agent has no shell access: its single tool is the read-only `scout`
+plugin tool (`.opencode/plugins/expert-scout-tools.ts`) which spawns the
+helper with an argv array, no shell. Never write to the corpus, never touch
+the production DB, never copy or dump the database, never print secrets. Run
+it from the Mac as `expert-scout "<question>"`.)
 
 ## Единственное рабочее место
 

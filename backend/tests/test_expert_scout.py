@@ -7,6 +7,7 @@ import importlib.util
 import io
 import sqlite3
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -104,3 +105,121 @@ def test_filter_keeps_only_text_after_last_tool(capsys, monkeypatch):
 
     assert filter_module.main() == 0
     assert capsys.readouterr().out.strip() == "FINAL ANSWER"
+
+
+def test_filter_marks_fallback_narration(capsys, monkeypatch):
+    filter_module = _load_module("expert_scout_filter_fallback", FILTER_PATH)
+    events = "\n".join(
+        [
+            '{"type":"text","part":{"messageID":"m1","text":"thinking out loud"}}',
+            '{"type":"tool_use","part":{"messageID":"m2","tool":"scout"}}',
+        ]
+    )
+    monkeypatch.setattr(sys, "stdin", io.StringIO(events))
+
+    assert filter_module.main() == 0
+    out = capsys.readouterr().out
+    assert out.startswith("# WARNING")
+    assert "thinking out loud" in out
+
+
+def test_soft_freshness_parses_both_formats_and_floors(scout):
+    now = datetime(2026, 9, 13, 12, 0, 0, tzinfo=timezone.utc)
+    one_day_space = scout._soft_freshness("2026-09-12 12:00:00.000000", now)
+    one_day_iso = scout._soft_freshness("2026-09-12T12:00:00", now)
+
+    assert one_day_space == pytest.approx(one_day_iso)
+    assert one_day_space == pytest.approx(1 - 1 / 365, abs=1e-6)
+    assert scout._soft_freshness("2020-01-01 00:00:00", now) == 0.7
+    assert scout._soft_freshness(None, now) == 0.7
+    assert scout._soft_freshness("garbage", now) == 0.7
+
+
+def test_rank_fts_demotes_stale_strong_match(scout):
+    now = datetime(2026, 9, 13, tzinfo=timezone.utc)
+    rows = [
+        (1, "s1", -6.0, "2023-01-01 00:00:00.000000"),  # better BM25, stale
+        (2, "s2", -5.0, "2026-09-12 00:00:00"),  # slightly weaker, fresh
+    ]
+
+    assert scout._rank_fts(rows, now) == [2, 1]
+
+
+def test_rank_vector_prefers_fresh_relevant(scout):
+    now = datetime(2026, 9, 13, tzinfo=timezone.utc)
+    rows = [
+        (1, 0.10, "2023-01-01 00:00:00.000000"),  # closest, stale
+        (2, 0.30, "2026-09-12 00:00:00"),  # farther, fresh
+    ]
+
+    assert scout._rank_vector(rows, now)[:1] == [2]
+
+
+@pytest.fixture()
+def show_conn():
+    conn = sqlite3.connect(":memory:")
+    conn.execute(
+        """
+        CREATE TABLE posts (
+            post_id INTEGER PRIMARY KEY, expert_id TEXT, telegram_message_id INTEGER,
+            channel_username TEXT, created_at TEXT, author_name TEXT, author_id TEXT,
+            message_text TEXT, reply_count INTEGER, view_count INTEGER
+        )
+        """
+    )
+    conn.execute(
+        """
+        CREATE TABLE comments (
+            comment_id INTEGER PRIMARY KEY, post_id INTEGER, comment_text TEXT,
+            author_id TEXT, author_name TEXT, created_at TEXT
+        )
+        """
+    )
+    conn.execute(
+        "CREATE TABLE links (source_post_id INTEGER, target_post_id INTEGER, link_type TEXT)"
+    )
+    conn.execute(
+        "INSERT INTO posts VALUES (1, 'acidcrunch', 2062, 'AcidCrunch',"
+        " '2025-06-05 10:00:00.000000', 'Acid', 'channel55', 'post text', 3, 100)"
+    )
+    for i in range(6):
+        conn.execute(
+            "INSERT INTO comments VALUES (?, 1, ?, '999', ?, ?)",
+            (i + 1, f"community {i}", f"user{i}", f"2025-06-05 11:{i:02d}:00.000000"),
+        )
+    # Late author replies would fall outside the chronological comment window.
+    conn.execute(
+        "INSERT INTO comments VALUES (20, 1, 'author answer', '55', 'Acid',"
+        " '2025-06-06 10:00:00.000000')"
+    )
+    conn.execute(
+        "INSERT INTO comments VALUES (21, 1, 'author answer 2', '55', 'Acid',"
+        " '2025-06-06 11:00:00.000000')"
+    )
+    conn.execute(
+        "INSERT INTO posts VALUES (2, 'acidcrunch', 2070, 'AcidCrunch',"
+        " '2025-06-07 10:00:00.000000', 'Acid', 'channel55', 'linked post text', 0, 5)"
+    )
+    conn.execute("INSERT INTO links VALUES (1, 2, 'reply')")
+    conn.commit()
+    return conn
+
+
+def test_collect_show_payload_keeps_late_author_comments(scout, show_conn):
+    payload = scout._collect_show_payload(show_conn, ["acidcrunch:2062"], 5)
+    item = payload[0]
+
+    author = [c for c in item["comments"] if c["is_author"]]
+    community = [c for c in item["comments"] if not c["is_author"]]
+    assert len(author) == 2  # both late author replies are kept
+    assert len(community) == 5  # community window stays capped
+    assert item["linked_context"][0]["source_key"] == "acidcrunch:2070"
+
+
+def test_collect_show_payload_reports_bad_keys(scout, show_conn):
+    payload = scout._collect_show_payload(
+        show_conn, ["acidcrunch:abc", "acidcrunch:999999"], 5
+    )
+
+    assert payload[0]["error"].startswith("invalid source_key")
+    assert payload[1]["error"] == "not_found"
