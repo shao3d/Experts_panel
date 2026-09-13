@@ -31,6 +31,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   className
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const expertMap = new Map(availableExperts.map(e => [e.expert_id, e]));
 
   const handleToggleExpert = (expertId: string) => {
@@ -48,6 +49,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
+
+  const toggleGroupCollapsed = (label: string) => {
+    setCollapsedGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(label)) {
+        next.delete(label);
+      } else {
+        next.add(label);
+      }
+      return next;
+    });
+  };
 
   const handleToggleGroup = (groupIds: string[]) => {
     if (disabled) return;
@@ -267,21 +280,43 @@ export const Sidebar: React.FC<SidebarProps> = ({
           if (groupExperts.length === 0) return null;
           
           const groupSelectedCount = groupExperts.filter(e => selectedExperts.has(e.expert_id)).length;
+          const isGroupCollapsed = collapsedGroups.has(group.label) && !isCollapsed;
 
           return (
             <div key={group.label} className={clsx("mb-6", isCollapsed ? "px-2" : "px-4")}>
               {!isCollapsed && (
-                <div 
-                  onClick={() => handleToggleGroup(group.expertIds)}
-                  className="px-3 mb-2 flex items-center justify-between cursor-pointer group/header hover:text-blue-600 transition-colors"
-                  title="Click to toggle all"
-                >
-                  <span className="text-xs font-bold text-gray-400 uppercase tracking-wider group-hover/header:text-blue-600">
-                    {group.label}
-                  </span>
-                  <span className="text-[10px] text-gray-400 group-hover/header:text-blue-500">
+                <div className="px-3 mb-2 flex items-center justify-between gap-2">
+                  <button
+                    type="button"
+                    onClick={() => toggleGroupCollapsed(group.label)}
+                    className="flex items-center gap-1.5 min-w-0 text-xs font-bold text-gray-400 uppercase tracking-wider hover:text-blue-600 transition-colors"
+                    title={isGroupCollapsed ? `Expand ${group.label}` : `Collapse ${group.label}`}
+                    aria-expanded={!isGroupCollapsed}
+                  >
+                    <svg
+                      className={clsx(
+                        "w-3 h-3 shrink-0 transition-transform duration-200",
+                        isGroupCollapsed ? "-rotate-90" : "rotate-0"
+                      )}
+                      viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                    >
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                    <span className="truncate">{group.label}</span>
+                    {isGroupCollapsed && groupSelectedCount > 0 && (
+                      <span className="ml-0.5 px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-600 text-[10px] font-semibold normal-case tracking-normal">
+                        {groupSelectedCount}
+                      </span>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleGroup(group.expertIds)}
+                    className="shrink-0 text-[10px] text-gray-400 hover:text-blue-500 transition-colors"
+                    title="Toggle all experts in this group"
+                  >
                     {groupSelectedCount > 0 ? `Deselect · ${groupSelectedCount}/${MAX_SELECTED_EXPERTS}` : 'Select'}
-                  </span>
+                  </button>
                 </div>
               )}
               {isCollapsed && (
@@ -292,6 +327,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 />
               )}
               
+              {!isGroupCollapsed && (
               <div className="space-y-1">
                 {groupExperts.map((expert) => {
                   const isSelected = selectedExperts.has(expert.expert_id);
@@ -372,6 +408,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   );
                 })}
               </div>
+              )}
             </div>
           );
         })}
