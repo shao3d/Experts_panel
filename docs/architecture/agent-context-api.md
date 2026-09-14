@@ -599,7 +599,7 @@ MVP boundary:
 - `video_hub` is a separate Knowledge Hub source and should be queried only when the user explicitly asks for video/video_hub, or when a later implementation adds a tested video source_bundle adapter.
 - Do not silently add `video_hub` to normal "по всем экспертам" ("all experts") calls in the first implementation slice.
 
-Backend implementation must not import frontend TypeScript config. Define an explicit backend group map for MVP and keep it covered by tests:
+Backend implementation must not import frontend TypeScript config. Define an explicit backend group map in the shared module `backend/src/expert_groups.py` (used by both the Agent Context API and Expert Scout) and keep it covered by tests:
 
 ```python
 AGENT_CONTEXT_EXPERT_GROUPS = {

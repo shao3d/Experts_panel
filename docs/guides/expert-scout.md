@@ -23,8 +23,9 @@ bash-команду.
 Чтобы фраза «задействуй Скаута ...» работала в любой сессии, установлен скилл
 `expert-scout`, который маршрутизирует такие запросы на команду:
 триггеры — «Скаут», «expert-scout», «задействуй Скаута», «сырой поиск по
-экспертам». «По визуалам» скилл передаёт как явное ограничение
-`acidcrunch,strangedalle` внутри вопроса (у скаута нет флага группы).
+экспертам». «По визуалам» скилл передаёт как `группа visual` внутри вопроса:
+группы резолвятся из канонической карты `backend/src/expert_groups.py`, поэтому
+при добавлении эксперта в группу скилл править не нужно.
 
 Установка (на Маке — для Codex, на VM — для opencode):
 
@@ -92,9 +93,12 @@ cd .opencode && npm ci
 
 ```bash
 backend/.venv/bin/python backend/scripts/expert_scout.py experts
-backend/.venv/bin/python backend/scripts/expert_scout.py search "<запрос>" [--experts a,b] [--recent-days N] [--limit N] [--no-vector] [--json]
+backend/.venv/bin/python backend/scripts/expert_scout.py search "<запрос>" [--experts a,b | --group visual] [--recent-days N] [--limit N] [--no-vector] [--json]
 backend/.venv/bin/python backend/scripts/expert_scout.py show <expert:message_id> [...] [--comments-limit N] [--json]
 ```
+
+`--group` (`tech`, `tech_business`, `visual`) резолвится через
+`backend/src/expert_groups.py` — ту же карту, что использует Панэкс.
 
 ## Границы и безопасность
 
@@ -135,6 +139,9 @@ backend/.venv/bin/python backend/scripts/expert_scout.py show <expert:message_id
 | Панэкс (`panex ask`) | Готовый сжатый дайджест по выбранным экспертам |
 
 Scout не заменяет два других канала и не выдаёт мнение практиков за истину.
+Область поиска: названный эксперт (`acidcrunch`) ограничивает поиск только им;
+группа («визуалы») — составом группы из канонической карты; без уточнения
+ищется по всем экспертам.
 
 ## Восстановление Mac-shim
 

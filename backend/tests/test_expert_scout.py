@@ -18,6 +18,9 @@ REPO_ROOT = BACKEND_DIR.parent
 SCOUT_PATH = BACKEND_DIR / "scripts" / "expert_scout.py"
 FILTER_PATH = REPO_ROOT / "scripts" / "expert_scout_filter.py"
 
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
 
 def _load_module(name: str, path: Path):
     spec = importlib.util.spec_from_file_location(name, path)
@@ -89,6 +92,40 @@ def test_expert_ids_validates_against_metadata(scout):
     all_known, no_unknown = scout._expert_ids(conn, None)
     assert all_known == ["akimov", "refat"]
     assert no_unknown == []
+
+
+def test_expert_ids_resolves_canonical_group(scout):
+    conn = sqlite3.connect(":memory:")
+    conn.execute("CREATE TABLE expert_metadata (expert_id TEXT)")
+    conn.executemany(
+        "INSERT INTO expert_metadata VALUES (?)",
+        [("acidcrunch",), ("strangedalle",), ("refat",)],
+    )
+
+    known, unknown = scout._expert_ids(conn, None, "visual")
+    assert known == ["strangedalle", "acidcrunch"]
+    assert unknown == []
+
+    known_tb, _ = scout._expert_ids(conn, None, "tech_business")
+    assert known_tb == ["refat"]
+
+
+def test_expert_ids_rejects_unknown_group(scout):
+    conn = sqlite3.connect(":memory:")
+    conn.execute("CREATE TABLE expert_metadata (expert_id TEXT)")
+
+    with pytest.raises(ValueError, match="unknown expert group"):
+        scout._expert_ids(conn, None, "bogus")
+
+
+def test_expert_groups_shared_module_is_canonical():
+    from src.expert_groups import AGENT_CONTEXT_EXPERT_GROUPS, groups_for_expert
+
+    assert "visual" in AGENT_CONTEXT_EXPERT_GROUPS
+    assert "strangedalle" in AGENT_CONTEXT_EXPERT_GROUPS["visual"]
+    assert groups_for_expert("acidcrunch") == ["visual"]
+    assert groups_for_expert("refat") == ["tech_business"]
+    assert groups_for_expert("mkarpov") == []
 
 
 def test_filter_keeps_only_text_after_last_tool(capsys, monkeypatch):

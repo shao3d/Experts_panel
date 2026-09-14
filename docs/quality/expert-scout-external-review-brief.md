@@ -39,7 +39,7 @@ video edit», «чем платят за консистентность») **age
 
 | # | Файл | Роль |
 |---|---|---|
-| 1 | `backend/scripts/expert_scout.py` | Read-only хелпер: `experts`, `search` (FTS5 + vector + soft-freshness + RRF), `show` (пост + раздельные окна авторских и community-комментариев + linked context). Открывает БД `mode=ro` + `PRAGMA query_only=ON`. |
+| 1 | `backend/scripts/expert_scout.py` | Read-only хелпер: `experts` (с группами), `search` (FTS5 + vector + soft-freshness + RRF; `--experts` или `--group`, группа резолвится из `backend/src/expert_groups.py`), `show` (пост + раздельные окна авторских и community-комментариев + linked context). Открывает БД `mode=ro` + `PRAGMA query_only=ON`. |
 | 2 | `.opencode/plugins/expert-scout-tools.ts` | Единственный инструмент агента `scout`: спавнит хелпер argv-массивом (без shell), доступен только агенту `expert-scout`. |
 | 3 | `.opencode/agents/expert-scout.md` | Политика агента: фасеты, anti-pattern формулировки, цитаты, caps, честный отказ. Модель `opencode-go/deepseek-v4.1-flash`, `variant: max`. `bash` запрещён полностью. |
 | 4 | `scripts/expert_scout.sh` | VM-обёртка: hard-timeout (`EXPERT_SCOUT_TIMEOUT`), артефакты прогона в `output/scout_runs/`, фильтр ответа. |
@@ -50,6 +50,7 @@ video edit», «чем платят за консистентность») **age
 | 9 | `~/.local/bin/expert-scout` (на Маке, вне git) | Мостик: base64 вопроса → SSH на VM → обёртка. |
 | 10 | `.opencode/package.json` + `package-lock.json` | Зависимость плагина `@opencode-ai/plugin`; восстановление `cd .opencode && npm ci`. |
 | 11 | `.codex/skills/expert-scout/` + `scripts/install_expert_scout_skill.sh` | Глобальный скилл-роутер («задействуй Скаута») для Codex и opencode; установщик ставит скиллы и Mac-мостик. |
+| 12 | `backend/src/expert_groups.py` | Каноническая карта групп (tech, tech_business, visual) — общая для API и скаута; добавление эксперта в группу правится здесь. |
 
 Коммиты: `2173720` (исходная реализация), `0c10a5f` (доки), `be88b1f`
 (no-shell plugin tool + hardening). Этот бриф — рабочий артефакт.

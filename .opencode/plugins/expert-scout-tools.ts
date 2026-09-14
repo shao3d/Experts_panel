@@ -32,6 +32,12 @@ export const ExpertScoutTools: Plugin = async () => {
             .string()
             .optional()
             .describe("Comma-separated expert_id subset for search"),
+          group: tool.schema
+            .string()
+            .optional()
+            .describe(
+              "Canonical group name for search (tech, tech_business, visual); mutually exclusive with experts and resolved from the backend group map",
+            ),
           recent_days: tool.schema
             .number()
             .int()
@@ -80,6 +86,7 @@ export const ExpertScoutTools: Plugin = async () => {
             }
             argv.push(args.query)
             if (args.experts) argv.push("--experts", args.experts)
+            if (args.group) argv.push("--group", args.group)
             if (args.recent_days) argv.push("--recent-days", String(args.recent_days))
             if (args.limit) argv.push("--limit", String(args.limit))
             if (args.no_vector) argv.push("--no-vector")

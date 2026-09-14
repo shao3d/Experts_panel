@@ -26,6 +26,7 @@ from .models import (
     SelectionUsed,
 )
 from .. import config
+from ..expert_groups import AGENT_CONTEXT_EXPERT_GROUPS
 from ..models.expert import Expert
 from ..models.base import SessionLocal
 from ..services.agent_context_service import (
@@ -37,34 +38,6 @@ from ..services.agent_context_service import (
 from ..services.artifact_retention_service import agent_context_results_dir
 from .simplified_query_endpoint import run_reddit_search_v2
 
-
-AGENT_CONTEXT_EXPERT_GROUPS = {
-    "tech": [
-        "ai_architect",
-        "neuraldeep",
-        "ilia_izmailov",
-        "polyakov",
-        "etechlead",
-        "glebkudr",
-        "ostrikov",
-        "pashazloy",
-    ],
-    "tech_business": [
-        "ai_grabli",
-        "refat",
-        "akimov",
-        "llm_under_hood",
-        "elkornacio",
-        "doronin",
-        "air_ai",
-        "silicbag",
-        "kornish",
-    ],
-    "visual": [
-        "strangedalle",
-        "acidcrunch",
-    ],
-}
 
 _KNOWN_AGENT_CONTEXT_EXPERT_IDS = {
     expert_id

@@ -85,11 +85,26 @@ def _connect(db_path: Path) -> sqlite3.Connection:
 
 
 def _expert_ids(
-    conn: sqlite3.Connection, experts: str | None
+    conn: sqlite3.Connection, experts: str | None, group: str | None = None
 ) -> tuple[list[str], list[str]]:
+    """Resolve selected experts from an explicit list or a canonical group name.
+
+    Returns `(known_ids, unknown_ids)`; raises `ValueError` for an unknown group.
+    """
     known = {
         row[0] for row in conn.execute("SELECT expert_id FROM expert_metadata")
     }
+    if group:
+        from src.expert_groups import AGENT_CONTEXT_EXPERT_GROUPS, resolve_expert_group
+
+        if group not in AGENT_CONTEXT_EXPERT_GROUPS:
+            raise ValueError(
+                f"unknown expert group: {group!r} "
+                f"(known: {', '.join(sorted(AGENT_CONTEXT_EXPERT_GROUPS))})"
+            )
+        requested = resolve_expert_group(group)
+        unknown = [expert_id for expert_id in requested if expert_id not in known]
+        return [expert_id for expert_id in requested if expert_id in known], unknown
     if experts:
         requested = [part.strip() for part in experts.split(",") if part.strip()]
         unknown = [expert_id for expert_id in requested if expert_id not in known]
@@ -293,6 +308,8 @@ def _excerpt(text: str, limit: int = MAX_SNIPPET_CHARS) -> str:
 
 def cmd_experts(args: argparse.Namespace) -> int:
     backend_dir = _load_backend()
+    from src.expert_groups import groups_for_expert
+
     db_path = _resolve_db_path(backend_dir, args.db)
     with _connect(db_path) as conn:
         rows = conn.execute(
@@ -311,6 +328,7 @@ def cmd_experts(args: argparse.Namespace) -> int:
             "display_name": display_name,
             "channel_username": channel_username,
             "posts_count": count,
+            "groups": groups_for_expert(expert_id),
         }
         for expert_id, display_name, channel_username, count in rows
     ]
@@ -318,9 +336,10 @@ def cmd_experts(args: argparse.Namespace) -> int:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
     else:
         for item in payload:
+            groups = f" [{'/'.join(item['groups'])}]" if item["groups"] else ""
             print(
                 f"{item['expert_id']:<18} {item['posts_count']:>5} posts  "
-                f"{item['display_name']} (@{item['channel_username']})"
+                f"{item['display_name']} (@{item['channel_username']}){groups}"
             )
     return 0
 
@@ -337,7 +356,11 @@ def cmd_search(args: argparse.Namespace) -> int:
     cutoff = _cutoff_iso(args.recent_days)
 
     with _connect(db_path) as conn:
-        expert_ids, unknown_experts = _expert_ids(conn, args.experts)
+        try:
+            expert_ids, unknown_experts = _expert_ids(conn, args.experts, args.group)
+        except ValueError as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 2
         warnings: list[str] = []
         if unknown_experts:
             warnings.append(f"unknown_experts: {','.join(unknown_experts)}")
@@ -559,7 +582,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     search = subparsers.add_parser("search", help="Hybrid FTS5 + vector search over posts")
     search.add_argument("query", help="Search query (natural language or keywords)")
-    search.add_argument("--experts", help="Comma-separated expert_id subset (default: all)")
+    selection = search.add_mutually_exclusive_group()
+    selection.add_argument("--experts", help="Comma-separated expert_id subset (default: all)")
+    selection.add_argument(
+        "--group",
+        help="Canonical group name (tech, tech_business, visual); resolved from src/expert_groups.py",
+    )
     search.add_argument("--recent-days", type=int, default=None, help="Only posts newer than N days")
     search.add_argument("--limit", type=int, default=DEFAULT_LIMIT, help=f"Max results (default {DEFAULT_LIMIT}, max {MAX_LIMIT})")
     search.add_argument("--no-vector", action="store_true", help="FTS5 only, skip embeddings")

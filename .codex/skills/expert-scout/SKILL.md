@@ -51,11 +51,14 @@ the helper outside the sanctioned wrapper or the no-shell `scout` plugin tool.
 
 ## Expert scope
 
-Scout searches all experts by default and has no group flag. To scope, name the
-expert ids inside the question, for example:
+Scout searches all experts by default. To scope, name the group or the expert
+inside the question (groups are resolved from the canonical backend map
+`backend/src/expert_groups.py`; do not hardcode member ids):
 
-- "по визуалам" → append: `Ограничь визуальными экспертами: acidcrunch, strangedalle`
-- a named expert → include the id or display name in the question.
+- "по визуалам" / "visual" → include `группа visual` in the question;
+- another group → include `группа tech` or `группа tech_business`;
+- a named expert → include the id or display name in the question; the scout
+  restricts retrieval to that single expert (no other experts are searched).
 
 Do not silently broaden or narrow the expert scope.
 
