@@ -102,6 +102,12 @@ Wide requests must use `--save` or `--output`; this is intentional. Wide means
 be large, and the CLI should preserve it as an artifact instead of relying on
 chat/stdout transport.
 
+Note on digest quality: on a broad expert (`expert_digest` with default
+all-evidence caps) the digest can return many weakly relevant `key_signals`
+alongside the useful ones. For narrow technical or quote-level questions,
+either scope `--experts` tighter or use the `expert-scout` channel, which
+returns source-grounded findings with `source_key` handles.
+
 ## Artifact Transport
 
 For real Codex/Claude subagent calls, use artifact-first transport:

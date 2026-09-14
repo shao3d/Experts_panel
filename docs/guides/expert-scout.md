@@ -1,7 +1,7 @@
 # Expert Scout (agentic read-only поиск по корпусу)
 
 Status: Active (owner-approved read-only contour)
-Last updated: 2026-09-13
+Last updated: 2026-09-14
 
 Expert Scout — «сырой» канал поиска по корпусу Telegram-экспертов. В отличие
 от Панэкса (готовый дайджест) и `reddit-search` (сообщество), скаут сам
@@ -99,6 +99,7 @@ backend/.venv/bin/python backend/scripts/expert_scout.py show <expert:message_id
 
 `--group` (`tech`, `tech_business`, `visual`) резолвится через
 `backend/src/expert_groups.py` — ту же карту, что использует Панэкс.
+`--comments-limit` — лимит на каждое окно (автор / сообщество) отдельно.
 
 ## Границы и безопасность
 

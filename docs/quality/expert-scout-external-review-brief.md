@@ -44,7 +44,7 @@ video edit», «чем платят за консистентность») **age
 | 3 | `.opencode/agents/expert-scout.md` | Политика агента: фасеты, anti-pattern формулировки, цитаты, caps, честный отказ. Модель `opencode-go/deepseek-v4.1-flash`, `variant: max`. `bash` запрещён полностью. |
 | 4 | `scripts/expert_scout.sh` | VM-обёртка: hard-timeout (`EXPERT_SCOUT_TIMEOUT`), артефакты прогона в `output/scout_runs/`, фильтр ответа. |
 | 5 | `scripts/expert_scout_filter.py` | Из JSONL-событий opencode оставляет только финальный текст; fallback-нарратив помечает `# WARNING`. |
-| 6 | `backend/tests/test_expert_scout.py` | 13 юнит-тестов: read-only, guard на prod-путь, freshness, RRF, show-окна, source_key, фильтр. |
+| 6 | `backend/tests/test_expert_scout.py` | 16 юнит-тестов: read-only, guard на prod-путь, freshness, RRF, группы, show-окна, source_key, фильтр. |
 | 7 | `docs/guides/expert-scout.md` | Операторский гайд и границы. |
 | 8 | `AGENTS.md` (раздел «Expert Scout») | Явное read-only исключение к правилу «не читать БД». |
 | 9 | `~/.local/bin/expert-scout` (на Маке, вне git) | Мостик: base64 вопроса → SSH на VM → обёртка. |
@@ -53,7 +53,9 @@ video edit», «чем платят за консистентность») **age
 | 12 | `backend/src/expert_groups.py` | Каноническая карта групп (tech, tech_business, visual) — общая для API и скаута; добавление эксперта в группу правится здесь. |
 
 Коммиты: `2173720` (исходная реализация), `0c10a5f` (доки), `be88b1f`
-(no-shell plugin tool + hardening). Этот бриф — рабочий артефакт.
+(no-shell plugin tool + hardening), `a66d41a` (закрытие замечаний review),
+`111a38c` (глобальный скилл и установщик), `c23adca` (общая карта групп и
+область «названный эксперт»). Этот бриф — рабочий артефакт.
 
 ## 4. Как устроено
 

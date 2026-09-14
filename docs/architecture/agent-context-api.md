@@ -633,6 +633,8 @@ AGENT_CONTEXT_EXPERT_GROUPS = {
 
 `all` resolves at request time from the runtime `expert_metadata` table (excluding unsupported special sources such as `video_hub`), so it also covers the Visual group. The `visual` group is a static map because those experts were admitted as a `limited_scope` production group. If any configured expert has no runtime data, return a warning rather than failing the whole request.
 
+The canonical copy of this map lives in `backend/src/expert_groups.py` and is shared by the Agent Context API and Expert Scout; the example above must match it.
+
 Every response must include `selection_used`, so the caller can see exactly what was queried.
 
 If a user names an unknown or ambiguous expert, the subagent must ask one clarification before calling the API.
