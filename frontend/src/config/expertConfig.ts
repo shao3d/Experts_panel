@@ -48,7 +48,7 @@ export const isExpertHidden = (expertId: string): boolean =>
 export const EXPERT_GROUPS: ExpertGroup[] = [
   { label: 'Tech', expertIds: ['ai_architect', 'neuraldeep', 'ilia_izmailov', 'polyakov', 'etechlead', 'rodion_mostovoy', 'glebkudr', 'ostrikov', 'pashazloy', 'sergei_notevskii', 'deksden_notes'] },
   { label: 'Tech & Business', expertIds: ['ai_grabli', 'refat', 'akimov', 'llm_under_hood', 'elkornacio', 'doronin', 'vlad_kooklev', 'air_ai', 'silicbag', 'kornish', 'aimasters_me'] },
-  { label: 'Visual', expertIds: ['strangedalle', 'acidcrunch', 'cgevent', 'neyrograph'] },
+  { label: 'Visual', expertIds: ['strangedalle', 'acidcrunch', 'cgevent', 'neyrograph', 'iideyalogiya'] },
   { label: 'Knowledge Hub', expertIds: ['video_hub'] },
 ];
 
@@ -84,10 +84,11 @@ export const EXPERT_UI_CONFIG: ExpertUIConfig = {
     'strangedalle': 'Molodca',
     'acidcrunch': 'AcidCrunch',
     'cgevent': 'Tsyptsyn',
-    'neyrograph': 'Neyrograph'
+    'neyrograph': 'Neyrograph',
+    'iideyalogiya': 'Romanenko'
   },
   // Order used for sorting results
-  order: ['refat', 'ai_architect', 'neuraldeep', 'ai_grabli', 'akimov', 'llm_under_hood', 'elkornacio', 'ilia_izmailov', 'polyakov', 'doronin', 'vlad_kooklev', 'etechlead', 'rodion_mostovoy', 'glebkudr', 'air_ai', 'ostrikov', 'silicbag', 'kornish', 'pashazloy', 'aimasters_me', 'sergei_notevskii', 'deksden_notes', 'strangedalle', 'acidcrunch', 'cgevent', 'neyrograph', 'video_hub']
+  order: ['refat', 'ai_architect', 'neuraldeep', 'ai_grabli', 'akimov', 'llm_under_hood', 'elkornacio', 'ilia_izmailov', 'polyakov', 'doronin', 'vlad_kooklev', 'etechlead', 'rodion_mostovoy', 'glebkudr', 'air_ai', 'ostrikov', 'silicbag', 'kornish', 'pashazloy', 'aimasters_me', 'sergei_notevskii', 'deksden_notes', 'strangedalle', 'acidcrunch', 'cgevent', 'neyrograph', 'iideyalogiya', 'video_hub']
 };
 
 /**

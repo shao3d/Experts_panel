@@ -83,6 +83,7 @@ the previously empty `creative_multimodal` taxonomy area.
 | `acidcrunch` | AcidCrunch | `AcidCrunch` |
 | `cgevent` | Tsyptsyn | `cgevent` |
 | `neyrograph` | Neyrograph | `neyr0graph` |
+| `iideyalogiya` | Romanenko | `iideyalogiya` |
 
 ### Knowledge Hub
 

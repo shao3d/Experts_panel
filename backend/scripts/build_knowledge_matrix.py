@@ -80,6 +80,7 @@ CORE_SUBDOMAIN_IDS = {
     "model_release_analysis",
     "multimodal_generation",
     "cg_craft_to_ai",
+    "hybrid_ai_vfx_pipeline",
     "ai_video_direction",
     "scene_blocking",
     "montage_language",
@@ -119,6 +120,7 @@ SUBDOMAIN_ALIASES: dict[str, str] = {
     "graph_rag_legal": "rag_architecture",
     "local_hardware": "inference_cost_latency",
     "other_cg_craft_to_ai": "cg_craft_to_ai",
+    "other_hybrid_ai_vfx_pipeline": "hybrid_ai_vfx_pipeline",
     "other_ai_video_direction": "ai_video_direction",
     "other_scene_blocking": "scene_blocking",
     "other_montage_language": "montage_language",
@@ -336,6 +338,18 @@ TAXONOMY_DECISIONS = [
         "kind": "subdomain",
         "decision": "alias_to_roi_business_cases",
         "rationale": "neyrograph noise cell: creator content-monetization economics folds into business_adoption/roi_business_cases; approved 2026-09-15.",
+    },
+    {
+        "value": "other_hybrid_ai_vfx_pipeline",
+        "kind": "subdomain",
+        "decision": "alias_to_hybrid_ai_vfx_pipeline",
+        "rationale": "iideyalogiya (Romanenko) signature: hybrid AI + CGI/VFX production (diffusion 3D-scene limits, compositing, own-performance reference); approved 2026-09-15.",
+    },
+    {
+        "value": "hybrid_ai_vfx_pipeline",
+        "kind": "subdomain",
+        "decision": "promote_to_core",
+        "rationale": "Reusable Panex query surface approved 2026-09-15: hybrid AI plus CGI/VFX production pipelines for commercial video and film.",
     },
 ]
 

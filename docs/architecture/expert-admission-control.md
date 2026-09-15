@@ -1132,6 +1132,19 @@ admission `neyrograph`, NeuroGraph / Сергей Нейрограф):
   noise cells folded into existing core subdomains (`multimodal_generation`,
   `roi_business_cases`); `applied_alias_count = 19`.
 
+Accepted-matrix snapshot on 2026-09-15 (adds the Visual `limited_scope`
+admission `iideyalogiya`, ИИдеология / Степан Романенко):
+
+- 27 passports in the manifest (22 `accept` + 5 `limited_scope`);
+- 81 active matrix cells;
+- 64 single-source exact cells;
+- 17 strong multi-source exact cells (21 strong single-source cells);
+- 19 related-cell overlaps at the `domain + query_intent` level;
+- 0 taxonomy extensions: the `iideyalogiya` signature placeholder
+  `other_hybrid_ai_vfx_pipeline` was approved on 2026-09-15 and promoted to the
+  core subdomain `creative_multimodal/hybrid_ai_vfx_pipeline`;
+  `applied_alias_count = 20`.
+
 Dogfood note (2026-09-15, n=1): the same how-to query (`Kling O3`) through
 Panex `expert_digest` (Gemini `MODEL_SYNTHESIS`) returned 13 mention-level
 signals without a stance/technique reduction and an unfiltered community

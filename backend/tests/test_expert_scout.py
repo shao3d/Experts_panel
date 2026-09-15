@@ -99,11 +99,11 @@ def test_expert_ids_resolves_canonical_group(scout):
     conn.execute("CREATE TABLE expert_metadata (expert_id TEXT)")
     conn.executemany(
         "INSERT INTO expert_metadata VALUES (?)",
-        [("acidcrunch",), ("strangedalle",), ("cgevent",), ("neyrograph",), ("refat",)],
+        [("acidcrunch",), ("strangedalle",), ("cgevent",), ("neyrograph",), ("iideyalogiya",), ("refat",)],
     )
 
     known, unknown = scout._expert_ids(conn, None, "visual")
-    assert known == ["strangedalle", "acidcrunch", "cgevent", "neyrograph"]
+    assert known == ["strangedalle", "acidcrunch", "cgevent", "neyrograph", "iideyalogiya"]
     assert unknown == []
 
     known_tb, _ = scout._expert_ids(conn, None, "tech_business")
@@ -126,6 +126,7 @@ def test_expert_groups_shared_module_is_canonical():
     assert groups_for_expert("acidcrunch") == ["visual"]
     assert groups_for_expert("cgevent") == ["visual"]
     assert groups_for_expert("neyrograph") == ["visual"]
+    assert groups_for_expert("iideyalogiya") == ["visual"]
     assert groups_for_expert("refat") == ["tech_business"]
     assert groups_for_expert("mkarpov") == []
 
