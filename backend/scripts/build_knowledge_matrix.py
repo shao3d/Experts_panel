@@ -79,6 +79,7 @@ CORE_SUBDOMAIN_IDS = {
     "model_comparison",
     "model_release_analysis",
     "multimodal_generation",
+    "cg_craft_to_ai",
     "broad_ai_news",
 }
 
@@ -101,12 +102,14 @@ CORE_QUERY_INTENT_IDS = {
 DOMAIN_ALIASES = {
     "ai_business_adoption": "business_adoption",
     "ai_coding_ides": "coding_agents",
+    "other_distinctive_domain": "creative_multimodal",
 }
 
 SUBDOMAIN_ALIASES: dict[str, str] = {
     "architecture": "tool_calling_hooks_skills",
     "graph_rag_legal": "rag_architecture",
     "local_hardware": "inference_cost_latency",
+    "other_cg_craft_to_ai": "cg_craft_to_ai",
 }
 
 TAXONOMY_DECISIONS = [
@@ -169,6 +172,24 @@ TAXONOMY_DECISIONS = [
         "kind": "subdomain",
         "decision": "alias_to_rag_architecture",
         "rationale": "Air's legal GraphRAG cell is a domain-specific GraphRAG/RAG architecture pattern, not a reusable top-level Experts Panel subdomain.",
+    },
+    {
+        "value": "other_distinctive_domain",
+        "kind": "domain",
+        "decision": "alias_to_creative_multimodal",
+        "rationale": "Placeholder domain from the cgevent passport; CG-craft-to-AI content is creative_multimodal production craft, approved 2026-09-14 (cgevent admission_report).",
+    },
+    {
+        "value": "other_cg_craft_to_ai",
+        "kind": "subdomain",
+        "decision": "alias_to_cg_craft_to_ai",
+        "rationale": "cgevent signature cell: CG/VFX production craft (neurorender, previz, blocking, Blender agents) transferred to generative models; approved 2026-09-14 (cgevent admission_report).",
+    },
+    {
+        "value": "cg_craft_to_ai",
+        "kind": "subdomain",
+        "decision": "promote_to_core",
+        "rationale": "Reusable Panex query surface approved 2026-09-14: CG production craft displaced by or transferred to generative models (neurorender, previz, blocking, Blender agents, world models).",
     },
 ]
 

@@ -1111,9 +1111,17 @@ Accepted-matrix snapshot on 2026-09-14 (seed roster backfilled to 22 accepts on
 - 48 single-source exact cells;
 - 16 strong multi-source exact cells (18 strong single-source cells);
 - 17 related-cell overlaps at the `domain + query_intent` level;
-- 1 taxonomy extension under review
-  (`other_distinctive_domain/other_cg_craft_to_ai`, recommended target:
-  `creative_multimodal/cg_craft_to_ai` per the `cgevent` admission report).
+- 0 taxonomy extensions: the `cgevent` signature cell was approved on
+  2026-09-14 and mapped to the core subdomain
+  `creative_multimodal/cg_craft_to_ai` (aliases from
+  `other_distinctive_domain/other_cg_craft_to_ai`; `applied_alias_count = 7`).
+
+Dogfood note (2026-09-15, n=1): the same how-to query (`Kling O3`) through
+Panex `expert_digest` (Gemini `MODEL_SYNTHESIS`) returned 13 mention-level
+signals without a stance/technique reduction and an unfiltered community
+comment digest, while Expert Scout returned a technique-level answer with
+explicit gaps. Candidate follow-up: digest-prompt hardening plus the golden-set
+eval harness (`docs/roadmap/2026-09-system-review.md`, A.3).
 
 Important interpretation notes:
 
