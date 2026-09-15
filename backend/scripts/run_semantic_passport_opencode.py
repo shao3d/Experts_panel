@@ -13,7 +13,7 @@ Validation/normalization logic is reused from run_semantic_passport_vertex.py;
 only the LLM call backend differs (serve sessions instead of generateContent).
 
 Needs a running `opencode serve` (default http://127.0.0.1:4096) with access
-to the requested model, e.g. opencode-go/muse-spark-1.3-contributor.
+to the requested model, e.g. opencode-go/deepseek-v4.1-flash.
 """
 
 from __future__ import annotations
@@ -40,7 +40,7 @@ from run_semantic_passport_vertex import (  # noqa: E402
     write_json,
 )
 
-DEFAULT_MODEL = "opencode-go/muse-spark-1.3-contributor"
+DEFAULT_MODEL = "opencode-go/deepseek-v4.1-flash"
 DEFAULT_TIMEOUT_SECONDS = 900
 SESSION_TITLE_PREFIX = "passport_"
 

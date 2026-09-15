@@ -1009,14 +1009,14 @@ Vertex AI is unavailable. Preferred path when the owner's Vertex/Gemini is not i
 use; it reuses the same validation/normalization logic as the Vertex runner, so
 all downstream matrix steps are unchanged.
 
-Status: implemented; used for the 2026-09 Visual candidates
-(`strangedalle`, `acidcrunch`).
+Status: implemented; used for the 2026-09 Visual admits (`strangedalle`,
+`acidcrunch`, `cgevent`); default model is `opencode-go/deepseek-v4.1-flash`.
 
 Inputs:
 
 - a packet directory produced by either export script;
 - a running `opencode serve` (`OPENCODE_URL`) with access to the model
-  (`--model`, default `opencode-go/muse-spark-1.3-contributor`, or
+  (`--model`, default `opencode-go/deepseek-v4.1-flash`, or
   `OPENCODE_PASSPORT_MODEL`).
 
 Outputs: the same passport/receipt/validation artifacts as the Vertex runner,
@@ -1038,7 +1038,8 @@ Implementation note: the serve has no `countTokens` or
 `responseMimeType: application/json`, so `--count-only` only reports prompt
 chars, and JSON reliability comes from the prompt plus the shared markdown
 extraction and `matrix_export` repair. Context is not truncated server-side by
-this script; the Muse model offers a 1M-token window.
+this script; the selected model's context window must cover the packet (the
+previous default, `muse-spark-1.3-contributor`, offered 1M tokens).
 
 ### `backend/scripts/build_knowledge_matrix.py`
 
@@ -1100,6 +1101,19 @@ Current accepted-matrix snapshot after Doronin admission on 2026-05-10:
 - 18 strong single-source cells;
 - `output/expert_admission/admission_manifest.json` is the accepted-roster
   gate.
+
+Accepted-matrix snapshot on 2026-09-14 (seed roster backfilled to 22 accepts on
+2026-05-15, plus the Visual `limited_scope` admissions `strangedalle`, `acidcrunch`,
+`cgevent`):
+
+- 25 passports in the manifest (22 `accept` + 3 `limited_scope`);
+- 64 active matrix cells;
+- 48 single-source exact cells;
+- 16 strong multi-source exact cells (18 strong single-source cells);
+- 17 related-cell overlaps at the `domain + query_intent` level;
+- 1 taxonomy extension under review
+  (`other_distinctive_domain/other_cg_craft_to_ai`, recommended target:
+  `creative_multimodal/cg_craft_to_ai` per the `cgevent` admission report).
 
 Important interpretation notes:
 

@@ -34,6 +34,7 @@ AGENT_CONTEXT_EXPERT_GROUPS: dict[str, list[str]] = {
     "visual": [
         "strangedalle",
         "acidcrunch",
+        "cgevent",
     ],
 }
 
