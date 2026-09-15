@@ -14,11 +14,14 @@ Last updated: 2026-09-14
 2. Выбери маршрут по таблице ниже.
 3. Читай только нужные SSOT-документы.
 4. Для текущего статуса, деплоя, CLI и БД проверяй код/команды, а не память.
+5. Если в `docs/plans/` есть свежий `*-starter.md`, прочитай его перед работой: это handoff-промт
+   активной задачи (онбординг + конкретный следующий шаг), актуальнее общей навигации.
 
 ## Быстрые Маршруты
 
 | Задача | Сначала читать | Потом, если нужно |
 | --- | --- | --- |
+| **Новый чат: admission эксперта @neyr0graph (Visual/видеогенерация)** | `docs/plans/2026-09-15-neyrograph-admission-starter.md` | `AGENTS.md`, `docs/architecture/expert-admission-control.md` |
 | Что улучшать дальше / статус обзора | `docs/roadmap/2026-09-system-review.md` | `docs/architecture/pipeline.md` для фазы 5b (citation verification) |
 | Общая архитектура / pipeline | `docs/architecture/pipeline.md` | `backend/CLAUDE.md` |
 | Retrieval / Embs&Keys / FTS5 | `docs/architecture/super-passport-search.md` | `docs/archive/hybrid_retrieval_plan.md` как историю |
