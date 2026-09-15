@@ -1116,6 +1116,22 @@ Accepted-matrix snapshot on 2026-09-14 (seed roster backfilled to 22 accepts on
   `creative_multimodal/cg_craft_to_ai` (aliases from
   `other_distinctive_domain/other_cg_craft_to_ai`; `applied_alias_count = 7`).
 
+Accepted-matrix snapshot on 2026-09-15 (adds the Visual `limited_scope`
+admission `neyrograph`, NeuroGraph / Сергей Нейрограф):
+
+- 26 passports in the manifest (22 `accept` + 4 `limited_scope`);
+- 77 active matrix cells;
+- 61 single-source exact cells;
+- 16 strong multi-source exact cells (19 strong single-source cells);
+- 18 related-cell overlaps at the `domain + query_intent` level;
+- 0 taxonomy extensions: the `neyrograph` placeholder cells were approved on
+  2026-09-15 and consolidated into core subdomains under `creative_multimodal`
+  (`ai_video_direction`, `scene_blocking`, `montage_language`, `color_and_light`,
+  `3d_previz_pipeline`, `character_consistency`, `lipsync_dubbing`,
+  `image_model_workflow`) and `prompt_engineering/prompt_architecture`; the two
+  noise cells folded into existing core subdomains (`multimodal_generation`,
+  `roi_business_cases`); `applied_alias_count = 19`.
+
 Dogfood note (2026-09-15, n=1): the same how-to query (`Kling O3`) through
 Panex `expert_digest` (Gemini `MODEL_SYNTHESIS`) returned 13 mention-level
 signals without a stance/technique reduction and an unfiltered community

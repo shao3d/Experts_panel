@@ -1,7 +1,7 @@
 # Current Expert Roster
 
 **Status:** Active roster reference
-**Last updated:** 2026-09-14
+**Last updated:** 2026-09-15
 
 This file documents the intended active expert roster and the places that must
 stay in sync when experts are added, removed, or regrouped. For live production
@@ -82,6 +82,7 @@ the previously empty `creative_multimodal` taxonomy area.
 | `strangedalle` | Molodca | `strangedalle` |
 | `acidcrunch` | AcidCrunch | `AcidCrunch` |
 | `cgevent` | Tsyptsyn | `cgevent` |
+| `neyrograph` | Neyrograph | `neyr0graph` |
 
 ### Knowledge Hub
 

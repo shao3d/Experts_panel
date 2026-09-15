@@ -1,7 +1,7 @@
 # Карта Документации
 
 Status: Active
-Last updated: 2026-09-14
+Last updated: 2026-09-15
 
 Это навигационный слой проекта Experts Panel. Он должен отвечать на вопрос
 "куда смотреть?", а не пересказывать содержимое всех документов.
@@ -21,7 +21,7 @@ Last updated: 2026-09-14
 
 | Задача | Сначала читать | Потом, если нужно |
 | --- | --- | --- |
-| **Новый чат: admission эксперта @neyr0graph (Visual/видеогенерация)** | `docs/plans/2026-09-15-neyrograph-admission-starter.md` | `AGENTS.md`, `docs/architecture/expert-admission-control.md` |
+| **Завершено: admission @neyr0graph (Visual, limited_scope, 2026-09-15)** | `docs/plans/2026-09-15-neyrograph-admission-starter.md` (§7 Completion addendum) | `docs/architecture/current-expert-roster.md`, `docs/architecture/expert-admission-control.md` |
 | Что улучшать дальше / статус обзора | `docs/roadmap/2026-09-system-review.md` | `docs/architecture/pipeline.md` для фазы 5b (citation verification) |
 | Общая архитектура / pipeline | `docs/architecture/pipeline.md` | `backend/CLAUDE.md` |
 | Retrieval / Embs&Keys / FTS5 | `docs/architecture/super-passport-search.md` | `docs/archive/hybrid_retrieval_plan.md` как историю |

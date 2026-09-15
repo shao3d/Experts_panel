@@ -1,6 +1,6 @@
 # Starter: admission эксперта @neyr0graph (Visual / видеогенерация)
 
-Status: Active handoff starter
+Status: Completed 2026-09-15 (admission + dev import + data release done; see §7)
 Created: 2026-09-15
 Origin: сессия 2026-09-14/15 (admission cgevent, taxonomy `cg_craft_to_ai`, matrix 25/64)
 How to use: это paste-ready промт для нового чата. Агент читает `docs/DOCUMENTATION_MAP.md`,
@@ -124,3 +124,38 @@ Fallback, если 4-месячный корпус окажется тонким
 Паспорт (valid) + preflight + arbitration/admission verdict + manifest/matrix обновлены +
 dev DB с 4-месячным корпусом и комментами + pending drift + UI-конфиг/группы/ростер + тесты зелёные +
 короткий отчёт владельцу: что сделано, что проверено, что не проверено и какие команды нужны (выкатывай/обнови базу).
+
+---
+
+## 7. Completion addendum (2026-09-15)
+
+Завершено. Отличия от исходного плана и результат:
+
+- **Окно 6 месяцев** вместо 4 (решение владельца): cutoff `2026-03-15`, 387 постов в packet,
+  444 поста импортированы (участвуют посты с текстом/медиа; service-сообщения пропускаются),
+  **0 комментов** в экспорте (linked discussion group) — комментарии добираются API-синком.
+- Паспорт: `valid_basic_contract: true`, 19 matrix cells; модель DeepSeek 4.1 Flash через
+  headless opencode serve.
+- Вердикт **`limited_scope`** (Visual AI-film-direction), подтверждён владельцем. Уникальный угол:
+  язык кино → промпт (крупность/180°/мизансцена/блокинг/монтаж/свет), 3D-превиз virtual production,
+  структурные промпт-системы, RU-липсинк/дубляж, due diligence платного доступа.
+- **Taxonomy**: 9 `other_*` субдоменов сведены в core `creative_multimodal` /
+  `prompt_engineering/prompt_architecture`; 2 noise-клетки — в существующие
+  (`multimodal_generation`, `roi_business_cases`). Alias-механизм в
+  `backend/scripts/build_knowledge_matrix.py`.
+- Матрица: **26 паспортов, 77 клеток, `taxonomy_extension_count = 0`, `applied_alias_count = 19`**.
+- Dev DB: 444 поста + **7991 коммент**, drift проанализирован на data release.
+- Data release 2026-09-15: прод DB заменена, drift 402/402, `/health` — healthy,
+  neyrograph в prod API (27 записей), 0 pending drift.
+- Проверки: backend `pytest test_expert_scout.py test_agent_context_api.py` — 44 passed;
+  frontend `type-check` + `test:run` — 62 passed.
+- UI/группы/доки: `frontend/src/config/expertConfig.ts`, `backend/src/expert_groups.py`,
+  `docs/architecture/current-expert-roster.md`, `docs/architecture/expert-admission-control.md`.
+- Артефакты admission: `output/expert_admission/candidates/neyrograph/*` (в `.gitignore`,
+  живут на VM; при необходимости заливаются на Mac через обратный туннель).
+
+Не сделано сознательно: runtime query probes (нет staging с embeddings вне data release);
+FTS-only пробы — опциональная эскалация.
+
+Note: `--channel-username` в packet был указан с буквой `o` (`neyrograph`), фактический
+Telegram-username — `neyr0graph` (с нулём); импорт и comment sync использовали `neyr0graph`.
