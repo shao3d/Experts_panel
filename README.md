@@ -27,7 +27,7 @@ Every expert answer card carries a server-verified citations badge, and clicking
 - Keeps each expert's evidence isolated, then produces a cross-expert analysis that surfaces consensus, disagreement, and what only one expert mentioned.
 - Verifies its own citations: every `[post:ID]` claim is checked against the cited post text (deterministic lexical layer plus a cheap LLM judge), and the answer card reports how many citations were confirmed.
 - Answers in the language of the question, Russian or English. For English questions, cited posts, comments, and discussion groups are translated too, with citations kept clickable. Every translation is cached persistently so it is computed once ([Multilingual Support](docs/architecture/multilingual-support.md)).
-- Runs a Video Hub transcript sidecar in the backend for video-based expert material; its sources are currently hidden from the web UI selection.
+- Runs a Video Hub transcript sidecar in the backend for video-based expert material, with an automated chunked ingest (ASR + adaptive keyframes + structured prompts/settings); its sources are currently hidden from the web UI selection and are searched through Scout.
 - Streams progress and results to the React interface over Server-Sent Events, and keeps every claim traceable to its source post.
 
 ## Community evidence sidecar

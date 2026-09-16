@@ -2,7 +2,13 @@
 
 **Created:** 2026-03-28
 **Status:** Active Roadmap (implement when video library exceeds ~100 segments)
-**Current State:** 53 segments, 4 videos, 40 topics. Pipeline stable.
+**Current State (2026-09-16):** the legacy batch (53 segments, 4 videos) was
+removed from the dev corpus by owner decision; the corpus now holds 1 video /
+11 segments (`STOP Wasting Credits & Master Seedance 2.5`, Youri van Hofwegen).
+Ingest is automated (chunked ASR + adaptive frames + LLM pass), the structured
+`visual` block and per-segment frames are stored, and Scout returns YouTube
+deep-links with timestamps. The scaling items below describe the state before
+automation and remain valid for the query-time side.
 **Trigger:** Start implementing when approaching 100-150 segments or 10+ videos.
 
 ---
@@ -41,6 +47,12 @@
 ## Проблемы масштабирования (что ломается при росте)
 
 ### P1. Brute-force загрузка всех сегментов
+
+> **Решение владельца (2026-09-16):** Video Hub намеренно **не** включается в
+> hybrid-поиск панели и в Панэкс (Agent Context API отклоняет `video_hub`).
+> Поиск по видео идёт через Expert Scout, у которого свой гибридный движок
+> (FTS5 + sqlite-vec + RRF) прямо по `posts`. Пункт ниже остаётся планом на
+> случай, если панель всё же получит видео.
 
 **Проблема:** Оркестратор явно обходит Hybrid Search для video_hub:
 ```python
@@ -272,9 +284,11 @@ Video Hub использует текущую Pro-модель `gemini-3.1-pro-p
 | `src/api/simplified_query_endpoint.py` | Оркестратор (строки 212-315 — video_hub ветка) |
 | `src/services/sync_orchestrator.py` | Исключает video_hub из Telegram-синхронизации (строка 45) |
 | `backend/src/config.py` | `MODEL_VIDEO_PRO`, `MODEL_VIDEO_FLASH` в секции Video Hub Models |
-| `scripts/import_video_json.py` | JSON -> SQLite импорт с virtual ID |
+| `scripts/import_video_json.py` | JSON -> SQLite: virtual ID, structured `visual`, кадры, `published_at`; upsert по `telegram_message_id` (не сиротит эмбеддинги) |
+| `scripts/ingest_video.py` | Stage 1 ingest: ASR, чанки, кадры, окна; `--combine` для склейки чанков |
+| `scripts/asr_whisper.py` | ASR-хелпер (faster-whisper int8, CPU, глоссарий, авто-язык) |
 | `scripts/embed_posts.py` | Эмбеддинги (покрывает video_hub — нет фильтра по expert_id) |
-| `prompts/video_segmentation_prompt.md` | Golden Prompt для AI Studio сегментации |
+| `prompts/video_segmentation_prompt.md` | Golden Prompt сегментации (ключевые кадры, дословные промты/настройки); используется и ручным путём, и LLM-пассом |
 
 ### Frontend
 | Файл | Роль |
@@ -286,7 +300,7 @@ Video Hub использует текущую Pro-модель `gemini-3.1-pro-p
 ### Scripts & Deploy
 | Файл | Роль |
 |------|------|
-| `scripts/deploy_video.sh` | 5-фазный deploy: backup -> import -> compress -> SFTP -> restart |
+| `scripts/deploy_video.sh` | Legacy manual path: promotion готового JSON через DB release. Основной путь — автоматический ingest + обычный `обнови базу` |
 
 ### Documentation
 | Файл | Роль |

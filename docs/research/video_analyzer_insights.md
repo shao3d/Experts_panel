@@ -67,3 +67,8 @@
 **Следующие шаги для Experts Panel:**
 1. Написать обертку Exponential Backoff для текущих вызовов к Gemini.
 2. Переписать текущие Markdown-промпты в сервисах на XML-разметку.
+
+---
+
+**Портировано в проект (2026-09-16):**
+- Механика ключевых кадров из `prompts/keyframes_criteria_default.xml` (критерии, каденция ~15s, recall-bias, дисциплина таймкодов, пометка неуверенности) адаптирована в `backend/prompts/video_segmentation_prompt.md` (правило 7) и синхронизирована в `docs/guides/video-hub-operator.md`.

@@ -101,6 +101,13 @@ backend/.venv/bin/python backend/scripts/expert_scout.py show <expert:message_id
 `backend/src/expert_groups.py` — ту же карту, что использует Панэкс.
 `--comments-limit` — лимит на каждое окно (автор / сообщество) отдельно.
 
+Video Hub segments (`expert_id=video_hub`) additionally return `video_link`
+(`https://youtu.be/<id>?t=<seconds>s`), `video_url`, `video_timestamp_s` and
+`video_title` in both `search` and `show` (built from `media_metadata`), so
+findings can cite the exact moment on YouTube. `visual` (prompt/settings/slides)
+is not exposed as a structured field; its text lives inside `content` as a
+`VISUAL:` block.
+
 ## Границы и безопасность
 
 - **Только чтение**: `mode=ro` + `PRAGMA query_only=ON`; скаут не пишет в

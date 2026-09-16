@@ -3,7 +3,29 @@
 **Pipeline:** `Map -> Resolve (Summary Bridging) -> Reduce (Digital Twin)`
 **Деплой: Oracle VM (Fly.io-процесс удалён 24.08.2026)**
 
-## 🚀 Quick Command
+## 🤖 Automated Ingest (preferred)
+
+Since 2026-09-16 segmentation is automated; the manual AI Studio JSON is the
+legacy fallback. Full playbook: `docs/guides/video-hub-operator.md` (Phase 0).
+
+```bash
+# 1. media: fetch on the Mac (VM IP is blocked by YouTube), copy to the VM
+
+# 2. deterministic extraction (transcript, chunked frames, windows)
+backend/.venv/bin/python backend/scripts/ingest_video.py \
+  --video /path/video.mp4 --audio /path/audio.m4a \
+  --video-id <youtube_id> --out /tmp/<id>_ingest --chunk-minutes 5
+
+# 3. LLM pass: write chunks/chunk_NN/segments.json per chunk
+
+# 4. combine, validate, import, embed
+backend/.venv/bin/python backend/scripts/ingest_video.py --combine --out /tmp/<id>_ingest
+backend/.venv/bin/python backend/scripts/import_video_json.py /tmp/<id>_ingest/segments.json --dry-run
+backend/.venv/bin/python backend/scripts/import_video_json.py /tmp/<id>_ingest/segments.json
+backend/.venv/bin/python backend/scripts/embed_posts.py
+```
+
+## 🚀 Quick Command (data release / promotion)
 
 `deploy_video.sh` теперь работает как production DB release через проверенный
 путь `update_production_db.sh`. Запускай **только на Oracle VM из dev checkout**:
@@ -18,10 +40,10 @@ cd ~/apps/experts-panel/dev
 > (`docs/operations.md`), он затрагивает production DB, поэтому запускается
 > только на VM, из dev checkout, никогда — из `app`-checkout или с Mac.
 
-> **Важно:** `deploy_video.sh` сам по себе **не вызывает Gemini / Vertex AI**
-> для разметки. Он импортирует готовый JSON в staging SQLite и выкатывает
-> обновлённую БД. Сам Video Hub отвечает через Vertex AI уже позже, во время
-> реального query runtime.
+> **Важно:** `deploy_video.sh` сам по себе **не вызывает LLM** для разметки.
+> Он импортирует готовый JSON в staging SQLite и выкатывает обновлённую БД.
+> Query-time Video Hub отвечает через OpenRouter-модели уже позже, во время
+> реального runtime.
 
 ## 📋 Prerequisite: JSON Format
 
@@ -30,26 +52,38 @@ Ensure your JSON file follows the **Segmented Topic Structure**:
 - `topic_id`: Must change every 10-15 mins or at logical chapters.
 - `segments`: Must be granular (one thought per segment).
 
-**Example:**
+**Example (legacy minimum; the automated pipeline also adds `visual` and `frames`):**
 ```json
 {
   "video_metadata": {
     "title": "My Video",
     "author": "Gleb Kudryavtcev",
-    "url": "youtube_id"
+    "url": "youtube_id",
+    "published_at": "2026-08-21T00:00:00"
   },
   "segments": [
     {
       "segment_id": 1001,
       "topic_id": "chapter_1_intro",
       "title": "Intro",
-      "summary": "...",
-      "content": "...",
-      "timestamp_seconds": 0
+      "summary": "... (RU: used by map phase and lexical search)",
+      "content": "... (original speech)",
+      "timestamp_seconds": 0,
+      "visual": {
+        "kind": "prompt_panel",
+        "model": "Seedance 2.5",
+        "showcase_prompt_verbatim": "..."
+      },
+      "frames": [{"time_s": 0, "path": "/abs/path/frame.jpg"}]
     }
   ]
 }
 ```
+
+`visual` is stored in `media_metadata` and appended to `message_text` as a
+`VISUAL:` block (searchable by FTS5/vector and visible to synthesis); frame files
+are copied to `backend/data/video_frames/<video_hash>/`. `published_at` drives
+`created_at`, so recency filters use the video date.
 
 ## 🛠️ What the script does
 
@@ -81,7 +115,7 @@ Ensure your JSON file follows the **Segmented Topic Structure**:
 python3 backend/scripts/embed_posts.py --continuous
 ```
 
-- This embedding step uses the same Vertex AI credentials from `backend/.env`.
+- This embedding step uses the same OpenRouter credentials from `backend/.env` (the legacy Vertex name in older docs is historical).
 
 ## 🐛 Troubleshooting
 

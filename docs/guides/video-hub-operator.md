@@ -1,8 +1,8 @@
 # 🎥 Video Hub Operator Playbook
 
 **Role:** Expert Digital Twin Creator
-**Status:** Active Workflow
-**Owner:** System Architect (Gemini CLI)
+**Status:** Active Workflow (automated ingest preferred)
+**Owner:** System Architect (opencode agent)
 
 ---
 
@@ -11,11 +11,53 @@ Transform raw video content (YouTube/MP4) into a structured Knowledge Graph (Seg
 
 ---
 
-## 🧠 Phase 1: Segmentation (External Gemini Tool)
+## 🤖 Phase 0: Automated Ingest (preferred)
+
+The pipeline replaces the manual AI Studio pass. Full details:
+`docs/architecture/video-hub-service.md` → "Automated Ingest Pipeline".
+
+### 0.1 Get the media onto the VM
+YouTube blocks the VM datacenter IP, so downloads happen on the Mac over the
+reverse SSH tunnel (the `fetch_audio.sh` pattern) and the files are copied to
+the VM (video-only 1080p + audio m4a; the Mac has no ffmpeg).
+
+### 0.2 Stage 1 — deterministic extraction (no LLM, no DB)
+
+```bash
+backend/.venv/bin/python backend/scripts/ingest_video.py \
+  --video /path/video.mp4 --audio /path/audio.m4a \
+  --video-id <youtube_id> --out /tmp/<id>_ingest \
+  --chunk-minutes 5
+```
+
+- ASR: `backend/scripts/asr_whisper.py` (faster-whisper int8, CPU, glossary-biased, auto language).
+- Chunks: `chunks/chunk_NN/` with coarse frames, contact sheets, change curve, cue windows, dense frames.
+- Caps per chunk: `--max-windows-per-chunk`, `--max-dense-frames-per-chunk`; artifacts are review-only.
+- Reuse `--transcript <json>` / `--skip-asr` for re-runs.
+
+### 0.3 Stage 2 — LLM pass per chunk
+Read one chunk (transcript slice + sheets + native frames), write
+`chunks/chunk_NN/segments.json` with the extended schema (`visual`, `frames`),
+then forget the frames. Disk is the memory.
+
+### 0.4 Combine, import, embed
+
+```bash
+backend/.venv/bin/python backend/scripts/ingest_video.py --combine --out /tmp/<id>_ingest
+backend/.venv/bin/python backend/scripts/import_video_json.py /tmp/<id>_ingest/segments.json --dry-run
+backend/.venv/bin/python backend/scripts/import_video_json.py /tmp/<id>_ingest/segments.json
+backend/.venv/bin/python backend/scripts/embed_posts.py
+```
+
+Production promotion of the updated DB is a separate owner command (`обнови базу`).
+
+---
+
+## 🧠 Phase 1 (legacy): Manual Segmentation in Google AI Studio
 
 Use **Google AI Studio** or another Gemini UI to generate the source JSON.
 
-> **Важно:** Это внешний ручной этап. Он не связан с backend runtime. Сам backend и query-time Video Hub в этом проекте работают через **Vertex AI**.
+> **Важно:** Это резервный ручной путь. Основной — Phase 0 выше.
 
 ### 📝 The Golden Prompt (System Instructions)
 *Copy this into AI Studio System Instructions:*
@@ -24,7 +66,7 @@ Use **Google AI Studio** or another Gemini UI to generate the source JSON.
 Ты — Senior AI Knowledge Architect. Твоя задача — провести глубокий мультимодальный анализ видео и превратить его в структурированную базу знаний (Knowledge Nodes).
 
 ПРАВИЛА АНАЛИЗА:
-1. ВИЗУАЛЬНЫЙ КОНТЕКСТ (MULTIMODAL): Описывай, что происходит на экране (код, схемы, слайды) в квадратных скобках [НА ЭКРАНЕ: ...].
+1. ВИЗУАЛЬНЫЙ КОНТЕКСТ (MULTIMODAL): Всё видимое — в квадратных скобках [НА ЭКРАНЕ: ...] внутри поля 'content'. Разделяй два случая: служебный фон (говорящий, браузер, обои слайда) — кратко; ценная нагрузка (промт, настройки/параметры генерации, код, формулы, точные цифры, заголовок) — ДОСЛОВНО, промт в кавычках, настройки коротким списком. Нечитаемое — пиши [НА ЭКРАНЕ: текст нечитаем], не выдумывай.
 2. СЕМАНТИЧЕСКИЕ ГРАНИЦЫ: Один сегмент = одна законченная мысль. Не режь на полуслове.
 3. ПРАВИЛО "КЛЕЯ": Конец сегмента N дублируется в начале сегмента N+1 (1-2 предложения).
 4. ТЕМАТИЧЕСКИЕ НИТИ (TOPIC_ID): 
@@ -32,6 +74,7 @@ Use **Google AI Studio** or another Gemini UI to generate the source JSON.
    - ВАЖНО: Меняй topic_id при смене логического блока (главы) или каждые 10-15 минут.
    - ИЗБЕГАЙ гигантских тем на все видео. Используй гранулярные ID: "rag_intro", "rag_architecture".
 5. ДОСЛОВНОСТЬ: Речь автора сохраняй дословно.
+6. КЛЮЧЕВЫЕ КАДРЫ (ON-SCREEN MOMENTS): значимые моменты фиксируй меткой [НА ЭКРАНЕ: ...] в 'content', а в timestamp_seconds ставь СЕКУНДУ ПОЯВЛЕНИЯ кадра, не начало сегмента. Ключевой = читаемый текст (промт/заголовок/метрика), интерфейс/настройки/модалка, таблица/график/код/формула, результат генерации, «до/после», клик или уведомление. Каденция ~1 кадр/15 сек, но без насилия. При сомнении — фиксируй. Частично нечитаемое помечай [НА ЭКРАНЕ (неуверенно): ...].
 
 ФОРМАТ ВЫХОДА (JSON):
 {
@@ -120,11 +163,12 @@ Use **Google AI Studio** or another Gemini UI to generate the source JSON.
 ---
 
 ## 🛠️ Maintenance
-- **Script Location:** `scripts/deploy_video.sh` (Oracle VM, dev checkout)
+- **Ingest scripts:** `backend/scripts/ingest_video.py`, `backend/scripts/asr_whisper.py` (dev checkout).
+- **Import:** `backend/scripts/import_video_json.py` (upsert by `telegram_message_id`; preserves embeddings across re-imports).
+- **Embeddings:** `backend/scripts/embed_posts.py` (run after import so segments join vector search; FTS5 updates itself via triggers).
 - **Database:** staging `backend/data/experts.db` → promoted to production via
   `DB_UPLOAD_ONLY=1 ./scripts/update_production_db.sh` (= Production data release,
-  см. `docs/operations.md`). Устаревший Fly.io SFTP-путь удалён 24.08.2026.
-- **Runtime Auth:** Query-time Video Hub uses Vertex AI credentials from `backend/.env` / managed secrets.
-- **Important:** `deploy_video.sh` does **not** call Gemini directly; it only asks
-  whether to generate embeddings for new segments.
-- **If immediate Hybrid Search is required:** run `python3 backend/scripts/embed_posts.py --continuous` after import.
+  см. `docs/operations.md`). Legacy manual flow can still promote a ready JSON via
+  `scripts/deploy_video.sh`. Устаревший Fly.io SFTP-путь удалён 24.08.2026.
+- **Runtime Auth:** query-time Video Hub calls the configured OpenRouter models from `backend/.env` / managed secrets.
+- **Important:** neither `deploy_video.sh` nor the ingest pipeline calls production; production DB changes only through the owner's `обнови базу`.

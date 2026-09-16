@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import importlib.util
 import io
+import json
 import sqlite3
 import sys
 from datetime import datetime, timezone
@@ -203,7 +204,8 @@ def show_conn():
         CREATE TABLE posts (
             post_id INTEGER PRIMARY KEY, expert_id TEXT, telegram_message_id INTEGER,
             channel_username TEXT, created_at TEXT, author_name TEXT, author_id TEXT,
-            message_text TEXT, reply_count INTEGER, view_count INTEGER
+            message_text TEXT, reply_count INTEGER, view_count INTEGER,
+            media_metadata TEXT
         )
         """
     )
@@ -219,7 +221,9 @@ def show_conn():
         "CREATE TABLE links (source_post_id INTEGER, target_post_id INTEGER, link_type TEXT)"
     )
     conn.execute(
-        "INSERT INTO posts VALUES (1, 'acidcrunch', 2062, 'AcidCrunch',"
+        "INSERT INTO posts (post_id, expert_id, telegram_message_id, channel_username,"
+        " created_at, author_name, author_id, message_text, reply_count, view_count)"
+        " VALUES (1, 'acidcrunch', 2062, 'AcidCrunch',"
         " '2025-06-05 10:00:00.000000', 'Acid', 'channel55', 'post text', 3, 100)"
     )
     for i in range(6):
@@ -237,8 +241,26 @@ def show_conn():
         " '2025-06-06 11:00:00.000000')"
     )
     conn.execute(
-        "INSERT INTO posts VALUES (2, 'acidcrunch', 2070, 'AcidCrunch',"
+        "INSERT INTO posts (post_id, expert_id, telegram_message_id, channel_username,"
+        " created_at, author_name, author_id, message_text, reply_count, view_count)"
+        " VALUES (2, 'acidcrunch', 2070, 'AcidCrunch',"
         " '2025-06-07 10:00:00.000000', 'Acid', 'channel55', 'linked post text', 0, 5)"
+    )
+    conn.execute(
+        "INSERT INTO posts (post_id, expert_id, telegram_message_id, channel_username,"
+        " created_at, author_name, author_id, message_text, reply_count, view_count, media_metadata)"
+        " VALUES (3, 'video_hub', 825056013, NULL, '2026-08-21T00:00:00',"
+        " 'Youri van Hofwegen', 'youri', 'video segment text', 0, 0, ?)",
+        (
+            json.dumps(
+                {
+                    "type": "video_segment",
+                    "video_url": "https://youtu.be/2b3Z4rW5VJc",
+                    "timestamp_seconds": 258,
+                    "video_title": "Seedance 2.5 tutorial",
+                }
+            ),
+        ),
     )
     conn.execute("INSERT INTO links VALUES (1, 2, 'reply')")
     conn.commit()
@@ -263,3 +285,34 @@ def test_collect_show_payload_reports_bad_keys(scout, show_conn):
 
     assert payload[0]["error"].startswith("invalid source_key")
     assert payload[1]["error"] == "not_found"
+
+
+def test_video_fields_builds_deep_link(scout):
+    fields = scout._video_fields(
+        json.dumps(
+            {
+                "type": "video_segment",
+                "video_url": "https://youtu.be/abc",
+                "timestamp_seconds": 258,
+                "video_title": "Title",
+            }
+        )
+    )
+    assert fields["video_link"] == "https://youtu.be/abc?t=258s"
+    assert fields["video_timestamp_s"] == 258
+    assert fields["video_title"] == "Title"
+
+
+def test_video_fields_ignores_non_video_and_bad_json(scout):
+    assert scout._video_fields("not json at all") == {}
+    assert scout._video_fields(json.dumps({"type": "telegram_post"})) == {}
+    assert scout._video_fields(None) == {}
+
+
+def test_collect_show_payload_exposes_video_link(scout, show_conn):
+    payload = scout._collect_show_payload(show_conn, ["video_hub:825056013"], 3)
+    item = payload[0]
+
+    assert item["video_link"] == "https://youtu.be/2b3Z4rW5VJc?t=258s"
+    assert item["video_timestamp_s"] == 258
+    assert item["video_title"] == "Seedance 2.5 tutorial"

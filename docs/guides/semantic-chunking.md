@@ -1,6 +1,13 @@
 # Semantic Video Chunking (через AI Studio)
 
-**Статус:** Рекомендованный Workflow для подготовки видео в Experts Panel (Video Hub)
+> **Статус: исторический документ (2026-09-16).** Автоматический ingest
+> (`backend/scripts/ingest_video.py`) нарезает видео фиксированными окнами с
+> нахлёстом и сам решает, где смотреть плотно, — ручная разметка «безопасных
+> точек разреза» в AI Studio больше не нужна. См.
+> `docs/architecture/video-hub-service.md` → "Automated Ingest Pipeline" и
+> `docs/guides/video-hub-operator.md` → Phase 0.
+
+**Статус (архив):** Рекомендованный Workflow для подготовки видео в Experts Panel (Video Hub)
 **Дата:** 2026-02-23
 
 ## Проблема "Рваного Контекста"

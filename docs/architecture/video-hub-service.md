@@ -24,7 +24,7 @@ The Video Hub operates as an **isolated sidecar**, running in parallel with the 
 
 ## 🛠️ Phase 1: Data Preparation (Smart Segmenting)
 
-Transcripts undergo pre-processing via **Gemini 3.1 Pro Preview (Structured Output)** before ingestion into the `posts` table.
+Segmentation is produced by the **automated ingest pipeline** (stage 1 script + an LLM pass, see "Automated Ingest Pipeline" below). The legacy manual pass through Google AI Studio still works and uses the same output contract.
 
 ### Data Schema (The "Fullness" Contract):
 ```json
@@ -48,6 +48,50 @@ Transcripts undergo pre-processing via **Gemini 3.1 Pro Preview (Structured Outp
   ]
 }
 ```
+
+### Keyframe Criteria ("On-Screen Moments")
+
+On-screen moments are captured per segment as `[НА ЭКРАНЕ: ...]` markers, with `timestamp_seconds` set to the second the frame appears (not the segment start). A moment counts as key when readable text (prompt/title/metric), a UI/settings panel or modal, a table/chart/code/formula, a generation result, a before/after, or an action/notification appears. Cadence is ≈1 keyframe per ~15s with recall-bias (capture when in doubt); partially unreadable text is tagged `[НА ЭКРАНЕ (неуверенно): ...]`. Adapted from `kdoronin/video_analyzer` (MIT).
+
+### Extended Segment Schema (Automated Ingest)
+
+The automated pipeline optionally adds two blocks to a segment:
+
+```json
+{
+  "segment_id": 1006,
+  "topic_id": "sound_crime_robbery",
+  "title": "Segment Title",
+  "summary": "Russian summary (RU) used by the Map phase and lexical search",
+  "content": "Original speech, verbatim",
+  "timestamp_seconds": 258,
+  "visual": {
+    "kind": "prompt_panel",
+    "app": "Higgsfield",
+    "model": "Seedance 2.5",
+    "settings": "30s / 16:9 / 720p / Bitrate High",
+    "showcase_prompt_verbatim": "A 30-second landscape 16:9 cinematic crime-action sequence..."
+  },
+  "frames": [
+    {"time_s": 260.0, "path": "/abs/path/c01f_00002600.jpg"}
+  ]
+}
+```
+
+- `visual` is stored in `media_metadata.visual` and **also appended to `message_text` as a `VISUAL:` block**, so FTS5, vector search and the synthesis context all see prompts/settings/slides. Retrieval indexes `message_text` only, hence the duplication.
+- `frames` are copied to `backend/data/video_frames/<video_hash>/`; `media_metadata.frames` keeps `{time_s, file}` for UI/deep-links.
+- `video_metadata.published_at` (optional) drives `created_at`, so freshness reflects the video date instead of the import date.
+- `import_video_json.py` upserts by `telegram_message_id` (row identity preserved), so re-imports do not orphan embeddings.
+
+### Automated Ingest Pipeline
+
+Three steps, dev-safe (no production writes):
+
+1. **Stage 1 — `backend/scripts/ingest_video.py`**: media probe → audio → ASR (`backend/scripts/asr_whisper.py`, faster-whisper int8, glossary-biased, auto language) → chunked processing (`--chunk-minutes`, overlap) → per-chunk coarse grid, contact sheets, per-second change curve (numpy), speech-cue windows, adaptive dense frames with dedup and hard caps (`--max-windows-per-chunk`, `--max-dense-frames-per-chunk`) → artifacts under `chunks/chunk_NN/`.
+2. **Stage 2 — LLM pass**: one chunk at a time; the model reads the transcript slice plus sheets/native frames and writes `chunks/chunk_NN/segments.json`. Disk is the memory, so long videos never load more than one chunk into context.
+3. **Combine, import, embed**: `ingest_video.py --combine` merges chunk JSONs (dedup by topic + time inside overlaps) into `segments.json`; `import_video_json.py` writes to the DB; `embed_posts.py` adds vectors.
+
+**YouTube download constraint**: the VM datacenter IP is blocked by YouTube, so media is fetched on the Mac over the reverse SSH tunnel (see `docs/guides/video-hub-operator.md`) and copied to the VM before stage 1.
 
 ---
 
@@ -73,7 +117,7 @@ The Video Hub runs as a dedicated stream in `event_generator_parallel`.
 -   **Persona**: "Expert's Digital Twin".
 -   **Instruction**: "Reconstruct the expert's original reasoning flow and vocabulary. Use [FULL TRANSCRIPT] for details and [SUMMARY] to bridge the gaps."
 -   **Language**: The synthesis prompt requires output in the detected query language (Russian by default, English for English queries) — generating in the right language up front avoids a second, style-losing translation pass.
--   **Visual Elements (`[НА ЭКРАНЕ]`)**: The model is strictly instructed to extract the *meaning* from visual markers and organically weave it into the narrative (as if the expert is speaking it), rather than mechanically quoting the metadata.
+-   **Visual Elements (`[НА ЭКРАНЕ]`)**: The synthesis prompt splits on-screen markers into two cases. **Ambient** context (speaker, browser, generic slide) is woven organically into the narrative rather than mechanically quoted. **Informational** payload (prompt text, model/generation settings, code, formulas, exact figures, slide titles) is preserved and surfaced verbatim — prompts quoted, settings as a short list — never paraphrased, translated, rounded, or hidden. Unreadable on-screen text is reported as unreadable instead of guessed.
 -   **Citations**: MANDATORY `[post:ID]` format for deep-links. **All** segments provided in the context (both HIGH and MEDIUM) are included in the `main_sources` list, ensuring every cited link is clickable on the frontend.
 -   **Output Token Limit**: `max_tokens=8192` — increased from 4096 to prevent truncation on videos with 50+ segments (where the "DO NOT SUMMARIZE" instruction produces long outputs with many citations).
 

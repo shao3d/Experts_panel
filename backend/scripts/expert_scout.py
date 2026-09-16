@@ -265,6 +265,43 @@ def _rrf_merge(fts_ids: list[int], vector_ids: list[int], k: int) -> list[int]:
     return sorted(scores, key=lambda pid: scores[pid], reverse=True)
 
 
+def _video_fields(media_metadata: Any) -> dict[str, Any]:
+    """Expose deep-link fields for synthetic video segments.
+
+    Video Hub posts carry `video_url` and `timestamp_seconds` in
+    `media_metadata`; surfacing them lets Scout cite an exact moment instead of
+    just a source_key.
+    """
+    if not media_metadata:
+        return {}
+    try:
+        meta = json.loads(media_metadata) if isinstance(media_metadata, str) else media_metadata
+    except (ValueError, TypeError):
+        return {}
+    if not isinstance(meta, dict) or meta.get("type") != "video_segment":
+        return {}
+
+    fields: dict[str, Any] = {}
+    url = meta.get("video_url")
+    timestamp = meta.get("timestamp_seconds")
+    if url:
+        fields["video_url"] = url
+        if timestamp is not None:
+            try:
+                seconds = int(float(timestamp))
+            except (ValueError, TypeError):
+                seconds = None
+            if seconds is not None:
+                fields["video_timestamp_s"] = seconds
+                separator = "&" if "?" in url else "?"
+                fields["video_link"] = f"{url}{separator}t={seconds}s"
+        if "video_link" not in fields:
+            fields["video_link"] = url
+    if meta.get("video_title"):
+        fields["video_title"] = meta["video_title"]
+    return fields
+
+
 def _fetch_posts(conn: sqlite3.Connection, post_ids: list[int]) -> dict[int, dict[str, Any]]:
     if not post_ids:
         return {}
@@ -272,7 +309,7 @@ def _fetch_posts(conn: sqlite3.Connection, post_ids: list[int]) -> dict[int, dic
     rows = conn.execute(
         f"""
         SELECT post_id, expert_id, telegram_message_id, channel_username,
-               created_at, author_name, message_text
+               created_at, author_name, message_text, media_metadata
         FROM posts WHERE post_id IN ({placeholders})
         """,
         post_ids,
@@ -286,6 +323,7 @@ def _fetch_posts(conn: sqlite3.Connection, post_ids: list[int]) -> dict[int, dic
         created_at,
         author_name,
         message_text,
+        media_metadata,
     ) in rows:
         result[int(post_id)] = {
             "source_key": f"{expert_id}:{telegram_message_id}",
@@ -295,6 +333,7 @@ def _fetch_posts(conn: sqlite3.Connection, post_ids: list[int]) -> dict[int, dic
             "created_at": created_at,
             "author_name": author_name,
             "message_text": message_text or "",
+            **_video_fields(media_metadata),
         }
     return result
 
@@ -398,17 +437,19 @@ def cmd_search(args: argparse.Namespace) -> int:
         if not post:
             continue
         snippet = fts_snippets.get(post_id) or _excerpt(post["message_text"])
-        results.append(
-            {
-                "source_key": post["source_key"],
-                "expert_id": post["expert_id"],
-                "created_at": post["created_at"],
-                "channel_username": post["channel_username"],
-                "found_by": found_by.get(post_id, []),
-                "chars": len(post["message_text"]),
-                "snippet": snippet,
-            }
-        )
+        item = {
+            "source_key": post["source_key"],
+            "expert_id": post["expert_id"],
+            "created_at": post["created_at"],
+            "channel_username": post["channel_username"],
+            "found_by": found_by.get(post_id, []),
+            "chars": len(post["message_text"]),
+            "snippet": snippet,
+        }
+        for key in ("video_link", "video_url", "video_timestamp_s", "video_title"):
+            if key in post:
+                item[key] = post[key]
+        results.append(item)
 
     if args.json:
         print(json.dumps({"query": args.query, "warnings": warnings, "results": results}, ensure_ascii=False, indent=2))
@@ -421,6 +462,8 @@ def cmd_search(args: argparse.Namespace) -> int:
                 f"({'+'.join(item['found_by'])}, {item['chars']} chars)\n"
                 f"  {item['snippet']}"
             )
+            if item.get("video_link"):
+                print(f"  video: {item['video_link']}")
     return 0
 
 
@@ -445,7 +488,7 @@ def _collect_show_payload(
             """
             SELECT post_id, expert_id, telegram_message_id, channel_username,
                    created_at, author_name, author_id, message_text,
-                   reply_count, view_count
+                   reply_count, view_count, media_metadata
             FROM posts WHERE expert_id = ? AND telegram_message_id = ?
             """,
             (expert_id, message_id),
@@ -464,6 +507,7 @@ def _collect_show_payload(
             message_text,
             reply_count,
             view_count,
+            media_metadata,
         ) = row
         # Posts store "channelXXX", comments store "XXX" (same normalization
         # as CommentGroupMapService._load_main_source_author_comments).
@@ -522,6 +566,7 @@ def _collect_show_payload(
                 "reply_count": reply_count,
                 "view_count": view_count,
                 "content": message_text,
+                **_video_fields(media_metadata),
                 "comments": comments,
                 "linked_context": [
                     {
@@ -552,6 +597,8 @@ def cmd_show(args: argparse.Namespace) -> int:
                 print(f"# {item['source_key']}: {item['error']}")
                 continue
             print(f"=== {item['source_key']} [{item['created_at']}] @{item['channel_username']} ===")
+            if item.get("video_link"):
+                print(f"video: {item['video_link']}")
             print(item["content"])
             author_comments = [c for c in item["comments"] if c["is_author"]]
             community_comments = [c for c in item["comments"] if not c["is_author"]]
