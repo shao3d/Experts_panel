@@ -299,9 +299,20 @@ do_deploy() {
     # Override DATABASE_URL to ensure we use the correct DB regardless of what's in .env
     export DATABASE_URL="sqlite:///$ABS_DB_PATH"
 
+    SCOPE_LABEL=""
+    SCOPE_ARGS=()
+    if [ -n "${EXPERTS_SCOPE:-}" ]; then
+        SCOPE_LABEL=" [scope: $EXPERTS_SCOPE]"
+        SCOPE_ARGS=(--scope "$EXPERTS_SCOPE")
+    fi
+
     echo "========================================================"
-    echo "🚀 STARTING PRODUCTION DB UPDATE SEQUENCE (12 steps)"
+    echo "🚀 STARTING PRODUCTION DB UPDATE SEQUENCE (12 steps)$SCOPE_LABEL"
     echo "========================================================"
+    if [ -n "${EXPERTS_SCOPE:-}" ]; then
+        echo "ℹ️  Scoped release: Telegram sync and drift analysis are limited to group '$EXPERTS_SCOPE'."
+        echo "ℹ️  Vectorization and DB promotion remain global, so new VideoHub segments are included."
+    fi
 
     # 1. Local Backup (consistent snapshot via SQLite Online Backup API)
     TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
@@ -329,7 +340,7 @@ do_deploy() {
     else
         # 2. Run Local Sync (Posts & Comments)
         echo "🔄 [2/12] Running Local Sync (Posts & Comments)..."
-        if $PYTHON_CMD backend/sync_channel_multi_expert.py; then
+        if $PYTHON_CMD backend/sync_channel_multi_expert.py ${SCOPE_ARGS[@]+"${SCOPE_ARGS[@]}"}; then
             echo "   ✅ Local sync completed successfully."
         else
             echo "   ❌ Sync failed. Aborting deployment."
@@ -349,25 +360,30 @@ do_deploy() {
             echo "   ⚠️ $MISSING_EMB post(s) have no embedding — hybrid search will be DEGRADED on production until the next successful deploy."
         fi
 
-        # 5. Backfill Drift Embeddings (legacy comment_group_drift rows)
-        echo "🧩 [5/12] Backfilling drift embeddings for legacy comment_group_drift rows (--limit 2000)..."
-        if $PYTHON_CMD -m backend.scripts.maintenance.backfill_drift_embeddings --limit 2000; then
-            echo "   ✅ Drift embedding backfill completed."
+        if [ -n "${EXPERTS_SCOPE:-}" ]; then
+            echo "⏭️  [5/12] Scoped release: skipping global drift embedding backfill."
+            echo "⏭️  [6/12] Scoped release: skipping global drift cleanup."
         else
-            echo "   ⚠️ Drift embedding backfill failed (non-critical). Continuing..."
-        fi
+            # 5. Backfill Drift Embeddings (legacy comment_group_drift rows)
+            echo "🧩 [5/12] Backfilling drift embeddings for legacy comment_group_drift rows (--limit 2000)..."
+            if $PYTHON_CMD -m backend.scripts.maintenance.backfill_drift_embeddings --limit 2000; then
+                echo "   ✅ Drift embedding backfill completed."
+            else
+                echo "   ⚠️ Drift embedding backfill failed (non-critical). Continuing..."
+            fi
 
-        # 6. Apply Drift Cleanup (legacy / newly-broken comment_group_drift rows)
-        echo "🧹 [6/12] Applying drift cleanup (--apply, repair-or-NULL malformed drift_topics)..."
-        if $PYTHON_CMD -m backend.scripts.maintenance.cleanup_malformed_drift --apply; then
-            echo "   ✅ Drift cleanup completed."
-        else
-            echo "   ⚠️ Drift cleanup failed (non-critical). Continuing..."
+            # 6. Apply Drift Cleanup (legacy / newly-broken comment_group_drift rows)
+            echo "🧹 [6/12] Applying drift cleanup (--apply, repair-or-NULL malformed drift_topics)..."
+            if $PYTHON_CMD -m backend.scripts.maintenance.cleanup_malformed_drift --apply; then
+                echo "   ✅ Drift cleanup completed."
+            else
+                echo "   ⚠️ Drift cleanup failed (non-critical). Continuing..."
+            fi
         fi
 
         # 7. Run Drift Analysis
         echo "🧠 [7/12] Running Drift Analysis (opencode/Muse)..."
-        if $PYTHON_CMD backend/run_drift_service.py; then
+        if $PYTHON_CMD backend/run_drift_service.py ${SCOPE_ARGS[@]+"${SCOPE_ARGS[@]}"}; then
             echo "   ✅ Drift analysis completed successfully."
         else
             echo "   ❌ Drift analysis failed. Aborting deployment."
@@ -554,6 +570,9 @@ Usage (run ON the Oracle VM; Mac is a thin client):
   cd ~/apps/experts-panel/dev
 
   ./scripts/update_production_db.sh                    Full pipeline deploy
+  ./scripts/update_production_db.sh --scope visual     Scoped release: sync + drift only for one expert group;
+                                                       vectorization and promotion stay global (new VideoHub
+                                                       segments are included)
   DB_UPLOAD_ONLY=1 ./scripts/update_production_db.sh   Skip sync/vectorize/drift
   ./scripts/update_production_db.sh --rollback         Restore prod DB from backup
   ./scripts/update_production_db.sh --check            Read-only maintenance preflight
@@ -567,6 +586,15 @@ main() {
             ;;
         --check)
             check_dev_runtime
+            ;;
+        --scope)
+            if [ -z "${2:-}" ]; then
+                echo "❌ --scope requires a group name (e.g. visual)"
+                usage
+                exit 1
+            fi
+            export EXPERTS_SCOPE="$2"
+            do_deploy
             ;;
         "")
             do_deploy

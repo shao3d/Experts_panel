@@ -107,7 +107,7 @@ it from the Mac as `expert-scout "<question>"`.)
 Перед работой сам проверь Git-состояние. Не трогай незнакомые изменения и не
 используй `reset --hard`, `clean`, rebase общей `main` или force-push.
 
-## Две операции владельца
+## Операции владельца
 
 ### `выкатывай`
 
@@ -120,6 +120,21 @@ it from the Mac as `expert-scout "<question>"`.)
 Это отдельный data release. Только после явной команды владельца следуй
 `docs/operations.md` и запускай `scripts/update_production_db.sh` из VM `dev`.
 Не объединяй data release с обычным code release и не запускай его для проверки.
+
+### `обнови базу по визуалам`
+
+Это scoped data release: обновляются только эксперты группы `visual`
+(`strangedalle`, `acidcrunch`, `cgevent`, `neyrograph`, `iideyalogiya`) плюс
+промоутится всё новое, что уже залито в VideoHub в staging. Запускай только
+после явной команды владельца:
+
+```bash
+./scripts/update_production_db.sh --scope visual
+```
+
+Sync и drift идут только по этой группе; миграции, эмбеддинги и промоушен БД
+остаются глобальными, поэтому новые видео-сегменты VideoHub попадают в
+production автоматически. Детали — `docs/operations.md`.
 
 Команды `проверь`, `разберись`, `подготовь` не разрешают commit, push, deploy,
 restart или изменение production DB. `зафиксируй` разрешает только commit.

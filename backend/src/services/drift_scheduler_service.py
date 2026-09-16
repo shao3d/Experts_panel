@@ -28,9 +28,10 @@ class DriftSchedulerService:
     EmbeddingService (OpenRouter gemini-embedding-001, 768d).
     """
 
-    def __init__(self, db: Session):
+    def __init__(self, db: Session, expert_ids: list[str] | None = None):
         import os as _os
         self.db = db
+        self.expert_ids = list(expert_ids) if expert_ids else None
         self.client = get_vertex_llm_client()
         self.model_name = MODEL_DRIFT_ANALYSIS
         # Gemini is forbidden for drift. The only allowed backend is headless
@@ -67,16 +68,32 @@ class DriftSchedulerService:
         # which uses Tenacity with exponential backoff + jitter
         logger.info(f"DriftSchedulerService initialized with model: {self.model_name}")
 
+    def _scope_sql(self, params: Dict[str, Any], column: str = "cgd.expert_id") -> str:
+        """Build an optional expert filter for scoped releases."""
+        if not self.expert_ids:
+            return ""
+        placeholders = ", ".join(f":scope_expert_{i}" for i in range(len(self.expert_ids)))
+        params.update({f"scope_expert_{i}": value for i, value in enumerate(self.expert_ids)})
+        return f" AND {column} IN ({placeholders})"
+
     def get_pending_count(self) -> int:
         """Count pending drift analysis groups."""
-        result = self.db.execute(text(
-            "SELECT COUNT(*) FROM comment_group_drift WHERE analyzed_by = 'pending'"
-        ))
+        params: Dict[str, Any] = {}
+        scope = self._scope_sql(params)
+        result = self.db.execute(
+            text(f"""
+                SELECT COUNT(*) FROM comment_group_drift cgd
+                WHERE cgd.analyzed_by = 'pending'{scope}
+            """),
+            params,
+        )
         return result.scalar() or 0
 
     def get_pending_groups(self, limit: int = 10) -> List[Dict[str, Any]]:
         """Fetch pending groups with their posts and comments."""
-        query = text("""
+        params: Dict[str, Any] = {"limit": limit}
+        scope = self._scope_sql(params)
+        query = text(f"""
             SELECT
                 cgd.post_id,
                 cgd.expert_id,
@@ -84,12 +101,12 @@ class DriftSchedulerService:
                 p.telegram_message_id
             FROM comment_group_drift cgd
             JOIN posts p ON cgd.post_id = p.post_id
-            WHERE cgd.analyzed_by = 'pending'
+            WHERE cgd.analyzed_by = 'pending'{scope}
             ORDER BY cgd.post_id ASC
             LIMIT :limit
         """)
 
-        results = self.db.execute(query, {"limit": limit}).fetchall()
+        results = self.db.execute(query, params).fetchall()
         groups = []
 
         for row in results:

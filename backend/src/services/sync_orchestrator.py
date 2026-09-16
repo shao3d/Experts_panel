@@ -15,19 +15,30 @@ from src.models.post import Post
 
 logger = logging.getLogger(__name__)
 
-def get_all_experts(db: Session) -> List[Dict[str, Any]]:
+def get_all_experts(
+    db: Session, expert_ids: Optional[List[str]] = None
+) -> List[Dict[str, Any]]:
     """
-    Получает всех экспертов из expert_metadata с их статистикой из posts.
+    Получает экспертов из expert_metadata с их статистикой из posts.
+
+    `expert_ids` ограничивает выборку (scoped release: например, только визуалы).
     """
+    params: Dict[str, Any] = {}
+    scope_clause = ""
+    if expert_ids:
+        placeholders = ", ".join(f":scope_expert_{i}" for i in range(len(expert_ids)))
+        scope_clause = f" AND expert_id IN ({placeholders})"
+        params.update({f"scope_expert_{i}": value for i, value in enumerate(expert_ids)})
+
     # Query expert_metadata for all experts, excluding video_hub
-    experts_query = text("""
+    experts_query = text(f"""
         SELECT expert_id, channel_username
         FROM expert_metadata
-        WHERE expert_id != 'video_hub'
+        WHERE expert_id != 'video_hub'{scope_clause}
         ORDER BY expert_id
     """)
 
-    expert_metadata = db.execute(experts_query).fetchall()
+    expert_metadata = db.execute(experts_query, params).fetchall()
     experts = []
 
     for expert_id, channel_username in expert_metadata:
@@ -215,9 +226,13 @@ def print_multi_expert_summary(results: List[Dict[str, Any]], start_time: dateti
     print(f"   Total duration: {duration:.1f}s", file=sys.stderr)
     print("=" * 80, file=sys.stderr)
 
-async def run_cron_pipeline(dry_run: bool = False, depth: int = 10) -> Dict[str, Any]:
+async def run_cron_pipeline(
+    dry_run: bool = False, depth: int = 10, expert_ids: Optional[List[str]] = None
+) -> Dict[str, Any]:
     """
-    Executes the full multi-expert sync pipeline.
+    Executes the multi-expert sync pipeline.
+
+    `expert_ids` limits the sync to a subset (scoped release: only visual experts).
     """
     load_dotenv()
     run_preflight_checks()
@@ -226,12 +241,13 @@ async def run_cron_pipeline(dry_run: bool = False, depth: int = 10) -> Dict[str,
     api_hash = os.getenv('TELEGRAM_API_HASH')
     session_name = os.getenv('TELEGRAM_SESSION_NAME', 'telegram_fetcher')
 
+    scope_note = f", Scope: {', '.join(expert_ids)}" if expert_ids else ""
     print("🔄 MULTI-EXPERT TELEGRAM SYNC (Service)", file=sys.stderr)
-    print(f"Mode: {'DRY-RUN' if dry_run else 'LIVE'}, Depth: {depth}", file=sys.stderr)
+    print(f"Mode: {'DRY-RUN' if dry_run else 'LIVE'}, Depth: {depth}{scope_note}", file=sys.stderr)
 
     db = SessionLocal()
     try:
-        experts = get_all_experts(db)
+        experts = get_all_experts(db, expert_ids)
         if not experts:
             return {'success': False, 'error': 'No experts found'}
 

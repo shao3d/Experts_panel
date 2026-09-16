@@ -49,6 +49,26 @@ DB_UPLOAD_ONLY=1 ./scripts/update_production_db.sh
 
 Он тоже является production data release и требует явной команды владельца.
 
+## Scoped data release: `обнови базу по визуалам`
+
+Обновление только группы `visual` (`strangedalle`, `acidcrunch`, `cgevent`,
+`neyrograph`, `iideyalogiya`) плюс всё новое, что уже залито в VideoHub staging:
+
+```bash
+cd /home/ubuntu/apps/experts-panel/dev
+./scripts/update_production_db.sh --scope visual
+```
+
+- **Scoped:** Telegram-синк и drift-анализ ограничены этой группой (шаги 2 и 7);
+  глобальные шаги 5–6 (drift backfill/cleanup) пропускаются.
+- **Глобально:** миграции, эмбеддинги (шаг 4) и промоушен всей staging-БД
+  (шаги 8–12). Поэтому новые видео-сегменты VideoHub, уже импортированные в
+  staging, попадают в production автоматически — отдельного шага для них нет.
+- Группы резолвятся из `backend/src/expert_groups.py` (та же карта, что у
+  Панэкса и Скаута); неизвестная группа — ошибка (до изменений в production).
+- Это production data release: те же правила, что у `обнови базу` — только по
+  явной команде владельца, из VM `dev`, не совмещать с code release.
+
 ## Health и rollback
 
 Проверка runtime:
