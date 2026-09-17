@@ -40,6 +40,10 @@ Read one chunk (transcript slice + sheets + native frames), write
 `chunks/chunk_NN/segments.json` with the extended schema (`visual`, `frames`),
 then forget the frames. Disk is the memory.
 
+Number `segment_id` **continuously across chunks** (do not restart from 1001 in
+each chunk): `--combine` fails on duplicates, and duplicate virtual IDs would
+otherwise overwrite segments at import time.
+
 ### 0.4 Combine, import, embed
 
 ```bash
@@ -48,6 +52,10 @@ backend/.venv/bin/python backend/scripts/import_video_json.py /tmp/<id>_ingest/s
 backend/.venv/bin/python backend/scripts/import_video_json.py /tmp/<id>_ingest/segments.json
 backend/.venv/bin/python backend/scripts/embed_posts.py
 ```
+
+Re-importing the same video after re-segmentation: add `--replace-video` so the
+old segments (matched by canonical video URL) and their embeddings are deleted
+before the new ones are imported.
 
 Production promotion of the updated DB is a separate owner command (`обнови базу`).
 

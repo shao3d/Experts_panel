@@ -24,11 +24,10 @@ from __future__ import annotations
 import argparse
 import json
 import math
-import os
 import shutil
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
@@ -500,17 +499,41 @@ def find_chunk_segment_files(out_dir: Path) -> list[Path]:
     return sorted((out_dir / "chunks").glob("chunk_*/segments.json"))
 
 
+#: Metadata keys that are local to a single chunk file and must not leak into
+#: the combined video-level artifact.
+CHUNK_LOCAL_META_KEYS = ("chunk", "chunk_range_s")
+
+
 def combine_chunks(out_dir: Path, overlap_s: float) -> dict:
     files = find_chunk_segment_files(out_dir)
     if not files:
         raise SystemExit(f"no chunk segments.json found under {out_dir / 'chunks'}")
     segments: list[dict] = []
     metadata: dict = {}
+    origins: dict = {}
     for path in files:
         with open(path, encoding="utf-8") as handle:
             payload = json.load(handle)
-        metadata = metadata or payload.get("video_metadata", {})
-        segments.extend(payload.get("segments", []))
+        metadata = metadata or {
+            key: value
+            for key, value in payload.get("video_metadata", {}).items()
+            if key not in CHUNK_LOCAL_META_KEYS
+        }
+        for segment in payload.get("segments", []):
+            if not isinstance(segment, dict):
+                raise SystemExit(
+                    f"non-object segment in {path}: {segment!r}. "
+                    "Expected a JSON object per segment."
+                )
+            segment_id = segment.get("segment_id")
+            if segment_id in origins:
+                raise SystemExit(
+                    f"duplicate segment_id {segment_id!r}: {origins[segment_id]} and {path}. "
+                    "Renumber the chunk segments.json files so segment_id is unique "
+                    "across the whole video, then re-run --combine."
+                )
+            origins[segment_id] = path
+            segments.append(segment)
     segments.sort(key=lambda s: float(s.get("timestamp_seconds", 0)))
     deduped: list[dict] = []
     for segment in segments:
@@ -572,6 +595,35 @@ def resolve_out_dir(args: argparse.Namespace, video: Path | None) -> Path:
     return (BACKEND_DIR.parent / "output" / "video_ingest" / video_id).resolve()
 
 
+def validate_transcript_schema(transcript: dict, source: str) -> None:
+    """Fail loudly when a transcript does not follow the ASR schema.
+
+    Chunk slicing and speech-cue windows read numeric `start`/`end` and string
+    `text`. A foreign-format transcript would otherwise degrade silently to
+    empty transcript slices and zero cue windows.
+    """
+    segments = transcript.get("segments") if isinstance(transcript, dict) else None
+    if not isinstance(segments, list) or not segments:
+        raise SystemExit(f"transcript {source} has no non-empty 'segments' list")
+    bad = [
+        index
+        for index, item in enumerate(segments)
+        if not isinstance(item, dict)
+        or isinstance(item.get("start"), bool)
+        or not isinstance(item.get("start"), int | float)
+        or isinstance(item.get("end"), bool)
+        or not isinstance(item.get("end"), int | float)
+        or not isinstance(item.get("text"), str)
+    ]
+    if bad:
+        preview = ", ".join(str(i) for i in bad[:5])
+        raise SystemExit(
+            f"transcript {source}: {len(bad)} segment(s) lack numeric start/end or "
+            f"string text (e.g. indexes {preview}). Expected the ASR schema "
+            "{start: <seconds>, end: <seconds>, text: <str>}."
+        )
+
+
 def main() -> None:
     args = parse_args()
 
@@ -583,6 +635,11 @@ def main() -> None:
 
     if not args.video:
         raise SystemExit("--video is required unless --combine is used")
+    if args.skip_asr and not args.transcript:
+        raise SystemExit(
+            "--skip-asr requires --transcript <json>: without a transcript the "
+            "chunks carry no transcript slices and no speech-cue windows"
+        )
     video = Path(args.video).expanduser().resolve()
     if not video.exists():
         raise SystemExit(f"video not found: {video}")
@@ -618,6 +675,7 @@ def main() -> None:
     if args.transcript:
         with open(Path(args.transcript).expanduser().resolve(), encoding="utf-8") as handle:
             transcript = json.load(handle)
+        validate_transcript_schema(transcript, args.transcript)
         logger.info("transcript reused: %s", args.transcript)
     elif not args.skip_asr:
         asr_python = shutil.which(args.asr_python)
@@ -629,6 +687,7 @@ def main() -> None:
             audio_path, out_dir / "transcript.json", asr_python,
             args.asr_model, args.glossary, args.language,
         )
+        validate_transcript_schema(transcript, "ASR output")
     if transcript is not None:
         write_json(out_dir / "transcript.json", transcript)
         logger.info(
@@ -642,7 +701,7 @@ def main() -> None:
         {
             "video_id": video_id,
             "source": str(video),
-            "created_at": datetime.now(timezone.utc).isoformat(),
+            "created_at": datetime.now(UTC).isoformat(),
             "media": media,
             "audio_path": str(audio_path),
             "transcript": bool(transcript),

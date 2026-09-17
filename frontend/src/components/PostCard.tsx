@@ -199,7 +199,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, isExpanded, onToggleComments,
           {/* YouTube Link */}
           {isVideoSegment && videoUrl && (
             <a
-              href={timestampSeconds !== undefined ? `${videoUrl}&t=${timestampSeconds}s` : videoUrl}
+              href={timestampSeconds !== undefined ? `${videoUrl}${videoUrl.includes('?') ? '&' : '?'}t=${timestampSeconds}s` : videoUrl}
               target="_blank"
               rel="noopener noreferrer"
               style={{

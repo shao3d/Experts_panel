@@ -17,6 +17,7 @@ backend/.venv/bin/python backend/scripts/ingest_video.py \
   --video-id <youtube_id> --out /tmp/<id>_ingest --chunk-minutes 5
 
 # 3. LLM pass: write chunks/chunk_NN/segments.json per chunk
+#    (segment_id — сквозной по всему видео: combine падает на дублях)
 
 # 4. combine, validate, import, embed
 backend/.venv/bin/python backend/scripts/ingest_video.py --combine --out /tmp/<id>_ingest
@@ -24,6 +25,10 @@ backend/.venv/bin/python backend/scripts/import_video_json.py /tmp/<id>_ingest/s
 backend/.venv/bin/python backend/scripts/import_video_json.py /tmp/<id>_ingest/segments.json
 backend/.venv/bin/python backend/scripts/embed_posts.py
 ```
+
+При повторном заходе по тому же видео (пересегментация) добавь к импорту
+`--replace-video`: старые сегменты, найденные по каноническому URL, и их
+эмбеддинги удаляются перед импортом новой разметки.
 
 ## 🚀 Quick Command (data release / promotion)
 

@@ -7,7 +7,7 @@ block (prompt/settings/slides) and optional `frames` references whose files are
 copied under `backend/data/video_frames/<video_hash>/`.
 
 Usage:
-    python3 backend/scripts/import_video_json.py <path_to_json> [--dry-run]
+    python3 backend/scripts/import_video_json.py <path_to_json> [--dry-run] [--replace-video]
 """
 
 from __future__ import annotations
@@ -15,13 +15,13 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import os
 import re
 import shutil
 import sqlite3
 import sys
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import parse_qs, urlparse
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 if str(BACKEND_DIR) not in sys.path:
@@ -98,6 +98,47 @@ def normalize_video_url(video_url: str) -> str:
     return video_url
 
 
+def _extract_youtube_id(video_url: str) -> str | None:
+    """Extract the video ID from common YouTube URL forms."""
+    try:
+        parsed = urlparse(video_url or "")
+    except Exception:
+        return None
+    host = (parsed.hostname or "").lower()
+    if host == "youtu.be":
+        candidate = parsed.path.strip("/").split("/")[0]
+        return candidate or None
+    if host in (
+        "youtube.com",
+        "www.youtube.com",
+        "m.youtube.com",
+        "youtube-nocookie.com",
+        "www.youtube-nocookie.com",
+    ):
+        if parsed.path == "/watch":
+            values = parse_qs(parsed.query).get("v")
+            if values and values[0]:
+                return values[0]
+        for prefix in ("/shorts/", "/embed/", "/live/", "/v/"):
+            if parsed.path.startswith(prefix):
+                candidate = parsed.path[len(prefix):].split("/")[0]
+                return candidate or None
+    return None
+
+
+def canonical_video_url(video_url: str) -> str:
+    """Canonicalize a YouTube URL to one identity per video.
+
+    Virtual segment IDs and composite topic hashes derive from the URL, so
+    `youtu.be/<id>` and `youtube.com/watch?v=<id>` must not produce duplicate
+    segment rows. Non-YouTube URLs fall back to `normalize_video_url`.
+    """
+    video_id = _extract_youtube_id(video_url or "")
+    if video_id:
+        return f"https://www.youtube.com/watch?v={video_id}"
+    return normalize_video_url(video_url)
+
+
 VISUAL_TEXT_KEYS = (
     "kind",
     "app",
@@ -119,12 +160,25 @@ def render_visual_block(visual: dict) -> str:
     Prompts and on-screen details live in `media_metadata.visual` for the UI and
     synthesis, but retrieval indexes `message_text` only, so the payload is also
     appended there. Keep the block human-readable: it doubles as context.
+
+    Keys outside the known set (e.g. `seed`, `negative_prompt`) are rendered
+    too when scalar, so future LLM-pass fields stay searchable; containers are
+    skipped (they remain in `media_metadata.visual`).
     """
     lines = ["VISUAL:"]
     for key in VISUAL_TEXT_KEYS:
         value = visual.get(key)
         if value:
             lines.append(f"{key}: {value}")
+    skip = set(VISUAL_TEXT_KEYS) | {"slides_verbatim", "frames_summary"}
+    for key in sorted(set(visual) - skip):
+        value = visual.get(key)
+        if isinstance(value, bool):
+            lines.append(f"{key}: {value}")
+        elif isinstance(value, str | int | float):
+            text = str(value).strip()
+            if text:
+                lines.append(f"{key}: {text}")
     slides = visual.get("slides_verbatim")
     if isinstance(slides, dict):
         for name, text in slides.items():
@@ -134,6 +188,78 @@ def render_visual_block(visual: dict) -> str:
     if frames:
         lines.append(f"frames_summary: {frames}")
     return "\n".join(lines)
+
+
+def _table_exists(cursor: sqlite3.Cursor, name: str) -> bool:
+    return (
+        cursor.execute(
+            "SELECT 1 FROM sqlite_master WHERE type IN ('table', 'view') AND name = ?",
+            (name,),
+        ).fetchone()
+        is not None
+    )
+
+
+def _load_vec_extension(conn: sqlite3.Connection) -> bool:
+    """Load sqlite-vec so vec_posts rows can be maintained; warn and skip if unavailable."""
+    try:
+        import sqlite_vec  # type: ignore
+    except ImportError:
+        logger.warning("sqlite_vec package missing; vec_posts rows left untouched")
+        return False
+    try:
+        conn.enable_load_extension(True)
+        sqlite_vec.load(conn)
+        conn.enable_load_extension(False)
+        return True
+    except Exception:
+        logger.warning("sqlite-vec extension unavailable; vec_posts rows left untouched")
+        return False
+
+
+def _invalidate_embeddings(cursor: sqlite3.Cursor, post_id: int, *, vec_ok: bool) -> None:
+    """Drop stale embedding rows so the next embed run regenerates them."""
+    if vec_ok and _table_exists(cursor, "vec_posts"):
+        cursor.execute("DELETE FROM vec_posts WHERE post_id = ?", (post_id,))
+    if _table_exists(cursor, "post_embeddings"):
+        cursor.execute("DELETE FROM post_embeddings WHERE post_id = ?", (post_id,))
+
+
+def find_video_post_ids(cursor: sqlite3.Cursor, canonical_url: str) -> list[int]:
+    """Find existing segment rows of one video, matched by canonical URL."""
+    rows = cursor.execute(
+        "SELECT post_id, media_metadata FROM posts WHERE expert_id = ?",
+        (EXPERT_ID,),
+    ).fetchall()
+    doomed = []
+    for post_id, media_meta in rows:
+        try:
+            meta = json.loads(media_meta) if isinstance(media_meta, str) else (media_meta or {})
+        except (ValueError, TypeError):
+            continue
+        if not isinstance(meta, dict):
+            continue
+        if canonical_video_url(str(meta.get("video_url", ""))) == canonical_url:
+            doomed.append(post_id)
+    return doomed
+
+
+def delete_video_rows(cursor: sqlite3.Cursor, post_ids: list[int], *, vec_ok: bool) -> None:
+    """Delete segment rows plus orphan-prone satellite rows.
+
+    posts_fts rows are removed by the DELETE trigger; video segments carry no
+    comments, but they are cleaned defensively.
+    """
+    for post_id in post_ids:
+        _invalidate_embeddings(cursor, post_id, vec_ok=vec_ok)
+        if _table_exists(cursor, "links"):
+            cursor.execute(
+                "DELETE FROM links WHERE source_post_id = ? OR target_post_id = ?",
+                (post_id, post_id),
+            )
+        if _table_exists(cursor, "comments"):
+            cursor.execute("DELETE FROM comments WHERE post_id = ?", (post_id,))
+        cursor.execute("DELETE FROM posts WHERE post_id = ?", (post_id,))
 
 
 def copy_frames(frames: list, series_dir: Path, base_dir: Path | None) -> list[dict]:
@@ -159,7 +285,13 @@ def copy_frames(frames: list, series_dir: Path, base_dir: Path | None) -> list[d
     return copied
 
 
-def import_video_json(json_path: Path, *, dry_run: bool = False, frames_base: Path | None = None) -> dict:
+def import_video_json(
+    json_path: Path,
+    *,
+    dry_run: bool = False,
+    frames_base: Path | None = None,
+    replace_video: bool = False,
+) -> dict:
     json_path = json_path.expanduser().resolve()
     if not json_path.exists():
         raise FileNotFoundError(f"JSON file not found: {json_path}")
@@ -167,7 +299,7 @@ def import_video_json(json_path: Path, *, dry_run: bool = False, frames_base: Pa
     db_path = get_db_path()
     logger.info("Using SQLite database at %s", db_path)
 
-    with open(json_path, "r", encoding="utf-8") as handle:
+    with open(json_path, encoding="utf-8") as handle:
         data = json.load(handle)
 
     meta = data.get("video_metadata", {})
@@ -176,7 +308,7 @@ def import_video_json(json_path: Path, *, dry_run: bool = False, frames_base: Pa
         logger.warning("No segments found in %s; nothing to import", json_path)
         return {"segments": 0, "frames": 0}
 
-    video_url = normalize_video_url(meta.get("url", "unknown_url"))
+    video_url = canonical_video_url(meta.get("url", "unknown_url"))
     video_title = meta.get("title", "Untitled Video")
     author_name = meta.get("author", meta.get("channel", "Unknown Expert"))
     author_id = slugify(author_name)
@@ -185,12 +317,29 @@ def import_video_json(json_path: Path, *, dry_run: bool = False, frames_base: Pa
 
     base_dir = frames_base or json_path.parent
     series_dir = FRAMES_ROOT / url_hash
-    counts = {"segments": 0, "frames": 0, "with_visual": 0}
+    counts = {"segments": 0, "frames": 0, "with_visual": 0, "replaced": 0}
 
     conn = sqlite3.connect(str(db_path))
     cursor = conn.cursor()
+    vec_ok = _load_vec_extension(conn)
 
     try:
+        if replace_video:
+            doomed = find_video_post_ids(cursor, video_url)
+            if dry_run:
+                counts["replaced"] = len(doomed)
+                logger.info(
+                    "DRY RUN: would delete %d existing segment(s) of this video",
+                    len(doomed),
+                )
+            elif doomed:
+                delete_video_rows(cursor, doomed, vec_ok=vec_ok)
+                counts["replaced"] = len(doomed)
+                logger.info(
+                    "Deleted %d existing segment(s) of this video (--replace-video)",
+                    len(doomed),
+                )
+
         cursor.execute(
             """
             INSERT OR IGNORE INTO expert_metadata (expert_id, display_name, channel_username)
@@ -201,9 +350,18 @@ def import_video_json(json_path: Path, *, dry_run: bool = False, frames_base: Pa
 
         logger.info("Importing video '%s' by %s (%s)", video_title, author_name, video_url)
 
+        seen_virtual: dict[int, object] = {}
         for index, segment in enumerate(segments):
             segment_id = segment.get("segment_id", index)
             virtual_message_id = generate_virtual_id(video_url, segment_id)
+            if virtual_message_id in seen_virtual:
+                raise SystemExit(
+                    f"duplicate segment identity: {segment_id!r} (index {index}) maps to "
+                    f"telegram_message_id {virtual_message_id}, already used by "
+                    f"{seen_virtual[virtual_message_id]!r}. Renumber segment_id values "
+                    "so they are unique within this video."
+                )
+            seen_virtual[virtual_message_id] = segment_id
 
             raw_topic_id = segment.get("topic_id", "general")
             composite_topic_id = f"{url_hash}_{raw_topic_id}"
@@ -258,19 +416,24 @@ def import_video_json(json_path: Path, *, dry_run: bool = False, frames_base: Pa
                 0,
             )
             existing = cursor.execute(
-                "SELECT post_id FROM posts WHERE telegram_message_id = ? LIMIT 1",
+                "SELECT post_id, message_text FROM posts WHERE telegram_message_id = ? LIMIT 1",
                 (virtual_message_id,),
             ).fetchone()
             if existing:
+                if existing[1] != full_text:
+                    # Text changed: drop stale vectors so the next embed run
+                    # regenerates them instead of serving outdated ones.
+                    _invalidate_embeddings(cursor, existing[0], vec_ok=vec_ok)
                 cursor.execute(
                     """
                     UPDATE posts SET
                         channel_id = ?, channel_name = ?, expert_id = ?, message_text = ?,
                         author_name = ?, author_id = ?, created_at = ?, media_metadata = ?,
-                        view_count = ?, forward_count = ?, reply_count = ?, is_forwarded = ?
+                        view_count = ?, forward_count = ?, reply_count = ?, is_forwarded = ?,
+                        channel_username = ?
                     WHERE post_id = ?
                     """,
-                    (*values[:7], *values[8:], existing[0]),
+                    (*values[:7], *values[8:], CHANNEL_USERNAME, existing[0]),
                 )
             else:
                 cursor.execute(
@@ -278,27 +441,27 @@ def import_video_json(json_path: Path, *, dry_run: bool = False, frames_base: Pa
                     INSERT INTO posts (
                         channel_id, channel_name, expert_id, message_text,
                         author_name, author_id, created_at, telegram_message_id, media_metadata,
-                        view_count, forward_count, reply_count, is_forwarded
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        view_count, forward_count, reply_count, is_forwarded, channel_username
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
-                    values,
+                    (*values, CHANNEL_USERNAME),
                 )
             counts["segments"] += 1
 
         if dry_run:
             conn.rollback()
             logger.info(
-                "DRY RUN: would import %d segments (%d with visual, %d frames)",
-                counts["segments"], counts["with_visual"], counts["frames"],
+                "DRY RUN: would import %d segments (%d with visual, %d frames; %d replaced)",
+                counts["segments"], counts["with_visual"], counts["frames"], counts["replaced"],
             )
         else:
             conn.commit()
             logger.info(
-                "Imported %d video segments (%d with visual, %d frames copied)",
-                counts["segments"], counts["with_visual"], counts["frames"],
+                "Imported %d video segments (%d with visual, %d frames copied, %d replaced)",
+                counts["segments"], counts["with_visual"], counts["frames"], counts["replaced"],
             )
 
-    except Exception:
+    except BaseException:
         conn.rollback()
         logger.exception("Failed to import video JSON from %s", json_path)
         raise
@@ -313,6 +476,12 @@ def main() -> None:
     parser.add_argument("json_path", help="Path to the exported video JSON file")
     parser.add_argument("--dry-run", action="store_true", help="validate and report without writing")
     parser.add_argument(
+        "--replace-video",
+        action="store_true",
+        help="delete existing segments of the same video (matched by canonical URL, "
+        "with their embeddings) before importing",
+    )
+    parser.add_argument(
         "--frames-base",
         default=None,
         help="base directory for relative frame paths (default: JSON directory)",
@@ -321,7 +490,12 @@ def main() -> None:
 
     frames_base = Path(args.frames_base).expanduser().resolve() if args.frames_base else None
     try:
-        counts = import_video_json(Path(args.json_path), dry_run=args.dry_run, frames_base=frames_base)
+        counts = import_video_json(
+            Path(args.json_path),
+            dry_run=args.dry_run,
+            frames_base=frames_base,
+            replace_video=args.replace_video,
+        )
     except Exception:
         raise SystemExit(1) from None
     if args.dry_run:

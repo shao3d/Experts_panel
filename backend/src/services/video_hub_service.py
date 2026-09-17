@@ -4,16 +4,16 @@ Handles segment-level semantic mapping, thread-based context expansion,
 and high-fidelity stylistic synthesis.
 """
 
-import logging
-import asyncio
 import json
-from typing import List, Dict, Any, Optional, Callable
+import logging
+from collections.abc import Callable
 from datetime import datetime
+from typing import Any
 
 from .. import config
-from .vertex_llm_client import get_vertex_llm_client
-from .language_validation_service import LanguageValidationService
 from ..utils.language_utils import detect_query_language
+from .language_validation_service import LanguageValidationService
+from .vertex_llm_client import get_vertex_llm_client
 
 logger = logging.getLogger(__name__)
 
@@ -26,18 +26,18 @@ class VideoHubService:
     async def process(
         self,
         query: str,
-        video_segments: List[Any], # List of Post objects
+        video_segments: list[Any], # List of Post objects
         expert_id: str = "video_hub",
-        progress_callback: Optional[Callable] = None
-    ) -> Dict[str, Any]:
+        progress_callback: Callable | None = None
+    ) -> dict[str, Any]:
         """Process the 4-phase video pipeline with segment-level precision."""
-        
+
         # 1. Video Map Phase (Segment-Level Scoring)
         if progress_callback:
             await progress_callback({"phase": "map", "status": "processing", "message": "🎥 Scoring video segments..."})
-        
+
         scored_segments = await self._map_segments(query, video_segments)
-        
+
         # Filter out only HIGH and MEDIUM
         high_segments = [s for s in scored_segments if s["relevance"] == "HIGH"]
         medium_segments = [s for s in scored_segments if s["relevance"] == "MEDIUM"]
@@ -53,19 +53,19 @@ class VideoHubService:
         # 2. Video Resolve Phase (Semantic Thread Expansion)
         if progress_callback:
             await progress_callback({"phase": "resolve", "status": "processing", "message": "🎥 Expanding knowledge threads..."})
-        
+
         thread_context = self._resolve_threads(scored_segments, video_segments)
 
         # 3. Video Synthesis Phase (The Digital Twin)
         if progress_callback:
             await progress_callback({"phase": "reduce", "status": "processing", "message": "🎥 Synthesizing digital twin response..."})
-        
+
         answer = await self._synthesize_response(query, thread_context)
 
         # 4. Language Validation (Style-Preserving)
         if progress_callback:
             await progress_callback({"phase": "language_validation", "status": "processing", "message": "🎥 Style-aware translation..."})
-        
+
         validator = LanguageValidationService()
         validation_result = await validator.process(answer, query, expert_id)
         final_answer = validation_result.get("answer", answer)
@@ -77,9 +77,9 @@ class VideoHubService:
             "posts_analyzed": len(video_segments)
         }
 
-    async def _map_segments(self, query: str, segments: List[Any]) -> List[Dict[str, Any]]:
+    async def _map_segments(self, query: str, segments: list[Any]) -> list[dict[str, Any]]:
         """Score each segment individually based on its summary."""
-        
+
         map_input = []
         for s in segments:
             try:
@@ -87,7 +87,7 @@ class VideoHubService:
                 if not meta: meta = {}
             except Exception:
                 meta = {}
-                
+
             map_input.append({
                 "id": s.telegram_message_id,
                 "topic_id": meta.get("topic_id", "unknown"),
@@ -106,11 +106,11 @@ Task: Rate the relevance of each video segment to the query.
 Segments:
 {json.dumps(map_input, ensure_ascii=False, indent=2)}
 
-Output JSON ONLY:
+Output JSON ONLY, no explanations (keep it compact: id + relevance per segment):
 {{
   "scores": [
-    {{"id": 123, "relevance": "HIGH", "reason": "..."}},
-    {{"id": 456, "relevance": "LOW", "reason": "..."}}
+    {{"id": 123, "relevance": "HIGH"}},
+    {{"id": 456, "relevance": "LOW"}}
   ]
 }}
 """
@@ -123,12 +123,46 @@ Output JSON ONLY:
                 max_tokens=4096,  # Scores JSON; 402 guard
             )
             data = json.loads(response.choices[0].message.content)
-            return data.get("scores", [])
+            return self._normalize_scores(data.get("scores", []), segments)
         except Exception as e:
             logger.error(f"Video Map failed: {e}")
             return []
 
-    def _resolve_threads(self, scored_segments: List[Dict[str, Any]], all_posts: List[Any]) -> List[Dict[str, Any]]:
+    @staticmethod
+    def _normalize_scores(raw_scores: Any, segments: list[Any]) -> list[dict[str, Any]]:
+        """Keep only well-formed scores that reference real segments.
+
+        The Map LLM may hallucinate IDs or drift from the contract; unknown IDs
+        or relevance labels are dropped instead of poisoning Resolve/Synthesis
+        (a raw check upstream would otherwise pass on phantom HIGH scores while
+        the context stays empty).
+        """
+        valid_ids = {str(s.telegram_message_id) for s in segments}
+        cleaned: list[dict[str, Any]] = []
+        if not isinstance(raw_scores, list):
+            logger.warning("Video Map: scores is %s, expected a list", type(raw_scores).__name__)
+            return cleaned
+        for item in raw_scores:
+            if not isinstance(item, dict):
+                continue
+            raw_id = item.get("id")
+            if isinstance(raw_id, bool):
+                continue
+            if isinstance(raw_id, float) and raw_id.is_integer():
+                raw_id = int(raw_id)
+            if str(raw_id) not in valid_ids:
+                continue
+            if item.get("relevance") not in ("HIGH", "MEDIUM", "LOW"):
+                continue
+            cleaned.append({"id": raw_id, "relevance": item["relevance"]})
+        if len(cleaned) != len(raw_scores):
+            logger.warning(
+                "Video Map: dropped %d/%d malformed scores",
+                len(raw_scores) - len(cleaned), len(raw_scores),
+            )
+        return cleaned
+
+    def _resolve_threads(self, scored_segments: list[dict[str, Any]], all_posts: list[Any]) -> list[dict[str, Any]]:
         """
         Assemble the final context:
         1. Keep all HIGH segments (Full Text).
@@ -138,7 +172,7 @@ Output JSON ONLY:
         # Create lookup for posts and their initial scores (using strings for keys to be type-safe)
         posts_by_id = {str(p.telegram_message_id): p for p in all_posts}
         scores_by_id = {str(s["id"]): s["relevance"] for s in scored_segments}
-        
+
         # Identify winning topic_ids (those having at least one HIGH segment)
         winning_topics = set()
         for s in scored_segments:
@@ -181,16 +215,16 @@ Output JSON ONLY:
         context.sort(key=lambda x: x["timestamp"])
         return context
 
-    async def _synthesize_response(self, query: str, context: List[Dict[str, Any]]) -> str:
+    async def _synthesize_response(self, query: str, context: list[dict[str, Any]]) -> str:
         """The Frontier Beast synthesis with explicit content labeling."""
-        
+
         formatted_parts = []
         for c in context:
             content_type = "FULL TRANSCRIPT" if c["relevance"] == "HIGH" else "SUMMARY (NARRATIVE BRIDGE)"
             formatted_parts.append(
                 f"--- SEGMENT [{c['telegram_message_id']}] at {c['timestamp']}s [{content_type}] ---\n{c['content']}"
             )
-            
+
         formatted_context = "\n\n".join(formatted_parts)
 
         # Match the synthesis language to the query language up front; the
@@ -207,7 +241,7 @@ Output JSON ONLY:
 <system_prompt>
     <role>You are the Expert's Digital Twin. Your task is to synthesize a full-text response in the expert's original style.</role>
     <context>
-        <date>TODAY is 2026.</date>
+        <date>TODAY is {datetime.now().strftime('%Y-%m-%d')}.</date>
     </context>
     <guardrails>
         <rule priority="CRITICAL">DO NOT SUMMARIZE. Reconstruct the expert's original reasoning flow and vocabulary.</rule>

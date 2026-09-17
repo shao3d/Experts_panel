@@ -145,7 +145,7 @@ Defined in `.env`, loaded in `config.py`.
 - **Logs**: `backend/data/backend.log`
 - **Ingest Video (stage 1)**: `backend/.venv/bin/python backend/scripts/ingest_video.py --video <mp4> --audio <m4a> --video-id <id> --out <dir> --chunk-minutes 5` (chunked ASR + frames + windows; no DB/LLM). `--combine` merges chunk `segments.json`.
 - **ASR helper**: `python3.11 backend/scripts/asr_whisper.py <audio> --out <json> [--initial-prompt <glossary>]` (faster-whisper int8 CPU, auto language).
-- **Import Video**: `python3 backend/scripts/import_video_json.py <path_to_json>` (upsert; supports structured `visual` + `frames` + `published_at`)
+- **Import Video**: `python3 backend/scripts/import_video_json.py <path_to_json>` (upsert by canonical YouTube URL; supports structured `visual` + `frames` + `published_at`; `--replace-video` deletes the old segments of the same video with their embeddings before importing; duplicate virtual IDs abort)
 - **Embed Fresh Posts**: `python3 backend/scripts/embed_posts.py --continuous` (run after video import so segments join vector search)
 - **Run Drift Batch**: `python3 backend/run_drift_service.py` (auto-loads `backend/.env`)
 - **Analyze One Drift Group**: `python3 backend/analyze_specific_drift.py <post_id>` (auto-loads `backend/.env`)
