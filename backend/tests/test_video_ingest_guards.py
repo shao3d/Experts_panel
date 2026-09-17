@@ -8,7 +8,8 @@ Covers the review follow-ups:
 - `validate_transcript_schema` rejects foreign-format transcripts
 - import: duplicate virtual IDs abort, text changes invalidate embeddings,
   `--replace-video` consolidates re-segmented videos
-- `VideoHubService._normalize_scores` drops phantom Map scores
+- `VideoHubService._normalize_scores` drops phantom Map scores and dedups
+  duplicates to the strongest relevance per segment
 """
 
 from __future__ import annotations
@@ -212,7 +213,23 @@ def test_normalize_scores_drops_phantoms():
     assert cleaned == [
         {"id": 111, "relevance": "HIGH"},
         {"id": "222", "relevance": "MEDIUM"},
+    ]
+
+
+def test_normalize_scores_dedups_to_strongest():
+    from src.services.video_hub_service import VideoHubService
+
+    segments = [_post(111), _post(222)]
+    raw = [
+        {"id": 111, "relevance": "LOW"},
         {"id": 111, "relevance": "HIGH"},
+        {"id": 222, "relevance": "MEDIUM"},
+        {"id": 222, "relevance": "LOW"},
+    ]
+    cleaned = VideoHubService._normalize_scores(raw, segments)
+    assert cleaned == [
+        {"id": 111, "relevance": "HIGH"},
+        {"id": 222, "relevance": "MEDIUM"},
     ]
 
 

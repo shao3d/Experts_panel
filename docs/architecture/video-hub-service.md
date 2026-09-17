@@ -2,7 +2,7 @@
 
 **Status:** Stable / Production-Ready (query-time branch dormant in the UI, see "Current Operating Mode")
 **Role:** Parallel pipeline for deep video transcript analysis using the "Digital Twin" approach.
-**Date:** 2026-04-12 (operating-mode note 2026-09-17)
+**Date:** 2026-04-12 (operating-mode note 2026-09-17; review pass 2026-09-17)
 
 ---
 
@@ -142,6 +142,16 @@ The Video Hub runs as a dedicated stream in `event_generator_parallel`.
 ### 4. Style-Preserving Validation/Translation
 -   **Service**: Shared `TranslationService` singleton (Model: `google/gemini-3.1-flash-lite`, Config: `MODEL_ANALYSIS`); results come from the persistent translation cache.
 -   **Task**: Safety net after synthesis — if the answer language does not match the query language (either direction), the answer is translated. With language-aware synthesis (Phase 3) this rarely triggers.
+
+### 5. Empty-Result Fallback
+
+If the Map phase scores no segment HIGH or MEDIUM (including when every score is
+malformed or references a phantom ID), Resolve/Synthesis are skipped and the
+service returns a localized "no relevant segments" answer in the query language
+(Russian/English). `_normalize_scores` drops malformed scores and collapses
+duplicates to the strongest relevance per segment before those counts are used,
+so both the fallback and the HIGH/MEDIUM confidence label reflect real segments
+only (review pass 2026-09-17).
 
 ---
 

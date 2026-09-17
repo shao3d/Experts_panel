@@ -19,7 +19,7 @@ import re
 import shutil
 import sqlite3
 import sys
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
@@ -400,21 +400,27 @@ def import_video_json(
                 counts["segments"] += 1
                 continue
 
-            values = (
-                CHANNEL_USERNAME,
-                meta.get("channel", "Video Archive"),
-                EXPERT_ID,
-                full_text,
-                author_name,
-                author_id,
-                published_at or datetime.utcnow().isoformat(),
-                virtual_message_id,
-                json.dumps(media_meta, ensure_ascii=False),
-                0,
-                0,
-                0,
-                0,
-            )
+            # One shared column->value mapping for INSERT and UPDATE; adding a
+            # column cannot silently desynchronize the two statements.
+            row_values = {
+                "channel_id": CHANNEL_USERNAME,
+                "channel_name": meta.get("channel", "Video Archive"),
+                "expert_id": EXPERT_ID,
+                "message_text": full_text,
+                "author_name": author_name,
+                "author_id": author_id,
+                # Naive UTC ISO string: the posts.created_at column is an
+                # SQLAlchemy DateTime; aware values would mix naive/aware
+                # arithmetic in retrieval services.
+                "created_at": published_at or datetime.now(UTC).replace(tzinfo=None).isoformat(),
+                "telegram_message_id": virtual_message_id,
+                "media_metadata": json.dumps(media_meta, ensure_ascii=False),
+                "view_count": 0,
+                "forward_count": 0,
+                "reply_count": 0,
+                "is_forwarded": 0,
+                "channel_username": CHANNEL_USERNAME,
+            }
             existing = cursor.execute(
                 "SELECT post_id, message_text FROM posts WHERE telegram_message_id = ? LIMIT 1",
                 (virtual_message_id,),
@@ -424,27 +430,18 @@ def import_video_json(
                     # Text changed: drop stale vectors so the next embed run
                     # regenerates them instead of serving outdated ones.
                     _invalidate_embeddings(cursor, existing[0], vec_ok=vec_ok)
+                update_cols = [c for c in row_values if c != "telegram_message_id"]
+                set_clause = ", ".join(f"{column} = ?" for column in update_cols)
                 cursor.execute(
-                    """
-                    UPDATE posts SET
-                        channel_id = ?, channel_name = ?, expert_id = ?, message_text = ?,
-                        author_name = ?, author_id = ?, created_at = ?, media_metadata = ?,
-                        view_count = ?, forward_count = ?, reply_count = ?, is_forwarded = ?,
-                        channel_username = ?
-                    WHERE post_id = ?
-                    """,
-                    (*values[:7], *values[8:], CHANNEL_USERNAME, existing[0]),
+                    f"UPDATE posts SET {set_clause} WHERE post_id = ?",
+                    (*[row_values[c] for c in update_cols], existing[0]),
                 )
             else:
+                columns = ", ".join(row_values)
+                placeholders = ", ".join("?" for _ in row_values)
                 cursor.execute(
-                    """
-                    INSERT INTO posts (
-                        channel_id, channel_name, expert_id, message_text,
-                        author_name, author_id, created_at, telegram_message_id, media_metadata,
-                        view_count, forward_count, reply_count, is_forwarded, channel_username
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """,
-                    (*values, CHANNEL_USERNAME),
+                    f"INSERT INTO posts ({columns}) VALUES ({placeholders})",
+                    tuple(row_values.values()),
                 )
             counts["segments"] += 1
 

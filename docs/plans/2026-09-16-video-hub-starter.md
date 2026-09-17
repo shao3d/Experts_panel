@@ -199,3 +199,26 @@ production data release (нужна команда владельца «обно
 Note: чужие незакоммиченные изменения (`docs/DOCUMENTATION_MAP.md` —
 admission-строка, untracked `backend/scripts/benchmark_reddit_synthesis_models.py`)
 остаются в рабочем дереве и в этот коммит не входят.
+
+---
+
+## 10. Fresh review pass (2026-09-17, повторный проход)
+
+Свежее ревью query-time/ingest кода дало пять маленьких правок (см.
+`docs/roadmap/video-hub-scaling.md`, «Review fixes … повторный проход»):
+
+- **`video_hub_service.py`**: фолбэк «не найдено сегментов» локализован (RU/EN по
+  языку запроса); `_normalize_scores` дедуплицирует Map-scores до сильнейшей
+  релевантности на сегмент.
+- **`import_video_json.py`**: единая column→value карта для INSERT/UPDATE вместо
+  позиционных срезов; `datetime.now(UTC).replace(tzinfo=None)` вместо deprecated
+  `utcnow()` (формат хранения `created_at` не менялся — naive ISO, иначе aware
+  смешался бы с naive-арифметикой retrieval-сервисов).
+- **Доки**: `video-hub-service.md` — §5 Empty-Result Fallback;
+  `2026-09-system-review.md` — граница citation verification (видео-ветка);
+  N6 в `video-hub-scaling.md` — включить `_run_citation_verification` при возврате
+  видео в панель.
+
+Проверки: `pytest test_video_ingest_guards.py test_expert_scout.py` — 43 passed
+(обновлён тест дедупа, добавлен тест strongest-relevance). Code release — обычный
+`выкатывай`; data release не требуется (изменения только в коде).

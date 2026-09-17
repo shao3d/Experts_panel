@@ -17,6 +17,8 @@ from .vertex_llm_client import get_vertex_llm_client
 
 logger = logging.getLogger(__name__)
 
+_RELEVANCE_RANK = {"HIGH": 0, "MEDIUM": 1, "LOW": 2}
+
 class VideoHubService:
     def __init__(self):
         self.llm_client = get_vertex_llm_client()
@@ -43,8 +45,16 @@ class VideoHubService:
         medium_segments = [s for s in scored_segments if s["relevance"] == "MEDIUM"]
 
         if not high_segments and not medium_segments:
+            # Match the fallback language to the query language; the synthesis
+            # phase is language-aware too, so both paths answer in the query's
+            # language instead of always Russian.
+            not_found = (
+                "В видео-архиве не найдено достаточно релевантных сегментов для ответа на этот вопрос."
+                if detect_query_language(query) == "Russian"
+                else "The video archive does not contain segments relevant enough to answer this question."
+            )
             return {
-                "answer": "В видео-архиве не найдено достаточно релевантных сегментов для ответа на этот вопрос.",
+                "answer": not_found,
                 "main_sources": [],
                 "confidence": "LOW",
                 "posts_analyzed": len(video_segments)
@@ -130,18 +140,19 @@ Output JSON ONLY, no explanations (keep it compact: id + relevance per segment):
 
     @staticmethod
     def _normalize_scores(raw_scores: Any, segments: list[Any]) -> list[dict[str, Any]]:
-        """Keep only well-formed scores that reference real segments.
+        """Keep only well-formed scores that reference real segments, one per segment.
 
         The Map LLM may hallucinate IDs or drift from the contract; unknown IDs
         or relevance labels are dropped instead of poisoning Resolve/Synthesis
         (a raw check upstream would otherwise pass on phantom HIGH scores while
-        the context stays empty).
+        the context stays empty). Duplicate scores collapse to the strongest
+        relevance per segment, so HIGH/MEDIUM counts cannot be inflated.
         """
         valid_ids = {str(s.telegram_message_id) for s in segments}
-        cleaned: list[dict[str, Any]] = []
+        cleaned_by_id: dict[str, dict[str, Any]] = {}
         if not isinstance(raw_scores, list):
             logger.warning("Video Map: scores is %s, expected a list", type(raw_scores).__name__)
-            return cleaned
+            return []
         for item in raw_scores:
             if not isinstance(item, dict):
                 continue
@@ -152,12 +163,17 @@ Output JSON ONLY, no explanations (keep it compact: id + relevance per segment):
                 raw_id = int(raw_id)
             if str(raw_id) not in valid_ids:
                 continue
-            if item.get("relevance") not in ("HIGH", "MEDIUM", "LOW"):
+            relevance = item.get("relevance")
+            if relevance not in ("HIGH", "MEDIUM", "LOW"):
                 continue
-            cleaned.append({"id": raw_id, "relevance": item["relevance"]})
+            entry = {"id": raw_id, "relevance": relevance}
+            existing = cleaned_by_id.get(str(raw_id))
+            if existing is None or _RELEVANCE_RANK[relevance] < _RELEVANCE_RANK[existing["relevance"]]:
+                cleaned_by_id[str(raw_id)] = entry
+        cleaned = list(cleaned_by_id.values())
         if len(cleaned) != len(raw_scores):
             logger.warning(
-                "Video Map: dropped %d/%d malformed scores",
+                "Video Map: dropped %d/%d malformed or duplicate scores",
                 len(raw_scores) - len(cleaned), len(raw_scores),
             )
         return cleaned

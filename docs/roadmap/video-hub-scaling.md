@@ -256,6 +256,20 @@ Video Hub использует текущую Pro-модель `gemini-3.1-pro-p
 
 **Решение:** В `PostCard.tsx` для `isVideoSegment` парсить формат и рендерить title как заголовок, summary как блок, content как основной текст.
 
+### N6. Видео-ответ не проходит citation verification
+
+**Проблема:** Видео-ветка оркестратора возвращает `ExpertResponse` напрямую
+(ветка video_hub в `simplified_query_endpoint.py`), минуя
+`_run_citation_verification` (вызывается только для обычных экспертов после
+Reduce). При этом промпт синтеза ОБЯЗЫВАЕТ ставить `[post:ID]` —
+галлюцинированная или битая ссылка в видео-ответе не проверится никогда.
+
+**Решение:** При возврате видео в панель — прогнать видео-ответ через
+`_run_citation_verification` так же, как обычный Reduce, с `posts_by_id`,
+собранным из видео-сегментов (маппинг по `telegram_message_id`).
+
+**Файл:** `backend/src/api/simplified_query_endpoint.py` — видео-ветка.
+
 ---
 
 ## Порядок реализации (приоритеты)
@@ -272,6 +286,7 @@ Video Hub использует текущую Pro-модель `gemini-3.1-pro-p
 | **8** | N3: Тест Flash vs Pro для синтеза | При оптимизации стоимости | Тривиальная | Открыто |
 | **9** | N4: Medium Scoring | При ~200 сегментах | Средняя | Открыто |
 | **10** | N5: PostCard парсинг | При UX-рефакторинге | Низкая | Открыто (deep-link `?t=`/`&t=` починен 2026-09-17) |
+| **11** | N6: Citation verification в видео-ветке | При возврате видео в панель | Низкая | Открыто |
 
 ### Review fixes (2026-09-17)
 
@@ -283,6 +298,20 @@ Video Hub использует текущую Pro-модель `gemini-3.1-pro-p
   при изменении `message_text` старые эмбеддинги инвалидируются.
 - PostCard: deep-link собирается с `?` или `&` в зависимости от формы URL (был битый `&t=`).
 - Тесты: `backend/tests/test_video_ingest_guards.py` — guard'ы combine/import/transcript/scores.
+
+### Review fixes (2026-09-17, повторный проход)
+
+- Фолбэк «не найдено сегментов» локализован: RU/EN по языку запроса (синтез уже был
+  language-aware, фолбэк — нет).
+- `_normalize_scores` дедуплицирует Map-scores до сильнейшей релевантности на сегмент —
+  HIGH/MEDIUM-счётчики не раздуются дублями.
+- `import_video_json.py`: единая column→value карта для INSERT и UPDATE вместо
+  позиционных срезов (`values[:7]`/`values[8:]`) — добавление колонки не рассинхронизирует
+  два запроса молча.
+- `datetime.now(UTC).replace(tzinfo=None)` вместо deprecated `utcnow()`; формат хранения
+  `created_at` не менялся (naive ISO) — aware-значения смешались бы с naive-арифметикой
+  в `_calculate_age_days` retrieval-сервисов.
+- Открыто (находка ревью): видео-ответ не проходит citation verification — см. N6.
 
 ---
 
