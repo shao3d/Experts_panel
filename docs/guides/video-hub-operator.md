@@ -16,6 +16,30 @@ Transform raw video content (YouTube/MP4) into a structured Knowledge Graph (Seg
 The pipeline replaces the manual AI Studio pass. Full details:
 `docs/architecture/video-hub-service.md` → "Automated Ingest Pipeline".
 
+### 0.0 Duplicate check (MANDATORY)
+
+Before any work on a new video, check its canonical YouTube URL against the
+staging DB (`backend/data/experts.db`) — the same DB that is promoted to
+production, so the check covers prod too. All URL shapes normalize to one
+identity (`watch?v=…&t=…`, `youtu.be/…?si=…`, `/shorts/…`).
+
+```bash
+backend/.venv/bin/python - <<'PY'
+import sqlite3, sys
+sys.path.insert(0, "backend")
+from scripts.import_video_json import canonical_video_url, find_video_post_ids
+conn = sqlite3.connect("file:backend/data/experts.db?mode=ro", uri=True)
+canonical = canonical_video_url("https://youtu.be/<youtube_id>")
+ids = find_video_post_ids(conn.cursor(), canonical)
+print(canonical, "->", len(ids), "segments")
+PY
+```
+
+If the count is **0** — proceed to 0.1. If the count is **> 0** — **stop and
+notify the owner**: video title, segment count, import/release date. Re-process
+an already imported video only with the owner's explicit consent, and then only
+with `--replace-video` at import time (0.4).
+
 ### 0.1 Get the media onto the VM
 YouTube blocks the VM datacenter IP, so downloads happen on the Mac over the
 reverse SSH tunnel (the `fetch_audio.sh` pattern) and the files are copied to
