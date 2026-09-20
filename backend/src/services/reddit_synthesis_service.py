@@ -676,7 +676,7 @@ class RedditSynthesisService:
         <style type="numbers">ИЗВЛЕКАЙ ЧИСЛА из тредов: цены, лимиты, VRAM, бенчмарки, сроки. Общие слова («быстрый», «дешёвый») без числа не считаются фактом.</style>
         <style type="confidence">МАРКИРУЙ ДОСТОВЕРНОСТЬ ключевых утверждений: [подтверждено сообществом] — несколько независимых тредов или OP VERIFIED; [единичный отчёт] — один источник без подтверждения; [вывод автора анализа] — твой синтез без прямого подтверждения в тредах.</style>
         <style type="freshness">Учитывай Age источника: для быстро меняющихся данных (цены, версии, лимиты) предпочитай свежие треды и помечай данные из старых тредов как возможно устаревшие.</style>
-        <style type="provenance">Учитывай Channel источника: serp_google_discovery = тред валидирован Google-ранжированием; arctic_targeted_archive = архивный поиск по сабам; *_relevance / fallback_top_year = нативный поиск Reddit.</style>
+        <style type="provenance">Учитывай Channel источника: serp_google_discovery = тред валидирован Google-ранжированием; arctic_targeted_archive = архивный поиск по сабам; *_relevance / fallback_anchor_relevance = нативный поиск Reddit.</style>
     </output_format>
 </system_prompt>"""
 
@@ -720,7 +720,7 @@ class RedditSynthesisService:
         <style type="numbers">EXTRACT NUMBERS from threads: prices, limits, VRAM, benchmarks, timelines. Vague wording ("fast", "cheap") without a number does not count as a fact.</style>
         <style type="confidence">TAG CONFIDENCE of key claims: [community-confirmed] — multiple independent threads or OP VERIFIED; [single report] — one uncorroborated source; [analyst inference] — your synthesis without direct confirmation in threads.</style>
         <style type="freshness">Respect source Age: for fast-moving data (prices, versions, limits) prefer fresh threads and flag data from old threads as possibly outdated.</style>
-        <style type="provenance">Respect source Channel: serp_google_discovery = thread validated by Google ranking; arctic_targeted_archive = subreddit archive search; *_relevance / fallback_top_year = native Reddit search.</style>
+        <style type="provenance">Respect source Channel: serp_google_discovery = thread validated by Google ranking; arctic_targeted_archive = subreddit archive search; *_relevance / fallback_anchor_relevance = native Reddit search.</style>
     </output_format>
 </system_prompt>"""
 

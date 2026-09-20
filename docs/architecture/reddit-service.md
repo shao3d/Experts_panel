@@ -63,10 +63,21 @@ V2 uses a small set of base strategies:
 
 - `literal_global_relevance`
 - `expanded_global_relevance`
-- `scout_global_relevance`
+- `scout_global_relevance` (plus `_2`/`_3` facets for compound queries)
 - `quality_global_top`
 - `fresh_global_new` for troubleshooting/news
+- `targeted_anchor_relevance` — a tight top-anchor query inside the scoped
+  subreddits; Reddit's relevance search chokes on long compound questions,
+  while 2–3 distinctive anchor terms surface the on-topic threads
 - a small targeted-channel pass over 1-2 best subreddit hints for narrow `how_to`, `troubleshooting`, `comparison` intents
+
+For overlong user questions (>15 words, agent-facing raw path) a compact
+Scout-style query is generated up front (`_formulate_compact_query`) and used
+as the retrieval backbone; the full question still drives anchors, must-keep
+terms and the AI rerank context. Anchor terms are ranked by structural
+specificity (product/version/hyphenated tokens win; question-frame and
+generic morphology lose) and capped at `MAX_ANCHOR_TERMS` (5) so long
+questions cannot flood the anchor gate with generic words.
 
 This matters:
 

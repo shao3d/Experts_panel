@@ -159,7 +159,98 @@ GENERIC_ANCHOR_STOPWORDS = COMMON_QUERY_STOPWORDS | {
     "chunking", "chunk", "chunks", "prompt", "prompts", "hallucination",
     "hallucinations", "deployment", "deployments", "offline", "fix",
     "troubleshooting", "security", "slow", "speed",
+    # Frame verbs/nouns of compound questions: they describe the requested
+    # answer, never the topic, and previously won anchor ties alphabetically.
+    "issue", "issues", "create", "creates", "created", "compare", "compares",
+    "compared", "include", "includes", "included", "preserve", "preserves",
+    "preserved", "distinguish", "prepare", "prepares", "prepared",
+    "generate", "generates", "generated", "produce", "produces", "produced",
+    "provide", "provides", "provided", "describe", "describes", "described",
+    "explain", "explains", "explained", "seek", "find", "findings",
+    "experience", "experiences", "evidence", "report", "reports",
+    "example", "examples", "case", "cases", "people", "person", "users",
+    "firsthand", "tested", "proven", "reliable", "reliably", "practical",
+    "actual", "specific", "particular", "certain", "related", "relevant",
+    "process", "step", "steps", "part", "parts", "feature", "features",
+    "version", "versions", "current", "latest", "existing", "known",
 }
+
+# Cap on anchor terms: with 30+ naive anchors a long compound query turns the
+# anchor gate into a keyword-stuffing contest (observed 2026-09: MRQ bug
+# reports outranked real clay-render guides on sheer generic-word count).
+MAX_ANCHOR_TERMS = 5
+
+# Wh-question frame words and pronouns that dominate long user questions.
+# Small closed class; everything else is ranked structurally below.
+QUESTION_FRAME_STOPWORDS = {
+    "how", "do", "does", "did", "can", "could", "should", "would", "what",
+    "which", "who", "whom", "whose", "when", "where", "why", "please",
+    "thanks", "hello", "hey", "just", "also", "too", "very", "quite",
+    "much", "many", "any", "some", "all", "every", "each", "both",
+    "either", "neither", "not", "no", "yes", "maybe", "perhaps",
+    "probably", "somehow", "something", "anything", "everything",
+    "nothing", "someone", "anyone", "everyone", "somewhere", "anywhere",
+    "everywhere", "nowhere", "this", "that", "these", "those", "they",
+    "them", "their", "theirs", "we", "us", "our", "ours", "you", "your",
+    "yours", "he", "him", "his", "she", "her", "hers", "me", "mine",
+    "myself", "yourself", "himself", "herself", "themselves", "ourselves",
+    "itself", "it", "its",
+}
+
+# Productive English morphology marking generic verbs/adverbs/plurals.
+_ANCHOR_LOW_SPECIFICITY_PATTERNS = (
+    re.compile(r"^[a-z]{4,}ing$"),   # "rendering", "making"
+    re.compile(r"^[a-z]{4,}ed$"),    # "created", "supported"
+    re.compile(r"^[a-z]{4,}ly$"),    # "reliably", "specifically"
+    re.compile(r"^[a-z]{4,}s$"),     # "renders", "materials"
+)
+
+# Tokens matching the low-specificity *shape* but carrying domain signal.
+_ANCHOR_SPECIFICITY_KEEP = {
+    "using", "coding", "programming", "debugging", "training", "learning",
+    "finetuning", "embedding", "embeddings", "inference", "streaming",
+    "caching", "parsing", "indexing", "routing", "logging", "testing",
+    "tracing", "monitoring", "benchmarking", "profiling", "quantization",
+    "orchestration", "hooks", "skills", "subagents", "workflows",
+    "lora", "loras", "vae", "controlnet", "img2img", "txt2img",
+    "inpainting", "outpainting", "upscaling", "denoising", "compositing",
+    "rotoscoping", "tracking", "stabilizing", "tonemapping", "grading",
+    "baking", "lightmapping", "texturing", "shading", "skinning",
+    "rigging", "animating", "simulating", "instancing", "sculpting",
+    "modeling", "retopology",
+}
+
+
+def _anchor_specificity(token: str) -> float:
+    """Rank a lowercased token by retrieval signal (higher = more distinctive).
+
+    Structural heuristics only — no domain word lists — so it transfers
+    across topics. Product/version tokens get bonuses; generic morphology
+    gets demoted (never hard-dropped: they remain eligible if the query has
+    few better candidates).
+    """
+    if not token:
+        return 0.0
+
+    score = 1.0
+    if any(c.isdigit() for c in token):
+        score += 0.6            # version / model numbers: "2.5", "ue5"
+    if "-" in token:
+        score += 0.5            # hyphenated compounds: "z-depth"
+    if "." in token:
+        score += 0.4            # dotted versions/files: "llama.cpp"
+    if len(token) <= 3:
+        score -= 0.3            # "ue", "ai" remnants
+    elif len(token) >= 12:
+        score -= 0.2            # long generic words ("practitioners")
+
+    if token not in _ANCHOR_SPECIFICITY_KEEP:
+        for pattern in _ANCHOR_LOW_SPECIFICITY_PATTERNS:
+            if pattern.match(token):
+                score -= 0.45
+                break
+
+    return score
 
 
 @dataclass
@@ -269,7 +360,48 @@ class RedditEnhancedService:
 
         # Perform single-pass substitution using global pre-compiled pattern
         return _EXPANSION_PATTERN.sub(replace_callback, query)
-    
+
+    async def _formulate_compact_query(
+        self,
+        query: str,
+        *,
+        original_user_query: Optional[str] = None,
+    ) -> Optional[str]:
+        """Compress an overlong question into one short Reddit-native query.
+
+        Returns ``None`` when the model output is unusable (empty, still
+        overlong, or degenerate) so the caller keeps the literal query.
+        """
+        prompt = f"""Compress this question into ONE short Reddit search query.
+
+Rules:
+1. 4-10 words, plain keywords only — no boolean operators, no quotes, no
+   site:/r/ syntax, no trailing punctuation.
+2. Keep named entities and versions exactly (product names, model numbers,
+   feature names).
+3. Keep the single most specific technical noun phrase; drop question
+   framing, constraint lists, and evidence requests.
+4. Output the query text only, nothing else.
+
+Question: {query}
+Original user question: {original_user_query or query}
+"""
+        response = await self._llm_client.chat_completions_create(
+            model=MODEL_SCOUT,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.0,
+            max_tokens=128,  # one short line; 402 guard
+        )
+        content = (response.choices[0].message.content or "").strip()
+        first_line = content.splitlines()[0] if content else ""
+        cleaned = self._sanitize_scout_query(first_line).strip("?.! ")
+        if not cleaned:
+            return None
+        words = cleaned.split()
+        if not (2 <= len(words) <= 14):
+            return None
+        return cleaned
+
     async def _plan_search_strategy(
         self,
         query: str,
@@ -443,19 +575,38 @@ Output JSON structure:
         return terms
 
     def _extract_anchor_terms(self, query: str) -> List[str]:
-        """Extract semantically specific anchor terms from the literal user query."""
-        anchors: List[str] = []
+        """Extract semantically specific anchor terms from the literal user query.
+
+        Long compound questions produce 20-30 raw tokens; treating all of them
+        as anchors floods heuristic scoring and the anchor gate with generic
+        words (observed 2026-09: MRQ bug reports outranked real clay-render
+        guides on sheer generic-anchor count). Rank by structural specificity
+        and keep the top ``MAX_ANCHOR_TERMS``. If every token looks generic,
+        the highest-scoring ones are still kept, so the anchor gate never
+        activates on an empty set.
+        """
+        candidates: List[Any] = []
         seen: Set[str] = set()
 
         for token in re.findall(r"[A-Za-z0-9_+.#-]{2,}", query.lower()):
             cleaned = token.strip("\"'()[]{}.,:;!?")
-            if len(cleaned) < 3 or cleaned in GENERIC_ANCHOR_STOPWORDS:
+            if (
+                len(cleaned) < 3
+                or cleaned in GENERIC_ANCHOR_STOPWORDS
+                or cleaned in QUESTION_FRAME_STOPWORDS
+            ):
                 continue
             if cleaned not in seen:
                 seen.add(cleaned)
-                anchors.append(cleaned)
+                candidates.append((_anchor_specificity(cleaned), cleaned))
 
-        return anchors
+        candidates.sort(key=lambda item: (-item[0], item[1]))
+        return [term for _, term in candidates[:MAX_ANCHOR_TERMS]]
+
+    @staticmethod
+    def _build_anchor_query(anchor_terms: List[str], limit: int = 3) -> str:
+        """Join the most distinctive anchors into a tight selective query."""
+        return " ".join(anchor_terms[:limit]).strip()
 
     def _sanitize_scout_query(self, query: str) -> str:
         """Remove web-search syntax from LLM-generated scout queries."""
@@ -743,10 +894,20 @@ Output JSON structure:
                 limit=20,
             )
 
-        if scout_queries:
+        # Scout's short queries are the decomposed facets of long compound
+        # user questions. Reddit relevance search chokes on a 40+ word
+        # literal string (observed 2026-09: literal_global_relevance returned
+        # 0 hits), so up to three short facets get their own global pass —
+        # previously only scout_queries[0] was searched globally.
+        for idx, scout_query in enumerate(scout_queries[:3]):
+            name = (
+                "scout_global_relevance"
+                if idx == 0
+                else f"scout_global_relevance_{idx + 1}"
+            )
             add_strategy(
-                "scout_global_relevance",
-                scout_queries[0],
+                name,
+                scout_query,
                 sort="relevance",
                 time=scout_time_filter,
                 limit=20,
@@ -768,6 +929,22 @@ Output JSON structure:
                     scout_queries[0],
                     sort="relevance",
                     time=scout_time_filter,
+                    limit=18,
+                    strategy_subreddits=targeted_subs,
+                )
+
+            # Tight anchor-first pass: long queries drown in Reddit's OR-ish
+            # relevance ranking even inside a subreddit (observed 2026-09:
+            # "unreal engine 5 export z-depth pass" returns popularity junk
+            # globally while "z-depth" inside r/unrealengine surfaces the
+            # real threads). The top anchors alone are the selective query.
+            anchor_query = self._build_anchor_query(anchor_terms)
+            if anchor_query:
+                add_strategy(
+                    "targeted_anchor_relevance",
+                    anchor_query,
+                    sort="relevance",
+                    time="all",
                     limit=18,
                     strategy_subreddits=targeted_subs,
                 )
@@ -888,6 +1065,7 @@ Output JSON structure:
 
         original_query = query.strip()
         expanded_query = self._expand_query(original_query)
+        plan_query = original_query  # retrieval backbone; may be compacted below
         explicit_subreddit_filter = subreddits is not None
         search_plan = {
             "subreddits": [],
@@ -905,6 +1083,38 @@ Output JSON structure:
                 must_keep_terms=must_keep_terms,
             )
             subreddits = search_plan.get("subreddits", [])
+
+        # Long compound questions defeat Reddit's native relevance search
+        # (observed 2026-09: a 40+ word literal query returned 0 hits and the
+        # whole pipeline abstained). A short Scout-style query works far
+        # better, so when the original is overlong and the caller did not
+        # already supply a compact query, generate one up front and use it
+        # as the retrieval backbone. The full original query still drives
+        # anchors, must-keep terms and the AI rerank context.
+        if (
+            len(original_query.split()) > 15
+            and not user_intent
+            and not must_keep_terms
+        ):
+            try:
+                compact = await self._formulate_compact_query(
+                    original_query,
+                    original_user_query=original_user_query,
+                )
+                if compact and compact.lower() != original_query.lower():
+                    plan_query = compact
+                    debug_trace["compact_plan_query"] = compact
+                    logger.info(
+                        "Compacted overlong Reddit query (%d words) to: '%s'",
+                        len(original_query.split()),
+                        compact,
+                    )
+            except Exception as e:
+                logger.warning(f"Query compaction failed, keeping literal: {e}")
+
+        # Synonym expansion follows the retrieval backbone, not the raw text.
+        if plan_query != original_query:
+            expanded_query = self._expand_query(plan_query)
 
         if user_intent:
             search_plan["intent"] = user_intent
@@ -952,7 +1162,7 @@ Output JSON structure:
         debug_trace["soft_target_subreddits"] = soft_target_subreddits or []
 
         sort_tasks, strategy_meta = self._build_search_tasks_v2(
-            original_query,
+            plan_query,
             expanded_query,
             search_plan,
             soft_target_subreddits,
@@ -962,13 +1172,13 @@ Output JSON structure:
         # Google SERP discovery via Serper.dev (site:reddit.com).
         if config.SERPER_API_KEY:
             strategy_meta["serp_google_discovery"] = {
-                "query": original_query,
+                "query": plan_query,
                 "source": "serper",
             }
             sort_tasks.append(
                 (
                     "serp_google_discovery",
-                    self._search_serper(original_query, recent_only=recent_only),
+                    self._search_serper(plan_query, recent_only=recent_only),
                 )
             )
         else:
@@ -977,7 +1187,7 @@ Output JSON structure:
         # Exhaustive archive recall within scout-suggested subreddits.
         if config.ARCTIC_SHIFT_ENABLED and soft_target_subreddits:
             strategy_meta["arctic_targeted_archive"] = {
-                "query": original_query,
+                "query": plan_query,
                 "source": "arctic_shift",
                 "subreddits": soft_target_subreddits[: config.ARCTIC_TARGET_SUBREDDITS],
             }
@@ -985,7 +1195,7 @@ Output JSON structure:
                 (
                     "arctic_targeted_archive",
                     self._search_arctic_shift(
-                        original_query,
+                        plan_query,
                         soft_target_subreddits,
                         recent_only=recent_only,
                     ),
@@ -1031,25 +1241,33 @@ Output JSON structure:
                     existing.strategy_hits.append(strategy_name)
 
         if not all_posts:
-            logger.warning("V2 search found no posts, trying one final broad fallback")
+            logger.warning(
+                "V2 search found no posts, retrying with the most "
+                "distinctive anchor terms (tight targeted fallback)"
+            )
             try:
+                # Reddit's relevance search chokes on long queries; the tight
+                # anchor set is the last-resort recall path.
+                anchor_query = " ".join(anchor_terms[:3]) or plan_query
+                fallback_subs = soft_target_subreddits or None
                 fallback_posts = await self._search_with_sort(
-                    original_query,
-                    sort="top",
+                    anchor_query,
+                    sort="relevance",
                     limit=20,
-                    time="year",
+                    time="all",
+                    subreddits=fallback_subs,
                 )
                 for post in fallback_posts:
-                    post.found_by_strategy = "fallback_top_year"
-                    post.strategy_hits = ["fallback_top_year"]
+                    post.found_by_strategy = "fallback_anchor_relevance"
+                    post.strategy_hits = ["fallback_anchor_relevance"]
                     all_posts[post.id] = post
                 if fallback_posts:
-                    strategies_used.append("fallback_top_year")
-                    debug_trace["strategy_results"]["fallback_top_year"] = {
-                        "query": original_query,
-                        "sort": "top",
-                        "time": "year",
-                        "subreddits": [],
+                    strategies_used.append("fallback_anchor_relevance")
+                    debug_trace["strategy_results"]["fallback_anchor_relevance"] = {
+                        "query": anchor_query,
+                        "sort": "relevance",
+                        "time": "all",
+                        "subreddits": fallback_subs or [],
                         "count": len(fallback_posts),
                     }
             except Exception as e:

@@ -13,7 +13,11 @@ from src.api.simplified_query_endpoint import (
     _parse_reddit_query_plan,
     _sanitize_reddit_source_citations,
 )
-from src.services.reddit_enhanced_service import RedditEnhancedService, RedditPost
+from src.services.reddit_enhanced_service import (
+    MAX_ANCHOR_TERMS,
+    RedditEnhancedService,
+    RedditPost,
+)
 
 
 def _post(*, title: str, body: str = "", subreddit: str = "test") -> RedditPost:
@@ -241,3 +245,135 @@ async def test_details_enrichment_preserves_creation_timestamp(monkeypatch):
     monkeypatch.setattr(service, "_get_client", fake_get_client)
     enriched = await service._enrich_post_content(post)
     assert enriched.created_utc == 1_800_000_000
+
+
+def test_anchor_extraction_caps_and_ranks_specific_terms():
+    service = object.__new__(RedditEnhancedService)
+    anchors = service._extract_anchor_terms(
+        "How do Unreal Engine practitioners reliably create clay or white "
+        "renders of an animated scene using Movie Render Queue? Compare "
+        "Lighting Only, Detail Lighting, and neutral lit material overrides; "
+        "include pitfalls with shadows, water, glass, exposure, and "
+        "preserving original materials."
+    )
+    assert len(anchors) <= MAX_ANCHOR_TERMS
+    # Distinctive technical terms must outrank question-frame generics.
+    assert "clay" in anchors
+    assert "material" in anchors
+    assert "practitioners" not in anchors
+    assert "reliably" not in anchors
+    assert "include" not in anchors
+    assert "preserving" not in anchors
+
+
+def test_anchor_extraction_prefers_version_and_hyphenated_tokens():
+    service = object.__new__(RedditEnhancedService)
+    anchors = service._extract_anchor_terms(
+        "How do practitioners prepare image references of one complex "
+        "articulated truck or mechanical vehicle for Seedance 2.5 or 2.0 "
+        "reference-to-video?"
+    )
+    assert len(anchors) <= MAX_ANCHOR_TERMS
+    assert "2.5" in anchors or "seedance" in anchors
+    assert "reference-to-video" in anchors
+    assert "practitioners" not in anchors
+    assert "prepare" not in anchors
+
+
+def test_anchor_extraction_falls_back_when_everything_looks_generic():
+    service = object.__new__(RedditEnhancedService)
+    anchors = service._extract_anchor_terms("how to fix slow rendering issues")
+    # The gate must never activate on an empty set: the least-generic token
+    # is still returned.
+    assert anchors == ["rendering"]
+
+
+def test_build_search_tasks_uses_all_scout_facets_globally(monkeypatch):
+    service = object.__new__(RedditEnhancedService)
+
+    def fake_search(*args, **kwargs):
+        return None  # task payload is irrelevant; only names/meta are asserted
+
+    monkeypatch.setattr(service, "_search_with_sort", fake_search)
+    search_plan = {
+        "subreddits": ["unrealengine"],
+        "queries": [
+            "movie render queue clay render",
+            "lighting only vs detail lighting",
+            "material override pitfalls glass",
+        ],
+        "keywords": ["clay render"],
+        "time_filter": "all",
+        "intent": "how_to",
+    }
+    tasks, meta = service._build_search_tasks_v2(
+        "How do practitioners create clay renders in Movie Render Queue?",
+        "How do practitioners create clay renders in Movie Render Queue?",
+        search_plan,
+        ["unrealengine"],
+        anchor_terms=["clay", "movie"],
+    )
+    names = [name for name, _ in tasks]
+    assert "scout_global_relevance" in names
+    assert "scout_global_relevance_2" in names
+    assert "scout_global_relevance_3" in names
+    assert meta["scout_global_relevance_2"]["query"] == (
+        "lighting only vs detail lighting"
+    )
+
+
+@pytest.mark.asyncio
+async def test_compact_query_is_generated_for_overlong_query(monkeypatch):
+    service = object.__new__(RedditEnhancedService)
+    service._llm_client = None  # replaced below
+
+    class FakeMessage:
+        content = "Movie Render Queue clay render material override"
+
+    class FakeChoice:
+        message = FakeMessage()
+
+    class FakeResponse:
+        choices = [FakeChoice()]
+
+    class FakeClient:
+        @staticmethod
+        async def chat_completions_create(**kwargs):
+            return FakeResponse()
+
+    monkeypatch.setattr(
+        RedditEnhancedService, "_llm_client", FakeClient(), raising=False
+    )
+    service._llm_client = FakeClient()
+    compact = await service._formulate_compact_query(
+        "How do Unreal Engine practitioners reliably create clay or white "
+        "renders of an animated scene using Movie Render Queue? Compare "
+        "Lighting Only, Detail Lighting, and neutral lit material overrides "
+        "with pitfalls for shadows, water, glass, and exposure."
+    )
+    assert compact == "Movie Render Queue clay render material override"
+
+
+@pytest.mark.asyncio
+async def test_compact_query_rejects_overlong_model_output(monkeypatch):
+    service = object.__new__(RedditEnhancedService)
+
+    class FakeMessage:
+        content = "word " * 20
+
+    class FakeChoice:
+        message = FakeMessage()
+
+    class FakeResponse:
+        choices = [FakeChoice()]
+
+    class FakeClient:
+        @staticmethod
+        async def chat_completions_create(**kwargs):
+            return FakeResponse()
+
+    monkeypatch.setattr(
+        RedditEnhancedService, "_llm_client", FakeClient(), raising=False
+    )
+    service._llm_client = FakeClient()
+    assert await service._formulate_compact_query("some long question") is None
