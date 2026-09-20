@@ -41,10 +41,44 @@ title, segment count, publication date. Re-process an already imported video
 only with the owner's explicit consent, and then only with `--replace-video`
 at import time (0.4).
 
+### 0.0b Knowledge-matrix gate (MANDATORY, механика: `docs/plans/2026-09-20-videohub-knowledge-matrix-proposal.md`)
+
+Перед любым ingest нового видео — гейт ценности ДО скачивания медиа.
+Полный цикл: траскрипт-проба → probe Скаутом → вердикт → `admission_log`.
+
+1. **Транскрипт-проба:** забрать YouTube auto-captions (§6.4a proposal —
+   через G15 или Mac, yt-dlp, клиент `android`), один LLM-вызов: 3–5 реальных
+   тем + черновые `prompt_density` / `version_lock` / `durable_share`.
+   Транскрипт — артефакт в `output/video_admission/<id>/`, в БД не импортировать.
+2. **Probe-чек Скаутом:** 3–5 вопросов по темам транскрипта (RU и EN) через
+   `scripts/expert_scout.sh`; покрыто = overlap (source_key), пусто = gap.
+   Артефакты — `output/video_admission/<id>/scout_probe*.md`.
+3. **Вердикт** в `output/video_admission/admission_log.json`: `ingest` /
+   `ingest_scoped` / `waitlist` / `reject_*` + `decision_basis` (маппинг gap-тем
+   на source_key) и `caveat` (version_lock / durable_share). Владелец
+   утверждает вердикт до старта ingest.
+4. **Если `ingest_scoped`:** gap-диапазоны локализовать по vtt-таймкодам,
+   срезать один сплошной диапазон ffmpeg-ом на VM (overlap-вставка дешевле
+   второго offset), Stage 1/2 только на срезе. **Грабля:** таймкоды ASR —
+   относительно среза; при разметке сегментов прибавлять offset, иначе
+   deep-links будут вести не туда (см. §6.4b proposal).
+
+Пример полного прогона: `OiULPvTJ-0E` (2026-09-20) — ядро overlap, вердикт
+`ingest_scoped`, импортировано 8 сегментов хвоста 10:25–19:42, gap-темы
+(robo-arm, hypermotion, two-layer prompt) ищутся Скаутом.
+
 ### 0.1 Get the media onto the VM
-YouTube blocks the VM datacenter IP, so downloads happen on the Mac over the
-reverse SSH tunnel (the `fetch_audio.sh` pattern) and the files are copied to
-the VM (video-only 1080p + audio m4a; the Mac has no ffmpeg).
+YouTube blocks the VM datacenter IP, so downloads happen off-VM. Two paths
+(detail and commands — §6.4a of `docs/plans/2026-09-20-videohub-knowledge-matrix-proposal.md`):
+
+- **G15 (Windows laptop, preferred, 2026-09-20):** fresh `yt-dlp.exe` in
+  `%USERPROFILE%\expp` opens formats up to 4K (video `-f 137`, EN-original
+  audio `-f 140-20`); persistent reverse tunnel G15→VM on port 2223
+  (Task Scheduler `expa-vm-tunnel`), then `scp -P 2223` pulls files to VM.
+- **Mac (backup):** reverse tunnel `-R 2222` (the `fetch_audio.sh` pattern),
+  SSH from VM with `~/.ssh/mac_remote`; the bundled yt-dlp is old (android
+  client only, 360p) — fine for subtitles, weak for frames (the Mac also
+  overheats and has no ffmpeg).
 
 ### 0.2 Stage 1 — deterministic extraction (no LLM, no DB)
 

@@ -32,6 +32,7 @@ Last updated: 2026-09-15
 | Добавить/удалить эксперта | `docs/guides/add-expert.md` | `scripts/add_new_expert.sh`, `scripts/update_production_db.sh` |
 | Drift analysis | `docs/guides/drift-analysis.md` | drift scripts in `backend/scripts/` |
 | Video Hub | `docs/architecture/video-hub-service.md` | `docs/guides/video-hub-operator.md` |
+| VideoHub Knowledge Matrix (гейт до ingest, gap-scoped) | `docs/plans/2026-09-20-videohub-knowledge-matrix-proposal.md` | чек-лист 0.0b в `docs/guides/video-hub-operator.md`, `output/video_admission/admission_log.json` |
 | Reddit sidecar | `docs/architecture/reddit-service.md` | service code under `services/reddit-proxy/` |
 | Agent-facing Reddit API + CLI + Codex skill | `docs/architecture/reddit-service.md` (разделы "Agent-facing API", "CLI-граница") | `.codex/skills/reddit-search/`, `scripts/install_reddit_search_skill.sh`, handoff-история: `docs/plans/2026-08-29-reddit-search-agent-api-handoff.md` |
 | Generic Reddit Search client | `docs/guides/reddit-search-generic-client.md` | `clients/reddit-search-generic/`, `scripts/build_reddit_search_generic_client.sh` |
