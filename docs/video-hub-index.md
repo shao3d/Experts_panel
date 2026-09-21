@@ -9,6 +9,7 @@
 | YouTube ID | Название | Сегментов | Опубликовано |
 |---|---|---:|---|
 | `vUYq38wC_xI` | GPT Astra 6 + Blender + Higgsfield Builds The Craziest Cinematic Scenes! | 38 | 2026-09-12 |
+| `NuvA32_dmtg` | GPT-6 Astra + Higgsfield MCP Made This ENTIRE Video in One Chat | 17 | 2026-09-06 |
 | `OiULPvTJ-0E` | How To Save AI Credits With Higgsfield + Blender (No One Talks About This Workflow) | 8 | 2026-08-28 |
 | `QfylrxtQSSs` | I Made a Viral AI Love Story (500M Views) — Steal My Prompts | 62 | 2026-08-21 |
 | `Hn8A8D4-SpQ` | I Challenged a Pro VFX Artist to Beat AI | 13 | 2026-08-07 |
@@ -19,4 +20,4 @@
 |---|---|---:|---|
 | `2b3Z4rW5VJc` | STOP Wasting Credits & Master Seedance 2.5 | 11 | 2026-08-21 |
 
-Итого: **5** видео, **132** сегментов.
+Итого: **6** видео, **149** сегментов.
