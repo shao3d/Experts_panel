@@ -17,7 +17,9 @@ from src.services.reddit_enhanced_service import (
     MAX_ANCHOR_TERMS,
     RedditEnhancedService,
     RedditPost,
+    _write_search_telemetry,
 )
+from src.services.reddit_enhanced_service import EnhancedSearchResult
 
 
 def _post(*, title: str, body: str = "", subreddit: str = "test") -> RedditPost:
@@ -377,3 +379,175 @@ async def test_compact_query_rejects_overlong_model_output(monkeypatch):
     )
     service._llm_client = FakeClient()
     assert await service._formulate_compact_query("some long question") is None
+
+
+def test_rank_and_filter_collects_reject_reasons():
+    service = object.__new__(RedditEnhancedService)
+    weak_post = _post(title="Weak adjacent showcase post")
+    weak_post.ranking_reason = "Adjacent showcase, not an answer"
+
+    async def fake_rerank(query, posts, **kwargs):
+        weak_post.ai_score = 0.1
+        weak_post.final_score = 0.1
+        return [weak_post]
+
+    service._ai_rerank_posts = fake_rerank
+    service._apply_confidence_threshold = lambda *a, **k: []
+
+    import asyncio as _asyncio
+
+    selected, final_sorted, post_rank, reasons = _asyncio.run(
+        service._rank_and_filter(
+            [weak_post],
+            [],
+            "test query",
+            4,
+            False,
+            [],
+            {"intent": "discussion"},
+            None,
+            None,
+            {},
+        )
+    )
+    assert selected == []
+    assert weak_post in final_sorted
+    assert any("Adjacent showcase" in reason for reason in reasons)
+
+
+@pytest.mark.asyncio
+async def test_plan_reflection_retry_builds_corrected_query(monkeypatch):
+    service = object.__new__(RedditEnhancedService)
+
+    class FakeMessage:
+        content = "movie render queue clay render material override"
+
+    class FakeChoice:
+        message = FakeMessage()
+
+    class FakeResponse:
+        choices = [FakeChoice()]
+
+    class FakeClient:
+        @staticmethod
+        async def chat_completions_create(**kwargs):
+            return FakeResponse()
+
+    service._llm_client = FakeClient()
+    retry = await service._plan_reflection_retry(
+        "ue5 clay render",
+        ["Addresses MRQ camera bugs, not clay rendering"],
+        ["clay"],
+    )
+    assert retry == "movie render queue clay render material override"
+
+
+@pytest.mark.asyncio
+async def test_plan_reflection_retry_returns_none_on_no_coverage(monkeypatch):
+    service = object.__new__(RedditEnhancedService)
+
+    class FakeMessage:
+        content = "NONE"
+
+    class FakeChoice:
+        message = FakeMessage()
+
+    class FakeResponse:
+        choices = [FakeChoice()]
+
+    class FakeClient:
+        @staticmethod
+        async def chat_completions_create(**kwargs):
+            return FakeResponse()
+
+    service._llm_client = FakeClient()
+    assert await service._plan_reflection_retry(
+        "seedance 2.5 truck", ["No Reddit coverage of this topic"], ["seedance"]
+    ) is None
+
+
+@pytest.mark.asyncio
+async def test_enrich_cache_avoids_second_details_call():
+    service = object.__new__(RedditEnhancedService)
+    service.base_url = "http://reddit-proxy"
+    post = _post(title="Cached thread")
+    post.created_utc = 0
+
+    class FakeResponse:
+        status_code = 200
+
+        @staticmethod
+        def json():
+            return {
+                "selftext": "Full body",
+                "top_comments": [{"author": "a", "body": "b"}],
+                "createdUtc": 1_700_000_000,
+            }
+
+    class FakeClient:
+        def __init__(self):
+            self.calls = 0
+
+        async def post(self, url, json):
+            self.calls += 1
+            return FakeResponse()
+
+    client = FakeClient()
+
+    async def fake_get_client():
+        return client
+
+    service._get_client = fake_get_client
+
+    first = await service._enrich_post_content(post)
+    assert client.calls == 1
+    assert first.created_utc == 1_700_000_000
+
+    second_post = _post(title="Cached thread")  # same id (id == title)
+    second = await service._enrich_post_content(second_post)
+    assert client.calls == 1  # served from cache
+    assert second.created_utc == 1_700_000_000
+    assert second.top_comments == first.top_comments
+
+
+@pytest.mark.asyncio
+async def test_pipeline_abstain_carries_near_misses(monkeypatch):
+    near_miss = SimpleNamespace(
+        title="Closest clay render thread",
+        permalink="https://reddit.com/r/unrealengine/clay",
+        url="https://reddit.com/r/unrealengine/clay",
+        subreddit="unrealengine",
+        final_score=0.41,
+    )
+
+    async def fake_search(**kwargs):
+        return SimpleNamespace(
+            posts=[],
+            total_found=42,
+            near_miss_posts=[near_miss],
+            processing_time_ms=5,
+        )
+
+    monkeypatch.setattr(endpoint, "search_reddit_enhanced", fake_search)
+    outcome = await endpoint.run_reddit_search_v2("some failing query")
+    assert outcome.status == "abstained"
+    assert outcome.near_misses and outcome.near_misses[0]["title"] == (
+        "Closest clay render thread"
+    )
+    assert outcome.near_misses[0]["url"].endswith("/clay")
+
+
+def test_telemetry_write_is_best_effort(tmp_path, monkeypatch):
+    from src.services import reddit_enhanced_service as svc
+
+    monkeypatch.setattr(svc.config, "REDDIT_TELEMETRY_ENABLED", True)
+    monkeypatch.setattr(
+        svc.config, "REDDIT_TELEMETRY_PATH", str(tmp_path / "telemetry.jsonl")
+    )
+    svc._write_search_telemetry({"query": "q", "selected_posts": 1})
+    content = (tmp_path / "telemetry.jsonl").read_text(encoding="utf-8")
+    assert '"query": "q"' in content
+
+    # Broken target must never raise
+    monkeypatch.setattr(svc.config, "REDDIT_TELEMETRY_PATH", "/proc/broken/path.jsonl")
+    svc._write_search_telemetry({"query": "q"})

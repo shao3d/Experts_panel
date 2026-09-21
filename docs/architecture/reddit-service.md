@@ -387,6 +387,9 @@ In `backend/src/config.py`:
 - `REDDIT_SYNTH_COMMENT_TOP_K` — top-K root comments by score per source in synthesis
 - `REDDIT_SYNTH_SOURCE_CHAR_CAP` — character cap per source (body + comment tree)
 - `REDDIT_SYNTH_MAX_TOKENS` — synthesis output budget; on finish_reason=length, one automatic re-request with a 2x budget
+- `REDDIT_REFLECTION_RETRY_ENABLED` (default true) — when the confidence filter keeps 0 posts, the judge's rejection reasons feed ONE bounded replan (`reflection_retry` strategy) + retrieval pass before an honest abstain
+- `REDDIT_TELEMETRY_ENABLED` / `REDDIT_TELEMETRY_PATH` — JSONL decision log (query, strategy counts, winners, near-misses, abstain reasons) powering periodic strategy-effectiveness review instead of gut-feel tuning
+- `REDDIT_ENRICH_CACHE_TTL_S` / `REDDIT_ENRICH_CACHE_MAX` — in-memory LRU for /details enrichment results, so iterative research sessions do not re-fetch the same threads
 - `REDDIT_SYNTH_BACKEND` — synthesis backend: gemini | opencode | auto | shadow (see the Synthesis section)
 - `OPENCODE_URL`, `OPENCODE_SYNTH_MODEL`, `OPENCODE_SYNTH_TIMEOUT_S`, `OPENCODE_SYNTH_CONCURRENCY` — headless opencode serve parameters
 
@@ -487,6 +490,11 @@ Content-Type: application/json
 - `found_count` — the number of unique candidates that reached ranking
   (before the confidence filter); therefore it can be (and usually is) larger
   than the number of `sources`.
+- `near_misses` (abstain only) — up to three closest-but-rejected threads
+  with their final score. Low confidence by definition: they did NOT pass
+  the confidence filter or the synthesis rejected them. Provided for
+  research transparency; an agent must not present them as reliable answers.
+  The CLI prints them under "closest discussions (LOW confidence...)".
 
 ### Semantics
 

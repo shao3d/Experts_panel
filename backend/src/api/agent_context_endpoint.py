@@ -21,6 +21,7 @@ from .models import (
     AgentRedditSearchRequest,
     AgentRedditSearchResponse,
     AgentRedditSearchSource,
+    AgentRedditSearchNearMiss,
     AgentSourceExpandRequest,
     AgentSourceExpandResponse,
     SelectionUsed,
@@ -633,6 +634,11 @@ async def reddit_search(request: AgentRedditSearchRequest) -> AgentRedditSearchR
         answer=None,
         sources=[],
         message=_REDDIT_SEARCH_ABSTAIN_MESSAGE,
+        near_misses=[
+            AgentRedditSearchNearMiss(**near_miss)
+            for near_miss in (getattr(outcome, "near_misses", None) or [])[:3]
+            if isinstance(near_miss, dict) and near_miss.get("url")
+        ],
         found_count=0,
         processing_time_ms=int((time.perf_counter() - start_time) * 1000),
     )

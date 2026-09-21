@@ -176,6 +176,30 @@ REDDIT_PRE_RERANK_ENRICH_LIMIT: int = int(
 REDDIT_MIN_CONFIDENCE: float = float(
     os.getenv("REDDIT_MIN_CONFIDENCE", "0.52")
 )
+
+# --- Reddit Search V2: reflection retry, telemetry, enrichment cache ---
+# One reflection retry fires only when the confidence filter left 0 posts:
+# the judge's top rejection reasons feed a short LLM replanner, whose query
+# gets one bounded second retrieval pass.
+REDDIT_REFLECTION_RETRY_ENABLED: bool = (
+    os.getenv("REDDIT_REFLECTION_RETRY_ENABLED", "true").lower() == "true"
+)
+# JSONL decision log (query, strategies, winners, abstain reason). Powers
+# periodic strategy/subreddit effectiveness review instead of gut-feel tuning.
+REDDIT_TELEMETRY_ENABLED: bool = (
+    os.getenv("REDDIT_TELEMETRY_ENABLED", "true").lower() == "true"
+)
+REDDIT_TELEMETRY_PATH: str = os.getenv(
+    "REDDIT_TELEMETRY_PATH", "backend/data/reddit_search_telemetry.jsonl"
+)
+# In-memory cache for /details enrichment: iterative research sessions re-fetch
+# the same threads, paying 10-20s and Reddit rate-limit budget every time.
+REDDIT_ENRICH_CACHE_TTL_S: int = int(
+    os.getenv("REDDIT_ENRICH_CACHE_TTL_S", "1800")
+)
+REDDIT_ENRICH_CACHE_MAX: int = int(
+    os.getenv("REDDIT_ENRICH_CACHE_MAX", "512")
+)
 REDDIT_SOFT_CONFIDENCE: float = float(
     os.getenv("REDDIT_SOFT_CONFIDENCE", "0.44")
 )

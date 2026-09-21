@@ -13,7 +13,7 @@ import asyncio
 import json
 import uuid
 import time
-from typing import AsyncGenerator, Optional, Callable
+from typing import Any, AsyncGenerator, Dict, List, Optional, Callable
 import logging
 import os
 from pathlib import Path
@@ -1048,20 +1048,24 @@ class RedditSearchV2Outcome:
     - status "completed": synthesis + real sources are available.
     - status "abstained": the confidence filter kept 0 posts or synthesis
       explicitly rejected the shortlist as off-topic; this is not an error.
+      `near_misses` carries the closest rejected threads (low confidence!)
+      so an abstain stays useful for research instead of being a dead end.
     - status "failed": a technical error occurred (proxy down, timeout, ...).
     """
 
-    __slots__ = ("status", "response", "error")
+    __slots__ = ("status", "response", "error", "near_misses")
 
     def __init__(
         self,
         status: str,
         response: Optional[RedditResponse] = None,
         error: Optional[str] = None,
+        near_misses: Optional[List[Dict[str, Any]]] = None,
     ) -> None:
         self.status = status
         self.response = response
         self.error = error
+        self.near_misses = near_misses or []
 
 
 async def run_reddit_search_v2(
@@ -1081,11 +1085,13 @@ async def run_reddit_search_v2(
     technical failure.
     """
     start_time = time.time()
+    outcome_context: Dict[str, Any] = {}
     try:
         response = await process_reddit_pipeline(
             query=query,
             progress_callback=progress_callback,
             recent_only=recent_only,
+            outcome_context=outcome_context,
         )
     except Exception as e:  # technical failure - never mask as abstain
         logger.error(f"Reddit Search V2 failed: {e}")
@@ -1096,14 +1102,19 @@ async def run_reddit_search_v2(
 
     # process_reddit_pipeline returns None both for "no posts found" (abstain)
     # and for "no synthesis produced". V2 treats an empty shortlist as an
-    # honest abstain; the synthesis stays empty.
-    return RedditSearchV2Outcome(status="abstained")
+    # honest abstain; the synthesis stays empty. Near-miss threads (if any)
+    # ride along so callers can show "closest discussions, low confidence".
+    return RedditSearchV2Outcome(
+        status="abstained",
+        near_misses=outcome_context.get("near_misses", []),
+    )
 
 
 async def process_reddit_pipeline(
     query: str,
     progress_callback: Optional[Callable] = None,
     recent_only: bool = False,
+    outcome_context: Optional[Dict[str, Any]] = None,
 ) -> Optional[RedditResponse]:
     """Process Reddit community pipeline through the enhanced Reddit proxy.
 
@@ -1114,6 +1125,8 @@ async def process_reddit_pipeline(
         query: User query (will be translated to English if Russian)
         progress_callback: Optional callback for progress updates
         recent_only: Hard-filter Reddit results to the last 3 months
+        outcome_context: Optional dict filled with extra outcome data on an
+            abstain (e.g. "near_misses": closest low-confidence threads).
 
     Returns:
         RedditResponse with community insights or None if failed/no results
@@ -1228,6 +1241,16 @@ Output one JSON object only:
         # Check if we found anything relevant
         if not reddit_result or not reddit_result.posts:
             logger.info(f"No Reddit posts found for query: {search_query}")
+            if outcome_context is not None:
+                outcome_context["near_misses"] = [
+                    {
+                        "title": post.title or "Untitled",
+                        "url": post.permalink or post.url,
+                        "subreddit": post.subreddit or "unknown",
+                        "final_score": round(getattr(post, "final_score", 0.0), 3),
+                    }
+                    for post in getattr(reddit_result, "near_miss_posts", []) or []
+                ]
             if progress_callback:
                 await progress_callback(
                     {
@@ -1322,6 +1345,18 @@ Output one JSON object only:
 
         if _is_explicit_reddit_synthesis_abstention(synthesis):
             logger.info("Reddit synthesis explicitly abstained after relevance check")
+            if outcome_context is not None:
+                # The shortlist passed ranking but the synthesis rejected it
+                # as collectively not answering; expose it as near-misses.
+                outcome_context["near_misses"] = [
+                    {
+                        "title": post.title or "Untitled",
+                        "url": post.permalink or post.url,
+                        "subreddit": post.subreddit or "unknown",
+                        "final_score": round(getattr(post, "final_score", 0.0), 3),
+                    }
+                    for post in (reddit_result.posts or [])[:3]
+                ]
             return None
 
         # Synthesis currently receives at most ten shortlist entries. Never

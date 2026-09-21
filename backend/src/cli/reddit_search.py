@@ -187,6 +187,12 @@ def print_summary(payload: dict[str, Any]) -> int:
         return 0
     if status == "abstained":
         print(f"status: abstained — {payload.get('message') or 'no reliable results'}")
+        near_misses = payload.get("near_misses") or []
+        if near_misses:
+            print("closest discussions (LOW confidence — not verified answers):")
+            for src in near_misses[:3]:
+                print(f"  - r/{src.get('subreddit', '?')}: {src.get('title', '')}")
+                print(f"    {src.get('url', '')}")
         return 0
     print(f"status: {status or 'unknown'}", file=sys.stderr)
     return 1

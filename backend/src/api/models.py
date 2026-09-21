@@ -996,6 +996,23 @@ class AgentRedditSearchSource(BaseModel):
     subreddit: str = Field(..., description="Subreddit name without the r/ prefix")
 
 
+class AgentRedditSearchNearMiss(BaseModel):
+    """One closest-but-rejected thread returned alongside an abstain.
+
+    Low confidence by definition: the confidence filter or synthesis did not
+    accept it as a reliable answer. Provided for research transparency so an
+    abstain is not a dead end; must not be presented as a reliable answer.
+    """
+
+    title: str = Field(..., description="Discussion title")
+    url: str = Field(..., description="Real Reddit thread URL")
+    subreddit: str = Field(..., description="Subreddit name without the r/ prefix")
+    final_score: float = Field(
+        ...,
+        description="Final pipeline score that did NOT pass the confidence filter",
+    )
+
+
 class AgentRedditSearchResponse(BaseModel):
     """Response for the agent-facing full Reddit Search V2 API.
 
@@ -1019,6 +1036,13 @@ class AgentRedditSearchResponse(BaseModel):
     message: Optional[str] = Field(
         default=None,
         description="Short diagnostic message; explains an abstain, null on success",
+    )
+    near_misses: List[AgentRedditSearchNearMiss] = Field(
+        default_factory=list,
+        description=(
+            "On abstain only: up to three closest-but-rejected discussions "
+            "(low confidence, not reliable answers)"
+        ),
     )
     found_count: int = Field(
         default=0,

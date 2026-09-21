@@ -9,10 +9,13 @@ This module provides advanced Reddit aggregation strategies:
 
 import asyncio
 import logging
+import os
 import re
 import json
 import math
 import html
+import time
+from collections import OrderedDict
 from dataclasses import dataclass, field
 from typing import Optional, List, Dict, Any, Set
 from datetime import datetime
@@ -253,6 +256,32 @@ def _anchor_specificity(token: str) -> float:
     return score
 
 
+def _write_search_telemetry(record: Dict[str, Any]) -> None:
+    """Append one decision record to the Reddit search JSONL telemetry log.
+
+    The log powers periodic strategy/subreddit effectiveness review (which
+    channels actually produce winning posts, where abstains come from)
+    instead of gut-feel tuning. Best-effort only: telemetry must never break
+    or delay a search.
+    """
+    try:
+        if not config.REDDIT_TELEMETRY_ENABLED:
+            return
+        path = config.REDDIT_TELEMETRY_PATH
+        if not os.path.isabs(path):
+            # Relative paths resolve against the repo root, matching how the
+            # backend locates its data directory.
+            base = os.path.dirname(os.path.dirname(os.path.dirname(
+                os.path.dirname(os.path.abspath(__file__))
+            )))
+            path = os.path.join(base, path)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "a", encoding="utf-8") as fh:
+            fh.write(json.dumps(record, ensure_ascii=False) + "\n")
+    except Exception as exc:  # pragma: no cover - telemetry must not break search
+        logger.debug(f"Reddit telemetry write failed: {exc}")
+
+
 @dataclass
 class RedditPost:
     """Enhanced Reddit post with full content."""
@@ -294,6 +323,9 @@ class EnhancedSearchResult:
     strategies_used: List[str]
     processing_time_ms: int
     debug_trace: Dict[str, Any] = field(default_factory=dict)
+    # Best rejected posts (below the soft threshold) when nothing passed the
+    # confidence filter; lets the API answer an abstain with "closest hits".
+    near_miss_posts: List[RedditPost] = field(default_factory=list)
 
 
 class RedditEnhancedService:
@@ -319,6 +351,10 @@ class RedditEnhancedService:
         self._circuit_breaker = CircuitBreaker()
         self._client: Optional[httpx.AsyncClient] = None
         self._llm_client = get_vertex_llm_client()
+        # post_id -> (timestamp, full_content, top_comments, created_utc);
+        # bounded LRU so iterative research sessions do not re-fetch the same
+        # threads through /details on every related query.
+        self._enrich_cache: "OrderedDict[str, tuple]" = OrderedDict()
     
     async def _get_client(self) -> httpx.AsyncClient:
         """Get or create HTTP client."""
@@ -1042,6 +1078,154 @@ Output JSON structure:
 
         return []
 
+    async def _rank_and_filter(
+        self,
+        candidates_for_rerank: List[RedditPost],
+        remaining_posts: List[RedditPost],
+        plan_query: str,
+        target_posts: int,
+        include_comments: bool,
+        anchor_terms: List[str],
+        search_plan: Dict[str, Any],
+        original_user_query: Optional[str],
+        must_keep_terms: Optional[List[str]],
+        debug_trace: Dict[str, Any],
+    ) -> tuple:
+        """AI rerank -> confidence filter -> final enrichment.
+
+        Returns (selected_posts, final_sorted, post_rank_trace,
+        top_reject_reasons). Shared by the main pass and the reflection retry
+        so both use identical scoring and gating.
+        """
+        if candidates_for_rerank:
+            try:
+                reranked_candidates = await self._ai_rerank_posts(
+                    plan_query,
+                    candidates_for_rerank,
+                    intent=search_plan.get("intent", "discussion"),
+                    anchor_terms=anchor_terms,
+                    original_user_query=original_user_query,
+                    must_keep_terms=must_keep_terms,
+                )
+            except Exception as e:
+                logger.error(f"AI reranking failed in V2: {e}")
+                reranked_candidates = candidates_for_rerank
+        else:
+            reranked_candidates = []
+
+        reranked_ids = {post.id for post in reranked_candidates}
+        final_sorted = reranked_candidates + [
+            post for post in remaining_posts if post.id not in reranked_ids
+        ]
+
+        selected_posts = self._apply_confidence_threshold(
+            final_sorted,
+            target_posts,
+            require_anchor_match=bool(anchor_terms),
+            intent=search_plan.get("intent", "discussion"),
+        )
+
+        if include_comments and selected_posts:
+            missing_context = [
+                post for post in selected_posts if not post.top_comments
+            ]
+            if missing_context:
+                enriched_results = await asyncio.gather(
+                    *[self._enrich_post_content(post) for post in missing_context],
+                    return_exceptions=True,
+                )
+                for idx, result in enumerate(enriched_results):
+                    if isinstance(result, Exception):
+                        logger.warning(
+                            f"Failed final enrichment for post {missing_context[idx].id}: {result}"
+                        )
+                        continue
+                    for selected_idx, selected in enumerate(selected_posts):
+                        if selected.id == result.id:
+                            selected_posts[selected_idx] = result
+                            break
+
+        post_rank = [
+            {
+                "id": post.id,
+                "title": post.title[:120],
+                "ai_score": round(post.ai_score, 3),
+                "final_score": round(post.final_score, 3),
+                "anchor_matches": post.anchor_matches,
+                "title_body_anchor_matches": post.title_body_anchor_matches,
+                "comment_anchor_matches": post.comment_anchor_matches,
+                "direct_comparison_hits": post.direct_comparison_hits,
+                "reason": post.ranking_reason,
+            }
+            for post in final_sorted[:10]
+        ]
+        # Why did the top candidates lose? These reasons are the raw material
+        # for the reflection replanner.
+        top_reject_reasons = [
+            post.ranking_reason
+            for post in final_sorted[:5]
+            if post.ranking_reason and post.final_score < config.REDDIT_MIN_CONFIDENCE
+        ]
+        return selected_posts, final_sorted, post_rank, top_reject_reasons
+
+    async def _plan_reflection_retry(
+        self,
+        plan_query: str,
+        top_reject_reasons: List[str],
+        anchor_terms: List[str],
+        *,
+        original_user_query: Optional[str] = None,
+    ) -> Optional[str]:
+        """Plan ONE corrected Reddit query from the judge's rejection reasons.
+
+        Returns None when there is nothing actionable (no reasons, LLM
+        unusable, or the replanner just echoed the same query) — the caller
+        then keeps the honest abstain.
+        """
+        if not top_reject_reasons:
+            return None
+        reasons_block = "\n".join(f"- {reason}" for reason in top_reject_reasons[:5])
+        prompt = f"""A Reddit search just failed its quality filter. Plan ONE corrected search query.
+
+Retrieval query used: "{plan_query}"
+Original user question: "{original_user_query or plan_query}"
+Key topic anchors that must be preserved: {anchor_terms or ["none"]}
+
+The judge rejected the top candidates for these reasons:
+{reasons_block}
+
+Infer from the rejections which term the first query missed or diluted
+(e.g. the community calls it differently, or a more specific technical noun
+phrase exists). Output ONE plain Reddit search query of 3-10 words: keywords
+only, no quotes, no boolean operators, no site:/r/ syntax. If the rejections
+show the topic simply has no Reddit coverage, output exactly: NONE
+"""
+        try:
+            response = await self._llm_client.chat_completions_create(
+                model=MODEL_SCOUT,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.0,
+                max_tokens=128,  # one short line; 402 guard
+            )
+            content = (response.choices[0].message.content or "").strip()
+            first_line = content.splitlines()[0] if content else ""
+            cleaned = self._sanitize_scout_query(first_line).strip("?.! ")
+            words = cleaned.split()
+            if (
+                not cleaned
+                or cleaned.upper() == "NONE"
+                or not (2 <= len(words) <= 14)
+                or cleaned.lower() == plan_query.lower()
+            ):
+                return None
+            logger.info(
+                f"🪞 Reflection retry planned: '{plan_query[:60]}' -> '{cleaned}'"
+            )
+            return cleaned
+        except Exception as e:
+            logger.warning(f"Reflection retry planning failed: {e}")
+            return None
+
     async def _search_enhanced_v2(
         self,
         query: str,
@@ -1388,59 +1572,135 @@ Output JSON structure:
         candidates_for_rerank = heuristic_sorted[: config.REDDIT_RERANK_CANDIDATES]
         remaining_posts = heuristic_sorted[config.REDDIT_RERANK_CANDIDATES :]
 
-        if candidates_for_rerank:
-            try:
-                reranked_candidates = await self._ai_rerank_posts(
-                    original_query,
-                    candidates_for_rerank,
-                    intent=search_plan.get("intent", "discussion"),
-                    anchor_terms=anchor_terms,
-                    original_user_query=original_user_query,
-                    must_keep_terms=must_keep_terms,
-                )
-            except Exception as e:
-                logger.error(f"AI reranking failed in V2: {e}")
-                reranked_candidates = candidates_for_rerank
-        else:
-            reranked_candidates = []
-
-        reranked_ids = {post.id for post in reranked_candidates}
-        final_sorted = reranked_candidates + [
-            post for post in remaining_posts if post.id not in reranked_ids
-        ]
-
-        selected_posts = self._apply_confidence_threshold(
+        (
+            selected_posts,
             final_sorted,
+            debug_trace["post_rank"],
+            debug_trace["top_reject_reasons"],
+        ) = await self._rank_and_filter(
+            candidates_for_rerank,
+            remaining_posts,
+            plan_query,
             target_posts,
-            require_anchor_match=bool(anchor_terms),
-            intent=search_plan.get("intent", "discussion"),
+            include_comments,
+            anchor_terms,
+            search_plan,
+            original_user_query,
+            must_keep_terms,
+            debug_trace,
         )
 
-        if include_comments and selected_posts:
-            selected_by_id = {post.id for post in selected_posts}
-            missing_context = [
-                post
-                for post in selected_posts
-                if not post.top_comments and post.id in selected_by_id
-            ]
-            if missing_context:
-                enriched_results = await asyncio.gather(
-                    *[self._enrich_post_content(post) for post in missing_context],
-                    return_exceptions=True,
-                )
-                for idx, result in enumerate(enriched_results):
-                    if isinstance(result, Exception):
-                        logger.warning(
-                            f"Failed final enrichment for post {missing_context[idx].id}: {result}"
+        # Reflection retry: when the confidence filter kept nothing, the
+        # judge's top rejection reasons ("lacks Z-depth steps", "camera bugs
+        # not clay workflow") feed one bounded replan + retrieval pass. This
+        # turns a dead end into a smarter second question instead of an
+        # abstain that could have been salvaged.
+        reflection_used = False
+        if (
+            not selected_posts
+            and unique_posts
+            and config.REDDIT_REFLECTION_RETRY_ENABLED
+        ):
+            retry_query = await self._plan_reflection_retry(
+                plan_query,
+                debug_trace.get("top_reject_reasons", []),
+                anchor_terms,
+                original_user_query=original_user_query,
+            )
+            if retry_query:
+                reflection_used = True
+                debug_trace["reflection_retry_query"] = retry_query
+                known_ids = {p.id for p in all_posts.values()}
+                retry_tasks = [
+                    self._search_with_sort(
+                        retry_query, sort="relevance", limit=20, time="all"
+                    )
+                ]
+                if soft_target_subreddits:
+                    retry_tasks.append(
+                        self._search_with_sort(
+                            retry_query,
+                            sort="relevance",
+                            limit=18,
+                            time="all",
+                            subreddits=soft_target_subreddits,
                         )
+                    )
+                retry_results = await asyncio.gather(
+                    *retry_tasks, return_exceptions=True
+                )
+                new_posts: List[RedditPost] = []
+                for result in retry_results:
+                    if isinstance(result, Exception):
+                        logger.warning(f"Reflection retry search failed: {result}")
                         continue
-                    for selected_idx, selected in enumerate(selected_posts):
-                        if selected.id == result.id:
-                            selected_posts[selected_idx] = result
-                            break
+                    for post in result:
+                        if post.id in known_ids or post.id in {
+                            p.id for p in new_posts
+                        }:
+                            continue
+                        post.found_by_strategy = "reflection_retry"
+                        post.strategy_hits = ["reflection_retry"]
+                        new_posts.append(post)
+
+                debug_trace["reflection_retry_new_posts"] = len(new_posts)
+                if new_posts:
+                    strategies_used.append("reflection_retry")
+                    debug_trace["strategy_results"]["reflection_retry"] = {
+                        "query": retry_query,
+                        "sort": "relevance",
+                        "time": "all",
+                        "subreddits": soft_target_subreddits or [],
+                        "count": len(new_posts),
+                    }
+                    retry_enriched = await asyncio.gather(
+                        *[
+                            self._enrich_post_content(post)
+                            for post in new_posts[:8]
+                        ],
+                        return_exceptions=True,
+                    )
+                    retry_pool = []
+                    for post, result in zip(new_posts[:8], retry_enriched):
+                        retry_pool.append(
+                            result if not isinstance(result, Exception) else post
+                        )
+                    for post in retry_pool:
+                        post.heuristic_score = self._score_post_v2(
+                            post,
+                            query_terms=query_terms,
+                            anchor_terms=anchor_terms,
+                            target_keywords=target_keywords,
+                            intent=search_plan.get("intent", "discussion"),
+                        )
+                    retry_pool.sort(
+                        key=lambda p: p.heuristic_score, reverse=True
+                    )
+                    (
+                        retry_selected,
+                        _retry_final,
+                        debug_trace["reflection_post_rank"],
+                        _ignored_reasons,
+                    ) = await self._rank_and_filter(
+                        retry_pool,
+                        [],
+                        plan_query,
+                        target_posts,
+                        include_comments,
+                        anchor_terms,
+                        search_plan,
+                        original_user_query,
+                        must_keep_terms,
+                        debug_trace,
+                    )
+                    if retry_selected:
+                        selected_posts = retry_selected
+                        for post in retry_selected:
+                            all_posts[post.id] = post
 
         debug_trace["unique_posts"] = len(unique_posts)
         debug_trace["selected_posts"] = len(selected_posts)
+        debug_trace["reflection_retry_used"] = reflection_used
         debug_trace["pre_rank"] = [
             {
                 "id": post.id,
@@ -1454,24 +1714,19 @@ Output JSON structure:
             }
             for post in heuristic_sorted[:10]
         ]
-        debug_trace["post_rank"] = [
-            {
-                "id": post.id,
-                "title": post.title[:120],
-                "ai_score": round(post.ai_score, 3),
-                "final_score": round(post.final_score, 3),
-                "anchor_matches": post.anchor_matches,
-                "title_body_anchor_matches": post.title_body_anchor_matches,
-                "comment_anchor_matches": post.comment_anchor_matches,
-                "direct_comparison_hits": post.direct_comparison_hits,
-                "reason": post.ranking_reason,
-            }
-            for post in final_sorted[:10]
-        ]
+        # Near-misses: the best rejected posts (top-3 by final score, below
+        # the soft threshold). They turn an abstain from a dead end into
+        # "closest discussions, low confidence" for the caller.
+        near_miss_posts: List[RedditPost] = []
+        if not selected_posts and unique_posts:
+            near_miss_posts = sorted(
+                unique_posts, key=lambda p: p.final_score, reverse=True
+            )[:3]
+
         self._log_debug_trace("reddit_search_v2", debug_trace)
 
         processing_time_ms = int((datetime.utcnow() - start_time).total_seconds() * 1000)
-        return EnhancedSearchResult(
+        result = EnhancedSearchResult(
             posts=selected_posts,
             total_found=len(unique_posts),
             query=query,
@@ -1479,6 +1734,49 @@ Output JSON structure:
             processing_time_ms=processing_time_ms,
             debug_trace=debug_trace,
         )
+        result.near_miss_posts = near_miss_posts
+
+        _write_search_telemetry(
+            {
+                "ts": datetime.utcnow().isoformat(timespec="seconds") + "Z",
+                "query": query,
+                "plan_query": plan_query,
+                "compact_plan_query": debug_trace.get("compact_plan_query"),
+                "intent": search_plan.get("intent", "discussion"),
+                "recent_only": recent_only,
+                "strategy_counts": {
+                    name: meta.get("count", 0)
+                    for name, meta in debug_trace.get(
+                        "strategy_results", {}
+                    ).items()
+                    if isinstance(meta, dict)
+                },
+                "unique_posts": len(unique_posts),
+                "selected_posts": len(selected_posts),
+                "reflection_retry_used": reflection_used,
+                "top_reject_reasons": debug_trace.get("top_reject_reasons", []),
+                "winners": [
+                    {
+                        "id": post.id,
+                        "subreddit": post.subreddit,
+                        "final_score": round(post.final_score, 3),
+                        "ai_score": round(post.ai_score, 3),
+                        "strategy_hits": post.strategy_hits,
+                    }
+                    for post in selected_posts[:10]
+                ],
+                "near_misses": [
+                    {
+                        "id": post.id,
+                        "subreddit": post.subreddit,
+                        "final_score": round(post.final_score, 3),
+                    }
+                    for post in near_miss_posts
+                ],
+                "processing_time_ms": processing_time_ms,
+            }
+        )
+        return result
     
     async def search_enhanced(
         self,
@@ -2008,6 +2306,26 @@ Output JSON format ONLY:
     
     async def _enrich_post_content(self, post: RedditPost) -> RedditPost:
         """Fetch full content and comments for a post via Proxy /details endpoint."""
+        # Bounded LRU cache: iterative research sessions re-fetch the same
+        # threads across related queries; reuse recent enrichment instead of
+        # paying 10-20s and Reddit rate-limit budget again.
+        cache = getattr(self, "_enrich_cache", None)
+        if cache is None:  # tests build instances via object.__new__
+            cache = self._enrich_cache = OrderedDict()
+        now = time.time()
+        cached = cache.get(post.id)
+        if cached:
+            cached_at, full_content, top_comments, created_utc = cached
+            if now - cached_at <= config.REDDIT_ENRICH_CACHE_TTL_S:
+                cache.move_to_end(post.id)
+                if full_content and len(full_content) > len(post.selftext):
+                    post.selftext = full_content
+                post.full_content = full_content
+                post.top_comments = top_comments
+                post.created_utc = int(created_utc or post.created_utc or 0)
+                return post
+            cache.pop(post.id, None)
+
         try:
             client = await self._get_client()
             url = f"{self.base_url}/details"
@@ -2041,6 +2359,15 @@ Output JSON format ONLY:
                 # If original selftext was truncated or missing, update it
                 if full_text and len(full_text) > len(post.selftext):
                      post.selftext = full_text
+
+                cache[post.id] = (
+                    now,
+                    post.full_content,
+                    post.top_comments,
+                    post.created_utc,
+                )
+                while len(cache) > config.REDDIT_ENRICH_CACHE_MAX:
+                    cache.popitem(last=False)
 
                 logger.info(f"✅ Enriched post {post.id} (r/{post.subreddit}): {len(post.top_comments)} comments")
             else:
