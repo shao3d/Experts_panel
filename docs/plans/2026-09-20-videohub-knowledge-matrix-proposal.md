@@ -38,10 +38,12 @@
 
 **Стартовый контекст (снимок на 2026-09-20):**
 
-- VideoHub (staging, промоутнут в прод scoped-релизом 2026-09-19; +1 видео
-  2026-09-20): **4 видео, 119 сегментов** — `QfylrxtQSSs` (Higgsfield AI, 62),
-  `vUYq38wC_xI` (Higgsfield AI, 38), `2b3Z4rW5VJc` (Youri van Hofwegen, 11),
-  `OiULPvTJ-0E` (Higgsfield AI, 8 — scoped-диапазон 10:25–19:42, 2026-08-28).
+- VideoHub (staging; последний scoped data release — 2026-09-20): **5 видео,
+  132 сегмента** — `QfylrxtQSSs` (Higgsfield AI, 62), `vUYq38wC_xI`
+  (Higgsfield AI, 38), `2b3Z4rW5VJc` (Youri van Hofwegen, 11),
+  `OiULPvTJ-0E` (Higgsfield AI, 8 — scoped-диапазон 10:25–19:42, 2026-08-28),
+  `Hn8A8D4-SpQ` (Higgsfield AI, 13 — полный ingest, 2026-08-07, второй
+  вердикт-кейс: gap размазан -> полный ingest вместо scoped).
 - Панель: **27 экспертов в матрице** (v0.3, 81 клетка). Визуальная группа
   (`strangedalle`, `acidcrunch`, `cgevent`, `neyrograph`, `iideyalogiya`)
   принята в сентябре как `limited_scope` — именно её клетки пересекаются с
@@ -100,7 +102,7 @@
 | Доказательства | посты + комменты | сегменты с дословными промтами и UI-скринами | «паспорт» почти рождается на Stage 2 |
 | Устаревание | неравномерное | агрессивное: version-locked туториалы гниют за месяцы | распад — **первоклассная колонка** |
 | Потребление | Панэкс/роутер | только Scout (sidecar; owner decision #1) | «ценность» = улучшение ответов Скаута |
-| Масштаб | 27 экспертов, ~8k постов | 4 видео, 119 сегментов | тяжёлая матрица сейчас = бюрократия |
+| Масштаб | 27 экспертов, ~8k постов | 5 видео, 132 сегмента | тяжёлая матрица сейчас = бюрократия |
 
 ---
 
@@ -193,7 +195,7 @@ Higgsfield-видео легло в клетки cgevent (`cg_craft_to_ai`) и n
 
 ## 6. Минимальная реализация (без бюрократии)
 
-- **Сейчас (4 видео)** — ручной режим:
+- **Сейчас (5 видео)** — ручной режим:
   - чек-лист 0.0b в `docs/guides/video-hub-operator.md` (включая
     транскрипт-пробу §6.4);
   - `output/video_admission/admission_log.json` — по объекту на видео
@@ -285,6 +287,18 @@ embed) в `video-hub-operator.md`, а не отдельное обещание: 
   `cg_craft_to_ai` (продуктовый CGI-шот, 10-сценный скелет через маркеры);
   `master_file_reuse` + `two_layer_prompt` → `prompt_architecture` +
   `ai_video_direction` (структурный лог ≠ стилевой слой, 1 монтаж → 3 мира).
+- `Hn8A8D4-SpQ` (Pro VFX Artist vs AI, полный): `ai_vs_vfx_workflow` →
+  `cg_craft_to_ai` (кеинг/despill/матчинг света и зерна — что ИИ делает под
+  капотом); `v2v_character_replacement` → `multimodal_generation` (правило
+  4 секунд входа, freeze-frame коротких клипов, POSITIVE LOCKS в промте
+  замены); `generation_failure_diagnosis` → `prompt_architecture` (одна
+  проблема во всех батчах = промт/исходник, переход в i2v + склейка);
+  `physical_realism_prompts` + `scale_consistency` → `prompt_architecture` +
+  `character_consistency` (size fit frame); `model_choice_per_task` +
+  `locations_and_batch_economics` → `image_model_workflow` (56 изображений
+  против 1, полемика «одежда: GPT Image 2 vs Seedream 5 Pro»);
+  `emotion_and_voice_consistency` + `camera_techniques` +
+  `vfx_hard_problems_to_ai` → `ai_video_direction` + `character_consistency`.
 
 ### 6.4 Механика probe-чека (Фаза 0)
 
