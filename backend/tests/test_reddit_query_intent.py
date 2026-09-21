@@ -1,3 +1,4 @@
+import json
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -551,3 +552,71 @@ def test_telemetry_write_is_best_effort(tmp_path, monkeypatch):
     # Broken target must never raise
     monkeypatch.setattr(svc.config, "REDDIT_TELEMETRY_PATH", "/proc/broken/path.jsonl")
     svc._write_search_telemetry({"query": "q"})
+
+
+def _make_rerank_service(ratings_payload: dict):
+    service = object.__new__(RedditEnhancedService)
+
+    class FakeMessage:
+        content = json.dumps(ratings_payload)
+
+    class FakeChoice:
+        message = FakeMessage()
+
+    class FakeResponse:
+        choices = [FakeChoice()]
+
+    class FakeClient:
+        @staticmethod
+        async def chat_completions_create(**kwargs):
+            return FakeResponse()
+
+    service._llm_client = FakeClient()
+    return service
+
+
+@pytest.mark.asyncio
+async def test_evidence_gate_keeps_quoted_scores():
+    service = _make_rerank_service(
+        {
+            "ratings": [
+                {
+                    "id": 0,
+                    "score": 0.9,
+                    "reason": "Direct fix",
+                    "evidence": "Enable Deferred Rendering and add the Depth pass in MRQ",
+                },
+                {
+                    "id": 1,
+                    "score": 0.8,
+                    "reason": "Sounds relevant but no quotable answer",
+                    "evidence": None,
+                },
+            ]
+        }
+    )
+    quoted = _post(
+        title="MRQ depth pass guide",
+        body="Enable Deferred Rendering and add the Depth pass in MRQ",
+    )
+    no_quote = _post(title="Sounds related thread")
+
+    reranked = await service._ai_rerank_posts(
+        "export depth pass", [quoted, no_quote], intent="how_to"
+    )
+    by_id = {p.id: p for p in reranked}
+    assert by_id[quoted.id].ai_score == 0.9
+    assert "Deferred Rendering" in by_id[quoted.id].evidence_span
+    # Judged WITHOUT a quotable span -> hard-capped despite the 0.8 score
+    assert by_id[no_quote.id].ai_score == 0.35
+    assert by_id[no_quote.id].evidence_span == ""
+
+
+@pytest.mark.asyncio
+async def test_evidence_gate_leaves_unrated_posts_neutral():
+    service = _make_rerank_service({"ratings": []})
+    lonely = _post(title="Some thread")
+    reranked = await service._ai_rerank_posts("query", [lonely], intent="discussion")
+    # Parse fallback / unrated: neutral 0.5 preserved (degraded ranking, not
+    # a fabricated abstain).
+    assert reranked[0].ai_score == 0.5

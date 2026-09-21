@@ -311,6 +311,10 @@ class RedditPost:
     ai_score: float = 0.0
     final_score: float = 0.0
     ranking_reason: str = ""
+    # Verbatim span from title/body/comments the judge quoted as the answer
+    # evidence; empty when the judge could not point to one (score then
+    # capped hard by the evidence gate).
+    evidence_span: str = ""
     # Enriched data
     full_content: Optional[str] = None
     top_comments: List[Dict[str, Any]] = field(default_factory=list)
@@ -1158,6 +1162,7 @@ Output JSON structure:
                 "comment_anchor_matches": post.comment_anchor_matches,
                 "direct_comparison_hits": post.direct_comparison_hits,
                 "reason": post.ranking_reason,
+                "evidence": post.evidence_span[:120],
             }
             for post in final_sorted[:10]
         ]
@@ -1764,6 +1769,7 @@ show the topic simply has no Reddit coverage, output exactly: NONE
                         "final_score": round(post.final_score, 3),
                         "ai_score": round(post.ai_score, 3),
                         "strategy_hits": post.strategy_hits,
+                        "has_evidence": bool(post.evidence_span),
                     }
                     for post in selected_posts[:10]
                 ],
@@ -1938,14 +1944,21 @@ Penalize posts that are:
 - off-topic showcase/news when the user asked for a guide or fix
 - only weakly adjacent to the query
 
+MANDATORY EVIDENCE RULE: for every post you score above 0.35, quote a short
+verbatim span (<= 200 characters, exact words) from its title, body, or
+comments that best answers the question — put it in the "evidence" field.
+If you cannot find such a verbatim span, set "evidence" to null and keep
+the score at or below 0.35: an answer you cannot point to in the text is
+not an answer.
+
 Posts:
 {context_str}
 
 Output JSON format ONLY:
 {{
   "ratings": [
-    {{"id": 0, "score": 0.95, "reason": "Exact fix with practical comments"}},
-    {{"id": 1, "score": 0.10, "reason": "Adjacent showcase, not an answer"}}
+    {{"id": 0, "score": 0.95, "reason": "Exact fix with practical comments", "evidence": "Go to Project Settings > Movie Render Queue, enable Deferred Rendering and add the Depth pass"}},
+    {{"id": 1, "score": 0.10, "reason": "Adjacent showcase, not an answer", "evidence": null}}
   ]
 }}
 """
@@ -1963,7 +1976,7 @@ Output JSON format ONLY:
                 model=rerank_model,
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.0,
-                max_tokens=2048  # Ratings JSON for <=18 posts; 402 guard
+                max_tokens=3072  # Ratings JSON + evidence spans for <=18 posts; 402 guard
             )
             
             content = response.choices[0].message.content.strip()
@@ -1994,7 +2007,30 @@ Output JSON format ONLY:
             for i, post in enumerate(posts):
                 rating = ratings.get(i)
                 ai_score = float(rating['score']) if rating else 0.5 # Default neutral
-                
+
+                # Evidence gate: a rating WITHOUT a quotable verbatim span is
+                # "hallucinated relevance" — cap it hard. Unrated posts (parse
+                # fallback) keep the neutral 0.5 so an LLM hiccup degrades
+                # ranking instead of fabricating an abstain.
+                evidence_span = ""
+                if rating is not None:
+                    raw_evidence = rating.get('evidence')
+                    if isinstance(raw_evidence, str):
+                        evidence_span = raw_evidence.strip()[:300]
+                    if (
+                        config.REDDIT_EVIDENCE_GATE_ENABLED
+                        and not evidence_span
+                        and ai_score > config.REDDIT_NO_EVIDENCE_MAX_SCORE
+                    ):
+                        logger.info(
+                            "Evidence gate capped post %s: %.2f -> %.2f (no quotable span)",
+                            post.id,
+                            ai_score,
+                            config.REDDIT_NO_EVIDENCE_MAX_SCORE,
+                        )
+                        ai_score = config.REDDIT_NO_EVIDENCE_MAX_SCORE
+                post.evidence_span = evidence_span
+
                 heuristic_component = min(post.heuristic_score / 1.4, 1.0)
                 engagement = max(post.score, 0) + post.num_comments
                 norm_engagement = min(math.log1p(engagement) / 8.0, 1.0)

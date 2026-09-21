@@ -184,6 +184,16 @@ REDDIT_MIN_CONFIDENCE: float = float(
 REDDIT_REFLECTION_RETRY_ENABLED: bool = (
     os.getenv("REDDIT_REFLECTION_RETRY_ENABLED", "true").lower() == "true"
 )
+# Evidence-span judge gate: the reranker must quote a verbatim span from the
+# post/comments that answers the question; a rating without a quotable span
+# is capped hard. Kills "hallucinated relevance" — an answer you cannot
+# point to in the text is not an answer.
+REDDIT_EVIDENCE_GATE_ENABLED: bool = (
+    os.getenv("REDDIT_EVIDENCE_GATE_ENABLED", "true").lower() == "true"
+)
+REDDIT_NO_EVIDENCE_MAX_SCORE: float = float(
+    os.getenv("REDDIT_NO_EVIDENCE_MAX_SCORE", "0.35")
+)
 # JSONL decision log (query, strategies, winners, abstain reason). Powers
 # periodic strategy/subreddit effectiveness review instead of gut-feel tuning.
 REDDIT_TELEMETRY_ENABLED: bool = (
