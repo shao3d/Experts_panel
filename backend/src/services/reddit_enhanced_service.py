@@ -269,12 +269,14 @@ def _write_search_telemetry(record: Dict[str, Any]) -> None:
             return
         path = config.REDDIT_TELEMETRY_PATH
         if not os.path.isabs(path):
-            # Relative paths resolve against the repo root, matching how the
-            # backend locates its data directory.
-            base = os.path.dirname(os.path.dirname(os.path.dirname(
-                os.path.dirname(os.path.abspath(__file__))
+            # Resolve relative paths against the backend package root
+            # (src/.. -> backend/): in dev that is <repo>/backend, in the
+            # production container /app — so "data/..." lands in the same
+            # persistent volume as experts.db and backend.log.
+            backend_root = os.path.dirname(os.path.dirname(os.path.dirname(
+                os.path.abspath(__file__)
             )))
-            path = os.path.join(base, path)
+            path = os.path.join(backend_root, path)
         os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, "a", encoding="utf-8") as fh:
             fh.write(json.dumps(record, ensure_ascii=False) + "\n")

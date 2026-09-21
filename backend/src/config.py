@@ -190,7 +190,7 @@ REDDIT_TELEMETRY_ENABLED: bool = (
     os.getenv("REDDIT_TELEMETRY_ENABLED", "true").lower() == "true"
 )
 REDDIT_TELEMETRY_PATH: str = os.getenv(
-    "REDDIT_TELEMETRY_PATH", "backend/data/reddit_search_telemetry.jsonl"
+    "REDDIT_TELEMETRY_PATH", "data/reddit_search_telemetry.jsonl"
 )
 # In-memory cache for /details enrichment: iterative research sessions re-fetch
 # the same threads, paying 10-20s and Reddit rate-limit budget every time.
