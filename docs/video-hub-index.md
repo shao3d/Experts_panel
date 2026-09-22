@@ -4,6 +4,12 @@
 Проверка дубликата перед ingest: `backend/.venv/bin/python backend/scripts/video_hub_index.py --check <url|id>`
 Источник: `/home/ubuntu/apps/experts-panel/dev/backend/data/experts.db` (staging-БД; после data release совпадает с продом).
 
+## Dan Kieft
+
+| YouTube ID | Название | Сегментов | Опубликовано |
+|---|---|---:|---|
+| `kGku3TTiYO8` | Create Cinematic AI Ads with Seedance 2.5 - Full guide | 13 | 2026-09-16 |
+
 ## Higgsfield AI
 
 | YouTube ID | Название | Сегментов | Опубликовано |
@@ -20,4 +26,4 @@
 |---|---|---:|---|
 | `2b3Z4rW5VJc` | STOP Wasting Credits & Master Seedance 2.5 | 11 | 2026-08-21 |
 
-Итого: **6** видео, **149** сегментов.
+Итого: **7** видео, **162** сегментов.
