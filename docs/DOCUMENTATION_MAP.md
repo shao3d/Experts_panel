@@ -1,7 +1,7 @@
 # Карта Документации
 
 Status: Active
-Last updated: 2026-09-15
+Last updated: 2026-09-21
 
 Это навигационный слой проекта Experts Panel. Он должен отвечать на вопрос
 "куда смотреть?", а не пересказывать содержимое всех документов.
@@ -21,7 +21,8 @@ Last updated: 2026-09-15
 
 | Задача | Сначала читать | Потом, если нужно |
 | --- | --- | --- |
-| **Завершено: admission @neyr0graph (Visual, limited_scope, 2026-09-15)** | `docs/plans/2026-09-15-neyrograph-admission-starter.md` (§7 Completion addendum) | `docs/architecture/current-expert-roster.md`, `docs/architecture/expert-admission-control.md` |
+| **Актуальный handoff: после VideoHub-ревью (2026-09-17)** | `docs/plans/2026-09-17-session-handoff-starter.md` | `docs/roadmap/video-hub-scaling.md`, `docs/roadmap/2026-09-system-review.md` |
+| **Завершено: admission Visual (neyrograph, iideyalogiya) — limited_scope, 2026-09-15** | `docs/architecture/current-expert-roster.md`, `docs/architecture/expert-admission-control.md` | `docs/archive/2026-09-15-neyrograph-admission-starter.md` (§7, история) |
 | Что улучшать дальше / статус обзора | `docs/roadmap/2026-09-system-review.md` | `docs/architecture/pipeline.md` для фазы 5b (citation verification) |
 | Общая архитектура / pipeline | `docs/architecture/pipeline.md` | `backend/CLAUDE.md` |
 | Retrieval / Embs&Keys / FTS5 | `docs/architecture/super-passport-search.md` | `docs/archive/hybrid_retrieval_plan.md` как историю |
@@ -34,7 +35,7 @@ Last updated: 2026-09-15
 | Video Hub | `docs/architecture/video-hub-service.md` | `docs/guides/video-hub-operator.md` |
 | VideoHub Knowledge Matrix (гейт до ingest, gap-scoped) | `docs/plans/2026-09-20-videohub-knowledge-matrix-proposal.md` | чек-лист 0.0b в `docs/guides/video-hub-operator.md`, `output/video_admission/admission_log.json` |
 | Reddit sidecar | `docs/architecture/reddit-service.md` | service code under `services/reddit-proxy/` |
-| Agent-facing Reddit API + CLI + Codex skill | `docs/architecture/reddit-service.md` (разделы "Agent-facing API", "CLI-граница") | `.codex/skills/reddit-search/`, `scripts/install_reddit_search_skill.sh`, handoff-история: `docs/plans/2026-08-29-reddit-search-agent-api-handoff.md` |
+| Agent-facing Reddit API + CLI + Codex skill | `docs/architecture/reddit-service.md` (разделы "Agent-facing API", "CLI-граница") | `.codex/skills/reddit-search/`, `scripts/install_reddit_search_skill.sh`, handoff-история: `docs/archive/2026-08-29-reddit-search-agent-api-handoff.md` |
 | Generic Reddit Search client | `docs/guides/reddit-search-generic-client.md` | `clients/reddit-search-generic/`, `scripts/build_reddit_search_generic_client.sh` |
 | Agentic read-only поиск по корпусу (Expert Scout) | `docs/guides/expert-scout.md` | `backend/scripts/expert_scout.py`, `backend/src/expert_groups.py`, `.opencode/agents/expert-scout.md`, `.opencode/plugins/expert-scout-tools.ts`, `.codex/skills/expert-scout/`, `scripts/expert_scout.sh`, `scripts/install_expert_scout_skill.sh` |
 | Языки / перевод RU-EN | `docs/architecture/multilingual-support.md` | `backend/src/utils/language_utils.py`, `backend/src/services/translation_service.py` |
@@ -45,13 +46,19 @@ Last updated: 2026-09-15
 
 ## Правила Навигации
 
-- `docs/architecture/*` - системное поведение и design constraints.
+- `docs/architecture/*` - системное поведение и design constraints (текущие SSOT).
 - `docs/guides/*` - операторские команды и процедуры.
+- `docs/operations.md` - релизные операции (code release / data release / rollback).
+- `docs/plans/*` - только АКТИВНЫЕ handoff/starter с датой в имени (`YYYY-MM-DD-*`); завершённый или вытесненный starter сразу уезжает в `docs/archive/`.
+- `docs/roadmap/*` - активные планы и обзоры; снятые с актуальности - в `docs/archive/`.
+- `docs/concepts/*` - черновики продуктовых идей, не runtime-поведение.
 - `docs/quality/*` - рубрики и dogfood evidence.
+- `docs/design-system/*` - UI/UX SSOT и снапшоты дизайн-токенов.
 - `docs/research/*` and `docs/session-logs/*` - evidence/history, not current SSOT.
 - Loose top-level files in `docs/` other than this map are ad hoc artifacts unless listed below.
 - `output/expert_admission/*` - generated artifacts, не ручная документация.
-- `docs/archive/*` - только история; не использовать как current SSOT.
+- `docs/archive/*` - только история; не использовать как current SSOT. Старое не удаляем - переносим сюда через `git mv` с обновлением всех ссылок.
+- Журнальные записи внутри документов (AND-*, датированные dogfood, "Done"-логи) - история, а не текущее состояние. Факты об инфраструктуре (где прод, как деплоится, где БД) сверяй с кодом, `.github/workflows/` и `docs/operations.md`, а не с журналом.
 
 ## Главные SSOT
 
@@ -120,7 +127,7 @@ Generated artifacts лучше регенерировать скриптами, 
 
 | Файл | Когда читать |
 | --- | --- |
-| `docs/guides/add-expert.md` | Добавление/удаление эксперта, DB/embedding/Fly sync. |
+| `docs/guides/add-expert.md` | Добавление/удаление эксперта, DB/embedding sync на Oracle VM. |
 | `docs/guides/panex-usage.md` | Как пользоваться Панэксом из чата или CLI. |
 | `docs/guides/expert-scout.md` | Agentic read-only поиск по локальному корпусу (`expert-scout`). |
 | `docs/guides/drift-analysis.md` | Проверка тематического drift. |
@@ -159,7 +166,7 @@ Quality docs - evidence snapshots and guardrails, not current API specs.
 | `docs/concepts/ai-architect-mode.md` | Product concept, not runtime behavior. |
 | `docs/concepts/expert-lens-global-skill.md` | Draft concept for a global Codex skill that turns Panex evidence into bounded source-grounded expert-lens critique packets. |
 | `docs/roadmap/video-hub-scaling.md` | Active scaling roadmap for larger Video Hub usage. |
-| `docs/roadmap/scout-next-steps.md` | Historical metadata-enrichment plan; removed phases are not active. |
+| `docs/archive/scout-next-steps.md` | Historical metadata-enrichment plan; removed phases are not active. |
 | `docs/archive/hybrid_retrieval_plan.md` | Historical implemented plan; current retrieval SSOT is `super-passport-search.md`. |
 | `docs/archive/*` | Historical only. Do not route new implementation from archive docs. |
 

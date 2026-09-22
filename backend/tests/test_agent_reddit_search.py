@@ -2,7 +2,7 @@
 """Contract tests for the agent-facing Reddit Search V2 API.
 
 Covers the handoff contract in
-docs/plans/2026-08-29-reddit-search-agent-api-handoff.md:
+docs/archive/2026-08-29-reddit-search-agent-api-handoff.md:
 
 - valid query -> completed with structured sources
 - too short / too long / empty query -> 400/422

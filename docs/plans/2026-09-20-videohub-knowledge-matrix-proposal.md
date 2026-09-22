@@ -48,7 +48,7 @@
   (`strangedalle`, `acidcrunch`, `cgevent`, `neyrograph`, `iideyalogiya`)
   принята в сентябре как `limited_scope` — именно её клетки пересекаются с
   контентом VideoHub.
-- Owner decision #1 (2026-09-16, `docs/plans/2026-09-16-video-hub-starter.md` §4):
+- Owner decision #1 (2026-09-16, `docs/archive/2026-09-16-video-hub-starter.md` §4):
   VideoHub **не входит в панель и Панэкс**; поиск — только Expert Scout.
   Поэтому «ценность» видео определяется как улучшение ответов Скаута.
 - Ingest-пайплайн: Stage 1 (ASR + кадры) → Stage 2 (LLM-сегментация) →
