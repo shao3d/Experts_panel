@@ -9,6 +9,7 @@
 | YouTube ID | Название | Сегментов | Опубликовано |
 |---|---|---:|---|
 | `kGku3TTiYO8` | Create Cinematic AI Ads with Seedance 2.5 - Full guide | 13 | 2026-09-16 |
+| `Zo8KaTs0l6k` | How I Make Ultra Realistic AI Videos using Seedance 2.5 | 10 | 2026-09-01 |
 
 ## Higgsfield AI
 
@@ -26,4 +27,4 @@
 |---|---|---:|---|
 | `2b3Z4rW5VJc` | STOP Wasting Credits & Master Seedance 2.5 | 11 | 2026-08-21 |
 
-Итого: **7** видео, **162** сегментов.
+Итого: **8** видео, **172** сегментов.
