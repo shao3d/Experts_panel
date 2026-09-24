@@ -2,7 +2,8 @@
 
 **Status:** Stable / Production-Ready (query-time branch dormant in the UI, see "Current Operating Mode")
 **Role:** Parallel pipeline for deep video transcript analysis using the "Digital Twin" approach.
-**Date:** 2026-04-12 (operating-mode note 2026-09-17; review pass 2026-09-17)
+**Date:** 2026-04-12 (operating-mode note 2026-09-17; review passes 2026-09-17,
+2026-09-24)
 
 ---
 
@@ -94,7 +95,19 @@ The automated pipeline optionally adds two blocks to a segment:
 
 - `visual` is stored in `media_metadata.visual` and **also appended to `message_text` as a `VISUAL:` block**, so FTS5, vector search and the synthesis context all see prompts/settings/slides. Retrieval indexes `message_text` only, hence the duplication. Unknown scalar keys (e.g. `seed`, `negative_prompt`) are rendered into the block too; container values stay in `media_metadata.visual` only.
 - `frames` are copied to `backend/data/video_frames/<video_hash>/` and recorded in `media_metadata.frames` as `{time_s, file}`. Frames are a stage-2 working artifact: `backend/data/` and the frame directory are gitignored and **not** shipped with the DB promotion, so in production `media_metadata.frames` are inert metadata (the UI uses YouTube deep-links, not local files).
-- `video_metadata.published_at` (optional) drives `created_at`, so freshness reflects the video date instead of the import date.
+- `video_metadata.published_at` drives `created_at`, so freshness reflects the
+  video date instead of the import date. Any accepted shape (date-only
+  `YYYY-MM-DD`, ISO with `T`, offsets) is normalized at import to the canonical
+  `YYYY-MM-DD HH:MM:SS` text — the same rendering as synced Telegram rows — and
+  mirrored into `media_metadata.published_at`. A missing `published_at` logs a
+  warning and falls back to import time; an unparsable date aborts the import,
+  because a silently wrong `created_at` would skew freshness ranking (review
+  fix 2026-09-24: bare dates used to be stored verbatim and were then treated
+  as maximally old by date parsers). Retrieval parsers
+  (`expert_scout._parse_created_at`, `HybridRetrievalService._calculate_age_days`)
+  also accept date-only text so legacy rows keep working. Rows imported before
+  the normalization are healed by
+  `backend/scripts/maintenance/normalize_video_timestamps.py`.
 - `import_video_json.py` upserts by `telegram_message_id` (row identity preserved), so re-imports do not orphan embeddings. When `message_text` changes, stale `post_embeddings`/`vec_posts` rows are dropped so the next `embed_posts.py` run regenerates them.
 - **Video identity is canonical**: every YouTube URL form (`youtu.be/ID`, `shorts/`, `embed/`, `live/`, `watch?v=ID` with extra params) is canonicalized to `https://www.youtube.com/watch?v=ID` before deriving virtual IDs and topic hashes, so the same video cannot be imported twice under different URLs.
 - **`segment_id` must be unique across the whole video** (chunk numbering is continuous). `--combine` fails loudly on duplicates instead of silently overwriting segments; `import_video_json.py` fails on duplicate virtual IDs inside one JSON.
@@ -121,6 +134,8 @@ The Video Hub runs as a dedicated stream in `event_generator_parallel`.
 -   **Model**: `gemini-2.5-flash-lite` (Config: `MODEL_MAP`).
 -   **Task**: Scans `title` + `summary` to find relevant segments. It scores each segment individually as `HIGH`, `MEDIUM`, or `LOW`.
 -   **Optimization**: Strictly ignores full content during mapping to save tokens.
+-   **Chunking**: segments are scored in chunks of 50 (parallel, capped by `MAP_MAX_PARALLEL`), not one giant prompt — prompt size and the scores JSON stay bounded at any corpus size (closes the ~300-segment truncation cliff).
+-   **Resilience**: 3 attempts with exponential backoff per chunk; a chunk that still fails fails the whole Map honestly via `VideoMapUnavailable` (see "Empty-Result Fallback vs Temporary Unavailability") instead of returning `[]` or silently dropping that chunk's segments.
 
 ### 2. Video Resolve (Semantic Context Expansion)
 -   **Model**: **None (SQL Only)**.
@@ -138,20 +153,33 @@ The Video Hub runs as a dedicated stream in `event_generator_parallel`.
 -   **Visual Elements (`[НА ЭКРАНЕ]`)**: The synthesis prompt splits on-screen markers into two cases. **Ambient** context (speaker, browser, generic slide) is woven organically into the narrative rather than mechanically quoted. **Informational** payload (prompt text, model/generation settings, code, formulas, exact figures, slide titles) is preserved and surfaced verbatim — prompts quoted, settings as a short list — never paraphrased, translated, rounded, or hidden. Unreadable on-screen text is reported as unreadable instead of guessed.
 -   **Citations**: MANDATORY `[post:ID]` format for deep-links. **All** segments provided in the context (both HIGH and MEDIUM) are included in the `main_sources` list, ensuring every cited link is clickable on the frontend.
 -   **Output Token Limit**: `max_tokens=8192` — increased from 4096 to prevent truncation on videos with 50+ segments (where the "DO NOT SUMMARIZE" instruction produces long outputs with many citations).
+-   **Resilience**: 3 attempts with exponential backoff; after the last knock the exception propagates to the orchestrator's error handler (SSE error event).
 
 ### 4. Style-Preserving Validation/Translation
 -   **Service**: Shared `TranslationService` singleton (Model: `google/gemini-3.1-flash-lite`, Config: `MODEL_ANALYSIS`); results come from the persistent translation cache.
 -   **Task**: Safety net after synthesis — if the answer language does not match the query language (either direction), the answer is translated. With language-aware synthesis (Phase 3) this rarely triggers.
 
-### 5. Empty-Result Fallback
+### 5. Empty-Result Fallback vs Temporary Unavailability
 
-If the Map phase scores no segment HIGH or MEDIUM (including when every score is
-malformed or references a phantom ID), Resolve/Synthesis are skipped and the
-service returns a localized "no relevant segments" answer in the query language
-(Russian/English). `_normalize_scores` drops malformed scores and collapses
-duplicates to the strongest relevance per segment before those counts are used,
-so both the fallback and the HIGH/MEDIUM confidence label reflect real segments
-only (review pass 2026-09-17).
+Two empty-looking outcomes are kept apart (review fix 2026-09-24):
+
+- **Honest empty result:** Map ran fine and every real segment scored LOW —
+  Resolve/Synthesis are skipped and the service returns a localized "no relevant
+  segments" answer in the query language (Russian/English).
+- **Temporary unavailability:** Map failed after retries (LLM error, broken
+  JSON, or a response with no usable scores — the contract scores every
+  segment, so phantom-only/malformed-only responses count as broken). The
+  service returns a localized "video archive is temporarily unavailable, try
+  again" answer (`VideoMapUnavailable`) with empty `main_sources` and LOW
+  confidence, so a scorer crash never masquerades as "no relevant segments".
+  Synthesis failures retry too and then raise — the orchestrator surfaces them
+  as an SSE error event.
+
+Both Map and Synthesis LLM calls get three attempts with exponential backoff
+(tenacity `AsyncRetrying`, same shape as `MapService` retries). `_normalize_scores`
+drops malformed scores and collapses duplicates to the strongest relevance per
+segment before those counts are used, so both the fallback and the HIGH/MEDIUM
+confidence label reflect real segments only (review pass 2026-09-17).
 
 ---
 

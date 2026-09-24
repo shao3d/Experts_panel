@@ -4,11 +4,20 @@ Handles segment-level semantic mapping, thread-based context expansion,
 and high-fidelity stylistic synthesis.
 """
 
+import asyncio
 import json
 import logging
 from collections.abc import Callable
 from datetime import datetime
 from typing import Any
+
+from tenacity import (
+    AsyncRetrying,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+    wait_none,
+)
 
 from .. import config
 from ..utils.language_utils import detect_query_language
@@ -19,11 +28,70 @@ logger = logging.getLogger(__name__)
 
 _RELEVANCE_RANK = {"HIGH": 0, "MEDIUM": 1, "LOW": 2}
 
+
+class VideoMapUnavailable(Exception):
+    """Map phase could not score segments after retries.
+
+    Infrastructure failure (LLM errors, broken responses), NOT an honest
+    "no relevant segments" verdict: callers must surface it as a temporary
+    problem instead of the empty-result fallback.
+    """
+
+
 class VideoHubService:
-    def __init__(self):
-        self.llm_client = get_vertex_llm_client()
+    def __init__(
+        self,
+        llm_client=None,
+        *,
+        map_max_attempts: int = 3,
+        retry_wait_min: float = 4.0,
+        map_chunk_size: int | None = None,
+        map_max_parallel: int | None = None,
+    ):
+        self.llm_client = llm_client or get_vertex_llm_client()
         self.map_model = config.MODEL_MAP
         self.synthesis_model = config.MODEL_VIDEO_PRO # gemini-3.0-pro
+        self.map_max_attempts = map_max_attempts
+        self.retry_wait_min = retry_wait_min
+        # Score in chunks like MapService: one prompt per 50 segments keeps the
+        # prompt and the scores JSON far below model limits at any corpus size.
+        self.map_chunk_size = map_chunk_size if map_chunk_size is not None else config.MAP_CHUNK_SIZE
+        self.map_max_parallel = map_max_parallel if map_max_parallel is not None else config.MAP_MAX_PARALLEL
+
+    def _retrying(self) -> AsyncRetrying:
+        """Three knocks with exponential backoff (same shape as MapService).
+
+        `retry_wait_min=0` disables waiting entirely (used by tests).
+        """
+        wait = (
+            wait_none()
+            if self.retry_wait_min <= 0
+            else wait_exponential(multiplier=2, min=self.retry_wait_min, max=90)
+        )
+        return AsyncRetrying(
+            stop=stop_after_attempt(self.map_max_attempts),
+            wait=wait,
+            retry=retry_if_exception_type(Exception),
+            reraise=True,
+        )
+
+    @staticmethod
+    def _unavailable_answer(query: str) -> str:
+        """Honest 'temporary problem' text in the query's language.
+
+        Distinct from the empty-result fallback: the archive is fine, we just
+        failed to read it right now — say so instead of claiming "nothing
+        relevant".
+        """
+        if detect_query_language(query) == "Russian":
+            return (
+                "Видеоархив сейчас недоступен: не удалось оценить сегменты видео. "
+                "Попробуйте ещё раз чуть позже."
+            )
+        return (
+            "The video archive is temporarily unavailable: video segments could "
+            "not be scored. Please try again in a moment."
+        )
 
     async def process(
         self,
@@ -38,13 +106,26 @@ class VideoHubService:
         if progress_callback:
             await progress_callback({"phase": "map", "status": "processing", "message": "🎥 Scoring video segments..."})
 
-        scored_segments = await self._map_segments(query, video_segments)
+        try:
+            scored_segments = await self._map_segments(query, video_segments)
+        except VideoMapUnavailable:
+            # Not an empty result: the scorer itself failed. Say "temporarily
+            # unavailable" instead of lying "nothing relevant was found".
+            return {
+                "answer": self._unavailable_answer(query),
+                "main_sources": [],
+                "confidence": "LOW",
+                "posts_analyzed": len(video_segments),
+            }
 
         # Filter out only HIGH and MEDIUM
         high_segments = [s for s in scored_segments if s["relevance"] == "HIGH"]
         medium_segments = [s for s in scored_segments if s["relevance"] == "MEDIUM"]
 
         if not high_segments and not medium_segments:
+            # Honest empty result: Map ran fine and every segment scored LOW.
+            # (Map failures never reach this branch — they raise
+            # VideoMapUnavailable and return the temporary-unavailable answer.)
             # Match the fallback language to the query language; the synthesis
             # phase is language-aware too, so both paths answer in the query's
             # language instead of always Russian.
@@ -88,10 +169,45 @@ class VideoHubService:
         }
 
     async def _map_segments(self, query: str, segments: list[Any]) -> list[dict[str, Any]]:
-        """Score each segment individually based on its summary."""
+        """Score each segment individually based on its summary.
 
+        Segments are scored in chunks (MapService-style, parallel with a
+        concurrency cap) so prompt size and the scores JSON stay bounded at any
+        corpus size. Each chunk retries flaky calls/broken responses on its own;
+        one chunk that still fails after retries fails the whole Map honestly
+        (VideoMapUnavailable) — never a silent partial score that would quietly
+        drop the failed chunk's segments.
+        """
+        if not segments:
+            return []
+
+        chunks = [
+            segments[i:i + self.map_chunk_size]
+            for i in range(0, len(segments), self.map_chunk_size)
+        ]
+        semaphore = asyncio.Semaphore(max(1, min(self.map_max_parallel, len(chunks))))
+
+        async def run_chunk(chunk: list[Any]) -> list[dict[str, Any]]:
+            async with semaphore:
+                return await self._map_chunk(query, chunk)
+
+        results = await asyncio.gather(
+            *(run_chunk(chunk) for chunk in chunks),
+            return_exceptions=True,
+        )
+        errors = [r for r in results if isinstance(r, BaseException)]
+        if errors:
+            logger.error(f"Video Map failed after retries: {errors[0]}")
+            raise VideoMapUnavailable(str(errors[0])) from errors[0]
+        cleaned = [item for chunk_scores in results for item in chunk_scores]
+        if not cleaned:
+            raise VideoMapUnavailable("Video Map produced no scores")
+        return cleaned
+
+    async def _map_chunk(self, query: str, chunk: list[Any]) -> list[dict[str, Any]]:
+        """Score one chunk of segments (single prompt, retried on failure)."""
         map_input = []
-        for s in segments:
+        for s in chunk:
             try:
                 meta = json.loads(s.media_metadata) if isinstance(s.media_metadata, str) else s.media_metadata
                 if not meta: meta = {}
@@ -125,18 +241,27 @@ Output JSON ONLY, no explanations (keep it compact: id + relevance per segment):
 }}
 """
         try:
-            response = await self.llm_client.chat_completions_create(
-                model=self.map_model,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.1,
-                response_format={"type": "json_object"},
-                max_tokens=4096,  # Scores JSON; 402 guard
-            )
-            data = json.loads(response.choices[0].message.content)
-            return self._normalize_scores(data.get("scores", []), segments)
+            async for attempt in self._retrying():
+                with attempt:
+                    response = await self.llm_client.chat_completions_create(
+                        model=self.map_model,
+                        messages=[{"role": "user", "content": prompt}],
+                        temperature=0.1,
+                        response_format={"type": "json_object"},
+                        max_tokens=4096,  # Scores JSON; 402 guard
+                    )
+                    data = json.loads(response.choices[0].message.content)
+                    cleaned = self._normalize_scores(data.get("scores", []), chunk)
+                    if not cleaned:
+                        # The contract scores every segment: a response with no
+                        # usable scores is a broken response, so it gets retried
+                        # like a crash instead of reading as "nothing relevant".
+                        raise ValueError("Video Map returned no usable scores")
+                    return cleaned
         except Exception as e:
-            logger.error(f"Video Map failed: {e}")
-            return []
+            logger.error(f"Video Map chunk failed after retries: {e}")
+            raise
+        raise VideoMapUnavailable("Video Map chunk produced no scores")  # pragma: no cover
 
     @staticmethod
     def _normalize_scores(raw_scores: Any, segments: list[Any]) -> list[dict[str, Any]]:
@@ -282,16 +407,19 @@ Expert Video Segments:
 
 Please provide a detailed, high-fidelity retelling of the expert's insights:"""
 
-        response = await self.llm_client.chat_completions_create(
-            model=self.synthesis_model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
-            temperature=0.3,
-            max_tokens=8192
-        )
-        return response.choices[0].message.content
+        async for attempt in self._retrying():
+            with attempt:
+                response = await self.llm_client.chat_completions_create(
+                    model=self.synthesis_model,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt}
+                    ],
+                    temperature=0.3,
+                    max_tokens=8192
+                )
+                return response.choices[0].message.content
+        raise RuntimeError("Video Synthesis produced no response")  # pragma: no cover
 
 # Helper functions to extract parts from our custom message_text format with robustness
 def seg_title_from_text(text: str) -> str:

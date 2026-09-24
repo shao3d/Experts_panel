@@ -2,6 +2,7 @@
 
 **Role:** Expert Digital Twin Creator
 **Status:** Active Workflow (automated ingest preferred)
+**Last updated:** 2026-09-24
 **Owner:** System Architect (opencode agent)
 
 ---
@@ -141,11 +142,12 @@ Use **Google AI Studio** or another Gemini UI to generate the source JSON.
    - ВАЖНО: Меняй topic_id при смене логического блока (главы) или каждые 10-15 минут.
    - ИЗБЕГАЙ гигантских тем на все видео. Используй гранулярные ID: "rag_intro", "rag_architecture".
 5. ДОСЛОВНОСТЬ: Речь автора сохраняй дословно.
-6. КЛЮЧЕВЫЕ КАДРЫ (ON-SCREEN MOMENTS): значимые моменты фиксируй меткой [НА ЭКРАНЕ: ...] в 'content', а в timestamp_seconds ставь СЕКУНДУ ПОЯВЛЕНИЯ кадра, не начало сегмента. Ключевой = читаемый текст (промт/заголовок/метрика), интерфейс/настройки/модалка, таблица/график/код/формула, результат генерации, «до/после», клик или уведомление. Каденция ~1 кадр/15 сек, но без насилия. При сомнении — фиксируй. Частично нечитаемое помечай [НА ЭКРАНЕ (неуверенно): ...].
+6. ДАТА ВЫХОДА: в video_metadata.published_at всегда ставь дату публикации видео на YouTube (YYYY-MM-DD) — поле обязательно.
+7. КЛЮЧЕВЫЕ КАДРЫ (ON-SCREEN MOMENTS): значимые моменты фиксируй меткой [НА ЭКРАНЕ: ...] в 'content', а в timestamp_seconds ставь СЕКУНДУ ПОЯВЛЕНИЯ кадра, не начало сегмента. Ключевой = читаемый текст (промт/заголовок/метрика), интерфейс/настройки/модалка, таблица/график/код/формула, результат генерации, «до/после», клик или уведомление. Каденция ~1 кадр/15 сек, но без насилия. При сомнении — фиксируй. Частично нечитаемое помечай [НА ЭКРАНЕ (неуверенно): ...].
 
 ФОРМАТ ВЫХОДА (JSON):
 {
-  "video_metadata": { "title": "...", "author": "Gleb Kudryavtcev", "url": "...", "duration_seconds": 0 },
+  "video_metadata": { "title": "...", "author": "Gleb Kudryavtcev", "url": "...", "duration_seconds": 0, "published_at": "YYYY-MM-DD" },
   "segments": [
     {
       "segment_id": 1001,
@@ -233,6 +235,11 @@ Use **Google AI Studio** or another Gemini UI to generate the source JSON.
 - **Ingest scripts:** `backend/scripts/ingest_video.py`, `backend/scripts/asr_whisper.py` (dev checkout).
 - **Import:** `backend/scripts/import_video_json.py` (upsert by `telegram_message_id`; preserves embeddings across re-imports).
 - **Embeddings:** `backend/scripts/embed_posts.py` (run after import so segments join vector search; FTS5 updates itself via triggers).
+- **Timestamps:** `video_metadata.published_at` (YYYY-MM-DD) is required by the
+  Stage-2 prompt; the importer normalizes it to canonical `YYYY-MM-DD HH:MM:SS`.
+  Rows imported before 2026-09-24 are healed by
+  `backend/scripts/maintenance/normalize_video_timestamps.py` (staging DB;
+  production goes with the owner's `обнови базу`).
 - **Database:** staging `backend/data/experts.db` → promoted to production via
   `DB_UPLOAD_ONLY=1 ./scripts/update_production_db.sh` (= Production data release,
   см. `docs/operations.md`). Legacy manual flow can still promote a ready JSON via

@@ -207,14 +207,15 @@ def _vector_search(
 
 
 def _parse_created_at(value: Any) -> datetime | None:
-    """Parse both space-format and ISO-T timestamps; None means 'treat as old'."""
-    if not value:
-        return None
-    text = str(value).replace("T", " ").split(".")[0]
-    try:
-        return datetime.strptime(text, "%Y-%m-%d %H:%M:%S")
-    except ValueError:
-        return None
+    """Parse stored timestamps (space/ISO-T/date-only); None means 'treat as old'.
+
+    Date-only values ("2026-08-07") are midnight of that day: ingest artifacts
+    sometimes carry bare dates, and treating those rows as maximally old would
+    punish the freshest videos in freshness ranking.
+    """
+    from src.utils.date_utils import parse_timestamp
+
+    return parse_timestamp(value)
 
 
 def _soft_freshness(created_at: Any, now: datetime) -> float:

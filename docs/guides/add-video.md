@@ -1,5 +1,7 @@
 # Adding New Videos (The "Video Hub" Pipeline)
 
+**Status:** Active
+**Last updated:** 2026-09-24
 **Pipeline:** `Map -> Resolve (Summary Bridging) -> Reduce (Digital Twin)`
 **Деплой: Oracle VM (Fly.io-процесс удалён 24.08.2026)**
 
@@ -88,7 +90,11 @@ Ensure your JSON file follows the **Segmented Topic Structure**:
 `visual` is stored in `media_metadata` and appended to `message_text` as a
 `VISUAL:` block (searchable by FTS5/vector and visible to synthesis); frame files
 are copied to `backend/data/video_frames/<video_hash>/`. `published_at` drives
-`created_at`, so recency filters use the video date.
+`created_at`, so recency filters use the video date. Write it as `YYYY-MM-DD`
+(the Stage-2 prompt requires it); the importer normalizes any accepted shape to
+canonical `YYYY-MM-DD HH:MM:SS` and refuses unparsable dates. Without
+`published_at` the import falls back to the import time (warning) and freshness
+ranking treats the video as new.
 
 ## 🛠️ What the script does
 

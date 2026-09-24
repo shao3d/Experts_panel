@@ -1,15 +1,20 @@
 # Video Hub: Scaling Roadmap & Architecture Audit
 
 **Created:** 2026-03-28
-**Status:** Active Roadmap (implement when video library exceeds ~100 segments)
-**Current State (2026-09-16):** the legacy batch (53 segments, 4 videos) was
-removed from the dev corpus by owner decision; the corpus now holds 1 video /
-11 segments (`STOP Wasting Credits & Master Seedance 2.5`, Youri van Hofwegen).
-Ingest is automated (chunked ASR + adaptive frames + LLM pass), the structured
-`visual` block and per-segment frames are stored, and Scout returns YouTube
-deep-links with timestamps. The scaling items below describe the state before
-automation and remain valid for the query-time side.
-**Trigger:** Start implementing when approaching 100-150 segments or 10+ videos.
+**Status:** Active Roadmap (query-time side; P2/P3/P5/P4/N2 closed — see the
+priority table and "Review fixes")
+**Last updated:** 2026-09-24
+**Current State (2026-09-24):** the dev corpus holds **8 videos / 172 segments**
+(see `docs/video-hub-index.md`): Higgsfield AI (5), Dan Kieft (2), Youri van
+Hofwegen (1). Ingest is automated (chunked ASR + adaptive frames + LLM pass),
+the structured `visual` block and per-segment frames are stored, and Scout
+returns YouTube deep-links with timestamps. The 2026-09-24 review pass closed
+the scaling blockers that had already tripped their triggers: Map is chunked
+(P2, was live at 172 segments), retries + honest failures (P3), timestamp
+normalization (P4 gap). The remaining items below stay valid for the
+query-time side.
+**Trigger:** was "100-150 segments or 10+ videos" — reached and handled
+2026-09-24; next scale step is N4 (~200+ segments).
 
 ---
 
@@ -276,11 +281,11 @@ Reduce). При этом промпт синтеза ОБЯЗЫВАЕТ став
 
 | Приоритет | Задача | Когда | Сложность | Статус |
 |-----------|--------|-------|-----------|--------|
-| **1** | P3: Retry-логика (Map + Synthesis) | Сейчас (баг) | Низкая | Частично: фильтрация битых scores и диета Map-вывода — 2026-09-17; retry — открыто |
+| **1** | P3: Retry-логика (Map + Synthesis) | Сейчас (баг) | Низкая | ✅ 2026-09-24: retry ×3 (tenacity) на Map и Synthesis; Map-сбой больше не маскируется под «не найдено» |
 | **2** | P5: Валидация ID после Map | Сейчас (баг) | Тривиальная | ✅ 2026-09-17 (`_normalize_scores`) |
 | **3** | P4: `published_at` в импорт | При следующем импорте видео | Низкая | ✅ 2026-09-16 |
 | **4** | N2: Динамическая дата в промпте | При любом изменении сервиса | Тривиальная | ✅ 2026-09-17 |
-| **5** | P2: Chunking в Video Map | При ~100 сегментах | Средняя | Открыто |
+| **5** | P2: Chunking в Video Map | При ~100 сегментах | Средняя | ✅ 2026-09-24: порции по 50, параллельно с капом `MAP_MAX_PARALLEL`; сбой порции = честный отказ Map |
 | **6** | P1: Включить Hybrid Search + эмбеддинги в deploy | При ~100-150 сегментах | Средняя | Снято решением владельца: поиск по видео — только Scout |
 | **7** | N1: Использовать `context_bridge` | При рефакторинге синтеза | Низкая | Открыто |
 | **8** | N3: Тест Flash vs Pro для синтеза | При оптимизации стоимости | Тривиальная | Открыто |
@@ -298,6 +303,35 @@ Reduce). При этом промпт синтеза ОБЯЗЫВАЕТ став
   при изменении `message_text` старые эмбеддинги инвалидируются.
 - PostCard: deep-link собирается с `?` или `&` в зависимости от формы URL (был битый `&t=`).
 - Тесты: `backend/tests/test_video_ingest_guards.py` — guard'ы combine/import/transcript/scores.
+
+### Review fixes (2026-09-24, Map chunking)
+
+- `_map_segments()` больше не шлёт все сегменты одним промптом: порции по
+  `MAP_CHUNK_SIZE` (50), параллельно с капом `MAP_MAX_PARALLEL`, merge scores
+  после. Снимает потолок ~300 сегментов (обрезка JSON со скорами → молчаливое
+  «не найдено»). Сбой любой порции после её retry роняет Map целиком
+  (`VideoMapUnavailable`) — без частичной оценки, которая молча потеряла бы
+  сегменты упавшей порции. Закрывает P2 из таблицы выше.
+
+### Review fixes (2026-09-24, honest failures & retry)
+
+- Map-сбой (LLM упал, битый JSON, ответ без валидных scores) после 3 попыток
+  больше не превращается в молчаливое «не найдено сегментов»: возвращается
+  локализованное «видеоархив временно недоступен» (`VideoMapUnavailable`,
+  пустые `main_sources`, LOW). Честный «не найдено» остался только для реального
+  вердикта «всё LOW». Synthesis получил retry ×3 и после финального сбоя
+  честно кидает ошибку наверх (SSE error event). Закрывает P3 из таблицы выше.
+
+### Review fixes (2026-09-24, timestamps)
+
+- Нормализация дат: `published_at` при импорте приводится к каноническому
+  `YYYY-MM-DD HH:MM:SS` (date-only/ISO-T/offsets — любой вход), дублируется в
+  `media_metadata.published_at`; кривая дата роняет импорт, а молча не
+  подменяется. Парсеры свежести (Scout, `HybridRetrievalService`) принимают и
+  date-only. Гэп P4: строки с bare-date `created_at` считались «очень старыми»
+  и свежие видео (Dan Kieft) занижались в поиске. Швабра для старых строк:
+  `backend/scripts/maintenance/normalize_video_timestamps.py`.
+- `embed_posts.py` пишет `vec_posts.created_at` в том же каноническом формате.
 
 ### Review fixes (2026-09-17, повторный проход)
 

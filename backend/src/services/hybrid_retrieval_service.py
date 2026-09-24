@@ -15,6 +15,8 @@ import time
 from datetime import datetime
 from typing import List, Optional, Tuple
 
+from ..utils.date_utils import parse_timestamp
+
 from sqlalchemy import func, text
 from sqlalchemy.orm import Session
 
@@ -326,13 +328,12 @@ class HybridRetrievalService:
         if not created_at:
             return 365  # Default: treat as old
 
-        if isinstance(created_at, str):
-            try:
-                # Handle both ISO formats: "2025-12-21T21:15:07" and "2024-06-11 15:58:34.000000"
-                clean_str = created_at.replace("T", " ").split(".")[0]
-                created_at = datetime.strptime(clean_str, "%Y-%m-%d %H:%M:%S")
-            except Exception:
-                return 365
+        # Accepts space/ISO-T forms, fractional seconds and date-only values
+        # ("2026-08-07" = midnight), so video rows imported with bare dates do
+        # not get bucketed as maximally old.
+        parsed = parse_timestamp(created_at)
+        if parsed is None:
+            return 365
 
-        age_days = (datetime.utcnow() - created_at).days
+        age_days = (datetime.utcnow() - parsed).days
         return max(0, age_days)

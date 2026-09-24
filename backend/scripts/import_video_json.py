@@ -27,6 +27,10 @@ BACKEND_DIR = Path(__file__).resolve().parents[1]
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 
+from src.utils.date_utils import (  # noqa: E402
+    format_timestamp,
+    to_canonical_timestamp,
+)
 from src.cli.bootstrap import (  # noqa: E402
     bootstrap_cli,
     get_sqlite_db_path,
@@ -312,7 +316,26 @@ def import_video_json(
     video_title = meta.get("title", "Untitled Video")
     author_name = meta.get("author", meta.get("channel", "Unknown Expert"))
     author_id = slugify(author_name)
-    published_at = meta.get("published_at")
+    # Normalize the publication date once, up front: any accepted shape
+    # (date-only, ISO with T, offsets) becomes canonical text so freshness
+    # ranking and date filters see one format. Unparsable dates abort the
+    # import — a silently wrong created_at would rank the video as "new".
+    try:
+        published_at = to_canonical_timestamp(
+            meta.get("published_at"), field="video_metadata.published_at"
+        )
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
+    if published_at is None:
+        logger.warning(
+            "video_metadata.published_at missing for %s; created_at falls back to "
+            "import time, so freshness ranking treats the video as newly imported "
+            "instead of its real publication date",
+            video_url,
+        )
+    created_at_value = published_at or format_timestamp(
+        datetime.now(UTC).replace(tzinfo=None)
+    )
     url_hash = hashlib.md5(video_url.encode()).hexdigest()[:12]
 
     base_dir = frames_base or json_path.parent
@@ -388,7 +411,7 @@ def import_video_json(
                 "original_author_id": author_id,
             }
             if published_at:
-                media_meta["published_at"] = published_at
+                media_meta["published_at"] = published_at  # canonical text
             if visual:
                 media_meta["visual"] = visual
                 counts["with_visual"] += 1
@@ -409,10 +432,11 @@ def import_video_json(
                 "message_text": full_text,
                 "author_name": author_name,
                 "author_id": author_id,
-                # Naive UTC ISO string: the posts.created_at column is an
-                # SQLAlchemy DateTime; aware values would mix naive/aware
-                # arithmetic in retrieval services.
-                "created_at": published_at or datetime.now(UTC).replace(tzinfo=None).isoformat(),
+                # Canonical naive-UTC text ("YYYY-MM-DD HH:MM:SS"): matches the
+                # SQLAlchemy SQLite DATETIME rendering used by synced Telegram
+                # rows, so strings compare correctly in SQL and parse back to
+                # real datetimes on ORM load.
+                "created_at": created_at_value,
                 "telegram_message_id": virtual_message_id,
                 "media_metadata": json.dumps(media_meta, ensure_ascii=False),
                 "view_count": 0,

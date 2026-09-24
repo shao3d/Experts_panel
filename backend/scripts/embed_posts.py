@@ -25,6 +25,7 @@ BACKEND_DIR = Path(__file__).parent.parent
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 
+from src.utils.date_utils import format_timestamp, parse_timestamp
 from src.cli.bootstrap import (
     bootstrap_cli,
     require_openrouter_runtime,
@@ -118,6 +119,14 @@ async def embed_batch(posts: list[Post], dry_run: bool = False) -> tuple[int, in
         logger.error(f"❌ Batch embedding failed: {e}")
         return 0, len(posts)
 
+    if len(embeddings) != len(posts):
+        # zip() would silently drop the tail; fail the batch honestly instead.
+        logger.error(
+            f"❌ Embedding API returned {len(embeddings)} vectors for "
+            f"{len(posts)} posts; refusing to save a partial batch"
+        )
+        return 0, len(posts)
+
     # Save to database
     db = SessionLocal()
     embedded = 0
@@ -128,6 +137,13 @@ async def embed_batch(posts: list[Post], dry_run: bool = False) -> tuple[int, in
             try:
                 # Insert into vec_posts (vector table with metadata)
                 # Use INSERT OR REPLACE for idempotency
+                parsed_created = parse_timestamp(post.created_at)
+                if post.created_at and parsed_created is None:
+                    # Present but unparsable: refuse to guess (stamping "now"
+                    # would rank the row as brand new) — skip like any bad row.
+                    raise ValueError(
+                        f"unparsable created_at {post.created_at!r} for post {post.post_id}"
+                    )
                 vec_sql = """
                     INSERT OR REPLACE INTO vec_posts (post_id, embedding, expert_id, created_at)
                     VALUES (:post_id, vec_f32(:embedding), :expert_id, :created_at)
@@ -138,9 +154,12 @@ async def embed_batch(posts: list[Post], dry_run: bool = False) -> tuple[int, in
                         "post_id": post.post_id,
                         "embedding": json.dumps(embedding),
                         "expert_id": post.expert_id,
-                        "created_at": post.created_at.isoformat()
-                        if post.created_at
-                        else datetime.now(timezone.utc).isoformat(),
+                        # Canonical naive-UTC text (same as posts.created_at),
+                        # so freshness parsers see one format in every table.
+                        "created_at": format_timestamp(
+                            parsed_created
+                            or datetime.now(timezone.utc).replace(tzinfo=None)
+                        ),
                     },
                 )
 
@@ -160,6 +179,11 @@ async def embed_batch(posts: list[Post], dry_run: bool = False) -> tuple[int, in
                     },
                 )
 
+                # Commit per post: one bad row must not roll back its
+                # neighbours' already-saved rows (a batch-level rollback after
+                # a mid-loop error silently dropped them while the counter
+                # still counted them as saved).
+                db.commit()
                 embedded += 1
 
             except Exception as e:
@@ -170,14 +194,15 @@ async def embed_batch(posts: list[Post], dry_run: bool = False) -> tuple[int, in
                 db.rollback()
                 continue
 
-        db.commit()
         logger.info(f"✅ Saved {embedded} embeddings ({errors} errors)")
         return embedded, errors
 
     except Exception as e:
         logger.error(f"❌ Database transaction failed: {e}")
         db.rollback()
-        return 0, len(posts)
+        # Saved rows stay saved (per-post commits); only the unsaved remainder
+        # counts as errors — never report zeros over real progress.
+        return embedded, (len(posts) - embedded)
     finally:
         db.close()
 
