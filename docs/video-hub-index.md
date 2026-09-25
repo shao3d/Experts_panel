@@ -4,6 +4,12 @@
 Проверка дубликата перед ingest: `backend/.venv/bin/python backend/scripts/video_hub_index.py --check <url|id>`
 Источник: `/home/ubuntu/apps/experts-panel/dev/backend/data/experts.db` (staging-БД; после data release совпадает с продом).
 
+## AI Samson
+
+| YouTube ID | Название | Сегментов | Опубликовано |
+|---|---|---:|---|
+| `5y20tE7zo40` | The Level of AI Video Most People Never Reach... | 32 | 2026-09-09 |
+
 ## Dan Kieft
 
 | YouTube ID | Название | Сегментов | Опубликовано |
@@ -27,4 +33,4 @@
 |---|---|---:|---|
 | `2b3Z4rW5VJc` | STOP Wasting Credits & Master Seedance 2.5 | 11 | 2026-08-21 |
 
-Итого: **8** видео, **172** сегментов.
+Итого: **9** видео, **204** сегментов.

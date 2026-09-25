@@ -3,10 +3,12 @@
 **Created:** 2026-03-28
 **Status:** Active Roadmap (query-time side; P2/P3/P5/P4/N2 closed — see the
 priority table and "Review fixes")
-**Last updated:** 2026-09-24
-**Current State (2026-09-24):** the dev corpus holds **8 videos / 172 segments**
+**Last updated:** 2026-09-25
+**Current State (2026-09-25):** the dev corpus holds **9 videos / 204 segments**
 (see `docs/video-hub-index.md`): Higgsfield AI (5), Dan Kieft (2), Youri van
-Hofwegen (1). Ingest is automated (chunked ASR + adaptive frames + LLM pass),
+Hofwegen (1), AI Samson (1 — `5y20tE7zo40`, "5 уровней AI-видео", 32 сегмента,
+2026-09-25; пробы/вердикт в `output/video_admission/admission_log.json`).
+Ingest is automated (chunked ASR + adaptive frames + LLM pass),
 the structured `visual` block and per-segment frames are stored, and Scout
 returns YouTube deep-links with timestamps. The 2026-09-24 review pass closed
 the scaling blockers that had already tripped their triggers: Map is chunked

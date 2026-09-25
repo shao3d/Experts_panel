@@ -2,7 +2,7 @@
 
 **Role:** Expert Digital Twin Creator
 **Status:** Active Workflow (automated ingest preferred)
-**Last updated:** 2026-09-24
+**Last updated:** 2026-09-25
 **Owner:** System Architect (opencode agent)
 
 ---
@@ -77,9 +77,14 @@ YouTube blocks the VM datacenter IP, so downloads happen off-VM. Two paths
   audio `-f 140-20`); persistent reverse tunnel G15→VM on port 2223
   (Task Scheduler `expa-vm-tunnel`), then `scp -P 2223` pulls files to VM.
 - **Mac (backup):** reverse tunnel `-R 2222` (the `fetch_audio.sh` pattern),
-  SSH from VM with `~/.ssh/mac_remote`; the bundled yt-dlp is old (android
-  client only, 360p) — fine for subtitles, weak for frames (the Mac also
-  overheats and has no ffmpeg).
+  SSH from VM with `~/.ssh/mac_remote`. Verified capable of FULL 1080p ingest
+  on 2026-09-25 (G15 offline) when the download stack is fresh: standalone
+  `yt-dlp` in `~/.local/bin` (the brew-pip copy is stale and dies with
+  HTTP 403 / SABR) plus `deno` in `~/.deno/bin` for the n-sig challenge —
+  put both on PATH. Video `-f 137`, audio `-f 140/251/bestaudio` (opus is
+  fine for ASR). Run downloads under `nohup` so an SSH drop does not kill
+  them. The Mac has no ffmpeg (Stage 1 runs on the VM) and overheats on
+  long work.
 
 ### 0.2 Stage 1 — deterministic extraction (no LLM, no DB)
 
