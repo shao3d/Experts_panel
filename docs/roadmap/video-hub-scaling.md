@@ -3,11 +3,14 @@
 **Created:** 2026-03-28
 **Status:** Active Roadmap (query-time side; P2/P3/P5/P4/N2 closed — see the
 priority table and "Review fixes")
-**Last updated:** 2026-09-25
-**Current State (2026-09-25):** the dev corpus holds **9 videos / 204 segments**
+**Last updated:** 2026-09-26
+**Current State (2026-09-26):** the dev corpus holds **10 videos / 233 segments**
 (see `docs/video-hub-index.md`): Higgsfield AI (5), Dan Kieft (2), Youri van
-Hofwegen (1), AI Samson (1 — `5y20tE7zo40`, "5 уровней AI-видео", 32 сегмента,
-2026-09-25; пробы/вердикт в `output/video_admission/admission_log.json`).
+Hofwegen (1), AI Samson (2 — `5y20tE7zo40` "5 уровней AI-видео" (32 сегмента,
+2026-09-25) и `9oCppy1gZpo` "AI Video Workflow / MODEL WIFE" (29 сегментов,
+2026-09-26); вердикты в `output/video_admission/admission_log.json`). Downloads
+now run directly on the VM via Cloudflare WARP SOCKS-proxy (recipe in
+`docs/guides/video-hub-operator.md` §0.1a) — Mac/G15 no longer required.
 Ingest is automated (chunked ASR + adaptive frames + LLM pass),
 the structured `visual` block and per-segment frames are stored, and Scout
 returns YouTube deep-links with timestamps. The 2026-09-24 review pass closed

@@ -2,7 +2,7 @@
 
 **Role:** Expert Digital Twin Creator
 **Status:** Active Workflow (automated ingest preferred)
-**Last updated:** 2026-09-25
+**Last updated:** 2026-09-26
 **Owner:** System Architect (opencode agent)
 
 ---
@@ -69,8 +69,38 @@ at import time (0.4).
 (robo-arm, hypermotion, two-layer prompt) ищутся Скаутом.
 
 ### 0.1 Get the media onto the VM
-YouTube blocks the VM datacenter IP, so downloads happen off-VM. Two paths
-(detail and commands — §6.4a of `docs/plans/2026-09-20-videohub-knowledge-matrix-proposal.md`):
+YouTube blocks the VM datacenter IP directly ("Sign in to confirm you're not a
+bot"). Three paths, in order of preference (0.1a verified 2026-09-26):
+
+**0.1a. Cloudflare WARP in SOCKS-proxy mode on the VM (preferred, no other
+machine needed).** Free, community-verified method for datacenter IPs. The
+client runs in proxy mode only — a local SOCKS5 on `127.0.0.1:40000`, so the
+panel/SSH traffic is untouched and only yt-dlp goes through WARP:
+
+```bash
+# one-time setup (arm64/jammy): apt repo pkg.cloudflareclient.com, package
+# cloudflare-warp; then:
+warp-cli --accept-tos registration new
+warp-cli --accept-tos mode proxy
+warp-cli --accept-tos connect          # SOCKS5 on 127.0.0.1:40000
+# download (rate-limited per community advice; formats are often 50fps —
+# request 299/303/399, not just 137):
+yt-dlp --proxy socks5h://127.0.0.1:40000 --js-runtimes node:/usr/bin/node \
+  -r 5M -c -f "299/303/399/312/18/best" -o video.mp4 URL
+yt-dlp --proxy socks5h://127.0.0.1:40000 --js-runtimes node:/usr/bin/node \
+  -r 5M -c -f "140/251/249/bestaudio" -o audio.m4a URL
+```
+
+Notes: `warp-cli` needs the global `--accept-tos` flag before the subcommand;
+proxy mode does not hijack the default route. The `bgutil-ytdlp-pot-provider`
+PO-token sidecar was tried and is NOT required with WARP (it even slows
+requests when its container cannot reach the proxy) — keep it disabled unless
+downloading without WARP. Old notes: keep `-r 5M` (faster rates trigger 403 on
+new videos) and avoid hard `[ext=mp4]` constraints (they fall back to blocked
+legacy clients).
+
+Fallback paths when WARP is unavailable (detail and commands — §6.4a of
+`docs/plans/2026-09-20-videohub-knowledge-matrix-proposal.md`):
 
 - **G15 (Windows laptop, preferred, 2026-09-20):** fresh `yt-dlp.exe` in
   `%USERPROFILE%\expp` opens formats up to 4K (video `-f 137`, EN-original
