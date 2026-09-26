@@ -1,7 +1,7 @@
 # Карта Документации
 
 Status: Active
-Last updated: 2026-09-21
+Last updated: 2026-09-26
 
 Это навигационный слой проекта Experts Panel. Он должен отвечать на вопрос
 "куда смотреть?", а не пересказывать содержимое всех документов.
@@ -16,12 +16,13 @@ Last updated: 2026-09-21
 4. Для текущего статуса, деплоя, CLI и БД проверяй код/команды, а не память.
 5. Если в `docs/plans/` есть свежий `*-starter.md`, прочитай его перед работой: это handoff-промт
    активной задачи (онбординг + конкретный следующий шаг), актуальнее общей навигации.
+   Если `*-starter.md` там нет — активного handoff'а нет; завершённые starter'ы лежат
+   в `docs/archive/` и как текущее состояние не читаются.
 
 ## Быстрые Маршруты
 
 | Задача | Сначала читать | Потом, если нужно |
 | --- | --- | --- |
-| **Актуальный handoff: после VideoHub-ревью (2026-09-17)** | `docs/plans/2026-09-17-session-handoff-starter.md` | `docs/roadmap/video-hub-scaling.md`, `docs/roadmap/2026-09-system-review.md` |
 | **Завершено: admission Visual (neyrograph, iideyalogiya) — limited_scope, 2026-09-15** | `docs/architecture/current-expert-roster.md`, `docs/architecture/expert-admission-control.md` | `docs/archive/2026-09-15-neyrograph-admission-starter.md` (§7, история) |
 | Что улучшать дальше / статус обзора | `docs/roadmap/2026-09-system-review.md` | `docs/architecture/pipeline.md` для фазы 5b (citation verification) |
 | Общая архитектура / pipeline | `docs/architecture/pipeline.md` | `backend/CLAUDE.md` |
@@ -32,7 +33,7 @@ Last updated: 2026-09-21
 | Текущий roster экспертов | `docs/architecture/current-expert-roster.md` | `frontend/src/config/expertConfig.ts`, `expert_metadata` |
 | Добавить/удалить эксперта | `docs/guides/add-expert.md` | `scripts/add_new_expert.sh`, `scripts/update_production_db.sh` |
 | Drift analysis | `docs/guides/drift-analysis.md` | drift scripts in `backend/scripts/` |
-| Video Hub | `docs/architecture/video-hub-service.md` | `docs/guides/video-hub-operator.md` |
+| Video Hub | `docs/architecture/video-hub-service.md` | `docs/guides/video-hub-operator.md`, `docs/video-hub-index.md` (авто-индекс корпуса) |
 | VideoHub Knowledge Matrix (гейт до ingest, gap-scoped) | `docs/plans/2026-09-20-videohub-knowledge-matrix-proposal.md` | чек-лист 0.0b в `docs/guides/video-hub-operator.md`, `output/video_admission/admission_log.json` |
 | Reddit sidecar | `docs/architecture/reddit-service.md` | service code under `services/reddit-proxy/` |
 | Agent-facing Reddit API + CLI + Codex skill | `docs/architecture/reddit-service.md` (разделы "Agent-facing API", "CLI-граница") | `.codex/skills/reddit-search/`, `scripts/install_reddit_search_skill.sh`, handoff-история: `docs/archive/2026-08-29-reddit-search-agent-api-handoff.md` |
@@ -142,7 +143,7 @@ Generated artifacts лучше регенерировать скриптами, 
 | `frontend/CLAUDE.md` | Engineering guide for the current React layout/state/components. |
 | `docs/design-system/refero-say-briefly/UX_INVARIANTS.md` | Product/UX SSOT for the current UI shell and future redesign decisions. |
 | `docs/design-system/refero-say-briefly/README.md` | Refero snapshot index and source coverage. |
-| `docs/design-system/refero-say-briefly/DESIGN.md` | Refero `DESIGN.md` source material. |
+| `docs/design-system/refero-say-briefly/DESIGN.md` | Refero source material (Design.md). |
 | `docs/design-system/refero-say-briefly/tokens.css` | CSS variables snapshot from Refero. |
 | `docs/design-system/refero-say-briefly/design-tokens.json` | Machine-readable design token snapshot. |
 
@@ -167,7 +168,7 @@ Quality docs - evidence snapshots and guardrails, not current API specs.
 | `docs/concepts/expert-lens-global-skill.md` | Draft concept for a global Codex skill that turns Panex evidence into bounded source-grounded expert-lens critique packets. |
 | `docs/roadmap/video-hub-scaling.md` | Active scaling roadmap for larger Video Hub usage. |
 | `docs/archive/scout-next-steps.md` | Historical metadata-enrichment plan; removed phases are not active. |
-| `docs/archive/hybrid_retrieval_plan.md` | Historical implemented plan; current retrieval SSOT is `super-passport-search.md`. |
+| `docs/archive/hybrid_retrieval_plan.md` | Historical implemented plan; current retrieval SSOT is `docs/architecture/super-passport-search.md`. |
 | `docs/archive/*` | Historical only. Do not route new implementation from archive docs. |
 
 ## Update Checklist
@@ -177,7 +178,7 @@ Quality docs - evidence snapshots and guardrails, not current API specs.
 | Статус пунктов обзора (фича сделана/болячка закрыта) | `docs/roadmap/2026-09-system-review.md` |
 | Pipeline/model/SSE/final delivery | `docs/architecture/pipeline.md`; maybe `backend/CLAUDE.md` |
 | Языковая логика / перевод / кэш переводов | `docs/architecture/multilingual-support.md` |
-| Hybrid search / embeddings / FTS5 / Scout | `docs/architecture/super-passport-search.md`; maybe `pipeline.md` |
+| Hybrid search / embeddings / FTS5 / Scout | `docs/architecture/super-passport-search.md`; maybe `docs/architecture/pipeline.md` |
 | Панэкс CLI/API/subagent behavior | `docs/guides/panex-usage.md`, `docs/architecture/agent-context-api.md`, repo-local agent files, global Codex agent |
 | Expert Scout behavior / boundaries | `docs/guides/expert-scout.md`, `AGENTS.md`, `.codex/skills/expert-scout/SKILL.md` |
 | New env var | `.env.example`, `backend/CLAUDE.md`, relevant architecture doc |
