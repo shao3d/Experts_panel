@@ -11,6 +11,12 @@
 | `9oCppy1gZpo` | The AI Video Workflow Nobody Is Talking About (Full Breakdown) | 29 | 2026-09-21 |
 | `5y20tE7zo40` | The Level of AI Video Most People Never Reach... | 32 | 2026-09-09 |
 
+## AI Video Studio
+
+| YouTube ID | Название | Сегментов | Опубликовано |
+|---|---|---:|---|
+| `6dNnvhoR3YY` | I Tested 3 AI Video Generators: Which One Has the Best Character Consistency? | 16 | 2026-05-26 |
+
 ## Dan Kieft
 
 | YouTube ID | Название | Сегментов | Опубликовано |
@@ -29,6 +35,18 @@
 | `QfylrxtQSSs` | I Made a Viral AI Love Story (500M Views) — Steal My Prompts | 62 | 2026-08-21 |
 | `Hn8A8D4-SpQ` | I Challenged a Pro VFX Artist to Beat AI | 13 | 2026-08-07 |
 
+## Max Novak
+
+| YouTube ID | Название | Сегментов | Опубликовано |
+|---|---|---:|---|
+| `yUiTmO8AjJc` | The Easiest Way for Filmmakers to Start Using Blender (with Switchlight AI!) | 20 | 2025-03-03 |
+
+## River Cody
+
+| YouTube ID | Название | Сегментов | Опубликовано |
+|---|---|---:|---|
+| `3I2jj6HA3p0` | I Mixed AI With Real Footage… and I'm Kinda Scared (3 VFX Tricks) | 14 | 2026-01-27 |
+
 ## Youri van Hofwegen
 
 | YouTube ID | Название | Сегментов | Опубликовано |
@@ -37,4 +55,4 @@
 | `H8WDehuVams` | How to Create Realistic AI Avatars (Full Guide) | 25 | 2026-09-24 |
 | `2b3Z4rW5VJc` | STOP Wasting Credits & Master Seedance 2.5 | 11 | 2026-08-21 |
 
-Итого: **13** видео, **308** сегментов.
+Итого: **16** видео, **358** сегментов.
