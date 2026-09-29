@@ -25,15 +25,23 @@
    Youri van Hofwegen, 926s. Ценность: закрывает дыру матрицы
    `lipsync_dubbing` (голос + липсинк аватара); gap по пробам: audio-промт
    «речь на камеру против нарратива», правило ~75 слов/30с, мульти-ref
-   переходы одним вызовом.
+   переходы одним вызовом. Черновик `cells` для admission_log:
+   `character_consistency`, `lipsync_dubbing`, `ai_video_direction`,
+   `prompt_architecture` (все `/build_human_ai_workflow`, domain
+   `creative_multimodal`); черновые атрибуты — в журнале проб
+   (`draft_attributes`).
 2. **`reFzEtCG_m8`** — «How To Animate a Short Film with Blender + Higgsfield
    (Full Breakdown)», Higgsfield Animation (аниматор Amina), 1685s.
    Ценность: `3d_previz_pipeline` / `scene_blocking`, squash & stretch
    (0 хитов в корпусе), постмортемы провалов, акварельный пайплайн, новый
-   автор. **ВАЖНО:** субтитры при пробе упёрлись в YouTube 429 — докачать
-   auto-captions перед Stage 2 (WARP-прокси на VM работает; паузы между
-   запросами); запасной материал (описание + таймкоды) уже лежит в
-   `output/video_admission/reFzEtCG_m8/description.txt`.
+   автор. Черновик `cells`: `3d_previz_pipeline`, `cg_craft_to_ai`,
+   `ai_video_direction`, `scene_blocking`, `montage_language`
+   (`/build_human_ai_workflow`); атрибуты — `draft_attributes` в журнале.
+   Примечание про сабы: при пробе auto-captions упёрлись в YouTube 429 —
+   для ingest это НЕ проблема, Stage 1 сделает свой ASR с аудио (как у
+   `y8PJ3B38S2o`). Описание + таймкоды из пробы
+   (`output/video_admission/reFzEtCG_m8/description.txt`) держать под рукой
+   как сверку тем.
 
 Запасной кандидат (если один из двух отвалится): `qwGIwxZFc2I` (Dan Kieft,
 20м) — см. watchlist.
@@ -45,10 +53,11 @@
 - **Доктрина гейта:** `docs/architecture/expert-admission-control.md` §16.
 - **Операторская процедура:** `docs/guides/video-hub-operator.md` (0.0b —
   гейт, 0.1a — WARP-скачивание, 0.2–0.4 — Stage 1/2 + импорт + матрица).
-- **Пробы уже сделаны** (транскрипты, 2 scout-прогона на видео, разбор gap/
-  overlap) — артефакты в `output/video_admission/<id>/`, журнал вердиктов —
-  `output/video_admission/candidate_probe_journal.json` (дописать `decision:
-  ingest` и `decision_note`).
+- **Пробы уже сделаны** (2 scout-прогона на видео, разбор gap/overlap;
+  транскрипт-проба у `H8WDehuVams`, fallback на описание — у `reFzEtCG_m8`) —
+  артефакты в `output/video_admission/<id>/`, журнал вердиктов —
+  `output/video_admission/candidate_probe_journal.json` (дописать
+  `decision: ingest` и `decision_note`; там же `draft_attributes`).
 - **Образец прошлого цикла:** видео `y8PJ3B38S2o` (17 сегментов, 2026-09-29) —
   запись в `admission_log.json`, сегменты в
   `output/video_ingest/y8PJ3B38S2o/ingest/segments.json`, стиль коммита в
@@ -82,8 +91,11 @@
    - в `segments.json` должен быть `video_metadata` (`title`, `author`, `url`,
      `duration_seconds`, `published_at` — обязательно, иначе импорт скажет
      «Untitled Video»);
-   - затем `import_video_json.py --dry-run` → реальный импорт →
-     `embed_posts.py` (дождаться N/N без ошибок).
+   - затем полный прогон (как в гайде 0.4):
+     `backend/.venv/bin/python backend/scripts/import_video_json.py
+     output/video_ingest/<id>/ingest/segments.json --dry-run` → тот же вызов
+     без `--dry-run` → `backend/.venv/bin/python
+     backend/scripts/embed_posts.py` (дождаться N/N без ошибок).
 6. **Фаза 1:** уточнить `cells` по `topic_id` сегментов в `admission_log.json`,
    пересобрать матрицу `backend/.venv/bin/python
    backend/scripts/build_video_matrix.py` (руками не править!), обновить индекс
