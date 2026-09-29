@@ -4,14 +4,19 @@
 **Status:** Active Roadmap (query-time side; P2/P3/P5/P4/N2 closed — see the
 priority table and "Review fixes")
 **Last updated:** 2026-09-29
-**Current State (2026-09-29):** the dev corpus holds **13 videos / 308 segments**
+**Current State (2026-09-29):** the dev corpus holds **16 videos / 358 segments**
 (see `docs/video-hub-index.md`): Higgsfield AI (6: + `reFzEtCG_m8` "Blender +
 Higgsfield: разбор короткометражки Passport Rush", 33 сегмента, новый автор —
 Higgsfield Animation / Amina, 2026-09-29), Youri van Hofwegen (3: `2b3Z4rW5VJc`,
 `y8PJ3B38S2o` "9 FREE Prompts / 7 стилей промтинга", + `H8WDehuVams`
 "Realistic AI Avatars", 25 сегментов, 2026-09-29), Dan Kieft (2), AI Samson (2:
 `5y20tE7zo40` "5 уровней AI-видео", 32 сегмента; `9oCppy1gZpo` "AI Video
-Workflow / MODEL WIFE", 29 сегментов); вердикты в
+Workflow / MODEL WIFE", 29 сегментов), free-roam тройка 2026-09-29 — River
+Cody (`3I2jj6HA3p0` "3 VFX Tricks", 14 сегментов — закрыл гэп
+`hybrid_ai_vfx_pipeline`), Max Novak (`yUiTmO8AjJc` "Switchlight AI / Blender",
+20 сегментов — первое покрытие light maps/relighting), AI Video Studio
+(`6dNnvhoR3YY` "3 AI Video Generators Character Consistency", 16 сегментов —
+первый side-by-side тест моделей); вердикты в
 `output/video_admission/admission_log.json`, watchlist кандидатов — ниже).
 Downloads now run directly on the VM via Cloudflare WARP SOCKS-proxy (recipe in
 `docs/guides/video-hub-operator.md` §0.1a) — Mac/G15 no longer required.
@@ -25,7 +30,8 @@ query-time side.
 **Trigger:** was "100-150 segments or 10+ videos" — reached and handled
 2026-09-24; next scale step is N4 (~200+ segments) — **trigger reached
 2026-09-29 (250 segments), N4 остаётся открытым; после ingest 2026-09-29 —
-308 сегментов, N4 всё ещё открыт**.
+358 сегментов (16 видео), N4 всё ещё открыт**. Матрица: 13 клеток / **0 gaps**
+(все поддомены `creative_multimodal` покрыты).
 
 ---
 
@@ -37,26 +43,62 @@ query-time side.
 `output/video_admission/candidate_probe_journal.json`. Это SSOT по «какие
 видео рассматривать дальше»: если здесь чего-то нет — кандидата нет.
 
-### Что дальше (кандидаты и резерв)
+### Что рассматривать дальше (приоритетный порядок, 2026-09-29)
 
 | # | Видео | Автор | Ценность для матрицы | Статус |
 |---|-------|-------|----------------------|--------|
-| 1 | `qwGIwxZFc2I` GPT-6 Astra is Crazy For AI Video (20м) | Dan Kieft | gap: интерактивный сайт 3D-сета для команды, AI-монтаж через AE/Premiere/DaVinci MCP, thumbnails-идеация с дизайнером + этика авторства, дизайн студии «под камеру» | **кандидат №1** — проба готова (rec: ingest), вердикт владельцу |
-| 2 | `rnZXSc8azc0` Master AI Video Creation: Your 5 Level Roadmap (2026-09-14) | AI Samson | риск дубля сюжетом с уже введённым `5y20tE7zo40` (тот же levels-фреймворк) | резерв: пробить только по запросу владельца |
-| — | `W3-RIZ-Ps64` GPT-6 Astra + After Effects Motion Graphics (11м) | Adil (Higgsfield) | угол «агент собирает AE-композиции» узкий, `montage_language` уже 9 видео | **waitlist** (снят с приоритета вердиктом матрицы 2026-09-29) |
-| — | `FW_tIpEBJ0U` Hybrid Production With Higgsfield Genjutsu (0:56) | Higgsfield AI | тема `hybrid_ai_vfx_pipeline` — дыра матрицы, но формат — тизер без техники | waitlist до полноценного breakdown |
+| 1 | `qwGIwxZFc2I` GPT-6 Astra is Crazy For AI Video (20м) | Dan Kieft | интерактивный сайт 3D-сета для команды, AI-монтаж через AE/Premiere/DaVinci MCP, thumbnails-идеация + этика авторства, дизайн студии «под камеру» | **кандидат №1** — проба готова (rec: ingest), вердикт владельцу |
+| 2 | `CAWnlOJbSX4` I Turned My Boring Hometown Into A Movie With AI VFX (12м) | River Cody | 5 уровней «скучная локация → кино» (практическая композиция → AI-усиление), elements + Claude-переводчик → сториборд-досборка недоснятых ракурсов; durable крафт; канал уже в корпусе (`3I2jj6HA3p0`) | **резерв №1** (rec: waitlist; перед ingest проверить дубль с levels-фреймворком `5y20tE7zo40`) |
+| 3 | `0d8pqU8JRrY` How to Make 3D Animations With GPT 6 Astra (No Blender Needed, 2026-09-19) | Youri van Hofwegen | «3D без Blender» через GPT-6 Astra — средняя новизна против `vUYq38wC_xI` и `neyrograph` | резерв: пробить по запросу владельца |
+| 4 | `rnZXSc8azc0` Master AI Video Creation: Your 5 Level Roadmap (2026-09-14) | AI Samson | риск дубля сюжетом с уже введённым `5y20tE7zo40` (тот же levels-фреймворк) | резерв: пробить только по запросу владельца |
+
+Вне очереди (waitlist / отсевы — не брать без нового повода):
+
+| Видео | Автор | Почему |
+|-------|-------|--------|
+| `W3-RIZ-Ps64` GPT-6 Astra + After Effects Motion Graphics (11м) | Adil (Higgsfield) | угол «агент собирает AE-композиции» узкий, `montage_language` уже 10 видео (вердикт матрицы 2026-09-29) |
+| `FW_tIpEBJ0U` Hybrid Production With Higgsfield Genjutsu (0:56) | Higgsfield AI | тизер без техники; тема `hybrid_ai_vfx_pipeline` покрыта `3I2jj6HA3p0` — ждать полноценный breakdown |
+| `RaJ0cywS7Hw` / `SWhYbZxRZCA` (липсинк Kling / lock face+voice) | Tao Prompts / AI Video Studio | липсинк-голос: плотный overlap (neyrograph:4650/4732/4728, cgevent:16412 и др.) — отсеяны пробами |
+| `StX3eflYq_o` 10+ Seedance 2.5 Prompts | Dan Kieft | промт-листикл, `prompt_architecture` перегружен (12 видео) |
+| `UQDM-ZigvGo` Anerneq, `IAl240xpSGM` The Trigger | Higgsfield AI/Originals | шоукейс-фильмы без техники |
+| `M73BrFnVPA8`, `9Pbg-_ptBcE`, `rwVeovA805k` | разные | продуктовые тизеры без техники (reject_low_value по пробам) |
+| `eUFdtZLDOo8` 50+ Ways to Use GPT-6, `_cbq1SJ_vP0` Opus 5.5 use cases | AI Samson | рейтинги/хайп и юзкейсы LLM вне видео-крафта |
+
+### Каналы на радаре (free-roam 2026-09-29)
+
+- **В корпусе (сканировать новые видео наравне с остальными):** River Cody
+  (hybrid «практика + ИИ», рекомендация Matti Haapoja; `3I2jj6HA3p0` введён),
+  Max Novak (AI+3D/VFX композитинг; `yUiTmO8AjJc` введён), AI Video Studio
+  (Veo/Flow/Omni/Runway, «hypothesis → test → result», промты в описании;
+  `6dNnvhoR3YY` введён).
+- **Ещё не пробованы** (списки рекомендаций: LinkedIn «9 AI Filmmaking
+  Channels», Haapoja, интернет): Curious Refuge (тренды + туториалы
+  Seedance/Kling/Runway), AI Filmmaking Academy (AI VFX), Roboverse
+  (аватары/UGC), Planet AI, Nour Art, Creating with Conor, Theoretically Media
+  (production breakdown с цифрами), GenAI+ (Flow prompt-document), Beriky
+  Studios (постмортемы короткометражек). Tao Prompts — липсинк/музыкальные
+  клипы, тема перекрыта корпусом (не пробовать).
+- Источники discovery: reddit-search (1 релевантный тред r/comfyui, в основном
+  abstained), HN (Show HN шум), веб-списки рекомендаций.
 
 **Недавно введены (больше не кандидаты):** `H8WDehuVams` (Youri van Hofwegen,
 25 сегментов — закрыл `lipsync_dubbing`) и `reFzEtCG_m8` (Higgsfield Animation /
 Amina, 33 сегмента — squash&stretch, постмортемы, акварельный пайплайн) — оба
 2026-09-29, см. `docs/video-hub-index.md` и
-`docs/archive/2026-09-29-videohub-two-videos-ingest-starter.md`.
+`docs/archive/2026-09-29-videohub-two-videos-ingest-starter.md`; free-roam
+тройка 2026-09-29 — `3I2jj6HA3p0` (River Cody, 14 сегментов — закрыл
+`hybrid_ai_vfx_pipeline`), `yUiTmO8AjJc` (Max Novak, 20 сегментов — первое
+покрытие light maps/relighting), `6dNnvhoR3YY` (AI Video Studio, 16 сегментов —
+первый side-by-side тест Seedance 2.0 / Kling 3.0 / Veo 3.1) — см.
+`docs/archive/2026-09-29-videohub-free-roam-trio-starter.md`.
 
 ### Следить (дыры без готовых кандидатов)
 
-- `hybrid_ai_vfx_pipeline` — единственная дыра матрицы (матрица 2026-09-29:
-  12 клеток / 1 gap); ждать полноценные VFX/Genjutsu breakdown'ы, а не тизеры
-  (`FW_tIpEBJ0U`, `rwVeovA805k`).
+- `hybrid_ai_vfx_pipeline` — **закрыта 2026-09-29** (`3I2jj6HA3p0` River Cody +
+`yUiTmO8AjJc` Max Novak; матрица: 13 клеток / 0 gaps, все поддомены
+`creative_multimodal` покрыты). Продолжать следить за полноценными
+VFX/Genjutsu breakdown'ами, а не тизерами (`FW_tIpEBJ0U`, `rwVeovA805k`) —
+но как за дополнением покрытой клетки, не за закрывателем дыры.
 - **Higgsfield Animation** — новый автор с трек-рекордом; анонсирован полный
   breakdown Passport Rush с production numbers (число генераций, бюджет,
   сроки) — брать первым, как только выйдет.
@@ -65,14 +107,11 @@ Amina, 33 сегмента — squash&stretch, постмортемы, аква�
 
 ### Не рассматривать (действующие отсевы)
 
-- Промт-листиклы (`prompt_architecture` — **12 видео**, перенасыщение;
-  пример: `StX3eflYq_o` «10+ Seedance 2.5 Prompts»).
-- Шоукейс-фильмы без техники (паттерн `IAl240xpSGM` / The Trigger; `UQDM-ZigvGo`
-  «Anerneq»).
-- Рейтинги и «50+ способов» (`eUFdtZLDOo8`), юзкейсы LLM вне видео-крафта
-  (`_cbq1SJ_vP0`).
-- Продуктовые тизеры без техники: `M73BrFnVPA8`, `9Pbg-_ptBcE` (оба
-  reject_low_value по пробам), `rwVeovA805k` (тизер VFX).
+Конкретные ID — в таблице «Вне очереди» выше; здесь — правила отсева:
+
+- Промт-листиклы (`prompt_architecture` — **12 видео**, перенасыщение).
+- Шоукейс-фильмы без техники; рейтинги и «50+ способов»; юзкейсы LLM вне
+  видео-крафта; продуктовые тизеры без техники.
 - Авторов с трек-рекордом не резать по заголовку — вскрывать транскрипт-пробой
   (урок `qwGIwxZFc2I`, 2026-09-29).
 

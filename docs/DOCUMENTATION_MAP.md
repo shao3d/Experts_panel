@@ -23,6 +23,7 @@ Last updated: 2026-09-29
 
 | Задача | Сначала читать | Потом, если нужно |
 | --- | --- | --- |
+| **Завершено: ввод free-roam тройки (3I2jj6HA3p0, yUiTmO8AjJc, 6dNnvhoR3YY) в VideoHub, 2026-09-29** | `docs/roadmap/video-hub-scaling.md` (watchlist), `docs/video-hub-index.md` | `docs/archive/2026-09-29-videohub-free-roam-trio-starter.md` (история); гейт: `docs/architecture/expert-admission-control.md` §16 |
 | **Завершено: ввод H8WDehuVams + reFzEtCG_m8 в VideoHub, 2026-09-29** | `docs/roadmap/video-hub-scaling.md` (watchlist), `docs/video-hub-index.md` | `docs/archive/2026-09-29-videohub-two-videos-ingest-starter.md` (история); гейт: `docs/architecture/expert-admission-control.md` §16 |
 | **Завершено: admission Visual (neyrograph, iideyalogiya) — limited_scope, 2026-09-15** | `docs/architecture/current-expert-roster.md`, `docs/architecture/expert-admission-control.md` | `docs/archive/2026-09-15-neyrograph-admission-starter.md` (§7, история) |
 | Что улучшать дальше / статус обзора | `docs/roadmap/2026-09-system-review.md` | `docs/architecture/pipeline.md` для фазы 5b (citation verification) |
@@ -35,6 +36,7 @@ Last updated: 2026-09-29
 | Добавить/удалить эксперта | `docs/guides/add-expert.md` | `scripts/add_new_expert.sh`, `scripts/update_production_db.sh` |
 | Drift analysis | `docs/guides/drift-analysis.md` | drift scripts in `backend/scripts/` |
 | Video Hub | `docs/architecture/video-hub-service.md` | `docs/guides/video-hub-operator.md`, `docs/video-hub-index.md` (авто-индекс корпуса) |
+| VideoHub: что дальше / кандидаты на ingest (watchlist) | `docs/roadmap/video-hub-scaling.md` (раздел «Кандидаты на ingest») | пробы и `decision`: `output/video_admission/candidate_probe_journal.json`; матрица: `output/video_admission/video_matrix/video_matrix.md` |
 | VideoHub Knowledge Matrix (гейт до ingest, gap-scoped) | `docs/architecture/expert-admission-control.md` (§16 VideoHub Sidecar Admission) | чек-лист 0.0b и шаг 0.4 в `docs/guides/video-hub-operator.md`, `output/video_admission/admission_log.json`, `output/video_admission/video_matrix/video_matrix.md` (генерация: `backend/scripts/build_video_matrix.py`); история решения: `docs/archive/2026-09-20-videohub-knowledge-matrix-proposal.md` |
 | Reddit sidecar | `docs/architecture/reddit-service.md` | service code under `services/reddit-proxy/` |
 | Agent-facing Reddit API + CLI + Codex skill | `docs/architecture/reddit-service.md` (разделы "Agent-facing API", "CLI-граница") | `.codex/skills/reddit-search/`, `scripts/install_reddit_search_skill.sh`, handoff-история: `docs/archive/2026-08-29-reddit-search-agent-api-handoff.md` |
