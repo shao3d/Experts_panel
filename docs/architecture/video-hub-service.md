@@ -3,7 +3,7 @@
 **Status:** Stable / Production-Ready (query-time branch dormant in the UI, see "Current Operating Mode")
 **Role:** Parallel pipeline for deep video transcript analysis using the "Digital Twin" approach.
 **Date:** 2026-04-12 (operating-mode note 2026-09-17; review passes 2026-09-17,
-2026-09-24)
+2026-09-24; admission-gate pointer 2026-09-28)
 
 ---
 
@@ -18,6 +18,13 @@ returns `video_link` deep-links into YouTube.
 The query-time 4-phase pipeline below still exists and remains reachable by a direct
 `POST /api/v1/query` with `expert_id="video_hub"`; it is kept for a possible return
 to the panel but is otherwise dormant.
+
+Corpus growth is gated: every new video passes the knowledge-matrix admission gate
+before ingest (doctrine: `docs/architecture/expert-admission-control.md` §16,
+operator checklist 0.0b in `docs/guides/video-hub-operator.md`). Decisions live in
+`output/video_admission/admission_log.json`; the corpus coverage map is generated
+into `output/video_admission/video_matrix/video_matrix.{md,json}` and must be
+rebuilt at every ingest (`backend/scripts/build_video_matrix.py`).
 
 ---
 

@@ -1,7 +1,7 @@
 # Карта Документации
 
 Status: Active
-Last updated: 2026-09-26
+Last updated: 2026-09-28
 
 Это навигационный слой проекта Experts Panel. Он должен отвечать на вопрос
 "куда смотреть?", а не пересказывать содержимое всех документов.
@@ -34,7 +34,7 @@ Last updated: 2026-09-26
 | Добавить/удалить эксперта | `docs/guides/add-expert.md` | `scripts/add_new_expert.sh`, `scripts/update_production_db.sh` |
 | Drift analysis | `docs/guides/drift-analysis.md` | drift scripts in `backend/scripts/` |
 | Video Hub | `docs/architecture/video-hub-service.md` | `docs/guides/video-hub-operator.md`, `docs/video-hub-index.md` (авто-индекс корпуса) |
-| VideoHub Knowledge Matrix (гейт до ingest, gap-scoped) | `docs/plans/2026-09-20-videohub-knowledge-matrix-proposal.md` | чек-лист 0.0b в `docs/guides/video-hub-operator.md`, `output/video_admission/admission_log.json` |
+| VideoHub Knowledge Matrix (гейт до ingest, gap-scoped) | `docs/architecture/expert-admission-control.md` (§16 VideoHub Sidecar Admission) | чек-лист 0.0b и шаг 0.4 в `docs/guides/video-hub-operator.md`, `output/video_admission/admission_log.json`, `output/video_admission/video_matrix/video_matrix.md` (генерация: `backend/scripts/build_video_matrix.py`); история решения: `docs/archive/2026-09-20-videohub-knowledge-matrix-proposal.md` |
 | Reddit sidecar | `docs/architecture/reddit-service.md` | service code under `services/reddit-proxy/` |
 | Agent-facing Reddit API + CLI + Codex skill | `docs/architecture/reddit-service.md` (разделы "Agent-facing API", "CLI-граница") | `.codex/skills/reddit-search/`, `scripts/install_reddit_search_skill.sh`, handoff-история: `docs/archive/2026-08-29-reddit-search-agent-api-handoff.md` |
 | Generic Reddit Search client | `docs/guides/reddit-search-generic-client.md` | `clients/reddit-search-generic/`, `scripts/build_reddit_search_generic_client.sh` |
@@ -186,6 +186,7 @@ Quality docs - evidence snapshots and guardrails, not current API specs.
 | Expert admission doctrine / matrix workflow | `docs/architecture/expert-admission-control.md`; this map only if navigation changes |
 | Add/remove expert scripts | `docs/guides/add-expert.md` |
 | Video Hub behavior | `docs/architecture/video-hub-service.md`, `docs/guides/video-hub-operator.md` |
+| VideoHub admission gate / video matrix | `docs/architecture/expert-admission-control.md` (§16), `docs/guides/video-hub-operator.md` (0.0b, 0.4); матрицу пересобирать `backend/scripts/build_video_matrix.py`, не править руками |
 | Reddit behavior | `docs/architecture/reddit-service.md` |
 | Frontend layout/state / UI shell | `frontend/CLAUDE.md`, `docs/design-system/refero-say-briefly/UX_INVARIANTS.md` |
 | Backend runtime/health/CLI bootstrap | `docs/roadmap/backend-runtime-cleanup.md`, `backend/CLAUDE.md` |

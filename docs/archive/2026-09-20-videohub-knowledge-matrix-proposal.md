@@ -1,7 +1,7 @@
 # VideoHub Knowledge Matrix — предложение (proposal)
 
 **Дата:** 2026-09-20
-**Статус:** Applied v0.3 (2026-09-20). Механика утверждена владельцем и **обкатана реальным прогоном** (`OiULPvTJ-0E`, verdict `ingest_scoped`, 8 сегментов импортировано, deep-links верифицированы Скаутом). До финального переезда в SSOT этот файл — рабочая инструкция по сбору матрицы VideoHub; SSOT матрицы Панели — `expert-admission-control.md`.
+**Статус:** Archived 2026-09-28. Механика утверждена владельцем (Applied v0.3, 2026-09-20) и обкатана реальным прогоном (`OiULPvTJ-0E`, verdict `ingest_scoped`, 8 сегментов, deep-links верифицированы Скаутом); перенесена в SSOT — `docs/architecture/expert-admission-control.md` (§16 VideoHub Sidecar Admission), операторская процедура — `docs/guides/video-hub-operator.md` (0.0b, 0.4), матрица генерируется `backend/scripts/build_video_matrix.py`. Этот файл — история решения, не рабочая инструкция.
 **Автор:** агент (по запросу владельца), после ingest двух видео Higgsfield AI.
 **Ссылки:** `docs/architecture/expert-admission-control.md` (SSOT матрицы Панели),
 `backend/scripts/build_knowledge_matrix.py`, `docs/architecture/video-hub-service.md`,

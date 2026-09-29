@@ -1,7 +1,7 @@
 # Expert Admission Control
 
 **Status:** Active admission doctrine and matrix workflow
-**Last updated:** 2026-05-20
+**Last updated:** 2026-09-28
 **Haft context:** `prob-20260509-71223b41`, `sol-20260509-ae57b368`
 
 This document defines the decision process for admitting new Telegram experts
@@ -1341,3 +1341,114 @@ measurement.
 
 The third slice can add hidden/limited-scope canary behavior if the product
 needs it.
+
+---
+
+## 16. VideoHub Sidecar Admission
+
+**Status:** Active doctrine for admitting videos into the VideoHub corpus.
+Migrated 2026-09-28 from the applied proposal
+(`docs/archive/2026-09-20-videohub-knowledge-matrix-proposal.md`, Applied v0.3,
+validated on `OiULPvTJ-0E`); that file is history only. Operator procedure:
+`docs/guides/video-hub-operator.md` step 0.0b. VideoHub runtime:
+`docs/architecture/video-hub-service.md`.
+
+### 16.1 Scope and value
+
+VideoHub admission gates **videos** (discrete artifacts), not expert streams.
+Owner decision (2026-09-16): `video_hub` stays out of the panel and Panex;
+search runs through Expert Scout only. Therefore the value question inverts:
+
+> Will this video improve Expert Scout answers enough to justify the next
+> operator-hour of ingest, instead of spending it on a candidate that fills a
+> matrix gap?
+
+Sorting heuristic (thinking aid, never a computed score):
+
+> **Marginal value per operator-hour** =
+> δcoverage × (depth + prompt_density) × (1 − decay) ÷ operator hours per ingest.
+
+### 16.2 Transfer from the panel matrix
+
+Doctrine ("map, not judge", overlap is not a verdict, final call is product
+judgment) transfers unchanged. Taxonomy is shared: video-specific axes
+(toolchain, level, prompt density) are **cell attributes, not new cells**.
+Cell scores transfer partially: `depth`, `practicality`, `evidence_quality`,
+`source_utility`, `intrinsic_distinctiveness`, `anti_hype` (CTA noise is
+stripped by the Stage 2 golden prompt); `community_signal` is not collected
+(YouTube comments are out of scope). Video-specific attributes replace it:
+`prompt_density`, `version_lock`, `durable_share`, `verbatim_ui`. A heavy LLM
+passport per candidate is not used (Stage 2 already produces segments);
+Phase 1 adds only a light `topic_id` → cell mapping.
+
+### 16.3 Two-phase gate
+
+**Phase 0 — before ingest** (cheap filter; cost of a wrong reject is low,
+cost of a wrong ingest is 0.5–1.5 operator-hours):
+
+1. Duplicate check (`video_hub_index.py --check`) and thematic filter:
+   practical generative video / visual production content, not news or hype
+   roundups.
+2. **Transcript probe**: fetch YouTube auto-captions (artifact in
+   `output/video_admission/<id>/`, never imported into the DB), one LLM call:
+   3–5 real topics + draft `prompt_density` / `version_lock` / `durable_share`.
+   Transcript does not see the screen — `prompt_density` from it is a lower
+   bound; dirty ASR is fine for topics, not for verbatim prompts. If captions
+   are unavailable, fall back to title/description.
+3. **Scout probe-check** of those topics (RU and EN) through the `expert-scout`
+   channel. The transcript generates questions; only Scout proves overlap.
+   Relevant top sources with citations = covered; empty = gap. Verdict rule:
+   EN video vs RU corpus yields gaps too easily — write "no panel coverage
+   (RU)", never unconditional "unique".
+4. **Verdict** into `output/video_admission/admission_log.json` (one object per
+   video: `verdict`, `decision_basis`, `caveat`, `cells`, `attributes`,
+   `decided_at`; `scope` for scoped ingest; `probe_notes` only if probe ran).
+   Owner approves before ingest starts.
+
+Verdicts: `ingest` / `ingest_scoped` / `waitlist` / `reject_duplicate` /
+`reject_low_value` / `reject_off_topic` (panel mapping: accept / limited_scope /
+reject).
+
+`ingest_scoped` (gap-scoped ingest): when overlap dominates but gaps localize
+to time ranges, cut one contiguous ffmpeg range on the VM (one offset; overlap
+padding beats a second offset), run Stage 1/2 on the slice only, and add the
+cut offset to segment timestamps so deep-links point at the original YouTube
+timeline. Log the range in `scope`, otherwise the map reads the video as fully
+covered. A later full ingest goes through `--replace-video`.
+
+**Phase 1 — after ingest**: one LLM call maps segment `topic_id`s to taxonomy
+cells (light video passport) and the video matrix is rebuilt. If 80%+ of
+segments land in already-covered cells, downgrade the channel's priority.
+
+### 16.4 Corpus and decay
+
+The video matrix is a **content-centric map** of what to fetch, not a report of
+what is already fetched. Per-cell decay aggregates video-level attributes
+(`version_lock` range, `durable_share` range) and is refined per cell on
+Phase 1. Durable content (blocking, montage, economics) outranks version-locked
+tool tours; `durable_share` is the main sorting signal after topic.
+
+### 16.5 Artifacts and maintenance
+
+| Artifact | Role |
+|---|---|
+| `output/video_admission/admission_log.json` | Decision journal, one object per video (the `admission_manifest.json` analogue). |
+| `output/video_admission/<id>/` | Probe artifacts: transcripts, scout runs. |
+| `output/video_admission/video_matrix/video_matrix.{md,json}` | Generated matrix; rebuild at **every** ingest, not by hand. |
+
+Generation: `backend/.venv/bin/python backend/scripts/build_video_matrix.py`
+(deterministic aggregation of the log + `topic_id` ingest artifacts + panel
+matrix experts; no LLM calls). Workflow step: `docs/guides/video-hub-operator.md`
+0.4. A stale matrix is worse than none — a forgotten rebuild means a lying map.
+
+### 16.6 Decision rights
+
+| Decision | Who |
+|---|---|
+| Verdict ingest / waitlist / reject | agent prepares, owner approves |
+| New taxonomy cells, `alias_to_*` / `promote_to_core` | owner only |
+| `video_hub` into panel/Panex | forbidden without a new owner decision |
+| Commit, push, production releases | owner commands only |
+
+Do not fork report families (one journal), do not fork the taxonomy, and do
+not automate past the point where the manual process actually hurts.

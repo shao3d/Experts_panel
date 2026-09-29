@@ -42,14 +42,14 @@ title, segment count, publication date. Re-process an already imported video
 only with the owner's explicit consent, and then only with `--replace-video`
 at import time (0.4).
 
-### 0.0b Knowledge-matrix gate (MANDATORY, механика: `docs/plans/2026-09-20-videohub-knowledge-matrix-proposal.md`)
+### 0.0b Knowledge-matrix gate (MANDATORY, механика: `docs/architecture/expert-admission-control.md` §16)
 
 Перед любым ingest нового видео — гейт ценности ДО скачивания медиа.
 Полный цикл: траскрипт-проба → probe Скаутом → вердикт → `admission_log`.
 
-1. **Транскрипт-проба:** забрать YouTube auto-captions (§6.4a proposal —
-   через G15 или Mac, yt-dlp, клиент `android`), один LLM-вызов: 3–5 реальных
-   тем + черновые `prompt_density` / `version_lock` / `durable_share`.
+1. **Транскрипт-проба:** забрать YouTube auto-captions (механика доступа — шаг 0.1
+   ниже; гигиена транскрипта — `expert-admission-control.md` §16.3), один LLM-вызов:
+   3–5 реальных тем + черновые `prompt_density` / `version_lock` / `durable_share`.
    Транскрипт — артефакт в `output/video_admission/<id>/`, в БД не импортировать.
 2. **Probe-чек Скаутом:** 3–5 вопросов по темам транскрипта (RU и EN) через
    `scripts/expert_scout.sh`; покрыто = overlap (source_key), пусто = gap.
@@ -62,7 +62,7 @@ at import time (0.4).
    срезать один сплошной диапазон ffmpeg-ом на VM (overlap-вставка дешевле
    второго offset), Stage 1/2 только на срезе. **Грабля:** таймкоды ASR —
    относительно среза; при разметке сегментов прибавлять offset, иначе
-   deep-links будут вести не туда (см. §6.4b proposal).
+   deep-links будут вести не туда (`expert-admission-control.md` §16.3).
 
 Пример полного прогона: `OiULPvTJ-0E` (2026-09-20) — ядро overlap, вердикт
 `ingest_scoped`, импортировано 8 сегментов хвоста 10:25–19:42, gap-темы
@@ -99,8 +99,9 @@ downloading without WARP. Old notes: keep `-r 5M` (faster rates trigger 403 on
 new videos) and avoid hard `[ext=mp4]` constraints (they fall back to blocked
 legacy clients).
 
-Fallback paths when WARP is unavailable (detail and commands — §6.4a of
-`docs/plans/2026-09-20-videohub-knowledge-matrix-proposal.md`):
+Fallback paths when WARP is unavailable (detail and commands —
+`docs/archive/2026-09-20-videohub-knowledge-matrix-proposal.md` §6.4a,
+историческая деталь):
 
 - **G15 (Windows laptop, preferred, 2026-09-20):** fresh `yt-dlp.exe` in
   `%USERPROFILE%\expp` opens formats up to 4K (video `-f 137`, EN-original
@@ -147,6 +148,19 @@ backend/.venv/bin/python backend/scripts/import_video_json.py /tmp/<id>_ingest/s
 backend/.venv/bin/python backend/scripts/import_video_json.py /tmp/<id>_ingest/segments.json
 backend/.venv/bin/python backend/scripts/embed_posts.py
 ```
+
+After import + embed — **update the video matrix** (Phase 1 of the admission
+gate, `expert-admission-control.md` §16.3–16.5): refine the video's `cells` in
+`admission_log.json` from the `topic_id` → cell mapping of its segments, then
+rebuild:
+
+```bash
+backend/.venv/bin/python backend/scripts/build_video_matrix.py
+```
+
+Обновление матрицы — обязательный шаг чек-листа, а не отдельное обещание:
+забыл пересобрать — карта врёт (`video_matrix.md`/`.json` генерируются, руками
+их не править).
 
 Re-importing the same video after re-segmentation: add `--replace-video` so the
 old segments (matched by canonical video URL) and their embeddings are deleted
