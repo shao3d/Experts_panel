@@ -4,12 +4,14 @@
 **Status:** Active Roadmap (query-time side; P2/P3/P5/P4/N2 closed — see the
 priority table and "Review fixes")
 **Last updated:** 2026-09-29
-**Current State (2026-09-29):** the dev corpus holds **11 videos / 250 segments**
-(see `docs/video-hub-index.md`): Higgsfield AI (5), Dan Kieft (2), Youri van
-Hofwegen (2: `2b3Z4rW5VJc` и `y8PJ3B38S2o` "9 FREE Prompts / 7 стилей
-промтинга", 17 сегментов, 2026-09-29), AI Samson (2: `5y20tE7zo40`
-"5 уровней AI-видео", 32 сегмента, 2026-09-25; `9oCppy1gZpo` "AI Video
-Workflow / MODEL WIFE", 29 сегментов, 2026-09-26); вердикты в
+**Current State (2026-09-29):** the dev corpus holds **13 videos / 308 segments**
+(see `docs/video-hub-index.md`): Higgsfield AI (6: + `reFzEtCG_m8` "Blender +
+Higgsfield: разбор короткометражки Passport Rush", 33 сегмента, новый автор —
+Higgsfield Animation / Amina, 2026-09-29), Youri van Hofwegen (3: `2b3Z4rW5VJc`,
+`y8PJ3B38S2o` "9 FREE Prompts / 7 стилей промтинга", + `H8WDehuVams`
+"Realistic AI Avatars", 25 сегментов, 2026-09-29), Dan Kieft (2), AI Samson (2:
+`5y20tE7zo40` "5 уровней AI-видео", 32 сегмента; `9oCppy1gZpo` "AI Video
+Workflow / MODEL WIFE", 29 сегментов); вердикты в
 `output/video_admission/admission_log.json`, watchlist кандидатов — ниже).
 Downloads now run directly on the VM via Cloudflare WARP SOCKS-proxy (recipe in
 `docs/guides/video-hub-operator.md` §0.1a) — Mac/G15 no longer required.
@@ -22,7 +24,8 @@ normalization (P4 gap). The remaining items below stay valid for the
 query-time side.
 **Trigger:** was "100-150 segments or 10+ videos" — reached and handled
 2026-09-24; next scale step is N4 (~200+ segments) — **trigger reached
-2026-09-29 (250 segments), N4 остаётся открытым**.
+2026-09-29 (250 segments), N4 остаётся открытым; после ingest 2026-09-29 —
+308 сегментов, N4 всё ещё открыт**.
 
 ---
 
@@ -35,14 +38,16 @@ query-time side.
 
 | # | Видео | Автор | Ценность для матрицы | Статус |
 |---|-------|-------|----------------------|--------|
-| 1 | `H8WDehuVams` How to Create Realistic AI Avatars (Full Guide, 15м) | Youri van Hofwegen | закрывает дыру `lipsync_dubbing` (голос + липсинк аватара); gap: audio-промт «речь на камеру против нарратива», правило ~75 слов/30с, мульти-ref переходы одним вызовом | кандидат №1 |
-| 2 | `reFzEtCG_m8` How To Animate a Short Film with Blender + Higgsfield (Full Breakdown, 28м) | Higgsfield Animation (Amina) | укрепляет `3d_previz_pipeline`/`scene_blocking`; gap: squash&stretch, постмортемы провалов, акварельный пайплайн, новый автор | кандидат №2 (до ingest докачать сабы: 429 при пробе) |
-| 3 | `qwGIwxZFc2I` GPT-6 Astra is Crazy For AI Video (20м) | Dan Kieft | gap: интерактивный сайт 3D-сета для команды, AI-монтаж через AE/Premiere/DaVinci MCP, thumbnails-идеация, дизайн студии «под камеру» | кандидат №3 |
+| 1 | `H8WDehuVams` How to Create Realistic AI Avatars (Full Guide, 15м) | Youri van Hofwegen | закрыл дыру `lipsync_dubbing` (голос + липсинк аватара); gap: audio-промт «речь на камеру против нарратива», правило ~75 слов/30с, мульти-ref переходы одним вызовом | **введён 2026-09-29** (25 сегментов, 1001-1025) |
+| 2 | `reFzEtCG_m8` How To Animate a Short Film with Blender + Higgsfield (Full Breakdown, 28м) | Higgsfield Animation (Amina) | укрепил `3d_previz_pipeline`/`scene_blocking`; gap: squash&stretch, постмортемы провалов, акварельный пайплайн, новый автор | **введён 2026-09-29** (33 сегмента, 1001-1033; сабы не понадобились — ASR Stage 1) |
+| 3 | `qwGIwxZFc2I` GPT-6 Astra is Crazy For AI Video (20м) | Dan Kieft | gap: интерактивный сайт 3D-сета для команды, AI-монтаж через AE/Premiere/DaVinci MCP, thumbnails-идеация, дизайн студии «под камеру» | **кандидат №1** |
 | — | `W3-RIZ-Ps64` GPT-6 Astra + After Effects Motion Graphics (11м) | Adil (Higgsfield) | угол «агент собирает AE-композиции» узкий, `montage_language` уже 8 видео | **waitlist** (снят с приоритета вердиктом матрицы 2026-09-29) |
 | — | `FW_tIpEBJ0U` Hybrid Production With Higgsfield Genjutsu (0:56) | Higgsfield AI | тема `hybrid_ai_vfx_pipeline` — дыра матрицы, но формат — тизер без техники | waitlist до полноценного breakdown |
 
-**Дыры без кандидатов:** `hybrid_ai_vfx_pipeline` — следить за сериями
-Higgsfield Genjutsu / VFX-breakdown; `lipsync_dubbing` закрывается п.1.
+**Дыры без кандидатов:** `hybrid_ai_vfx_pipeline` — единственная оставшаяся
+дыра матрицы (матрица 2026-09-29: 12 клеток / 1 gap); следить за сериями
+Higgsfield Genjutsu / VFX-breakdown. `lipsync_dubbing` закрыт п.1
+(2026-09-29). `squash & stretch` (0 хитов в корпусе) закрыт п.2.
 
 **Не рассматривать:** промт-листиклы (`prompt_architecture` — 10 видео,
 перенасыщение); шоукейс-фильмы без техники (паттерн `IAl240xpSGM` / The Trigger);

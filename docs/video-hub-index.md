@@ -22,6 +22,7 @@
 
 | YouTube ID | Название | Сегментов | Опубликовано |
 |---|---|---:|---|
+| `reFzEtCG_m8` | How To Animate a Short Film with Blender + Higgsfield (Full Breakdown) | 33 | 2026-09-23 |
 | `vUYq38wC_xI` | GPT Astra 6 + Blender + Higgsfield Builds The Craziest Cinematic Scenes! | 38 | 2026-09-12 |
 | `NuvA32_dmtg` | GPT-6 Astra + Higgsfield MCP Made This ENTIRE Video in One Chat | 17 | 2026-09-06 |
 | `OiULPvTJ-0E` | How To Save AI Credits With Higgsfield + Blender (No One Talks About This Workflow) | 8 | 2026-08-28 |
@@ -33,6 +34,7 @@
 | YouTube ID | Название | Сегментов | Опубликовано |
 |---|---|---:|---|
 | `y8PJ3B38S2o` | 9 FREE Prompts to Make AI Videos that Look Real (Cinematic AI) | 17 | 2026-09-25 |
+| `H8WDehuVams` | How to Create Realistic AI Avatars (Full Guide) | 25 | 2026-09-24 |
 | `2b3Z4rW5VJc` | STOP Wasting Credits & Master Seedance 2.5 | 11 | 2026-08-21 |
 
-Итого: **11** видео, **250** сегментов.
+Итого: **13** видео, **308** сегментов.

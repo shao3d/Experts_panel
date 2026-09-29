@@ -1,6 +1,7 @@
 # Starter: ввод двух видео в VideoHub + матрицу (H8WDehuVams, reFzEtCG_m8)
 
-**Status:** Active starter (handoff из сессии 2026-09-29)
+**Status:** Done (архив: задача закрыта 2026-09-29 — оба видео введены,
+data release SUCCESS, выкатка выполнена)
 **Last updated:** 2026-09-29
 **Задача:** без вопросов обработать два видео из watchlist через полный цикл
 ввода в VideoHub + матрицу, затем data release, коммит и деплой.

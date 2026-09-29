@@ -23,7 +23,7 @@ Last updated: 2026-09-29
 
 | Задача | Сначала читать | Потом, если нужно |
 | --- | --- | --- |
-| **АКТИВНО: ввод видео H8WDehuVams + reFzEtCG_m8 в VideoHub (handoff 2026-09-29)** | `docs/plans/2026-09-29-videohub-two-videos-ingest-starter.md` | watchlist: `docs/roadmap/video-hub-scaling.md`; гейт: `docs/architecture/expert-admission-control.md` §16; процедура: `docs/guides/video-hub-operator.md` |
+| **Завершено: ввод H8WDehuVams + reFzEtCG_m8 в VideoHub, 2026-09-29** | `docs/roadmap/video-hub-scaling.md` (watchlist), `docs/video-hub-index.md` | `docs/archive/2026-09-29-videohub-two-videos-ingest-starter.md` (история); гейт: `docs/architecture/expert-admission-control.md` §16 |
 | **Завершено: admission Visual (neyrograph, iideyalogiya) — limited_scope, 2026-09-15** | `docs/architecture/current-expert-roster.md`, `docs/architecture/expert-admission-control.md` | `docs/archive/2026-09-15-neyrograph-admission-starter.md` (§7, история) |
 | Что улучшать дальше / статус обзора | `docs/roadmap/2026-09-system-review.md` | `docs/architecture/pipeline.md` для фазы 5b (citation verification) |
 | Общая архитектура / pipeline | `docs/architecture/pipeline.md` | `backend/CLAUDE.md` |
