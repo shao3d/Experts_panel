@@ -3,13 +3,15 @@
 **Created:** 2026-03-28
 **Status:** Active Roadmap (query-time side; P2/P3/P5/P4/N2 closed — see the
 priority table and "Review fixes")
-**Last updated:** 2026-09-26
-**Current State (2026-09-26):** the dev corpus holds **10 videos / 233 segments**
+**Last updated:** 2026-09-29
+**Current State (2026-09-29):** the dev corpus holds **11 videos / 250 segments**
 (see `docs/video-hub-index.md`): Higgsfield AI (5), Dan Kieft (2), Youri van
-Hofwegen (1), AI Samson (2 — `5y20tE7zo40` "5 уровней AI-видео" (32 сегмента,
-2026-09-25) и `9oCppy1gZpo` "AI Video Workflow / MODEL WIFE" (29 сегментов,
-2026-09-26); вердикты в `output/video_admission/admission_log.json`). Downloads
-now run directly on the VM via Cloudflare WARP SOCKS-proxy (recipe in
+Hofwegen (2: `2b3Z4rW5VJc` и `y8PJ3B38S2o` "9 FREE Prompts / 7 стилей
+промтинга", 17 сегментов, 2026-09-29), AI Samson (2: `5y20tE7zo40`
+"5 уровней AI-видео", 32 сегмента, 2026-09-25; `9oCppy1gZpo` "AI Video
+Workflow / MODEL WIFE", 29 сегментов, 2026-09-26); вердикты в
+`output/video_admission/admission_log.json`, watchlist кандидатов — ниже).
+Downloads now run directly on the VM via Cloudflare WARP SOCKS-proxy (recipe in
 `docs/guides/video-hub-operator.md` §0.1a) — Mac/G15 no longer required.
 Ingest is automated (chunked ASR + adaptive frames + LLM pass),
 the structured `visual` block and per-segment frames are stored, and Scout
@@ -19,7 +21,39 @@ the scaling blockers that had already tripped their triggers: Map is chunked
 normalization (P4 gap). The remaining items below stay valid for the
 query-time side.
 **Trigger:** was "100-150 segments or 10+ videos" — reached and handled
-2026-09-24; next scale step is N4 (~200+ segments).
+2026-09-24; next scale step is N4 (~200+ segments) — **trigger reached
+2026-09-29 (250 segments), N4 остаётся открытым**.
+
+---
+
+## Кандидаты на ingest (watchlist, 2026-09-29)
+
+Решение по каждому — владелец; порядок — по ценности для матрицы
+(`output/video_admission/video_matrix/video_matrix.md`). Полные пробы
+(транскрипты, scout-прогоны, аргументация, `decision`-поля) —
+`output/video_admission/candidate_probe_journal.json`.
+
+| # | Видео | Автор | Ценность для матрицы | Статус |
+|---|-------|-------|----------------------|--------|
+| 1 | `H8WDehuVams` How to Create Realistic AI Avatars (Full Guide, 15м) | Youri van Hofwegen | закрывает дыру `lipsync_dubbing` (голос + липсинк аватара); gap: audio-промт «речь на камеру против нарратива», правило ~75 слов/30с, мульти-ref переходы одним вызовом | кандидат №1 |
+| 2 | `reFzEtCG_m8` How To Animate a Short Film with Blender + Higgsfield (Full Breakdown, 28м) | Higgsfield Animation (Amina) | укрепляет `3d_previz_pipeline`/`scene_blocking`; gap: squash&stretch, постмортемы провалов, акварельный пайплайн, новый автор | кандидат №2 (до ingest докачать сабы: 429 при пробе) |
+| 3 | `qwGIwxZFc2I` GPT-6 Astra is Crazy For AI Video (20м) | Dan Kieft | gap: интерактивный сайт 3D-сета для команды, AI-монтаж через AE/Premiere/DaVinci MCP, thumbnails-идеация, дизайн студии «под камеру» | кандидат №3 |
+| — | `W3-RIZ-Ps64` GPT-6 Astra + After Effects Motion Graphics (11м) | Adil (Higgsfield) | угол «агент собирает AE-композиции» узкий, `montage_language` уже 8 видео | **waitlist** (снят с приоритета вердиктом матрицы 2026-09-29) |
+| — | `FW_tIpEBJ0U` Hybrid Production With Higgsfield Genjutsu (0:56) | Higgsfield AI | тема `hybrid_ai_vfx_pipeline` — дыра матрицы, но формат — тизер без техники | waitlist до полноценного breakdown |
+
+**Дыры без кандидатов:** `hybrid_ai_vfx_pipeline` — следить за сериями
+Higgsfield Genjutsu / VFX-breakdown; `lipsync_dubbing` закрывается п.1.
+
+**Не рассматривать:** промт-листиклы (`prompt_architecture` — 10 видео,
+перенасыщение); шоукейс-фильмы без техники (паттерн `IAl240xpSGM` / The Trigger);
+рейтинги и «50+ способов» (критерий чек-листа 0.0b: не новости и не хайп).
+Авторов с трек-рекордом не резать по заголовку — вскрывать транскрипт-пробой
+(урок `qwGIwxZFc2I`, 2026-09-29).
+
+Механика отбора: гейт 0.0b (`docs/guides/video-hub-operator.md`) +
+`docs/architecture/expert-admission-control.md` §16. Скан каналов: RSS/flat
+по авторам корпуса за окно 3 недель → транскрипт-проба → probe Скаутом →
+вердикт владельцу.
 
 ---
 

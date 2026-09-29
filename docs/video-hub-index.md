@@ -32,6 +32,7 @@
 
 | YouTube ID | Название | Сегментов | Опубликовано |
 |---|---|---:|---|
+| `y8PJ3B38S2o` | 9 FREE Prompts to Make AI Videos that Look Real (Cinematic AI) | 17 | 2026-09-25 |
 | `2b3Z4rW5VJc` | STOP Wasting Credits & Master Seedance 2.5 | 11 | 2026-08-21 |
 
-Итого: **10** видео, **233** сегментов.
+Итого: **11** видео, **250** сегментов.
