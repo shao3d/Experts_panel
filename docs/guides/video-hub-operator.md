@@ -2,7 +2,7 @@
 
 **Role:** Expert Digital Twin Creator
 **Status:** Active Workflow (automated ingest preferred)
-**Last updated:** 2026-09-26
+**Last updated:** 2026-09-29
 **Owner:** System Architect (opencode agent)
 
 ---
@@ -140,6 +140,18 @@ Number `segment_id` **continuously across chunks** (do not restart from 1001 in
 each chunk): `--combine` fails on duplicates, and duplicate virtual IDs would
 otherwise overwrite segments at import time.
 
+Два правила против граблей `--combine` (проверено 2026-09-29):
+
+- **Разные `topic_id` у соседних сегментов.** Дедуп combine склеивает сегменты
+  с одинаковым `topic_id` в пределах overlap-окна (25с) — два последовательных
+  разных сегмента с одним topic_id схлопнутся в один. Синонимично: смежные
+  темы называть разными slug'ами (`location_prompts_lighting` и
+  `location_snow_summit`, а не один общий).
+- **[НА ЭКРАНЕ] из OCR, не по памяти.** Промты/настройки с экрана читай по
+  кадрам; на VM есть `rapidocr-onnxruntime` (RapidOCR, ~1.3с/кадр) —
+  OCR плотных и coarse-кадров даёт дословный текст промтов для
+  `[НА ЭКРАНЕ: ...]`. Нечитаемое не выдумывать.
+
 ### 0.4 Combine, import, embed
 
 ```bash
@@ -148,6 +160,17 @@ backend/.venv/bin/python backend/scripts/import_video_json.py /tmp/<id>_ingest/s
 backend/.venv/bin/python backend/scripts/import_video_json.py /tmp/<id>_ingest/segments.json
 backend/.venv/bin/python backend/scripts/embed_posts.py
 ```
+
+После `--combine` и до импорта (грабли, проверено 2026-09-29):
+
+- **Пути кадров** в `segments.json` combine НЕ переписывает: в чанках они
+  голые имена (`c01_w01_....jpg`), а после combine обязаны быть полными
+  относительными (`chunks/chunk_NN/frames_dense/<file>` — по префиксу `cNN`
+  имени файла). Переписать самому, затем сверить, что все файлы существуют.
+- **`video_metadata`** (`title`, `author`, `url`, `duration_seconds`,
+  `published_at`) combine берёт из первого чанка, где он есть; без него импорт
+  скажет «Untitled Video». Класть в `chunks/chunk_01/segments.json` или
+  дописывать в combined-файл.
 
 After import + embed — **update the video matrix** (Phase 1 of the admission
 gate, `expert-admission-control.md` §16.3–16.5): refine the video's `cells` in

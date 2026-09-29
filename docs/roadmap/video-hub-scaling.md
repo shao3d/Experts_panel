@@ -34,26 +34,47 @@ query-time side.
 Решение по каждому — владелец; порядок — по ценности для матрицы
 (`output/video_admission/video_matrix/video_matrix.md`). Полные пробы
 (транскрипты, scout-прогоны, аргументация, `decision`-поля) —
-`output/video_admission/candidate_probe_journal.json`.
+`output/video_admission/candidate_probe_journal.json`. Это SSOT по «какие
+видео рассматривать дальше»: если здесь чего-то нет — кандидата нет.
+
+### Что дальше (кандидаты и резерв)
 
 | # | Видео | Автор | Ценность для матрицы | Статус |
 |---|-------|-------|----------------------|--------|
-| 1 | `H8WDehuVams` How to Create Realistic AI Avatars (Full Guide, 15м) | Youri van Hofwegen | закрыл дыру `lipsync_dubbing` (голос + липсинк аватара); gap: audio-промт «речь на камеру против нарратива», правило ~75 слов/30с, мульти-ref переходы одним вызовом | **введён 2026-09-29** (25 сегментов, 1001-1025) |
-| 2 | `reFzEtCG_m8` How To Animate a Short Film with Blender + Higgsfield (Full Breakdown, 28м) | Higgsfield Animation (Amina) | укрепил `3d_previz_pipeline`/`scene_blocking`; gap: squash&stretch, постмортемы провалов, акварельный пайплайн, новый автор | **введён 2026-09-29** (33 сегмента, 1001-1033; сабы не понадобились — ASR Stage 1) |
-| 3 | `qwGIwxZFc2I` GPT-6 Astra is Crazy For AI Video (20м) | Dan Kieft | gap: интерактивный сайт 3D-сета для команды, AI-монтаж через AE/Premiere/DaVinci MCP, thumbnails-идеация, дизайн студии «под камеру» | **кандидат №1** |
-| — | `W3-RIZ-Ps64` GPT-6 Astra + After Effects Motion Graphics (11м) | Adil (Higgsfield) | угол «агент собирает AE-композиции» узкий, `montage_language` уже 8 видео | **waitlist** (снят с приоритета вердиктом матрицы 2026-09-29) |
+| 1 | `qwGIwxZFc2I` GPT-6 Astra is Crazy For AI Video (20м) | Dan Kieft | gap: интерактивный сайт 3D-сета для команды, AI-монтаж через AE/Premiere/DaVinci MCP, thumbnails-идеация с дизайнером + этика авторства, дизайн студии «под камеру» | **кандидат №1** — проба готова (rec: ingest), вердикт владельцу |
+| 2 | `rnZXSc8azc0` Master AI Video Creation: Your 5 Level Roadmap (2026-09-14) | AI Samson | риск дубля сюжетом с уже введённым `5y20tE7zo40` (тот же levels-фреймворк) | резерв: пробить только по запросу владельца |
+| — | `W3-RIZ-Ps64` GPT-6 Astra + After Effects Motion Graphics (11м) | Adil (Higgsfield) | угол «агент собирает AE-композиции» узкий, `montage_language` уже 9 видео | **waitlist** (снят с приоритета вердиктом матрицы 2026-09-29) |
 | — | `FW_tIpEBJ0U` Hybrid Production With Higgsfield Genjutsu (0:56) | Higgsfield AI | тема `hybrid_ai_vfx_pipeline` — дыра матрицы, но формат — тизер без техники | waitlist до полноценного breakdown |
 
-**Дыры без кандидатов:** `hybrid_ai_vfx_pipeline` — единственная оставшаяся
-дыра матрицы (матрица 2026-09-29: 12 клеток / 1 gap); следить за сериями
-Higgsfield Genjutsu / VFX-breakdown. `lipsync_dubbing` закрыт п.1
-(2026-09-29). `squash & stretch` (0 хитов в корпусе) закрыт п.2.
+**Недавно введены (больше не кандидаты):** `H8WDehuVams` (Youri van Hofwegen,
+25 сегментов — закрыл `lipsync_dubbing`) и `reFzEtCG_m8` (Higgsfield Animation /
+Amina, 33 сегмента — squash&stretch, постмортемы, акварельный пайплайн) — оба
+2026-09-29, см. `docs/video-hub-index.md` и
+`docs/archive/2026-09-29-videohub-two-videos-ingest-starter.md`.
 
-**Не рассматривать:** промт-листиклы (`prompt_architecture` — 10 видео,
-перенасыщение); шоукейс-фильмы без техники (паттерн `IAl240xpSGM` / The Trigger);
-рейтинги и «50+ способов» (критерий чек-листа 0.0b: не новости и не хайп).
-Авторов с трек-рекордом не резать по заголовку — вскрывать транскрипт-пробой
-(урок `qwGIwxZFc2I`, 2026-09-29).
+### Следить (дыры без готовых кандидатов)
+
+- `hybrid_ai_vfx_pipeline` — единственная дыра матрицы (матрица 2026-09-29:
+  12 клеток / 1 gap); ждать полноценные VFX/Genjutsu breakdown'ы, а не тизеры
+  (`FW_tIpEBJ0U`, `rwVeovA805k`).
+- **Higgsfield Animation** — новый автор с трек-рекордом; анонсирован полный
+  breakdown Passport Rush с production numbers (число генераций, бюджет,
+  сроки) — брать первым, как только выйдет.
+- Регулярный скан каналов корпуса (см. «Механика отбора» ниже) — новые кандидаты
+  появляются только через него или по запросу владельца.
+
+### Не рассматривать (действующие отсевы)
+
+- Промт-листиклы (`prompt_architecture` — **12 видео**, перенасыщение;
+  пример: `StX3eflYq_o` «10+ Seedance 2.5 Prompts»).
+- Шоукейс-фильмы без техники (паттерн `IAl240xpSGM` / The Trigger; `UQDM-ZigvGo`
+  «Anerneq»).
+- Рейтинги и «50+ способов» (`eUFdtZLDOo8`), юзкейсы LLM вне видео-крафта
+  (`_cbq1SJ_vP0`).
+- Продуктовые тизеры без техники: `M73BrFnVPA8`, `9Pbg-_ptBcE` (оба
+  reject_low_value по пробам), `rwVeovA805k` (тизер VFX).
+- Авторов с трек-рекордом не резать по заголовку — вскрывать транскрипт-пробой
+  (урок `qwGIwxZFc2I`, 2026-09-29).
 
 Механика отбора: гейт 0.0b (`docs/guides/video-hub-operator.md`) +
 `docs/architecture/expert-admission-control.md` §16. Скан каналов: RSS/flat
