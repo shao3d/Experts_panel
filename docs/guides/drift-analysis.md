@@ -1,10 +1,16 @@
-# Анализ Дрифта (opencode / Muse)
+# Анализ Дрифта (headless OpenCode)
+
+Status: Active
+Last updated: 2026-09-30
 
 Руководство по анализу «дрейфа тем» в комментариях Telegram-постов.
 
 **Текущий рантайм:** drift выполняется только через headless opencode
-(`DRIFT_BACKEND=opencode`) на модели из `OPENCODE_DRIFT_MODEL`
-(по умолчанию `opencode-go/muse-spark-1.3-contributor`). Генерация дрифта через
+(`DRIFT_BACKEND=opencode`) на **MiMo-V2.6-Pro**, провайдер **Xiaomi Token Plan (Singapore)**.
+Точный ID: `xiaomi-token-plan-sgp/mimo-v2.6-pro`. Выбор хранится в
+`backend/src/services/opencode_drift_client.py` (`OPENCODE_MODEL`) и применяется
+к пакетному и одиночному анализу. Старый `OPENCODE_DRIFT_MODEL` из окружения
+больше не переопределяет выбор: это предотвращает возврат на Muse после релиза. Генерация дрифта через
 Gemini/Vertex/OpenRouter **отключена**: если opencode serve недоступен, группы
 остаются `pending`, а не уходят в Gemini.
 
@@ -15,10 +21,16 @@ Gemini/Vertex/OpenRouter **отключена**: если opencode serve нед�
    `backend/analyze_specific_drift.py`) подхватывают `backend/.env` и ходят в
    opencode serve (`OPENCODE_URL`, по умолчанию `http://127.0.0.1:4096`).
    Убедись, что serve поднят.
-3. Ручной анализ в чате агента тоже допустим: агент читает данные через
-   `sqlite3` и формирует JSON сам.
+3. Прямые чтение/изменение БД агентом запрещены правилами проекта. Примеры
+   ручного SQL ниже предназначены оператору; агент использует штатный pipeline.
 
 ---
+
+Сервер и клиент OpenCode должны поддерживать выбранного провайдера. При переключении
+30.09.2026 установленный клиент был 1.18.33, а сервер оставался на 1.18.31:
+attach-вызов возвращал `Unexpected server error`. После проверки отсутствия активных
+сессий сервис `opencode-serve.service` перезапущен на установленной версии 1.18.33.
+Ключи и авторизация остаются в OpenCode; в репозитории хранится только ID модели.
 
 ## Рантайм-путь (рекомендуется)
 

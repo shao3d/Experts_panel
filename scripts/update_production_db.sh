@@ -382,7 +382,7 @@ do_deploy() {
         fi
 
         # 7. Run Drift Analysis
-        echo "🧠 [7/12] Running Drift Analysis (opencode/Muse)..."
+        echo "🧠 [7/12] Running Drift Analysis (headless opencode)..."
         if $PYTHON_CMD backend/run_drift_service.py ${SCOPE_ARGS[@]+"${SCOPE_ARGS[@]}"}; then
             echo "   ✅ Drift analysis completed successfully."
         else

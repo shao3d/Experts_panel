@@ -1,5 +1,8 @@
 # Experts Panel operations
 
+Status: Active
+Last updated: 2026-09-30
+
 Актуальная операторская схема для ИИ-агента. Все команды разработки и
 maintenance выполняются из VM checkout `/home/ubuntu/apps/experts-panel/dev`.
 Production checkout `app` вручную не редактируется.
@@ -40,6 +43,10 @@ staging-БД, свободное место и отсутствие второг
 ```bash
 ./scripts/update_production_db.sh --check
 ```
+
+`--check` запускается отдельной командой, без `--scope`. Текущий скрипт
+выбирает режим по первому аргументу: `--scope visual --check` запустит
+настоящее scoped-обновление, а не проверку.
 
 Режим продвижения уже подготовленной staging-БД:
 

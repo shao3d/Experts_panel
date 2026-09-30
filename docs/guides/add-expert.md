@@ -1,8 +1,8 @@
 # 🚀 Добавление нового эксперта (Полный алгоритм)
 
 **Версия:** 7.4 (Admission-first + Single Config + Staged Oracle VM DB Deploy)
-**Дата:** 2026-08-31
-**Статус:** Актуально
+**Last updated:** 2026-09-30
+**Status:** Active
 
 ---
 
@@ -35,7 +35,7 @@
 
 3. **LLM runtime** (в `backend/.env`):
    - `OPENROUTER_API_KEY` — эмбеддинги (`MODEL_EMBEDDING=google/gemini-embedding-001`, 768d) и рантайм пайплайна.
-   - Drift-анализ идёт через headless opencode: `DRIFT_BACKEND=opencode`, `OPENCODE_DRIFT_MODEL=opencode-go/muse-spark-1.3-contributor`, живой `OPENCODE_URL`. Gemini для drift не используется.
+   - Drift-анализ идёт через headless opencode: `DRIFT_BACKEND=opencode`, живой `OPENCODE_URL`. Выбор модели и диагностика — [анализ дрифта](drift-analysis.md). Gemini для drift не используется.
 
 ---
 
@@ -101,7 +101,7 @@ order: [..., '<expert_id>']
 **Вариант А: Автоматический (при деплое)**
 Если вы планируете сразу деплоить (`Step 5`), скрипт `./scripts/update_production_db.sh` **сам запустит** анализ дрифта для всех pending групп.
 *   **Плюс:** Полная автоматизация.
-*   **Минус:** Занимает время serve opencode (модель Muse на подписке OpenCode Go).
+*   **Минус:** Занимает время serve opencode (модель и провайдер указаны в руководстве по анализу дрифта).
 
 **Вариант Б: Ручной (Dev)**
 Если хотите проверить результат локально перед деплоем:

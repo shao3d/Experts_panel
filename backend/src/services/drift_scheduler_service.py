@@ -8,8 +8,7 @@ import numpy as np
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from src.config import MODEL_DRIFT_ANALYSIS
-from .vertex_llm_client import get_vertex_llm_client, VertexLLMError
+from .opencode_drift_client import OPENCODE_MODEL
 from .embedding_service import get_embedding_service
 from .comment_group_map_service import build_drift_text, _normalize_embedding_to_blob
 
@@ -20,7 +19,7 @@ class DriftSchedulerService:
     Service for processing 'pending' comment groups with headless opencode.
 
     Drift runs exclusively through the opencode serve (DRIFT_BACKEND=opencode,
-    model OPENCODE_DRIFT_MODEL). Gemini/OpenRouter drift generation is disabled:
+    model OPENCODE_MODEL in opencode_drift_client). Gemini/OpenRouter drift generation is disabled:
     if the serve is unavailable the groups stay 'pending' instead of falling
     back to Gemini.
 
@@ -32,10 +31,9 @@ class DriftSchedulerService:
         import os as _os
         self.db = db
         self.expert_ids = list(expert_ids) if expert_ids else None
-        self.client = get_vertex_llm_client()
-        self.model_name = MODEL_DRIFT_ANALYSIS
+        self.model_name = OPENCODE_MODEL
         # Gemini is forbidden for drift. The only allowed backend is headless
-        # opencode (Muse on the OpenCode Go subscription). Any other value, or
+        # opencode (MiMo via Xiaomi Token Plan Singapore). Any other value, or
         # an unreachable serve, leaves groups pending instead of falling back
         # to Gemini/OpenRouter.
         self.backend = _os.getenv("DRIFT_BACKEND", "opencode").lower()
@@ -54,7 +52,7 @@ class DriftSchedulerService:
                 self._oc_batch = _oc_batch
                 self.oc_batch_size = max(1, int(_os.getenv("OPENCODE_DRIFT_BATCH_SIZE", "12")))
                 logger.info(
-                    f"Drift backend: opencode ({_os.getenv('OPENCODE_DRIFT_MODEL', 'x-preview-f-free')}) "
+                    f"Drift backend: opencode ({self.model_name}) "
                     f"concurrency={self.concurrency}"
                 )
         else:
@@ -64,8 +62,6 @@ class DriftSchedulerService:
                 self.backend,
             )
             self.backend = "paused"
-        # Rate limiting is handled by the shared Vertex client
-        # which uses Tenacity with exponential backoff + jitter
         logger.info(f"DriftSchedulerService initialized with model: {self.model_name}")
 
     def _scope_sql(self, params: Dict[str, Any], column: str = "cgd.expert_id") -> str:

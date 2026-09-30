@@ -22,7 +22,8 @@ logger = logging.getLogger(__name__)
 
 OPENCODE_URL = os.getenv("OPENCODE_URL", "http://127.0.0.1:4096")
 OPENCODE_BIN = os.getenv("OPENCODE_BIN", "/home/ubuntu/.opencode/bin/opencode")
-OPENCODE_MODEL = os.getenv("OPENCODE_DRIFT_MODEL", "opencode/x-preview-f-free")
+# Versioned drift selection: stale deployment env must not restore Muse.
+OPENCODE_MODEL = "xiaomi-token-plan-sgp/mimo-v2.6-pro"
 DRIFT_AGENT = os.getenv("OPENCODE_DRIFT_AGENT", "drift")
 TASK_DIR = os.getenv("OPENCODE_TASK_DIR", "/tmp/drift_task")
 POLL_INTERVAL = float(os.getenv("OPENCODE_POLL_INTERVAL", "3"))
