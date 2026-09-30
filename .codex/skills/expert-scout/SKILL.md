@@ -83,8 +83,13 @@ Do not silently broaden or narrow the expert scope.
   text (anomaly; inspect run artifacts on the VM); `124` — wrapper hard timeout
   (default `EXPERT_SCOUT_TIMEOUT=300`); other non-zero — operational failure.
   Report failures as technical problems, not as "no signal".
+- Every run is checked automatically by `backend/scripts/verify_citations.py`:
+  a `# WARNING: unverified source_keys: ...` line at the top of the answer means
+  the agent cited a source that does not exist. Report it as a technical defect,
+  do not pass such a key through as a real source; details are in
+  `integrity.json`.
 - Run artifacts live on the VM under `output/scout_runs/<timestamp>/`
-  (`question.txt`, `events.jsonl`, `answer.md`, `meta.txt`).
+  (`question.txt`, `events.jsonl`, `answer.md`, `integrity.json`, `meta.txt`).
 
 ## Response format in chat
 

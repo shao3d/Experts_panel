@@ -1,0 +1,1351 @@
+{
+ "generated_at": "2026-09-29 21:33:25",
+ "summary": {
+  "fixtures": 24,
+  "hit_fixtures": 22,
+  "mean_recall@10": 0.2045,
+  "mean_recall@20": 0.3011,
+  "mean_recall@40": 0.392,
+  "mean_mrr@10": 0.1447,
+  "hidden_keys_total": 22,
+  "legs": {
+   "queries": 28,
+   "dead_leg_queries": 0,
+   "mean_jaccard": 0.121
+  },
+  "craft_mode": {
+   "fixtures": [
+    "coverage_pravilo180",
+    "aleph_camera_acidcrunch",
+    "mastery_levels",
+    "character_likeness_longform",
+    "realism_in_ai_video",
+    "morph_pravilo180"
+   ],
+   "default_recall@10": 0.2639,
+   "craft_recall@10": 0.3125,
+   "craft_recall@40": 0.4722
+  }
+ },
+ "results": [
+  {
+   "id": "coverage_previz_blocking",
+   "kind": "hit",
+   "tags": [
+    "broad",
+    "scope_all",
+    "freshness_tool"
+   ],
+   "expected": [
+    "video_hub:737101800",
+    "video_hub:168482184",
+    "video_hub:726332883",
+    "cgevent:16660"
+   ],
+   "per_query": [
+    {
+     "query": "Проверь покрытие корпуса (эксперты Панели + video_hub) по 5 темам. Для каждой: покрыто (дай source_key и краткую цитату) или gap. Темы: 1) превиз/блокинг сцены в Blender перед AI-генерацией видео для экономии кредитов; 2) генерация посекундного промта по видео-референсу блокинга; 3) консистентность персонажей и правило 180 градусов в мульти-персонажных сценах; 4) сложные движения камеры (орбита, пролёт сквозь этажи, robotic arm) через 3D-блокинг; 5) экономика кредитов AI-видеогенерации (стоимость дублей, оптимизация расхода).",
+     "recall@10": 0.25,
+     "recall@20": 0.5,
+     "recall@40": 0.75,
+     "mrr@10": 0.5,
+     "hidden_keys": [
+      "video_hub:168482184",
+      "cgevent:16660"
+     ],
+     "returned@10": [
+      "video_hub:532855074",
+      "video_hub:737101800",
+      "video_hub:339817680",
+      "video_hub:55113591",
+      "neyrograph:4729",
+      "video_hub:715063429",
+      "video_hub:243093117",
+      "video_hub:23521707",
+      "neyrograph:4714",
+      "neyrograph:4731"
+     ]
+    }
+   ],
+   "recall@10": 0.25,
+   "recall@20": 0.5,
+   "recall@40": 0.75,
+   "mrr@10": 0.5,
+   "hidden_total": 2,
+   "legs": {
+    "queries": 1,
+    "mean_overlap": 24.0,
+    "mean_jaccard": 0.2264,
+    "dead_leg_queries": 0
+   }
+  },
+  {
+   "id": "coverage_persecond_prompt",
+   "kind": "hit",
+   "tags": [
+    "broad",
+    "scope_all",
+    "freshness_tool"
+   ],
+   "expected": [
+    "video_hub:23777140",
+    "video_hub:998318835",
+    "video_hub:705705922",
+    "cgevent:16312"
+   ],
+   "per_query": [
+    {
+     "query": "Проверь покрытие корпуса (эксперты Панели + video_hub) по 5 темам. Для каждой: покрыто (дай source_key и краткую цитату) или gap. Темы: 1) превиз/блокинг сцены в Blender перед AI-генерацией видео для экономии кредитов; 2) генерация посекундного промта по видео-референсу блокинга; 3) консистентность персонажей и правило 180 градусов в мульти-персонажных сценах; 4) сложные движения камеры (орбита, пролёт сквозь этажи, robotic arm) через 3D-блокинг; 5) экономика кредитов AI-видеогенерации (стоимость дублей, оптимизация расхода).",
+     "recall@10": 0.0,
+     "recall@20": 0.0,
+     "recall@40": 0.25,
+     "mrr@10": 0.0,
+     "hidden_keys": [
+      "video_hub:23777140"
+     ],
+     "returned@10": [
+      "video_hub:532855074",
+      "video_hub:737101800",
+      "video_hub:339817680",
+      "video_hub:55113591",
+      "neyrograph:4729",
+      "video_hub:715063429",
+      "video_hub:243093117",
+      "video_hub:23521707",
+      "neyrograph:4714",
+      "neyrograph:4731"
+     ]
+    }
+   ],
+   "recall@10": 0.0,
+   "recall@20": 0.0,
+   "recall@40": 0.25,
+   "mrr@10": 0.0,
+   "hidden_total": 1,
+   "legs": {
+    "queries": 1,
+    "mean_overlap": 24.0,
+    "mean_jaccard": 0.2264,
+    "dead_leg_queries": 0
+   }
+  },
+  {
+   "id": "coverage_pravilo180",
+   "kind": "hit",
+   "tags": [
+    "broad",
+    "scope_all",
+    "freshness_craft"
+   ],
+   "expected": [
+    "neyrograph:4425",
+    "acidcrunch:2177"
+   ],
+   "per_query": [
+    {
+     "query": "Проверь покрытие корпуса (эксперты Панели + video_hub) по 5 темам. Для каждой: покрыто (дай source_key и краткую цитату) или gap. Темы: 1) превиз/блокинг сцены в Blender перед AI-генерацией видео для экономии кредитов; 2) генерация посекундного промта по видео-референсу блокинга; 3) консистентность персонажей и правило 180 градусов в мульти-персонажных сценах; 4) сложные движения камеры (орбита, пролёт сквозь этажи, robotic arm) через 3D-блокинг; 5) экономика кредитов AI-видеогенерации (стоимость дублей, оптимизация расхода).",
+     "recall@10": 0.0,
+     "recall@20": 0.0,
+     "recall@40": 0.0,
+     "mrr@10": 0.0,
+     "hidden_keys": [],
+     "returned@10": [
+      "video_hub:532855074",
+      "video_hub:737101800",
+      "video_hub:339817680",
+      "video_hub:55113591",
+      "neyrograph:4729",
+      "video_hub:715063429",
+      "video_hub:243093117",
+      "video_hub:23521707",
+      "neyrograph:4714",
+      "neyrograph:4731"
+     ]
+    }
+   ],
+   "recall@10": 0.0,
+   "recall@20": 0.0,
+   "recall@40": 0.0,
+   "mrr@10": 0.0,
+   "hidden_total": 0,
+   "legs": {
+    "queries": 1,
+    "mean_overlap": 24.0,
+    "mean_jaccard": 0.2264,
+    "dead_leg_queries": 0
+   },
+   "craft_mode": {
+    "recall@10": 0.0,
+    "recall@40": 0.5,
+    "mrr@10": 0.0
+   }
+  },
+  {
+   "id": "coverage_camera_moves",
+   "kind": "hit",
+   "tags": [
+    "broad",
+    "scope_all"
+   ],
+   "expected": [
+    "neyrograph:4714",
+    "video_hub:34425000",
+    "video_hub:908346948"
+   ],
+   "per_query": [
+    {
+     "query": "Проверь покрытие корпуса (эксперты Панели + video_hub) по 5 темам. Для каждой: покрыто (дай source_key и краткую цитату) или gap. Темы: 1) превиз/блокинг сцены в Blender перед AI-генерацией видео для экономии кредитов; 2) генерация посекундного промта по видео-референсу блокинга; 3) консистентность персонажей и правило 180 градусов в мульти-персонажных сценах; 4) сложные движения камеры (орбита, пролёт сквозь этажи, robotic arm) через 3D-блокинг; 5) экономика кредитов AI-видеогенерации (стоимость дублей, оптимизация расхода).",
+     "recall@10": 0.3333333333333333,
+     "recall@20": 0.6666666666666666,
+     "recall@40": 0.6666666666666666,
+     "mrr@10": 0.1111111111111111,
+     "hidden_keys": [
+      "video_hub:34425000"
+     ],
+     "returned@10": [
+      "video_hub:532855074",
+      "video_hub:737101800",
+      "video_hub:339817680",
+      "video_hub:55113591",
+      "neyrograph:4729",
+      "video_hub:715063429",
+      "video_hub:243093117",
+      "video_hub:23521707",
+      "neyrograph:4714",
+      "neyrograph:4731"
+     ]
+    }
+   ],
+   "recall@10": 0.3333,
+   "recall@20": 0.6667,
+   "recall@40": 0.6667,
+   "mrr@10": 0.1111,
+   "hidden_total": 1,
+   "legs": {
+    "queries": 1,
+    "mean_overlap": 24.0,
+    "mean_jaccard": 0.2264,
+    "dead_leg_queries": 0
+   }
+  },
+  {
+   "id": "coverage_credits",
+   "kind": "hit",
+   "tags": [
+    "broad",
+    "scope_all"
+   ],
+   "expected": [
+    "cgevent:16497",
+    "video_hub:368890709",
+    "video_hub:737101800"
+   ],
+   "per_query": [
+    {
+     "query": "Проверь покрытие корпуса (эксперты Панели + video_hub) по 5 темам. Для каждой: покрыто (дай source_key и краткую цитату) или gap. Темы: 1) превиз/блокинг сцены в Blender перед AI-генерацией видео для экономии кредитов; 2) генерация посекундного промта по видео-референсу блокинга; 3) консистентность персонажей и правило 180 градусов в мульти-персонажных сценах; 4) сложные движения камеры (орбита, пролёт сквозь этажи, robotic arm) через 3D-блокинг; 5) экономика кредитов AI-видеогенерации (стоимость дублей, оптимизация расхода).",
+     "recall@10": 0.3333333333333333,
+     "recall@20": 0.3333333333333333,
+     "recall@40": 0.3333333333333333,
+     "mrr@10": 0.5,
+     "hidden_keys": [],
+     "returned@10": [
+      "video_hub:532855074",
+      "video_hub:737101800",
+      "video_hub:339817680",
+      "video_hub:55113591",
+      "neyrograph:4729",
+      "video_hub:715063429",
+      "video_hub:243093117",
+      "video_hub:23521707",
+      "neyrograph:4714",
+      "neyrograph:4731"
+     ]
+    }
+   ],
+   "recall@10": 0.3333,
+   "recall@20": 0.3333,
+   "recall@40": 0.3333,
+   "mrr@10": 0.5,
+   "hidden_total": 0,
+   "legs": {
+    "queries": 1,
+    "mean_overlap": 24.0,
+    "mean_jaccard": 0.2264,
+    "dead_leg_queries": 0
+   }
+  },
+  {
+   "id": "aleph_camera_acidcrunch",
+   "kind": "hit",
+   "tags": [
+    "scope_expert",
+    "freshness_craft"
+   ],
+   "expected": [
+    "acidcrunch:1350",
+    "acidcrunch:1062",
+    "acidcrunch:1276",
+    "acidcrunch:1313",
+    "acidcrunch:1320",
+    "acidcrunch:1335"
+   ],
+   "per_query": [
+    {
+     "query": "Посмотри, что у acidcrunch написано про камеру в модели Aleph (Runway Aleph). Если сигнала нет — скажи честно.",
+     "recall@10": 0.8333333333333334,
+     "recall@20": 0.8333333333333334,
+     "recall@40": 0.8333333333333334,
+     "mrr@10": 0.5,
+     "hidden_keys": [],
+     "returned@10": [
+      "acidcrunch:1277",
+      "acidcrunch:1350",
+      "acidcrunch:1330",
+      "acidcrunch:1308",
+      "acidcrunch:1335",
+      "acidcrunch:1276",
+      "acidcrunch:1336",
+      "acidcrunch:1313",
+      "acidcrunch:1325",
+      "acidcrunch:1320"
+     ]
+    }
+   ],
+   "recall@10": 0.8333,
+   "recall@20": 0.8333,
+   "recall@40": 0.8333,
+   "mrr@10": 0.5,
+   "hidden_total": 0,
+   "legs": {
+    "queries": 1,
+    "mean_overlap": 32.0,
+    "mean_jaccard": 0.3265,
+    "dead_leg_queries": 0
+   },
+   "craft_mode": {
+    "recall@10": 0.8333,
+    "recall@40": 0.8333,
+    "mrr@10": 0.5
+   }
+  },
+  {
+   "id": "kling_o3_cgevent",
+   "kind": "hit",
+   "tags": [
+    "scope_expert"
+   ],
+   "expected": [
+    "cgevent:15685",
+    "cgevent:15729",
+    "cgevent:15973",
+    "cgevent:16191",
+    "cgevent:16296",
+    "cgevent:16375"
+   ],
+   "per_query": [
+    {
+     "query": "По эксперту cgevent (Tsyptsyn, Метаверсище и ИИще): как правильно использовать Kling O3 для видеогенерации? Нужны конкретные приёмы и источники.",
+     "recall@10": 0.3333333333333333,
+     "recall@20": 0.3333333333333333,
+     "recall@40": 0.6666666666666666,
+     "mrr@10": 0.16666666666666666,
+     "hidden_keys": [
+      "cgevent:15729",
+      "cgevent:15685"
+     ],
+     "returned@10": [
+      "cgevent:16776",
+      "cgevent:16403",
+      "cgevent:16413",
+      "cgevent:16734",
+      "cgevent:16777",
+      "cgevent:16296",
+      "cgevent:15973",
+      "cgevent:16081",
+      "cgevent:16144",
+      "cgevent:15719"
+     ]
+    }
+   ],
+   "recall@10": 0.3333,
+   "recall@20": 0.3333,
+   "recall@40": 0.6667,
+   "mrr@10": 0.1667,
+   "hidden_total": 2,
+   "legs": {
+    "queries": 1,
+    "mean_overlap": 12.0,
+    "mean_jaccard": 0.1017,
+    "dead_leg_queries": 0
+   }
+  },
+  {
+   "id": "kling25_visual",
+   "kind": "hit",
+   "tags": [
+    "scope_group",
+    "freshness_tool"
+   ],
+   "expected": [
+    "acidcrunch:1597",
+    "acidcrunch:1824",
+    "strangedalle:1326"
+   ],
+   "per_query": [
+    {
+     "query": "По визуалам: что пишут про Kling 2.5? 1-2 источника.",
+     "recall@10": 0.3333333333333333,
+     "recall@20": 0.3333333333333333,
+     "recall@40": 0.3333333333333333,
+     "mrr@10": 0.125,
+     "hidden_keys": [],
+     "returned@10": [
+      "neyrograph:4727",
+      "cgevent:16776",
+      "neyrograph:4734",
+      "neyrograph:4732",
+      "neyrograph:4730",
+      "cgevent:16413",
+      "neyrograph:4553",
+      "strangedalle:1326",
+      "iideyalogiya:1019",
+      "neyrograph:4733"
+     ]
+    }
+   ],
+   "recall@10": 0.3333,
+   "recall@20": 0.3333,
+   "recall@40": 0.3333,
+   "mrr@10": 0.125,
+   "hidden_total": 0,
+   "legs": {
+    "queries": 1,
+    "mean_overlap": 8.0,
+    "mean_jaccard": 0.0656,
+    "dead_leg_queries": 0
+   }
+  },
+  {
+   "id": "mastery_levels",
+   "kind": "hit",
+   "tags": [
+    "broad",
+    "freshness_craft"
+   ],
+   "expected": [
+    "acidcrunch:2707",
+    "acidcrunch:2792",
+    "cgevent:16312",
+    "iideyalogiya:1775",
+    "neyrograph:4606",
+    "neyrograph:4702"
+   ],
+   "per_query": [
+    {
+     "query": "Есть ли в корпусе ступенчатые модели мастерства AI-видео (уровни контроля: text-to-video, image-to-video, секвенции, performance transfer, агенты) и экономика стоимости одного удачного шота — сколько генераций и кредитов уходит на один usable shot на каждом уровне контроля? Дай источники с source_key.",
+     "recall@10": 0.0,
+     "recall@20": 0.0,
+     "recall@40": 0.0,
+     "mrr@10": 0.0,
+     "hidden_keys": [],
+     "returned@10": [
+      "video_hub:447986046",
+      "video_hub:306464563",
+      "video_hub:781501388",
+      "video_hub:119251081",
+      "video_hub:502009119",
+      "video_hub:180821357",
+      "video_hub:163751293",
+      "video_hub:56232167",
+      "cgevent:16635",
+      "cgevent:16655"
+     ]
+    }
+   ],
+   "recall@10": 0.0,
+   "recall@20": 0.0,
+   "recall@40": 0.0,
+   "mrr@10": 0.0,
+   "hidden_total": 0,
+   "legs": {
+    "queries": 1,
+    "mean_overlap": 13.0,
+    "mean_jaccard": 0.1111,
+    "dead_leg_queries": 0
+   },
+   "craft_mode": {
+    "recall@10": 0.0,
+    "recall@40": 0.1667,
+    "mrr@10": 0.0
+   }
+  },
+  {
+   "id": "avatar_face_consistency",
+   "kind": "hit",
+   "tags": [
+    "scope_videohub",
+    "freshness_tool"
+   ],
+   "expected": [
+    "acidcrunch:2771",
+    "cgevent:16753",
+    "iideyalogiya:1914",
+    "neyrograph:4154",
+    "neyrograph:4422",
+    "neyrograph:4519"
+   ],
+   "per_query": [
+    {
+     "query": "Что в корпусе экспертов про создание AI-аватара с консистентностью лица: character sheet (полный рост + крупный план), перенос персонажа в разные локации с сохранением лица, клонирование/замена голоса и lip sync 'говорит на камеру' против нарратива? Есть ли конкретные приёмы?",
+     "recall@10": 0.0,
+     "recall@20": 0.0,
+     "recall@40": 0.3333333333333333,
+     "mrr@10": 0.0,
+     "hidden_keys": [
+      "neyrograph:4422",
+      "cgevent:16753"
+     ],
+     "returned@10": [
+      "video_hub:643325874",
+      "video_hub:396714561",
+      "video_hub:316157080",
+      "video_hub:461299858",
+      "video_hub:282951548",
+      "video_hub:354615574",
+      "cgevent:16773",
+      "video_hub:762891275",
+      "cgevent:16651",
+      "neyrograph:4707"
+     ]
+    }
+   ],
+   "recall@10": 0.0,
+   "recall@20": 0.0,
+   "recall@40": 0.3333,
+   "mrr@10": 0.0,
+   "hidden_total": 2,
+   "legs": {
+    "queries": 1,
+    "mean_overlap": 15.0,
+    "mean_jaccard": 0.1304,
+    "dead_leg_queries": 0
+   }
+  },
+  {
+   "id": "blender_short_film_pipeline",
+   "kind": "hit",
+   "tags": [
+    "scope_videohub",
+    "freshness_tool"
+   ],
+   "expected": [
+    "acidcrunch:2792",
+    "cgevent:16236",
+    "cgevent:16651",
+    "cgevent:16660",
+    "cgevent:16675",
+    "iideyalogiya:1970"
+   ],
+   "per_query": [
+    {
+     "query": "Что в корпусе про пайплайн анимации короткометражки Blender + AI-генерация: (1) previs в Blender как гайд для движений камеры, тайминга и squash&stretch в AI-видео, (2) художественное направление - стилизованные 3D-персонажи в акварельном мире, ручная доработка в Photoshop, (3) тесты дизайнов до продакшна и освещения, (4) 'почему ИИ слаб в тонкой актёрской игре персонажей', честные провалы генераций?",
+     "recall@10": 0.3333333333333333,
+     "recall@20": 0.5,
+     "recall@40": 0.5,
+     "mrr@10": 0.125,
+     "hidden_keys": [
+      "iideyalogiya:1970"
+     ],
+     "returned@10": [
+      "video_hub:971118098",
+      "video_hub:53328084",
+      "video_hub:793518597",
+      "video_hub:554786127",
+      "video_hub:923273020",
+      "video_hub:415371114",
+      "video_hub:225135628",
+      "cgevent:16660",
+      "acidcrunch:2792",
+      "video_hub:607964930"
+     ]
+    }
+   ],
+   "recall@10": 0.3333,
+   "recall@20": 0.5,
+   "recall@40": 0.5,
+   "mrr@10": 0.125,
+   "hidden_total": 1,
+   "legs": {
+    "queries": 1,
+    "mean_overlap": 17.0,
+    "mean_jaccard": 0.1504,
+    "dead_leg_queries": 0
+   }
+  },
+  {
+   "id": "higgsfield_videohub_inventory",
+   "kind": "hit",
+   "tags": [
+    "scope_videohub",
+    "broad"
+   ],
+   "expected": [
+    "video_hub:575947525",
+    "video_hub:679225094",
+    "video_hub:759787428",
+    "acidcrunch:1207",
+    "acidcrunch:1558",
+    "acidcrunch:1709"
+   ],
+   "per_query": [
+    {
+     "query": "Какой контент, связанный с Higgsfield (Higgsfield AI), уже есть в корпусе VideoHub? Перечисли, какие видео, модели (например Soul, DoP, Seedance, Cinema Studio, Kling, Veo и т.п.), техники и темы по Higgsfield уже покрыты в сегментах экспертов. Нужен максимально полный инвентарь: названия/темы видео-источников и о чём они.",
+     "recall@10": 0.16666666666666666,
+     "recall@20": 0.16666666666666666,
+     "recall@40": 0.3333333333333333,
+     "mrr@10": 0.25,
+     "hidden_keys": [
+      "video_hub:759787428"
+     ],
+     "returned@10": [
+      "video_hub:564138204",
+      "acidcrunch:2806",
+      "video_hub:695651720",
+      "video_hub:679225094",
+      "video_hub:905937277",
+      "video_hub:825108165",
+      "cgevent:16497",
+      "video_hub:894036246",
+      "video_hub:997757685",
+      "video_hub:330426580"
+     ]
+    }
+   ],
+   "recall@10": 0.1667,
+   "recall@20": 0.1667,
+   "recall@40": 0.3333,
+   "mrr@10": 0.25,
+   "hidden_total": 1,
+   "legs": {
+    "queries": 1,
+    "mean_overlap": 12.0,
+    "mean_jaccard": 0.1017,
+    "dead_leg_queries": 0
+   }
+  },
+  {
+   "id": "grid_prompting",
+   "kind": "hit",
+   "tags": [
+    "broad"
+   ],
+   "expected": [
+    "acidcrunch:2044",
+    "acidcrunch:741",
+    "cgevent:16144",
+    "iideyalogiya:1304",
+    "iideyalogiya:1388",
+    "strangedalle:1348"
+   ],
+   "per_query": [
+    {
+     "query": "Grid prompting for AI video: creating a single image with a 3x3 grid of nine film stills (nine equal panels) and then animating between the panels sequentially in one long video generation to get a multi-shot sequence with consistency. Also: first-frame plus last-frame interpolation to control the start and end of a shot while the model decides the middle. Do practitioners use these techniques? Give sources with source_key.",
+     "recall@10": 0.0,
+     "recall@20": 0.0,
+     "recall@40": 0.0,
+     "mrr@10": 0.0,
+     "hidden_keys": [],
+     "returned@10": [
+      "video_hub:471071063",
+      "video_hub:56232167",
+      "video_hub:366181511",
+      "video_hub:102636863",
+      "video_hub:643325874",
+      "video_hub:531461744",
+      "video_hub:293918715",
+      "video_hub:718546572",
+      "video_hub:119251081",
+      "video_hub:163751293"
+     ]
+    }
+   ],
+   "recall@10": 0.0,
+   "recall@20": 0.0,
+   "recall@40": 0.0,
+   "mrr@10": 0.0,
+   "hidden_total": 0,
+   "legs": {
+    "queries": 1,
+    "mean_overlap": 21.0,
+    "mean_jaccard": 0.1927,
+    "dead_leg_queries": 0
+   }
+  },
+  {
+   "id": "character_likeness_longform",
+   "kind": "hit",
+   "tags": [
+    "broad",
+    "freshness_craft"
+   ],
+   "expected": [
+    "cgevent:16480",
+    "iideyalogiya:1904",
+    "iideyalogiya:1947",
+    "strangedalle:1504",
+    "video_hub:481640535",
+    "video_hub:5056987"
+   ],
+   "per_query": [
+    {
+     "query": "How do practitioners keep character likeness and visual world consistent across many shots of a longer AI-generated film? I am looking for: character reference sheets generated from real photos of a real person, a written rules document for the world (location, flat overcast lighting, color palette with exact hex codes, recurring prop motifs, locked-off camera at eye height), and reports of likeness drift across shots. Give 3-5 sources with source_key.",
+     "recall@10": 0.0,
+     "recall@20": 0.0,
+     "recall@40": 0.3333333333333333,
+     "mrr@10": 0.0,
+     "hidden_keys": [
+      "video_hub:5056987",
+      "video_hub:481640535"
+     ],
+     "returned@10": [
+      "video_hub:282951548",
+      "video_hub:130059708",
+      "video_hub:643325874",
+      "video_hub:509155341",
+      "video_hub:685215031",
+      "video_hub:897596306",
+      "video_hub:366181511",
+      "video_hub:997642295",
+      "video_hub:763320226",
+      "video_hub:585980878"
+     ]
+    }
+   ],
+   "recall@10": 0.0,
+   "recall@20": 0.0,
+   "recall@40": 0.3333,
+   "mrr@10": 0.0,
+   "hidden_total": 2,
+   "legs": {
+    "queries": 1,
+    "mean_overlap": 22.0,
+    "mean_jaccard": 0.2037,
+    "dead_leg_queries": 0
+   },
+   "craft_mode": {
+    "recall@10": 0.1667,
+    "recall@40": 0.3333,
+    "mrr@10": 0.1111
+   }
+  },
+  {
+   "id": "realism_in_ai_video",
+   "kind": "hit",
+   "tags": [
+    "broad",
+    "freshness_craft"
+   ],
+   "expected": [
+    "acidcrunch:2760",
+    "acidcrunch:2787",
+    "acidcrunch:2792",
+    "cgevent:16135",
+    "cgevent:16553",
+    "cgevent:16651"
+   ],
+   "per_query": [
+    {
+     "query": "Realism in AI-generated video: what actually makes a shot look real (motion/physics, natural light behaviour, small human traces), and the practice of deliberately adding imperfection to generated footage to kill the AI look. What does the corpus have on AI video realism and on 'adding imperfection' (shaky camera, imperfect framing, natural micro-motions)? Give sources with source_key and honest gaps.",
+     "recall@10": 0.0,
+     "recall@20": 0.16666666666666666,
+     "recall@40": 0.16666666666666666,
+     "mrr@10": 0.0,
+     "hidden_keys": [
+      "acidcrunch:2787"
+     ],
+     "returned@10": [
+      "video_hub:383007989",
+      "video_hub:575814828",
+      "video_hub:354492912",
+      "video_hub:85167630",
+      "video_hub:366181511",
+      "video_hub:793518597",
+      "video_hub:622075450",
+      "video_hub:825108165",
+      "video_hub:180821357",
+      "video_hub:53328084"
+     ]
+    }
+   ],
+   "recall@10": 0.0,
+   "recall@20": 0.1667,
+   "recall@40": 0.1667,
+   "mrr@10": 0.0,
+   "hidden_total": 1,
+   "legs": {
+    "queries": 1,
+    "mean_overlap": 13.0,
+    "mean_jaccard": 0.1111,
+    "dead_leg_queries": 0
+   },
+   "craft_mode": {
+    "recall@10": 0.0,
+    "recall@40": 0.0,
+    "mrr@10": 0.0
+   }
+  },
+  {
+   "id": "credits_economy",
+   "kind": "hit",
+   "tags": [
+    "broad"
+   ],
+   "expected": [
+    "cgevent:16322",
+    "acidcrunch:2611",
+    "acidcrunch:2644",
+    "acidcrunch:2771",
+    "acidcrunch:550",
+    "cgevent:16041"
+   ],
+   "per_query": [
+    {
+     "query": "Что в корпусе про экономию кредитов в AI-видео-продакшене и мастеринг платформы Higgsfield: (1) дисциплина промта до генерации - проработка сцены до роллов, чтобы не жечь кредиты, (2) character sheet split-frame (полный рост + крупный план) с текстурой кожи, белый фон, (3) общий пайплайн платформы: image workspace -> scene build -> video generation, (4) чем Higgsfield отличается от голого Seedance в экономике?",
+     "recall@10": 0.0,
+     "recall@20": 0.0,
+     "recall@40": 0.0,
+     "mrr@10": 0.0,
+     "hidden_keys": [],
+     "returned@10": [
+      "video_hub:643325874",
+      "video_hub:530231241",
+      "video_hub:641313330",
+      "video_hub:998318835",
+      "video_hub:781501388",
+      "video_hub:752772063",
+      "video_hub:763320226",
+      "cgevent:16755",
+      "video_hub:215373275",
+      "video_hub:34425000"
+     ]
+    }
+   ],
+   "recall@10": 0.0,
+   "recall@20": 0.0,
+   "recall@40": 0.0,
+   "mrr@10": 0.0,
+   "hidden_total": 0,
+   "legs": {
+    "queries": 1,
+    "mean_overlap": 18.0,
+    "mean_jaccard": 0.1607,
+    "dead_leg_queries": 0
+   }
+  },
+  {
+   "id": "speech_direction_audio_prompt",
+   "kind": "hit",
+   "tags": [
+    "broad"
+   ],
+   "expected": [
+    "cgevent:16753",
+    "iideyalogiya:1914",
+    "neyrograph:4573",
+    "video_hub:139865057",
+    "video_hub:231192822",
+    "video_hub:293918715"
+   ],
+   "per_query": [
+    {
+     "query": "English probe: what does the corpus say about these specific AI video techniques: (1) writing speech direction INTO the video audio prompt - 'spoken on camera with mouth moving' vs narration/voiceover, (2) counting script words for video duration - about 75 words per 30 seconds or the model fills silence, (3) generating multiple location transitions inside ONE video generation call with several reference images, (4) voice change / training a custom voice from a recording vs TTS presets? Concrete source_key citations please.",
+     "recall@10": 0.16666666666666666,
+     "recall@20": 0.16666666666666666,
+     "recall@40": 0.16666666666666666,
+     "mrr@10": 0.1,
+     "hidden_keys": [],
+     "returned@10": [
+      "video_hub:623900094",
+      "video_hub:781501388",
+      "video_hub:163751293",
+      "video_hub:132344581",
+      "video_hub:939367701",
+      "video_hub:349307042",
+      "video_hub:366181511",
+      "video_hub:718546572",
+      "video_hub:790307026",
+      "video_hub:139865057"
+     ]
+    }
+   ],
+   "recall@10": 0.1667,
+   "recall@20": 0.1667,
+   "recall@40": 0.1667,
+   "mrr@10": 0.1,
+   "hidden_total": 0,
+   "legs": {
+    "queries": 1,
+    "mean_overlap": 22.0,
+    "mean_jaccard": 0.2037,
+    "dead_leg_queries": 0
+   }
+  },
+  {
+   "id": "kling_elements_stability",
+   "kind": "hit",
+   "tags": [
+    "stability",
+    "freshness_tool"
+   ],
+   "expected": [
+    "acidcrunch:371",
+    "doronin:394",
+    "strangedalle:1066",
+    "polyakov:128"
+   ],
+   "per_query": [
+    {
+     "query": "Что такое Kling Elements? Один источник, кратко.",
+     "recall@10": 0.5,
+     "recall@20": 1.0,
+     "recall@40": 1.0,
+     "mrr@10": 0.3333333333333333,
+     "hidden_keys": [
+      "strangedalle:1066",
+      "acidcrunch:371"
+     ],
+     "returned@10": [
+      "cgevent:16776",
+      "neyrograph:4727",
+      "polyakov:128",
+      "acidcrunch:1304",
+      "neyrograph:4732",
+      "neyrograph:4733",
+      "doronin:394",
+      "doronin:641",
+      "neyrograph:4730",
+      "video_hub:330426580"
+     ]
+    }
+   ],
+   "recall@10": 0.5,
+   "recall@20": 1.0,
+   "recall@40": 1.0,
+   "mrr@10": 0.3333,
+   "hidden_total": 2,
+   "legs": {
+    "queries": 1,
+    "mean_overlap": 2.0,
+    "mean_jaccard": 0.0156,
+    "dead_leg_queries": 0
+   }
+  },
+  {
+   "id": "ae_motion_graphics_agent",
+   "kind": "hit",
+   "tags": [
+    "broad",
+    "scope_videohub"
+   ],
+   "expected": [
+    "cgevent:16296",
+    "cgevent:16312",
+    "neyrograph:4623",
+    "video_hub:246201519",
+    "video_hub:306464563",
+    "video_hub:363651573"
+   ],
+   "per_query": [
+    {
+     "query": "English probe: corpus coverage of (1) After Effects plugin skills/instructions that let an AI agent build motion graphics compositions directly, (2) using video references to convey rhythm and typography in motion design prompts, (3) promo video brief structure - scenes, visual style, how elements should move, (4) AI-generated motion graphics with editable After Effects project files as deliverable? source_key citations.",
+     "recall@10": 0.16666666666666666,
+     "recall@20": 0.16666666666666666,
+     "recall@40": 0.3333333333333333,
+     "mrr@10": 0.2,
+     "hidden_keys": [
+      "video_hub:306464563"
+     ],
+     "returned@10": [
+      "video_hub:420629738",
+      "video_hub:475663712",
+      "video_hub:180821357",
+      "video_hub:366181511",
+      "video_hub:363651573",
+      "video_hub:993186432",
+      "video_hub:575814828",
+      "video_hub:270308195",
+      "video_hub:443522679",
+      "video_hub:102636863"
+     ]
+    }
+   ],
+   "recall@10": 0.1667,
+   "recall@20": 0.1667,
+   "recall@40": 0.3333,
+   "mrr@10": 0.2,
+   "hidden_total": 1,
+   "legs": {
+    "queries": 1,
+    "mean_overlap": 11.0,
+    "mean_jaccard": 0.0924,
+    "dead_leg_queries": 0
+   }
+  },
+  {
+   "id": "minimax_degradation",
+   "kind": "hit",
+   "tags": [
+    "scope_expert",
+    "freshness_tool"
+   ],
+   "expected": [
+    "cgevent:16239",
+    "cgevent:16316",
+    "cgevent:16451",
+    "video_hub:371286679",
+    "video_hub:752772063",
+    "video_hub:995586242"
+   ],
+   "per_query": [
+    {
+     "query": "Найди практические свидетельства по MiniMax H3: резкая деградация reference-to-video после замены двух image references и небольшой правки prompt при прежнем clay-видео12.5с,6изображениях,13с output. Симптомы: перенос временных цветов clay в финал, пенные кольца несмотря на отрицания, лишние объекты, дрейф камеры. Особенно интересуют binding Video/Picture/Subject, Context-IR/rewrite, reAPI prompt expansion/seed, конфликт референсов и контролируемая диагностика. Отдели H3 от других моделей и hosted от local; нужны источники/даты и честные пробелы, не диагноз проекта.",
+     "recall@10": 0.0,
+     "recall@20": 0.3333333333333333,
+     "recall@40": 0.5,
+     "mrr@10": 0.0,
+     "hidden_keys": [
+      "video_hub:995586242",
+      "cgevent:16451",
+      "cgevent:16316"
+     ],
+     "returned@10": [
+      "video_hub:180821357",
+      "video_hub:790307026",
+      "cgevent:16506",
+      "neyrograph:4728",
+      "cgevent:16377",
+      "video_hub:366181511",
+      "video_hub:177727417",
+      "cgevent:16441",
+      "cgevent:16429",
+      "neyrograph:4666"
+     ]
+    }
+   ],
+   "recall@10": 0.0,
+   "recall@20": 0.3333,
+   "recall@40": 0.5,
+   "mrr@10": 0.0,
+   "hidden_total": 3,
+   "legs": {
+    "queries": 1,
+    "mean_overlap": 12.0,
+    "mean_jaccard": 0.1017,
+    "dead_leg_queries": 0
+   }
+  },
+  {
+   "id": "hypermotion_gap",
+   "kind": "gap",
+   "tags": [
+    "gap"
+   ],
+   "expected": [],
+   "per_query": [
+    {
+     "query": "Проверь покрытие корпуса по 2 темам (покрыто + source_key / gap): 1) hypermotion-реклама продуктов — замороженные в воздухе осколки/лёд/фрукты, разлетающаяся банка (slow-mo product shot); 2) workflow правок клиента: клиент просит изменения после рендера, редактируемая 3D-сцена в Blender позволяет не перегенерировать всё с нуля.",
+     "recall@10": null,
+     "recall@20": null,
+     "recall@40": null,
+     "mrr@10": 0.0,
+     "hidden_keys": [],
+     "returned@10": [
+      "video_hub:468785115",
+      "video_hub:850060911",
+      "video_hub:23521707",
+      "neyrograph:4729",
+      "video_hub:180821357",
+      "video_hub:121063689",
+      "video_hub:556342664",
+      "video_hub:737101800",
+      "video_hub:726332883",
+      "video_hub:298409509"
+     ]
+    }
+   ],
+   "recall@10": null,
+   "recall@20": null,
+   "recall@40": null,
+   "mrr@10": 0.0,
+   "hidden_total": 0,
+   "legs": {
+    "queries": 1,
+    "mean_overlap": 21.0,
+    "mean_jaccard": 0.1927,
+    "dead_leg_queries": 0
+   }
+  },
+  {
+   "id": "morph_pravilo180",
+   "kind": "hit",
+   "tags": [
+    "morphology",
+    "freshness_craft"
+   ],
+   "expected": [
+    "neyrograph:4425",
+    "acidcrunch:2177"
+   ],
+   "per_query": [
+    {
+     "query": "правило 180 градусов в AI-видео",
+     "recall@10": 1.0,
+     "recall@20": 1.0,
+     "recall@40": 1.0,
+     "mrr@10": 0.5,
+     "hidden_keys": [],
+     "returned@10": [
+      "video_hub:532322981",
+      "neyrograph:4425",
+      "video_hub:767512885",
+      "video_hub:354492912",
+      "video_hub:645951527",
+      "neyrograph:4731",
+      "neyrograph:4381",
+      "video_hub:366181511",
+      "acidcrunch:2177",
+      "video_hub:924584632"
+     ]
+    },
+    {
+     "query": "правила ста восьмидесяти градусов",
+     "recall@10": 0.5,
+     "recall@20": 1.0,
+     "recall@40": 1.0,
+     "mrr@10": 0.14285714285714285,
+     "hidden_keys": [
+      "acidcrunch:2177"
+     ],
+     "returned@10": [
+      "video_hub:554786127",
+      "deksden_notes:1256",
+      "neyrograph:4381",
+      "cgevent:16784",
+      "neyrograph:4709",
+      "video_hub:366181511",
+      "neyrograph:4425",
+      "video_hub:767512885",
+      "video_hub:532322981",
+      "video_hub:541488274"
+     ]
+    },
+    {
+     "query": "180-градусный разворот сцены",
+     "recall@10": 0.5,
+     "recall@20": 1.0,
+     "recall@40": 1.0,
+     "mrr@10": 0.1111111111111111,
+     "hidden_keys": [
+      "neyrograph:4425"
+     ],
+     "returned@10": [
+      "iideyalogiya:2018",
+      "video_hub:538002071",
+      "video_hub:532322981",
+      "video_hub:908346948",
+      "video_hub:532855074",
+      "neyrograph:4714",
+      "cgevent:16651",
+      "video_hub:41727223",
+      "acidcrunch:2177",
+      "video_hub:81348350"
+     ]
+    },
+    {
+     "query": "правилом 180 градусов",
+     "recall@10": 1.0,
+     "recall@20": 1.0,
+     "recall@40": 1.0,
+     "mrr@10": 0.3333333333333333,
+     "hidden_keys": [],
+     "returned@10": [
+      "video_hub:532322981",
+      "video_hub:767512885",
+      "neyrograph:4425",
+      "acidcrunch:2809",
+      "video_hub:645951527",
+      "video_hub:401000031",
+      "acidcrunch:2177",
+      "video_hub:949162836",
+      "neyrograph:4381",
+      "neuraldeep:2312"
+     ]
+    }
+   ],
+   "recall@10": 0.75,
+   "recall@20": 1.0,
+   "recall@40": 1.0,
+   "mrr@10": 0.2718,
+   "hidden_total": 2,
+   "legs": {
+    "queries": 4,
+    "mean_overlap": 3.25,
+    "mean_jaccard": 0.027,
+    "dead_leg_queries": 0
+   },
+   "craft_mode": {
+    "recall@10": 0.875,
+    "recall@40": 1.0,
+    "mrr@10": 0.75
+   }
+  },
+  {
+   "id": "morph_credits",
+   "kind": "hit",
+   "tags": [
+    "morphology"
+   ],
+   "expected": [
+    "cgevent:16497",
+    "cgevent:16312"
+   ],
+   "per_query": [
+    {
+     "query": "экономия кредитов AI-видеогенерации",
+     "recall@10": 0.0,
+     "recall@20": 0.0,
+     "recall@40": 0.0,
+     "mrr@10": 0.0,
+     "hidden_keys": [],
+     "returned@10": [
+      "cgevent:16728",
+      "video_hub:398784453",
+      "akimov:1275",
+      "neyrograph:4723",
+      "acidcrunch:1003",
+      "cgevent:16755",
+      "video_hub:336492274",
+      "iideyalogiya:2013",
+      "neyrograph:4728",
+      "cgevent:16581"
+     ]
+    },
+    {
+     "query": "экономии кредитов",
+     "recall@10": 0.0,
+     "recall@20": 0.0,
+     "recall@40": 0.0,
+     "mrr@10": 0.0,
+     "hidden_keys": [],
+     "returned@10": [
+      "acidcrunch:2813",
+      "cgevent:16728",
+      "deksden_notes:193",
+      "video_hub:398784453",
+      "cgevent:16581",
+      "glebkudr:738",
+      "air_ai:486",
+      "neyrograph:4728",
+      "video_hub:737101800",
+      "neyrograph:4729"
+     ]
+    },
+    {
+     "query": "кредитами экономит",
+     "recall@10": 0.0,
+     "recall@20": 0.0,
+     "recall@40": 0.0,
+     "mrr@10": 0.0,
+     "hidden_keys": [],
+     "returned@10": [
+      "video_hub:737101800",
+      "deksden_notes:1248",
+      "video_hub:398784453",
+      "acidcrunch:1390",
+      "acidcrunch:2813",
+      "video_hub:641313330",
+      "cgevent:16581",
+      "refat:82",
+      "deksden_notes:154",
+      "cgevent:16766"
+     ]
+    },
+    {
+     "query": "стоимость кредитов генераций",
+     "recall@10": 0.0,
+     "recall@20": 0.5,
+     "recall@40": 0.5,
+     "mrr@10": 0.0,
+     "hidden_keys": [
+      "cgevent:16497"
+     ],
+     "returned@10": [
+      "iideyalogiya:2013",
+      "iideyalogiya:2015",
+      "acidcrunch:2813",
+      "cgevent:16728",
+      "cgevent:16447",
+      "strangedalle:1038",
+      "cgevent:16581",
+      "video_hub:997757685",
+      "video_hub:398784453",
+      "neyrograph:4656"
+     ]
+    }
+   ],
+   "recall@10": 0.0,
+   "recall@20": 0.125,
+   "recall@40": 0.125,
+   "mrr@10": 0.0,
+   "hidden_total": 1,
+   "legs": {
+    "queries": 4,
+    "mean_overlap": 2.5,
+    "mean_jaccard": 0.0197,
+    "dead_leg_queries": 0
+   }
+  },
+  {
+   "id": "negative_control_out_of_corpus",
+   "kind": "negative_control",
+   "tags": [
+    "negative_control"
+   ],
+   "expected": [],
+   "per_query": [
+    {
+     "query": "Какие в корпусе экспертов есть протоколы секвенирования ДНК и биоинформатические пайплайны для NGS-данных?",
+     "recall@10": null,
+     "recall@20": null,
+     "recall@40": null,
+     "mrr@10": 0.0,
+     "hidden_keys": [],
+     "returned@10": [
+      "silicbag:1998",
+      "neyrograph:4729",
+      "akimov:2118",
+      "cgevent:16769",
+      "neuraldeep:2277",
+      "cgevent:16777",
+      "strangedalle:1458",
+      "glebkudr:767",
+      "acidcrunch:2192",
+      "iideyalogiya:2020"
+     ]
+    }
+   ],
+   "recall@10": null,
+   "recall@20": null,
+   "recall@40": null,
+   "mrr@10": 0.0,
+   "hidden_total": 0,
+   "legs": {
+    "queries": 1,
+    "mean_overlap": 0.0,
+    "mean_jaccard": 0.0,
+    "dead_leg_queries": 1
+   }
+  }
+ ],
+ "baseline_note": "Updated 2026-09-29 after improvements 1-3 (wide pool 40, freshness profiles, leg telemetry). Default metrics unchanged vs pre-change snapshot; craft_mode and legs fields added as new guarded metrics."
+}

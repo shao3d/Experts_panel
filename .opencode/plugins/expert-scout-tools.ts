@@ -17,12 +17,12 @@ export const ExpertScoutTools: Plugin = async () => {
     tool: {
       scout: tool({
         description:
-          "Read-only access to the Experts Panel Telegram corpus: expert roster (experts), hybrid FTS5+vector post search (search), full source with author/community comments and linked context (show).",
+          "Read-only access to the Experts Panel Telegram corpus: expert roster (experts), hybrid FTS5+vector post search (search), windowed exhaustive read of a scope (digest), full source with author/community comments and linked context (show).",
         args: {
           command: tool.schema
-            .enum(["experts", "search", "show"])
+            .enum(["experts", "search", "digest", "show"])
             .describe(
-              "experts = roster and volumes; search = hybrid post search; show = full source lookup",
+              "experts = roster and volumes; search = hybrid post search; digest = windowed exhaustive read of a scope (no retrieval); show = full source lookup",
             ),
           query: tool.schema
             .string()
@@ -51,6 +51,16 @@ export const ExpertScoutTools: Plugin = async () => {
             .max(30)
             .optional()
             .describe("Max search results (default 10, max 30)"),
+          diversity: tool.schema
+            .boolean()
+            .optional()
+            .describe("search: opt-in per-expert cap in the top window (avoids single-author monoculture)"),
+          freshness: tool.schema
+            .enum(["tool", "craft", "any"])
+            .optional()
+            .describe(
+              "search: age-penalty profile; tool = default soft decay (fast-moving tooling), craft/any = no age penalty (durable craft knowledge)",
+            ),
           no_vector: tool.schema
             .boolean()
             .optional()
@@ -63,6 +73,26 @@ export const ExpertScoutTools: Plugin = async () => {
             .array(tool.schema.string())
             .optional()
             .describe("source_key values like expert:123; required when command=show"),
+          window: tool.schema
+            .number()
+            .int()
+            .positive()
+            .max(30)
+            .optional()
+            .describe("digest: posts per page (default 15, max 30)"),
+          page: tool.schema
+            .number()
+            .int()
+            .min(0)
+            .optional()
+            .describe("digest: 0-based page number"),
+          expand: tool.schema
+            .number()
+            .int()
+            .positive()
+            .max(5)
+            .optional()
+            .describe("show: also fetch up to N adjacent posts per source (same expert, +/- in time)"),
           comments_limit: tool.schema
             .number()
             .int()
@@ -90,12 +120,24 @@ export const ExpertScoutTools: Plugin = async () => {
             if (args.recent_days) argv.push("--recent-days", String(args.recent_days))
             if (args.limit) argv.push("--limit", String(args.limit))
             if (args.no_vector) argv.push("--no-vector")
+            if (args.diversity) argv.push("--diversity")
+            if (args.freshness) argv.push("--freshness", String(args.freshness))
+          } else if (args.command === "digest") {
+            if (!args.experts && !args.group) {
+              throw new Error("command=digest requires --experts or --group scope")
+            }
+            if (args.experts) argv.push("--experts", args.experts)
+            if (args.group) argv.push("--group", args.group)
+            if (args.recent_days) argv.push("--recent-days", String(args.recent_days))
+            if (args.window) argv.push("--window", String(args.window))
+            if (args.page !== undefined) argv.push("--page", String(args.page))
           } else if (args.command === "show") {
             if (!args.source_keys || args.source_keys.length === 0) {
               throw new Error("command=show requires at least one source_key (expert:123)")
             }
             argv.push(...args.source_keys)
             if (args.comments_limit) argv.push("--comments-limit", String(args.comments_limit))
+            if (args.expand) argv.push("--expand", String(args.expand))
           }
           if (args.json) argv.push("--json")
           try {

@@ -43,15 +43,27 @@ TOOL_CALLS="$(grep -c '"type":"tool' "$RUN_DIR/events.jsonl" || true)"
 "$PYTHON_BIN" "$REPO_DIR/scripts/expert_scout_filter.py" \
   < "$RUN_DIR/events.jsonl" > "$RUN_DIR/answer.md"
 
+# Deterministic integrity check: cited keys must exist, quotes must be real,
+# repeated tool calls are flagged (docs/guides/expert-scout.md).
+set +e
+"$PYTHON_BIN" "$REPO_DIR/backend/scripts/verify_citations.py" \
+  --answer "$RUN_DIR/answer.md" --events "$RUN_DIR/events.jsonl" \
+  --json --annotate > "$RUN_DIR/integrity.json" 2> "$RUN_DIR/integrity.log"
+INTEGRITY_EXIT=$?
+set -e
+INTEGRITY_SUMMARY="$(tail -n 1 "$RUN_DIR/integrity.log" 2>/dev/null || true)"
+
 {
   printf 'question: %s\n' "$*"
   printf 'started_epoch: %s\n' "$START_EPOCH"
   printf 'duration_seconds: %s\n' "$DURATION"
   printf 'opencode_exit: %s\n' "$OPENCODE_EXIT"
   printf 'tool_calls: %s\n' "$TOOL_CALLS"
+  printf 'integrity_exit: %s\n' "$INTEGRITY_EXIT"
+  printf 'integrity: %s\n' "$INTEGRITY_SUMMARY"
 } > "$RUN_DIR/meta.txt"
 
-echo "# scout-run: ${DURATION}s, exit=${OPENCODE_EXIT}, tool_calls=${TOOL_CALLS}, artifacts=${RUN_DIR}" >&2
+echo "# scout-run: ${DURATION}s, exit=${OPENCODE_EXIT}, tool_calls=${TOOL_CALLS}, integrity_exit=${INTEGRITY_EXIT} ${INTEGRITY_SUMMARY}, artifacts=${RUN_DIR}" >&2
 
 if [[ -s "$RUN_DIR/answer.md" ]]; then
   cat "$RUN_DIR/answer.md"

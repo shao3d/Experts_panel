@@ -21,6 +21,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import re
 import sqlite3
 import sys
 from datetime import datetime, timedelta, timezone
@@ -33,12 +34,20 @@ except ImportError:  # pragma: no cover - vector search degrades gracefully
     sqlite_vec = None
 
 
-DEFAULT_LIMIT = 10
-MAX_LIMIT = 30
+DEFAULT_LIMIT = 20
+MAX_LIMIT = 40
+# Candidate fetch depth is constant (not tied to the output limit): BM25
+# rescoring normalizes over the fetched set, so a limit-dependent depth would
+# reshuffle the top-10 whenever the caller asks for a wider pool.
+FTS_CANDIDATES = 90
 DEFAULT_COMMENTS_LIMIT = 20
 MAX_COMMENTS_LIMIT = 100
 MAX_SNIPPET_CHARS = 500
 VECTOR_TOP_K = 40
+MAX_EXPAND_NEIGHBORS = 5
+MAX_DIGEST_WINDOW = 30
+MAX_DIGEST_TEXT = 400
+MAX_DIGEST_CHARS = 12000
 # Soft freshness mirrors HybridRetrievalService: linear decay over one year,
 # capped at 0.7, applied to both retrievers before the RRF merge.
 FRESHNESS_MAX_PENALTY = 0.7
@@ -218,7 +227,20 @@ def _parse_created_at(value: Any) -> datetime | None:
     return parse_timestamp(value)
 
 
-def _soft_freshness(created_at: Any, now: datetime) -> float:
+def _parse_now(raw: str | None) -> datetime:
+    if not raw:
+        return datetime.now(timezone.utc)
+    from src.utils.date_utils import parse_timestamp
+
+    parsed = parse_timestamp(raw)
+    if parsed is None:
+        raise ValueError(f"invalid --now timestamp: {raw!r}")
+    return parsed.replace(tzinfo=timezone.utc)
+
+
+def _soft_freshness(created_at: Any, now: datetime, freshness: str = "tool") -> float:
+    if freshness in ("craft", "any"):
+        return 1.0
     parsed = _parse_created_at(created_at)
     if parsed is None:
         return FRESHNESS_MAX_PENALTY
@@ -227,18 +249,19 @@ def _soft_freshness(created_at: Any, now: datetime) -> float:
 
 
 def _rank_fts(
-    fts_rows: list[tuple[int, str, float, str | None]], now: datetime
+    fts_rows: list[tuple[int, str, float, str | None]], now: datetime, freshness: str = "tool"
 ) -> list[int]:
     """Rescore BM25 rows with soft freshness, return post_ids best-first.
 
     Mirrors HybridRetrievalService: norm_rank in [0,1] -> base 0.3..1.0,
-    multiplied by soft freshness.
+    multiplied by soft freshness. `freshness="craft"`/`"any"` disables the
+    age penalty for durable craft knowledge (recency trap).
     """
     if not fts_rows:
         return []
     max_rank = max((abs(rank) for _, _, rank, _ in fts_rows), default=1) or 1
     scored = [
-        (post_id, (abs(rank) / max_rank * 0.7 + 0.3) * _soft_freshness(created_at, now))
+        (post_id, (abs(rank) / max_rank * 0.7 + 0.3) * _soft_freshness(created_at, now, freshness))
         for post_id, _, rank, created_at in fts_rows
     ]
     scored.sort(key=lambda item: item[1], reverse=True)
@@ -246,11 +269,11 @@ def _rank_fts(
 
 
 def _rank_vector(
-    vector_rows: list[tuple[int, float, str | None]], now: datetime
+    vector_rows: list[tuple[int, float, str | None]], now: datetime, freshness: str = "tool"
 ) -> list[int]:
     """Rescore distance rows with soft freshness, return post_ids best-first."""
     scored = [
-        (post_id, max(0.0, 1.0 - distance) * _soft_freshness(created_at, now))
+        (post_id, max(0.0, 1.0 - distance) * _soft_freshness(created_at, now, freshness))
         for post_id, distance, created_at in vector_rows
     ]
     scored.sort(key=lambda item: item[1], reverse=True)
@@ -264,6 +287,46 @@ def _rrf_merge(fts_ids: list[int], vector_ids: list[int], k: int) -> list[int]:
     for rank, post_id in enumerate(vector_ids):
         scores[post_id] = scores.get(post_id, 0.0) + 1.0 / (k + rank + 1)
     return sorted(scores, key=lambda pid: scores[pid], reverse=True)
+
+
+DIVERSITY_CAP_TOP = 6
+DIVERSITY_CAP_REST = 10
+
+
+def diversify(
+    merged_ids: list[int], expert_by_post: dict[int, str], top_k: int = 10
+) -> list[int]:
+    """Anti-monoculture reorder: no more than N posts per expert in the top
+    window, while other experts' candidates exist. Relative order is kept for
+    items that fit the cap; overflow is deferred to the tail of the list.
+    """
+    counts: dict[tuple[str, int], int] = {}
+    taken: list[int] = []
+    deferred: list[int] = []
+    for index, post_id in enumerate(merged_ids):
+        expert = expert_by_post.get(post_id, "?")
+        window = 0 if index < top_k else 1
+        cap = DIVERSITY_CAP_TOP if window == 0 else DIVERSITY_CAP_REST
+        if counts.get((expert, window), 0) < cap:
+            counts[(expert, window)] = counts.get((expert, window), 0) + 1
+            taken.append(post_id)
+        else:
+            deferred.append(post_id)
+    return taken + deferred
+
+
+def leg_stats(fts_ids: list[int], vector_ids: list[int]) -> dict[str, Any]:
+    """Hybrid leg telemetry: a dead leg (overlap ~ 0) fails silently without it."""
+    fts_set, vec_set = set(fts_ids), set(vector_ids)
+    overlap = fts_set & vec_set
+    union = fts_set | vec_set
+    jaccard = (len(overlap) / len(union)) if union else 0.0
+    return {
+        "fts_ranked": len(fts_ids),
+        "vector_ranked": len(vector_ids),
+        "overlap": len(overlap),
+        "jaccard": round(jaccard, 4),
+    }
 
 
 def _video_fields(media_metadata: Any) -> dict[str, Any]:
@@ -406,8 +469,12 @@ def cmd_search(args: argparse.Namespace) -> int:
             warnings.append(f"unknown_experts: {','.join(unknown_experts)}")
         if not expert_ids:
             warnings.append("no_known_experts_selected")
-        now = datetime.now(timezone.utc)
-        fts_rows, fts_warning = _fts_search(conn, args.query, expert_ids, cutoff, limit * 3)
+        try:
+            now = _parse_now(args.now)
+        except ValueError as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 2
+        fts_rows, fts_warning = _fts_search(conn, args.query, expert_ids, cutoff, FTS_CANDIDATES)
         if fts_warning:
             warnings.append(fts_warning)
         vector_rows: list[tuple[int, float, str | None]] = []
@@ -420,12 +487,16 @@ def cmd_search(args: argparse.Namespace) -> int:
             if vector_warning:
                 warnings.append(vector_warning)
 
-        fts_ids = _rank_fts(fts_rows, now)
-        vector_ids = _rank_vector(vector_rows, now)[:VECTOR_TOP_K]
+        fts_ids = _rank_fts(fts_rows, now, args.freshness)
+        vector_ids = _rank_vector(vector_rows, now, args.freshness)[:VECTOR_TOP_K]
         merged = _rrf_merge(fts_ids, vector_ids, config.HYBRID_RRF_K)[:limit]
         posts = _fetch_posts(conn, merged)
 
     fts_snippets = {post_id: snip for post_id, snip, _, _ in fts_rows}
+    # Anti-monoculture: only meaningful when the scope spans several experts.
+    if len(expert_ids) > 1 and getattr(args, "diversity", False) and merged:
+        expert_by_post = {pid: p["expert_id"] for pid, p in posts.items()}
+        merged = diversify(merged, expert_by_post)[:limit]
     found_by: dict[int, list[str]] = {}
     for post_id in fts_ids:
         found_by.setdefault(post_id, []).append("fts")
@@ -453,10 +524,12 @@ def cmd_search(args: argparse.Namespace) -> int:
         results.append(item)
 
     if args.json:
-        print(json.dumps({"query": args.query, "warnings": warnings, "results": results}, ensure_ascii=False, indent=2))
+        print(json.dumps({"query": args.query, "warnings": warnings, "retrieval_stats": leg_stats(fts_ids, vector_ids), "results": results}, ensure_ascii=False, indent=2))
     else:
         if warnings:
             print(f"# warnings: {'; '.join(warnings)}")
+        stats = leg_stats(fts_ids, vector_ids)
+        print(f"# legs: fts={stats['fts_ranked']} vec={stats['vector_ranked']} overlap={stats['overlap']} jaccard={stats['jaccard']}")
         for item in results:
             print(
                 f"- {item['source_key']} [{item['created_at']}] "
@@ -476,7 +549,7 @@ def _parse_source_key(raw: str) -> tuple[str, int]:
 
 
 def _collect_show_payload(
-    conn: sqlite3.Connection, raw_keys: list[str], comments_limit: int
+    conn: sqlite3.Connection, raw_keys: list[str], comments_limit: int, expand: int = 0
 ) -> list[dict[str, Any]]:
     payload: list[dict[str, Any]] = []
     for raw_key in raw_keys:
@@ -558,6 +631,35 @@ def _collect_show_payload(
             """,
             (post_id,),
         ).fetchall()
+        neighbors: list[dict[str, Any]] = []
+        if expand > 0:
+            n = min(expand, MAX_EXPAND_NEIGHBORS)
+            for side_sql, side_params in (
+                (
+                    "SELECT expert_id, telegram_message_id, created_at, "
+                    "substr(message_text, 1, 200) FROM posts WHERE expert_id = ? AND "
+                    "(created_at < ? OR (created_at = ? AND post_id < ?)) "
+                    "ORDER BY created_at DESC, post_id DESC LIMIT ?",
+                    (expert_id, created_at, created_at, post_id, n),
+                ),
+                (
+                    "SELECT expert_id, telegram_message_id, created_at, "
+                    "substr(message_text, 1, 200) FROM posts WHERE expert_id = ? AND "
+                    "(created_at > ? OR (created_at = ? AND post_id > ?)) "
+                    "ORDER BY created_at ASC, post_id ASC LIMIT ?",
+                    (expert_id, created_at, created_at, post_id, n),
+                ),
+            ):
+                neighbors.extend(
+                    {
+                        "source_key": f"{n_expert}:{n_mid}",
+                        "created_at": n_created,
+                        "excerpt": n_excerpt,
+                    }
+                    for n_expert, n_mid, n_created, n_excerpt in conn.execute(
+                        side_sql, side_params
+                    ).fetchall()
+                )
         payload.append(
             {
                 "source_key": f"{expert_id}:{message_id}",
@@ -569,6 +671,7 @@ def _collect_show_payload(
                 "content": message_text,
                 **_video_fields(media_metadata),
                 "comments": comments,
+                "neighbors": neighbors,
                 "linked_context": [
                     {
                         "source_key": f"{expert}:{mid}",
@@ -582,13 +685,86 @@ def _collect_show_payload(
     return payload
 
 
+def cmd_digest(args: argparse.Namespace) -> int:
+    """Windowed exhaustive read of a scoped collection (no retrieval).
+
+    Long-context over a scope (one expert, a group, video_hub) beats chunk
+    retrieval when the corpus slice fits the model's context. The agent pages
+    through windows; each call is char-capped so one page cannot flood context.
+    """
+    backend_dir = _load_backend()
+    db_path = _resolve_db_path(backend_dir, args.db)
+    window = max(1, min(args.window, MAX_DIGEST_WINDOW))
+    page = max(0, args.page)
+    cutoff = _cutoff_iso(args.recent_days)
+
+    with _connect(db_path) as conn:
+        try:
+            expert_ids, unknown_experts = _expert_ids(conn, args.experts, args.group)
+        except ValueError as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 2
+        if not expert_ids:
+            print("error: empty scope (use --experts or --group)", file=sys.stderr)
+            return 2
+        placeholders = ",".join("?" for _ in expert_ids)
+        sql = (
+            "SELECT post_id, expert_id, telegram_message_id, created_at, message_text "
+            f"FROM posts WHERE expert_id IN ({placeholders})"
+        )
+        params: list[Any] = list(expert_ids)
+        if cutoff:
+            sql += " AND created_at >= ?"
+            params.append(cutoff)
+        sql += " ORDER BY created_at DESC, post_id DESC LIMIT ? OFFSET ?"
+        params.extend([window + 1, page * window])
+        rows = conn.execute(sql, params).fetchall()
+
+    has_more = len(rows) > window
+    rows = rows[:window]
+    posts = []
+    used = 0
+    for post_id, expert_id, telegram_message_id, created_at, message_text in rows:
+        text = (message_text or "").strip().replace("\n", " ")
+        if len(text) > MAX_DIGEST_TEXT:
+            text = text[: MAX_DIGEST_TEXT - 1] + "…"
+        entry = {
+            "source_key": f"{expert_id}:{telegram_message_id}",
+            "created_at": created_at,
+            "text": text,
+        }
+        entry_cost = len(entry["source_key"]) + len(text)
+        if used + entry_cost > MAX_DIGEST_CHARS and posts:
+            has_more = True
+            break
+        used += entry_cost
+        posts.append(entry)
+
+    payload = {
+        "scope": expert_ids,
+        "page": page,
+        "window": window,
+        "has_more": has_more,
+        "posts": posts,
+    }
+    if args.json:
+        print(json.dumps(payload, ensure_ascii=False, indent=1))
+    else:
+        print(f"# digest scope={','.join(expert_ids)} page={page} posts={len(posts)} has_more={has_more}")
+        for post in posts:
+            print(f"- {post['source_key']} [{post['created_at']}] {post['text']}")
+    return 0
+
+
 def cmd_show(args: argparse.Namespace) -> int:
     backend_dir = _load_backend()
     db_path = _resolve_db_path(backend_dir, args.db)
     comments_limit = max(1, min(args.comments_limit, MAX_COMMENTS_LIMIT))
 
     with _connect(db_path) as conn:
-        payload = _collect_show_payload(conn, args.source_keys, comments_limit)
+        payload = _collect_show_payload(
+            conn, args.source_keys, comments_limit, expand=getattr(args, "expand", 0)
+        )
 
     if args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
@@ -601,6 +777,10 @@ def cmd_show(args: argparse.Namespace) -> int:
             if item.get("video_link"):
                 print(f"video: {item['video_link']}")
             print(item["content"])
+            if item.get("neighbors"):
+                print(f"--- neighbors ({len(item['neighbors'])}) ---")
+                for neighbor in item["neighbors"]:
+                    print(f"  {neighbor['source_key']} [{neighbor['created_at']}]: {neighbor['excerpt']}")
             author_comments = [c for c in item["comments"] if c["is_author"]]
             community_comments = [c for c in item["comments"] if not c["is_author"]]
             print(f"--- author comments ({len(author_comments)}) ---")
@@ -639,11 +819,39 @@ def build_parser() -> argparse.ArgumentParser:
     search.add_argument("--recent-days", type=int, default=None, help="Only posts newer than N days")
     search.add_argument("--limit", type=int, default=DEFAULT_LIMIT, help=f"Max results (default {DEFAULT_LIMIT}, max {MAX_LIMIT})")
     search.add_argument("--no-vector", action="store_true", help="FTS5 only, skip embeddings")
+    search.add_argument(
+        "--diversity",
+        action="store_true",
+        help="Opt-in: cap per-expert hits in the top window (DIVERSITY_CAP_TOP) to avoid single-author monoculture",
+    )
+    search.add_argument(
+        "--freshness",
+        choices=["tool", "craft", "any"],
+        default="tool",
+        help="tool = soft age penalty (fast-moving tooling); craft/any = no age penalty (durable craft knowledge)",
+    )
+    search.add_argument(
+        "--now",
+        help="ISO timestamp used as 'now' for the freshness decay (reproducible probes; default: system time)",
+    )
     search.add_argument("--json", action="store_true", help="Machine-readable JSON output")
+
+    digest = subparsers.add_parser(
+        "digest",
+        help="Windowed exhaustive read of a scoped collection (expert/group), no retrieval",
+    )
+    digest_scope = digest.add_mutually_exclusive_group(required=True)
+    digest_scope.add_argument("--experts", help="Comma-separated expert_id subset")
+    digest_scope.add_argument("--group", help="Canonical group name (tech, tech_business, visual)")
+    digest.add_argument("--recent-days", type=int, default=None, help="Only posts newer than N days")
+    digest.add_argument("--window", type=int, default=15, help=f"Posts per page (default 15, max {MAX_DIGEST_WINDOW})")
+    digest.add_argument("--page", type=int, default=0, help="Page number, 0-based")
+    digest.add_argument("--json", action="store_true", help="Machine-readable JSON output")
 
     show = subparsers.add_parser("show", help="Show full source(s) with comments and linked context")
     show.add_argument("source_keys", nargs="+", help="source_key values like refat:238")
     show.add_argument("--comments-limit", type=int, default=DEFAULT_COMMENTS_LIMIT, help=f"Max comments per window (author / community) per source (default {DEFAULT_COMMENTS_LIMIT})")
+    show.add_argument("--expand", type=int, default=0, help=f"Also fetch up to N adjacent posts per source (same expert, +/- in time; max {MAX_EXPAND_NEIGHBORS})")
     show.add_argument("--json", action="store_true", help="Machine-readable JSON output")
 
     return parser
@@ -656,6 +864,8 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_experts(args)
     if args.command == "search":
         return cmd_search(args)
+    if args.command == "digest":
+        return cmd_digest(args)
     if args.command == "show":
         return cmd_show(args)
     parser.error(f"unknown command: {args.command}")

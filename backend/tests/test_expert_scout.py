@@ -51,11 +51,173 @@ def test_rrf_merge_prefers_ids_found_by_both_retrievers(scout):
     assert set(merged) == {10, 11, 12}
 
 
+def test_leg_stats_exposes_dead_leg(scout):
+    """Improvement 3: hybrid leg telemetry (silent dead-leg detection)."""
+    stats = scout.leg_stats([1, 2, 3, 4], [3, 4, 5, 6])
+    assert stats["fts_ranked"] == 4
+    assert stats["vector_ranked"] == 4
+    assert stats["overlap"] == 2
+    assert 0 < stats["jaccard"] < 1
+
+    dead = scout.leg_stats([1, 2], [3, 4])
+    assert dead["overlap"] == 0 and dead["jaccard"] == 0.0
+
+    empty = scout.leg_stats([], [])
+    assert empty["overlap"] == 0 and empty["jaccard"] == 0.0
+
+
+def test_digest_parser_requires_scope(scout):
+    """Improvement 4: digest = windowed exhaustive read of a scope."""
+    parser = scout.build_parser()
+    args = parser.parse_args(["digest", "--experts", "acidcrunch", "--window", "30", "--page", "2"])
+    assert args.command == "digest"
+    assert args.window == 30 and args.page == 2
+    with pytest.raises(SystemExit):
+        parser.parse_args(["digest"])
+    with pytest.raises(SystemExit):
+        parser.parse_args(["digest", "--experts", "a", "--group", "visual"])
+
+
+def test_digest_caps_are_bounded(scout):
+    assert scout.MAX_DIGEST_WINDOW <= 30
+    assert scout.MAX_DIGEST_TEXT <= 500
+    assert scout.MAX_DIGEST_CHARS <= 20000
+
+
+def test_digest_walks_small_expert_completely(scout, tmp_path):
+    """Integration: a small expert must be fully walkable via pages (real corpus)."""
+    import subprocess
+    import sys as _sys
+
+    proc = subprocess.run(
+        [
+            _sys.executable,
+            str(Path(scout.__file__)),
+            "digest",
+            "--experts",
+            "vlad_kooklev",
+            "--window",
+            "30",
+            "--page",
+            "0",
+            "--json",
+        ],
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    assert proc.returncode == 0, proc.stderr
+    payload = __import__("json").loads(proc.stdout)
+    assert payload["scope"] == ["vlad_kooklev"]
+    assert payload["has_more"] is False
+    assert len(payload["posts"]) >= 20
+    assert all(p["source_key"].startswith("vlad_kooklev:") for p in payload["posts"])
+    assert all(len(p["text"]) <= scout.MAX_DIGEST_TEXT for p in payload["posts"])
+
+
+def test_parse_now_is_optional_and_validated(scout):
+    """Reproducible probes: --now anchors the day-based freshness decay."""
+    from datetime import datetime, timezone
+
+    assert scout._parse_now(None) is not None
+    fixed = scout._parse_now("2026-09-29T12:00:00")
+    assert fixed == datetime(2026, 9, 29, 12, 0, 0, tzinfo=timezone.utc)
+    assert scout._parse_now("2026-09-29 12:00:00") == fixed
+    with pytest.raises(ValueError):
+        scout._parse_now("не дата")
+
+
+def test_diversify_caps_monoculture_but_keeps_order(scout):
+    """Improvement 7: the top window keeps at most N posts per expert."""
+    assert scout.DIVERSITY_CAP_TOP == 6
+    assert scout.DIVERSITY_CAP_REST == 10
+    ids = list(range(10))
+    experts = {i: ("a" if i < 7 else "b") for i in ids}
+    out = scout.diversify(ids, experts, top_k=10)
+    # 7 "a" posts, 3 "b" posts: the top window takes only 6 "a", then the "b"s
+    # float up; the 7th "a" is deferred to the tail (order kept).
+    assert out[:6] == [0, 1, 2, 3, 4, 5]
+    assert out[6:9] == [7, 8, 9]
+    assert out[9:] == [6]
+    assert set(out) == set(ids)
+    # single-expert lists are untouched
+    mono = {i: "a" for i in ids}
+    assert scout.diversify(ids, mono, top_k=10) == ids
+
+
+def test_show_expand_fetches_adjacent_posts(scout):
+    """Improvement: --expand stitches local context (adjacent posts, same expert)."""
+    import subprocess
+    import sys as _sys
+
+    assert scout.MAX_EXPAND_NEIGHBORS <= 5
+    proc = subprocess.run(
+        [
+            _sys.executable,
+            str(Path(scout.__file__)),
+            "show",
+            "acidcrunch:1335",
+            "--expand",
+            "99",
+            "--json",
+        ],
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    assert proc.returncode == 0, proc.stderr
+    item = __import__("json").loads(proc.stdout)[0]
+    neighbors = item.get("neighbors", [])
+    assert 1 <= len(neighbors) <= 2 * scout.MAX_EXPAND_NEIGHBORS
+    assert all(n["source_key"].startswith("acidcrunch:") for n in neighbors)
+    assert "acidcrunch:1335" not in {n["source_key"] for n in neighbors}
+
+
 def test_cutoff_iso_format(scout):
     assert scout._cutoff_iso(None) is None
     cutoff = scout._cutoff_iso(7)
     assert cutoff is not None
     assert len(cutoff) == len("2026-01-01 00:00:00")
+
+
+def test_search_pool_is_wide_for_llm_reranking(scout):
+    """Improvement 1: the candidate pool is wide enough for the model to re-rank."""
+    assert scout.MAX_LIMIT >= 40
+    assert scout.DEFAULT_LIMIT >= 20
+    assert scout.VECTOR_TOP_K >= scout.MAX_LIMIT
+    args = scout.build_parser().parse_args(["search", "q"])
+    assert args.limit == scout.DEFAULT_LIMIT
+    assert scout.build_parser().parse_args(["search", "q", "--limit", "40"]).limit == 40
+
+
+def test_search_candidate_depth_is_limit_independent(scout):
+    """Ranking must not reshuffle when the caller widens the pool (BM25 max_rank)."""
+    assert scout.FTS_CANDIDATES >= 90
+    src = Path(scout.__file__).read_text(encoding="utf-8")
+    assert "limit * 3" not in src
+
+
+def test_freshness_craft_mode_neutralizes_age_penalty(scout):
+    """Improvement 2: craft/any profiles must not demote old canonical posts."""
+    from datetime import datetime, timezone
+
+    now = datetime(2026, 9, 29, tzinfo=timezone.utc)
+    old = "2024-01-01 00:00:00"
+    fresh = "2026-09-01 00:00:00"
+    assert scout._soft_freshness(old, now, "tool") == scout.FRESHNESS_MAX_PENALTY
+    assert scout._soft_freshness(old, now, "craft") == 1.0
+    assert scout._soft_freshness(old, now, "any") == 1.0
+    assert scout._soft_freshness(fresh, now, "tool") > scout._soft_freshness(old, now, "tool")
+
+    # old strong BM25 match vs a slightly weaker fresh one: age penalty flips the order
+    fts_rows = [
+        (1, "old strong", -10.0, old),
+        (2, "fresh slightly weaker", -9.0, fresh),
+    ]
+    tool_order = scout._rank_fts(fts_rows, now, "tool")
+    craft_order = scout._rank_fts(fts_rows, now, "craft")
+    assert craft_order[0] == 1, "craft must keep the strong old match first"
+    assert tool_order[0] == 2, "tool profile demotes the old match (recency trap demo)"
 
 
 def test_connect_is_read_only(scout, tmp_path):
