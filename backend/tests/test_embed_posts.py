@@ -162,3 +162,67 @@ async def test_embedding_api_failure_reports_all_posts_as_errors(embed_env, monk
 
     assert (embedded, errors) == (0, 2)
     assert saved_ids() == []
+
+
+async def test_continuous_stops_after_three_stalled_batches(embed_env, monkeypatch):
+    module, _ = embed_env
+    calls = []
+    async def failed(*args):
+        calls.append(1)
+        return 0,1
+    monkeypatch.setattr(module,'process_batch',failed)
+    assert await module.run_continuous(delay=0) == (0,1)
+    assert len(calls) == 3
+
+
+async def test_continuous_can_recover_a_transient_failure(embed_env, monkeypatch):
+    module, _ = embed_env
+    results = iter([(0,1),(3,0),(0,0)])
+    async def process(*args):
+        return next(results)
+    monkeypatch.setattr(module,'process_batch',process)
+    assert await module.run_continuous(delay=0) == (3,0)
+
+
+@pytest.mark.parametrize('kwargs',[{'dry_run':True},{'force':True}])
+async def test_continuous_rejects_modes_that_cannot_advance(embed_env, kwargs):
+    module, _ = embed_env
+    with pytest.raises(ValueError,match='continuous'):
+        await module.run_continuous(**kwargs)
+
+
+def test_main_propagates_batch_errors(embed_env, monkeypatch):
+    module, _ = embed_env
+    monkeypatch.setattr(sys,'argv',['embed_posts'])
+    monkeypatch.setattr(module,'require_openrouter_runtime',lambda:None)
+    async def process(*args):
+        return 0,2
+    monkeypatch.setattr(module,'process_batch',process)
+    assert module.main() == 1
+
+
+def test_receipt_readiness_requires_each_isolated_source_in_all_indexes(embed_env,tmp_path,monkeypatch):
+    import hashlib,json
+    from sqlalchemy import text
+    module,_=embed_env
+    _with_service(module,monkeypatch,FakeEmbeddingService())
+    source=tmp_path/'segments.json';source.write_text('{}')
+    receipt=tmp_path/'segments.import-receipt.json'
+    receipt.write_text(json.dumps({'source_path':str(source),'source_sha256':hashlib.sha256(source.read_bytes()).hexdigest(),'source_keys':['video_hub:11','video_hub:22'],'status':'loaded'}))
+    with module.SessionLocal() as db:
+        db.execute(text('CREATE TABLE posts (post_id INTEGER PRIMARY KEY,expert_id TEXT,telegram_message_id INTEGER)'))
+        db.execute(text('CREATE VIRTUAL TABLE posts_fts USING fts5(content)'))
+        db.execute(text("INSERT INTO posts VALUES (1,'video_hub',11),(2,'other',22)"))
+        db.execute(text("INSERT INTO posts_fts(rowid,content) VALUES (1,'one'),(2,'two')"))
+        db.commit()
+    awaitable=module.embed_batch([_post(1),_post(2)])
+    import asyncio
+    assert asyncio.run(awaitable)==(2,0)
+    assert not module.verify_receipt_index(receipt)
+    with module.SessionLocal() as db:
+        db.execute(text("UPDATE posts SET expert_id='video_hub' WHERE post_id=2"));db.commit()
+    assert module.verify_receipt_index(receipt)
+    with module.SessionLocal() as db:
+        db.execute(text('DELETE FROM posts_fts WHERE rowid=2'));db.commit()
+    assert not module.verify_receipt_index(receipt)
+    assert json.loads(receipt.read_text())['status']=='loaded'

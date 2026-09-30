@@ -37,15 +37,17 @@ bridge itself is missing, install it from the Experts Panel repo:
 scripts/install_expert_scout_skill.sh --with-shim
 ```
 
-On the VM (opencode), from the repository root (or use the absolute path):
+On the VM, from the repository root (or use the absolute path):
 
 ```bash
 ./scripts/expert_scout.sh "<bounded question>"
 /home/ubuntu/apps/experts-panel/dev/scripts/expert_scout.sh "<bounded question>"
 ```
 
+The wrapper defaults to headless GPT-6.1-Sol with low reasoning and Fast tier requested. It uses only the existing read-only scout tool through its MCP adapter. OpenCode/Bunny is available solely as an explicit comparison override; there is no automatic fallback. Runtime SSOT: `docs/guides/expert-scout.md`.
+
 A run takes roughly 15 seconds to a few minutes. If the harness asks for a
-command timeout, allow up to 300 seconds; raise it with `EXPERT_SCOUT_TIMEOUT`
+command timeout, allow up to 900 seconds; raise it with `EXPERT_SCOUT_TIMEOUT`
 (seconds) when needed. Never open the corpus database directly and never call
 the helper outside the sanctioned wrapper or the no-shell `scout` plugin tool.
 
@@ -79,15 +81,8 @@ Do not silently broaden or narrow the expert scope.
 - Preserve `source_key` values so the user can ask follow-ups.
 - An honest "в корпусе нет сигнала" is a valid result; never replace it with
   general knowledge.
-- Exit codes: `0` — answer (including "no signal"); `3` — the agent produced no
-  text (anomaly; inspect run artifacts on the VM); `124` — wrapper hard timeout
-  (default `EXPERT_SCOUT_TIMEOUT=300`); other non-zero — operational failure.
-  Report failures as technical problems, not as "no signal".
-- Every run is checked automatically by `backend/scripts/verify_citations.py`:
-  a `# WARNING: unverified source_keys: ...` line at the top of the answer means
-  the agent cited a source that does not exist. Report it as a technical defect,
-  do not pass such a key through as a real source; details are in
-  `integrity.json`.
+- Exit codes: `0` — completed answer with verified reads/citations; `3` — missing final answer; `4` — incomplete or unverified evidence; `124` — engine timeout; other non-zero — operational failure. Report a partial answer or technical failure honestly, never as absence of signal.
+- Every run checks source existence, completed full reads, locally cited verbatim quotations and tool loops. A warning means the answer failed integrity checks; do not present it as a verified result. This check does not prove semantic correctness. Runtime details: `docs/guides/expert-scout.md`.
 - Run artifacts live on the VM under `output/scout_runs/<timestamp>/`
   (`question.txt`, `events.jsonl`, `answer.md`, `integrity.json`, `meta.txt`).
 

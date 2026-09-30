@@ -2,7 +2,7 @@
 
 **Role:** Expert Digital Twin Creator
 **Status:** Active Workflow (automated ingest preferred)
-**Last updated:** 2026-09-29
+**Last updated:** 2026-09-30
 **Owner:** System Architect (opencode agent)
 
 ---
@@ -140,13 +140,8 @@ Number `segment_id` **continuously across chunks** (do not restart from 1001 in
 each chunk): `--combine` fails on duplicates, and duplicate virtual IDs would
 otherwise overwrite segments at import time.
 
-Два правила против граблей `--combine` (проверено 2026-09-29):
+Combine сохраняет разные инструкции даже при одинаковой теме и близких таймкодах. Удаляются только одинаковые свидетельства из соседних чанков. Искусственно менять `topic_id` ради обхода дедупликации больше не требуется.
 
-- **Разные `topic_id` у соседних сегментов.** Дедуп combine склеивает сегменты
-  с одинаковым `topic_id` в пределах overlap-окна (25с) — два последовательных
-  разных сегмента с одним topic_id схлопнутся в один. Синонимично: смежные
-  темы называть разными slug'ами (`location_prompts_lighting` и
-  `location_snow_summit`, а не один общий).
 - **[НА ЭКРАНЕ] из OCR, не по памяти.** Промты/настройки с экрана читай по
   кадрам; на VM есть `rapidocr-onnxruntime` (RapidOCR, ~1.3с/кадр) —
   OCR плотных и coarse-кадров даёт дословный текст промтов для
@@ -158,32 +153,26 @@ otherwise overwrite segments at import time.
 backend/.venv/bin/python backend/scripts/ingest_video.py --combine --out /tmp/<id>_ingest
 backend/.venv/bin/python backend/scripts/import_video_json.py /tmp/<id>_ingest/segments.json --dry-run
 backend/.venv/bin/python backend/scripts/import_video_json.py /tmp/<id>_ingest/segments.json
-backend/.venv/bin/python backend/scripts/embed_posts.py
+backend/.venv/bin/python backend/scripts/embed_posts.py --continuous --receipt /tmp/<id>_ingest/segments.import-receipt.json
 ```
 
-После `--combine` и до импорта (грабли, проверено 2026-09-29):
+До combine: каждый чанк должен содержать согласованные метаданные ролика, включая настоящую дату публикации. Проверяется весь ожидаемый набор чанков. Пути кадров автоматически перебазируются относительно каталога чанка; проверить существование файлов всё равно нужно. Import без даты, с пустым текстом, отрицательным таймкодом или конфликтующей идентичностью останавливается.
 
-- **Пути кадров** в `segments.json` combine НЕ переписывает: в чанках они
-  голые имена (`c01_w01_....jpg`), а после combine обязаны быть полными
-  относительными (`chunks/chunk_NN/frames_dense/<file>` — по префиксу `cNN`
-  имени файла). Переписать самому, затем сверить, что все файлы существуют.
-- **`video_metadata`** (`title`, `author`, `url`, `duration_seconds`,
-  `published_at`) combine берёт из первого чанка, где он есть; без него импорт
-  скажет «Untitled Video». Класть в `chunks/chunk_01/segments.json` или
-  дописывать в combined-файл.
+Для scoped ingest сохраняй `video_metadata.scope` и `scope_range_s` (границы на исходной шкале YouTube). `timestamp_seconds` — навигационный keyframe; `start_seconds`/`end_seconds` добавляй только при проверенных границах. Импорт эти поля сохраняет, но не выдумывает отсутствующее покрытие.
 
-After import + embed — **update the video matrix** (Phase 1 of the admission
-gate, `expert-admission-control.md` §16.3–16.5): refine the video's `cells` in
-`admission_log.json` from the `topic_id` → cell mapping of its segments, then
-rebuild:
+Phase 1: до импорта сопоставь реальные сегменты с ячейками таксономии: `matrix_cells: ["domain/subdomain/intent"]` у каждого подтверждающего сегмента. Это лёгкая разметка, не отдельный тяжёлый паспорт. В `admission_log.json` сохраняй выбранные cells и `segments_path`, если источник лежит вне стандартного ingest-каталога.
+
+После commit импорт создаёт `segments.import-receipt.json` со статусом `loaded`, SHA256 источника и соответствием cell → source_key. Команда embedding выше должна закончиться успешно и подтвердить `searchable`. Только затем пересобирай матрицу:
 
 ```bash
 backend/.venv/bin/python backend/scripts/build_video_matrix.py
 ```
 
 Обновление матрицы — обязательный шаг чек-листа, а не отдельное обещание:
-забыл пересобрать — карта врёт (`video_matrix.md`/`.json` генерируются, руками
+забыл пересобрать — карта устаревает (`video_matrix.md`/`.json` генерируются, руками
 их не править).
+
+Старые материалы без receipt считаются неподтверждёнными, а не отсутствующими в базе. Не создавай подтверждения вручную по одному verdict. Их проверка/повторный импорт — отдельная работа с данными по разрешению владельца. Изменение исходного JSON делает receipt устаревшим; после уточнения разметки повтори импорт и проверку индексов. Уже импортированные материалы эти правки кода не пересоздают.
 
 Re-importing the same video after re-segmentation: add `--replace-video` so the
 old segments (matched by canonical video URL) and their embeddings are deleted

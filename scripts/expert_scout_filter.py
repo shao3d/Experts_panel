@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Reduce `opencode run --format json` JSONL into the final agent answer.
+"""Reduce OpenCode or Codex JSONL into the final agent answer.
 
 Keeps only text parts emitted after the last tool call (falling back to all
 text parts — explicitly marked with a # WARNING — when the run ended without
@@ -11,6 +11,10 @@ from __future__ import annotations
 import itertools
 import json
 import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
+from src.utils.scout_evidence import finished
 
 
 def main() -> int:
@@ -26,11 +30,17 @@ def main() -> int:
 
     last_tool_index = -1
     for index, event in enumerate(events):
-        if event.get("type") in {"tool", "tool_use"}:
+        if event.get("type") in {"tool", "tool_use"} or (event.get("type") == "item.completed" and event.get("item", {}).get("type") == "mcp_tool_call"):
             last_tool_index = index
 
     text_parts: list[tuple[str, str]] = []
     for index, event in enumerate(events):
+        if event.get("type") == "item.completed" and event.get("item", {}).get("type") == "agent_message":
+            if index > last_tool_index:
+                item = event["item"]
+                if item.get("text"):
+                    text_parts.append((item.get("id", f"msg-{index}"), item["text"]))
+            continue
         if event.get("type") != "text":
             continue
         if last_tool_index >= 0 and index <= last_tool_index:
@@ -56,8 +66,9 @@ def main() -> int:
     for _message_id, group in itertools.groupby(text_parts, key=lambda item: item[0]):
         grouped.append("".join(text for _, text in group))
 
-    answer = "\n\n".join(grouped).strip()
-    if answer and used_fallback and last_tool_index >= 0:
+    answer = grouped[-1].strip() if grouped else ""
+    complete = finished(events) and not used_fallback
+    if answer and not complete:
         answer = (
             "# WARNING: scout did not emit a final answer after the last tool call; "
             "the text below is intermediate narration and may be incomplete.\n\n"
@@ -65,7 +76,7 @@ def main() -> int:
         )
     if answer:
         print(answer)
-    return 0
+    return 0 if complete and answer else 3
 
 
 if __name__ == "__main__":

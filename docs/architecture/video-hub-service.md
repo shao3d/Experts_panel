@@ -1,6 +1,7 @@
 # Video Hub Sidecar: Architecture & Integration
 
 **Status:** Stable / Production-Ready (query-time branch dormant in the UI, see "Current Operating Mode")
+**Last updated:** 2026-09-30
 **Role:** Parallel pipeline for deep video transcript analysis using the "Digital Twin" approach.
 **Date:** 2026-04-12 (operating-mode note 2026-09-17; review passes 2026-09-17,
 2026-09-24; admission-gate pointer 2026-09-28)
@@ -106,8 +107,7 @@ The automated pipeline optionally adds two blocks to a segment:
   video date instead of the import date. Any accepted shape (date-only
   `YYYY-MM-DD`, ISO with `T`, offsets) is normalized at import to the canonical
   `YYYY-MM-DD HH:MM:SS` text — the same rendering as synced Telegram rows — and
-  mirrored into `media_metadata.published_at`. A missing `published_at` logs a
-  warning and falls back to import time; an unparsable date aborts the import,
+  mirrored into `media_metadata.published_at`. A missing or unparsable `published_at` aborts the import,
   because a silently wrong `created_at` would skew freshness ranking (review
   fix 2026-09-24: bare dates used to be stored verbatim and were then treated
   as maximally old by date parsers). Retrieval parsers
@@ -115,10 +115,14 @@ The automated pipeline optionally adds two blocks to a segment:
   also accept date-only text so legacy rows keep working. Rows imported before
   the normalization are healed by
   `backend/scripts/maintenance/normalize_video_timestamps.py`.
-- `import_video_json.py` upserts by `telegram_message_id` (row identity preserved), so re-imports do not orphan embeddings. When `message_text` changes, stale `post_embeddings`/`vec_posts` rows are dropped so the next `embed_posts.py` run regenerates them.
+- `import_video_json.py` upserts by `(expert_id=video_hub, telegram_message_id)` and rejects stored duplicates or a virtual-ID collision with another video/segment. Changes to text or publication date invalidate both embedding tables; inability to invalidate the vector table aborts the transaction.
 - **Video identity is canonical**: every YouTube URL form (`youtu.be/ID`, `shorts/`, `embed/`, `live/`, `watch?v=ID` with extra params) is canonicalized to `https://www.youtube.com/watch?v=ID` before deriving virtual IDs and topic hashes, so the same video cannot be imported twice under different URLs.
 - **`segment_id` must be unique across the whole video** (chunk numbering is continuous). `--combine` fails loudly on duplicates instead of silently overwriting segments; `import_video_json.py` fails on duplicate virtual IDs inside one JSON.
 - **Re-segmentation:** `import_video_json.py --replace-video` deletes all existing segments of the same video (matched by canonical URL) together with their embeddings before importing the new segmentation. Without the flag, changed `segment_id` values leave old rows in place.
+- Combine checks the expected chunk set from `chunks_index.json`, consistent video metadata, and rebases chunk-relative frame paths. Import requires nonempty textual content and finite nonnegative keyframes. Explicit start/end intervals must contain the keyframe; no intervals are inferred from neighboring timestamps.
+- Import preserves optional duration, declared scope/range and per-segment `matrix_cells`. A keyframe alone does not prove continuous source coverage. Frame filenames include a content hash; dry-run copies nothing and existing frames are not overwritten.
+- A successful committed import writes `<segments>.import-receipt.json`, tied to the exact input SHA256 and source keys. Its initial state is `loaded`. `embed_posts.py --continuous --receipt <receipt>` confirms every isolated source in FTS and both embedding tables, then records `searchable`. This is an operator readiness snapshot, not a perpetual guarantee against later manual database changes. No schema migration or new service is introduced.
+- Continuous embedding stops after three batches with no progress, returns failure for unresolved errors, and disallows continuous dry-run/force combinations. Existing historical videos are not automatically reimported by these code changes.
 - A reused transcript (`--transcript`) and the ASR output are validated for the ASR schema (`{start: <seconds>, end: <seconds>, text: <str>}`); a foreign format fails the ingest instead of producing empty transcript slices.
 
 ### Automated Ingest Pipeline
@@ -127,7 +131,7 @@ Three steps, dev-safe (no production writes):
 
 1. **Stage 1 — `backend/scripts/ingest_video.py`**: media probe → audio → ASR (`backend/scripts/asr_whisper.py`, faster-whisper int8, glossary-biased, auto language) → chunked processing (`--chunk-minutes`, overlap) → per-chunk coarse grid, contact sheets, per-second change curve (numpy), speech-cue windows, adaptive dense frames with dedup and hard caps (`--max-windows-per-chunk`, `--max-dense-frames-per-chunk`) → artifacts under `chunks/chunk_NN/`.
 2. **Stage 2 — LLM pass**: one chunk at a time; the model reads the transcript slice plus sheets/native frames and writes `chunks/chunk_NN/segments.json`. Disk is the memory, so long videos never load more than one chunk into context. `segment_id` must continue across chunks (no restart from 1001 per chunk).
-3. **Combine, import, embed**: `ingest_video.py --combine` merges chunk JSONs (dedup by topic + time inside overlaps, chunk-local metadata stripped) into `segments.json` and fails on duplicate `segment_id`; `import_video_json.py` writes to the DB (`--replace-video` for re-segmentation); `embed_posts.py` adds vectors.
+3. **Combine, import, embed**: `ingest_video.py --combine` merges chunk JSONs (only identical evidence in nearby segments from different chunks is deduplicated; distinct advice is preserved; chunk-local metadata is stripped) into `segments.json` and fails on duplicate `segment_id`; `import_video_json.py` writes to the DB (`--replace-video` for re-segmentation); `embed_posts.py` adds vectors.
 
 **YouTube download constraint**: the VM datacenter IP is blocked by YouTube, so media is fetched on the Mac over the reverse SSH tunnel (see `docs/guides/video-hub-operator.md`) and copied to the VM before stage 1.
 

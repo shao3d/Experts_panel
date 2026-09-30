@@ -4,10 +4,13 @@
 > **Feature Evolution:** This architecture has evolved. The current implementation (Embs&Keys Search) combines the Entity-Centric FTS5 approach described here with **vector search (`sqlite-vec`)** and merges them via the *Reciprocal Rank Fusion (RRF)* algorithm. See `hybrid_retrieval_plan.md` and the source code of `hybrid_retrieval_service.py` as the current SSOT.
 
 **Status:** ✅ Evolved into Hybrid Retrieval (Updated 2026-05-06)
+**Last updated:** 2026-09-30
 **Feature Flag:** `use_super_passport` (exposed via the "Embs&Keys" UI checkbox; backend default = `false`, current frontend init = `true`)
 **Goal:** Scale the pre-filtering of posts for the Map Phase via a hybrid split (Vector + FTS5) and prevent OOM/CPU spikes.
 
 ---
+
+AI Scout ниже — генератор запросов внутри Панели. Отдельный Expert Scout имеет свой read-only контур и SSOT [руководство Скаута](../guides/expert-scout.md). Его ремонт 2026-09-30 не меняет выборку Панели.
 
 ## 📊 Current Architecture (from code and DB)
 

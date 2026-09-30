@@ -44,24 +44,18 @@ scripts/install_expert_scout_skill.sh --with-shim  # + Mac-мостик
 Mac: ~/.local/bin/expert-scout "вопрос"
   -> SSH (ubuntu@82.70.251.73)
   -> VM: scripts/expert_scout.sh
-  -> opencode run --agent expert-scout
+  -> headless Codex: gpt-6.1-sol / low / fast
+  -> scripts/expert_scout_mcp.ts (тот же инструмент)
   -> plugin tool `scout` (argv-массив, без shell)
-  -> backend/scripts/expert_scout.py   (read-only: experts / search / digest / show)
+  -> backend/scripts/expert_scout.py   (read-only: experts / videos / search / digest / show)
   -> backend/data/experts.db           (mode=ro, query_only=ON)
   -> scripts/expert_scout_filter.py    (сборка финального ответа)
   -> backend/scripts/verify_citations.py (целостность: ключи/цитаты/повторы)
 ```
 
-- Агент — `.opencode/agents/expert-scout.md` (модель
-  `opencode/space-bunny-free`, `variant: max`, `temperature: 0.2`; до
-  2026-09-30 была `opencode-go/deepseek-v4.1-flash` — подписка OpenCode Go
-  исчерпана, поэтому переключились на free-модель; при смене модели правь
-  и эту строку, и `docs/roadmap/2026-09-system-review.md`). Shell агенту
-  недоступен
-  (bash запрещён полностью): единственный инструмент — read-only `scout` из
-  плагина `.opencode/plugins/expert-scout-tools.ts`, который запускает хелпер
-  через argv-массив без shell, поэтому подстановки `$( )`/backticks в
-  аргументах инертны (проверено пробой 2026-09-13).
+- По умолчанию wrapper запускает **GPT-6.1-Sol, reasoning low, Fast** через `scripts/expert_scout_codex.py`. Общая конфигурация runtime и модельных замеров — `backend/src/utils/scout_codex.py`: `service_tier="fast"`, `features.fast_mode=true`, строгая проверка конфигурации. Настройки действуют только на этот запуск; глобальный конфиг Codex не меняется. Fast запрашивается явно; фактически обслуженный tier не выводится CLI в используемый поток, поэтому это не независимое подтверждение SLA или скорости сервера. Официальное описание: [Codex Fast mode](https://learn.chatgpt.com/docs/agent-configuration/speed).
+- Общий промпт остаётся в теле `.opencode/agents/expert-scout.md`. Его frontmatter с Bunny используется только для явного OpenCode-сравнения: `EXPERT_SCOUT_ENGINE=bunny ./scripts/expert_scout.sh "<вопрос>"`. Автоматического отката на Bunny нет. Runtime-default Sol задан в wrapper; при смене модели обновлять этот SSOT и обзор.
+- У Codex отключены shell, файлы изображений, веб, приложения, другие плагины и подагенты; единственный инструмент — read-only `scout` через MCP-адаптер существующего `.opencode/plugins/expert-scout-tools.ts`. Adapter повторно использует схему и исполнение плагина, который запускает helper argv-массивом без shell. Общий runtime не загружает пользовательские/проектные инструкции, способные добавить другие инструменты.
 - Хелпер — `backend/scripts/expert_scout.py`: гибрид FTS5 + vector
   (soft-freshness + RRF, как в `HybridRetrievalService`), точное раскрытие
   источника по `source_key` с раздельной выборкой авторских комментариев и
@@ -75,9 +69,9 @@ Mac: ~/.local/bin/expert-scout "вопрос"
 Обёртка `scripts/expert_scout.sh`:
 
 - hard-timeout на весь агентный прогон: переменная `EXPERT_SCOUT_TIMEOUT`
-  (секунд, по умолчанию 300);
+  (секунд, по умолчанию 900);
 - артефакты каждого прогона в `output/scout_runs/<timestamp>/`:
-  `question.txt`, `events.jsonl` (сырой поток opencode), `answer.md`
+  `question.txt`, `events.jsonl` (сырой поток движка), `answer.md`
   (финальный ответ), `integrity.json` (отчёт проверки целостности),
   `integrity.log` (одна строка-сводка), `meta.txt` (вопрос, длительность,
   exit-код, число tool-вызовов, `integrity_exit` и сводка проверки);
@@ -91,21 +85,14 @@ Mac: ~/.local/bin/expert-scout "вопрос"
 
 `backend/scripts/verify_citations.py` (вызывается обёрткой автоматически):
 
-- каждый `source_key` из ответа должен существовать в корпусе; несуществующие
-  → `# WARNING: unverified source_keys: ...` в начале `answer.md`, exit 1;
-- дословные цитаты (≥25 символов) сверяются с текстом источника и его
-  комментариями (устойчиво к многоточиям) — несовпадения попадают в
-  `integrity.json` как `quotes_unverified`, но не валят прогон: модель часто
-  пересказывает цитату своими словами (в т.ч. переводит), и это не выдумка;
-- ≥3 одинаковых `scout`-вызова за прогон (не обязательно соседних; считаются
-  запросы `tool_use` с одинаковыми аргументами) → `tool_loops` в отчёте и
-  warning (типовой провал агента: зацикливание);
-- отчёт: `integrity.json` рядом с `answer.md`; проверка вручную:
-  `backend/.venv/bin/python backend/scripts/verify_citations.py --answer <answer.md> [--events <events.jsonl>]`.
+- Каждый цитируемый источник должен существовать и быть полностью прочитан успешными `show`-вызовами. Карточка поиска, digest, соседний пост и ошибочный вызов чтением не считаются. Длинный текст собирается по непрерывным страницам.
+- Дословные цитаты (≥25 символов) проверяются по локально указанному источнику. Фрагменты с многоточиями должны идти в исходном порядке внутри одного текста. Перевод и пересказ оформляются без кавычек. Название, summary и редакторский мостик VideoHub не являются речью автора.
+- ≥3 одинаковых вызова дают `tool_loops`. Сбой чтения, незавершённый прогон и отсутствие подтверждённых источников дают ошибку проверки. Ответ без ссылок допустим при честном отсутствии сигнала после трёх успешных поисков и просмотра digest.
+- Авторский комментарий проверяется отдельно, когда ответ явно ссылается на комментарии. Комментарий сообщества не становится мнением эксперта.
+- CLI возвращает `0` только при завершённом прогоне и пройденной проверке, `3` при отсутствии финального ответа, `4` при неподтверждённых источниках/цитатах, код движка при его сбое (включая `124` для таймаута). Текст с предупреждением может быть возвращён, но это частичный результат, а не успешный ответ.
+- Отчёт остаётся в `integrity.json`; ручная проверка: `backend/.venv/bin/python backend/scripts/verify_citations.py --answer <answer.md> [--events <events.jsonl>]`.
 
-Правило для оператора: `# WARNING: unverified source_keys` в ответе — это
-сигнал, что какой-то источник выдуман или не найден; такой ответ нельзя
-передавать как есть, ключ проверяется вручную через `show`.
+Проверка подтверждает чтение и дословность, но не доказывает правильность смысловых выводов. `status=completed` не заменяет оценку точности ответа.
 
 ## Окружение плагина
 
@@ -122,32 +109,26 @@ cd .opencode && npm ci
 
 ```bash
 backend/.venv/bin/python backend/scripts/expert_scout.py experts
-backend/.venv/bin/python backend/scripts/expert_scout.py search "<запрос>" [--experts a,b | --group visual] [--recent-days N] [--limit N] [--no-vector] [--freshness tool|craft|any] [--diversity] [--now ISO] [--json]
-backend/.venv/bin/python backend/scripts/expert_scout.py digest --experts a,b | --group visual [--window N] [--page N] [--recent-days N] [--json]
-backend/.venv/bin/python backend/scripts/expert_scout.py show <expert:message_id> [...] [--comments-limit N] [--expand N] [--json]
+backend/.venv/bin/python backend/scripts/expert_scout.py videos [--video-id ID] [--cursor N] [--limit N]
+backend/.venv/bin/python backend/scripts/expert_scout.py search "<запрос>" [--experts a,b | --group visual] [--recent-days N] [--limit N] [--cursor N] [--no-vector] [--freshness tool|craft|any] [--diversity] [--now ISO] [--json]
+backend/.venv/bin/python backend/scripts/expert_scout.py digest --experts a,b | --group visual [--video-id ID] [--window N] [--page N | --cursor N] [--recent-days N] [--json]
+backend/.venv/bin/python backend/scripts/expert_scout.py show <expert:message_id> [...] [--comments-limit N] [--expand N] [--content-offset N] [--max-chars N] [--json]
 ```
 
 `--group` (`tech`, `tech_business`, `visual`) резолвится через
 `backend/src/expert_groups.py` — ту же карту, что использует Панэкс.
 `--comments-limit` — лимит на каждое окно (автор / сообщество) отдельно.
-`search` отдаёт широкий пул (по умолчанию 20, максимум 40 карточек) — модель
-сама ранжирует; глубина кандидатов поиска постоянна, чтобы широкий пул не
-перемешивал топ-10. `--freshness craft|any` отключает штраф за возраст
-(durable-крафт), `tool` (дефолт) — мягкий штраф за старость. `--now ISO`
-фиксирует «сейчас» для штрафа свежести (воспроизводимые замеры). `--diversity`
-— opt-in потолок постов одного эксперта в топ-окне (по замеру нейтрально по
-recall, поэтому выключен по умолчанию). `digest` — постраничная вычитка всего
-скоупа без поиска (окно ≤30 постов, ≤12k символов на вызов): для вопросов про
-конкретного эксперта/видеохаб точнее поиска; `--experts video_hub` — весь
-ВидеоХаб. `show --expand N` — вместе с постом подтягивает ±N соседних постов
-того же эксперта (контекстная склейка для серийных разборов).
+`search` возвращает страницы до 40 карточек (по умолчанию 20). FTS-кандидаты и векторные кандидаты объединяются: слабое векторное совпадение не удаляет результат текстового поиска. Первый экран сохраняет измеренный порядок; `candidate_pool_size` и `next_cursor` позволяют прочитать оставшийся конечный пул. KNN не доказывает исчерпывающий просмотр всего корпуса. `--no-vector` оставляет текстовую ветку. Новых порогов отсева по векторному расстоянию нет. Основной retrieval Панели этим контуром не меняется.
 
-Video Hub segments (`expert_id=video_hub`) additionally return `video_link`
-(`https://youtu.be/<id>?t=<seconds>s`), `video_url`, `video_timestamp_s` and
-`video_title` in both `search` and `show` (built from `media_metadata`), so
-findings can cite the exact moment on YouTube. `visual` (prompt/settings/slides)
-is not exposed as a structured field; its text lives inside `content` as a
-`VISUAL:` block.
+`--freshness craft|any` отключает возрастной штраф, `tool` оставляет мягкий штраф. `--now ISO` фиксирует дату для воспроизводимых замеров; `--diversity` остаётся opt-in.
+
+Для известного ролика используются `videos --video-id ID`, затем `digest --experts video_hub --video-id ID` и `show`. Векторы для этой задачи не нужны. Каталог показывает автора и фактическое число записей. `digest` даёт только превью (окно ≤30, примерно ≤12k символов) и следующий курсор; ограничение размера сокращает превью, а не выбрасывает записи. Полнота чтения требует `show`.
+
+`show` принимает не более трёх ключей за вызов и до 8000 символов основного текста на источник. `next_content_offset` указывает продолжение. `--comments-limit 0` отключает комментарии. `--expand N` для видео показывает соседей только того же ролика; для Telegram — соседние сообщения того же эксперта.
+
+Видео возвращают исходного автора, название, дату, deep-link и `timestamp_kind=keyframe`. Keyframe — точка навигации, а не начало/конец смыслового интервала. При отсутствии явно сохранённых границ `coverage=unknown`: расстояние между таймкодами не доказывает пропуск. `editorial_context_bridge` — редакторская связка, не подтверждение покрытия. Основной текст `show` отделён от TITLE/SUMMARY; экранные заметки остаются в блоке `VISUAL:`.
+
+Парное сравнение моделей: `benchmark_scout_models.py --engine runtime|bunny|luna|sol --case <case>`. Codex headless использует Luna/max или Sol/low через MCP-адаптер существующего инструмента; новые права и отдельный retrieval не вводятся. Все модели проходят одинаковую проверку чтений/цитат по живым событиям. Действующая модель — Sol low/fast; результаты аудита и проверок см. в карте документации.
 
 ## Измерение качества (стенды)
 
@@ -224,12 +205,7 @@ mean recall@10 = 0.20, recall@40 = 0.39 (baseline `backend/tests/search_probe_ba
 
 Два честных хвоста, чтобы новый агент не считал их сделанными:
 
-- **Леджер находок** (правило в `.opencode/agents/expert-scout.md`: финальный
-  ответ собирается только из построенного леджера) — правило есть, замер
-  покрытия «после» не завершён (прогоны LLM прерваны владельцем). «До»
-  измерено офлайн-пересчётом уже сохранённых прогонов: покрытие 0.856 на трёх
-  hit-вопросах (цифра живёт только здесь; пересчитывается через
-  `agent_probe.py`). Считать правило неподтверждённым, пока стенд не пройден.
+- **Леджер находок:** правила агента дополнены механической проверкой реальных полных чтений. Замер после правок выполнен; качество Bunny пока не принято. Результаты и ограничения сравнения исторических метрик: [проверки 2026-09-30](../quality/2026-09-30-videohub-scout-fixes.md).
 - **Происхождение фикстур**: `backend/tests/search_probe_fixtures.py` собран
   одноразово из реальных ответов в `output/scout_runs/` (ключи из `answer.md`,
   затем mechanically проверены через `show`); `output/` в git не попадает, так
@@ -298,14 +274,13 @@ scripts/install_expert_scout_skill.sh --with-shim
 
 Установщик — источник истины для содержимого мостика: он же переустанавливает
 скиллы и перезаписывает `~/.local/bin/expert-scout`. Мостик форвардит
-`EXPERT_SCOUT_TIMEOUT` с Мака на VM (по умолчанию 300 секунд).
+`EXPERT_SCOUT_TIMEOUT` с Мака на VM (по умолчанию 900 секунд).
 
 ## Диагностика
 
-- «opencode not found» / «backend python not found» — проверить
-  `~/.opencode/bin/opencode` и `backend/.venv` на VM.
+- «codex not found» / «backend python not found» — проверить Codex CLI и `backend/.venv` на VM. OpenCode нужен только для явного сравнения Bunny.
 - «Permission denied» — проверить SSH-ключ Mac → VM.
-- «scout: opencode failed (exit 124)» — сработал hard-timeout обёртки
+- «scout: engine failed (exit 124)» — сработал hard-timeout обёртки
   (`EXPERT_SCOUT_TIMEOUT`); частичный поток смотреть в `events.jsonl`
   артефактов прогона.
 - `# WARNING` в начале ответа — агент не выдал финальный ответ после

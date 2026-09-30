@@ -1,7 +1,7 @@
 # Обзор системы и roadmap: ценностные фичи + техздоровье (2026-09)
 
 Status: Active roadmap
-Last updated: 2026-09-17
+Last updated: 2026-09-30
 Origin: большой обзор системы в Mac-сессии 05–06.09.2026 (птичий полёт по докам,
 код-dig backend/frontend/reddit-proxy, 4 живых Reddit-поиска через `reddit-search`,
 2 веб-поиска). Документ фиксирует выводы обзора и текущий статус каждого пункта.
@@ -141,15 +141,13 @@ Algolia HN Search API: бесплатный, без auth. Обобщает Reddi
 
 ### 10. Expert Scout — ✅ сделано (2026-09-13)
 
+Ремонт и повторная проверка 2026-09-30: [результаты](../quality/2026-09-30-videohub-scout-fixes.md). Технические потери и ложный успешный статус исправлены локально; качество Space Bunny пока не принято. После замера владелец разрешил Sol low/fast, и runtime переключён. Текущее поведение — в [SSOT Скаута](../guides/expert-scout.md).
+
 Agentic-поиск по корпусу из Кодекса: агент сам перебирает фасеты и
 anti-pattern формулировки, читает первоисточники и приносит находки с
 `source_key`, датами и честными пробелами.
 
-- Канал: `expert-scout "<вопрос>"` с Мака → SSH на VM → агент opencode
-  (`opencode/space-bunny-free`, `variant: max`; до 2026-09-30 был
-  `opencode-go/deepseek-v4.1-flash` — подписка OpenCode Go исчерпана) →
-  read-only хелпер `backend/scripts/expert_scout.py` (FTS5 + vector +
-  soft-freshness + RRF; `mode=ro`, только dev-корпус, guard на prod-путь).
+- Канал: `expert-scout "<вопрос>"` с Мака → SSH на VM → headless Codex через read-only MCP `scout`. По команде владельца 2026-09-30 включены Sol 6.1 / low / fast; конфигурация и границы — в [SSOT Скаута](../guides/expert-scout.md). Bunny сохранена только для явного сравнения.
 - Границы: только чтение, без записи/копирования БД; у агента нет shell
   (bash запрещён полностью), единственный инструмент — read-only `scout`
   (плагин, argv без shell; read/grep/glob/сеть запрещены).

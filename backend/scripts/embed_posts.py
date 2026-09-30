@@ -52,6 +52,7 @@ from src.models.base import SessionLocal
 from src.models.post import Post
 from src.services.embedding_service import get_embedding_service
 from src.config import EMBEDDING_DIMENSIONS
+from src.utils.video_identity import load_receipt, write_receipt
 
 
 def get_pending_posts(db: Session, batch_size: int, force: bool = False) -> list[Post]:
@@ -70,7 +71,8 @@ def get_pending_posts(db: Session, batch_size: int, force: bool = False) -> list
     sql = """
         SELECT p.* FROM posts p
         LEFT JOIN post_embeddings pe ON p.post_id = pe.post_id
-        WHERE pe.post_id IS NULL
+        LEFT JOIN vec_posts vp ON p.post_id = vp.post_id
+        WHERE (pe.post_id IS NULL OR vp.post_id IS NULL)
         AND p.message_text IS NOT NULL
         AND LENGTH(p.message_text) > 30
         LIMIT :limit
@@ -91,7 +93,8 @@ def get_pending_count(db: Session) -> int:
     sql = """
         SELECT COUNT(*) FROM posts p
         LEFT JOIN post_embeddings pe ON p.post_id = pe.post_id
-        WHERE pe.post_id IS NULL
+        LEFT JOIN vec_posts vp ON p.post_id = vp.post_id
+        WHERE (pe.post_id IS NULL OR vp.post_id IS NULL)
         AND p.message_text IS NOT NULL
         AND LENGTH(p.message_text) > 30
     """
@@ -104,12 +107,13 @@ async def embed_batch(posts: list[Post], dry_run: bool = False) -> tuple[int, in
     if not posts:
         return 0, 0
 
-    service = get_embedding_service()
     texts = [p.message_text for p in posts]
 
     if dry_run:
         logger.info(f"🔍 [DRY-RUN] Would embed {len(posts)} posts")
         return len(posts), 0
+
+    service = get_embedding_service()
 
     # Generate embeddings via batch API
     try:
@@ -237,9 +241,13 @@ async def run_continuous(
     batch_size: int = 50, dry_run: bool = False, force: bool = False, delay: float = 0.5
 ):
     """Run until all posts are embedded."""
+    if dry_run or force:
+        raise ValueError("continuous cannot be combined with dry_run or force; use one bounded preview/force batch")
     total_embedded = 0
     total_errors = 0
     batch_num = 0
+    stalled = 0
+    unresolved = 0
 
     with Progress(
         SpinnerColumn(),
@@ -257,6 +265,7 @@ async def run_continuous(
             if embedded == 0 and errors == 0:
                 progress.update(task, description="[green]✓ Complete!")
                 break
+            stalled = stalled + 1 if embedded == 0 else 0
 
             total_embedded += embedded
             total_errors += errors
@@ -266,8 +275,11 @@ async def run_continuous(
                 description=f"[cyan]Batch {batch_num}: {embedded} embedded, {errors} errors",
             )
 
-            if not dry_run and embedded > 0:
-                await asyncio.sleep(delay)
+            if stalled >= 3:
+                unresolved = max(1, errors)
+                logger.error("Embedding stopped after three batches without progress; pending posts remain")
+                break
+            await asyncio.sleep(max(0.0, delay))
 
     logger.info(f"\n{'=' * 50}")
     logger.info(f"📊 Total batches: {batch_num}")
@@ -279,7 +291,34 @@ async def run_continuous(
             "Posts that stayed pending were retried in later passes."
         )
 
-    return total_embedded, total_errors
+    return total_embedded, unresolved
+
+
+def verify_receipt_index(receipt_path: Path) -> bool:
+    """Record readiness only when every imported source is in FTS and vector search."""
+    receipt = load_receipt(receipt_path)
+    mids = [int(key.partition(':')[2]) for key in receipt['source_keys']]
+    indexed = 0
+    with SessionLocal() as db:
+        for offset in range(0, len(mids), 500):
+            chunk = mids[offset:offset+500]
+            bindings = {f'm{i}': value for i, value in enumerate(chunk)}
+            placeholders = ','.join(f':m{i}' for i in range(len(chunk)))
+            sql = f"""SELECT p.telegram_message_id, COUNT(DISTINCT p.post_id),
+                COUNT(DISTINCT pe.post_id), COUNT(DISTINCT vp.post_id), COUNT(DISTINCT f.rowid)
+                FROM posts p
+                LEFT JOIN post_embeddings pe ON pe.post_id=p.post_id
+                LEFT JOIN vec_posts vp ON vp.post_id=p.post_id
+                LEFT JOIN posts_fts f ON f.rowid=p.post_id
+                WHERE p.expert_id='video_hub' AND p.telegram_message_id IN ({placeholders})
+                GROUP BY p.telegram_message_id"""
+            indexed += sum(all(count == 1 for count in row[1:]) for row in db.execute(text(sql), bindings))
+    ready = indexed == len(mids)
+    receipt.update(status='searchable' if ready else 'loaded', indexed_segments=indexed,
+                   index_checked_at=datetime.now(timezone.utc).isoformat())
+    write_receipt(receipt_path, receipt)
+    logger.info("Video import readiness: %s/%s indexed; status=%s", indexed, len(mids), receipt['status'])
+    return ready
 
 
 def main():
@@ -295,17 +334,30 @@ def main():
     parser.add_argument(
         "--delay", type=float, default=0.5, help="Delay between batches (default: 0.5s)"
     )
+    parser.add_argument('--receipt', type=Path, help='Verify this VideoHub import receipt after indexing')
     args = parser.parse_args()
-    require_openrouter_runtime()
+    if args.continuous and (args.dry_run or args.force):
+        parser.error('--continuous cannot be combined with --dry-run or --force')
+    if args.receipt and args.dry_run:
+        parser.error('--receipt requires actual indexing, not --dry-run')
+    if args.batch_size < 1 or args.delay < 0:
+        parser.error('batch-size must be positive and delay non-negative')
+    if not args.dry_run:
+        require_openrouter_runtime()
     logger.info("Embedding script started (db=%s, batch_size=%s)", DB_PATH, args.batch_size)
 
     if args.continuous:
-        asyncio.run(
+        _, errors = asyncio.run(
             run_continuous(args.batch_size, args.dry_run, args.force, args.delay)
         )
     else:
-        asyncio.run(process_batch(args.batch_size, args.dry_run, args.force))
+        _, errors = asyncio.run(process_batch(args.batch_size, args.dry_run, args.force))
+    if errors:
+        return 1
+    if args.receipt and not verify_receipt_index(args.receipt):
+        return 1
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

@@ -46,6 +46,24 @@ def test_fixture_shape():
             assert f["min_hits"] >= 1, f
 
 
+def test_key_lookup_batches_match_show_limit(monkeypatch):
+    batches=[]
+    def run(command,**kwargs):
+        keys=command[3:command.index('--comments-limit')]
+        batches.append(keys)
+        return subprocess.CompletedProcess(command,0,json.dumps([{'source_key':key,'content':'text'} for key in keys]),'')
+    monkeypatch.setattr(probe.subprocess,'run',run)
+    keys=[f'video_hub:{i}' for i in range(8)]
+    assert all(probe.keys_exist(keys).values())
+    assert [len(batch) for batch in batches]==[3,3,2]
+
+
+def test_key_lookup_failure_is_not_absence(monkeypatch):
+    monkeypatch.setattr(probe.subprocess,'run',lambda *args,**kwargs:subprocess.CompletedProcess([],2,'',''))
+    with pytest.raises(RuntimeError,match='existence check failed'):
+        probe.keys_exist(['video_hub:1'])
+
+
 def test_fixture_keys_exist_in_corpus():
     """Every expected_key must exist right now (guards against ghost ground truth)."""
     all_keys = sorted({k for f in fixtures for k in f["expected_keys"]})

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import hashlib
 import sys
 from pathlib import Path
 
@@ -67,6 +68,7 @@ def write_segments_chunked(root: Path, video_id: str, topic_ids: list[str]) -> N
         ],
     }
     target.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    write_receipt_fixture(target, video_id, len(topic_ids))
 
 
 def write_segments_legacy(root: Path, video_id: str, topic_ids: list[str]) -> None:
@@ -77,6 +79,20 @@ def write_segments_legacy(root: Path, video_id: str, topic_ids: list[str]) -> No
         for index, topic in enumerate(topic_ids)
     ]
     target.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    write_receipt_fixture(target, video_id, len(topic_ids))
+
+
+def write_receipt_fixture(target: Path, video_id: str, count: int, status: str = 'searchable', cells: list | None = None):
+    keys = [f'video_hub:{1001+i}' for i in range(count)]
+    # Explicit source-backed cells used by these aggregation fixtures.
+    cells = cells or ['creative_multimodal/montage_language/build_human_ai_workflow',
+                      'creative_multimodal/ai_video_direction/build_human_ai_workflow']
+    target.with_suffix('.import-receipt.json').write_text(json.dumps({
+        'status':status, 'video_id':video_id, 'source_path':str(target),
+        'source_sha256':hashlib.sha256(target.read_bytes()).hexdigest(),
+        'source_keys':keys, 'indexed_segments':count if status == 'searchable' else 0,
+        'cell_sources':{cell:keys for cell in cells},
+    }))
 
 
 def test_build_matrix_groups_corpus_videos_by_cell(tmp_path):
@@ -170,6 +186,7 @@ def test_gaps_list_creative_subdomains_without_video(tmp_path):
         tmp_path / "admission_log.json",
         [make_entry("vidOnly", cells=["creative_multimodal/montage_language/build_human_ai_workflow"])],
     )
+    write_segments_chunked(tmp_path/'ingest','vidOnly',['topic'])
     matrix = module.build_matrix(
         module.read_json(log_path), panel_experts={}, ingest_root=tmp_path / "ingest"
     )
@@ -251,6 +268,7 @@ def test_panel_experts_attached_and_marked_primary(tmp_path):
         encoding="utf-8",
     )
 
+    write_segments_chunked(tmp_path/'ingest','vidA',['topic'])
     matrix = module.build_matrix(
         module.read_json(log_path),
         panel_experts=module.load_panel_experts(panel_path),
@@ -274,6 +292,7 @@ def test_render_markdown_includes_cells_gaps_and_scope_marker(tmp_path):
             )
         ],
     )
+    write_segments_chunked(tmp_path/'ingest','vidScoped',['topic'])
     matrix = module.build_matrix(
         module.read_json(log_path), panel_experts={}, ingest_root=tmp_path / "ingest"
     )
@@ -281,3 +300,48 @@ def test_render_markdown_includes_cells_gaps_and_scope_marker(tmp_path):
     assert "creative_multimodal/montage_language/build_human_ai_workflow" in markdown
     assert "vidScoped (scoped)" in markdown
     assert "color_and_light" in markdown
+
+
+def test_approval_without_import_does_not_close_gaps(tmp_path):
+    module = load_module()
+    entry = make_entry('missing',cells=[f'creative_multimodal/{s}/build_human_ai_workflow' for s in module.CREATIVE_SUBDOMAIN_IDS])
+    matrix = module.build_matrix({'videos':[entry]}, {}, tmp_path)
+    assert matrix['summary']['ingested_video_count'] == 0
+    assert matrix['summary']['covered_cell_count'] == 0
+    assert matrix['summary']['gap_subdomain_count'] == 12
+    assert matrix['videos'][0]['state'] == 'planned'
+
+
+def test_prepared_json_and_stale_receipt_are_not_import_proof(tmp_path):
+    module = load_module()
+    write_segments_legacy(tmp_path,'vid',['topic'])
+    target = tmp_path/'vid/segments.json'
+    target.write_text(target.read_text()+' ')
+    matrix = module.build_matrix({'videos':[make_entry('vid')]},{},tmp_path)
+    assert not matrix['videos'][0]['in_corpus']
+    assert matrix['videos'][0]['state'] == 'prepared'
+
+
+def test_duplicate_decision_counts_video_once(tmp_path):
+    module = load_module()
+    write_segments_legacy(tmp_path,'vid',['topic'])
+    entry = make_entry('vid')
+    matrix = module.build_matrix({'videos':[entry,dict(entry)]},{},tmp_path)
+    assert matrix['summary']['ingested_video_count'] == 1
+    assert matrix['summary']['ingested_segment_count'] == 1
+
+
+def test_loaded_is_separate_from_searchable_and_scoped_evidence(tmp_path):
+    module = load_module()
+    write_segments_legacy(tmp_path,'vid',['topic'])
+    target = tmp_path/'vid/segments.json'
+    cell = 'creative_multimodal/montage_language/build_human_ai_workflow'
+    entry = make_entry('vid',verdict='ingest_scoped',cells=[cell,'creative_multimodal/color_and_light/build_human_ai_workflow'])
+    write_receipt_fixture(target,'vid',1,status='loaded',cells=[cell])
+    matrix = module.build_matrix({'videos':[entry]},{},tmp_path)
+    assert matrix['summary']['ingested_video_count'] == 1
+    assert matrix['summary']['covered_cell_count'] == 0
+    write_receipt_fixture(target,'vid',1,cells=[cell])
+    matrix = module.build_matrix({'videos':[entry]},{},tmp_path)
+    assert [c['cell_id'] for c in matrix['cells']] == [cell]
+    assert matrix['cells'][0]['videos'][0]['source_keys'] == ['video_hub:1001']

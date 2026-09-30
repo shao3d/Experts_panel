@@ -55,7 +55,7 @@ Q=$(printf '%s' "$*" | base64 | tr -d '\n')
 exec ssh -o BatchMode=yes -o ConnectTimeout=10 \
   -o ServerAliveInterval=30 -o ServerAliveCountMax=10 \
   "$REMOTE" \
-  "cd '$REPO' && EXPERT_SCOUT_TIMEOUT='${EXPERT_SCOUT_TIMEOUT:-300}' ./scripts/expert_scout.sh \"\$(printf '%s' '$Q' | base64 -d)\""
+  "cd '$REPO' && EXPERT_SCOUT_TIMEOUT='${EXPERT_SCOUT_TIMEOUT:-900}' ./scripts/expert_scout.sh \"\$(printf '%s' '$Q' | base64 -d)\""
 SHIM
   chmod 755 "$BIN_DIR/expert-scout"
   printf 'Installed command: %s/expert-scout\n' "$BIN_DIR"

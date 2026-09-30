@@ -25,7 +25,9 @@ BACKEND_DIR = SCRIPT_DIR.parent
 REPO_ROOT = BACKEND_DIR.parent
 
 sys.path.insert(0, str(SCRIPT_DIR))
+sys.path.insert(0, str(BACKEND_DIR))
 import build_knowledge_matrix  # noqa: E402
+from src.utils.video_identity import load_receipt  # noqa: E402
 
 DEFAULT_ADMISSION_LOG = REPO_ROOT / "output" / "video_admission" / "admission_log.json"
 DEFAULT_PANEL_MATRIX = (
@@ -90,11 +92,14 @@ def taxonomy_flag(domain_id: str, subdomain_id: str, query_intent_id: str) -> st
     return "+".join(flags) if flags else "core"
 
 
-def ingest_stats(ingest_root: Path, video_id: str) -> dict[str, Any]:
+def ingest_stats(ingest_root: Path, video_id: str, source_path: str | None = None) -> dict[str, Any]:
     candidates = (
         (ingest_root / video_id / "ingest" / "segments.json", "chunked"),
         (ingest_root / video_id / "segments.json", "legacy"),
     )
+    if source_path:
+        path = Path(source_path)
+        candidates = ((path if path.is_absolute() else REPO_ROOT/path, "explicit"),)
     for path, layout in candidates:
         if not path.is_file():
             continue
@@ -106,11 +111,25 @@ def ingest_stats(ingest_root: Path, video_id: str) -> dict[str, Any]:
         topic_ids = sorted(
             {str(seg.get("topic_id")) for seg in segments if seg.get("topic_id")}
         )
+        receipt = None
+        receipt_error = None
+        try:
+            receipt = load_receipt(path.with_suffix(".import-receipt.json"))
+            if receipt.get("video_id") != video_id or Path(receipt["source_path"]).resolve() != path.resolve() or len(receipt["source_keys"]) != len(segments):
+                raise ValueError("receipt identity or segment count does not match")
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            receipt_error = type(exc).__name__
+            receipt = None
         return {
             "segment_count": len(segments),
             "topic_ids": topic_ids,
             "layout": layout,
             "source_path": display_path(path),
+            "import_verified": receipt is not None,
+            "searchable": bool(receipt and receipt["status"] == "searchable"),
+            "cell_sources": receipt.get("cell_sources", {}) if receipt else {},
+            "source_keys": receipt.get("source_keys", []) if receipt else [],
+            "receipt_error": receipt_error,
         }
     return {"segment_count": None, "topic_ids": [], "layout": None, "source_path": None}
 
@@ -124,7 +143,7 @@ def display_path(path: Path) -> str:
 
 def load_panel_experts(panel_matrix_path: Path) -> dict[str, list[dict[str, Any]]]:
     if not panel_matrix_path.is_file():
-        return {}
+        raise FileNotFoundError(f"Panel knowledge matrix is required: {panel_matrix_path}")
     payload = read_json(panel_matrix_path)
     experts_by_cell: dict[str, list[dict[str, Any]]] = {}
     for cell in payload.get("cells", []):
@@ -186,6 +205,12 @@ def decay_payload(videos: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 def video_record(entry: dict[str, Any], stats: dict[str, Any]) -> dict[str, Any]:
+    approved = entry.get("verdict") in CORPUS_VERDICTS
+    loaded = approved and bool(stats.get("import_verified"))
+    searchable = loaded and bool(stats.get("searchable"))
+    keys = set(stats.get("source_keys", []))
+    cell_sources = {cell: list(dict.fromkeys(k for k in sources if k in keys))
+                    for cell, sources in stats.get("cell_sources", {}).items() if cell in (entry.get("cells") or [])}
     return {
         "video_id": entry.get("video_id"),
         "title": entry.get("title"),
@@ -193,7 +218,12 @@ def video_record(entry: dict[str, Any], stats: dict[str, Any]) -> dict[str, Any]
         "published_at": entry.get("published_at"),
         "verdict": entry.get("verdict"),
         "scope": entry.get("scope"),
-        "in_corpus": entry.get("verdict") in CORPUS_VERDICTS,
+        "in_corpus": loaded,
+        "searchable": searchable,
+        "state": "searchable" if searchable else "loaded" if loaded else "prepared" if stats.get("segment_count") else "planned" if approved else "not_admitted",
+        "verified_cells": [cell for cell, sources in cell_sources.items() if sources],
+        "cell_sources": cell_sources,
+        "receipt_error": stats.get("receipt_error"),
         "segment_count": stats.get("segment_count"),
         "topic_ids": stats.get("topic_ids"),
         "ingest_layout": stats.get("layout"),
@@ -211,17 +241,24 @@ def build_matrix(
     ingest_root: Path,
     source_admission_log: str | None = None,
 ) -> dict[str, Any]:
-    entries = log.get("videos", [])
+    # Admission logs are append-only decisions; the latest entry per video is
+    # current state, not a second copy of the same corpus contribution.
+    entries_by_id = {}
+    for entry in log.get("videos", []):
+        if not entry.get("video_id"):
+            raise ValueError("admission entry requires video_id")
+        entries_by_id[entry["video_id"]] = entry
+    entries = list(entries_by_id.values())
     records: list[dict[str, Any]] = []
     cells_map: dict[str, dict[str, Any]] = {}
 
     for entry in entries:
-        stats = ingest_stats(ingest_root, str(entry.get("video_id", "")))
+        stats = ingest_stats(ingest_root, str(entry.get("video_id", "")), entry.get("segments_path"))
         record = video_record(entry, stats)
         records.append(record)
-        if not record["in_corpus"]:
+        if not record["searchable"]:
             continue
-        for cell_id in record["cells"]:
+        for cell_id in record["verified_cells"]:
             cell = cells_map.setdefault(
                 cell_id,
                 {
@@ -251,6 +288,7 @@ def build_matrix(
                         "channel": video["channel"],
                         "verdict": video["verdict"],
                         "scope": video["scope"],
+                        "source_keys": video["cell_sources"][cell_id],
                         "version_lock": entry_attributes(video).get("version_lock"),
                         "durable_share": entry_attributes(video).get("durable_share"),
                     }
@@ -286,17 +324,19 @@ def build_matrix(
     waitlist_records = [
         record
         for record in records
-        if record["verdict"] not in CORPUS_VERDICTS
+        if not record["in_corpus"]
     ]
 
     return {
-        "schema_version": "video_hub_knowledge_matrix.v0.1",
+        "schema_version": "video_hub_knowledge_matrix.v0.2",
         "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "source_admission_log": source_admission_log
         or display_path(DEFAULT_ADMISSION_LOG),
         "summary": {
             "log_video_count": len(records),
             "ingested_video_count": len(corpus_records),
+            "searchable_video_count": sum(r["searchable"] for r in records),
+            "planned_video_count": sum(r["verdict"] in CORPUS_VERDICTS and not r["in_corpus"] for r in records),
             "non_corpus_video_count": len(waitlist_records),
             "ingested_segment_count": sum(
                 record["segment_count"] or 0 for record in corpus_records
@@ -340,7 +380,8 @@ def render_markdown(matrix: dict[str, Any]) -> str:
     lines.append("")
     lines.append(
         f"Видео в журнале: **{summary['log_video_count']}** "
-        f"(в корпусе: {summary['ingested_video_count']}, "
+        f"(импорт подтверждён: {summary['ingested_video_count']}, "
+        f"индексация подтверждена: {summary['searchable_video_count']}, "
         f"вне корпуса: {summary['non_corpus_video_count']}), "
         f"сегментов: **{summary['ingested_segment_count']}**, "
         f"клеток с покрытием: **{summary['covered_cell_count']}** "
@@ -350,7 +391,7 @@ def render_markdown(matrix: dict[str, Any]) -> str:
 
     lines.append("## Покрытие клеток (корпус)")
     lines.append("")
-    lines.append("| Клетка | Видео | Эксперты Панели (RU) | Распад |")
+    lines.append("| Клетка | Видео и источники | Эксперты Панели (RU) | Зависимость от версий |")
     lines.append("|---|---|---|---|")
     for cell in matrix["cells"]:
         video_parts = []
@@ -358,6 +399,7 @@ def render_markdown(matrix: dict[str, Any]) -> str:
             label = video["video_id"]
             if video.get("verdict") == "ingest_scoped":
                 label += " (scoped)"
+            label += " " + ", ".join(video.get("source_keys", []))
             video_parts.append(label)
         experts = ", ".join(
             expert["expert_id"]
@@ -386,15 +428,16 @@ def render_markdown(matrix: dict[str, Any]) -> str:
         )
     lines.append("")
     lines.append(
-        "Распад — агрегат видео-атрибутов журнала (`version_lock` min–max, "
-        "`durable_share` min–max по видео клетки); per-cell уточнение — Фаза 1."
+        "Зависимость от версий — агрегат `version_lock` и `durable_share`; "
+        "это не вычисление старения во времени. Покрытие означает наличие "
+        "подтверждённых источников, а не полноту ответов на все вопросы темы."
     )
     lines.append("")
 
     lines.append("## Видео в журнале")
     lines.append("")
     lines.append(
-        "| ID | Видео | Канал | Вердикт | Сегменты | Клетки | version_lock | durable_share |"
+        "| ID | Видео | Канал | Вердикт и состояние | Сегменты | Заявленные клетки | version_lock | durable_share |"
     )
     lines.append("|---|---|---|---|---:|---|---|---|")
     for video in matrix["videos"]:
@@ -405,12 +448,12 @@ def render_markdown(matrix: dict[str, Any]) -> str:
         channel = (video.get("channel") or "—").replace("|", "\\|")
         lines.append(
             f"| `{video['video_id']}` | {title} | {channel} | "
-            f"{video.get('verdict') or '—'} | {segments} | {len(video['cells'])} | "
+            f"{video.get('verdict') or '—'} / {video['state']} | {segments} | {len(video['cells'])} | "
             f"{version_lock} | {durable_share} |"
         )
     lines.append("")
 
-    lines.append("## Gaps (creative_multimodal без видео-покрытия)")
+    lines.append("## Gaps без подтверждённого поискового покрытия VideoHub")
     lines.append("")
     gaps = matrix["gaps"]["creative_multimodal_subdomains_without_video"]
     if gaps:

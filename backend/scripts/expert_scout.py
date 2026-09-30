@@ -48,6 +48,8 @@ MAX_EXPAND_NEIGHBORS = 5
 MAX_DIGEST_WINDOW = 30
 MAX_DIGEST_TEXT = 400
 MAX_DIGEST_CHARS = 12000
+MAX_SHOW_CHARS = 8000
+MAX_SHOW_KEYS = 3
 # Soft freshness mirrors HybridRetrievalService: linear decay over one year,
 # capped at 0.7, applied to both retrievers before the RRF merge.
 FRESHNESS_MAX_PENALTY = 0.7
@@ -289,6 +291,17 @@ def _rrf_merge(fts_ids: list[int], vector_ids: list[int], k: int) -> list[int]:
     return sorted(scores, key=lambda pid: scores[pid], reverse=True)
 
 
+def _candidate_pool(fts_ids: list[int], vector_ids: list[int], vector_rows: list[tuple], k: int) -> list[int]:
+    """Keep the measured first page; never discard the other fetched candidates.
+
+    Vector similarity is a source of additional leads, not a veto on textual
+    matches. The remaining per-expert KNN candidates are also walkable.
+    """
+    primary = _rrf_merge(fts_ids, vector_ids, k)
+    vector_tail = [pid for pid, _, _ in sorted(vector_rows, key=lambda row: row[1])]
+    return list(dict.fromkeys([*primary, *vector_tail]))
+
+
 DIVERSITY_CAP_TOP = 6
 DIVERSITY_CAP_REST = 10
 
@@ -363,7 +376,56 @@ def _video_fields(media_metadata: Any) -> dict[str, Any]:
             fields["video_link"] = url
     if meta.get("video_title"):
         fields["video_title"] = meta["video_title"]
+    from src.utils.video_identity import youtube_id
+    fields.update(
+        video_id=youtube_id(url or ""),
+        timestamp_kind=meta.get("timestamp_kind", "keyframe"),
+        coverage="unknown" if not meta.get("scope") else "declared_scope",
+        segment_start_s=meta.get("start_seconds"),
+        segment_end_s=meta.get("end_seconds"),
+        coverage_note="Keyframes are navigation points, not interval boundaries. Do not infer missing time ranges or continuous coverage from their spacing.",
+    )
+    if meta.get("context_bridge"):
+        fields["editorial_context_bridge"] = meta["context_bridge"]
+    for name in ("original_author", "published_at", "duration_seconds", "scope", "scope_range_s", "segment_id"):
+        if name in meta:
+            fields[name] = meta[name]
     return fields
+
+
+def _video_posts(conn: sqlite3.Connection, video_id: str | None = None) -> list[dict]:
+    """A small read-only catalog; no new index or database migration."""
+    ids = [r[0] for r in conn.execute("SELECT post_id FROM posts WHERE expert_id='video_hub'")]
+    posts = _fetch_posts(conn, ids).values()
+    return sorted((p for p in posts if p.get("video_id") and (not video_id or p["video_id"] == video_id)),
+                  key=lambda p: (p.get("video_timestamp_s", 0), p["telegram_message_id"]))
+
+
+def cmd_videos(args: argparse.Namespace) -> int:
+    with _connect(_resolve_db_path(_load_backend(), args.db)) as conn:
+        posts = _video_posts(conn, args.video_id)
+    videos: dict[str, dict] = {}
+    for post in posts:
+        record = videos.setdefault(post["video_id"], {
+            "video_id": post["video_id"], "title": post.get("video_title"),
+            "author": post.get("original_author") or post["author_name"],
+            "published_at": post.get("published_at") or post["created_at"],
+            "scope": post.get("scope"), "scope_range_s": post.get("scope_range_s"),
+            "coverage": post.get("coverage", "unknown"), "timestamp_kind": post.get("timestamp_kind"),
+            "segment_count": 0, "first_keyframe_s": post.get("video_timestamp_s"),
+            "last_keyframe_s": post.get("video_timestamp_s"),
+            "coverage_note": post.get("coverage_note"),
+        })
+        record["segment_count"] += 1
+        record["last_keyframe_s"] = post.get("video_timestamp_s")
+    offset = max(0, args.cursor or 0)
+    ordered = sorted(videos.values(), key=lambda v: v["video_id"])
+    selected = ordered[offset:offset + MAX_DIGEST_WINDOW]
+    payload = {"status": "completed", "videos": selected, "total_videos": len(ordered),
+               "next_cursor": offset + len(selected) if offset + len(selected) < len(ordered) else None,
+               "note": "Keyframes are navigation points. They do not prove segment boundaries or continuous coverage."}
+    print(json.dumps(payload, ensure_ascii=False, indent=1))
+    return 0
 
 
 def _fetch_posts(conn: sqlite3.Connection, post_ids: list[int]) -> dict[int, dict[str, Any]]:
@@ -489,18 +551,21 @@ def cmd_search(args: argparse.Namespace) -> int:
 
         fts_ids = _rank_fts(fts_rows, now, args.freshness)
         vector_ids = _rank_vector(vector_rows, now, args.freshness)[:VECTOR_TOP_K]
-        merged = _rrf_merge(fts_ids, vector_ids, config.HYBRID_RRF_K)[:limit]
-        posts = _fetch_posts(conn, merged)
+        pool = _candidate_pool(fts_ids, vector_ids, vector_rows, config.HYBRID_RRF_K)
+        offset = max(0, getattr(args, "cursor", 0))
+        merged = pool[offset:offset+limit]
+        posts = _fetch_posts(conn, pool if getattr(args, "diversity", False) else merged)
 
     fts_snippets = {post_id: snip for post_id, snip, _, _ in fts_rows}
     # Anti-monoculture: only meaningful when the scope spans several experts.
     if len(expert_ids) > 1 and getattr(args, "diversity", False) and merged:
         expert_by_post = {pid: p["expert_id"] for pid, p in posts.items()}
-        merged = diversify(merged, expert_by_post)[:limit]
+        pool = diversify(pool, expert_by_post)
+        merged = pool[offset:offset+limit]
     found_by: dict[int, list[str]] = {}
     for post_id in fts_ids:
         found_by.setdefault(post_id, []).append("fts")
-    for post_id in vector_ids:
+    for post_id, _, _ in vector_rows:
         found_by.setdefault(post_id, []).append("vector")
 
     results = []
@@ -521,15 +586,25 @@ def cmd_search(args: argparse.Namespace) -> int:
         for key in ("video_link", "video_url", "video_timestamp_s", "video_title"):
             if key in post:
                 item[key] = post[key]
+        item["author_name"] = post["author_name"]
+        item.update({key: value for key, value in post.items() if key in {
+            "video_id", "original_author", "timestamp_kind", "coverage", "scope", "scope_range_s",
+            "segment_start_s", "segment_end_s", "published_at", "duration_seconds",
+        }})
         results.append(item)
 
     if args.json:
-        print(json.dumps({"query": args.query, "warnings": warnings, "retrieval_stats": leg_stats(fts_ids, vector_ids), "results": results}, ensure_ascii=False, indent=2))
+        degraded = any(w != "vector_skipped_by_flag" for w in warnings)
+        print(json.dumps({"status": "partial" if degraded else "completed", "query": args.query, "warnings": warnings,
+                          "retrieval_stats": leg_stats(fts_ids, vector_ids), "candidate_pool_size": len(pool),
+                          "next_cursor": offset + len(merged) if offset + len(merged) < len(pool) else None,
+                          "results": results}, ensure_ascii=False, indent=2))
     else:
         if warnings:
             print(f"# warnings: {'; '.join(warnings)}")
         stats = leg_stats(fts_ids, vector_ids)
         print(f"# legs: fts={stats['fts_ranked']} vec={stats['vector_ranked']} overlap={stats['overlap']} jaccard={stats['jaccard']}")
+        print(f"# candidates={len(pool)} offset={offset} next_cursor={offset+len(merged) if offset+len(merged)<len(pool) else None}")
         for item in results:
             print(
                 f"- {item['source_key']} [{item['created_at']}] "
@@ -538,6 +613,7 @@ def cmd_search(args: argparse.Namespace) -> int:
             )
             if item.get("video_link"):
                 print(f"  video: {item['video_link']}")
+                print(f"  author={item['author_name']}; video_id={item.get('video_id')}; timestamp_kind=keyframe; coverage={item.get('coverage')}")
     return 0
 
 
@@ -632,7 +708,7 @@ def _collect_show_payload(
             (post_id,),
         ).fetchall()
         neighbors: list[dict[str, Any]] = []
-        if expand > 0:
+        if expand > 0 and not _video_fields(media_metadata):
             n = min(expand, MAX_EXPAND_NEIGHBORS)
             for side_sql, side_params in (
                 (
@@ -660,6 +736,21 @@ def _collect_show_payload(
                         side_sql, side_params
                     ).fetchall()
                 )
+        elif expand > 0:
+            video_id = _video_fields(media_metadata).get("video_id")
+            video_posts = _video_posts(conn, video_id) if video_id else []
+            position = next((i for i, p in enumerate(video_posts) if p["source_key"] == raw_key), None)
+            if position is not None:
+                n = min(expand, MAX_EXPAND_NEIGHBORS)
+                neighbors = [{"source_key": p["source_key"], "created_at": p["created_at"],
+                              "excerpt": p["message_text"][:200], "video_id": video_id,
+                              "video_timestamp_s": p.get("video_timestamp_s")}
+                             for p in video_posts[max(0, position-n):position+n+1] if p["source_key"] != raw_key]
+        source_text = message_text or ""
+        segment_title = None
+        if expert_id == "video_hub" and "\nCONTENT:\n" in source_text:
+            header, _, source_text = source_text.partition("\nCONTENT:\n")
+            segment_title = header.partition("\n")[0].removeprefix("TITLE: ")
         payload.append(
             {
                 "source_key": f"{expert_id}:{message_id}",
@@ -668,7 +759,10 @@ def _collect_show_payload(
                 "author_name": author_name,
                 "reply_count": reply_count,
                 "view_count": view_count,
-                "content": message_text,
+                "content": source_text,
+                "segment_title": segment_title,
+                "content_kind": "transcript_and_screen_notes" if expert_id == "video_hub" else "expert_post",
+                "editorial_note": "TITLE and SUMMARY are editorial aids, not quotations from the expert." if expert_id == "video_hub" else None,
                 **_video_fields(media_metadata),
                 "comments": comments,
                 "neighbors": neighbors,
@@ -709,22 +803,37 @@ def cmd_digest(args: argparse.Namespace) -> int:
             return 2
         placeholders = ",".join("?" for _ in expert_ids)
         sql = (
-            "SELECT post_id, expert_id, telegram_message_id, created_at, message_text "
+            "SELECT post_id, expert_id, telegram_message_id, created_at, message_text, author_name, media_metadata "
             f"FROM posts WHERE expert_id IN ({placeholders})"
         )
         params: list[Any] = list(expert_ids)
         if cutoff:
             sql += " AND created_at >= ?"
             params.append(cutoff)
-        sql += " ORDER BY created_at DESC, post_id DESC LIMIT ? OFFSET ?"
-        params.extend([window + 1, page * window])
-        rows = conn.execute(sql, params).fetchall()
+        offset = getattr(args, "cursor", None)
+        offset = page * window if offset is None else max(0, offset)
+        if getattr(args, "video_id", None):
+            if expert_ids != ["video_hub"]:
+                print("error: video_id requires experts=video_hub", file=sys.stderr)
+                return 2
+            videos = _video_posts(conn, args.video_id)
+            if cutoff:
+                videos = [p for p in videos if p["created_at"] >= cutoff]
+            rows = [(p["telegram_message_id"], p["expert_id"], p["telegram_message_id"],
+                     p["created_at"], p["message_text"], p["author_name"],
+                     json.dumps({"type": "video_segment", "video_url": p.get("video_url"),
+                                 "video_title": p.get("video_title"), "timestamp_seconds": p.get("video_timestamp_s"),
+                                 **{k: p[k] for k in ("scope", "scope_range_s", "published_at", "duration_seconds", "original_author", "timestamp_kind") if k in p}}))
+                    for p in videos[offset:offset+window+1]]
+        else:
+            sql += " ORDER BY created_at DESC, post_id DESC LIMIT ? OFFSET ?"
+            params.extend([window + 1, offset])
+            rows = conn.execute(sql, params).fetchall()
 
     has_more = len(rows) > window
     rows = rows[:window]
     posts = []
-    used = 0
-    for post_id, expert_id, telegram_message_id, created_at, message_text in rows:
+    for post_id, expert_id, telegram_message_id, created_at, message_text, author_name, media_metadata in rows:
         text = (message_text or "").strip().replace("\n", " ")
         if len(text) > MAX_DIGEST_TEXT:
             text = text[: MAX_DIGEST_TEXT - 1] + "…"
@@ -732,12 +841,16 @@ def cmd_digest(args: argparse.Namespace) -> int:
             "source_key": f"{expert_id}:{telegram_message_id}",
             "created_at": created_at,
             "text": text,
+            "author_name": (author_name or "")[:100],
+            "preview_only": True,
+            "content_chars": len(message_text or ""),
         }
-        entry_cost = len(entry["source_key"]) + len(text)
-        if used + entry_cost > MAX_DIGEST_CHARS and posts:
-            has_more = True
-            break
-        used += entry_cost
+        fields = _video_fields(media_metadata)
+        for key in ("video_id", "video_timestamp_s", "timestamp_kind", "coverage"):
+            if key in fields:
+                entry[key] = fields[key]
+        if fields.get("video_title"):
+            entry["video_title"] = fields["video_title"][:100]
         posts.append(entry)
 
     payload = {
@@ -745,26 +858,49 @@ def cmd_digest(args: argparse.Namespace) -> int:
         "page": page,
         "window": window,
         "has_more": has_more,
+        "next_cursor": offset + len(posts) if has_more else None,
+        "status": "partial" if unknown_experts else "completed",
+        "preview_only": True,
+        "video_id": getattr(args, "video_id", None),
+        "unknown_experts": unknown_experts,
         "posts": posts,
     }
+    # Shrink previews rather than dropping rows: legacy page numbers must
+    # remain safe as well as the next_cursor protocol.
+    while len(json.dumps(payload, ensure_ascii=False)) > MAX_DIGEST_CHARS and any(p["text"] for p in posts):
+        for post in posts:
+            post["text"] = post["text"][:max(0, len(post["text"]) - 20)]
     if args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=1))
     else:
-        print(f"# digest scope={','.join(expert_ids)} page={page} posts={len(posts)} has_more={has_more}")
+        print(f"# digest scope={','.join(expert_ids)} page={page} posts={len(posts)} has_more={has_more} next_cursor={payload['next_cursor']} preview_only=true")
         for post in posts:
-            print(f"- {post['source_key']} [{post['created_at']}] {post['text']}")
+            print(f"- {post['source_key']} [{post['created_at']}] author={post['author_name']} video_id={post.get('video_id')} keyframe={post.get('video_timestamp_s')} {post['text']}")
     return 0
 
 
 def cmd_show(args: argparse.Namespace) -> int:
     backend_dir = _load_backend()
     db_path = _resolve_db_path(backend_dir, args.db)
-    comments_limit = max(1, min(args.comments_limit, MAX_COMMENTS_LIMIT))
+    comments_limit = max(0, min(args.comments_limit, MAX_COMMENTS_LIMIT))
+    if len(args.source_keys) > MAX_SHOW_KEYS:
+        print(f"error: show accepts at most {MAX_SHOW_KEYS} keys; split into batches", file=sys.stderr)
+        return 2
 
     with _connect(db_path) as conn:
         payload = _collect_show_payload(
             conn, args.source_keys, comments_limit, expand=getattr(args, "expand", 0)
         )
+    offset = max(0, getattr(args, "content_offset", 0))
+    length = max(1, min(getattr(args, "max_chars", MAX_SHOW_CHARS), MAX_SHOW_CHARS))
+    for item in payload:
+        if "error" in item:
+            continue
+        total = len(item["content"] or "")
+        item["content"] = (item["content"] or "")[offset:offset+length]
+        end = min(total, offset+length)
+        item.update(content_offset=offset, content_chars=total, content_end=end,
+                    truncated=end < total, next_content_offset=end if end < total else None)
 
     if args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
@@ -776,6 +912,9 @@ def cmd_show(args: argparse.Namespace) -> int:
             print(f"=== {item['source_key']} [{item['created_at']}] @{item['channel_username']} ===")
             if item.get("video_link"):
                 print(f"video: {item['video_link']}")
+            print(f"AUTHOR: {item.get('author_name')}")
+            print("VIDEO_METADATA: " + json.dumps({k: v for k, v in item.items() if k.startswith('video_') or k in {'timestamp_kind', 'coverage', 'scope', 'scope_range_s', 'segment_start_s', 'segment_end_s', 'published_at'}}, ensure_ascii=False))
+            print("READ_STATE: " + json.dumps({k: item[k] for k in ('content_offset', 'content_chars', 'content_end', 'truncated', 'next_content_offset')}))
             print(item["content"])
             if item.get("neighbors"):
                 print(f"--- neighbors ({len(item['neighbors'])}) ---")
@@ -807,6 +946,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     experts = subparsers.add_parser("experts", help="List experts and post counts")
     experts.add_argument("--json", action="store_true", help="Machine-readable JSON output")
+    videos = subparsers.add_parser("videos", help="VideoHub catalog with authors, counts and coverage limits")
+    videos.add_argument("--video-id", default=None)
+    videos.add_argument("--cursor", type=int, default=0)
+    videos.add_argument("--json", action="store_true")
 
     search = subparsers.add_parser("search", help="Hybrid FTS5 + vector search over posts")
     search.add_argument("query", help="Search query (natural language or keywords)")
@@ -835,6 +978,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="ISO timestamp used as 'now' for the freshness decay (reproducible probes; default: system time)",
     )
     search.add_argument("--json", action="store_true", help="Machine-readable JSON output")
+    search.add_argument("--cursor", type=int, default=0, help="Continue the same query using next_cursor")
 
     digest = subparsers.add_parser(
         "digest",
@@ -846,6 +990,8 @@ def build_parser() -> argparse.ArgumentParser:
     digest.add_argument("--recent-days", type=int, default=None, help="Only posts newer than N days")
     digest.add_argument("--window", type=int, default=15, help=f"Posts per page (default 15, max {MAX_DIGEST_WINDOW})")
     digest.add_argument("--page", type=int, default=0, help="Page number, 0-based")
+    digest.add_argument("--cursor", type=int, default=None, help="Use next_cursor from the previous result")
+    digest.add_argument("--video-id", default=None, help="Exact YouTube id, requires experts=video_hub")
     digest.add_argument("--json", action="store_true", help="Machine-readable JSON output")
 
     show = subparsers.add_parser("show", help="Show full source(s) with comments and linked context")
@@ -853,6 +999,8 @@ def build_parser() -> argparse.ArgumentParser:
     show.add_argument("--comments-limit", type=int, default=DEFAULT_COMMENTS_LIMIT, help=f"Max comments per window (author / community) per source (default {DEFAULT_COMMENTS_LIMIT})")
     show.add_argument("--expand", type=int, default=0, help=f"Also fetch up to N adjacent posts per source (same expert, +/- in time; max {MAX_EXPAND_NEIGHBORS})")
     show.add_argument("--json", action="store_true", help="Machine-readable JSON output")
+    show.add_argument("--content-offset", type=int, default=0)
+    show.add_argument("--max-chars", type=int, default=MAX_SHOW_CHARS)
 
     return parser
 
@@ -862,6 +1010,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.command == "experts":
         return cmd_experts(args)
+    if args.command == "videos":
+        return cmd_videos(args)
     if args.command == "search":
         return cmd_search(args)
     if args.command == "digest":

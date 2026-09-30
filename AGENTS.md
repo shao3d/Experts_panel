@@ -73,7 +73,7 @@ expert-scout "<вопрос>"
 на Маке — с `--with-shim`).
 
 Под капотом: Mac-shim (`~/.local/bin/expert-scout`) → SSH на VM →
-`scripts/expert_scout.sh` → агент `expert-scout` в opencode → read-only хелпер.
+`scripts/expert_scout.sh` → headless Codex → MCP-адаптер существующего `scout` → read-only хелпер. Текущая модель и режимы — в `docs/guides/expert-scout.md`.
 У агента нет shell (bash запрещён полностью): единственный инструмент —
 read-only `scout` из плагина `.opencode/plugins/expert-scout-tools.ts`,
 который запускает хелпер argv-массивом без shell, поэтому инъекции команд
@@ -83,8 +83,11 @@ read-only `scout` из плагина `.opencode/plugins/expert-scout-tools.ts`,
 `docs/guides/expert-scout.md`.
 
 Каждый прогон автоматически проходит проверку целостности
-(`backend/scripts/verify_citations.py`): несуществующие `source_key` и
-зацикливание tool-вызовов помечаются warning'ом. Правки Скаута принимаются
+(`backend/scripts/verify_citations.py`): источники должны существовать и быть
+полностью прочитаны; цитаты проверяются по локально указанному источнику.
+Незавершённый прогон, неподтверждённые цитаты и зацикливание возвращают
+частичный результат с ненулевым кодом. SSOT: `docs/guides/expert-scout.md`.
+Правки Скаута принимаются
 только по замерам автоматических стендов
 (`backend/scripts/search_probe.py`, `agent_probe.py`); регрессия = откат.
 Запрещено: писать в корпус, трогать production DB, копировать/выгружать БД,

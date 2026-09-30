@@ -15,13 +15,13 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import re
 import shutil
 import sqlite3
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
-from urllib.parse import parse_qs, urlparse
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 if str(BACKEND_DIR) not in sys.path:
@@ -36,6 +36,7 @@ from src.cli.bootstrap import (  # noqa: E402
     get_sqlite_db_path,
     set_default_sqlite_database_url,
 )
+from src.utils.video_identity import canonical_video_url, youtube_id as _extract_youtube_id, write_receipt  # noqa: E402
 
 BACKEND_DIR, logger = bootstrap_cli(
     __file__,
@@ -94,53 +95,6 @@ def generate_virtual_id(url: str, segment_id: int | str) -> int:
     """Generate a stable integer ID for synthetic `telegram_message_id` values."""
     hash_str = f"{url}_{segment_id}"
     return int(hashlib.md5(hash_str.encode()).hexdigest(), 16) % (10**9)
-
-
-def normalize_video_url(video_url: str) -> str:
-    if len(video_url) < 15 and "http" not in video_url:
-        return f"https://www.youtube.com/watch?v={video_url}"
-    return video_url
-
-
-def _extract_youtube_id(video_url: str) -> str | None:
-    """Extract the video ID from common YouTube URL forms."""
-    try:
-        parsed = urlparse(video_url or "")
-    except Exception:
-        return None
-    host = (parsed.hostname or "").lower()
-    if host == "youtu.be":
-        candidate = parsed.path.strip("/").split("/")[0]
-        return candidate or None
-    if host in (
-        "youtube.com",
-        "www.youtube.com",
-        "m.youtube.com",
-        "youtube-nocookie.com",
-        "www.youtube-nocookie.com",
-    ):
-        if parsed.path == "/watch":
-            values = parse_qs(parsed.query).get("v")
-            if values and values[0]:
-                return values[0]
-        for prefix in ("/shorts/", "/embed/", "/live/", "/v/"):
-            if parsed.path.startswith(prefix):
-                candidate = parsed.path[len(prefix):].split("/")[0]
-                return candidate or None
-    return None
-
-
-def canonical_video_url(video_url: str) -> str:
-    """Canonicalize a YouTube URL to one identity per video.
-
-    Virtual segment IDs and composite topic hashes derive from the URL, so
-    `youtu.be/<id>` and `youtube.com/watch?v=<id>` must not produce duplicate
-    segment rows. Non-YouTube URLs fall back to `normalize_video_url`.
-    """
-    video_id = _extract_youtube_id(video_url or "")
-    if video_id:
-        return f"https://www.youtube.com/watch?v={video_id}"
-    return normalize_video_url(video_url)
 
 
 VISUAL_TEXT_KEYS = (
@@ -223,7 +177,9 @@ def _load_vec_extension(conn: sqlite3.Connection) -> bool:
 
 def _invalidate_embeddings(cursor: sqlite3.Cursor, post_id: int, *, vec_ok: bool) -> None:
     """Drop stale embedding rows so the next embed run regenerates them."""
-    if vec_ok and _table_exists(cursor, "vec_posts"):
+    if _table_exists(cursor, "vec_posts"):
+        if not vec_ok:
+            raise RuntimeError("Cannot invalidate vec_posts: sqlite-vec unavailable; import rolled back")
         cursor.execute("DELETE FROM vec_posts WHERE post_id = ?", (post_id,))
     if _table_exists(cursor, "post_embeddings"):
         cursor.execute("DELETE FROM post_embeddings WHERE post_id = ?", (post_id,))
@@ -266,7 +222,7 @@ def delete_video_rows(cursor: sqlite3.Cursor, post_ids: list[int], *, vec_ok: bo
         cursor.execute("DELETE FROM posts WHERE post_id = ?", (post_id,))
 
 
-def copy_frames(frames: list, series_dir: Path, base_dir: Path | None) -> list[dict]:
+def copy_frames(frames: list, series_dir: Path, base_dir: Path | None, *, dry_run: bool = False) -> list[dict]:
     """Copy referenced frame files into the corpus frame directory."""
     copied: list[dict] = []
     for frame in frames:
@@ -281,10 +237,16 @@ def copy_frames(frames: list, series_dir: Path, base_dir: Path | None) -> list[d
         if not source.exists():
             logger.warning("frame missing, skipped: %s", source)
             continue
-        series_dir.mkdir(parents=True, exist_ok=True)
-        target = series_dir / source.name
-        if not target.exists():
-            shutil.copy2(source, target)
+        # Immutable names keep a failed import from replacing frames still
+        # referenced by the previous committed corpus version.
+        digest = hashlib.sha256(source.read_bytes()).hexdigest()[:12]
+        target = series_dir / f"{source.stem}-{digest}{source.suffix}"
+        if not dry_run:
+            series_dir.mkdir(parents=True, exist_ok=True)
+            if not target.exists():
+                temporary = target.with_suffix(target.suffix + ".tmp")
+                shutil.copy2(source, temporary)
+                temporary.replace(target)
         copied.append({"time_s": frame.get("time_s"), "file": target.name})
     return copied
 
@@ -303,8 +265,8 @@ def import_video_json(
     db_path = get_db_path()
     logger.info("Using SQLite database at %s", db_path)
 
-    with open(json_path, encoding="utf-8") as handle:
-        data = json.load(handle)
+    source_bytes = json_path.read_bytes()
+    data = json.loads(source_bytes)
 
     meta = data.get("video_metadata", {})
     segments = data.get("segments", [])
@@ -327,20 +289,16 @@ def import_video_json(
     except ValueError as exc:
         raise SystemExit(str(exc)) from exc
     if published_at is None:
-        logger.warning(
-            "video_metadata.published_at missing for %s; created_at falls back to "
-            "import time, so freshness ranking treats the video as newly imported "
-            "instead of its real publication date",
-            video_url,
-        )
-    created_at_value = published_at or format_timestamp(
-        datetime.now(UTC).replace(tzinfo=None)
-    )
+        raise SystemExit("video_metadata.published_at is required; import time is not publication time")
+    created_at_value = published_at
     url_hash = hashlib.md5(video_url.encode()).hexdigest()[:12]
 
     base_dir = frames_base or json_path.parent
     series_dir = FRAMES_ROOT / url_hash
     counts = {"segments": 0, "frames": 0, "with_visual": 0, "replaced": 0}
+    source_keys = []
+    cell_sources: dict[str, list[str]] = {}
+    pending_frames = []
 
     conn = sqlite3.connect(str(db_path))
     cursor = conn.cursor()
@@ -375,6 +333,15 @@ def import_video_json(
 
         seen_virtual: dict[int, object] = {}
         for index, segment in enumerate(segments):
+            if not isinstance(segment, dict) or not isinstance(segment.get("content"), str) or not segment["content"].strip():
+                raise SystemExit(f"segment {index}: non-empty content is required")
+            timestamp = segment.get("timestamp_seconds")
+            if isinstance(timestamp, bool) or not isinstance(timestamp, (int, float)) or not math.isfinite(timestamp) or timestamp < 0:
+                raise SystemExit(f"segment {index}: timestamp_seconds must be finite and non-negative")
+            if "start_seconds" in segment or "end_seconds" in segment:
+                start, end = segment.get("start_seconds"), segment.get("end_seconds")
+                if any(isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) for value in (start, end)) or not 0 <= start <= timestamp <= end:
+                    raise SystemExit(f"segment {index}: source interval must contain the keyframe")
             segment_id = segment.get("segment_id", index)
             virtual_message_id = generate_virtual_id(video_url, segment_id)
             if virtual_message_id in seen_virtual:
@@ -385,6 +352,13 @@ def import_video_json(
                     "so they are unique within this video."
                 )
             seen_virtual[virtual_message_id] = segment_id
+            key = f"{EXPERT_ID}:{virtual_message_id}"
+            source_keys.append(key)
+            cells = segment.get("matrix_cells") or []
+            if not isinstance(cells, list) or any(not isinstance(cell, str) or len(cell.split('/')) != 3 for cell in cells):
+                raise SystemExit(f"segment {index}: matrix_cells must be a list of domain/subdomain/intent IDs")
+            for cell in cells:
+                cell_sources.setdefault(cell, []).append(key)
 
             raw_topic_id = segment.get("topic_id", "general")
             composite_topic_id = f"{url_hash}_{raw_topic_id}"
@@ -398,7 +372,8 @@ def import_video_json(
             )
             if visual:
                 full_text += "\n\n" + render_visual_block(visual)
-            frames = copy_frames(segment.get("frames") or [], series_dir, base_dir)
+            frames = copy_frames(segment.get("frames") or [], series_dir, base_dir, dry_run=True)
+            pending_frames.append(segment.get("frames") or [])
 
             media_meta = {
                 "type": "video_segment",
@@ -409,7 +384,15 @@ def import_video_json(
                 "context_bridge": segment.get("context_bridge", ""),
                 "original_author": author_name,
                 "original_author_id": author_id,
+                "segment_id": segment_id,
+                "timestamp_kind": "keyframe",
             }
+            for field in ("duration_seconds", "scope", "scope_range_s"):
+                if field in meta:
+                    media_meta[field] = meta[field]
+            for field in ("start_seconds", "end_seconds", "matrix_cells"):
+                if field in segment:
+                    media_meta[field] = segment[field]
             if published_at:
                 media_meta["published_at"] = published_at  # canonical text
             if visual:
@@ -445,12 +428,20 @@ def import_video_json(
                 "is_forwarded": 0,
                 "channel_username": CHANNEL_USERNAME,
             }
-            existing = cursor.execute(
-                "SELECT post_id, message_text FROM posts WHERE telegram_message_id = ? LIMIT 1",
-                (virtual_message_id,),
-            ).fetchone()
+            existing_rows = cursor.execute(
+                "SELECT post_id, message_text, media_metadata, created_at FROM posts WHERE expert_id = ? AND telegram_message_id = ?",
+                (EXPERT_ID, virtual_message_id),
+            ).fetchall()
+            if len(existing_rows) > 1:
+                raise SystemExit(f"duplicate stored video segment identity: {virtual_message_id}")
+            existing = existing_rows[0] if existing_rows else None
             if existing:
-                if existing[1] != full_text:
+                old_meta = json.loads(existing[2] or "{}")
+                if canonical_video_url(old_meta.get("video_url", "")) != video_url or (
+                    "segment_id" in old_meta and str(old_meta["segment_id"]) != str(segment_id)
+                ):
+                    raise SystemExit(f"video segment ID collision: {virtual_message_id}; existing source is different")
+                if existing[1] != full_text or existing[3] != created_at_value:
                     # Text changed: drop stale vectors so the next embed run
                     # regenerates them instead of serving outdated ones.
                     _invalidate_embeddings(cursor, existing[0], vec_ok=vec_ok)
@@ -476,6 +467,8 @@ def import_video_json(
                 counts["segments"], counts["with_visual"], counts["frames"], counts["replaced"],
             )
         else:
+            for frames in pending_frames:
+                copy_frames(frames, series_dir, base_dir)
             conn.commit()
             logger.info(
                 "Imported %d video segments (%d with visual, %d frames copied, %d replaced)",
@@ -488,6 +481,19 @@ def import_video_json(
         raise
     finally:
         conn.close()
+
+    if not dry_run:
+        receipt_path = json_path.with_suffix(".import-receipt.json")
+        write_receipt(receipt_path, {
+            "schema_version": 1, "status": "loaded",
+            "video_id": _extract_youtube_id(video_url) or video_url,
+            "source_path": str(json_path),
+            "source_sha256": hashlib.sha256(source_bytes).hexdigest(),
+            "imported_at": datetime.now(UTC).isoformat(),
+            "source_keys": source_keys, "cell_sources": cell_sources,
+            "scope": meta.get("scope"), "scope_range_s": meta.get("scope_range_s"),
+        })
+        counts["receipt_path"] = str(receipt_path)
 
     return counts
 
@@ -521,6 +527,8 @@ def main() -> None:
         raise SystemExit(1) from None
     if args.dry_run:
         print(f"dry-run ok: {counts['segments']} segments, {counts['frames']} frames")
+    else:
+        print(f"import ok: {counts['segments']} segments; readiness receipt: {counts['receipt_path']}")
 
 
 if __name__ == "__main__":

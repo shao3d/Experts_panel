@@ -151,12 +151,25 @@ def test_import_normalizes_iso_t_published_at(import_env):
     assert meta_published == "2026-08-21 00:00:00"
 
 
-def test_import_missing_published_at_falls_back_to_canonical_now(import_env):
+def test_import_missing_published_at_is_rejected(import_env):
     importer, db_path, json_path = import_env
-    importer.import_video_json(_write_json(json_path, None))
-    created_at, meta_published = _post_row(db_path)
-    assert re.fullmatch(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}", created_at)
-    assert meta_published is None
+    with pytest.raises(SystemExit, match="published_at is required"):
+        importer.import_video_json(_write_json(json_path, None))
+    with sqlite3.connect(db_path) as conn:
+        assert conn.execute("SELECT COUNT(*) FROM posts").fetchone()[0] == 0
+
+
+def test_import_date_only_change_invalidates_search_metadata(import_env):
+    importer, db_path, json_path = import_env
+    importer.import_video_json(_write_json(json_path, "2026-01-01"))
+    with sqlite3.connect(db_path) as conn:
+        post_id = conn.execute("SELECT post_id FROM posts").fetchone()[0]
+        conn.execute("INSERT INTO vec_posts VALUES (?, '2026-01-01')", (post_id,))
+        conn.execute("INSERT INTO post_embeddings VALUES (?)", (post_id,))
+    importer.import_video_json(_write_json(json_path, "2026-09-01"))
+    with sqlite3.connect(db_path) as conn:
+        assert conn.execute("SELECT COUNT(*) FROM vec_posts").fetchone()[0] == 0
+        assert conn.execute("SELECT COUNT(*) FROM post_embeddings").fetchone()[0] == 0
 
 
 def test_import_rejects_unparsable_published_at(import_env):

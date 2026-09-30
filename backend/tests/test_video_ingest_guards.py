@@ -137,6 +137,43 @@ def test_combine_rejects_non_object_segment(ingest, tmp_path):
         ingest.combine_chunks(tmp_path, 25.0)
 
 
+def test_combine_keeps_distinct_nearby_instructions(ingest, tmp_path):
+    first, second = _seg(1, 10), _seg(2, 30)
+    first["content"], second["content"] = "Set light position", "Set light intensity"
+    _write_chunk(tmp_path, "chunk_01", [first, second])
+    assert len(ingest.combine_chunks(tmp_path, 25)["segments"]) == 2
+
+
+def test_combine_removes_only_cross_chunk_identical_evidence(ingest, tmp_path):
+    _write_chunk(tmp_path, "chunk_01", [_seg(1, 290)])
+    _write_chunk(tmp_path, "chunk_02", [_seg(2, 291)])
+    assert len(ingest.combine_chunks(tmp_path, 25)["segments"]) == 1
+
+
+def test_combine_rejects_missing_expected_chunk(ingest, tmp_path):
+    _write_chunk(tmp_path, "chunk_01", [_seg(1, 10)])
+    (tmp_path / "chunks_index.json").write_text(json.dumps({"chunks": [
+        {"dir": "chunks/chunk_01"}, {"dir": "chunks/chunk_02"},
+    ]}))
+    with pytest.raises(SystemExit, match="incomplete chunk set"):
+        ingest.combine_chunks(tmp_path, 25)
+
+
+def test_combine_rejects_different_video(ingest, tmp_path):
+    _write_chunk(tmp_path, "chunk_01", [_seg(1, 10)])
+    _write_chunk(tmp_path, "chunk_02", [_seg(2, 40)], {"url": "https://youtu.be/other"})
+    with pytest.raises(SystemExit, match="inconsistent video metadata"):
+        ingest.combine_chunks(tmp_path, 25)
+
+
+def test_combine_rebases_frame_paths(ingest, tmp_path):
+    segment = _seg(1, 10)
+    segment["frames"] = [{"path": "frames_dense/f.jpg"}]
+    _write_chunk(tmp_path, "chunk_01", [segment])
+    result = ingest.combine_chunks(tmp_path, 25)
+    assert result["segments"][0]["frames"][0]["path"] == "chunks/chunk_01/frames_dense/f.jpg"
+
+
 # --- render_visual_block -----------------------------------------------------
 
 
@@ -363,3 +400,51 @@ def test_import_replace_video_consolidates_resegmentation(import_env):
     assert len(rows) == 2
     texts = " ".join(r[1] for r in rows)
     assert "S1003" in texts and "S1002" not in texts
+
+
+def test_import_preserves_other_expert_with_same_message_id(import_env):
+    importer, db_path, json_path = import_env
+    mid = importer.generate_virtual_id(CANONICAL, 1)
+    with sqlite3.connect(db_path) as conn:
+        conn.execute("INSERT INTO posts (expert_id, telegram_message_id, message_text) VALUES ('other', ?, 'Keep me')", (mid,))
+    importer.import_video_json(_write_json(json_path, [_vseg(1, 0)]))
+    with sqlite3.connect(db_path) as conn:
+        assert conn.execute("SELECT message_text FROM posts WHERE expert_id='other'").fetchone()[0] == "Keep me"
+        assert conn.execute("SELECT COUNT(*) FROM posts").fetchone()[0] == 2
+
+
+def test_import_rejects_cross_video_virtual_id_collision(import_env, monkeypatch):
+    importer, db_path, json_path = import_env
+    monkeypatch.setattr(importer, "generate_virtual_id", lambda *args: 123)
+    importer.import_video_json(_write_json(json_path, [_vseg(1, 0)]))
+    with pytest.raises(SystemExit, match="ID collision"):
+        importer.import_video_json(_write_json(json_path, [_vseg(1, 0)], url="https://youtu.be/different"))
+    assert _rows(db_path)[0][3] == CANONICAL
+
+
+def test_dry_run_does_not_copy_frames(import_env, tmp_path, monkeypatch):
+    importer, _, json_path = import_env
+    root = tmp_path / "corpus_frames"
+    monkeypatch.setattr(importer, "FRAMES_ROOT", root)
+    (tmp_path / "frame.jpg").write_bytes(b"synthetic-frame")
+    segment = _vseg(1, 0)
+    segment["frames"] = [{"path": "frame.jpg"}]
+    importer.import_video_json(_write_json(json_path, [segment]), dry_run=True)
+    assert not root.exists()
+
+
+@pytest.mark.parametrize("timestamp,content", [(-1, "text"), (float("nan"), "text"), (0, ""), (0, None)])
+def test_import_rejects_invalid_evidence(import_env, timestamp, content):
+    importer, db_path, json_path = import_env
+    with pytest.raises(SystemExit):
+        importer.import_video_json(_write_json(json_path, [_vseg(1, timestamp, content)]))
+    assert _rows(db_path) == []
+
+
+@pytest.mark.parametrize('start,end', [(None,20),(10,5),(-1,20),(1,20)])
+def test_import_rejects_unproven_source_interval(import_env, start, end):
+    importer, db_path, json_path = import_env
+    segment = dict(_vseg(1,0), start_seconds=start,end_seconds=end)
+    with pytest.raises(SystemExit,match='source interval'):
+        importer.import_video_json(_write_json(json_path,[segment]))
+    assert _rows(db_path) == []

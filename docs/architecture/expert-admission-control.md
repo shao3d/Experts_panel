@@ -1,7 +1,7 @@
 # Expert Admission Control
 
 **Status:** Active admission doctrine and matrix workflow
-**Last updated:** 2026-09-28
+**Last updated:** 2026-09-30
 **Haft context:** `prob-20260509-71223b41`, `sol-20260509-ae57b368`
 
 This document defines the decision process for admitting new Telegram experts
@@ -1380,7 +1380,7 @@ stripped by the Stage 2 golden prompt); `community_signal` is not collected
 (YouTube comments are out of scope). Video-specific attributes replace it:
 `prompt_density`, `version_lock`, `durable_share`, `verbatim_ui`. A heavy LLM
 passport per candidate is not used (Stage 2 already produces segments);
-Phase 1 adds only a light `topic_id` → cell mapping.
+Phase 1 adds only a light segment/topic → cell mapping, stored as per-segment `matrix_cells`.
 
 ### 16.3 Two-phase gate
 
@@ -1398,7 +1398,7 @@ cost of a wrong ingest is 0.5–1.5 operator-hours):
    are unavailable, fall back to title/description.
 3. **Scout probe-check** of those topics (RU and EN) through the `expert-scout`
    channel. The transcript generates questions; only Scout proves overlap.
-   Relevant top sources with citations = covered; empty = gap. Verdict rule:
+   Relevant fully read sources with citations can establish overlap. An empty successful probe means no evidence in the checked scope; an error, timeout or incomplete probe is unverified, not a gap. Verdict rule:
    EN video vs RU corpus yields gaps too easily — write "no panel coverage
    (RU)", never unconditional "unique".
 4. **Verdict** into `output/video_admission/admission_log.json` (one object per
@@ -1417,14 +1417,15 @@ cut offset to segment timestamps so deep-links point at the original YouTube
 timeline. Log the range in `scope`, otherwise the map reads the video as fully
 covered. A later full ingest goes through `--replace-video`.
 
-**Phase 1 — after ingest**: one LLM call maps segment `topic_id`s to taxonomy
-cells (light video passport) and the video matrix is rebuilt. If 80%+ of
+**Phase 1 — source mapping and confirmed ingest**: one LLM call maps real segments to taxonomy cells (light video passport). The imported artifact records `matrix_cells`, and the matrix is rebuilt after import/index readiness is confirmed. If 80%+ of
 segments land in already-covered cells, downgrade the channel's priority.
+
+Admission approval is a plan, not evidence of corpus readiness. The generated map distinguishes planned, prepared, loaded and searchable videos. Only searchable imports with cell-specific source keys close a cell; declaring broad video-level cells alone does not close it. Source SHA256/import receipts and indexing checks are defined in `docs/architecture/video-hub-service.md`; operator steps are in `docs/guides/video-hub-operator.md`. Missing legacy receipts mean unverified readiness, not proven absence. The latest journal entry per video supersedes earlier decisions rather than adding another corpus contribution.
 
 ### 16.4 Corpus and decay
 
 The video matrix is a **content-centric map** of what to fetch, not a report of
-what is already fetched. Per-cell decay aggregates video-level attributes
+what is already fetched. The current decay label measures version dependence; it is not a calendar aging score. Per-cell decay aggregates video-level attributes
 (`version_lock` range, `durable_share` range) and is refined per cell on
 Phase 1. Durable content (blocking, montage, economics) outranks version-locked
 tool tours; `durable_share` is the main sorting signal after topic.

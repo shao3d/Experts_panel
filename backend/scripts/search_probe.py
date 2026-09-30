@@ -76,22 +76,26 @@ def run_search(query: str, limit: int = 40, extra: list[str] | None = None) -> d
 def keys_exist(keys: list[str]) -> dict[str, bool]:
     out: dict[str, bool] = {}
     uniq = sorted(set(keys))
-    for i in range(0, len(uniq), 40):
-        chunk = uniq[i : i + 40]
+    for i in range(0, len(uniq), 3):
+        chunk = uniq[i : i + 3]
         proc = subprocess.run(
             [str(PY), str(HELPER), "show", *chunk, "--comments-limit", "0", "--json"],
             capture_output=True,
             text=True,
             timeout=300,
         )
+        if proc.returncode:
+            raise RuntimeError(f"source existence check failed (exit {proc.returncode})")
         payload = json.loads(proc.stdout)
+        if not isinstance(payload, list):
+            raise RuntimeError("source existence check returned invalid payload")
         seen = set()
         for item in payload:
             key = item.get("source_key", "?")
             seen.add(key)
             out[key] = "error" not in item
-        for key in chunk:
-            out.setdefault(key, False)
+        if seen != set(chunk):
+            raise RuntimeError("source existence check omitted or added keys")
     return out
 
 

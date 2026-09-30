@@ -35,6 +35,7 @@ if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 
 from src.cli.bootstrap import bootstrap_cli  # noqa: E402
+from src.utils.video_identity import canonical_video_url  # noqa: E402
 
 BACKEND_DIR, logger = bootstrap_cli(__file__, logger_name="cli.ingest_video")
 
@@ -508,6 +509,14 @@ def combine_chunks(out_dir: Path, overlap_s: float) -> dict:
     files = find_chunk_segment_files(out_dir)
     if not files:
         raise SystemExit(f"no chunk segments.json found under {out_dir / 'chunks'}")
+    index_path = out_dir / "chunks_index.json"
+    expected = {p.name for p in (out_dir / "chunks").glob("chunk_*") if p.is_dir()}
+    if index_path.exists():
+        index = json.loads(index_path.read_text(encoding="utf-8"))
+        expected = {Path(chunk["dir"]).name for chunk in index["chunks"]}
+    actual = {p.parent.name for p in files}
+    if expected != actual:
+        raise SystemExit(f"incomplete chunk set: missing={sorted(expected - actual)}, unexpected={sorted(actual - expected)}")
     segments: list[dict] = []
     metadata: dict = {}
     origins: dict = {}
@@ -519,6 +528,13 @@ def combine_chunks(out_dir: Path, overlap_s: float) -> dict:
             for key, value in payload.get("video_metadata", {}).items()
             if key not in CHUNK_LOCAL_META_KEYS
         }
+        chunk_meta = payload.get("video_metadata", {})
+        for key in ("url", "title", "author", "channel", "published_at", "duration_seconds", "scope", "scope_range_s"):
+            old, new = metadata.get(key), chunk_meta.get(key)
+            if key == "url":
+                old, new = canonical_video_url(old or ""), canonical_video_url(new or "")
+            if old != new:
+                raise SystemExit(f"inconsistent video metadata {key!r} in {path}")
         for segment in payload.get("segments", []):
             if not isinstance(segment, dict):
                 raise SystemExit(
@@ -533,6 +549,13 @@ def combine_chunks(out_dir: Path, overlap_s: float) -> dict:
                     "across the whole video, then re-run --combine."
                 )
             origins[segment_id] = path
+            for frame in segment.get("frames") or []:
+                field = "path" if frame.get("path") else "file"
+                raw = frame.get(field)
+                if raw and not Path(raw).is_absolute():
+                    # Frame references in a chunk are relative to that chunk.
+                    source = out_dir / raw if raw.startswith("chunks/") else path.parent / raw
+                    frame[field] = str(source.relative_to(out_dir))
             segments.append(segment)
     segments.sort(key=lambda s: float(s.get("timestamp_seconds", 0)))
     deduped: list[dict] = []
@@ -540,10 +563,14 @@ def combine_chunks(out_dir: Path, overlap_s: float) -> dict:
         duplicate = None
         for existing in reversed(deduped[-6:]):
             same_topic = existing.get("topic_id") == segment.get("topic_id")
+            different_chunks = origins[existing["segment_id"]] != origins[segment["segment_id"]]
+            same_evidence = bool(segment.get("content", "").strip()) and all(
+                existing.get(key) == segment.get(key) for key in ("content", "visual", "context_bridge")
+            )
             close_in_time = abs(
                 float(existing.get("timestamp_seconds", 0)) - float(segment.get("timestamp_seconds", 0))
             ) <= overlap_s
-            if same_topic and close_in_time:
+            if different_chunks and same_evidence and same_topic and close_in_time:
                 duplicate = existing
                 break
         if duplicate is None:

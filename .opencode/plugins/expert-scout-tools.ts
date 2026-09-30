@@ -17,12 +17,12 @@ export const ExpertScoutTools: Plugin = async () => {
     tool: {
       scout: tool({
         description:
-          "Read-only access to the Experts Panel Telegram corpus: expert roster (experts), hybrid FTS5+vector post search (search), windowed exhaustive read of a scope (digest), full source with author/community comments and linked context (show).",
+          "Read-only corpus: experts roster; videos catalog; search hybrid FTS5+vector; digest paged source previews (not full reading); show source text with explicit continuation and comments. Video keyframes are navigation points, not segment boundaries.",
         args: {
           command: tool.schema
-            .enum(["experts", "search", "digest", "show"])
+            .enum(["experts", "videos", "search", "digest", "show"])
             .describe(
-              "experts = roster and volumes; search = hybrid post search; digest = windowed exhaustive read of a scope (no retrieval); show = full source lookup",
+              "experts = roster; videos = VideoHub catalog; search = hybrid search; digest = previews with next_cursor; show = source text with next_content_offset",
             ),
           query: tool.schema
             .string()
@@ -48,9 +48,9 @@ export const ExpertScoutTools: Plugin = async () => {
             .number()
             .int()
             .positive()
-            .max(30)
+            .max(40)
             .optional()
-            .describe("Max search results (default 10, max 30)"),
+            .describe("Max search results (default 20, max 40)"),
           diversity: tool.schema
             .boolean()
             .optional()
@@ -71,8 +71,13 @@ export const ExpertScoutTools: Plugin = async () => {
             .describe("Machine-readable JSON output"),
           source_keys: tool.schema
             .array(tool.schema.string())
+            .max(3)
             .optional()
-            .describe("source_key values like expert:123; required when command=show"),
+            .describe("show: 1-3 source_key values like expert:123; split larger lists into batches"),
+          video_id: tool.schema.string().optional().describe("videos/digest: exact YouTube id; digest requires experts=video_hub"),
+          cursor: tool.schema.number().int().min(0).optional().describe("search/videos/digest: next_cursor from previous result; search requires the same query and scope"),
+          content_offset: tool.schema.number().int().min(0).optional().describe("show: next_content_offset from previous result; default 0"),
+          max_chars: tool.schema.number().int().positive().max(8000).optional().describe("show: source text characters per key, default/max 8000"),
           window: tool.schema
             .number()
             .int()
@@ -96,7 +101,7 @@ export const ExpertScoutTools: Plugin = async () => {
           comments_limit: tool.schema
             .number()
             .int()
-            .positive()
+            .min(0)
             .max(100)
             .optional()
             .describe(
@@ -110,6 +115,8 @@ export const ExpertScoutTools: Plugin = async () => {
           const python = path.join(context.directory, "backend/.venv/bin/python")
           const helper = path.join(context.directory, "backend/scripts/expert_scout.py")
           const argv: string[] = [helper, args.command]
+          if (args.experts && args.group) throw new Error("experts and group are mutually exclusive")
+          if (args.video_id && !["videos", "digest"].includes(args.command)) throw new Error("video_id is supported by videos and digest")
           if (args.command === "search") {
             if (!args.query || !args.query.trim()) {
               throw new Error("command=search requires a non-empty query")
@@ -122,6 +129,7 @@ export const ExpertScoutTools: Plugin = async () => {
             if (args.no_vector) argv.push("--no-vector")
             if (args.diversity) argv.push("--diversity")
             if (args.freshness) argv.push("--freshness", String(args.freshness))
+            if (args.cursor !== undefined) argv.push("--cursor", String(args.cursor))
           } else if (args.command === "digest") {
             if (!args.experts && !args.group) {
               throw new Error("command=digest requires --experts or --group scope")
@@ -131,15 +139,22 @@ export const ExpertScoutTools: Plugin = async () => {
             if (args.recent_days) argv.push("--recent-days", String(args.recent_days))
             if (args.window) argv.push("--window", String(args.window))
             if (args.page !== undefined) argv.push("--page", String(args.page))
+            if (args.cursor !== undefined) argv.push("--cursor", String(args.cursor))
+            if (args.video_id) argv.push("--video-id", args.video_id)
+          } else if (args.command === "videos") {
+            if (args.video_id) argv.push("--video-id", args.video_id)
+            if (args.cursor !== undefined) argv.push("--cursor", String(args.cursor))
           } else if (args.command === "show") {
             if (!args.source_keys || args.source_keys.length === 0) {
               throw new Error("command=show requires at least one source_key (expert:123)")
             }
             argv.push(...args.source_keys)
-            if (args.comments_limit) argv.push("--comments-limit", String(args.comments_limit))
+            if (args.comments_limit !== undefined) argv.push("--comments-limit", String(args.comments_limit))
             if (args.expand) argv.push("--expand", String(args.expand))
+            if (args.content_offset !== undefined) argv.push("--content-offset", String(args.content_offset))
+            if (args.max_chars !== undefined) argv.push("--max-chars", String(args.max_chars))
           }
-          if (args.json) argv.push("--json")
+          if (args.json !== false) argv.push("--json")
           try {
             const { stdout } = await execFileAsync(python, argv, {
               cwd: context.directory,
@@ -148,15 +163,10 @@ export const ExpertScoutTools: Plugin = async () => {
             })
             return stdout
           } catch (err: any) {
-            // Surface helper failures to the model instead of raising, so it
-            // can adjust the query; schema mistakes above still throw.
-            return [
-              `scout failed: ${err?.message ?? err}`,
-              err?.stderr ?? "",
-              err?.stdout ?? "",
-            ]
-              .filter(Boolean)
-              .join("\n")
+            // A failure is never an empty search result. Do not include raw
+            // exception output, which may contain infrastructure details.
+            return JSON.stringify({ status: "error", error: "helper_failed",
+              exit_code: err?.code ?? null, message: "Scout helper failed; retry or report an operational failure. This does not prove absence of sources." })
           }
         },
       }),

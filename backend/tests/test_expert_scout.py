@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import importlib.util
 import io
+from contextlib import nullcontext
 import json
 import sqlite3
 import sys
@@ -302,6 +303,7 @@ def test_filter_keeps_only_text_after_last_tool(capsys, monkeypatch):
             '{"type":"tool_use","part":{"messageID":"m2","tool":"bash"}}',
             '{"type":"text","part":{"messageID":"m3","text":"FINAL "}}',
             '{"type":"text","part":{"messageID":"m3","text":"ANSWER"}}',
+            '{"type":"step_finish","part":{"reason":"stop"}}',
         ]
     )
     monkeypatch.setattr(sys, "stdin", io.StringIO(events))
@@ -320,7 +322,7 @@ def test_filter_marks_fallback_narration(capsys, monkeypatch):
     )
     monkeypatch.setattr(sys, "stdin", io.StringIO(events))
 
-    assert filter_module.main() == 0
+    assert filter_module.main() == 3
     out = capsys.readouterr().out
     assert out.startswith("# WARNING")
     assert "thinking out loud" in out
@@ -356,6 +358,16 @@ def test_rank_vector_prefers_fresh_relevant(scout):
     ]
 
     assert scout._rank_vector(rows, now)[:1] == [2]
+
+
+def test_broad_candidate_pool_keeps_text_and_vector_tail(scout):
+    fts = list(range(90))
+    vector = list(range(100,140))
+    rows = [(i,1.4,'2026-09-30') for i in vector] + [(200,1.1,'2026-09-30')]
+    pool = scout._candidate_pool(fts,vector,rows,60)
+    assert pool[:40] == scout._rrf_merge(fts,vector,60)[:40]
+    assert set(pool) == set(fts+vector+[200])
+    assert len(pool) == len(set(pool))
 
 
 @pytest.fixture()
@@ -478,3 +490,77 @@ def test_collect_show_payload_exposes_video_link(scout, show_conn):
     assert item["video_link"] == "https://youtu.be/2b3Z4rW5VJc?t=258s"
     assert item["video_timestamp_s"] == 258
     assert item["video_title"] == "Seedance 2.5 tutorial"
+
+
+def _mock_corpus(scout, monkeypatch, conn):
+    monkeypatch.setattr(scout, "_load_backend", lambda: BACKEND_DIR)
+    monkeypatch.setattr(scout, "_connect", lambda *args: nullcontext(conn))
+
+
+def test_digest_does_not_skip_rows_at_character_cap(scout, show_conn, monkeypatch, capsys):
+    show_conn.execute("DELETE FROM posts")
+    show_conn.execute("CREATE TABLE expert_metadata (expert_id TEXT)")
+    show_conn.execute("INSERT INTO expert_metadata VALUES ('acidcrunch')")
+    show_conn.executemany("INSERT INTO posts (post_id, expert_id, telegram_message_id, created_at, message_text, author_name) VALUES (?, 'acidcrunch', ?, '2026-01-01', ?, 'Author')",
+                          [(i, i, 'x'*500) for i in range(1,61)])
+    _mock_corpus(scout, monkeypatch, show_conn)
+    seen = []
+    for page in range(2):
+        args = scout.build_parser().parse_args(['digest','--experts','acidcrunch','--window','30','--page',str(page),'--json'])
+        assert scout.cmd_digest(args) == 0
+        payload = json.loads(capsys.readouterr().out)
+        seen.extend(p['source_key'] for p in payload['posts'])
+        assert len(payload['posts']) == 30
+        assert payload['preview_only']
+    assert len(set(seen)) == 60
+    assert payload['next_cursor'] is None
+
+
+def test_exact_video_digest_and_catalog(scout, show_conn, monkeypatch, capsys):
+    show_conn.execute("CREATE TABLE expert_metadata (expert_id TEXT)")
+    show_conn.execute("INSERT INTO expert_metadata VALUES ('video_hub')")
+    _mock_corpus(scout, monkeypatch, show_conn)
+    args = scout.build_parser().parse_args(['videos','--video-id','2b3Z4rW5VJc','--json'])
+    assert scout.cmd_videos(args) == 0
+    record = json.loads(capsys.readouterr().out)['videos'][0]
+    assert record['author'] == 'Youri van Hofwegen'
+    assert record['segment_count'] == 1 and record['coverage'] == 'unknown'
+    args = scout.build_parser().parse_args(['digest','--experts','video_hub','--video-id','2b3Z4rW5VJc','--json'])
+    assert scout.cmd_digest(args) == 0
+    posts = json.loads(capsys.readouterr().out)['posts']
+    assert [p['source_key'] for p in posts] == ['video_hub:825056013']
+    assert posts[0]['timestamp_kind'] == 'keyframe'
+
+
+def test_video_neighbors_follow_video_and_time(scout, show_conn):
+    for pid, mid, video, timestamp in [(4,4,'2b3Z4rW5VJc',100),(5,5,'other_video',257),(6,6,'2b3Z4rW5VJc',400)]:
+        meta = json.dumps({'type':'video_segment','video_url':f'https://youtu.be/{video}','timestamp_seconds':timestamp})
+        show_conn.execute("INSERT INTO posts (post_id,expert_id,telegram_message_id,created_at,message_text,media_metadata) VALUES (?, 'video_hub', ?, '2026-08-21', 'text', ?)", (pid,mid,meta))
+    item = scout._collect_show_payload(show_conn,['video_hub:825056013'],0,expand=1)[0]
+    assert [p['source_key'] for p in item['neighbors']] == ['video_hub:4','video_hub:6']
+
+
+def test_show_has_explicit_continuation_and_author(scout, show_conn, monkeypatch, capsys):
+    show_conn.execute("UPDATE posts SET message_text=? WHERE post_id=3", ('start-'+ 'x'*10000+'-critical-tail',))
+    _mock_corpus(scout, monkeypatch, show_conn)
+    args = scout.build_parser().parse_args(['show','video_hub:825056013','--json','--comments-limit','0'])
+    assert scout.cmd_show(args) == 0
+    first = json.loads(capsys.readouterr().out)[0]
+    assert first['truncated'] and first['next_content_offset'] == scout.MAX_SHOW_CHARS
+    args.content_offset = first['next_content_offset']
+    assert scout.cmd_show(args) == 0
+    second = json.loads(capsys.readouterr().out)[0]
+    assert second['content'].endswith('-critical-tail') and not second['truncated']
+    args.json, args.content_offset = False, 0
+    scout.cmd_show(args)
+    assert 'AUTHOR: Youri van Hofwegen' in capsys.readouterr().out
+
+
+def test_digest_missing_expert_is_incomplete_scope(scout,show_conn,monkeypatch,capsys):
+    show_conn.execute('CREATE TABLE expert_metadata (expert_id TEXT)')
+    show_conn.execute("INSERT INTO expert_metadata VALUES ('video_hub')")
+    _mock_corpus(scout,monkeypatch,show_conn)
+    args=scout.build_parser().parse_args(['digest','--experts','video_hub,missing_expert','--json'])
+    assert scout.cmd_digest(args)==0
+    result=json.loads(capsys.readouterr().out)
+    assert result['status']=='partial' and result['unknown_experts']==['missing_expert']
