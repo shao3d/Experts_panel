@@ -82,6 +82,11 @@ read-only `scout` из плагина `.opencode/plugins/expert-scout-tools.ts`,
 `source_key` и честные пробелы. Полное описание и границы —
 `docs/guides/expert-scout.md`.
 
+Каждый прогон автоматически проходит проверку целостности
+(`backend/scripts/verify_citations.py`): несуществующие `source_key` и
+зацикливание tool-вызовов помечаются warning'ом. Правки Скаута принимаются
+только по замерам автоматических стендов
+(`backend/scripts/search_probe.py`, `agent_probe.py`); регрессия = откат.
 Запрещено: писать в корпус, трогать production DB, копировать/выгружать БД,
 выводить секреты. Scout не заменяет `reddit-search` (сообщество) и Панэкс
 (готовый дайджест); это третий, «сырой» канал.

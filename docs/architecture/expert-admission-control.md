@@ -1010,13 +1010,14 @@ use; it reuses the same validation/normalization logic as the Vertex runner, so
 all downstream matrix steps are unchanged.
 
 Status: implemented; used for the 2026-09 Visual admits (`strangedalle`,
-`acidcrunch`, `cgevent`); default model is `opencode-go/deepseek-v4.1-flash`.
+`acidcrunch`, `cgevent`); default model is `opencode/space-bunny-free` (was `opencode-go/deepseek-v4.1-flash`
+  until the OpenCode Go subscription ran out on 2026-09-30).
 
 Inputs:
 
 - a packet directory produced by either export script;
 - a running `opencode serve` (`OPENCODE_URL`) with access to the model
-  (`--model`, default `opencode-go/deepseek-v4.1-flash`, or
+  (`--model`, default `opencode/space-bunny-free`, or
   `OPENCODE_PASSPORT_MODEL`).
 
 Outputs: the same passport/receipt/validation artifacts as the Vertex runner,

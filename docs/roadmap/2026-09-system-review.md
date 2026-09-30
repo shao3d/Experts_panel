@@ -146,9 +146,10 @@ anti-pattern формулировки, читает первоисточники
 `source_key`, датами и честными пробелами.
 
 - Канал: `expert-scout "<вопрос>"` с Мака → SSH на VM → агент opencode
-  (deepseek-v4.1-flash, `variant: max`) → read-only хелпер
-  `backend/scripts/expert_scout.py` (FTS5 + vector + soft-freshness + RRF;
-  `mode=ro`, только dev-корпус, guard на prod-путь).
+  (`opencode/space-bunny-free`, `variant: max`; до 2026-09-30 был
+  `opencode-go/deepseek-v4.1-flash` — подписка OpenCode Go исчерпана) →
+  read-only хелпер `backend/scripts/expert_scout.py` (FTS5 + vector +
+  soft-freshness + RRF; `mode=ro`, только dev-корпус, guard на prod-путь).
 - Границы: только чтение, без записи/копирования БД; у агента нет shell
   (bash запрещён полностью), единственный инструмент — read-only `scout`
   (плагин, argv без shell; read/grep/glob/сеть запрещены).
