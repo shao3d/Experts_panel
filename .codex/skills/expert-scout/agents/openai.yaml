@@ -1,4 +1,4 @@
 interface:
   display_name: "Expert Scout"
-  short_description: "Agentic read-only mining over the Experts Panel Telegram corpus"
-  default_prompt: "Use $expert-scout for an explicit raw expert-corpus research question."
+  short_description: "Search visual Telegram experts and VideoHub"
+  default_prompt: "Use $expert-scout to research my question in visual Telegram channels and VideoHub by default; preserve any explicitly requested narrower scope."

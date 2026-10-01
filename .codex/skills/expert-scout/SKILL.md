@@ -1,11 +1,11 @@
 ---
 name: expert-scout
-description: Use when the user explicitly asks to involve Scout / expert-scout / «Скаут» / «задействуй Скаута» / «сырой поиск по экспертам» for agentic read-only mining over the Experts Panel Telegram practitioner corpus. Runs the no-shell scout and returns findings with source_key citations and honest gaps. Not for Reddit (reddit-search) and not for the Panex digest (panex ask).
+description: Use when the user explicitly asks to involve Scout / expert-scout / «Скаут» / «задействуй Скаута» / «сырой поиск по экспертам» for read-only search over visual Telegram experts and VideoHub by default. Runs the no-shell scout and returns findings with source_key citations and honest gaps. Not for Reddit (reddit-search) and not for the Panex digest (panex ask).
 ---
 
 # Expert Scout
 
-Read-only agentic search over the Experts Panel Telegram practitioner corpus.
+Read-only agentic search over visual Telegram experts and VideoHub by default.
 Unlike Panex (a ready compact digest) and `reddit-search` (community sentiment),
 Scout iteratively searches the corpus, reads primary sources, and returns
 findings with `source_key` citations and explicit gaps.
@@ -14,7 +14,7 @@ findings with `source_key` citations and explicit gaps.
 
 Trigger only on explicit user phrases such as:
 
-- "Скаут", "expert-scout", "задействуй Скаута", "погоняй Скаута",
+- "Скаут", "expert-scout", "задействуй Скаута", "погоняй Скаута", "давай спросим у Скаута",
   "сырой поиск по экспертам", "посмотри по корпусу экспертов".
 
 Do not trigger automatically for generic research. Do not confuse with:
@@ -53,16 +53,18 @@ the helper outside the sanctioned wrapper or the no-shell `scout` plugin tool.
 
 ## Expert scope
 
-Scout searches all experts by default. To scope, name the group or the expert
-inside the question (groups are resolved from the canonical backend map
-`backend/src/expert_groups.py`; do not hardcode member ids):
+Default scope is **visual Telegram channels plus VideoHub**, including an ordinary
+"давай спросим у Скаута" or "по визуалам" request. No extra scope confirmation
+is needed. The VM agent searches both `group=visual` and `experts=video_hub`
+separately; VideoHub is not a member of the canonical visual group.
 
-- "по визуалам" / "visual" → include `группа visual` in the question;
-- another group → include `группа tech` or `группа tech_business`;
-- a named expert → include the id or display name in the question; the scout
-  restricts retrieval to that single expert (no other experts are searched).
+Keep explicit scope requests: a named expert, tech/tech_business, only Telegram,
+only VideoHub, a specific video, or the whole corpus overrides the default.
+Do not silently broaden such requests. Group membership is resolved on the VM;
+do not hardcode member IDs or translate the default into visual-only search.
 
-Do not silently broaden or narrow the expert scope.
+Use the research question already present in the conversation. If the user only
+says "спросим у Скаута" and there is no question in context, ask what to research.
 
 ## Query handling
 

@@ -133,3 +133,23 @@ def test_mimo_uses_drift_connection_but_scout_agent(monkeypatch):
     assert command[-1] == 'Test question'
     assert result['answer'] == 'Final answer'
     assert result['run_completed'] is True
+
+
+def test_codex_finds_bun_in_nonlogin_ssh_environment(monkeypatch, tmp_path):
+    from src.utils import scout_codex
+    bun = tmp_path / '.bun/bin/bun'
+    bun.parent.mkdir(parents=True)
+    bun.write_text('#!/bin/sh\nexit 0\n')
+    bun.chmod(0o755)
+    monkeypatch.setattr(scout_codex.shutil, 'which', lambda name: None)
+    monkeypatch.setattr(scout_codex.Path, 'home', lambda: tmp_path)
+    command = scout_codex.codex_command('sol')
+    assert 'mcp_servers.expert_scout.command=' + json.dumps(str(bun)) in command
+
+
+def test_missing_bun_fails_before_starting_model(monkeypatch, tmp_path):
+    from src.utils import scout_codex
+    monkeypatch.setattr(scout_codex.shutil, 'which', lambda name: None)
+    monkeypatch.setattr(scout_codex.Path, 'home', lambda: tmp_path)
+    with pytest.raises(RuntimeError, match='Scout requires Bun'):
+        scout_codex.codex_command('sol')

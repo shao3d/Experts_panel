@@ -7,6 +7,14 @@ import shutil
 ROOT = Path(__file__).resolve().parents[3]
 
 
+def resolve_bun() -> str:
+    """SSH non-login sessions may omit Bun's standard install directory."""
+    candidate = shutil.which("bun") or str(Path.home() / ".bun/bin/bun")
+    if not Path(candidate).is_file() or not os.access(candidate, os.X_OK):
+        raise RuntimeError("Scout requires Bun: install it in ~/.bun/bin or add it to PATH")
+    return candidate
+
+
 def codex_command(engine: str = "luna", *, fast: bool = False) -> list[str]:
     model, effort = {"luna": ("gpt-6-luna", "max"), "sol": ("gpt-6.1-sol", "low")}[engine]
     prompt = (ROOT / ".opencode/agents/expert-scout.md").read_text().split("---", 2)[2].strip()
@@ -24,7 +32,7 @@ def codex_command(engine: str = "luna", *, fast: bool = False) -> list[str]:
         "web_search": "disabled",
         "project_doc_max_bytes": 0,
         "developer_instructions": prompt + "\nUse only the scout MCP tool for corpus access. Do not use any other tool. Answer in Russian.",
-        "mcp_servers.expert_scout.command": shutil.which("bun"),
+        "mcp_servers.expert_scout.command": resolve_bun(),
         "mcp_servers.expert_scout.args": ["run", str(ROOT / "scripts/expert_scout_mcp.ts")],
         "mcp_servers.expert_scout.cwd": str(ROOT),
         "mcp_servers.expert_scout.enabled_tools": ["scout"],

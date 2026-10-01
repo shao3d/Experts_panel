@@ -72,6 +72,10 @@ expert-scout "<вопрос>"
 `.codex/skills/expert-scout/` (установка: `scripts/install_expert_scout_skill.sh`,
 на Маке — с `--with-shim`).
 
+По умолчанию вызов Скаута ищет в Telegram-группе `visual` и отдельно в
+`video_hub`. Явно заданная узкая область сохраняется; общий состав групп не
+меняется. SSOT области и запуска — `docs/guides/expert-scout.md`.
+
 Под капотом: Mac-shim (`~/.local/bin/expert-scout`) → SSH на VM →
 `scripts/expert_scout.sh` → headless Codex → MCP-адаптер существующего `scout` → read-only хелпер. Текущая модель и режимы — в `docs/guides/expert-scout.md`.
 У агента нет shell (bash запрещён полностью): единственный инструмент —
