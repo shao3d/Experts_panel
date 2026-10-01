@@ -3,21 +3,16 @@
 **Created:** 2026-03-28
 **Status:** Active Roadmap (query-time side; P2/P3/P5/P4/N2 closed — see the
 priority table and "Review fixes")
-**Last updated:** 2026-09-29
-**Current State (2026-09-29):** the dev corpus holds **16 videos / 358 segments**
-(see `docs/video-hub-index.md`): Higgsfield AI (6: + `reFzEtCG_m8` "Blender +
-Higgsfield: разбор короткометражки Passport Rush", 33 сегмента, новый автор —
-Higgsfield Animation / Amina, 2026-09-29), Youri van Hofwegen (3: `2b3Z4rW5VJc`,
-`y8PJ3B38S2o` "9 FREE Prompts / 7 стилей промтинга", + `H8WDehuVams`
-"Realistic AI Avatars", 25 сегментов, 2026-09-29), Dan Kieft (2), AI Samson (2:
-`5y20tE7zo40` "5 уровней AI-видео", 32 сегмента; `9oCppy1gZpo` "AI Video
-Workflow / MODEL WIFE", 29 сегментов), free-roam тройка 2026-09-29 — River
-Cody (`3I2jj6HA3p0` "3 VFX Tricks", 14 сегментов — закрыл гэп
-`hybrid_ai_vfx_pipeline`), Max Novak (`yUiTmO8AjJc` "Switchlight AI / Blender",
-20 сегментов — первое покрытие light maps/relighting), AI Video Studio
-(`6dNnvhoR3YY` "3 AI Video Generators Character Consistency", 16 сегментов —
-первый side-by-side тест моделей); вердикты в
-`output/video_admission/admission_log.json`, watchlist кандидатов — ниже).
+**Last updated:** 2026-10-01
+**Current State (2026-10-01):** dev and production hold **17 videos / 401 segments**.
+Current inventory: [generated index](../video-hub-index.md). Dan Kieft
+`qwGIwxZFc2I` was imported with 35 reviewed segments and 85 frame references.
+Its generated receipt confirms `searchable` (35/35 indexed, zero embedding
+errors). The Matrix is rebuilt with six source-backed cells for this video.
+Three targeted Sol Scout runs passed integrity and semantic review: set website
+preview limits, KIEFT match-cut/provenance, AE editable outlines/Adobe control
+limits. Scoped visual data release completed on 2026-10-01 with healthy production.
+Verification and release evidence: [quality report](../quality/2026-09-30-videohub-scout-fixes.md).
 Downloads now run directly on the VM via Cloudflare WARP SOCKS-proxy (recipe in
 `docs/guides/video-hub-operator.md` §0.1a) — Mac/G15 no longer required.
 Ingest is automated (chunked ASR + adaptive frames + LLM pass),
@@ -30,8 +25,9 @@ query-time side.
 **Trigger:** was "100-150 segments or 10+ videos" — reached and handled
 2026-09-24; next scale step is N4 (~200+ segments) — **trigger reached
 2026-09-29 (250 segments), N4 остаётся открытым; после ingest 2026-09-29 —
-358 сегментов (16 видео), N4 всё ещё открыт**. Матрица: 13 клеток / **0 gaps**
-(все поддомены `creative_multimodal` покрыты).
+358 сегментов (16 видео); текущий каталог — по ссылке выше, N4 всё ещё открыт**.
+Актуальное подтверждённое покрытие — в сгенерированной Матрице; новый ролик
+Dan включён после подтверждения `searchable`.
 
 ---
 
@@ -43,14 +39,16 @@ query-time side.
 `output/video_admission/candidate_probe_journal.json`. Это SSOT по «какие
 видео рассматривать дальше»: если здесь чего-то нет — кандидата нет.
 
-### Что рассматривать дальше (приоритетный порядок, 2026-09-29)
+### Что рассматривать дальше (приоритетный порядок, 2026-10-01)
 
 | # | Видео | Автор | Ценность для матрицы | Статус |
 |---|-------|-------|----------------------|--------|
-| 1 | `qwGIwxZFc2I` GPT-6 Astra is Crazy For AI Video (20м) | Dan Kieft | интерактивный сайт 3D-сета для команды, AI-монтаж через AE/Premiere/DaVinci MCP, thumbnails-идеация + этика авторства, дизайн студии «под камеру» | **кандидат №1** — проба готова (rec: ingest), вердикт владельцу |
-| 2 | `CAWnlOJbSX4` I Turned My Boring Hometown Into A Movie With AI VFX (12м) | River Cody | 5 уровней «скучная локация → кино» (практическая композиция → AI-усиление), elements + Claude-переводчик → сториборд-досборка недоснятых ракурсов; durable крафт; канал уже в корпусе (`3I2jj6HA3p0`) | **резерв №1** (rec: waitlist; перед ingest проверить дубль с levels-фреймворком `5y20tE7zo40`) |
-| 3 | `0d8pqU8JRrY` How to Make 3D Animations With GPT 6 Astra (No Blender Needed, 2026-09-19) | Youri van Hofwegen | «3D без Blender» через GPT-6 Astra — средняя новизна против `vUYq38wC_xI` и `neyrograph` | резерв: пробить по запросу владельца |
-| 4 | `rnZXSc8azc0` Master AI Video Creation: Your 5 Level Roadmap (2026-09-14) | AI Samson | риск дубля сюжетом с уже введённым `5y20tE7zo40` (тот же levels-фреймворк) | резерв: пробить только по запросу владельца |
+| 1 | `CAWnlOJbSX4` I Turned My Boring Hometown Into A Movie With AI VFX (12м) | River Cody | 5 уровней «скучная локация → кино» (практическая композиция → AI-усиление), elements + Claude-переводчик → сториборд-досборка недоснятых ракурсов; durable крафт; канал уже в корпусе (`3I2jj6HA3p0`) | **резерв №1** (rec: waitlist; перед ingest проверить дубль с levels-фреймворком `5y20tE7zo40`) |
+| 2 | `0d8pqU8JRrY` How to Make 3D Animations With GPT 6 Astra (No Blender Needed, 2026-09-19) | Youri van Hofwegen | «3D без Blender» через GPT-6 Astra — средняя новизна против `vUYq38wC_xI` и `neyrograph` | резерв: пробить по запросу владельца |
+| 3 | `rnZXSc8azc0` Master AI Video Creation: Your 5 Level Roadmap (2026-09-14) | AI Samson | риск дубля сюжетом с уже введённым `5y20tE7zo40` (тот же levels-фреймворк) | резерв: пробить только по запросу владельца |
+
+`qwGIwxZFc2I` больше не кандидат: онбординг в dev и проверка поиска завершены;
+scoped visual data release выполнен 2026-10-01.
 
 Вне очереди (waitlist / отсевы — не брать без нового повода):
 

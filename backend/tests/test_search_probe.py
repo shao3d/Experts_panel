@@ -93,3 +93,35 @@ def test_negative_control_returns_no_fixture_keys():
     fixture = next(f for f in fixtures if f["kind"] == "negative_control")
     returned = probe.run_search(fixture["question"])["keys"]
     assert not (set(returned) & {k for f in fixtures for k in f["expected_keys"]})
+
+
+def test_changed_gold_cannot_silently_pass_baseline(tmp_path, monkeypatch):
+    baseline = tmp_path / 'baseline.json'
+    baseline.write_text(json.dumps({'summary': {}, 'results': [{'id': 'x', 'kind': 'hit', 'fixture_signature': 'old'}]}))
+    monkeypatch.setattr(probe, 'BASELINE_PATH', baseline)
+    problems = probe.compare_to_baseline({'summary': {}, 'results': [{'id': 'x', 'kind': 'hit', 'fixture_signature': 'new'}]})
+    assert any('contract changed' in p for p in problems)
+    assert any('missing' in p for p in probe.compare_to_baseline({'summary': {}, 'results': []}))
+
+
+def test_rebaseline_keeps_original_search_date(tmp_path, monkeypatch):
+    baseline = tmp_path / 'baseline.json'
+    baseline.write_text(json.dumps({'generated_at': '2026-09-30 23:00:00', 'search_as_of': '2026-09-29T12:00:00'}))
+    monkeypatch.setattr(probe, 'BASELINE_PATH', baseline)
+    assert probe._probe_now() == '2026-09-29T12:00:00'
+
+
+def test_reviewed_agent_gold_has_evidence():
+    for fixture in fixtures:
+        assert 0 <= fixture['min_hits'] <= len(fixture['expected_keys'])
+        if fixture.get('reviewed_at'):
+            assert fixture.get('rubric')
+            assert set(fixture.get('evidence', {})) == set(fixture['expected_keys'])
+        if fixture.get('max_sources'):
+            assert fixture['min_hits'] <= fixture['max_sources']
+        for keys in fixture.get('required_groups', {}).values():
+            assert keys and set(keys) <= set(fixture['expected_keys'])
+        args = fixture.get('search_args', [])
+        if '--experts' in args:
+            experts = args[args.index('--experts')+1].split(',')
+            assert all(key.split(':')[0] in experts for key in fixture['expected_keys'])

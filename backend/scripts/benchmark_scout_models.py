@@ -51,6 +51,7 @@ raise SystemExit(proc.wait())
 
 
 from src.utils.scout_codex import codex_command
+from src.services.opencode_drift_client import OPENCODE_BIN, OPENCODE_URL, OPENCODE_MODEL
 
 
 def unpack_sources(output: object) -> list[dict]:
@@ -105,7 +106,11 @@ def run(engine: str, case: str, timeout: int, *, question: str | None = None) ->
     started = time.monotonic()
     with tempfile.TemporaryDirectory(prefix=".scout-eval-", dir=ROOT) as work:
         env = dict(os.environ)
-        if engine in ("luna", "sol"):
+        if engine == "mimo":
+            command = [OPENCODE_BIN, "run", "--attach", OPENCODE_URL, "--dir", str(ROOT),
+                       "--model", OPENCODE_MODEL, "--agent", "expert-scout",
+                       "--format", "json", question]
+        elif engine in ("luna", "sol"):
             command = codex_command(engine) + [question]
         else:
             proxy = Path(work) / "opencode-proxy"
@@ -122,7 +127,7 @@ def run(engine: str, case: str, timeout: int, *, question: str | None = None) ->
             command = ["bash", str(ROOT / "scripts/expert_scout.sh"), question]
         proc = run_process(command, env, timeout + 90)
     events = []
-    event_lines = proc.stdout.splitlines() if engine in ("luna", "sol") else [
+    event_lines = proc.stdout.splitlines() if engine in ("luna", "sol", "mimo") else [
         line.removeprefix("SCOUT_EVAL_EVENT ") for line in proc.stderr.splitlines()
         if line.startswith("SCOUT_EVAL_EVENT ")]
     for line in event_lines:
@@ -135,6 +140,10 @@ def run(engine: str, case: str, timeout: int, *, question: str | None = None) ->
                    if e.get("type") == "item.completed"
                    and e.get("item", {}).get("type") == "agent_message"]
         answer = answers[-1] if answers else ""
+    elif engine == "mimo":
+        filtered = subprocess.run([sys.executable, str(ROOT / "scripts/expert_scout_filter.py")],
+                                  input=proc.stdout, capture_output=True, text=True, timeout=30)
+        answer = filtered.stdout.strip()
     else:
         answer = proc.stdout.strip()
     return {
@@ -150,7 +159,7 @@ def run(engine: str, case: str, timeout: int, *, question: str | None = None) ->
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--engine", choices=["luna", "sol", "bunny", "runtime"], required=True)
+    parser.add_argument("--engine", choices=["luna", "sol", "bunny", "runtime", "mimo"], required=True)
     parser.add_argument("--case", choices=QUESTIONS, required=True)
     parser.add_argument("--timeout", type=int, default=900)
     args = parser.parse_args()

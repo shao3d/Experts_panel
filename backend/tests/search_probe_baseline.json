@@ -1,17 +1,20 @@
 {
- "generated_at": "2026-09-29 21:33:25",
+ "generated_at": "2026-09-30 21:40:32",
+ "search_as_of": "2026-09-29T21:33:25",
  "summary": {
-  "fixtures": 24,
-  "hit_fixtures": 22,
-  "mean_recall@10": 0.2045,
-  "mean_recall@20": 0.3011,
-  "mean_recall@40": 0.392,
-  "mean_mrr@10": 0.1447,
-  "hidden_keys_total": 22,
+  "fixtures": 30,
+  "hit_fixtures": 28,
+  "mean_recall@10": 0.2733,
+  "mean_recall@20": 0.396,
+  "mean_recall@40": 0.515,
+  "mean_mrr@10": 0.1911,
+  "hidden_keys_total": 24,
+  "outside_keys_total": 63,
+  "experts_in_top10_unscoped": 2.46,
   "legs": {
-   "queries": 28,
+   "queries": 34,
    "dead_leg_queries": 0,
-   "mean_jaccard": 0.121
+   "mean_jaccard": 0.1422
   },
   "craft_mode": {
    "fixtures": [
@@ -22,14 +25,15 @@
     "realism_in_ai_video",
     "morph_pravilo180"
    ],
-   "default_recall@10": 0.2639,
-   "craft_recall@10": 0.3125,
-   "craft_recall@40": 0.4722
+   "default_recall@10": 0.2917,
+   "craft_recall@10": 0.3403,
+   "craft_recall@40": 0.5
   }
  },
  "results": [
   {
    "id": "coverage_previz_blocking",
+   "fixture_signature": "85bd01f44f6a9edf5aa2ebd665a0f9df174437f5d0eded2ab744ef250e89eca8",
    "kind": "hit",
    "tags": [
     "broad",
@@ -53,6 +57,10 @@
       "video_hub:168482184",
       "cgevent:16660"
      ],
+     "outside_keys": [
+      "video_hub:726332883"
+     ],
+     "experts_in_top10": 2,
      "returned@10": [
       "video_hub:532855074",
       "video_hub:737101800",
@@ -72,6 +80,8 @@
    "recall@40": 0.75,
    "mrr@10": 0.5,
    "hidden_total": 2,
+   "outside_total": 1,
+   "experts_in_top10": 2.0,
    "legs": {
     "queries": 1,
     "mean_overlap": 24.0,
@@ -81,6 +91,7 @@
   },
   {
    "id": "coverage_persecond_prompt",
+   "fixture_signature": "634beba3efaa93eb149dc269d8b8e42fe8b67e944dab21a5b5e77989c236f65c",
    "kind": "hit",
    "tags": [
     "broad",
@@ -103,6 +114,12 @@
      "hidden_keys": [
       "video_hub:23777140"
      ],
+     "outside_keys": [
+      "video_hub:998318835",
+      "video_hub:705705922",
+      "cgevent:16312"
+     ],
+     "experts_in_top10": 2,
      "returned@10": [
       "video_hub:532855074",
       "video_hub:737101800",
@@ -122,6 +139,8 @@
    "recall@40": 0.25,
    "mrr@10": 0.0,
    "hidden_total": 1,
+   "outside_total": 3,
+   "experts_in_top10": 2.0,
    "legs": {
     "queries": 1,
     "mean_overlap": 24.0,
@@ -131,6 +150,7 @@
   },
   {
    "id": "coverage_pravilo180",
+   "fixture_signature": "1606abe541daa6b387a35d7852fed70f0510bdf38366208c0f563094ce27d345",
    "kind": "hit",
    "tags": [
     "broad",
@@ -149,6 +169,11 @@
      "recall@40": 0.0,
      "mrr@10": 0.0,
      "hidden_keys": [],
+     "outside_keys": [
+      "neyrograph:4425",
+      "acidcrunch:2177"
+     ],
+     "experts_in_top10": 2,
      "returned@10": [
       "video_hub:532855074",
       "video_hub:737101800",
@@ -168,6 +193,8 @@
    "recall@40": 0.0,
    "mrr@10": 0.0,
    "hidden_total": 0,
+   "outside_total": 2,
+   "experts_in_top10": 2.0,
    "legs": {
     "queries": 1,
     "mean_overlap": 24.0,
@@ -182,6 +209,7 @@
   },
   {
    "id": "coverage_camera_moves",
+   "fixture_signature": "ac95c90c68d031cd7ee9111696b4fdc796dc26780bdac4553deea8cd2719a676",
    "kind": "hit",
    "tags": [
     "broad",
@@ -202,6 +230,10 @@
      "hidden_keys": [
       "video_hub:34425000"
      ],
+     "outside_keys": [
+      "video_hub:908346948"
+     ],
+     "experts_in_top10": 2,
      "returned@10": [
       "video_hub:532855074",
       "video_hub:737101800",
@@ -221,6 +253,8 @@
    "recall@40": 0.6667,
    "mrr@10": 0.1111,
    "hidden_total": 1,
+   "outside_total": 1,
+   "experts_in_top10": 2.0,
    "legs": {
     "queries": 1,
     "mean_overlap": 24.0,
@@ -230,6 +264,7 @@
   },
   {
    "id": "coverage_credits",
+   "fixture_signature": "4b27a91e7fff74fc1de116c9c425d2e17c60bda792eb80a3687563e379dea362",
    "kind": "hit",
    "tags": [
     "broad",
@@ -248,6 +283,11 @@
      "recall@40": 0.3333333333333333,
      "mrr@10": 0.5,
      "hidden_keys": [],
+     "outside_keys": [
+      "cgevent:16497",
+      "video_hub:368890709"
+     ],
+     "experts_in_top10": 2,
      "returned@10": [
       "video_hub:532855074",
       "video_hub:737101800",
@@ -267,6 +307,8 @@
    "recall@40": 0.3333,
    "mrr@10": 0.5,
    "hidden_total": 0,
+   "outside_total": 2,
+   "experts_in_top10": 2.0,
    "legs": {
     "queries": 1,
     "mean_overlap": 24.0,
@@ -276,6 +318,7 @@
   },
   {
    "id": "aleph_camera_acidcrunch",
+   "fixture_signature": "abc582ccce265403e8838daa10d52f869345d57e3b2d984dbdda8ae1e11ae476",
    "kind": "hit",
    "tags": [
     "scope_expert",
@@ -283,20 +326,20 @@
    ],
    "expected": [
     "acidcrunch:1350",
-    "acidcrunch:1062",
     "acidcrunch:1276",
-    "acidcrunch:1313",
     "acidcrunch:1320",
     "acidcrunch:1335"
    ],
    "per_query": [
     {
      "query": "Посмотри, что у acidcrunch написано про камеру в модели Aleph (Runway Aleph). Если сигнала нет — скажи честно.",
-     "recall@10": 0.8333333333333334,
-     "recall@20": 0.8333333333333334,
-     "recall@40": 0.8333333333333334,
+     "recall@10": 1.0,
+     "recall@20": 1.0,
+     "recall@40": 1.0,
      "mrr@10": 0.5,
      "hidden_keys": [],
+     "outside_keys": [],
+     "experts_in_top10": 1,
      "returned@10": [
       "acidcrunch:1277",
       "acidcrunch:1350",
@@ -311,11 +354,13 @@
      ]
     }
    ],
-   "recall@10": 0.8333,
-   "recall@20": 0.8333,
-   "recall@40": 0.8333,
+   "recall@10": 1.0,
+   "recall@20": 1.0,
+   "recall@40": 1.0,
    "mrr@10": 0.5,
    "hidden_total": 0,
+   "outside_total": 0,
+   "experts_in_top10": 1.0,
    "legs": {
     "queries": 1,
     "mean_overlap": 32.0,
@@ -323,13 +368,14 @@
     "dead_leg_queries": 0
    },
    "craft_mode": {
-    "recall@10": 0.8333,
-    "recall@40": 0.8333,
+    "recall@10": 1.0,
+    "recall@40": 1.0,
     "mrr@10": 0.5
    }
   },
   {
    "id": "kling_o3_cgevent",
+   "fixture_signature": "9ee7f4aba65ec10709364b4123b6102abfb0f7c45b908a1ceacfb604c1cdf5ab",
    "kind": "hit",
    "tags": [
     "scope_expert"
@@ -353,6 +399,11 @@
       "cgevent:15729",
       "cgevent:15685"
      ],
+     "outside_keys": [
+      "cgevent:16191",
+      "cgevent:16375"
+     ],
+     "experts_in_top10": 1,
      "returned@10": [
       "cgevent:16776",
       "cgevent:16403",
@@ -372,6 +423,8 @@
    "recall@40": 0.6667,
    "mrr@10": 0.1667,
    "hidden_total": 2,
+   "outside_total": 2,
+   "experts_in_top10": 1.0,
    "legs": {
     "queries": 1,
     "mean_overlap": 12.0,
@@ -381,6 +434,7 @@
   },
   {
    "id": "kling25_visual",
+   "fixture_signature": "1988dcfae8a8d5d4feec91ba86fc867e6b30fec6777c2b08f0cb0475710e763a",
    "kind": "hit",
    "tags": [
     "scope_group",
@@ -399,6 +453,11 @@
      "recall@40": 0.3333333333333333,
      "mrr@10": 0.125,
      "hidden_keys": [],
+     "outside_keys": [
+      "acidcrunch:1597",
+      "acidcrunch:1824"
+     ],
+     "experts_in_top10": 4,
      "returned@10": [
       "neyrograph:4727",
       "cgevent:16776",
@@ -418,6 +477,8 @@
    "recall@40": 0.3333,
    "mrr@10": 0.125,
    "hidden_total": 0,
+   "outside_total": 2,
+   "experts_in_top10": 4.0,
    "legs": {
     "queries": 1,
     "mean_overlap": 8.0,
@@ -427,6 +488,7 @@
   },
   {
    "id": "mastery_levels",
+   "fixture_signature": "6d3c115687fb89941556164d32ba4c234239807b0814534f6929d7192ce89926",
    "kind": "hit",
    "tags": [
     "broad",
@@ -448,17 +510,26 @@
      "recall@40": 0.0,
      "mrr@10": 0.0,
      "hidden_keys": [],
+     "outside_keys": [
+      "acidcrunch:2707",
+      "acidcrunch:2792",
+      "cgevent:16312",
+      "iideyalogiya:1775",
+      "neyrograph:4606",
+      "neyrograph:4702"
+     ],
+     "experts_in_top10": 2,
      "returned@10": [
       "video_hub:447986046",
       "video_hub:306464563",
       "video_hub:781501388",
-      "video_hub:119251081",
       "video_hub:502009119",
+      "video_hub:119251081",
       "video_hub:180821357",
       "video_hub:163751293",
+      "video_hub:284369050",
       "video_hub:56232167",
-      "cgevent:16635",
-      "cgevent:16655"
+      "cgevent:16635"
      ]
     }
    ],
@@ -467,10 +538,12 @@
    "recall@40": 0.0,
    "mrr@10": 0.0,
    "hidden_total": 0,
+   "outside_total": 6,
+   "experts_in_top10": 2.0,
    "legs": {
     "queries": 1,
-    "mean_overlap": 13.0,
-    "mean_jaccard": 0.1111,
+    "mean_overlap": 14.0,
+    "mean_jaccard": 0.1207,
     "dead_leg_queries": 0
    },
    "craft_mode": {
@@ -481,6 +554,7 @@
   },
   {
    "id": "avatar_face_consistency",
+   "fixture_signature": "cea12026d12222cf3de4466103ab88c27589871c6b4b050e8330454cf72d8085",
    "kind": "hit",
    "tags": [
     "scope_videohub",
@@ -505,6 +579,13 @@
       "neyrograph:4422",
       "cgevent:16753"
      ],
+     "outside_keys": [
+      "acidcrunch:2771",
+      "iideyalogiya:1914",
+      "neyrograph:4154",
+      "neyrograph:4519"
+     ],
+     "experts_in_top10": 3,
      "returned@10": [
       "video_hub:643325874",
       "video_hub:396714561",
@@ -524,15 +605,18 @@
    "recall@40": 0.3333,
    "mrr@10": 0.0,
    "hidden_total": 2,
+   "outside_total": 4,
+   "experts_in_top10": 3.0,
    "legs": {
     "queries": 1,
-    "mean_overlap": 15.0,
-    "mean_jaccard": 0.1304,
+    "mean_overlap": 16.0,
+    "mean_jaccard": 0.1404,
     "dead_leg_queries": 0
    }
   },
   {
    "id": "blender_short_film_pipeline",
+   "fixture_signature": "1102dd9ffd221ad63313d7d21f599be949bc8446f0d525a634d2db73d2799ecf",
    "kind": "hit",
    "tags": [
     "scope_videohub",
@@ -556,6 +640,12 @@
      "hidden_keys": [
       "iideyalogiya:1970"
      ],
+     "outside_keys": [
+      "cgevent:16236",
+      "cgevent:16651",
+      "cgevent:16675"
+     ],
+     "experts_in_top10": 3,
      "returned@10": [
       "video_hub:971118098",
       "video_hub:53328084",
@@ -575,6 +665,8 @@
    "recall@40": 0.5,
    "mrr@10": 0.125,
    "hidden_total": 1,
+   "outside_total": 3,
+   "experts_in_top10": 3.0,
    "legs": {
     "queries": 1,
     "mean_overlap": 17.0,
@@ -584,6 +676,7 @@
   },
   {
    "id": "higgsfield_videohub_inventory",
+   "fixture_signature": "45ac80c387a7afd57aa6b388176b79ba0c3fedda270788748b044cffacc28fac",
    "kind": "hit",
    "tags": [
     "scope_videohub",
@@ -592,76 +685,89 @@
    "expected": [
     "video_hub:575947525",
     "video_hub:679225094",
-    "video_hub:759787428",
-    "acidcrunch:1207",
-    "acidcrunch:1558",
-    "acidcrunch:1709"
+    "video_hub:759787428"
    ],
    "per_query": [
     {
      "query": "Какой контент, связанный с Higgsfield (Higgsfield AI), уже есть в корпусе VideoHub? Перечисли, какие видео, модели (например Soul, DoP, Seedance, Cinema Studio, Kling, Veo и т.п.), техники и темы по Higgsfield уже покрыты в сегментах экспертов. Нужен максимально полный инвентарь: названия/темы видео-источников и о чём они.",
-     "recall@10": 0.16666666666666666,
-     "recall@20": 0.16666666666666666,
-     "recall@40": 0.3333333333333333,
-     "mrr@10": 0.25,
+     "recall@10": 0.3333333333333333,
+     "recall@20": 0.6666666666666666,
+     "recall@40": 1.0,
+     "mrr@10": 0.3333333333333333,
      "hidden_keys": [
-      "video_hub:759787428"
+      "video_hub:759787428",
+      "video_hub:575947525"
      ],
+     "outside_keys": [],
+     "experts_in_top10": 1,
      "returned@10": [
       "video_hub:564138204",
-      "acidcrunch:2806",
       "video_hub:695651720",
       "video_hub:679225094",
       "video_hub:905937277",
       "video_hub:825108165",
-      "cgevent:16497",
+      "video_hub:100200151",
+      "video_hub:518802175",
       "video_hub:894036246",
       "video_hub:997757685",
       "video_hub:330426580"
      ]
     }
    ],
-   "recall@10": 0.1667,
-   "recall@20": 0.1667,
-   "recall@40": 0.3333,
-   "mrr@10": 0.25,
-   "hidden_total": 1,
+   "recall@10": 0.3333,
+   "recall@20": 0.6667,
+   "recall@40": 1.0,
+   "mrr@10": 0.3333,
+   "hidden_total": 2,
+   "outside_total": 0,
+   "experts_in_top10": 1.0,
    "legs": {
     "queries": 1,
-    "mean_overlap": 12.0,
-    "mean_jaccard": 0.1017,
+    "mean_overlap": 27.0,
+    "mean_jaccard": 0.2621,
     "dead_leg_queries": 0
    }
   },
   {
    "id": "grid_prompting",
+   "fixture_signature": "eff060e0b0b7f2a4421b2187cbeab6873bbfe2ac754765617d75c8ea78908c58",
    "kind": "hit",
    "tags": [
     "broad"
    ],
    "expected": [
     "acidcrunch:2044",
-    "acidcrunch:741",
-    "cgevent:16144",
     "iideyalogiya:1304",
     "iideyalogiya:1388",
-    "strangedalle:1348"
+    "strangedalle:1348",
+    "video_hub:531461744",
+    "video_hub:102636863",
+    "video_hub:619811946"
    ],
    "per_query": [
     {
      "query": "Grid prompting for AI video: creating a single image with a 3x3 grid of nine film stills (nine equal panels) and then animating between the panels sequentially in one long video generation to get a multi-shot sequence with consistency. Also: first-frame plus last-frame interpolation to control the start and end of a shot while the model decides the middle. Do practitioners use these techniques? Give sources with source_key.",
-     "recall@10": 0.0,
-     "recall@20": 0.0,
-     "recall@40": 0.0,
-     "mrr@10": 0.0,
-     "hidden_keys": [],
+     "recall@10": 0.2857142857142857,
+     "recall@20": 0.42857142857142855,
+     "recall@40": 0.42857142857142855,
+     "mrr@10": 0.25,
+     "hidden_keys": [
+      "video_hub:619811946"
+     ],
+     "outside_keys": [
+      "acidcrunch:2044",
+      "iideyalogiya:1304",
+      "iideyalogiya:1388",
+      "strangedalle:1348"
+     ],
+     "experts_in_top10": 1,
      "returned@10": [
-      "video_hub:471071063",
       "video_hub:56232167",
+      "video_hub:471071063",
       "video_hub:366181511",
       "video_hub:102636863",
-      "video_hub:643325874",
       "video_hub:531461744",
+      "video_hub:643325874",
       "video_hub:293918715",
       "video_hub:718546572",
       "video_hub:119251081",
@@ -669,20 +775,23 @@
      ]
     }
    ],
-   "recall@10": 0.0,
-   "recall@20": 0.0,
-   "recall@40": 0.0,
-   "mrr@10": 0.0,
-   "hidden_total": 0,
+   "recall@10": 0.2857,
+   "recall@20": 0.4286,
+   "recall@40": 0.4286,
+   "mrr@10": 0.25,
+   "hidden_total": 1,
+   "outside_total": 4,
+   "experts_in_top10": 1.0,
    "legs": {
     "queries": 1,
-    "mean_overlap": 21.0,
-    "mean_jaccard": 0.1927,
+    "mean_overlap": 22.0,
+    "mean_jaccard": 0.2037,
     "dead_leg_queries": 0
    }
   },
   {
    "id": "character_likeness_longform",
+   "fixture_signature": "6d092cec56e4ee0fc59bcfe83784b66c6992c09dfd2289a2071ab5e7782595aa",
    "kind": "hit",
    "tags": [
     "broad",
@@ -700,36 +809,45 @@
     {
      "query": "How do practitioners keep character likeness and visual world consistent across many shots of a longer AI-generated film? I am looking for: character reference sheets generated from real photos of a real person, a written rules document for the world (location, flat overcast lighting, color palette with exact hex codes, recurring prop motifs, locked-off camera at eye height), and reports of likeness drift across shots. Give 3-5 sources with source_key.",
      "recall@10": 0.0,
-     "recall@20": 0.0,
+     "recall@20": 0.16666666666666666,
      "recall@40": 0.3333333333333333,
      "mrr@10": 0.0,
      "hidden_keys": [
       "video_hub:5056987",
       "video_hub:481640535"
      ],
+     "outside_keys": [
+      "cgevent:16480",
+      "iideyalogiya:1904",
+      "iideyalogiya:1947",
+      "strangedalle:1504"
+     ],
+     "experts_in_top10": 1,
      "returned@10": [
       "video_hub:282951548",
       "video_hub:130059708",
       "video_hub:643325874",
       "video_hub:509155341",
-      "video_hub:685215031",
       "video_hub:897596306",
       "video_hub:366181511",
       "video_hub:997642295",
       "video_hub:763320226",
-      "video_hub:585980878"
+      "video_hub:585980878",
+      "video_hub:163751293"
      ]
     }
    ],
    "recall@10": 0.0,
-   "recall@20": 0.0,
+   "recall@20": 0.1667,
    "recall@40": 0.3333,
    "mrr@10": 0.0,
    "hidden_total": 2,
+   "outside_total": 4,
+   "experts_in_top10": 1.0,
    "legs": {
     "queries": 1,
-    "mean_overlap": 22.0,
-    "mean_jaccard": 0.2037,
+    "mean_overlap": 21.0,
+    "mean_jaccard": 0.1927,
     "dead_leg_queries": 0
    },
    "craft_mode": {
@@ -740,6 +858,7 @@
   },
   {
    "id": "realism_in_ai_video",
+   "fixture_signature": "a4c4f753936b4b0f8b0fb9875c56fa5e55c617b7188a6ec02509d2f586321366",
    "kind": "hit",
    "tags": [
     "broad",
@@ -763,6 +882,14 @@
      "hidden_keys": [
       "acidcrunch:2787"
      ],
+     "outside_keys": [
+      "acidcrunch:2760",
+      "acidcrunch:2792",
+      "cgevent:16135",
+      "cgevent:16553",
+      "cgevent:16651"
+     ],
+     "experts_in_top10": 1,
      "returned@10": [
       "video_hub:383007989",
       "video_hub:575814828",
@@ -770,8 +897,8 @@
       "video_hub:85167630",
       "video_hub:366181511",
       "video_hub:793518597",
-      "video_hub:622075450",
       "video_hub:825108165",
+      "video_hub:622075450",
       "video_hub:180821357",
       "video_hub:53328084"
      ]
@@ -782,6 +909,8 @@
    "recall@40": 0.1667,
    "mrr@10": 0.0,
    "hidden_total": 1,
+   "outside_total": 5,
+   "experts_in_top10": 1.0,
    "legs": {
     "queries": 1,
     "mean_overlap": 13.0,
@@ -796,6 +925,7 @@
   },
   {
    "id": "credits_economy",
+   "fixture_signature": "b1e6d34496344ae83225a391e53d5f699e3dc1520b1cfa3a8681288f89f1d837",
    "kind": "hit",
    "tags": [
     "broad"
@@ -816,6 +946,15 @@
      "recall@40": 0.0,
      "mrr@10": 0.0,
      "hidden_keys": [],
+     "outside_keys": [
+      "cgevent:16322",
+      "acidcrunch:2611",
+      "acidcrunch:2644",
+      "acidcrunch:2771",
+      "acidcrunch:550",
+      "cgevent:16041"
+     ],
+     "experts_in_top10": 2,
      "returned@10": [
       "video_hub:643325874",
       "video_hub:530231241",
@@ -824,8 +963,8 @@
       "video_hub:781501388",
       "video_hub:752772063",
       "video_hub:763320226",
-      "cgevent:16755",
       "video_hub:215373275",
+      "cgevent:16755",
       "video_hub:34425000"
      ]
     }
@@ -835,15 +974,18 @@
    "recall@40": 0.0,
    "mrr@10": 0.0,
    "hidden_total": 0,
+   "outside_total": 6,
+   "experts_in_top10": 2.0,
    "legs": {
     "queries": 1,
-    "mean_overlap": 18.0,
-    "mean_jaccard": 0.1607,
+    "mean_overlap": 17.0,
+    "mean_jaccard": 0.1504,
     "dead_leg_queries": 0
    }
   },
   {
    "id": "speech_direction_audio_prompt",
+   "fixture_signature": "60ea6bf093874470d628f312d0f648bb7c946822034ab3b6d88d68b5745dbc00",
    "kind": "hit",
    "tags": [
     "broad"
@@ -853,17 +995,23 @@
     "iideyalogiya:1914",
     "neyrograph:4573",
     "video_hub:139865057",
-    "video_hub:231192822",
-    "video_hub:293918715"
+    "video_hub:231192822"
    ],
    "per_query": [
     {
      "query": "English probe: what does the corpus say about these specific AI video techniques: (1) writing speech direction INTO the video audio prompt - 'spoken on camera with mouth moving' vs narration/voiceover, (2) counting script words for video duration - about 75 words per 30 seconds or the model fills silence, (3) generating multiple location transitions inside ONE video generation call with several reference images, (4) voice change / training a custom voice from a recording vs TTS presets? Concrete source_key citations please.",
-     "recall@10": 0.16666666666666666,
-     "recall@20": 0.16666666666666666,
-     "recall@40": 0.16666666666666666,
+     "recall@10": 0.2,
+     "recall@20": 0.2,
+     "recall@40": 0.2,
      "mrr@10": 0.1,
      "hidden_keys": [],
+     "outside_keys": [
+      "cgevent:16753",
+      "iideyalogiya:1914",
+      "neyrograph:4573",
+      "video_hub:231192822"
+     ],
+     "experts_in_top10": 1,
      "returned@10": [
       "video_hub:623900094",
       "video_hub:781501388",
@@ -878,11 +1026,13 @@
      ]
     }
    ],
-   "recall@10": 0.1667,
-   "recall@20": 0.1667,
-   "recall@40": 0.1667,
+   "recall@10": 0.2,
+   "recall@20": 0.2,
+   "recall@40": 0.2,
    "mrr@10": 0.1,
    "hidden_total": 0,
+   "outside_total": 4,
+   "experts_in_top10": 1.0,
    "legs": {
     "queries": 1,
     "mean_overlap": 22.0,
@@ -892,6 +1042,7 @@
   },
   {
    "id": "kling_elements_stability",
+   "fixture_signature": "f8f0bc3ec319864a61a4050be79f75d2fa718373d0b921606a29073ac4de9e1a",
    "kind": "hit",
    "tags": [
     "stability",
@@ -914,6 +1065,8 @@
       "strangedalle:1066",
       "acidcrunch:371"
      ],
+     "outside_keys": [],
+     "experts_in_top10": 6,
      "returned@10": [
       "cgevent:16776",
       "neyrograph:4727",
@@ -933,6 +1086,8 @@
    "recall@40": 1.0,
    "mrr@10": 0.3333,
    "hidden_total": 2,
+   "outside_total": 0,
+   "experts_in_top10": 6.0,
    "legs": {
     "queries": 1,
     "mean_overlap": 2.0,
@@ -942,6 +1097,7 @@
   },
   {
    "id": "ae_motion_graphics_agent",
+   "fixture_signature": "f1940e5050026e1955796a60133bcde9851120ef20519b7e5dae1c879df06192",
    "kind": "hit",
    "tags": [
     "broad",
@@ -965,6 +1121,13 @@
      "hidden_keys": [
       "video_hub:306464563"
      ],
+     "outside_keys": [
+      "cgevent:16296",
+      "cgevent:16312",
+      "neyrograph:4623",
+      "video_hub:246201519"
+     ],
+     "experts_in_top10": 1,
      "returned@10": [
       "video_hub:420629738",
       "video_hub:475663712",
@@ -984,6 +1147,8 @@
    "recall@40": 0.3333,
    "mrr@10": 0.2,
    "hidden_total": 1,
+   "outside_total": 4,
+   "experts_in_top10": 1.0,
    "legs": {
     "queries": 1,
     "mean_overlap": 11.0,
@@ -993,31 +1158,23 @@
   },
   {
    "id": "minimax_degradation",
-   "kind": "hit",
+   "fixture_signature": "4130b7bb5faee635aa40771c4b2201776fbe391f1d998410ec1d25c72015f804",
+   "kind": "gap",
    "tags": [
-    "scope_expert",
-    "freshness_tool"
+    "model_separation",
+    "partial_context"
    ],
-   "expected": [
-    "cgevent:16239",
-    "cgevent:16316",
-    "cgevent:16451",
-    "video_hub:371286679",
-    "video_hub:752772063",
-    "video_hub:995586242"
-   ],
+   "expected": [],
    "per_query": [
     {
      "query": "Найди практические свидетельства по MiniMax H3: резкая деградация reference-to-video после замены двух image references и небольшой правки prompt при прежнем clay-видео12.5с,6изображениях,13с output. Симптомы: перенос временных цветов clay в финал, пенные кольца несмотря на отрицания, лишние объекты, дрейф камеры. Особенно интересуют binding Video/Picture/Subject, Context-IR/rewrite, reAPI prompt expansion/seed, конфликт референсов и контролируемая диагностика. Отдели H3 от других моделей и hosted от local; нужны источники/даты и честные пробелы, не диагноз проекта.",
-     "recall@10": 0.0,
-     "recall@20": 0.3333333333333333,
-     "recall@40": 0.5,
+     "recall@10": null,
+     "recall@20": null,
+     "recall@40": null,
      "mrr@10": 0.0,
-     "hidden_keys": [
-      "video_hub:995586242",
-      "cgevent:16451",
-      "cgevent:16316"
-     ],
+     "hidden_keys": [],
+     "outside_keys": [],
+     "experts_in_top10": 3,
      "returned@10": [
       "video_hub:180821357",
       "video_hub:790307026",
@@ -1032,61 +1189,72 @@
      ]
     }
    ],
-   "recall@10": 0.0,
-   "recall@20": 0.3333,
-   "recall@40": 0.5,
-   "mrr@10": 0.0,
-   "hidden_total": 3,
-   "legs": {
-    "queries": 1,
-    "mean_overlap": 12.0,
-    "mean_jaccard": 0.1017,
-    "dead_leg_queries": 0
-   }
-  },
-  {
-   "id": "hypermotion_gap",
-   "kind": "gap",
-   "tags": [
-    "gap"
-   ],
-   "expected": [],
-   "per_query": [
-    {
-     "query": "Проверь покрытие корпуса по 2 темам (покрыто + source_key / gap): 1) hypermotion-реклама продуктов — замороженные в воздухе осколки/лёд/фрукты, разлетающаяся банка (slow-mo product shot); 2) workflow правок клиента: клиент просит изменения после рендера, редактируемая 3D-сцена в Blender позволяет не перегенерировать всё с нуля.",
-     "recall@10": null,
-     "recall@20": null,
-     "recall@40": null,
-     "mrr@10": 0.0,
-     "hidden_keys": [],
-     "returned@10": [
-      "video_hub:468785115",
-      "video_hub:850060911",
-      "video_hub:23521707",
-      "neyrograph:4729",
-      "video_hub:180821357",
-      "video_hub:121063689",
-      "video_hub:556342664",
-      "video_hub:737101800",
-      "video_hub:726332883",
-      "video_hub:298409509"
-     ]
-    }
-   ],
    "recall@10": null,
    "recall@20": null,
    "recall@40": null,
    "mrr@10": 0.0,
    "hidden_total": 0,
+   "outside_total": 0,
+   "experts_in_top10": 3.0,
    "legs": {
     "queries": 1,
-    "mean_overlap": 21.0,
-    "mean_jaccard": 0.1927,
+    "mean_overlap": 11.0,
+    "mean_jaccard": 0.0924,
+    "dead_leg_queries": 0
+   }
+  },
+  {
+   "id": "hypermotion_gap",
+   "fixture_signature": "3d2a009df018e551b65969aeee5009c7c9dd7a1122f92f5b7521e355b085ce25",
+   "kind": "hit",
+   "tags": [
+    "historical_gap_closed",
+    "scope_all"
+   ],
+   "expected": [
+    "video_hub:468785115"
+   ],
+   "per_query": [
+    {
+     "query": "Проверь покрытие корпуса (покрыто + source_key / gap): гипермоушн-реклама продуктов — разлетающаяся банка, осколки стекла/льда, замороженные фрукты как продуктовый макро-шот.",
+     "recall@10": 1.0,
+     "recall@20": 1.0,
+     "recall@40": 1.0,
+     "mrr@10": 0.5,
+     "hidden_keys": [],
+     "outside_keys": [],
+     "experts_in_top10": 2,
+     "returned@10": [
+      "video_hub:878871019",
+      "video_hub:468785115",
+      "video_hub:346538719",
+      "video_hub:180821357",
+      "video_hub:216398615",
+      "video_hub:368890709",
+      "video_hub:276863315",
+      "cgevent:16487",
+      "video_hub:726332883",
+      "video_hub:765217612"
+     ]
+    }
+   ],
+   "recall@10": 1.0,
+   "recall@20": 1.0,
+   "recall@40": 1.0,
+   "mrr@10": 0.5,
+   "hidden_total": 0,
+   "outside_total": 0,
+   "experts_in_top10": 2.0,
+   "legs": {
+    "queries": 1,
+    "mean_overlap": 7.0,
+    "mean_jaccard": 0.0569,
     "dead_leg_queries": 0
    }
   },
   {
    "id": "morph_pravilo180",
+   "fixture_signature": "113ac86ab1f15ce1cf06909672f582687297c2ed8fc9f6dd0885e5c8d8ce3dd3",
    "kind": "hit",
    "tags": [
     "morphology",
@@ -1104,6 +1272,8 @@
      "recall@40": 1.0,
      "mrr@10": 0.5,
      "hidden_keys": [],
+     "outside_keys": [],
+     "experts_in_top10": 3,
      "returned@10": [
       "video_hub:532322981",
       "neyrograph:4425",
@@ -1126,17 +1296,19 @@
      "hidden_keys": [
       "acidcrunch:2177"
      ],
+     "outside_keys": [],
+     "experts_in_top10": 4,
      "returned@10": [
       "video_hub:554786127",
       "deksden_notes:1256",
       "neyrograph:4381",
-      "cgevent:16784",
+      "neyrograph:4735",
       "neyrograph:4709",
-      "video_hub:366181511",
+      "cgevent:16784",
       "neyrograph:4425",
-      "video_hub:767512885",
+      "video_hub:366181511",
       "video_hub:532322981",
-      "video_hub:541488274"
+      "video_hub:767512885"
      ]
     },
     {
@@ -1148,6 +1320,8 @@
      "hidden_keys": [
       "neyrograph:4425"
      ],
+     "outside_keys": [],
+     "experts_in_top10": 5,
      "returned@10": [
       "iideyalogiya:2018",
       "video_hub:538002071",
@@ -1168,17 +1342,19 @@
      "recall@40": 1.0,
      "mrr@10": 0.3333333333333333,
      "hidden_keys": [],
+     "outside_keys": [],
+     "experts_in_top10": 3,
      "returned@10": [
       "video_hub:532322981",
       "video_hub:767512885",
       "neyrograph:4425",
       "acidcrunch:2809",
       "video_hub:645951527",
-      "video_hub:401000031",
+      "neyrograph:4735",
       "acidcrunch:2177",
-      "video_hub:949162836",
+      "video_hub:401000031",
       "neyrograph:4381",
-      "neuraldeep:2312"
+      "video_hub:949162836"
      ]
     }
    ],
@@ -1187,6 +1363,8 @@
    "recall@40": 1.0,
    "mrr@10": 0.2718,
    "hidden_total": 2,
+   "outside_total": 0,
+   "experts_in_top10": 3.75,
    "legs": {
     "queries": 4,
     "mean_overlap": 3.25,
@@ -1201,6 +1379,7 @@
   },
   {
    "id": "morph_credits",
+   "fixture_signature": "b9244d993d835881dc5807af4a25b1ebdc48b087a457b72d353dea185748a05c",
    "kind": "hit",
    "tags": [
     "morphology"
@@ -1217,6 +1396,11 @@
      "recall@40": 0.0,
      "mrr@10": 0.0,
      "hidden_keys": [],
+     "outside_keys": [
+      "cgevent:16497",
+      "cgevent:16312"
+     ],
+     "experts_in_top10": 6,
      "returned@10": [
       "cgevent:16728",
       "video_hub:398784453",
@@ -1237,6 +1421,11 @@
      "recall@40": 0.0,
      "mrr@10": 0.0,
      "hidden_keys": [],
+     "outside_keys": [
+      "cgevent:16497",
+      "cgevent:16312"
+     ],
+     "experts_in_top10": 7,
      "returned@10": [
       "acidcrunch:2813",
       "cgevent:16728",
@@ -1257,6 +1446,11 @@
      "recall@40": 0.0,
      "mrr@10": 0.0,
      "hidden_keys": [],
+     "outside_keys": [
+      "cgevent:16497",
+      "cgevent:16312"
+     ],
+     "experts_in_top10": 5,
      "returned@10": [
       "video_hub:737101800",
       "deksden_notes:1248",
@@ -1279,6 +1473,10 @@
      "hidden_keys": [
       "cgevent:16497"
      ],
+     "outside_keys": [
+      "cgevent:16312"
+     ],
+     "experts_in_top10": 6,
      "returned@10": [
       "iideyalogiya:2013",
       "iideyalogiya:2015",
@@ -1298,6 +1496,8 @@
    "recall@40": 0.125,
    "mrr@10": 0.0,
    "hidden_total": 1,
+   "outside_total": 7,
+   "experts_in_top10": 6.0,
    "legs": {
     "queries": 4,
     "mean_overlap": 2.5,
@@ -1307,6 +1507,7 @@
   },
   {
    "id": "negative_control_out_of_corpus",
+   "fixture_signature": "225651179e064a8f49aac175432821a79b1300b235a90b8f000d50ca35b2bdc6",
    "kind": "negative_control",
    "tags": [
     "negative_control"
@@ -1320,6 +1521,8 @@
      "recall@40": null,
      "mrr@10": 0.0,
      "hidden_keys": [],
+     "outside_keys": [],
+     "experts_in_top10": 9,
      "returned@10": [
       "silicbag:1998",
       "neyrograph:4729",
@@ -1339,13 +1542,323 @@
    "recall@40": null,
    "mrr@10": 0.0,
    "hidden_total": 0,
+   "outside_total": 0,
+   "experts_in_top10": 9.0,
    "legs": {
     "queries": 1,
     "mean_overlap": 0.0,
     "mean_jaccard": 0.0,
     "dead_leg_queries": 1
    }
+  },
+  {
+   "id": "videohub_liquid_speed_ramp",
+   "fixture_signature": "5c005a77467792195944397abf0f201dc688747aa2f4063515b3e370a7b67a2c",
+   "kind": "hit",
+   "tags": [
+    "scope_videohub",
+    "historical_repair"
+   ],
+   "expected": [
+    "video_hub:276863315",
+    "video_hub:210678333"
+   ],
+   "per_query": [
+    {
+     "query": "По ВидеоХабу: как подготовить в Blender рекламный ролик с жидкостью и резкими ускорениями камеры? Нужны конкретные приёмы: что оставляют вместо симуляции жидкости и как задают speed ramp до AI-генерации.",
+     "recall@10": 0.5,
+     "recall@20": 0.5,
+     "recall@40": 0.5,
+     "mrr@10": 0.3333333333333333,
+     "hidden_keys": [],
+     "outside_keys": [
+      "video_hub:276863315"
+     ],
+     "experts_in_top10": 1,
+     "returned@10": [
+      "video_hub:180821357",
+      "video_hub:86471712",
+      "video_hub:210678333",
+      "video_hub:55113591",
+      "video_hub:468785115",
+      "video_hub:971118098",
+      "video_hub:216398615",
+      "video_hub:619204127",
+      "video_hub:737101800",
+      "video_hub:554786127"
+     ]
+    }
+   ],
+   "recall@10": 0.5,
+   "recall@20": 0.5,
+   "recall@40": 0.5,
+   "mrr@10": 0.3333,
+   "hidden_total": 0,
+   "outside_total": 1,
+   "experts_in_top10": 1.0,
+   "legs": {
+    "queries": 1,
+    "mean_overlap": 24.0,
+    "mean_jaccard": 0.2264,
+    "dead_leg_queries": 0
+   }
+  },
+  {
+   "id": "videohub_dialogue_language",
+   "fixture_signature": "b63ff09fb13c9cd4c9667056142716c509c82c1325f21c315bc17213c5d6d7e6",
+   "kind": "hit",
+   "tags": [
+    "scope_videohub",
+    "historical_repair"
+   ],
+   "expected": [
+    "video_hub:231192822"
+   ],
+   "per_query": [
+    {
+     "query": "По ВидеоХабу: как Youri предлагает задавать язык и акцент реплик, где хранить текст реплик и где указывать момент их произнесения? Нужны конкретные инструкции эксперта.",
+     "recall@10": 0.0,
+     "recall@20": 0.0,
+     "recall@40": 0.0,
+     "mrr@10": 0.0,
+     "hidden_keys": [],
+     "outside_keys": [
+      "video_hub:231192822"
+     ],
+     "experts_in_top10": 1,
+     "returned@10": [
+      "video_hub:486891687",
+      "video_hub:443011194",
+      "video_hub:993186432",
+      "video_hub:718546572",
+      "video_hub:575814828",
+      "video_hub:246201519",
+      "video_hub:939367701",
+      "video_hub:850060911",
+      "video_hub:443522679",
+      "video_hub:696160272"
+     ]
+    }
+   ],
+   "recall@10": 0.0,
+   "recall@20": 0.0,
+   "recall@40": 0.0,
+   "mrr@10": 0.0,
+   "hidden_total": 0,
+   "outside_total": 1,
+   "experts_in_top10": 1.0,
+   "legs": {
+    "queries": 1,
+    "mean_overlap": 15.0,
+    "mean_jaccard": 0.1304,
+    "dead_leg_queries": 0
+   }
+  },
+  {
+   "id": "videohub_character_sheet_model",
+   "fixture_signature": "23f5c281d632ad8c6e0fda52ac27845e409c2f6d7c4373a94e32ed0db61ee45c",
+   "kind": "hit",
+   "tags": [
+    "scope_videohub",
+    "historical_repair"
+   ],
+   "expected": [
+    "video_hub:763320226"
+   ],
+   "per_query": [
+    {
+     "query": "По ВидеоХабу: какую модель Dan Kieft использует для character sheet в уроке про реалистичные видео Seedance 2.5, почему убирает шляпу и как закрепляет внешность героя?",
+     "recall@10": 0.0,
+     "recall@20": 1.0,
+     "recall@40": 1.0,
+     "mrr@10": 0.0,
+     "hidden_keys": [
+      "video_hub:763320226"
+     ],
+     "outside_keys": [],
+     "experts_in_top10": 1,
+     "returned@10": [
+      "video_hub:461299858",
+      "video_hub:998318835",
+      "video_hub:530231241",
+      "video_hub:464204432",
+      "video_hub:643325874",
+      "video_hub:396714561",
+      "video_hub:124000899",
+      "video_hub:888425289",
+      "video_hub:282951548",
+      "video_hub:532855074"
+     ]
+    }
+   ],
+   "recall@10": 0.0,
+   "recall@20": 1.0,
+   "recall@40": 1.0,
+   "mrr@10": 0.0,
+   "hidden_total": 1,
+   "outside_total": 0,
+   "experts_in_top10": 1.0,
+   "legs": {
+    "queries": 1,
+    "mean_overlap": 31.0,
+    "mean_jaccard": 0.3131,
+    "dead_leg_queries": 0
+   }
+  },
+  {
+   "id": "videohub_fake_fall",
+   "fixture_signature": "451c6945b5034ad87f3abd945da3ba60c6fd31f4c4fc388d431387e3bd944b7e",
+   "kind": "hit",
+   "tags": [
+    "scope_videohub",
+    "historical_repair"
+   ],
+   "expected": [
+    "video_hub:445026460"
+   ],
+   "per_query": [
+    {
+     "query": "По ВидеоХабу: по каким признакам в разборе VFX можно заметить ненастоящее падение цифрового дублёра с обрыва? Какие именно ошибки движения и внешности отмечает автор?",
+     "recall@10": 1.0,
+     "recall@20": 1.0,
+     "recall@40": 1.0,
+     "mrr@10": 1.0,
+     "hidden_keys": [],
+     "outside_keys": [],
+     "experts_in_top10": 1,
+     "returned@10": [
+      "video_hub:445026460",
+      "video_hub:207541593",
+      "video_hub:41727223",
+      "video_hub:842087282",
+      "video_hub:763044608",
+      "video_hub:718979580",
+      "video_hub:279303119",
+      "video_hub:146896941",
+      "video_hub:210885443",
+      "video_hub:542497855"
+     ]
+    }
+   ],
+   "recall@10": 1.0,
+   "recall@20": 1.0,
+   "recall@40": 1.0,
+   "mrr@10": 1.0,
+   "hidden_total": 0,
+   "outside_total": 0,
+   "experts_in_top10": 1.0,
+   "legs": {
+    "queries": 1,
+    "mean_overlap": 12.0,
+    "mean_jaccard": 0.1017,
+    "dead_leg_queries": 0
+   }
+  },
+  {
+   "id": "videohub_liquid_plain_language",
+   "fixture_signature": "9c0808193aecb2ded952f39a40ae4f34a6bb1d9f5a78e3e1c3dcd54d909e3862",
+   "kind": "hit",
+   "tags": [
+    "scope_videohub",
+    "plain_language"
+   ],
+   "expected": [
+    "video_hub:276863315",
+    "video_hub:210678333"
+   ],
+   "per_query": [
+    {
+     "query": "По ВидеоХабу: как подготовить рекламный ролик, чтобы камера резко разгонялась и притормаживала? А кусок с льющейся жидкостью обязательно заранее делать в Blender?",
+     "recall@10": 0.0,
+     "recall@20": 0.0,
+     "recall@40": 0.5,
+     "mrr@10": 0.0,
+     "hidden_keys": [
+      "video_hub:210678333"
+     ],
+     "outside_keys": [
+      "video_hub:276863315"
+     ],
+     "experts_in_top10": 1,
+     "returned@10": [
+      "video_hub:308091777",
+      "video_hub:971118098",
+      "video_hub:180821357",
+      "video_hub:86471712",
+      "video_hub:216398615",
+      "video_hub:55113591",
+      "video_hub:715063429",
+      "video_hub:559298287",
+      "video_hub:554786127",
+      "video_hub:532855074"
+     ]
+    }
+   ],
+   "recall@10": 0.0,
+   "recall@20": 0.0,
+   "recall@40": 0.5,
+   "mrr@10": 0.0,
+   "hidden_total": 1,
+   "outside_total": 1,
+   "experts_in_top10": 1.0,
+   "legs": {
+    "queries": 1,
+    "mean_overlap": 25.0,
+    "mean_jaccard": 0.2381,
+    "dead_leg_queries": 0
+   }
+  },
+  {
+   "id": "videohub_character_sheet_false_premise",
+   "fixture_signature": "9e3b9d76c470b5254feb5f34195a738b9d24fb44fc6416f07f07cb99f8531dc4",
+   "kind": "hit",
+   "tags": [
+    "scope_videohub",
+    "false_premise"
+   ],
+   "expected": [
+    "video_hub:763320226"
+   ],
+   "per_query": [
+    {
+     "query": "По ВидеоХабу: в разборе Dan Kieft про реалистичные видео Seedance 2.5 таблицу персонажа делают в SeaArt, правильно? Как он это делает?",
+     "recall@10": 0.0,
+     "recall@20": 0.0,
+     "recall@40": 1.0,
+     "mrr@10": 0.0,
+     "hidden_keys": [
+      "video_hub:763320226"
+     ],
+     "outside_keys": [],
+     "experts_in_top10": 1,
+     "returned@10": [
+      "video_hub:314659585",
+      "video_hub:781501388",
+      "video_hub:641313330",
+      "video_hub:765217612",
+      "video_hub:215373275",
+      "video_hub:998318835",
+      "video_hub:177727417",
+      "video_hub:464204432",
+      "video_hub:752772063",
+      "video_hub:119251081"
+     ]
+    }
+   ],
+   "recall@10": 0.0,
+   "recall@20": 0.0,
+   "recall@40": 1.0,
+   "mrr@10": 0.0,
+   "hidden_total": 1,
+   "outside_total": 0,
+   "experts_in_top10": 1.0,
+   "legs": {
+    "queries": 1,
+    "mean_overlap": 31.0,
+    "mean_jaccard": 0.3131,
+    "dead_leg_queries": 0
+   }
   }
  ],
- "baseline_note": "Updated 2026-09-29 after improvements 1-3 (wide pool 40, freshness profiles, leg telemetry). Default metrics unchanged vs pre-change snapshot; craft_mode and legs fields added as new guarded metrics."
+ "baseline_note": "Added two paired agent questions (plain language and false premise), and allowed explicitly bounded context in NGS abstention. All 28 existing retrieval metric rows unchanged; source evidence reused from reviewed originals. Aggregate changes reflect new questions, not runtime changes."
 }

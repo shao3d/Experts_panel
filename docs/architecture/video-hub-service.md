@@ -1,7 +1,7 @@
 # Video Hub Sidecar: Architecture & Integration
 
 **Status:** Stable / Production-Ready (query-time branch dormant in the UI, see "Current Operating Mode")
-**Last updated:** 2026-09-30
+**Last updated:** 2026-10-01
 **Role:** Parallel pipeline for deep video transcript analysis using the "Digital Twin" approach.
 **Date:** 2026-04-12 (operating-mode note 2026-09-17; review passes 2026-09-17,
 2026-09-24; admission-gate pointer 2026-09-28)
@@ -133,7 +133,7 @@ Three steps, dev-safe (no production writes):
 2. **Stage 2 — LLM pass**: one chunk at a time; the model reads the transcript slice plus sheets/native frames and writes `chunks/chunk_NN/segments.json`. Disk is the memory, so long videos never load more than one chunk into context. `segment_id` must continue across chunks (no restart from 1001 per chunk).
 3. **Combine, import, embed**: `ingest_video.py --combine` merges chunk JSONs (only identical evidence in nearby segments from different chunks is deduplicated; distinct advice is preserved; chunk-local metadata is stripped) into `segments.json` and fails on duplicate `segment_id`; `import_video_json.py` writes to the DB (`--replace-video` for re-segmentation); `embed_posts.py` adds vectors.
 
-**YouTube download constraint**: the VM datacenter IP is blocked by YouTube, so media is fetched on the Mac over the reverse SSH tunnel (see `docs/guides/video-hub-operator.md`) and copied to the VM before stage 1.
+**YouTube download constraint**: direct access from the VM datacenter IP is restricted. Current download routes and fallbacks are maintained in [the operator playbook](../guides/video-hub-operator.md#01-get-the-media-onto-the-vm).
 
 ---
 

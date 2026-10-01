@@ -15,6 +15,7 @@ Fixture self-check (no network): --check-keys
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import subprocess
 import sys
@@ -40,12 +41,21 @@ def load_fixtures() -> list[dict]:
     return module.FIXTURES
 
 
+def fixture_signature(fixture: dict) -> str:
+    """A changed question, scope or gold set requires an explicit new baseline."""
+    fields = ("question", "kind", "expected_keys", "query_variants", "search_args",
+              "min_hits", "max_sources", "required_groups", "allow_context_citations", "rubric")
+    contract = {field: fixture.get(field) for field in fields}
+    return hashlib.sha256(json.dumps(contract, ensure_ascii=False, sort_keys=True).encode()).hexdigest()
+
+
 def _probe_now() -> str | None:
     """Anchor freshness decay to the baseline snapshot so metrics do not drift
     as calendar days pass (the decay is day-based)."""
     if BASELINE_PATH.exists():
         try:
-            stamp = json.loads(BASELINE_PATH.read_text(encoding="utf-8")).get("generated_at")
+            baseline = json.loads(BASELINE_PATH.read_text(encoding="utf-8"))
+            stamp = baseline.get("search_as_of") or baseline.get("generated_at")
             if stamp:
                 return stamp.replace(" ", "T")
         except json.JSONDecodeError:
@@ -179,6 +189,7 @@ def probe_fixture(fixture: dict) -> dict:
 
     result = {
         "id": fixture["id"],
+        "fixture_signature": fixture_signature(fixture),
         "kind": fixture["kind"],
         "tags": fixture.get("tags", []),
         "expected": expected,
@@ -247,6 +258,7 @@ def run_probe() -> dict:
         }
     return {
         "generated_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "search_as_of": _probe_now() or time.strftime("%Y-%m-%dT%H:%M:%S"),
         "summary": {
             "fixtures": len(results),
             "hit_fixtures": len(hits),
@@ -274,12 +286,18 @@ def compare_to_baseline(probe: dict) -> list[str]:
     baseline = json.loads(BASELINE_PATH.read_text(encoding="utf-8"))
     problems = []
     base_by_id = {r["id"]: r for r in baseline["results"]}
+    current_ids = {r["id"] for r in probe["results"]}
+    for missing in set(base_by_id)-current_ids:
+        problems.append(f"{missing}: fixture missing from probe")
     for r in probe["results"]:
-        if r["kind"] != "hit":
-            continue
         base = base_by_id.get(r["id"])
+        if base and base.get("fixture_signature") != r.get("fixture_signature"):
+            problems.append(f"{r['id']}: fixture contract changed; review and explicitly rebaseline")
+            continue
         if base is None:
             problems.append(f"{r['id']}: new fixture (not in baseline)")
+            continue
+        if r["kind"] != "hit":
             continue
         for field in ("recall@10", "recall@20", "recall@40", "mrr@10"):
             b, c = base.get(field), r.get(field)
@@ -304,9 +322,12 @@ def main() -> int:
     parser.add_argument("--run", action="store_true", help="run the probe and print the table")
     parser.add_argument("--check-keys", action="store_true", help="verify fixture keys exist")
     parser.add_argument("--write-baseline", action="store_true")
+    parser.add_argument("--baseline-note", help="Required explanation when replacing the baseline")
     parser.add_argument("--check-baseline", action="store_true", help="run + compare with baseline")
     parser.add_argument("--json-out", help="write full probe JSON here")
     args = parser.parse_args()
+    if args.write_baseline and not (args.baseline_note or "").strip():
+        parser.error("--write-baseline requires --baseline-note explaining the reviewed change")
 
     if args.check_keys:
         fixtures = load_fixtures()
@@ -330,11 +351,7 @@ def main() -> int:
         if args.json_out:
             Path(args.json_out).write_text(json.dumps(probe, ensure_ascii=False, indent=1), encoding="utf-8")
         if args.write_baseline:
-            probe["baseline_note"] = (
-                "Updated 2026-09-29 after improvements 1-3 (wide pool 40, freshness profiles, "
-                "leg telemetry). Default metrics unchanged vs pre-change snapshot; craft_mode "
-                "and legs fields added as new guarded metrics."
-            )
+            probe["baseline_note"] = args.baseline_note
             BASELINE_PATH.write_text(json.dumps(probe, ensure_ascii=False, indent=1), encoding="utf-8")
             print("baseline written:", BASELINE_PATH)
         if args.check_baseline:

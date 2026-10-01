@@ -1,11 +1,13 @@
-"""Search probe fixtures: real owner questions with verified source_keys.
+"""Search probes: historical retrieval diagnostics and source-reviewed agent cases.
 
 Ground truth provenance:
 - questions: output/scout_runs/*/question.txt (real runs, not synthetic);
-- expected_keys: cited in run answers, then mechanically verified to exist
-  in the corpus via expert_scout.py show (quote-verified where marked);
+- legacy expected_keys came from run citations: existence alone is NOT semantic gold;
+- reviewed_at + rubric + evidence mark cases manually checked against full Scout show;
+- new historical_repair questions guard repaired source details;
 - gap/negative_control fixtures pin honest-abstain behavior.
-Regenerate/verify: /tmp/opencode/extract_fixtures.py + verify_fixtures.py
+Never rebuild gold from the answers being scored. Review sources first; keep
+legacy diagnostics separate from source-reviewed answer acceptance.
 """
 
 from __future__ import annotations
@@ -78,10 +80,13 @@ FIXTURES: list[dict] = [
         'question': 'Посмотри, что у acidcrunch написано про камеру в модели Aleph (Runway Aleph). Если сигнала нет — скажи честно.',
         'query_variants': [],
         'search_args': ['--experts', 'acidcrunch'],
-        'expected_keys': ['acidcrunch:1350', 'acidcrunch:1062', 'acidcrunch:1276', 'acidcrunch:1313', 'acidcrunch:1320', 'acidcrunch:1335'],
-        'min_hits': 2,
+        'expected_keys': ['acidcrunch:1350', 'acidcrunch:1276', 'acidcrunch:1320', 'acidcrunch:1335'],
+        'min_hits': 1,
         'note': 'один эксперт, источники 2025 года',
         'provenance': 'scout_run:20260914-000628-1211929',
+        'reviewed_at': '2026-09-30',
+        'rubric': 'Ответ только по acidcrunch: конкретное управление камерой Aleph; не выдавать Gen-4 References за Aleph.',
+        'evidence': {'acidcrunch:1350': 'В Aleph это тоже работает.', 'acidcrunch:1276': 'копировать траекторию камеры', 'acidcrunch:1320': 'Менять ракурс съёмки', 'acidcrunch:1335': 'Extreme zoom in x 100'},
     },
     {
         'id': 'kling_o3_cgevent',
@@ -149,10 +154,10 @@ FIXTURES: list[dict] = [
         'tags': ['scope_videohub', 'broad'],
         'question': 'Какой контент, связанный с Higgsfield (Higgsfield AI), уже есть в корпусе VideoHub? Перечисли, какие видео, модели (например Soul, DoP, Seedance, Cinema Studio, Kling, Veo и т.п.), техники и темы по Higgsfield уже покрыты в сегментах экспертов. Нужен максимально полный инвентарь: названия/темы видео-источников и о чём они.',
         'query_variants': [],
-        'search_args': [],
-        'expected_keys': ['video_hub:575947525', 'video_hub:679225094', 'video_hub:759787428', 'acidcrunch:1207', 'acidcrunch:1558', 'acidcrunch:1709'],
+        'search_args': ['--experts', 'video_hub'],
+        'expected_keys': ['video_hub:575947525', 'video_hub:679225094', 'video_hub:759787428'],
         'min_hits': 2,
-        'note': 'инвентарь VideoHub (тест digest)',
+        'note': 'Диагностика retrieval по выборке VideoHub; три ключа не доказывают полноту инвентаря. Telegram исключён из gold согласно вопросу.',
         'provenance': 'scout_run:20260921-115241-1220614',
     },
     {
@@ -162,10 +167,14 @@ FIXTURES: list[dict] = [
         'question': 'Grid prompting for AI video: creating a single image with a 3x3 grid of nine film stills (nine equal panels) and then animating between the panels sequentially in one long video generation to get a multi-shot sequence with consistency. Also: first-frame plus last-frame interpolation to control the start and end of a shot while the model decides the middle. Do practitioners use these techniques? Give sources with source_key.',
         'query_variants': [],
         'search_args': [],
-        'expected_keys': ['acidcrunch:2044', 'acidcrunch:741', 'cgevent:16144', 'iideyalogiya:1304', 'iideyalogiya:1388', 'strangedalle:1348'],
+        'expected_keys': ['acidcrunch:2044', 'iideyalogiya:1304', 'iideyalogiya:1388', 'strangedalle:1348', 'video_hub:531461744', 'video_hub:102636863', 'video_hub:619811946'],
         'min_hits': 2,
         'note': 'узкая техника: grid 3x3',
         'provenance': 'scout_run:20260922-101956-1725373',
+        'required_groups': {'grid_animation': ['acidcrunch:2044', 'video_hub:102636863'], 'first_last_frame': ['strangedalle:1348', 'video_hub:619811946']},
+        'reviewed_at': '2026-09-30',
+        'rubric': 'Различить создание сетки, её анимацию и first/last interpolation. Статическая сетка сама по себе не подтверждает анимацию.',
+        'evidence': {'acidcrunch:2044': 'Работают сетки сцены 3×3', 'iideyalogiya:1304': 'Generate a cohesive 3x3 grid', 'iideyalogiya:1388': 'a clean 3×3 storyboard grid', 'strangedalle:1348': 'start-end frame', 'video_hub:531461744': 'a 3x3 grid of nine film stills', 'video_hub:102636863': 'Animate each frame as an individual shot', 'video_hub:619811946': 'the video will interpolate between these two exact frames.'},
     },
     {
         'id': 'character_likeness_longform',
@@ -210,9 +219,9 @@ FIXTURES: list[dict] = [
         'question': "English probe: what does the corpus say about these specific AI video techniques: (1) writing speech direction INTO the video audio prompt - 'spoken on camera with mouth moving' vs narration/voiceover, (2) counting script words for video duration - about 75 words per 30 seconds or the model fills silence, (3) generating multiple location transitions inside ONE video generation call with several reference images, (4) voice change / training a custom voice from a recording vs TTS presets? Concrete source_key citations please.",
         'query_variants': [],
         'search_args': [],
-        'expected_keys': ['cgevent:16753', 'iideyalogiya:1914', 'neyrograph:4573', 'video_hub:139865057', 'video_hub:231192822', 'video_hub:293918715'],
+        'expected_keys': ['cgevent:16753', 'iideyalogiya:1914', 'neyrograph:4573', 'video_hub:139865057', 'video_hub:231192822'],
         'min_hits': 2,
-        'note': 'EN-вопрос: speech direction в audio-промт',
+        'note': 'Исторический многосоставный вопрос. Удалён video_hub:293918715: преимущества grid prompting не подтверждают speech direction.',
         'provenance': 'scout_run:20260929-090304-4028516',
     },
     {
@@ -223,9 +232,13 @@ FIXTURES: list[dict] = [
         'query_variants': [],
         'search_args': [],
         'expected_keys': ['acidcrunch:371', 'doronin:394', 'strangedalle:1066', 'polyakov:128'],
-        'min_hits': 2,
+        'min_hits': 1,
         'note': 'стабильность: вопрос гонялся 4 раза',
         'provenance': 'scout_run:20260913-233219-1202872',
+        'max_sources': 1,
+        'reviewed_at': '2026-09-30',
+        'rubric': 'Один прочитанный источник из допустимых альтернатив достаточен; объяснить использование изображений элементов.',
+        'evidence': {'acidcrunch:371': 'Просто загружаете до 4 изображений', 'doronin:394': 'Поместить один понятный Клингу элемент', 'strangedalle:1066': 'соединять различные картинки (до 4 штук)', 'polyakov:128': 'промпт + действующие лица.'},
     },
     {
         'id': 'ae_motion_graphics_agent',
@@ -241,27 +254,34 @@ FIXTURES: list[dict] = [
     },
     {
         'id': 'minimax_degradation',
-        'kind': 'hit',
-        'tags': ['scope_expert', 'freshness_tool'],
-        'question': 'Найди практические свидетельства по MiniMax H3: резкая деградация reference-to-video после замены двух image references и небольшой правки prompt при прежнем clay-видео12.5с,6изображениях,13с output. Симптомы: перенос временных цветов clay в финал, пенные кольца несмотря на отрицания, лишние объекты, дрейф камеры. Особенно интересуют binding Video/Picture/Subject, Context-IR/rewrite, reAPI prompt expansion/seed, конфликт референсов и контролируемая диагностика. Отдели H3 от других моделей и hosted от local; нужны источники/даты и честные пробелы, не диагноз проекта.',
-        'query_variants': [],
-        'search_args': [],
-        'expected_keys': ['cgevent:16239', 'cgevent:16316', 'cgevent:16451', 'video_hub:371286679', 'video_hub:752772063', 'video_hub:995586242'],
-        'min_hits': 2,
-        'note': 'узкий tool-вопрос: деградация MiniMax H3',
-        'provenance': 'scout_run:20260923-232200-2292414',
-    },
-    {
-        'id': 'hypermotion_gap',
         'kind': 'gap',
-        'tags': ['gap'],
-        'question': 'Проверь покрытие корпуса (покрыто + source_key / gap): гипермоушн-реклама продуктов — разлетающаяся банка, осколки стекла/льда, замороженные фрукты как продуктовый макро-шот.',
+        'tags': ['model_separation', 'partial_context'],
+        'question': 'Найди практические свидетельства по MiniMax H3: резкая деградация reference-to-video после замены двух image references и небольшой правки prompt при прежнем clay-видео12.5с,6изображениях,13с output. Симптомы: перенос временных цветов clay в финал, пенные кольца несмотря на отрицания, лишние объекты, дрейф камеры. Особенно интересуют binding Video/Picture/Subject, Context-IR/rewrite, reAPI prompt expansion/seed, конфликт референсов и контролируемая диагностика. Отдели H3 от других моделей и hosted от local; нужны источники/даты и честные пробелы, не диагноз проекта.',
         'query_variants': [],
         'search_args': [],
         'expected_keys': [],
         'min_hits': 0,
-        'note': 'подтверждённый gap: продуктовый гипермоушн-макрошот; allowlist near-hit acidcrunch:893 (2025, общий bullet time)',
+        'note': 'Прямой описанный кейс H3 не подтверждён. Старые ключи были общими новостями H3 и другими моделями Seedance/Cinema Studio, не доказательством диагностики.',
+        'provenance': 'scout_run:20260923-232200-2292414',
+        'reviewed_at': '2026-09-30',
+        'rubric': 'Честно обозначить отсутствие точного кейса. Общие данные H3 допустимы только как контекст; Seedance не доказывает причины сбоя H3.',
+        'allow_context_citations': True,
+        'evidence': {},
+    },
+    {
+        'id': 'hypermotion_gap',
+        'kind': 'hit',
+        'tags': ['historical_gap_closed', 'scope_all'],
+        'question': 'Проверь покрытие корпуса (покрыто + source_key / gap): гипермоушн-реклама продуктов — разлетающаяся банка, осколки стекла/льда, замороженные фрукты как продуктовый макро-шот.',
+        'query_variants': [],
+        'search_args': [],
+        'expected_keys': ['video_hub:468785115'],
+        'min_hits': 1,
+        'note': 'Бывший gap закрыт: прямой hypermotion-кейс банки, фруктов и льда. Не требовать отсутствующий разбор осколков стекла.',
         'provenance': 'scout_run:20260920-100750-467477',
+        'reviewed_at': '2026-09-30',
+        'rubric': 'Найти рекламу банки с фруктами/льдом и Blender blocking. Отдельные неподтверждённые детали не придумывать.',
+        'evidence': {'video_hub:468785115': 'Can explodes into slices, fruit cracks open, ice floats, and everything freezes mid-air.'},
     },
     {
         'id': 'morph_pravilo180',
@@ -296,8 +316,102 @@ FIXTURES: list[dict] = [
         'search_args': [],
         'expected_keys': [],
         'min_hits': 0,
-        'note': 'заведомо вне корпуса: любые источники в ответе = галлюцинация',
+        'allow_context_citations': True,
+        'note': 'Ссылки на прочитанный смежный контекст допустимы; его уместность и оговорки оцениваются по рубрике.',
         'provenance': 'manual_negative_control',
+        'reviewed_at': '2026-09-30',
+        'rubric': 'Явно сказать, что конкретные протоколы NGS не найдены в проверенных материалах. Смежный контекст допустим только с объяснением, чего он не подтверждает; не выдавать его за ответ, не придумывать инструкции и не объявлять доказанным отсутствие во всём корпусе.',
+        'evidence': {},
     },
+
+    {'id': 'videohub_liquid_speed_ramp',
+     'kind': 'hit',
+     'tags': ['scope_videohub', 'historical_repair'],
+     'question': 'По ВидеоХабу: как подготовить в Blender рекламный ролик с жидкостью и резкими ускорениями '
+                 'камеры? Нужны конкретные приёмы: что оставляют вместо симуляции жидкости и как задают speed '
+                 'ramp до AI-генерации.',
+     'query_variants': [],
+     'search_args': ['--experts', 'video_hub'],
+     'expected_keys': ['video_hub:276863315', 'video_hub:210678333'],
+     'min_hits': 2,
+     'note': 'Регрессия найденной и исправленной исторической потери; проверено полным show.',
+     'provenance': 'source_review:2026-09-30',
+     'reviewed_at': '2026-09-30',
+     'rubric': 'Чёрная заглушка вместо блокинга жидкости; speed ramp задаётся изменением блокинга, а не общим '
+               'советом экономить кредиты.',
+     'evidence': {'video_hub:276863315': 'Keep it black in the block out, and let the AI fill it in later.',
+                  'video_hub:210678333': 'The camera slams in, pauses for a beat, and accelerates into the next '
+                                         'cut.'}},
+
+    {'id': 'videohub_dialogue_language',
+     'kind': 'hit',
+     'tags': ['scope_videohub', 'historical_repair'],
+     'question': 'По ВидеоХабу: как Youri предлагает задавать язык и акцент реплик, где хранить текст реплик и '
+                 'где указывать момент их произнесения? Нужны конкретные инструкции эксперта.',
+     'query_variants': [],
+     'search_args': ['--experts', 'video_hub'],
+     'expected_keys': ['video_hub:231192822'],
+     'min_hits': 1,
+     'note': 'Регрессия найденной и исправленной исторической потери; проверено полным show.',
+     'provenance': 'source_review:2026-09-30',
+     'reviewed_at': '2026-09-30',
+     'rubric': 'Язык/акцент и подача в dialogue block; реплики повторены по порядку; шот задаёт когда, dialogue '
+               'задаёт что и как.',
+     'evidence': {'video_hub:231192822': 'This is also where you name the language and the accent, if you want '
+                                         'to.'}},
+
+    {'id': 'videohub_character_sheet_model',
+     'kind': 'hit',
+     'tags': ['scope_videohub', 'historical_repair'],
+     'question': 'По ВидеоХабу: какую модель Dan Kieft использует для character sheet в уроке про реалистичные '
+                 'видео Seedance 2.5, почему убирает шляпу и как закрепляет внешность героя?',
+     'query_variants': [],
+     'search_args': ['--experts', 'video_hub'],
+     'expected_keys': ['video_hub:763320226'],
+     'min_hits': 1,
+     'note': 'Регрессия найденной и исправленной исторической потери; проверено полным show.',
+     'provenance': 'source_review:2026-09-30',
+     'reviewed_at': '2026-09-30',
+     'rubric': 'Seedream 5.0 Pro, не SeaArt; убрать мелкую деталь; sheet и портрет как identity references, '
+               'запреты recast/beautify.',
+     'evidence': {'video_hub:763320226': "I'm now using Seedream 5.0 Pro when I generate these character "
+                                         'sheets.'}},
+
+    {'id': 'videohub_fake_fall',
+     'kind': 'hit',
+     'tags': ['scope_videohub', 'historical_repair'],
+     'question': 'По ВидеоХабу: по каким признакам в разборе VFX можно заметить ненастоящее падение цифрового '
+                 'дублёра с обрыва? Какие именно ошибки движения и внешности отмечает автор?',
+     'query_variants': [],
+     'search_args': ['--experts', 'video_hub'],
+     'expected_keys': ['video_hub:445026460'],
+     'min_hits': 1,
+     'note': 'Регрессия найденной и исправленной исторической потери; проверено полным show.',
+     'provenance': 'source_review:2026-09-30',
+     'reviewed_at': '2026-09-30',
+     'rubric': 'Постоянная скорость без ускорения, жёсткая поза, нет движения одежды/конечностей; меняются '
+               'кроссовки.',
+     'evidence': {'video_hub:445026460': 'No acceleration, nothing moving in the clothes or the limbs.'}},
 ]
 
+# Paired questions share source evidence with the original cases. Only the
+# wording and semantic task differ; the agent never receives the gold/rubric.
+_by_id = {fixture['id']: fixture for fixture in FIXTURES}
+FIXTURES.extend([
+    {
+        **_by_id['videohub_liquid_speed_ramp'],
+        'id': 'videohub_liquid_plain_language',
+        'tags': ['scope_videohub', 'plain_language'],
+        'question': 'По ВидеоХабу: как подготовить рекламный ролик, чтобы камера резко разгонялась и притормаживала? А кусок с льющейся жидкостью обязательно заранее делать в Blender?',
+        'note': 'Парный вопрос без терминов speed ramp и блокинг; те же два приёма и источника.',
+    },
+    {
+        **_by_id['videohub_character_sheet_model'],
+        'id': 'videohub_character_sheet_false_premise',
+        'tags': ['scope_videohub', 'false_premise'],
+        'question': 'По ВидеоХабу: в разборе Dan Kieft про реалистичные видео Seedance 2.5 таблицу персонажа делают в SeaArt, правильно? Как он это делает?',
+        'note': 'Ошибочная подсказка пользователя; наличие правильной ссылки само по себе не доказывает исправления ошибки.',
+        'rubric': 'Явно исправить SeaArt на Seedream 5.0 Pro со ссылкой на источник. Объяснить подготовку character sheet по материалу Dan; не приписывать этот процесс SeaArt и не сочинять его настройки. Проверять смысл вручную: слова SeaArt и Seedream сами по себе ничего не доказывают.',
+    },
+])
+del _by_id

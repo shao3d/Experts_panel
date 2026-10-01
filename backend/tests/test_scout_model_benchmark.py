@@ -109,3 +109,27 @@ def test_mcp_reuses_schema_and_rejects_invalid_calls_without_corpus_access():
     assert tool["name"] == "scout"
     assert tool["inputSchema"]["properties"]["command"]["enum"] == ["experts", "videos", "search", "digest", "show"]
     assert results[2]["isError"] and results[3]["isError"]
+
+
+def test_mimo_uses_drift_connection_but_scout_agent(monkeypatch):
+    commands = []
+    events = [
+        {'type': 'text', 'part': {'text': 'Final answer', 'messageID': 'answer'}},
+        {'type': 'step_finish', 'part': {'reason': 'stop'}},
+    ]
+
+    def run_process(command, env, timeout):
+        commands.append(command)
+        return subprocess.CompletedProcess(command, 0, '\n'.join(map(json.dumps, events)), '')
+
+    monkeypatch.setattr(bench, 'run_process', run_process)
+    result = bench.run('mimo', 'test', 30, question='Test question')
+    command = commands[0]
+    assert command[0] == bench.OPENCODE_BIN
+    assert command[command.index('--attach') + 1] == bench.OPENCODE_URL
+    assert command[command.index('--model') + 1] == bench.OPENCODE_MODEL
+    assert command[command.index('--agent') + 1] == 'expert-scout'
+    assert command[command.index('--dir') + 1] == str(ROOT)
+    assert command[-1] == 'Test question'
+    assert result['answer'] == 'Final answer'
+    assert result['run_completed'] is True

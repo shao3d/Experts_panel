@@ -1,7 +1,7 @@
 # Карта Документации
 
 Status: Active
-Last updated: 2026-09-30
+Last updated: 2026-10-01
 
 Это навигационный слой проекта Experts Panel. Он должен отвечать на вопрос
 "куда смотреть?", а не пересказывать содержимое всех документов.
@@ -23,6 +23,7 @@ Last updated: 2026-09-30
 
 | Задача | Сначала читать | Потом, если нужно |
 | --- | --- | --- |
+| **VideoHub и Скаут: Dan опубликован, стенд обновлён; проверки и ограничения** | `docs/quality/2026-09-30-videohub-scout-fixes.md` | `docs/guides/video-hub-operator.md`, `docs/guides/expert-scout.md`; история передачи: `docs/archive/2026-09-30-videohub-scout-handoff-starter.md` |
 | **Завершено: ввод free-roam тройки (3I2jj6HA3p0, yUiTmO8AjJc, 6dNnvhoR3YY) в VideoHub, 2026-09-29** | `docs/roadmap/video-hub-scaling.md` (watchlist), `docs/video-hub-index.md` | `docs/archive/2026-09-29-videohub-free-roam-trio-starter.md` (история); гейт: `docs/architecture/expert-admission-control.md` §16 |
 | **Завершено: ввод H8WDehuVams + reFzEtCG_m8 в VideoHub, 2026-09-29** | `docs/roadmap/video-hub-scaling.md` (watchlist), `docs/video-hub-index.md` | `docs/archive/2026-09-29-videohub-two-videos-ingest-starter.md` (история); гейт: `docs/architecture/expert-admission-control.md` §16 |
 | **Завершено: admission Visual (neyrograph, iideyalogiya) — limited_scope, 2026-09-15** | `docs/architecture/current-expert-roster.md`, `docs/architecture/expert-admission-control.md` | `docs/archive/2026-09-15-neyrograph-admission-starter.md` (§7, история) |
@@ -43,7 +44,7 @@ Last updated: 2026-09-30
 | Generic Reddit Search client | `docs/guides/reddit-search-generic-client.md` | `clients/reddit-search-generic/`, `scripts/build_reddit_search_generic_client.sh` |
 | Agentic read-only поиск по корпусу (Expert Scout) | `docs/guides/expert-scout.md` | `backend/scripts/expert_scout.py` (experts/videos/search/digest/show), `backend/src/expert_groups.py`, `.opencode/agents/expert-scout.md`, `.opencode/plugins/expert-scout-tools.ts`, `.codex/skills/expert-scout/`, `scripts/expert_scout.sh`, `scripts/install_expert_scout_skill.sh` |
 | Замеры качества Скаута (стенды и верификатор) | `docs/guides/expert-scout.md` (разделы «Измерение качества», «Отклонённые и opt-in эксперименты», «Что уже улучшено») | `backend/scripts/search_probe.py`, `backend/scripts/agent_probe.py`, `backend/scripts/verify_citations.py`, фикстуры и baseline: `backend/tests/search_probe_fixtures.py`, `backend/tests/search_probe_baseline.json` |
-| Правки после аудита VideoHub/Скаута: проверки, ограничения Bunny, ремонт 16 исторических видео, MiMo drift и visual data release | `docs/quality/2026-09-30-videohub-scout-fixes.md` | Текущее поведение — в профильных SSOT; сравнение моделей — `backend/scripts/benchmark_scout_models.py`; результаты ремонта — `output/video_review/2026-09-30/summary.json` |
+| Правки после аудита VideoHub/Скаута: проверки, ограничения Bunny, ремонт 16 исторических видео, MiMo drift, visual data release и пересмотр тестовых вопросов | `docs/quality/2026-09-30-videohub-scout-fixes.md` | Текущее поведение — в профильных SSOT; сравнение моделей — `backend/scripts/benchmark_scout_models.py`; результаты ремонта — `output/video_review/2026-09-30/summary.json` |
 | Аудит VideoHub, Матрицы и Скаута; сравнение Bunny, Luna max и Sol low | `docs/quality/2026-09-30-videohub-scout-audit.md` | Воспроизведение сравнения: `backend/scripts/benchmark_scout_models.py`; действующее поведение — в профильных SSOT выше |
 | Языки / перевод RU-EN | `docs/architecture/multilingual-support.md` | `backend/src/utils/language_utils.py`, `backend/src/services/translation_service.py` |
 | Backend runtime / health / CLI bootstrap | `docs/roadmap/backend-runtime-cleanup.md` | `backend/CLAUDE.md` |
