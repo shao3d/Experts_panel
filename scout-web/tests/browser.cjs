@@ -6,17 +6,19 @@ const assert = require('node:assert/strict');
     const page = await browser.newPage({viewport,permissions:['clipboard-read','clipboard-write']});
     let job;
     let finish = false;
+    let submissions = 0;
     await page.route('**/scout-api/**', async route => {
       const path = new URL(route.request().url()).pathname;
       let result;
       if (path.endsWith('/auth')) result={status:'ok'};
       else if (route.request().method()==='POST') {
+        submissions++;
         job={id:'a'.repeat(32),question:JSON.parse(route.request().postData()).question,status:'running',message:'Ищу в Telegram…',started_at:Date.now()/1000,elapsed:0,answer:''}; result=job;
       } else if (route.request().method()==='DELETE') {
         job={...job,status:'stopped',message:'Поиск остановлен',elapsed:1}; result=job;
       } else {
         if (finish) job={...job,status:'completed',message:'Готово',elapsed:42,
-          answer:'**Редактируемые слои** — не live text.\n\n[Dan Kieft · 14:35](https://www.youtube.com/watch?v=qwGIwxZFc2I&t=875s) · `video_hub:123`, Higgsfield AI, 28.08.2026, 18:06. Ключи: `video_hub:456`\n\nСохраняй референс ([Пост](https://t.me/AcidCrunch/2511) · acidcrunch:2511, **Acid Crunch**, *26.06.2026*, 01:02–01:18). Это важное пояснение.\n\nЕщё совет: **[Разбор](https://www.youtube.com/watch?v=example)**. Не потерять текст после ссылки.\n\nКлюч: `cgevent:42`.\n\n```\ncgevent:43\n```\n\n<script>window.compromised=true</script><img src=x onerror="window.compromised=true">\n\n| Приём | Ограничение |\n|---|---|\n| Слои AE | Контуры букв (Источник: [Источник](https://t.me/cgevent/42)) |'};
+          answer:'**Редактируемые слои** — не live text.\n\n[Dan Kieft · 14:35](https://www.youtube.com/watch?v=qwGIwxZFc2I&t=875s) · `video_hub:123`, Higgsfield AI, 28.08.2026, 18:06. Ключи: `video_hub:456`\n\nСохраняй референс ([Пост](https://t.me/AcidCrunch/2511) · acidcrunch:2511, **Acid Crunch**, *26.06.2026*, 01:02–01:18). Это важное пояснение.\n\nЕщё совет: **[Разбор](https://www.youtube.com/watch?v=example)**. Не потерять текст после ссылки.\n\nПроверенный совет — важная деталь. — Dan Kieft, 01.09.2026, [04:23](https://www.youtube.com/watch?v=example&t=263s), `video_hub:789`.\n\nКлюч: `cgevent:42`.\n\n```\ncgevent:43\n```\n\n<script>window.compromised=true</script><img src=x onerror="window.compromised=true">\n\n| Приём | Ограничение |\n|---|---|\n| Слои AE | Контуры букв (Источник: [Источник](https://t.me/cgevent/42)) |'};
         result=job;
       }
       await route.fulfill({json:result,headers:{'access-control-allow-origin':'*'}});
@@ -29,9 +31,18 @@ const assert = require('node:assert/strict');
     await page.locator('#question').fill('Как сохранить персонажа?');
     assert.equal(await page.locator('#question').evaluate(el=>getComputedStyle(el).outlineStyle),'none');
     assert.equal(await page.locator('#ask').evaluate(el=>getComputedStyle(el).borderTopColor),'rgb(217, 160, 91)');
+    assert.equal(await page.locator('#elapsed').count(),0);
+    assert.ok((await page.locator('#shortcut').innerText()).includes('Shift + Enter'));
+    assert.equal(Math.round((await page.locator('#shortcut').boundingBox()).x+(await page.locator('#shortcut').boundingBox()).width), Math.round((await page.locator('#ask').boundingBox()).x+(await page.locator('#ask').boundingBox()).width));
+    await page.locator('#question').press('Enter');
+    assert.equal(submissions,0);
+    assert.ok((await page.locator('#question').inputValue()).includes('\n'));
     const beforeSearch = await page.locator('#ask').boundingBox();
-    await page.locator('#action').click();
+    await page.locator('#question').press('Shift+Enter');
     await page.waitForFunction(()=>document.querySelector('#action').textContent==='Остановить');
+    assert.equal(submissions,1);
+    await page.locator('#question').press('Shift+Enter');
+    assert.equal(submissions,1);
     assert.match(await page.locator('#message').textContent(), /Telegram/);
     assert.equal((await page.locator('#ask').boundingBox()).y,beforeSearch.y);
     await page.reload();
@@ -44,11 +55,12 @@ const assert = require('node:assert/strict');
     assert.equal(await page.locator('#answer table').count(),1);
     assert.equal((await page.locator('#answer pre').innerText()).trim(),'cgevent:43');
     const sources = page.locator('#answer .source-toggle');
-    assert.equal(await sources.count(),5);
+    assert.equal(await sources.count(),6);
     assert.equal(await page.locator('#answer a:visible').count(),0);
     assert.ok(!(await page.locator('#answer').innerText()).includes('video_hub:123'));
-    for (const metadata of ['Higgsfield AI', '28.08.2026', '18:06', 'Acid Crunch', '26.06.2026', '01:02']) assert.ok(!(await page.locator('#answer').innerText()).includes(metadata), metadata);
+    for (const metadata of ['Higgsfield AI', '28.08.2026', '18:06', 'Acid Crunch', '26.06.2026', '01:02', 'Dan Kieft, 01.09.2026']) assert.ok(!(await page.locator('#answer').innerText()).includes(metadata), metadata);
     assert.ok((await page.locator('#answer').innerText()).includes('Это важное пояснение.'));
+    assert.ok((await page.locator('#answer').innerText()).includes('Проверенный совет — важная деталь.'));
     assert.ok((await page.locator('#answer').innerText()).includes('Не потерять текст после ссылки.'));
     assert.ok(!(await page.locator('#answer').innerText()).includes('((источники'));
     await sources.first().click();

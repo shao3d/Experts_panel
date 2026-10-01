@@ -20,10 +20,10 @@
     </form>
     <form id="ask" class="composer" hidden>
       <label class="sr-only" for="question">Вопрос Скауту</label>
-      <textarea id="question" rows="2" maxlength="6000" placeholder="Задай вопрос…" required></textarea>
-      <button id="action">Спросить</button>
+      <textarea id="question" rows="2" maxlength="6000" placeholder="Задай вопрос…" aria-describedby="shortcut" required></textarea>
+      <button id="action">Отправить</button>
     </form>
-    <div class="status" role="status" aria-live="polite"><span id="message"></span><time id="elapsed"></time></div>
+    <div class="status"><span id="message" role="status" aria-live="polite"></span><span id="shortcut" hidden>Shift + Enter — отправить</span></div>
     <article id="answer" aria-label="Ответ Скаута" hidden></article>
     <button id="copy" class="quiet" hidden>Скопировать</button>
   </main>

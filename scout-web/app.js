@@ -4,7 +4,6 @@ const $ = id => document.getElementById(id);
 let password = sessionStorage.getItem('scout-password') || '';
 let job = null;
 let answer = '';
-let timer = null;
 let stoppedPolling = false;
 const terminal = new Set(['completed', 'partial', 'error', 'stopped']);
 
@@ -31,6 +30,27 @@ function foldSources(root) {
     (node.matches('a') || (node.matches('code') && key.test(node.textContent)));
   const separator = node => node.nodeType === Node.TEXT_NODE &&
     /^[\s.,;:·|()[\]—–-]*(?:(?:Ключи?|Источники?|source_keys?|Sources?)\s*:\s*)?[\s.,;:·|()[\]—–-]*$/i.test(node.textContent);
+  function citationFragment(siblings, start, length) {
+    const range = document.createRange();
+    let position = 0, started = false;
+    for (const sibling of siblings) {
+      const walker = document.createTreeWalker(sibling, NodeFilter.SHOW_TEXT);
+      let text = sibling.nodeType === Node.TEXT_NODE ? sibling : walker.nextNode();
+      while (text) {
+        if (!started && start <= position + text.length) {
+          range.setStart(text, start - position); started = true;
+        }
+        if (started && start + length <= position + text.length) {
+          range.setEnd(text, start + length - position);
+          const fragment = range.extractContents(), parts = [...fragment.childNodes];
+          range.insertNode(fragment);
+          return parts;
+        }
+        position += text.length; text = walker.nextNode();
+      }
+    }
+    return [];
+  }
   function metadataAfter(node) {
     // A citation's author/date/time are one unit. Stop before ordinary prose.
     const siblings = [];
@@ -41,24 +61,17 @@ function foldSources(root) {
     const text = siblings.map(item => item.textContent).join('');
     const match = text.match(/^[\s,;·—–-]+(?:[^,;\n().!?]{1,100},\s*)?(?:\d{2}\.\d{2}\.\d{4}|\d{4}-\d{2}-\d{2})(?:\s*[,·]\s*\d{1,2}:\d{2}(?::\d{2})?(?:\s*[–—-]\s*\d{1,2}:\d{2}(?::\d{2})?)?)?/);
     if (!match) return [];
-    let remaining = match[0].length;
-    const range = document.createRange(); range.setStartAfter(node);
-    for (const sibling of siblings) {
-      const walker = document.createTreeWalker(sibling, NodeFilter.SHOW_TEXT);
-      let textNode = sibling.nodeType === Node.TEXT_NODE ? sibling : walker.nextNode();
-      while (textNode) {
-        if (remaining <= textNode.length) {
-          range.setEnd(textNode, remaining);
-          const fragment = range.extractContents();
-          const parts = [...fragment.childNodes];
-          node.after(fragment);
-          return parts;
-        }
-        remaining -= textNode.length;
-        textNode = walker.nextNode();
-      }
+    return citationFragment(siblings, 0, match[0].length);
+  }
+  function metadataBefore(node) {
+    const siblings = [];
+    for (let before = node.previousSibling; before; before = before.previousSibling) {
+      if (before.nodeType !== Node.TEXT_NODE && !before.matches?.('strong,em,span')) break;
+      siblings.unshift(before);
     }
-    return [];
+    const text = siblings.map(item => item.textContent).join('');
+    const match = text.match(/(?:Источник:\s*[^;\n]{1,300}|[—–]\s*[^,;\n.!?—–]{1,100}),\s*(?:\d{2}\.\d{2}\.\d{4}|\d{4}-\d{2}-\d{2}),\s*$/i);
+    return match ? citationFragment(siblings, match.index, match[0].length) : [];
   }
   let number = 0;
   const parents = new Set([...root.querySelectorAll('a,code')].filter(node => citation(node) && !node.closest('pre')).map(node => node.parentElement));
@@ -79,6 +92,8 @@ function foldSources(root) {
         const metadata = metadataAfter(end);
         if (metadata.length) { nodes.push(...metadata); end = metadata.at(-1); }
       }
+      const prefix = metadataBefore(node);
+      if (prefix.length) { nodes.unshift(...prefix); node = prefix[0]; }
       const before = node.previousSibling;
       const after = end.nextSibling;
       // Reuse existing parentheses rather than adding a second pair.
@@ -135,6 +150,7 @@ async function request(path, options = {}) {
       sessionStorage.removeItem('scout-password');
       $('login').hidden = false;
       $('ask').hidden = true;
+      $('shortcut').hidden = true;
     }
     throw new Error(typeof data.detail === 'string' ? data.detail : 'Не удалось выполнить запрос.');
   }
@@ -146,17 +162,10 @@ function display(data) {
   const running = !terminal.has(data.status);
   $('message').textContent = data.message;
   document.querySelector('.status').classList.toggle('running', running);
-  $('action').textContent = running ? 'Остановить' : 'Спросить';
+  $('action').textContent = running ? 'Остановить' : 'Отправить';
   $('question').readOnly = running;
   $('question').value = data.question;
   resizeQuestion();
-  clearInterval(timer);
-  const tick = () => {
-    const seconds = running ? Math.max(0, Math.round(Date.now() / 1000 - data.started_at)) : data.elapsed;
-    $('elapsed').textContent = `${String(Math.floor(seconds / 60)).padStart(2,'0')}:${String(seconds % 60).padStart(2,'0')}`;
-  };
-  tick();
-  if (running) timer = setInterval(tick, 1000);
   answer = data.answer || '';
   $('answer').hidden = !answer;
   $('copy').hidden = !answer;
@@ -186,7 +195,6 @@ async function poll() {
       $('message').textContent = 'Связь прервалась. Восстанавливаю…';
       if (++failures >= 5) {
         $('message').textContent = 'Связь прервалась. Обнови страницу: поиск сохранён.';
-        clearInterval(timer);
         break;
       }
     }
@@ -198,6 +206,7 @@ async function login() {
   sessionStorage.setItem('scout-password', password);
   $('login').hidden = true;
   $('ask').hidden = false;
+  $('shortcut').hidden = false;
   $('question').focus();
   resizeQuestion();
   $('message').textContent = '';
@@ -214,6 +223,13 @@ $('login').addEventListener('submit', async event => {
   catch (error) { $('message').textContent = error.message; }
 });
 $('question').addEventListener('input', resizeQuestion);
+$('question').addEventListener('keydown', event => {
+  if (event.key !== 'Enter' || !event.shiftKey || event.isComposing ||
+      event.ctrlKey || event.metaKey || event.altKey) return;
+  event.preventDefault();
+  if (event.repeat || $('question').readOnly || $('action').disabled) return;
+  $('ask').requestSubmit();
+});
 window.addEventListener('resize', resizeQuestion);
 $('ask').addEventListener('submit', async event => {
   event.preventDefault(); $('action').disabled = true;
