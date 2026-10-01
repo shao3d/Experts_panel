@@ -32,6 +32,30 @@ const assert = require('node:assert/strict');
       await route.fulfill({json:result,headers:{'access-control-allow-origin':'*'}});
     });
     await page.goto(process.env.SCOUT_PAGE || 'http://127.0.0.1:8767');
+    const duplicateCases = await page.evaluate(() => {
+      const url = 'https://www.youtube.com/watch?v=qwGIwxZFc2I&t=263s';
+      const sources = {'video_hub:789': {url, label: 'Dan Kieft · AI workflow · 4:23'}};
+      const cases = [
+        `[Видео](${url}), [4:23](${url})`,
+        `[4:23](${url}), [Видео](${url})`,
+        `\`video_hub:789\`, [4:23](${url})`,
+        `[Видео · 4:23](${url}), [4:23](${url}), \`video_hub:789\``,
+        `[Видео · 4:23](${url}), [14:35](https://www.youtube.com/watch?v=qwGIwxZFc2I&t=875s)`
+      ];
+      return cases.map(markdown => {
+        const root = document.createElement('div');
+        root.innerHTML = DOMPurify.sanitize(marked.parse(markdown));
+        foldSources(root); linkSources(root, sources);
+        return {links: [...root.querySelectorAll('a')].map(a => ({text: a.textContent, href: a.href})), text: root.textContent};
+      });
+    });
+    for (const result of duplicateCases.slice(0, 4)) {
+      assert.equal(result.links.length, 1, JSON.stringify(result));
+      assert.equal(result.links[0].text.match(/4:23/g)?.length, 1, JSON.stringify(result));
+      assert.match(result.links[0].text, /Видео|Dan Kieft/);
+      assert.equal(result.links[0].href, 'https://www.youtube.com/watch?v=qwGIwxZFc2I&t=263s');
+    }
+    assert.equal(duplicateCases[4].links.length, 2, 'Different moments of the same video must remain clickable');
     await page.locator('#password').fill('test-password');
     await page.locator('#login button').click();
     await page.locator('#question').fill('Длинный вопрос\nсо второй строкой\nи третьей строкой\nи четвёртой строкой');

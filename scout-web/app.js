@@ -173,12 +173,21 @@ function linkSources(root, sources = {}) {
         if (original && provider(original) === provider(target)) link.href = target.href;
       });
     }
-    // Keep the named citation when its adjacent key points to the same URL.
+    // Show each destination once, including model-written timestamp links.
     const seen = new Map();
     wrapper.querySelectorAll('a[href]').forEach(link => {
       const previous = seen.get(link.href);
-      if (previous && link.dataset.sourceKey && (!previous.dataset.sourceKey || previous.dataset.sourceKey === link.dataset.sourceKey)) {
-        previous.title = link.title; previous.dataset.sourceKey = link.dataset.sourceKey;
+      if (previous && publicUrl(link.href)) {
+        const timestamp = /^\d{1,2}:\d{2}(?::\d{2})?$/;
+        const label = link.textContent.trim(), previousLabel = previous.textContent.trim();
+        if (timestamp.test(previousLabel) && !timestamp.test(label)) {
+          previous.textContent = label.includes(previousLabel) ? label : `${label} · ${previousLabel}`;
+        } else if (timestamp.test(label) && !previousLabel.includes(label)) {
+          previous.textContent += ` · ${label}`;
+        }
+        if (link.dataset.sourceKey) {
+          previous.title = link.title; previous.dataset.sourceKey = link.dataset.sourceKey;
+        }
         const separator = link.previousSibling;
         if (separator?.nodeType === Node.TEXT_NODE && /^[\s,;·|]+$/.test(separator.textContent)) separator.remove();
         link.remove();
