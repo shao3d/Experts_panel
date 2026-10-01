@@ -61,6 +61,9 @@ FILTER_EXIT=0
 
 # Deterministic integrity check: cited keys must exist, quotes must be real,
 # repeated tool calls are flagged (docs/guides/expert-scout.md).
+if [[ "${SCOUT_WEB_PROGRESS:-0}" == 1 ]]; then
+  echo 'SCOUT_PROGRESS "Проверяю ответ и источники…"' >&2
+fi
 set +e
 "$PYTHON_BIN" "$REPO_DIR/backend/scripts/verify_citations.py" \
   --answer "$RUN_DIR/answer.md" --events "$RUN_DIR/events.jsonl" \

@@ -1,0 +1,51 @@
+const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const assert = require('node:assert/strict');
+(async () => {
+  const browser = await chromium.launch({headless:true});
+  for (const viewport of [{width:1280,height:900},{width:390,height:844}]) {
+    const page = await browser.newPage({viewport});
+    let job;
+    let finish = false;
+    await page.route('**/scout-api/**', async route => {
+      const path = new URL(route.request().url()).pathname;
+      let result;
+      if (path.endsWith('/auth')) result={status:'ok'};
+      else if (route.request().method()==='POST') {
+        job={id:'a'.repeat(32),question:JSON.parse(route.request().postData()).question,status:'running',message:'Ищу в Telegram…',started_at:Date.now()/1000,elapsed:0,answer:''}; result=job;
+      } else if (route.request().method()==='DELETE') {
+        job={...job,status:'stopped',message:'Поиск остановлен',elapsed:1}; result=job;
+      } else {
+        if (finish) job={...job,status:'completed',message:'Готово',elapsed:42,
+          answer:'**Редактируемые слои** — не live text.\n\n[Dan Kieft · 14:35](https://www.youtube.com/watch?v=qwGIwxZFc2I&t=875s)\n\n<script>window.compromised=true</script><img src=x onerror="window.compromised=true">\n\n| Приём | Ограничение |\n|---|---|\n| Слои AE | Контуры букв |'};
+        result=job;
+      }
+      await route.fulfill({json:result,headers:{'access-control-allow-origin':'*'}});
+    });
+    await page.goto(process.env.SCOUT_PAGE || 'http://127.0.0.1:8767');
+    await page.locator('#password').fill('test-password');
+    await page.locator('#login button').click();
+    await page.locator('#question').fill('Как сохранить персонажа?');
+    await page.locator('#action').click();
+    await page.waitForFunction(()=>document.querySelector('#action').textContent==='Остановить');
+    assert.match(await page.locator('#message').textContent(), /Telegram/);
+    await page.reload();
+    await page.waitForFunction(()=>document.querySelector('#action').textContent==='Остановить');
+    finish=true;
+    await page.waitForFunction(()=>document.querySelector('#message').textContent==='Готово');
+    assert.equal(await page.evaluate(()=>Boolean(window.compromised)),false);
+    assert.equal(await page.locator('#answer img').count(),0);
+    assert.equal(await page.locator('#answer a').getAttribute('rel'),'noopener noreferrer');
+    assert.equal(await page.locator('#answer table').count(),1);
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+    await page.screenshot({path:`output/scout_web_checks/${viewport.width}.png`,fullPage:true});
+    finish=false;
+    await page.locator('#question').fill('Другой вопрос');
+    await page.locator('#action').click();
+    await page.waitForFunction(()=>document.querySelector('#action').textContent==='Остановить');
+    await page.locator('#action').click();
+    await page.waitForFunction(()=>document.querySelector('#message').textContent==='Поиск остановлен');
+    await page.close();
+    console.log(`PASS ${viewport.width}: login, submit, progress, reload, safe Markdown, links, layout, stop`);
+  }
+  await browser.close();
+})().catch(error=>{console.error(error);process.exit(1)});

@@ -1,7 +1,7 @@
 # Experts Panel operations
 
 Status: Active
-Last updated: 2026-09-30
+Last updated: 2026-10-01
 
 Актуальная операторская схема для ИИ-агента. Все команды разработки и
 maintenance выполняются из VM checkout `/home/ubuntu/apps/experts-panel/dev`.
@@ -17,6 +17,13 @@ Production checkout `app` вручную не редактируется.
    `reddit-proxy`, затем проверяет `/health`.
 5. Дождись успешного workflow и проверь production health. Обычный code release
    не меняет production DB.
+
+## Веб-Скаут
+
+Отдельная статическая страница и API публикуются по
+[процедуре Веб-Скаута](guides/scout-web.md). Обычный workflow Панели
+не перезапускает `scout-web.service` и не публикует GitHub Pages.
+Это code release, без обновления production DB.
 
 ## Data release: `обнови базу`
 

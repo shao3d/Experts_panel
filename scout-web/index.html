@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Скаут</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Literata:opsz,wght@7..72,400;7..72,500&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="vendor/marked.js" defer></script>
+  <script src="vendor/purify.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header><h1>Скаут</h1><p>Telegram визуалов + ВидеоХаб</p></header>
+  <main>
+    <form id="login" class="composer">
+      <label class="sr-only" for="password">Пароль Скаута</label>
+      <input id="password" type="password" autocomplete="current-password" placeholder="Пароль Скаута" required>
+      <button>Войти</button>
+    </form>
+    <form id="ask" class="composer" hidden>
+      <label class="sr-only" for="question">Вопрос Скауту</label>
+      <textarea id="question" rows="2" maxlength="6000" placeholder="Задай вопрос…" required></textarea>
+      <button id="action">Спросить</button>
+    </form>
+    <div class="status" role="status" aria-live="polite"><span id="message"></span><time id="elapsed"></time></div>
+    <article id="answer" aria-label="Ответ Скаута" hidden></article>
+    <button id="copy" class="quiet" hidden>Скопировать</button>
+  </main>
+</body>
+</html>

@@ -1,0 +1,19 @@
+[Unit]
+Description=Scout web API (read-only dev corpus)
+After=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/apps/experts-panel/dev
+Environment=PATH=/home/ubuntu/.bun/bin:/usr/local/bin:/usr/bin:/bin
+EnvironmentFile=/home/ubuntu/.config/scout-web/access.env
+ExecStart=/home/ubuntu/apps/experts-panel/dev/backend/.venv/bin/python -m uvicorn scripts.scout_web_api:app --host 172.18.0.1 --port 8766 --no-access-log
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=15
+KillMode=control-group
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target
