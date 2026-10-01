@@ -25,6 +25,8 @@ const assert = require('node:assert/strict');
     await page.locator('#password').fill('test-password');
     await page.locator('#login button').click();
     await page.locator('#question').fill('Как сохранить персонажа?');
+    assert.equal(await page.locator('#question').evaluate(el=>getComputedStyle(el).outlineStyle),'none');
+    assert.equal(await page.locator('#ask').evaluate(el=>getComputedStyle(el).borderTopColor),'rgb(217, 160, 91)');
     await page.locator('#action').click();
     await page.waitForFunction(()=>document.querySelector('#action').textContent==='Остановить');
     assert.match(await page.locator('#message').textContent(), /Telegram/);
