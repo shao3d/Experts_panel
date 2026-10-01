@@ -8,6 +8,80 @@ let timer = null;
 let stoppedPolling = false;
 const terminal = new Set(['completed', 'partial', 'error', 'stopped']);
 
+function foldSources(root) {
+  const key = /^[a-z][a-z0-9_]*:\d+$/i;
+  // Plain source keys occur alongside Markdown links as well as inside code.
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const texts = [];
+  while (walker.nextNode()) {
+    if (!walker.currentNode.parentElement.closest('a,code,pre')) texts.push(walker.currentNode);
+  }
+  texts.forEach(node => {
+    const parts = node.textContent.split(/(\b[a-z][a-z0-9_]*:\d+\b)/gi);
+    if (parts.length === 1) return;
+    const fragment = document.createDocumentFragment();
+    parts.forEach(part => {
+      if (key.test(part)) {
+        const code = document.createElement('code'); code.textContent = part; fragment.append(code);
+      } else fragment.append(document.createTextNode(part));
+    });
+    node.replaceWith(fragment);
+  });
+  const citation = node => node.nodeType === Node.ELEMENT_NODE &&
+    (node.matches('a') || (node.matches('code') && key.test(node.textContent)));
+  const separator = node => node.nodeType === Node.TEXT_NODE &&
+    /^[\s.,;:·|()[\]—–-]*(?:(?:Ключи?|Источники?|source_keys?|Sources?)\s*:\s*)?[\s.,;:·|()[\]—–-]*$/i.test(node.textContent);
+  let number = 0;
+  const parents = new Set([...root.querySelectorAll('a,code')].filter(citation).map(node => node.parentElement));
+  parents.forEach(parent => {
+    let node = parent.firstChild;
+    while (node) {
+      if (!citation(node)) { node = node.nextSibling; continue; }
+      const nodes = [node];
+      let end = node;
+      while (end.nextSibling) {
+        let next = end.nextSibling;
+        const between = [];
+        while (next && separator(next)) { between.push(next); next = next.nextSibling; }
+        if (!next || !citation(next)) break;
+        nodes.push(...between, next); end = next;
+      }
+      const before = node.previousSibling;
+      const after = end.nextSibling;
+      // Reuse existing parentheses rather than adding a second pair.
+      if (before?.nodeType === Node.TEXT_NODE && after?.nodeType === Node.TEXT_NODE &&
+          /\(\s*$/.test(before.textContent) && /^\s*\)/.test(after.textContent)) {
+        before.textContent = before.textContent.replace(/\(\s*$/, '');
+        after.textContent = after.textContent.replace(/^\s*\)/, '');
+      }
+      if (before?.nodeType === Node.TEXT_NODE) {
+        const label = before.textContent.match(/(^|[\s(])(?:Источники?|Ключи?|Sources?|source_keys?)\s*:\s*$/i);
+        if (label) {
+          const suffix = before.splitText(label.index + label[1].length);
+          nodes.unshift(suffix); node = suffix;
+        }
+      }
+      const wrapper = document.createElement('span'); wrapper.className = 'sources';
+      const toggle = document.createElement('button');
+      toggle.type = 'button'; toggle.className = 'source-toggle'; toggle.textContent = 'источники';
+      toggle.setAttribute('aria-expanded', 'false');
+      const content = document.createElement('span'); content.hidden = true;
+      content.id = `sources-${++number}`;
+      toggle.setAttribute('aria-controls', content.id);
+      toggle.setAttribute('aria-label', 'Показать источники');
+      node.before(wrapper);
+      content.append(': ', ...nodes);
+      wrapper.append('(', toggle, content, ')');
+      toggle.addEventListener('click', () => {
+        content.hidden = !content.hidden;
+        toggle.setAttribute('aria-expanded', String(!content.hidden));
+        toggle.setAttribute('aria-label', content.hidden ? 'Показать источники' : 'Свернуть источники');
+      });
+      node = wrapper.nextSibling;
+    }
+  });
+}
+
 async function request(path, options = {}) {
   const response = await fetch(API + path, {...options, cache: 'no-store', headers: {
     'Content-Type': 'application/json', 'X-Scout-Password': password, ...options.headers
@@ -46,6 +120,7 @@ function display(data) {
   if (answer) {
     $('answer').innerHTML = DOMPurify.sanitize(marked.parse(answer), {FORBID_TAGS: ['img', 'form', 'input', 'style']});
     $('answer').querySelectorAll('a').forEach(a => { a.target = '_blank'; a.rel = 'noopener noreferrer'; });
+    foldSources($('answer'));
     $('answer').querySelectorAll('table').forEach(table => {
       const wrapper = document.createElement('div'); wrapper.className = 'table-wrap';
       table.before(wrapper); wrapper.append(table);
