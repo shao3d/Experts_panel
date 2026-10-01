@@ -1,5 +1,6 @@
 import asyncio
 import hashlib
+import json
 import os
 from pathlib import Path
 import sys
@@ -10,6 +11,68 @@ from fastapi.testclient import TestClient
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from scripts import scout_web_api as api
 from scripts.scout_web_progress import progress
+
+
+def test_source_links_use_real_channel_and_segment_timestamp():
+    assert api.source_link({"source_key": "acidcrunch:2511", "channel_username": "@AcidCrunch", "author_name": "Acid Crunch"}) == {
+        "url": "https://t.me/AcidCrunch/2511", "label": "Acid Crunch · пост 2511"}
+    link = api.source_link({"source_key": "video_hub:900000123", "video_url": "https://www.youtube.com/watch?v=qwGIwxZFc2I&t=1s&start=2#t=3",
+                            "video_timestamp_s": 875, "author_name": "Dan Kieft", "video_title": "AI workflow"})
+    assert link == {"url": "https://www.youtube.com/watch?v=qwGIwxZFc2I&t=875s", "label": "Dan Kieft · AI workflow · 14:35"}
+    assert "900000123" not in link["url"]
+    assert api.source_link({"source_key": "video_hub:1", "video_url": "https://youtu.be/qwGIwxZFc2I", "video_timestamp_s": 0})["url"].endswith("?t=0s")
+
+
+@pytest.mark.parametrize("item", [
+    {"source_key": "cgevent:42", "error": "not_found"},
+    {"source_key": "cgevent:42"},
+    {"source_key": "cgevent:42", "channel_username": "evil.example/channel"},
+    {"source_key": "video_hub:1", "video_url": "javascript:alert(1)"},
+    {"source_key": "video_hub:1", "video_url": "https://youtube.com.evil.example/watch?v=test"},
+    {"source_key": "video_hub:1", "video_url": "https://user:password@youtube.com/watch?v=test"},
+])
+def test_unknown_or_unsafe_sources_do_not_get_invented_links(item):
+    assert api.source_link(item) is None
+
+
+@pytest.mark.asyncio
+async def test_resolve_sources_batches_read_only_helper_and_discards_content(monkeypatch):
+    commands = []
+    class Process:
+        returncode = 0
+        async def communicate(self):
+            return json.dumps([{"source_key": key, "channel_username": "ActualChannel", "content": "Do not send source text"}
+                               for key in commands[-1][0][3:commands[-1][0].index("--json")]]).encode(), b""
+    async def spawn(*args, **kwargs):
+        commands.append((args, kwargs))
+        return Process()
+    monkeypatch.setattr(asyncio, 'create_subprocess_exec', spawn)
+    monkeypatch.setenv('SCOUT_WEB_PASSWORD_HASH', 'private')
+    links = await api.resolve_sources('cgevent:1 acidcrunch:2 strangedalle:3 neyrograph:4 cgevent:1')
+    assert len(commands) == 2 and len(links) == 4
+    assert links['cgevent:1']['url'] == 'https://t.me/ActualChannel/1'
+    assert all('SCOUT_WEB_PASSWORD_HASH' not in kwargs['env'] for _, kwargs in commands)
+    assert all(args[2] == 'show' and '--max-chars' in args and '--json' in args for args, _ in commands)
+    assert 'Do not send source text' not in json.dumps(links)
+
+
+@pytest.mark.asyncio
+async def test_old_saved_answers_get_links_without_rerunning_model(monkeypatch, tmp_path):
+    original = api.Jobs
+    monkeypatch.setattr(api, 'Jobs', lambda: original(tmp_path))
+    monkeypatch.setenv('SCOUT_WEB_PASSWORD_HASH', hashlib.sha256(b'test-password').hexdigest())
+    calls = []
+    async def resolve(answer):
+        calls.append(answer)
+        return {'cgevent:42': {'url': 'https://t.me/cgevent/42', 'label': 'CGEVENT · пост 42'}}
+    monkeypatch.setattr(api, 'resolve_sources', resolve)
+    with TestClient(api.app) as client:
+        api.app.state.jobs.save({'id': 'a'*32, 'status': 'completed', 'answer': 'Совет — cgevent:42'})
+        headers = {'X-Scout-Password': 'test-password'}
+        result = client.get('/jobs/' + 'a'*32, headers=headers).json()
+        assert result['sources']['cgevent:42']['url'] == 'https://t.me/cgevent/42'
+        client.get('/jobs/' + 'a'*32, headers=headers)
+    assert calls == ['Совет — cgevent:42']
 
 
 def test_progress_does_not_expose_content_or_internal_reasoning():

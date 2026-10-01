@@ -1,17 +1,20 @@
 # Adding New Videos (The "Video Hub" Pipeline)
 
 **Status:** Active
-**Last updated:** 2026-09-24
-**Pipeline:** `Map -> Resolve (Summary Bridging) -> Reduce (Digital Twin)`
+**Last updated:** 2026-10-01
+**Scope:** VideoHub onboarding; query-time behavior is documented in `docs/architecture/video-hub-service.md`.
 **Деплой: Oracle VM (Fly.io-процесс удалён 24.08.2026)**
 
 ## 🤖 Automated Ingest (preferred)
 
-Since 2026-09-16 segmentation is automated; the manual AI Studio JSON is the
-legacy fallback. Full playbook: `docs/guides/video-hub-operator.md` (Phase 0).
+The preferred workflow combines scripted extraction with agent annotation and
+source review. Start with duplicate and admission checks, then obtain owner
+approval before ingest. Full playbook and source of truth for commands:
+[operator guide](video-hub-operator.md) (Phase 0). Manual export follows the same
+contract and review requirements.
 
 ```bash
-# 1. media: fetch on the Mac (VM IP is blocked by YouTube), copy to the VM
+# 1. media: follow operator step 0.1 (VM WARP preferred; Mac/G15 are fallbacks)
 
 # 2. deterministic extraction (transcript, chunked frames, windows)
 backend/.venv/bin/python backend/scripts/ingest_video.py \
@@ -20,22 +23,29 @@ backend/.venv/bin/python backend/scripts/ingest_video.py \
 
 # 3. LLM pass: write chunks/chunk_NN/segments.json per chunk
 #    (segment_id — сквозной по всему видео: combine падает на дублях)
+#    Ведущий принимает разметку по речи и кадрам до импорта.
 
 # 4. combine, validate, import, embed
 backend/.venv/bin/python backend/scripts/ingest_video.py --combine --out /tmp/<id>_ingest
 backend/.venv/bin/python backend/scripts/import_video_json.py /tmp/<id>_ingest/segments.json --dry-run
 backend/.venv/bin/python backend/scripts/import_video_json.py /tmp/<id>_ingest/segments.json
-backend/.venv/bin/python backend/scripts/embed_posts.py
+backend/.venv/bin/python backend/scripts/embed_posts.py --continuous --receipt /tmp/<id>_ingest/segments.import-receipt.json
 ```
+
+После подтверждения `searchable` пересобери Матрицу по шагу 0.4 руководства
+оператора и обнови индекс видео по шагу 0.0. Импорт и индексация здесь относятся
+к staging; выпуск в production — отдельная операция по
+[operations](../operations.md).
 
 При повторном заходе по тому же видео (пересегментация) добавь к импорту
 `--replace-video`: старые сегменты, найденные по каноническому URL, и их
 эмбеддинги удаляются перед импортом новой разметки.
 
-## 🚀 Quick Command (data release / promotion)
+## Legacy wrapper (production data release)
 
 `deploy_video.sh` теперь работает как production DB release через проверенный
-путь `update_production_db.sh`. Запускай **только на Oracle VM из dev checkout**:
+путь `update_production_db.sh`. Это не обычный шаг онбординга. Запускай только
+при явном разрешении владельца на production data release и только из VM dev:
 
 ```bash
 ssh -t ubuntu@82.70.251.73
@@ -66,7 +76,7 @@ Ensure your JSON file follows the **Segmented Topic Structure**:
     "title": "My Video",
     "author": "Gleb Kudryavtcev",
     "url": "youtube_id",
-    "published_at": "2026-08-21T00:00:00"
+    "published_at": "2026-08-21"
   },
   "segments": [
     {
@@ -92,16 +102,16 @@ Ensure your JSON file follows the **Segmented Topic Structure**:
 are copied to `backend/data/video_frames/<video_hash>/`. `published_at` drives
 `created_at`, so recency filters use the video date. Write it as `YYYY-MM-DD`
 (the Stage-2 prompt requires it); the importer normalizes any accepted shape to
-canonical `YYYY-MM-DD HH:MM:SS` and refuses unparsable dates. Without
-`published_at` the import falls back to the import time (warning) and freshness
-ranking treats the video as new.
+canonical `YYYY-MM-DD HH:MM:SS`. Missing or unparsable `published_at` aborts
+the import; import time is never a substitute for the video publication date.
 
 ## 🛠️ What the script does
 
 1.  **Guards**: проверяет, что запущен на Oracle VM в dev checkout.
 2.  **Import**: runs `backend/scripts/import_video_json.py` to add segments to
-    the **staging** SQLite (`backend/data/experts.db`). Staging DB не меняется
-    только там, где импорт прошёл успешно (иначе abort до деплоя).
+    the **staging** SQLite (`backend/data/experts.db`). Успешный импорт фиксирует
+    изменения в staging. Ошибка импорта откатывает транзакцию и останавливает
+    wrapper до production promotion.
 3.  **Integrity**: `PRAGMA integrity_check` на staging DB перед продвижением.
 4.  **Embeddings (optional)**: спрашивает, векторизовать ли свежие сегменты
     сразу (`embed_posts.py --continuous`); `N` — пропустить и сделать позже.
@@ -118,12 +128,13 @@ ranking treats the video as new.
 
 ## 🔎 Important Runtime Note
 
-- `deploy_video.sh` **does not** generate embeddings for fresh video segments
-  (it only asks optionally). If you need new video segments to participate in
-  Hybrid Search immediately, run:
+- `deploy_video.sh` offers an optional embedding run; skipping it or an embedding
+  failure does not stop its production promotion. It does not perform the
+  receipt-based readiness check. Use the reviewed workflow above to confirm
+  `searchable` before a separate owner-authorized data release:
 
 ```bash
-python3 backend/scripts/embed_posts.py --continuous
+backend/.venv/bin/python backend/scripts/embed_posts.py --continuous --receipt /path/segments.import-receipt.json
 ```
 
 - This embedding step uses the same OpenRouter credentials from `backend/.env` (the legacy Vertex name in older docs is historical).

@@ -1,9 +1,10 @@
 const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const assert = require('node:assert/strict');
 (async () => {
-  const browser = await chromium.launch({headless:true});
+  const browser = await chromium.launch({headless:true, executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE});
   for (const viewport of [{width:1280,height:900},{width:390,height:844},{width:320,height:740}]) {
     const page = await browser.newPage({viewport,permissions:['clipboard-read','clipboard-write']});
+    await page.context().route(/https:\/\/(?:t\.me|www\.youtube\.com)\//, route => route.fulfill({contentType:'text/html',body:'<title>Source destination</title>'}));
     let job;
     let finish = false;
     let submissions = 0;
@@ -18,6 +19,13 @@ const assert = require('node:assert/strict');
         job={...job,status:'stopped',message:'Поиск остановлен',elapsed:1}; result=job;
       } else {
         if (finish) job={...job,status:'completed',message:'Готово',elapsed:42,
+          sources:{
+            'video_hub:123':{url:'https://www.youtube.com/watch?v=qwGIwxZFc2I&t=875s',label:'Dan Kieft · AI workflow · 14:35'},
+            'video_hub:456':{url:'https://www.youtube.com/watch?v=qwGIwxZFc2I&t=1086s',label:'Higgsfield AI · Длинное название видео с подробным объяснением · 18:06'},
+            'video_hub:789':{url:'https://www.youtube.com/watch?v=qwGIwxZFc2I&t=263s',label:'Dan Kieft · AI workflow · 4:23'},
+            'acidcrunch:2511':{url:'https://t.me/AcidCrunch/2511',label:'Acid Crunch · пост 2511'},
+            'cgevent:42':{url:'https://t.me/cgevent/42',label:'CGEVENT · пост 42'}
+          },
           answer:'**Редактируемые слои** — не live text.\n\n[Dan Kieft · 14:35](https://www.youtube.com/watch?v=qwGIwxZFc2I&t=875s) · `video_hub:123`, Higgsfield AI, 28.08.2026, 18:06. Ключи: `video_hub:456`\n\nСохраняй референс ([Пост](https://t.me/AcidCrunch/2511) · acidcrunch:2511, **Acid Crunch**, *26.06.2026*, 01:02–01:18). Это важное пояснение.\n\nЕщё совет: **[Разбор](https://www.youtube.com/watch?v=example)**. Не потерять текст после ссылки.\n\nПроверенный совет — важная деталь. — Dan Kieft, 01.09.2026, [04:23](https://www.youtube.com/watch?v=example&t=263s), `video_hub:789`.\n\nКлюч: `cgevent:42`.\n\n```\ncgevent:43\n```\n\n<script>window.compromised=true</script><img src=x onerror="window.compromised=true">\n\n| Приём | Ограничение |\n|---|---|\n| Слои AE | Контуры букв (Источник: [Источник](https://t.me/cgevent/42)) |'};
         result=job;
       }
@@ -65,17 +73,32 @@ const assert = require('node:assert/strict');
     assert.ok(!(await page.locator('#answer').innerText()).includes('((источники'));
     await sources.first().click();
     assert.equal(await sources.first().getAttribute('aria-expanded'),'true');
-    assert.equal(await page.locator('#answer a:visible').count(),1);
-    assert.ok((await page.locator('#answer').innerText()).includes('video_hub:123'));
+    assert.equal(await page.locator('#answer a:visible').count(),2);
+    assert.equal(await page.locator('#answer a[title="video_hub:123"]').getAttribute('href'),'https://www.youtube.com/watch?v=qwGIwxZFc2I&t=875s');
     assert.ok((await page.locator('#answer').innerText()).includes('Higgsfield AI, 28.08.2026, 18:06'));
-    assert.ok((await page.locator('#answer').innerText()).includes('video_hub:456'));
+    assert.ok((await page.locator('#answer').innerText()).includes('Длинное название видео'));
+    const videoPopup = await Promise.all([page.waitForEvent('popup'), page.locator('#answer a[title="video_hub:123"]').click()]);
+    await videoPopup[0].waitForLoadState();
+    assert.equal(videoPopup[0].url(),'https://www.youtube.com/watch?v=qwGIwxZFc2I&t=875s');
+    await videoPopup[0].close();
     assert.equal(await sources.nth(1).getAttribute('aria-expanded'),'false');
     await sources.first().press('Enter');
     assert.equal(await sources.first().getAttribute('aria-expanded'),'false');
     assert.equal(await page.locator('#answer a:visible').count(),0);
     await sources.nth(1).click();
     assert.ok((await page.locator('#answer').innerText()).includes('Acid Crunch, 26.06.2026, 01:02–01:18'));
+    const telegramPopup = await Promise.all([page.waitForEvent('popup'), page.locator('#answer a[title="acidcrunch:2511"]').click()]);
+    await telegramPopup[0].waitForLoadState();
+    assert.equal(telegramPopup[0].url(),'https://t.me/AcidCrunch/2511');
+    await telegramPopup[0].close();
     await sources.nth(1).click();
+    await sources.nth(3).click();
+    assert.equal(await page.locator('#answer .sources').nth(3).locator('a').first().getAttribute('href'),'https://www.youtube.com/watch?v=qwGIwxZFc2I&t=263s');
+    await sources.nth(3).click();
+    await sources.first().click();
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+    await page.screenshot({path:`output/scout_web_checks/sources-${viewport.width}.png`,fullPage:true});
+    await sources.first().click();
     await page.locator('#copy').click();
     const copied = await page.evaluate(()=>navigator.clipboard.readText());
     assert.ok(copied.includes('video_hub:123'));

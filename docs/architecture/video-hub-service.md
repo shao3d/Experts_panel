@@ -47,7 +47,7 @@ The Video Hub operates as an **isolated sidecar**, running in parallel with the 
 
 ## 🛠️ Phase 1: Data Preparation (Smart Segmenting)
 
-Segmentation is produced by the **automated ingest pipeline** (stage 1 script + an LLM pass, see "Automated Ingest Pipeline" below). The legacy manual pass through Google AI Studio still works and uses the same output contract.
+Segmentation is produced by the **automated ingest pipeline** (stage 1 script + an agent LLM pass and source review, see "Automated Ingest Pipeline" below). This is not an unattended LLM runner. A manual export uses the same output contract and review requirements; see the operator playbook's fallback procedure.
 
 ### Data Schema (The "Fullness" Contract):
 ```json
@@ -56,7 +56,8 @@ Segmentation is produced by the **automated ingest pipeline** (stage 1 script + 
     "title": "Video Title",
     "url": "https://youtube.com/watch?v=...",
     "author": "Expert Name",
-    "channel_id": "video_hub_internal" 
+    "channel_id": "video_hub_internal",
+    "published_at": "2026-09-01"
   },
   "segments": [
     {

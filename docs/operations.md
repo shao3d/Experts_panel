@@ -63,6 +63,12 @@ DB_UPLOAD_ONLY=1 ./scripts/update_production_db.sh
 
 Он тоже является production data release и требует явной команды владельца.
 
+Старый wrapper `scripts/deploy_video.sh <json>` импортирует готовый JSON в
+staging и затем вызывает этот upload-only режим. Он тоже меняет production DB;
+поручение онбордировать видео не разрешает его запуск. Основной VideoHub
+workflow разделяет staging-онбординг и data release; описание wrapper — в
+[коротком руководстве](guides/add-video.md#legacy-wrapper-production-data-release).
+
 ## Scoped data release: `обнови базу по визуалам`
 
 Обновление только группы `visual` (`strangedalle`, `acidcrunch`, `cgevent`,

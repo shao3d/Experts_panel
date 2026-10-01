@@ -1,20 +1,33 @@
+# VideoHub Operator Playbook: historical snapshot before documentation repair
+
+**Status:** Archived / historical only
+**Last updated:** 2026-10-01
+
+Снимок прежнего руководства перед устранением противоречий. Приведённые ниже
+сценарии, команды и утверждения могут быть устаревшими; не выполнять их как
+текущий регламент. В частности, старый «Merge & Deploy» не даёт разрешения
+на production release, а `deploy_video.sh` действительно продвигает БД в prod.
+Текущий SSOT: [руководство оператора](../guides/video-hub-operator.md).
+
+---
+
 # 🎥 Video Hub Operator Playbook
 
 **Role:** Expert Digital Twin Creator
-**Status:** Active Workflow (scripted extraction + agent annotation and review)
+**Original status:** Active Workflow (automated ingest preferred)
 **Last updated:** 2026-10-01
-**Owner:** Project owner
+**Owner:** System Architect (opencode agent)
 
 ---
 
 ## 🎯 Objective
-Transform raw video content (YouTube/MP4) into source-backed segments and topics for VideoHub search through Expert Scout. Current operating boundaries: `docs/architecture/video-hub-service.md` → "Current Operating Mode".
+Transform raw video content (YouTube/MP4) into a structured Knowledge Graph (Segments & Topics) for the Expert Panel.
 
 ---
 
 ## 🤖 Phase 0: Automated Ingest (preferred)
 
-The preferred workflow combines scripted media extraction with agent annotation and source review. It is not an unattended LLM runner. Full details:
+The pipeline replaces the manual AI Studio pass. Full details:
 `docs/architecture/video-hub-service.md` → "Automated Ingest Pipeline".
 
 ### Модель для ведения онбординга
@@ -54,16 +67,16 @@ chunk, текст, sheets/native frames, offset исходного видео и
 согласование владельцем вердикта ingest и отдельные правила релиза.
 
 Probe по существующему корпусу идёт через штатный Скаут; его текущая модель и
-режим описаны в [руководстве Скаута](expert-scout.md). Скачивание, нарезка,
+режим описаны в [руководстве Скаута](../guides/expert-scout.md). Скачивание, нарезка,
 combine/import и пересборка Матрицы остаются скриптовыми шагами. ASR использует
 локальный faster-whisper (по умолчанию large-v3-turbo); это отдельная задача.
-MiMo из [анализа дрифта](drift-analysis.md) к онбордингу не подключена.
+MiMo из [анализа дрифта](../guides/drift-analysis.md) к онбордингу не подключена.
 
 ### 0.0 Duplicate check (MANDATORY)
 
 Before any work on a new video, run the read-only index checker against the
-staging DB (`backend/data/experts.db`). This is the source for data releases,
-not a live comparison with production; staging can include unpublished videos. All URL shapes normalize to one
+staging DB (`backend/data/experts.db`) — the same DB that is promoted to
+production, so the check covers prod too. All URL shapes normalize to one
 identity (`watch?v=…&t=…`, `youtu.be/…?si=…`, `/shorts/…`).
 
 ```bash
@@ -213,7 +226,7 @@ backend/.venv/bin/python backend/scripts/embed_posts.py --continuous --receipt /
 
 Phase 1: до импорта сопоставь реальные сегменты с ячейками таксономии: `matrix_cells: ["domain/subdomain/intent"]` у каждого подтверждающего сегмента. Это лёгкая разметка, не отдельный тяжёлый паспорт. В `admission_log.json` сохраняй выбранные cells и `segments_path`, если источник лежит вне стандартного ingest-каталога.
 
-После успешной фиксации транзакции в staging (не Git commit) импорт создаёт `segments.import-receipt.json` со статусом `loaded`, SHA256 источника и соответствием cell → source_key. Команда embedding выше должна закончиться успешно и подтвердить `searchable`. Только затем пересобирай матрицу:
+После commit импорт создаёт `segments.import-receipt.json` со статусом `loaded`, SHA256 источника и соответствием cell → source_key. Команда embedding выше должна закончиться успешно и подтвердить `searchable`. Только затем пересобирай матрицу:
 
 ```bash
 backend/.venv/bin/python backend/scripts/build_video_matrix.py
@@ -229,21 +242,18 @@ Re-importing the same video after re-segmentation: add `--replace-video` so the
 old segments (matched by canonical video URL) and their embeddings are deleted
 before the new ones are imported.
 
-Production promotion of the updated DB is a separate owner-authorized data release.
-Follow [the operations guide](../operations.md#data-release-обнови-базу), including
-the scoped visual release when explicitly requested. An onboarding task alone
-does not authorize production promotion.
+Production promotion of the updated DB is a separate owner command (`обнови базу`).
 
 ---
 
-## Инструкции для разметки чанка
+## 🧠 Phase 1 (legacy): Manual Segmentation in Google AI Studio
 
-Используй правила ниже на шаге 0.3 вместе с расширенным контрактом `visual`,
-`frames`, scope и `matrix_cells` из шагов 0.3–0.4 и архитектурного SSOT.
-JSON-пример — минимальная форма, а не разрешение потерять экранные инструкции
-или разметку Матрицы. Идентификаторы остаются сквозными по всему видео.
+Use **Google AI Studio** or another Gemini UI to generate the source JSON.
+
+> **Важно:** Это резервный ручной путь. Основной — Phase 0 выше.
 
 ### 📝 The Golden Prompt (System Instructions)
+*Copy this into AI Studio System Instructions:*
 
 ```text
 Ты — Senior AI Knowledge Architect. Твоя задача — провести глубокий мультимодальный анализ видео и превратить его в структурированную базу знаний (Knowledge Nodes).
@@ -252,7 +262,7 @@ JSON-пример — минимальная форма, а не разреше�
 1. ВИЗУАЛЬНЫЙ КОНТЕКСТ (MULTIMODAL): Всё видимое — в квадратных скобках [НА ЭКРАНЕ: ...] внутри поля 'content'. Разделяй два случая: служебный фон (говорящий, браузер, обои слайда) — кратко; ценная нагрузка (промт, настройки/параметры генерации, код, формулы, точные цифры, заголовок) — ДОСЛОВНО, промт в кавычках, настройки коротким списком. Нечитаемое — пиши [НА ЭКРАНЕ: текст нечитаем], не выдумывай.
 2. СЕМАНТИЧЕСКИЕ ГРАНИЦЫ: Один сегмент = одна законченная мысль. Не режь на полуслове.
 3. ПРАВИЛО "КЛЕЯ": Конец сегмента N дублируется в начале сегмента N+1 (1-2 предложения).
-4. ТЕМАТИЧЕСКИЕ НИТИ (TOPIC_ID): 
+4. ТЕМАТИЧЕСКИЕ НИТИ (TOPIC_ID):
    - Группируй сегменты одной темы под одним ID.
    - ВАЖНО: Меняй topic_id при смене логического блока (главы) или каждые 10-15 минут.
    - ИЗБЕГАЙ гигантских тем на все видео. Используй гранулярные ID: "rag_intro", "rag_architecture".
@@ -262,7 +272,7 @@ JSON-пример — минимальная форма, а не разреше�
 
 ФОРМАТ ВЫХОДА (JSON):
 {
-  "video_metadata": { "title": "...", "author": "Author or channel name", "url": "...", "duration_seconds": 0, "published_at": "YYYY-MM-DD" },
+  "video_metadata": { "title": "...", "author": "Gleb Kudryavtcev", "url": "...", "duration_seconds": 0, "published_at": "YYYY-MM-DD" },
   "segments": [
     {
       "segment_id": 1001,
@@ -276,52 +286,88 @@ JSON-пример — минимальная форма, а не разреше�
 }
 ```
 
-## Резервный ручной экспорт
+---
 
-Если материал размечается в AI Studio или другом интерфейсе, действуют те же
-требования к первоисточникам, метаданным, таймкодам и приёмке, что и на шаге 0.3.
-Для длинного видео работай по чанкам; не загружай весь ролик в один проход.
-Перед `--combine` приведи части к структуре `chunks/chunk_NN/segments.json`
-с согласованными метаданными и уникальными `segment_id` по всему видео.
-Разные инструкции внутри одной темы сохраняются: совпадение заголовков само
-по себе не является основанием для удаления фрагмента.
+## 🎬 Phase 2: Processing Scenarios
 
-После приёмки следуй шагу 0.4. Ручной экспорт не разрешает автоматический
-деплой или удаление исходного JSON: подтверждение импорта привязано к его SHA256,
-а исходники нужны для повторной проверки и ремонта.
+### Scenario A: Short Video (< 30 min)
+1.  Generate **one JSON file** covering the entire video.
+2.  Save as `video.json`.
+3.  Deploy:
+    ```bash
+    ./scripts/deploy_video.sh video.json
+    ```
 
-Старые сценарии AI Studio / Gemini «Merge & Deploy» сохранены
-[в архиве](../archive/2026-10-01-video-hub-operator-before-doc-repair.md).
-Это история, а не инструкция для выполнения.
+### Scenario B: Long Video (> 30 min)
+**Strategy:** "Overlap & Merge" (Нахлест и Склейка).
 
-## Troubleshooting
+1.  **Generate Part 1:**
+    *   Input: First 35 mins.
+    *   User Prompt: "Analyze video content from 00:00 to 35:00. Finish at a logical pause."
+    *   Save JSON (`part1.json`).
 
-- **Неполный набор чанков / duplicate segment_id:** восстанови недостающую
-  разметку или устрани повторяющиеся идентификаторы в исходных chunk JSON,
-  затем повтори combine. Не обходи проверку удалением полезных частей.
-- **Неверный JSON / дата / таймкоды / отсутствующий кадр:** исправь артефакт
-  по исходникам, повтори проверку и приёмку на шагах 0.3–0.4. Дата публикации
-  обязательна; дата импорта её не заменяет.
-- **Потеря содержания в длинном видео:** вернись к разбору отдельных чанков
-  на шаге 0.3 и сверке ведущим по тексту и кадрам.
-- **Ошибка индексации / receipt остаётся loaded:** материал не подтверждён
-  как searchable. Устрани ошибку индексации и повтори проверку receipt до
-  пересборки Матрицы; успешный импорт сам по себе недостаточен.
-- **Ошибка production release / health:** действуй по
-  [операционному SSOT](../operations.md#health-и-rollback). Запуск релиза
-  и откат требуют соответствующей команды владельца.
+2.  **Generate Part 2:**
+    *   Input: From 30:00 to End.
+    *   User Prompt: "Analyze video content starting from timestamp 30:00 to the end. Ignore the intro, begin with the first complete thought after 30:00."
+    *   *Note:* It is normal for `segment_id` to reset to 1001 here. Gemini CLI will renumber them.
+    *   Save JSON (`part2.json`).
 
-## Maintenance
+3.  **Merge & Deploy (Via Gemini CLI):**
+    *   **Action:** Paste both JSON parts directly into the Gemini CLI chat.
+    *   **Command:** *"Here are Part 1 and Part 2. Merge them, check the overlap, and deploy."*
 
-- **Extraction:** `backend/scripts/ingest_video.py`, `backend/scripts/asr_whisper.py`.
-- **Import:** `backend/scripts/import_video_json.py` — staging upsert по
-  идентичности видео и сегмента. При изменении поискового текста или даты
-  старые эмбеддинги сбрасываются; после импорта нужна индексация.
-  `--replace-video` удаляет прежние сегменты видео и их эмбеддинги перед
-  импортом новой разметки; используется только при разрешённой пересегментации.
-- **Readiness and Matrix:** следуй шагу 0.4; receipt не подтверждает
-  содержательную полноту и не заменяет приёмку ведущим.
-- **Production:** правила и команды живут в [operations](../operations.md).
-  `scripts/deploy_video.sh` — старый wrapper импорта **с production promotion**,
-  а не безопасный staging-only шаг. Он не входит в обычный онбординг;
-  описание — в [коротком руководстве](add-video.md).
+### 🤖 Gemini Agent Protocol (For AI)
+*When instructed to execute "Merge & Deploy", follow this precise workflow:*
+1.  **Receive:** Wait for user to provide Part 1 and Part 2 JSON blocks.
+2.  **Validate:** Check syntax (fix trailing commas, ensure `segments` array exists).
+3.  **Smart Merge Logic:**
+    *   Identify the last segment of Part 1.
+    *   Find the corresponding/overlapping segment in Part 2 (match by `title` or `content` context).
+    *   **Slice:** Keep Part 1 entirely. Remove overlapping segments from Part 2.
+    *   **Re-index:** Update `segment_id` in Part 2 starting from `(Part 1 Max ID + 1)`.
+    *   **Stitch Topics:** If `topic_id` at the seam is identical, keep it.
+4.  **Execute:**
+    *   Save merged content to `merged_video.json`.
+    *   Run `./scripts/deploy_video.sh merged_video.json`.
+    *   Delete `merged_video.json` upon success.
+
+---
+
+## 🐛 Troubleshooting
+
+### Common Issues
+1.  **"This script must run ON the Oracle VM"**:
+    *   Video deploy — это production DB release. Запускай только на VM из dev
+        checkout (`cd ~/apps/experts-panel/dev`), см. `docs/guides/add-video.md`.
+
+2.  **"JSON Parse Error"**:
+    *   AI Studio sometimes outputs invalid JSON (trailing commas, missing brackets).
+    *   **Fix:** Paste the JSON into Gemini CLI and ask: *"Fix this JSON syntax"*.
+
+3.  **"Lost Middle" (Missing Content)**:
+    *   If a video is long (60m+) and you try to do it in one pass, the output will be truncated.
+    *   **Fix:** Use **Scenario B** immediately.
+
+4.  **Health-проверка падает после деплоя**:
+    *   `deploy_video.sh` вернёт ошибку, если `/health` не пройден. Проверь логи
+        контейнера (`sudo docker logs --tail 100 $(sudo docker ps -qf name=panel-1)`)
+        и при необходимости откатись:
+        `./scripts/update_production_db.sh --rollback` (из dev checkout).
+
+---
+
+## 🛠️ Maintenance
+- **Ingest scripts:** `backend/scripts/ingest_video.py`, `backend/scripts/asr_whisper.py` (dev checkout).
+- **Import:** `backend/scripts/import_video_json.py` (upsert by `telegram_message_id`; preserves embeddings across re-imports).
+- **Embeddings:** `backend/scripts/embed_posts.py` (run after import so segments join vector search; FTS5 updates itself via triggers).
+- **Timestamps:** `video_metadata.published_at` (YYYY-MM-DD) is required by the
+  Stage-2 prompt; the importer normalizes it to canonical `YYYY-MM-DD HH:MM:SS`.
+  Rows imported before 2026-09-24 are healed by
+  `backend/scripts/maintenance/normalize_video_timestamps.py` (staging DB;
+  production goes with the owner's `обнови базу`).
+- **Database:** staging `backend/data/experts.db` → promoted to production via
+  `DB_UPLOAD_ONLY=1 ./scripts/update_production_db.sh` (= Production data release,
+  см. `docs/operations.md`). Legacy manual flow can still promote a ready JSON via
+  `scripts/deploy_video.sh`. Устаревший Fly.io SFTP-путь удалён 24.08.2026.
+- **Runtime Auth:** query-time Video Hub calls the configured OpenRouter models from `backend/.env` / managed secrets.
+- **Important:** neither `deploy_video.sh` nor the ingest pipeline calls production; production DB changes only through the owner's `обнови базу`.

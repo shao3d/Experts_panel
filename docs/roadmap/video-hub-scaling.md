@@ -147,7 +147,10 @@ VFX/Genjutsu breakdown'ами, а не тизерами (`FW_tIpEBJ0U`, `rwVeovA
 Промпт синтеза запрещает механическое цитирование ("На слайде написано..."), требуя органично вплетать визуальный контекст в нарратив эксперта.
 
 **5. Deploy Pipeline**
-`scripts/deploy_video.sh` — 5 фаз с backup, SSH wait, SFTP, WAL cleanup и rollback. Production-grade.
+Production data release follows [operations](../operations.md). The legacy
+`scripts/deploy_video.sh` wrapper imports JSON into staging and promotes the
+whole DB through the Oracle VM upload-only path; the old Fly.io SFTP flow is
+obsolete. It requires explicit owner authorization for a data release.
 
 ---
 
@@ -179,11 +182,12 @@ if scout_query and expert_id != "video_hub":  # <-- Video Hub МИМО
 
 **Риск 1 (Topic Thread Expansion):** `_resolve_threads()` подтягивает "соседей" по topic_id. Если Hybrid Search отфильтровал часть соседей, нужно будет дозагрузить их из БД. Решение: в `_resolve_threads()` добавить SQL-запрос для подтягивания недостающих сегментов из winning topics.
 
-**Риск 2 (Эмбеддинги при деплое):** `deploy_video.sh` НЕ запускает `embed_posts.py` после импорта! Эмбеддинги создаются только при запуске `update_production_db.sh` (шаг 4: Vectorization). Это значит: свежие сегменты не имеют эмбеддингов до следующего цикла обновления. При включении Hybrid Search для видео **обязательно** добавить шаг эмбеддинга в `deploy_video.sh` (между шагами 2 и 3):
-```bash
-log "🧬 [2.5/5] Generating embeddings for new segments..."
-$PYTHON_CMD backend/scripts/embed_posts.py --continuous
-```
+**Риск 2 (Эмбеддинги при деплое):** старое предложение добавить embedding-шаг
+устарело: `deploy_video.sh` уже предлагает его, но пропуск или ошибка не
+останавливают promotion. Поэтому успешный wrapper не доказывает готовность
+поиска. Основной онбординг подтверждает receipt как `searchable` до пересборки
+Матрицы и отдельного data release; процедура — в
+[руководстве оператора, шаг 0.4](../guides/video-hub-operator.md#04-combine-import-embed).
 
 **Ориентировочный порог:** При 100+ сегментах выигрыш от предфильтрации превысит overhead на дозагрузку.
 
@@ -252,6 +256,11 @@ response = await self.llm_client.chat_completions_create(...)  # Exception пр�
 
 ### P4. `created_at` = момент импорта, не дата видео
 
+**История закрытого пункта:** проблема ниже устранена. Прежнее предложение
+с опциональной датой и fallback на время импорта не является текущим контрактом.
+Сейчас `published_at` обязательна; актуальная семантика — в
+[архитектурном SSOT](../architecture/video-hub-service.md).
+
 **Проблема:** `import_video_json.py:140`:
 ```python
 datetime.utcnow().isoformat(),  # created_at
@@ -261,7 +270,7 @@ datetime.utcnow().isoformat(),  # created_at
 - Сортировка "newest first" в UI некорректна
 
 **Решение:** Добавить опциональное поле `published_at` в `video_metadata` JSON-схему:
-```json
+```jsonc
 {
   "video_metadata": {
     "title": "...",

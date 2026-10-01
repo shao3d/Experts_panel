@@ -142,7 +142,7 @@ Generated artifacts лучше регенерировать скриптами, 
 | `docs/guides/drift-analysis.md` | Проверка тематического drift. |
 | `docs/guides/ab-testing-super-passport.md` | A/B MapReduce vs Hybrid Retrieval. |
 | `docs/guides/video-hub-operator.md` | Операторский Video Hub workflow. |
-| `docs/guides/add-video.md` | Короткий flow добавления видео. |
+| `docs/guides/add-video.md` | Короткий flow staging-онбординга; legacy wrapper отдельно обозначен как production data release. |
 
 ## UI And Design System
 
@@ -178,6 +178,7 @@ Quality docs - evidence snapshots and guardrails, not current API specs.
 | `docs/concepts/expert-lens-global-skill.md` | Draft concept for a global Codex skill that turns Panex evidence into bounded source-grounded expert-lens critique packets. |
 | `docs/roadmap/video-hub-scaling.md` | Active scaling roadmap for larger Video Hub usage. |
 | `docs/archive/scout-next-steps.md` | Historical metadata-enrichment plan; removed phases are not active. |
+| `docs/archive/2026-10-01-video-hub-operator-before-doc-repair.md` | Historical operator snapshot with the superseded AI Studio / Gemini Merge & Deploy instructions; current workflow is `docs/guides/video-hub-operator.md`. |
 | `docs/archive/hybrid_retrieval_plan.md` | Historical implemented plan; current retrieval SSOT is `docs/architecture/super-passport-search.md`. |
 | `docs/archive/*` | Historical only. Do not route new implementation from archive docs. |
 

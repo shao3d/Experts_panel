@@ -9,15 +9,81 @@ import secrets
 import shutil
 import signal
 import time
+import re
 from contextlib import asynccontextmanager
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+from backend.scripts.expert_scout import MAX_SHOW_KEYS
+from backend.scripts.verify_citations import extract_keys
 
 ROOT = Path(__file__).resolve().parents[1]
 STATE_DIR = ROOT / "output/scout_web"
 TERMINAL = {"completed", "partial", "error", "stopped"}
+
+
+def source_link(item):
+    """Build a public link from corpus metadata, never from the model's guess."""
+    key = item.get("source_key", "")
+    if item.get("error") or not key:
+        return None
+    if key.startswith("video_hub:"):
+        try:
+            url = urlsplit(item.get("video_url") or "")
+        except ValueError:
+            return None
+        if url.scheme != "https" or url.username or url.password or url.hostname not in {"youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be"}:
+            return None
+        query = [(name, value) for name, value in parse_qsl(url.query, keep_blank_values=True)
+                 if name not in {"t", "start", "time_continue"}]
+        seconds = item.get("video_timestamp_s")
+        label = " · ".join(str(value) for value in (item.get("author_name"), item.get("video_title")) if value) or "Видео"
+        if isinstance(seconds, int) and not isinstance(seconds, bool) and seconds >= 0:
+            query.append(("t", f"{seconds}s"))
+            minutes, secs = divmod(seconds, 60)
+            hours, minutes = divmod(minutes, 60)
+            label += f" · {hours}:{minutes:02d}:{secs:02d}" if hours else f" · {minutes}:{secs:02d}"
+        return {"url": urlunsplit((url.scheme, url.netloc, url.path, urlencode(query), "")), "label": label}
+    channel = (item.get("channel_username") or "").lstrip("@")
+    message_id = key.partition(":")[2]
+    if not re.fullmatch(r"[a-zA-Z][a-zA-Z0-9_]{3,31}", channel) or not message_id.isdigit():
+        return None
+    label = item.get("author_name") or f"@{channel}"
+    return {"url": f"https://t.me/{channel}/{message_id}", "label": f"{label} · пост {message_id}"}
+
+
+async def resolve_sources(answer):
+    """Read only cited metadata through the existing read-only Scout helper."""
+    keys = extract_keys(answer)
+    links = {}
+    env = dict(os.environ)
+    env.pop("SCOUT_WEB_PASSWORD_HASH", None)
+    for offset in range(0, len(keys), MAX_SHOW_KEYS):
+        batch = keys[offset:offset + MAX_SHOW_KEYS]
+        process = None
+        try:
+            process = await asyncio.create_subprocess_exec(
+                str(ROOT / "backend/.venv/bin/python"), str(ROOT / "backend/scripts/expert_scout.py"),
+                "show", *batch, "--json", "--comments-limit", "0", "--max-chars", "1",
+                cwd=ROOT, env=env, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+            output, _ = await asyncio.wait_for(process.communicate(), 15)
+            if process.returncode != 0:
+                continue
+            for item in json.loads(output):
+                if isinstance(item, dict) and item.get("source_key") in batch:
+                    link = source_link(item)
+                    if link:
+                        links[item["source_key"]] = link
+        except (OSError, ValueError, TypeError, asyncio.TimeoutError):
+            # Missing metadata must not turn into an invented link or lose the answer.
+            pass
+        finally:
+            if process and process.returncode is None:
+                process.kill()
+                await process.wait()
+    return links
 
 
 class Question(BaseModel):
@@ -108,6 +174,10 @@ class Jobs:
             code = await self.process.wait()
             await reader
             job["answer"] = answer.decode(errors="replace")
+            if job["status"] != "stopped" and job["answer"]:
+                job["message"] = "Подготавливаю ссылки на источники…"
+                self.save(job)
+                job["sources"] = await resolve_sources(job["answer"])
             if job["status"] != "stopped":
                 job["status"] = "completed" if code == 0 else "partial" if code in (3, 4) and job["answer"] else "error"
                 job["message"] = {"completed": "Готово", "partial": "Ответ не прошёл полную проверку",
@@ -185,7 +255,11 @@ async def auth():
 
 @app.get("/jobs/{job_id}", dependencies=[Depends(authorize)])
 async def get(job_id: str):
-    return app.state.jobs.get(job_id)
+    job = app.state.jobs.get(job_id)
+    if job.get("answer") and job["status"] in TERMINAL and "sources" not in job:
+        job["sources"] = await resolve_sources(job["answer"])
+        app.state.jobs.save(job)
+    return job
 
 
 @app.delete("/jobs/{job_id}", dependencies=[Depends(authorize)])

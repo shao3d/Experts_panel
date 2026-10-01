@@ -1,7 +1,7 @@
 # Expert Admission Control
 
 **Status:** Active admission doctrine and matrix workflow
-**Last updated:** 2026-09-30
+**Last updated:** 2026-10-01
 **Haft context:** `prob-20260509-71223b41`, `sol-20260509-ae57b368`
 
 This document defines the decision process for admitting new Telegram experts
@@ -1384,8 +1384,13 @@ Phase 1 adds only a light segment/topic → cell mapping, stored as per-segment 
 
 ### 16.3 Two-phase gate
 
-**Phase 0 — before ingest** (cheap filter; cost of a wrong reject is low,
-cost of a wrong ingest is 0.5–1.5 operator-hours):
+**Phase 0 — before ingest** (lightweight source-backed screening):
+
+An incorrect rejection or scoped cut can lose a useful technique. Do not treat
+that loss as cheap or infer full overlap from shared topics or matrix cells.
+Check each useful technique against fully read Scout sources with the same
+action, conditions and substantive details. Unresolved coverage goes into the
+verdict caveat for owner review; it does not justify silently dropping a block.
 
 1. Duplicate check (`video_hub_index.py --check`) and thematic filter:
    practical generative video / visual production content, not news or hype
@@ -1395,7 +1400,12 @@ cost of a wrong ingest is 0.5–1.5 operator-hours):
    3–5 real topics + draft `prompt_density` / `version_lock` / `durable_share`.
    Transcript does not see the screen — `prompt_density` from it is a lower
    bound; dirty ASR is fine for topics, not for verbatim prompts. If captions
-   are unavailable, fall back to title/description.
+   are unavailable, title/description can support initial triage only. A
+   transcript or title alone does not prove that useful on-screen techniques
+   are absent or already covered. Review relevant frames before a content-based
+   rejection or scoped exclusion when screen evidence is missing; if that
+   review cannot be completed, record the uncertainty and propose waitlist
+   rather than a confident coverage verdict.
 3. **Scout probe-check** of those topics (RU and EN) through the `expert-scout`
    channel. The transcript generates questions; only Scout proves overlap.
    Relevant fully read sources with citations can establish overlap. An empty successful probe means no evidence in the checked scope; an error, timeout or incomplete probe is unverified, not a gap. Verdict rule:

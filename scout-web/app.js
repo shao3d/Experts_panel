@@ -140,6 +140,53 @@ function resizeQuestion() {
   field.style.height = `${Math.min(240, field.scrollHeight)}px`;
 }
 
+function linkSources(root, sources = {}) {
+  const provider = url => url.hostname === 't.me' ? 'telegram' :
+    ['youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtu.be'].includes(url.hostname) ? 'youtube' : null;
+  function publicUrl(raw) {
+    try {
+      const url = new URL(raw);
+      return url.protocol === 'https:' && !url.username && !url.password && provider(url) ? url : null;
+    } catch { return null; }
+  }
+  root.querySelectorAll('.sources').forEach(wrapper => {
+    const references = [...wrapper.querySelectorAll('code,a')].filter(node => /^[a-z][a-z0-9_]*:\d+$/i.test(node.textContent));
+    const keys = new Set(references.map(node => node.textContent));
+    references.forEach(node => {
+      const key = node.textContent, source = sources[key];
+      const url = source && publicUrl(source.url);
+      if (!url) return;
+      const existing = node.closest('a');
+      const link = existing || document.createElement('a');
+      link.href = url.href;
+      link.target = '_blank'; link.rel = 'noopener noreferrer'; link.title = key;
+      link.dataset.sourceKey = key;
+      link.textContent = source.label || key;
+      if (!existing) node.replaceWith(link);
+    });
+    // A single identified source also fixes its model-written label/link.
+    // With several sources, their individual keys remain the unambiguous links.
+    if (keys.size === 1) {
+      const source = sources[[...keys][0]], target = source && publicUrl(source.url);
+      if (target) wrapper.querySelectorAll('a[href]').forEach(link => {
+        const original = publicUrl(link.href);
+        if (original && provider(original) === provider(target)) link.href = target.href;
+      });
+    }
+    // Keep the named citation when its adjacent key points to the same URL.
+    const seen = new Map();
+    wrapper.querySelectorAll('a[href]').forEach(link => {
+      const previous = seen.get(link.href);
+      if (previous && link.dataset.sourceKey && (!previous.dataset.sourceKey || previous.dataset.sourceKey === link.dataset.sourceKey)) {
+        previous.title = link.title; previous.dataset.sourceKey = link.dataset.sourceKey;
+        const separator = link.previousSibling;
+        if (separator?.nodeType === Node.TEXT_NODE && /^[\s,;·|]+$/.test(separator.textContent)) separator.remove();
+        link.remove();
+      } else seen.set(link.href, link);
+    });
+  });
+}
+
 async function request(path, options = {}) {
   const response = await fetch(API + path, {...options, cache: 'no-store', headers: {
     'Content-Type': 'application/json', 'X-Scout-Password': password, ...options.headers
@@ -173,6 +220,7 @@ function display(data) {
     $('answer').innerHTML = DOMPurify.sanitize(marked.parse(answer), {FORBID_TAGS: ['img', 'form', 'input', 'style']});
     $('answer').querySelectorAll('a').forEach(a => { a.target = '_blank'; a.rel = 'noopener noreferrer'; });
     foldSources($('answer'));
+    linkSources($('answer'), data.sources);
     $('answer').querySelectorAll('table').forEach(table => {
       const wrapper = document.createElement('div'); wrapper.className = 'table-wrap';
       table.before(wrapper); wrapper.append(table);
