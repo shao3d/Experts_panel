@@ -16,7 +16,7 @@ const assert = require('node:assert/strict');
         job={...job,status:'stopped',message:'Поиск остановлен',elapsed:1}; result=job;
       } else {
         if (finish) job={...job,status:'completed',message:'Готово',elapsed:42,
-          answer:'**Редактируемые слои** — не live text.\n\n[Dan Kieft · 14:35](https://www.youtube.com/watch?v=qwGIwxZFc2I&t=875s) · `video_hub:123`. Ключи: `video_hub:456`\n\nСохраняй референс ([Пост](https://t.me/AcidCrunch/2511) · acidcrunch:2511). Это важное пояснение.\n\nЕщё совет: **[Разбор](https://www.youtube.com/watch?v=example)**. Не потерять текст после ссылки.\n\nКлюч: `cgevent:42`.\n\n<script>window.compromised=true</script><img src=x onerror="window.compromised=true">\n\n| Приём | Ограничение |\n|---|---|\n| Слои AE | Контуры букв ([Источник](https://t.me/cgevent/42)) |'};
+          answer:'**Редактируемые слои** — не live text.\n\n[Dan Kieft · 14:35](https://www.youtube.com/watch?v=qwGIwxZFc2I&t=875s) · `video_hub:123`. Ключи: `video_hub:456`\n\nСохраняй референс ([Пост](https://t.me/AcidCrunch/2511) · acidcrunch:2511). Это важное пояснение.\n\nЕщё совет: **[Разбор](https://www.youtube.com/watch?v=example)**. Не потерять текст после ссылки.\n\nКлюч: `cgevent:42`.\n\n```\ncgevent:43\n```\n\n<script>window.compromised=true</script><img src=x onerror="window.compromised=true">\n\n| Приём | Ограничение |\n|---|---|\n| Слои AE | Контуры букв (Источник: [Источник](https://t.me/cgevent/42)) |'};
         result=job;
       }
       await route.fulfill({json:result,headers:{'access-control-allow-origin':'*'}});
@@ -38,6 +38,7 @@ const assert = require('node:assert/strict');
     assert.equal(await page.locator('#answer img').count(),0);
     assert.equal(await page.locator('#answer a').first().getAttribute('rel'),'noopener noreferrer');
     assert.equal(await page.locator('#answer table').count(),1);
+    assert.equal((await page.locator('#answer pre').innerText()).trim(),'cgevent:43');
     const sources = page.locator('#answer .source-toggle');
     assert.equal(await sources.count(),5);
     assert.equal(await page.locator('#answer a:visible').count(),0);

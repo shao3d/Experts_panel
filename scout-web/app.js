@@ -32,7 +32,7 @@ function foldSources(root) {
   const separator = node => node.nodeType === Node.TEXT_NODE &&
     /^[\s.,;:·|()[\]—–-]*(?:(?:Ключи?|Источники?|source_keys?|Sources?)\s*:\s*)?[\s.,;:·|()[\]—–-]*$/i.test(node.textContent);
   let number = 0;
-  const parents = new Set([...root.querySelectorAll('a,code')].filter(citation).map(node => node.parentElement));
+  const parents = new Set([...root.querySelectorAll('a,code')].filter(node => citation(node) && !node.closest('pre')).map(node => node.parentElement));
   parents.forEach(parent => {
     let node = parent.firstChild;
     while (node) {
@@ -49,9 +49,10 @@ function foldSources(root) {
       const before = node.previousSibling;
       const after = end.nextSibling;
       // Reuse existing parentheses rather than adding a second pair.
-      if (before?.nodeType === Node.TEXT_NODE && after?.nodeType === Node.TEXT_NODE &&
-          /\(\s*$/.test(before.textContent) && /^\s*\)/.test(after.textContent)) {
-        before.textContent = before.textContent.replace(/\(\s*$/, '');
+      const opening = before?.nodeType === Node.TEXT_NODE &&
+        before.textContent.match(/\(\s*(?:(?:Источники?|Ключи?|Sources?|source_keys?)\s*:\s*)?$/i);
+      if (opening && after?.nodeType === Node.TEXT_NODE && /^\s*\)/.test(after.textContent)) {
+        before.textContent = before.textContent.slice(0, opening.index) + opening[0].replace(/^\(\s*/, '');
         after.textContent = after.textContent.replace(/^\s*\)/, '');
       }
       if (before?.nodeType === Node.TEXT_NODE) {
