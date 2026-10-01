@@ -31,6 +31,35 @@ function foldSources(root) {
     (node.matches('a') || (node.matches('code') && key.test(node.textContent)));
   const separator = node => node.nodeType === Node.TEXT_NODE &&
     /^[\s.,;:·|()[\]—–-]*(?:(?:Ключи?|Источники?|source_keys?|Sources?)\s*:\s*)?[\s.,;:·|()[\]—–-]*$/i.test(node.textContent);
+  function metadataAfter(node) {
+    // A citation's author/date/time are one unit. Stop before ordinary prose.
+    const siblings = [];
+    for (let next = node.nextSibling; next; next = next.nextSibling) {
+      if (next.nodeType !== Node.TEXT_NODE && !next.matches?.('strong,em,span,code')) break;
+      siblings.push(next);
+    }
+    const text = siblings.map(item => item.textContent).join('');
+    const match = text.match(/^[\s,;·—–-]+(?:[^,;\n().!?]{1,100},\s*)?(?:\d{2}\.\d{2}\.\d{4}|\d{4}-\d{2}-\d{2})(?:\s*[,·]\s*\d{1,2}:\d{2}(?::\d{2})?(?:\s*[–—-]\s*\d{1,2}:\d{2}(?::\d{2})?)?)?/);
+    if (!match) return [];
+    let remaining = match[0].length;
+    const range = document.createRange(); range.setStartAfter(node);
+    for (const sibling of siblings) {
+      const walker = document.createTreeWalker(sibling, NodeFilter.SHOW_TEXT);
+      let textNode = sibling.nodeType === Node.TEXT_NODE ? sibling : walker.nextNode();
+      while (textNode) {
+        if (remaining <= textNode.length) {
+          range.setEnd(textNode, remaining);
+          const fragment = range.extractContents();
+          const parts = [...fragment.childNodes];
+          node.after(fragment);
+          return parts;
+        }
+        remaining -= textNode.length;
+        textNode = walker.nextNode();
+      }
+    }
+    return [];
+  }
   let number = 0;
   const parents = new Set([...root.querySelectorAll('a,code')].filter(node => citation(node) && !node.closest('pre')).map(node => node.parentElement));
   parents.forEach(parent => {
@@ -39,12 +68,16 @@ function foldSources(root) {
       if (!citation(node)) { node = node.nextSibling; continue; }
       const nodes = [node];
       let end = node;
+      const metadata = metadataAfter(end);
+      if (metadata.length) { nodes.push(...metadata); end = metadata.at(-1); }
       while (end.nextSibling) {
         let next = end.nextSibling;
         const between = [];
         while (next && separator(next)) { between.push(next); next = next.nextSibling; }
         if (!next || !citation(next)) break;
         nodes.push(...between, next); end = next;
+        const metadata = metadataAfter(end);
+        if (metadata.length) { nodes.push(...metadata); end = metadata.at(-1); }
       }
       const before = node.previousSibling;
       const after = end.nextSibling;
@@ -72,15 +105,24 @@ function foldSources(root) {
       toggle.setAttribute('aria-label', 'Показать источники');
       node.before(wrapper);
       content.append(': ', ...nodes);
-      wrapper.append('(', toggle, content, ')');
+      const label = document.createElement('span'); label.className = 'source-label';
+      label.append('(', toggle);
+      wrapper.append(label, content, ')');
       toggle.addEventListener('click', () => {
         content.hidden = !content.hidden;
+        wrapper.classList.toggle('is-open', !content.hidden);
         toggle.setAttribute('aria-expanded', String(!content.hidden));
         toggle.setAttribute('aria-label', content.hidden ? 'Показать источники' : 'Свернуть источники');
       });
       node = wrapper.nextSibling;
     }
   });
+}
+
+function resizeQuestion() {
+  const field = $('question');
+  field.style.height = 'auto';
+  field.style.height = `${Math.min(240, field.scrollHeight)}px`;
 }
 
 async function request(path, options = {}) {
@@ -101,13 +143,13 @@ async function request(path, options = {}) {
 
 function display(data) {
   job = data;
-  document.body.classList.add('has-result');
   const running = !terminal.has(data.status);
   $('message').textContent = data.message;
   document.querySelector('.status').classList.toggle('running', running);
   $('action').textContent = running ? 'Остановить' : 'Спросить';
   $('question').readOnly = running;
   $('question').value = data.question;
+  resizeQuestion();
   clearInterval(timer);
   const tick = () => {
     const seconds = running ? Math.max(0, Math.round(Date.now() / 1000 - data.started_at)) : data.elapsed;
@@ -156,6 +198,8 @@ async function login() {
   sessionStorage.setItem('scout-password', password);
   $('login').hidden = true;
   $('ask').hidden = false;
+  $('question').focus();
+  resizeQuestion();
   $('message').textContent = '';
   const id = localStorage.getItem('scout-job');
   if (id) {
@@ -169,6 +213,8 @@ $('login').addEventListener('submit', async event => {
   try { await login(); $('password').value = ''; }
   catch (error) { $('message').textContent = error.message; }
 });
+$('question').addEventListener('input', resizeQuestion);
+window.addEventListener('resize', resizeQuestion);
 $('ask').addEventListener('submit', async event => {
   event.preventDefault(); $('action').disabled = true;
   try {

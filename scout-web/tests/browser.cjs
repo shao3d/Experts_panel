@@ -2,7 +2,7 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const assert = require('node:assert/strict');
 (async () => {
   const browser = await chromium.launch({headless:true});
-  for (const viewport of [{width:1280,height:900},{width:390,height:844}]) {
+  for (const viewport of [{width:1280,height:900},{width:390,height:844},{width:320,height:740}]) {
     const page = await browser.newPage({viewport,permissions:['clipboard-read','clipboard-write']});
     let job;
     let finish = false;
@@ -16,7 +16,7 @@ const assert = require('node:assert/strict');
         job={...job,status:'stopped',message:'Поиск остановлен',elapsed:1}; result=job;
       } else {
         if (finish) job={...job,status:'completed',message:'Готово',elapsed:42,
-          answer:'**Редактируемые слои** — не live text.\n\n[Dan Kieft · 14:35](https://www.youtube.com/watch?v=qwGIwxZFc2I&t=875s) · `video_hub:123`. Ключи: `video_hub:456`\n\nСохраняй референс ([Пост](https://t.me/AcidCrunch/2511) · acidcrunch:2511). Это важное пояснение.\n\nЕщё совет: **[Разбор](https://www.youtube.com/watch?v=example)**. Не потерять текст после ссылки.\n\nКлюч: `cgevent:42`.\n\n```\ncgevent:43\n```\n\n<script>window.compromised=true</script><img src=x onerror="window.compromised=true">\n\n| Приём | Ограничение |\n|---|---|\n| Слои AE | Контуры букв (Источник: [Источник](https://t.me/cgevent/42)) |'};
+          answer:'**Редактируемые слои** — не live text.\n\n[Dan Kieft · 14:35](https://www.youtube.com/watch?v=qwGIwxZFc2I&t=875s) · `video_hub:123`, Higgsfield AI, 28.08.2026, 18:06. Ключи: `video_hub:456`\n\nСохраняй референс ([Пост](https://t.me/AcidCrunch/2511) · acidcrunch:2511, **Acid Crunch**, *26.06.2026*, 01:02–01:18). Это важное пояснение.\n\nЕщё совет: **[Разбор](https://www.youtube.com/watch?v=example)**. Не потерять текст после ссылки.\n\nКлюч: `cgevent:42`.\n\n```\ncgevent:43\n```\n\n<script>window.compromised=true</script><img src=x onerror="window.compromised=true">\n\n| Приём | Ограничение |\n|---|---|\n| Слои AE | Контуры букв (Источник: [Источник](https://t.me/cgevent/42)) |'};
         result=job;
       }
       await route.fulfill({json:result,headers:{'access-control-allow-origin':'*'}});
@@ -24,12 +24,16 @@ const assert = require('node:assert/strict');
     await page.goto(process.env.SCOUT_PAGE || 'http://127.0.0.1:8767');
     await page.locator('#password').fill('test-password');
     await page.locator('#login button').click();
+    await page.locator('#question').fill('Длинный вопрос\nсо второй строкой\nи третьей строкой\nи четвёртой строкой');
+    assert.ok(await page.locator('#question').evaluate(el=>el.clientHeight>=el.scrollHeight));
     await page.locator('#question').fill('Как сохранить персонажа?');
     assert.equal(await page.locator('#question').evaluate(el=>getComputedStyle(el).outlineStyle),'none');
     assert.equal(await page.locator('#ask').evaluate(el=>getComputedStyle(el).borderTopColor),'rgb(217, 160, 91)');
+    const beforeSearch = await page.locator('#ask').boundingBox();
     await page.locator('#action').click();
     await page.waitForFunction(()=>document.querySelector('#action').textContent==='Остановить');
     assert.match(await page.locator('#message').textContent(), /Telegram/);
+    assert.equal((await page.locator('#ask').boundingBox()).y,beforeSearch.y);
     await page.reload();
     await page.waitForFunction(()=>document.querySelector('#action').textContent==='Остановить');
     finish=true;
@@ -43,6 +47,7 @@ const assert = require('node:assert/strict');
     assert.equal(await sources.count(),5);
     assert.equal(await page.locator('#answer a:visible').count(),0);
     assert.ok(!(await page.locator('#answer').innerText()).includes('video_hub:123'));
+    for (const metadata of ['Higgsfield AI', '28.08.2026', '18:06', 'Acid Crunch', '26.06.2026', '01:02']) assert.ok(!(await page.locator('#answer').innerText()).includes(metadata), metadata);
     assert.ok((await page.locator('#answer').innerText()).includes('Это важное пояснение.'));
     assert.ok((await page.locator('#answer').innerText()).includes('Не потерять текст после ссылки.'));
     assert.ok(!(await page.locator('#answer').innerText()).includes('((источники'));
@@ -50,13 +55,19 @@ const assert = require('node:assert/strict');
     assert.equal(await sources.first().getAttribute('aria-expanded'),'true');
     assert.equal(await page.locator('#answer a:visible').count(),1);
     assert.ok((await page.locator('#answer').innerText()).includes('video_hub:123'));
+    assert.ok((await page.locator('#answer').innerText()).includes('Higgsfield AI, 28.08.2026, 18:06'));
     assert.ok((await page.locator('#answer').innerText()).includes('video_hub:456'));
     assert.equal(await sources.nth(1).getAttribute('aria-expanded'),'false');
     await sources.first().press('Enter');
     assert.equal(await sources.first().getAttribute('aria-expanded'),'false');
     assert.equal(await page.locator('#answer a:visible').count(),0);
+    await sources.nth(1).click();
+    assert.ok((await page.locator('#answer').innerText()).includes('Acid Crunch, 26.06.2026, 01:02–01:18'));
+    await sources.nth(1).click();
     await page.locator('#copy').click();
-    assert.ok((await page.evaluate(()=>navigator.clipboard.readText())).includes('video_hub:123'));
+    const copied = await page.evaluate(()=>navigator.clipboard.readText());
+    assert.ok(copied.includes('video_hub:123'));
+    assert.ok(copied.includes('Higgsfield AI, 28.08.2026, 18:06'));
 
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
     await page.screenshot({path:`output/scout_web_checks/${viewport.width}.png`,fullPage:true});
