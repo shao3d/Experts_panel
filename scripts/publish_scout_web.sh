@@ -5,5 +5,5 @@ if [[ -n "$(git status --porcelain -- scout-web)" ]]; then
     echo 'Commit scout-web changes before publication.' >&2
     exit 1
 fi
-revision=$(git subtree split --quiet --prefix=scout-web HEAD)
+revision=$(git subtree split -q --prefix=scout-web HEAD)
 git push https://github.com/shao3d/scout-web.git "$revision:refs/heads/main"

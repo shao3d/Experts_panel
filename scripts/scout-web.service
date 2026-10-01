@@ -8,6 +8,7 @@ User=ubuntu
 WorkingDirectory=/home/ubuntu/apps/experts-panel/dev
 Environment=PATH=/home/ubuntu/.bun/bin:/usr/local/bin:/usr/bin:/bin
 EnvironmentFile=/home/ubuntu/.config/scout-web/access.env
+ExecStartPre=+/bin/sh -c '/usr/sbin/iptables -C INPUT -s 172.18.0.0/16 -d 172.18.0.1 -p tcp --dport 8766 -j ACCEPT || /usr/sbin/iptables -I INPUT 1 -s 172.18.0.0/16 -d 172.18.0.1 -p tcp --dport 8766 -j ACCEPT'
 ExecStart=/home/ubuntu/apps/experts-panel/dev/backend/.venv/bin/python -m uvicorn scripts.scout_web_api:app --host 172.18.0.1 --port 8766 --no-access-log
 Restart=on-failure
 RestartSec=3

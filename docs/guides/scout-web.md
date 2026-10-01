@@ -71,6 +71,8 @@ Pages и проверить страницу; основного code deploy —
 `systemctl daemon-reload` и `systemctl restart scout-web`. Unit запускает dev
 venv с адресом `172.18.0.1:8766` (gateway сети `experts-panel_default`).
 Смена Docker сети требует согласовать этот адрес в unit и Caddy.
+Unit также идемпотентно разрешает в host firewall только обращения Docker
+подсети `172.18.0.0/16` к этому адресу и порту. Порт не слушает публичный IP.
 
 В `/home/ubuntu/apps/experts-panel/Caddyfile` внутри существующего сайта:
 
