@@ -4,11 +4,17 @@
 **Status:** Active Roadmap (query-time side; P2/P3/P5/P4/N2 closed — see the
 priority table and "Review fixes")
 **Last updated:** 2026-10-02
-**Current State (2026-10-02):** dev and production hold **20 videos / 458 segments**.
+**Current State (2026-10-02):** staging and production contain **20 videos / 458 segments**.
+Исправленная разметка новой тройки промоутирована через scoped visual data release
+2026-10-02; проверка целостности БД и production `/health` прошли.
 Current inventory: [generated index](../video-hub-index.md). Введены 2026-10-02:
 `AgUATWAOaKY` (24), `cCDn0Z6AdmM` (21), `FJfMTvZvX7w` (12) — все с receipts
 `searchable`, матрица 20 видео / 458 сегментов / 13 клеток / 0 gaps; материалы и
-REVIEW — `output/video_review/2026-10-02/REVIEW.md`. Ранее: Dan Kieft
+REVIEW — `output/video_review/2026-10-02/REVIEW.md`. Независимая приёмка выявила
+ошибки экранной разметки, таймкодов и неполное отражение ячеек Матрицы;
+ремонт и проверки staging завершены:
+[находки, исправления и затраты](../quality/2026-10-02-mimo-video-onboarding-review.md).
+Успешный импорт не означает приёмку точности содержания. Ранее: Dan Kieft
 `qwGIwxZFc2I` was imported with 35 reviewed segments and 85 frame references.
 Its generated receipt confirms `searchable` (35/35 indexed, zero embedding
 errors). The Matrix is rebuilt with six source-backed cells for this video.
