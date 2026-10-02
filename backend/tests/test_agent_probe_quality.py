@@ -3,6 +3,8 @@ import importlib.util
 import json
 from pathlib import Path
 
+import pytest
+
 PATH=Path(__file__).resolve().parents[1]/'scripts/agent_probe.py'
 
 
@@ -18,6 +20,20 @@ def test_failed_run_is_not_honest_absence():
     run={'answer_keys':[],'abstain_signal':True,'exit':4,'run_completed':True,'read_keys':[]}
     result=module.score_fixture(fixture,run)
     assert result['abstain_ok'] is False and result['run_succeeded'] is False
+
+
+def test_all_fixtures_are_validated_before_launching_any_model(monkeypatch):
+    module = probe()
+    fixtures = [
+        {'id': 'reviewed', 'reviewed_at': '2026-10-02', 'question': 'Reviewed question'},
+        {'id': 'unreviewed', 'question': 'Needs source review'},
+    ]
+    monkeypatch.setattr(module.probe, 'load_fixtures', lambda: fixtures)
+    launched = []
+    monkeypatch.setattr(module, 'run_agent', lambda *args: launched.append(args))
+    with pytest.raises(ValueError, match='unreviewed: source review required'):
+        module.run_all(fixture_ids=['reviewed', 'unreviewed'])
+    assert launched == []
 
 
 def test_missing_result_is_regression(tmp_path):
@@ -50,6 +66,17 @@ def test_completed_run_with_no_answer_sources_fails():
     result = module.score_fixture({'id': 'hit', 'kind': 'hit', 'expected_keys': ['expert:1'], 'min_hits': 1}, successful_run([]))
     assert result['run_succeeded'] is True
     assert result['automatic_pass'] is False
+
+
+@pytest.mark.parametrize('interpolation_key', ['video_hub:119251081', 'video_hub:403371283'])
+def test_grid_accepts_reviewed_interpolation_alternatives_but_still_requires_animation(monkeypatch, interpolation_key):
+    module = probe()
+    fixture = next(f for f in module.probe.load_fixtures() if f['id'] == 'grid_prompting')
+    monkeypatch.setattr(module.probe, 'keys_exist', lambda keys: dict.fromkeys(keys, True))
+    assert module.score_fixture(fixture, successful_run(['video_hub:102636863', interpolation_key]))['automatic_pass']
+    result = module.score_fixture(fixture, successful_run(['video_hub:531461744', interpolation_key]))
+    assert not result['automatic_pass']
+    assert result['missing_groups'] == ['grid_animation']
 
 
 def test_strict_abstention_rejects_citations_when_context_is_disallowed(monkeypatch):

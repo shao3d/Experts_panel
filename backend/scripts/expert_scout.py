@@ -180,10 +180,13 @@ def _vector_search(
     if sqlite_vec is None:
         return [], "sqlite_vec_unavailable"
 
-    from src.services.embedding_service import get_embedding_service
+    from src.services.embedding_service import EmbeddingService
 
     try:
-        embedding = asyncio.run(get_embedding_service().embed_query(query))
+        # Leave time for FTS results to return before the tool's 120s timeout.
+        # The ingestion service keeps its default, longer retry policy.
+        service = EmbeddingService(request_timeout=15, max_retry_attempts=2)
+        embedding = asyncio.run(service.embed_query(query))
     except Exception as exc:  # noqa: BLE001 - degrade to FTS-only
         return [], f"embedding_failed: {type(exc).__name__}"
 
@@ -273,13 +276,18 @@ def _rank_fts(
 def _rank_vector(
     vector_rows: list[tuple[int, float, str | None]], now: datetime, freshness: str = "tool"
 ) -> list[int]:
-    """Rescore distance rows with soft freshness, return post_ids best-first."""
+    """Keep the calibrated freshness score; break ties by vector distance.
+
+    L2 distances can exceed one. Their clamped score must not let the order
+    of expert partitions decide relevance. Changing the score scale itself
+    regressed measured retrieval, so distance only resolves equal scores.
+    """
     scored = [
-        (post_id, max(0.0, 1.0 - distance) * _soft_freshness(created_at, now, freshness))
+        (post_id, max(0.0, 1.0 - distance) * _soft_freshness(created_at, now, freshness), distance)
         for post_id, distance, created_at in vector_rows
     ]
-    scored.sort(key=lambda item: item[1], reverse=True)
-    return [post_id for post_id, _ in scored]
+    scored.sort(key=lambda item: (-item[1], item[2]))
+    return [post_id for post_id, _, _ in scored]
 
 
 def _rrf_merge(fts_ids: list[int], vector_ids: list[int], k: int) -> list[int]:
@@ -595,6 +603,15 @@ def cmd_search(args: argparse.Namespace) -> int:
 
     if args.json:
         degraded = any(w != "vector_skipped_by_flag" for w in warnings)
+        # Search cards select what to read. Links and interval metadata belong
+        # to show, which is still required before citing a primary source.
+        card_fields = {
+            "source_key", "author_name", "created_at", "found_by", "chars", "snippet",
+            "video_id", "video_title", "video_timestamp_s", "published_at",
+            "scope", "coverage", "timestamp_kind",
+        }
+        results = [{key: value for key, value in item.items() if key in card_fields}
+                   for item in results]
         print(json.dumps({"status": "partial" if degraded else "completed", "query": args.query, "warnings": warnings,
                           "retrieval_stats": leg_stats(fts_ids, vector_ids), "candidate_pool_size": len(pool),
                           "next_cursor": offset + len(merged) if offset + len(merged) < len(pool) else None,

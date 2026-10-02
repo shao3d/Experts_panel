@@ -28,7 +28,10 @@ class RetryableEmbeddingError(RuntimeError):
 class EmbeddingService:
     """Generate compatible 768-dimension Gemini embeddings through OpenRouter."""
 
-    def __init__(self):
+    def __init__(self, *, request_timeout: float = _DEFAULT_TIMEOUT_SECONDS,
+                 max_retry_attempts: int = _MAX_RETRY_ATTEMPTS):
+        self.request_timeout = request_timeout
+        self.max_retry_attempts = max_retry_attempts
         self.model = config.MODEL_EMBEDDING
         self.dimensions = config.EMBEDDING_DIMENSIONS
         self.api_key = config.OPENROUTER_API_KEY
@@ -90,7 +93,7 @@ class EmbeddingService:
                     "input_type": self._input_type(task_type),
                     "provider": {"require_parameters": True},
                 },
-                timeout=_DEFAULT_TIMEOUT_SECONDS,
+                timeout=self.request_timeout,
             )
         except requests.RequestException as exc:
             raise RetryableEmbeddingError(f"Network error while calling OpenRouter embeddings: {exc}") from exc
@@ -111,14 +114,14 @@ class EmbeddingService:
         raise RuntimeError(f"Error code: {response.status_code} - {message}")
 
     async def embed_text(self, text: str, task_type: str = "RETRIEVAL_DOCUMENT") -> List[float]:
-        for attempt in range(1, _MAX_RETRY_ATTEMPTS + 1):
+        for attempt in range(1, self.max_retry_attempts + 1):
             try:
                 return await asyncio.to_thread(self._embed, text, task_type)
             except RetryableEmbeddingError as exc:
-                if attempt >= _MAX_RETRY_ATTEMPTS:
+                if attempt >= self.max_retry_attempts:
                     raise
                 delay = exc.retry_after or min(_MAX_BACKOFF_SECONDS, _BASE_BACKOFF_SECONDS * 2 ** (attempt - 1)) + random.uniform(0, 0.75)
-                logger.warning("OpenRouter embedding transient error; retrying in %.1fs (%s/%s)", delay, attempt, _MAX_RETRY_ATTEMPTS)
+                logger.warning("OpenRouter embedding transient error; retrying in %.1fs (%s/%s)", delay, attempt, self.max_retry_attempts)
                 await asyncio.sleep(delay)
 
     async def embed_query(self, query: str) -> List[float]:

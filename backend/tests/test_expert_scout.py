@@ -360,6 +360,31 @@ def test_rank_vector_prefers_fresh_relevant(scout):
     assert scout._rank_vector(rows, now)[:1] == [2]
 
 
+@pytest.mark.parametrize('freshness', ['tool', 'craft', 'any'])
+def test_rank_vector_distinguishes_distances_above_one(scout, freshness):
+    now = datetime(2026, 10, 2, tzinfo=timezone.utc)
+    rows = [(1, 1.4, '2026-10-01'), (2, 1.1, '2026-10-01'),
+            (3, 1.01, '2026-10-01'), (4, 0.9, '2026-10-01')]
+    expected = [4, 3, 2, 1]
+    assert scout._rank_vector(rows, now, freshness) == expected
+    # Expert iteration order must not decide relevance for distant matches.
+    assert scout._rank_vector(list(reversed(rows)), now, freshness) == expected
+
+
+def test_vec_default_metric_can_exceed_one(scout):
+    if scout.sqlite_vec is None:
+        pytest.skip('sqlite_vec not installed')
+    with sqlite3.connect(':memory:') as conn:
+        conn.enable_load_extension(True)
+        scout.sqlite_vec.load(conn)
+        conn.execute('CREATE VIRTUAL TABLE vectors USING vec0(embedding float[2])')
+        conn.execute("INSERT INTO vectors(rowid, embedding) VALUES (1, '[0, 1]')")
+        distance = conn.execute(
+            "SELECT distance FROM vectors WHERE embedding MATCH '[1, 0]' AND k=1"
+        ).fetchone()[0]
+    assert distance == pytest.approx(2 ** 0.5)
+
+
 def test_broad_candidate_pool_keeps_text_and_vector_tail(scout):
     fts = list(range(90))
     vector = list(range(100,140))
@@ -495,6 +520,57 @@ def test_collect_show_payload_exposes_video_link(scout, show_conn):
 def _mock_corpus(scout, monkeypatch, conn):
     monkeypatch.setattr(scout, "_load_backend", lambda: BACKEND_DIR)
     monkeypatch.setattr(scout, "_connect", lambda *args: nullcontext(conn))
+
+
+def test_search_returns_fts_after_embedding_timeouts(scout, show_conn, monkeypatch, capsys):
+    from unittest.mock import AsyncMock
+    import requests
+    from src.services import embedding_service as embeddings
+
+    _mock_corpus(scout, monkeypatch, show_conn)
+    monkeypatch.setattr(scout, '_expert_ids', lambda *a: (['acidcrunch'], []))
+    monkeypatch.setattr(scout, '_fts_search', lambda *a: ([(1, 'post text', -1, '2025-06-05')], None))
+    monkeypatch.setattr(embeddings.config, 'OPENROUTER_API_KEY', 'test-only')
+    calls = []
+
+    def fail(*a, **kw):
+        calls.append(kw['timeout'])
+        raise requests.Timeout('simulated timeout')
+
+    monkeypatch.setattr(embeddings.requests, 'post', fail)
+    monkeypatch.setattr(embeddings.asyncio, 'sleep', AsyncMock())
+    args = scout.build_parser().parse_args(['search', 'post', '--experts', 'acidcrunch', '--json'])
+    assert scout.cmd_search(args) == 0
+    result = json.loads(capsys.readouterr().out)
+    assert calls == [15, 15]
+    assert result['status'] == 'partial'
+    assert result['warnings'] == ['embedding_failed: RetryableEmbeddingError']
+    assert result['results'][0]['source_key'] == 'acidcrunch:2062'
+    assert result['results'][0]['found_by'] == ['fts']
+
+
+def test_compact_search_keeps_candidates_and_show_keeps_metadata(scout, show_conn, monkeypatch, capsys):
+    _mock_corpus(scout, monkeypatch, show_conn)
+    monkeypatch.setattr(scout, '_expert_ids', lambda *a: (['video_hub'], []))
+    monkeypatch.setattr(scout, '_fts_search', lambda *a: ([(3, 'video snippet', -1, '2026-08-21')], None))
+    args = scout.build_parser().parse_args(['search', 'video', '--experts', 'video_hub', '--no-vector', '--json'])
+    assert scout.cmd_search(args) == 0
+    result = json.loads(capsys.readouterr().out)
+    assert result['status'] == 'completed'
+    assert result['candidate_pool_size'] == 1
+    card = result['results'][0]
+    assert card['source_key'] == 'video_hub:825056013'
+    assert card['author_name'] == 'Youri van Hofwegen'
+    assert card['video_id'] == '2b3Z4rW5VJc'
+    assert card['snippet'] == 'video snippet'
+    assert card['coverage'] == 'unknown'
+    assert card['timestamp_kind'] == 'keyframe'
+    assert 'video_url' not in card and 'video_link' not in card
+    assert 'channel_username' not in card and 'segment_start_s' not in card
+    source = scout._collect_show_payload(show_conn, [card['source_key']], 0)[0]
+    assert source['video_link'].endswith('t=258s')
+    assert source['content'] == 'video segment text'
+    assert source['timestamp_kind'] == 'keyframe'
 
 
 def test_digest_does_not_skip_rows_at_character_cap(scout, show_conn, monkeypatch, capsys):

@@ -144,11 +144,14 @@ def score_fixture(fixture: dict, run: dict) -> dict:
 
 def run_all(timeout_s: int = 900, fixture_ids: list[str] | None = None, show_answers: bool = False, engine: str = "runtime") -> dict:
     fixtures = {f["id"]: f for f in probe.load_fixtures()}
-    results = []
-    for fid in fixture_ids or AGENT_FIXTURES:
-        fixture = fixtures[fid]
+    selected = [fixtures[fid] for fid in fixture_ids or AGENT_FIXTURES]
+    # Reject an invalid suite before spending any model calls on earlier cases.
+    for fixture in selected:
         if not fixture.get("reviewed_at"):
-            raise ValueError(f"{fid}: source review required before agent acceptance")
+            raise ValueError(f"{fixture['id']}: source review required before agent acceptance")
+    results = []
+    for fixture in selected:
+        fid = fixture["id"]
         print(f"running agent on {fid} ...", file=sys.stderr)
         run = run_agent(fixture["question"], timeout_s, engine)
         scored = score_fixture(fixture, run)

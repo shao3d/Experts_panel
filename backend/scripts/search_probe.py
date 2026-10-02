@@ -167,6 +167,8 @@ def probe_fixture(fixture: dict) -> dict:
             k for k in metrics_for(returned, expected, 40)["returned"]
             if k in expected and k not in returned[:10]
         ]
+        # Legacy field name: outside the measured top-40, not the whole
+        # paginated candidate pool. Repeated queries count occurrences.
         outside = [k for k in expected if k not in returned[:40]]
         per_query.append(
             {

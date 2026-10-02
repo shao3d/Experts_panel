@@ -23,6 +23,7 @@ Last updated: 2026-10-02
 
 | Задача | Сначала читать | Потом, если нужно |
 | --- | --- | --- |
+| Scout: ремонт надёжности, компактные карточки и проверка лишних чтений, 2026-10-02 | `docs/quality/2026-10-02-scout-reliability-fixes.md` | `docs/guides/expert-scout.md`; статус локальных проверок и ограничения исторического baseline — в отчёте |
 | **VideoHub и Скаут: Dan опубликован, стенд обновлён; проверки и ограничения** | `docs/quality/2026-09-30-videohub-scout-fixes.md` | `docs/guides/video-hub-operator.md`, `docs/guides/expert-scout.md`; история передачи: `docs/archive/2026-09-30-videohub-scout-handoff-starter.md` |
 | **Тройка MiMo: разметка отремонтирована, проверена и промоутирована в production, 2026-10-02 (AgUATWAOaKY, cCDn0Z6AdmM, FJfMTvZvX7w)** | `docs/quality/2026-10-02-mimo-video-onboarding-review.md` | `output/video_review/2026-10-02/REVIEW.md` (исходный handoff); `docs/roadmap/video-hub-scaling.md`, `docs/video-hub-index.md`; гейт: `docs/architecture/expert-admission-control.md` §16 |
 | **Завершено: ввод free-roam тройки (3I2jj6HA3p0, yUiTmO8AjJc, 6dNnvhoR3YY) в VideoHub, 2026-09-29** | `docs/roadmap/video-hub-scaling.md` (watchlist), `docs/video-hub-index.md` | `docs/archive/2026-09-29-videohub-free-roam-trio-starter.md` (история); гейт: `docs/architecture/expert-admission-control.md` §16 |
