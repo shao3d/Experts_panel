@@ -3,9 +3,12 @@
 **Created:** 2026-03-28
 **Status:** Active Roadmap (query-time side; P2/P3/P5/P4/N2 closed — see the
 priority table and "Review fixes")
-**Last updated:** 2026-10-01
-**Current State (2026-10-01):** dev and production hold **17 videos / 401 segments**.
-Current inventory: [generated index](../video-hub-index.md). Dan Kieft
+**Last updated:** 2026-10-02
+**Current State (2026-10-02):** dev and production hold **20 videos / 458 segments**.
+Current inventory: [generated index](../video-hub-index.md). Введены 2026-10-02:
+`AgUATWAOaKY` (24), `cCDn0Z6AdmM` (21), `FJfMTvZvX7w` (12) — все с receipts
+`searchable`, матрица 20 видео / 458 сегментов / 13 клеток / 0 gaps; материалы и
+REVIEW — `output/video_review/2026-10-02/REVIEW.md`. Ранее: Dan Kieft
 `qwGIwxZFc2I` was imported with 35 reviewed segments and 85 frame references.
 Its generated receipt confirms `searchable` (35/35 indexed, zero embedding
 errors). The Matrix is rebuilt with six source-backed cells for this video.
@@ -39,13 +42,18 @@ Dan включён после подтверждения `searchable`.
 `output/video_admission/candidate_probe_journal.json`. Это SSOT по «какие
 видео рассматривать дальше»: если здесь чего-то нет — кандидата нет.
 
-### Что рассматривать дальше (приоритетный порядок, 2026-10-01)
+### Что рассматривать дальше (приоритетный порядок, 2026-10-02)
+
+Скан 2026-10-02 (окно 30 дней: 2026-09-02..2026-10-02, 10 каналов) завершён; введены
+`AgUATWAOaKY`, `cCDn0Z6AdmM`, `FJfMTvZvX7w` (см. «Недавно введены»). Остатки watchlist:
 
 | # | Видео | Автор | Ценность для матрицы | Статус |
 |---|-------|-------|----------------------|--------|
-| 1 | `CAWnlOJbSX4` I Turned My Boring Hometown Into A Movie With AI VFX (12м) | River Cody | 5 уровней «скучная локация → кино» (практическая композиция → AI-усиление), elements + Claude-переводчик → сториборд-досборка недоснятых ракурсов; durable крафт; канал уже в корпусе (`3I2jj6HA3p0`) | **резерв №1** (rec: waitlist; перед ingest проверить дубль с levels-фреймворком `5y20tE7zo40`) |
-| 2 | `0d8pqU8JRrY` How to Make 3D Animations With GPT 6 Astra (No Blender Needed, 2026-09-19) | Youri van Hofwegen | «3D без Blender» через GPT-6 Astra — средняя новизна против `vUYq38wC_xI` и `neyrograph` | резерв: пробить по запросу владельца |
-| 3 | `rnZXSc8azc0` Master AI Video Creation: Your 5 Level Roadmap (2026-09-14) | AI Samson | риск дубля сюжетом с уже введённым `5y20tE7zo40` (тот же levels-фреймворк) | резерв: пробить только по запросу владельца |
+| 1 | `3LekYT1rKoc` Can AI Color Grade Better Than A Human? (2026-09-16) | River Cody | film-reference prompting для грейдинга, cost breakdown; ядро Astra+Resolve покрыто `qwGIwxZFc2I` | **waitlist** (проба 2026-10-02) |
+| 2 | `gr9fEEKrO5Y` Video Editors Are Dead? Opus Edited This (2026-09-29) | AI Samson | word-by-word animation, selects-labels; code-animation покрыта (Remotion/Three.js/Python) | waitlist |
+| 3 | `CAWnlOJbSX4` I Turned My Boring Hometown Into A Movie With AI VFX (2026-08-12) | River Cody | резерв №1 вне окна 30 дней — по решению владельца 2026-10-02 в окно не тянули | резерв |
+
+| `0d8pqU8JRrY` How to Make 3D Animations With GPT 6 Astra (2026-09-19) | Youri van Hofwegen | вне окна не брался; пробить по запросу владельца | резерв |
 
 `qwGIwxZFc2I` больше не кандидат: онбординг в dev и проверка поиска завершены;
 scoped visual data release выполнен 2026-10-01.
@@ -62,7 +70,14 @@ scoped visual data release выполнен 2026-10-01.
 | `M73BrFnVPA8`, `9Pbg-_ptBcE`, `rwVeovA805k` | разные | продуктовые тизеры без техники (reject_low_value по пробам) |
 | `eUFdtZLDOo8` 50+ Ways to Use GPT-6, `_cbq1SJ_vP0` Opus 5.5 use cases | AI Samson | рейтинги/хайп и юзкейсы LLM вне видео-крафта |
 
-### Каналы на радаре (free-roam 2026-09-29)
+### Каналы на радаре (free-roam 2026-09-29; дополнения 2026-10-02)
+
+**Добавлены владельцем 2026-10-02 и отсканированы (окно 30 дней):**
+- **Yapper AI** (`@yapper_so`) — введён `cCDn0Z6AdmM`; в окне ещё `mbEo8tn2BZA` (AI music video + промты) — кандидат light-пробы.
+- **Bla Bla about AI** (`@BlaBlaProAi`, RU) — `TgCp6SuVnJw` (Blender dummy) отсеян пробой: overlap с `3d_previz_pipeline` + реклама; ждать новые ролики.
+- **Tao Prompts** (`@taoprompts`) — ранее помечен «не пробовать» за липсинк; отсканирован по указанию владельца: `TggVh3WCwxg` (4-Step Workflow, 2026-09-30) и `EcxvHRccXnc` (Level Up с Opus 5.5) — в окне, не пробованы (слоты заняты сильнейшими); липсинк-ролики остаются в отсеве.
+
+
 
 - **В корпусе (сканировать новые видео наравне с остальными):** River Cody
   (hybrid «практика + ИИ», рекомендация Matti Haapoja; `3I2jj6HA3p0` введён),
@@ -79,7 +94,14 @@ scoped visual data release выполнен 2026-10-01.
 - Источники discovery: reddit-search (1 релевантный тред r/comfyui, в основном
   abstained), HN (Show HN шум), веб-списки рекомендаций.
 
-**Недавно введены (больше не кандидаты):** `H8WDehuVams` (Youri van Hofwegen,
+**Недавно введены (больше не кандидаты):** Ведены 2026-10-02 (скан окна 30 дней,
+10 каналов, гейт 0.0b, workers: MiMo-V2.6-Pro max): `AgUATWAOaKY` (Dan Kieft, 24 сегмента —
+6 методов AI-монтажа: universal prompt, B-cam из фото комнаты, VFX по кадровым маркерам,
+sound design), `cCDn0Z6AdmM` (Yapper AI, 21 сегмент — copyright-workaround, element sheet
+без головы на front view, 6-beat бой, cost breakdown), `FJfMTvZvX7w` (Dan Kieft, 12 сегментов —
+two-role overlay swap, multi-tag гардероб/объекты, сшивка шотов в одну генерацию).
+Полные материалы: `output/video_ingest/<id>/`, `output/video_review/2026-10-02/REVIEW.md`.
+Ранее: `H8WDehuVams` (Youri van Hofwegen, `H8WDehuVams` (Youri van Hofwegen,
 25 сегментов — закрыл `lipsync_dubbing`) и `reFzEtCG_m8` (Higgsfield Animation /
 Amina, 33 сегмента — squash&stretch, постмортемы, акварельный пайплайн) — оба
 2026-09-29, см. `docs/video-hub-index.md` и

@@ -21,8 +21,10 @@
 
 | YouTube ID | Название | Сегментов | Опубликовано |
 |---|---|---:|---|
+| `AgUATWAOaKY` | Master AI Video Editing in 25 Minutes (Full Course) | 24 | 2026-09-29 |
 | `qwGIwxZFc2I` | GPT-6 Astra is Crazy For AI Video | 35 | 2026-09-23 |
 | `kGku3TTiYO8` | Create Cinematic AI Ads with Seedance 2.5 - Full guide | 13 | 2026-09-16 |
+| `FJfMTvZvX7w` | Seedance 2.5 Transforms iPhone Footage into Cinematic AI Videos | 12 | 2026-09-06 |
 | `Zo8KaTs0l6k` | How I Make Ultra Realistic AI Videos using Seedance 2.5 | 10 | 2026-09-01 |
 
 ## Higgsfield AI
@@ -48,6 +50,12 @@
 |---|---|---:|---|
 | `3I2jj6HA3p0` | I Mixed AI With Real Footage… and I'm Kinda Scared (3 VFX Tricks) | 14 | 2026-01-27 |
 
+## Yapper AI
+
+| YouTube ID | Название | Сегментов | Опубликовано |
+|---|---|---:|---|
+| `cCDn0Z6AdmM` | I Made a 5M View Live Action Naruto Film on a Budget | 21 | 2026-09-18 |
+
 ## Youri van Hofwegen
 
 | YouTube ID | Название | Сегментов | Опубликовано |
@@ -56,4 +64,4 @@
 | `H8WDehuVams` | How to Create Realistic AI Avatars (Full Guide) | 25 | 2026-09-24 |
 | `2b3Z4rW5VJc` | STOP Wasting Credits & Master Seedance 2.5 | 11 | 2026-08-21 |
 
-Итого: **17** видео, **401** сегментов.
+Итого: **20** видео, **458** сегментов.
