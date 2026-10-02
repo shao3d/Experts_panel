@@ -109,6 +109,13 @@ def _sanitize_reddit_source_citations(
     query_language: str,
 ) -> tuple[str, list[int]]:
     """Remove impossible [S#] markers and disclose that validation failed."""
+    # Gemini also emits grouped markers. Normalize them before bounds checks
+    # so an impossible [S0, S13] cannot bypass the single-marker validator.
+    text = re.sub(
+        r"\[(S\d+(?:\s*,\s*S\d+)+)\]",
+        lambda match: " ".join(f"[{token.strip().upper()}]" for token in match.group(1).split(",")),
+        text or "", flags=re.IGNORECASE,
+    )
     invalid_indices = sorted(
         {
             int(match.group(1))
@@ -1343,6 +1350,9 @@ Output one JSON object only:
         # Passing 'search_result' (RedditSearchResult with Pydantic sources) would flatten comments into string.
         synthesis = await synthesis_service.synthesize(query, reddit_result)
 
+        if not isinstance(synthesis, str) or not synthesis.strip():
+            raise RuntimeError("Reddit synthesis returned an empty response")
+
         if _is_explicit_reddit_synthesis_abstention(synthesis):
             logger.info("Reddit synthesis explicitly abstained after relevance check")
             if outcome_context is not None:
@@ -1370,6 +1380,18 @@ Output one JSON object only:
             logger.warning(
                 "Removed out-of-range Reddit synthesis citations: %s",
                 invalid_citations,
+            )
+
+        if any(
+            getattr(post, "evidence_status", "") == "unavailable"
+            for post in reddit_result.posts[:10]
+        ):
+            synthesis += (
+                "\n\n> Часть источников отобрана резервным способом: "
+                "проверка доказательств при ранжировании была недоступна."
+                if query_language == "Russian"
+                else "\n\n> Some sources used fallback ranking because "
+                "evidence checking during ranking was unavailable."
             )
 
         # We still need search_result for the legacy 'found_count' logic below if needed,

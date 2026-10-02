@@ -160,6 +160,28 @@ async def test_pipeline_returns_none_for_explicit_synthesis_abstention(monkeypat
     assert await endpoint.process_reddit_pipeline("English query") is None
 
 
+@pytest.mark.asyncio
+async def test_pipeline_discloses_unavailable_evidence_check(monkeypatch):
+    candidate = _post(title="Practical answer", body="Concrete steps")
+    candidate.evidence_status = "unavailable"
+
+    async def fake_search(**kwargs):
+        return SimpleNamespace(posts=[candidate], total_found=1, processing_time_ms=1)
+
+    async def fake_synthesis(self, query, reddit_result):
+        return "A useful answer [S1]."
+
+    monkeypatch.setattr(endpoint, "search_reddit_enhanced", fake_search)
+    monkeypatch.setattr(endpoint.RedditSynthesisService, "synthesize", fake_synthesis)
+    result = await endpoint.process_reddit_pipeline("English query")
+    assert "fallback ranking" in result.synthesis
+    assert "[S1]" in result.synthesis
+
+    candidate.evidence_status = "verified"
+    result = await endpoint.process_reddit_pipeline("English query")
+    assert "fallback ranking" not in result.synthesis
+
+
 def test_practitioner_discovery_rejects_job_solicitation():
     service = object.__new__(RedditEnhancedService)
     useful = _post(
@@ -620,3 +642,13 @@ async def test_evidence_gate_leaves_unrated_posts_neutral():
     # Parse fallback / unrated: neutral 0.5 preserved (degraded ranking, not
     # a fabricated abstain).
     assert reranked[0].ai_score == 0.5
+
+
+def test_grouped_synthesis_citations_cannot_bypass_bounds_check():
+    cleaned, invalid = _sanitize_reddit_source_citations(
+        "Supported [S1, S2], invalid [S0, S13].",
+        max_source_index=2, query_language="English",
+    )
+    assert "[S1] [S2]" in cleaned
+    assert "S0" not in cleaned and "S13" not in cleaned
+    assert invalid == [0, 13]

@@ -17,40 +17,18 @@ def _system_prompt(language: str) -> str:
     return messages[0]["content"]
 
 
-def test_russian_prompt_is_bounded_and_decision_first():
-    prompt = _system_prompt("Russian")
-
-    assert "+30%" not in prompt
-    assert 'max_words="120"' in prompt
-    assert 'max_words="600"' in prompt
-    assert prompt.index("КУДА ИДТИ") < prompt.index("Deep Dive")
-    assert 'required="only_if_enough_numeric_evidence"' in prompt
-    assert "минимум две содержательные строки" in prompt
-    assert "минимум два разных релевантных источника" in prompt
-    assert "Не добавляйте его для привлечения внимания" in prompt
-    assert "верните ровно одно предложение и больше ничего" in prompt
+def test_prompt_requires_scope_before_content_in_both_languages():
+    for language in ("Russian", "English"):
+        prompt = _system_prompt(language)
+        assert f"user-facing text in {language}" in prompt
+        assert prompt.index("COVERAGE") < prompt.index("EVIDENCE RULES")
+        assert "actions MUST be empty" in prompt
+        assert "generated guide is not a tested practitioner report" in prompt
+        assert 'required="always"' not in prompt
 
 
-def test_english_prompt_is_bounded_and_decision_first():
-    prompt = _system_prompt("English")
-
-    assert "+30%" not in prompt
-    assert 'max_words="120"' in prompt
-    assert 'max_words="600"' in prompt
-    assert prompt.index("WHERE TO GO") < prompt.index("Deep Dive")
-    assert 'required="only_if_enough_numeric_evidence"' in prompt
-    assert "at least two meaningful comparison rows" in prompt
-    assert "at least two distinct relevant sources" in prompt
-    assert "Never add it merely for emphasis" in prompt
-    assert "return exactly one sentence and nothing else" in prompt
-
-
-def test_opencode_accepts_only_standalone_canonical_abstention():
-    assert RedditSynthesisService._reject_opencode_output(
-        "No relevant Reddit discussions found for this specific topic.",
-        "English",
-    ) is None
-    assert RedditSynthesisService._reject_opencode_output(
-        "No relevant benchmarks were found, but this answer is truncated.",
-        "English",
-    ).startswith("suspiciously short")
+def test_only_standalone_canonical_abstention_is_an_abstention():
+    assert RedditSynthesisService.is_explicit_abstention(
+        "No relevant Reddit discussions found for this specific topic.")
+    assert not RedditSynthesisService.is_explicit_abstention(
+        "No relevant benchmarks were found, but use model X anyway.")

@@ -1,0 +1,101 @@
+{
+  "provenance": "Reddit telemetry queries selected on 2026-10-02; excludes audit smoke queries. These are retrieval questions, not relevance labels.",
+  "cases": [
+    {
+      "id": "inpainting_pixels",
+      "query": "Reddit image editing inpainting preserve unmasked pixels exactly original image composite generated masked area back onto original using Photoshop or GIMP local edit",
+      "intent": "how_to",
+      "recent_only": false
+    },
+    {
+      "id": "freelance_revisions",
+      "query": "Freelance motion design fixed price project revisions scope creep how many revision rounds paid discovery test client changes",
+      "intent": "practitioner_examples",
+      "recent_only": false
+    },
+    {
+      "id": "video_gpu_cost",
+      "query": "MiniMax H3 on rented GPUs: real benchmark and total session dollars per 768p 10-15s Ref2VA clip on Vast.ai or RunPod, model setup overhead, exact GPU and LoRA/steps. When does self-hosting beat paying ~$1.94 per 13s clip on a hosted API? Exclude YouTube livestream and FL2VA-only speed claims; link original firsthand measurement posts.",
+      "intent": "comparison",
+      "recent_only": false
+    },
+    {
+      "id": "free_model_rotation",
+      "query": "Is Kimi K3 still free in Cline Desktop? Any recent change to the free model list?",
+      "intent": "troubleshooting",
+      "recent_only": true
+    },
+    {
+      "id": "style_bible",
+      "query": "How do practitioners build a style bible or voice guide to make LLM write in a specific author's voice? What sections should it have, examples vs rules, contrastive pairs?",
+      "intent": "practitioner_examples",
+      "recent_only": false
+    },
+    {
+      "id": "video_reference_transfer",
+      "query": "Seedance or MiniMax Hailuo H3 reference-to-video: input video appearance overrides reference images, materials or style fail to transfer. Are there firsthand controlled tests or working fixes? Distinguish Hailuo 3 from older Hailuo versions and preserve uncertainty.",
+      "intent": "troubleshooting",
+      "recent_only": false
+    },
+    {
+      "id": "image_edit_preservation",
+      "query": "Reddit: practical experience with ChatGPT image editing changing only a selected area, preserving the rest of the image, and unwanted changes after repeated edits. Find original user reports and comments, include discussion URLs and dates. Focus on GPT Image or ChatGPT Images, do not treat DALL-E 3 reports as evidence for newer models. What did users actually try to reduce unwanted changes?",
+      "intent": "troubleshooting",
+      "recent_only": false
+    },
+    {
+      "id": "russian_style",
+      "query": "best LLM for Russian writing style imitation prose 2026 DeepSeek GLM Kimi Qwen",
+      "intent": "comparison",
+      "recent_only": false
+    },
+    {
+      "id": "persona_consistency",
+      "query": "What are proven practices for building lorebooks or knowledge-graph personas for LLM roleplay characters? How do people structure beliefs, avoid contradictions, and keep persona consistent — extraction from corpus vs hand-writing?",
+      "intent": "how_to",
+      "recent_only": false
+    },
+    {
+      "id": "video_tutorials",
+      "query": "which YouTube channels do you follow for AI filmmaking tutorials practical workflows not hype",
+      "intent": "recommendation",
+      "recent_only": false
+    },
+    {
+      "id": "long_context_rag",
+      "query": "long context window vs RAG stuffing entire corpus accuracy lost in the middle distractors",
+      "intent": "comparison",
+      "recent_only": false
+    },
+    {
+      "id": "tmux_scrollback",
+      "query": "codex CLI tmux mouse wheel scroll not working scrollback changes command history",
+      "intent": "troubleshooting",
+      "recent_only": false
+    },
+    {
+      "id": "creative_technologist",
+      "query": "What do people working as creative technologists say on Reddit about their job title, daily responsibilities and how the role combines creative work with coding? I want actual professional experiences and title ambiguity, especially in film, animation, creative studios or agencies.",
+      "intent": "practitioner_examples",
+      "recent_only": false
+    },
+    {
+      "id": "ocr_comparison",
+      "query": "RapidOCR vs PaddleOCR Tesseract EasyOCR vision LLM small text extraction",
+      "intent": "comparison",
+      "recent_only": false
+    },
+    {
+      "id": "reasoning_comparison",
+      "query": "What are real users reporting about GLM-5.3-Flash at max reasoning versus high: instruction following, long coding tasks, self-checking, and failures?",
+      "intent": "comparison",
+      "recent_only": false
+    },
+    {
+      "id": "agent_guardrails",
+      "query": "What concrete guardrails, automated tests and independent review improve GLM coding agents or ZCode on long multi-step tasks? Include failures where self-review or subagents did not catch mistakes.",
+      "intent": "troubleshooting",
+      "recent_only": false
+    }
+  ]
+}

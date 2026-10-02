@@ -3,7 +3,22 @@
 **Status:** Production (Precision-First V2)  
 **Architecture:** Sidecar Proxy Pattern  
 **Logic:** AI Scout v2 + Precision-First Retrieval + Answerability Rerank  
-**Last updated:** 23.08.2026
+**Last updated:** 2026-10-02
+
+> **Current code:** query-aware judge excerpts, source-local evidence validation,
+> reliability fixes and the synthesis scope contract described below are part
+> of Reddit V2. Gemini routing remains unchanged. The broader ranking
+> experiment was rejected; the final synthesis change was evaluated separately
+> on identical shortlists. Acceptance measurements are tracked in
+> [the evidence improvement report](../quality/2026-10-02-reddit-v2-evidence-fixes.md).
+
+> **Isolated judge experiment:** `backend/scripts/replay_reddit_rerank.py`
+> with `--transport codex` can replay an authorized frozen corpus through the local
+> Codex ChatGPT login using Sol 6.1 low. This does not change production model
+> routing. The adapter is `backend/src/utils/reddit_codex_judge.py`; it forces
+> ChatGPT login, removes API-key overrides, disables tools, and passes source
+> text on stdin. The Codex transport rejects `--live`; normal Reddit searches
+> continue to use the official API/CLI boundary described below.
 
 > **UI status:** The Reddit toggle is visible in the UI again (`REDDIT_SEARCH_VISIBLE = true` in `frontend/src/config/expertConfig.ts`, enabled on 24.08.2026). The sidecar runs on the VM (`http://reddit-proxy:3000`, docker compose service `reddit-proxy`); the URL is configured via `REDDIT_PROXY_URL` in `backend/src/config.py`. An honest V2 abstain (0 posts after the confidence filter) is marked as `skipped`, not as an error.
 
@@ -121,8 +136,12 @@ If the AI rerank call itself fails (LLM outage, exhausted provider balance),
 the pipeline does **not** abstain on everything: candidates fall back to
 heuristic scoring with a neutral AI component (0.5, the same value an unrated
 post gets on a parse failure), so an outage degrades ranking quality — it
-never turns real results into a false "nothing found". Scout and rerank LLM
-calls also pass explicit `max_tokens` caps (1024/2048): their outputs are
+does not automatically zero out all candidates. These posts carry
+`evidence_status=unavailable`, a synthesis instruction to check relevance,
+and an explicit fallback-ranking notice in the delivered answer. If a valid
+partial rating batch omits a candidate, that candidate is rejected; it is not
+promoted through the outage fallback. Scout and rerank LLM
+calls also pass explicit `max_tokens` caps (1024/3072): their outputs are
 small JSON plans, and bounded requests stay affordable for low OpenRouter
 balances that reject the model-default 65536-token headroom with 402.
 
@@ -186,7 +205,11 @@ The Arctic Shift channel (a free mirror with live ingestion, lag of ~minutes): e
 full-text search over `title` + `selftext` inside the Scout's top subreddits — it surfaces threads
 that native search misses due to ranking quirks. Service limitation: text
 search requires a subreddit. Freshness for `use_recent_only` is via the `after=90d` parameter.
-Enabled by default (`ARCTIC_SHIFT_ENABLED`); degrades silently without network.
+Enabled by default (`ARCTIC_SHIFT_ENABLED`). Channel errors are recorded and
+other available channels continue. If every retrieval channel and the final
+native fallback fail, the request raises a technical failure rather than
+returning an empty success. A successfully executed empty search remains a
+valid no-results outcome.
 
 ### Google ranking (`serp_google_discovery`)
 
@@ -194,23 +217,52 @@ The Serper.dev channel — programmatic access to the real Google results for `s
 (closing the hole left by the discontinued CSE: ranking + comment indexing + tolerance for
 rephrasing). Snippet-only candidates get `created_utc` via a mandatory
 `/details` enrichment; under `use_recent_only`, candidates with an old or still
-unknown date are dropped. ≤10 results per call = 1 credit
+unknown date are dropped. The exact 90-day window is applied before title
+deduplication and again after enrichment, including reflection retries and
+the final selected set. Undated discovery placeholders cannot suppress a
+known-fresh same-title post. ≤10 results per call = 1 credit
 (~$1/1000 queries, 2500 free tier). Without a `SERPER_API_KEY` the channel sleeps.
 
 ### Synthesis (`backend/src/services/reddit_synthesis_service.py`)
 
-Takes the already cleaned shortlist and produces a Staff-Engineer synthesis:
+Takes the already cleaned shortlist and assesses whether it can answer the
+user's question, in the same Gemini call that produces the synthesis. The
+model first lists explicit question requirements with supported/unsupported
+flags, then returns JSON with `coverage`, `gap`, cited `findings` and `actions`.
+The service requests JSON output at temperature 0; models and the ordinary
+number of LLM calls are unchanged.
 
-- hidden gems
-- minority reports
-- practical takeaways
-- no fluff
+`reddit_synthesis_contract.py` validates and renders this response:
 
-The answer is built decision-first: the brief conclusion and `КУДА ИДТИ` / `WHERE TO GO` (where to go) come before the Deep Dive, and sections have explicit length limits. A comparison table
-is added only when there are at least two meaningful numeric rows.
-Wording such as «консенсус» (consensus), «стандарт» (standard) and «смена тренда» (trend shift) is allowed only with
-independent confirmation by at least two relevant sources, with both
-links in the same statement.
+- `insufficient`, or every listed requirement unsupported: return the canonical
+  standalone abstention. Any extra answer/findings/actions are discarded. The
+  shared API returns `abstained` with the existing near-miss source mechanism.
+- `partial`, any unsupported requirement, or a nonempty evidence gap: show
+  the limitation and at most three cited observations (600 characters each).
+  Actions, summaries and extra free-form answer fields cannot reach the user.
+- `sufficient`, with all listed requirements supported and no gap: render
+  up to eight findings and four supported actions. There is no mandatory
+  action plan, comparison table, trend alert or long-form section template.
+
+Every rendered finding/action has nonempty valid source indices and an
+explicit evidence type: reported experience, suggested advice, or experience
+from another context whose applicability remains untested. Source headers
+use `[S1]`, `[S2]`, etc. The API also normalizes grouped citations before its
+existing bounds check. This checks reference existence, not entailment.
+
+Malformed scope JSON or invalid source indices raise a technical error, never
+an evidence abstention. The previous one-time larger-budget retry on generation
+truncation remains; a still-truncated response fails. A provider failure keeps
+the existing explicitly disclosed source-list fallback. Raw model prose cannot
+bypass the JSON contract. Optional synthesis backends use the same renderer.
+
+The model still assesses semantic support: code cannot prove that the model
+listed every requirement or judged each correctly. Tests and replay check the
+observed failures; this is not a guarantee against all hallucinations.
+`[OP]` identifies the author only; thanks, scores, flairs, Google discovery
+and unread external links are not technical verification. The prompt requires
+reading negations, preserving measurement conditions, distinguishing generated
+advice from actual tests, and avoiding extrapolation into missing conclusions.
 
 **Synthesis backends (`REDDIT_SYNTH_BACKEND`):**
 
@@ -225,10 +277,10 @@ links in the same statement.
 - `shadow` — the user gets Gemini; opencode runs in parallel
   fire-and-forget for `[shadow]` telemetry only (A/B on latency and quality).
 
-opencode response validation: an honest abstain is accepted from any backend; everything else must
-be ≥200 characters and contain a final «КУДА ИДИ» / `WHERE TO GO` block,
-otherwise the answer is rejected → fallback. Concurrency is limited by
-`OPENCODE_SYNTH_CONCURRENCY` (the serve is shared with drift workers).
+opencode response validation uses the same JSON scope contract; malformed output
+falls back to Gemini. A valid short abstention or partial answer does not need
+an action-block heading or an arbitrary minimum length. Concurrency remains
+limited by `OPENCODE_SYNTH_CONCURRENCY` (the serve is shared with drift workers).
 
 **`auto` mode — head-start race:** the free model starts immediately; if it has not finished within
 `OPENCODE_SYNTH_HEADSTART_S` (20s), Gemini joins the race
@@ -333,8 +385,8 @@ The best candidates receive `full_content` and top comments even before the fina
 The Gemini rerank receives:
 
 - title
-- preview/body
-- top comment snippets
+- a bounded selection of query-relevant body and comment excerpts, including
+  nested replies, instead of fixed opening-only previews
 - strategy provenance
 - engagement (`score`, `num_comments`) — an explicit signal so the judge can
   itself tell SEO bait apart from a fresh high-quality post
@@ -350,6 +402,35 @@ The judge model depends on intent: comparison queries (a magnet for "vs"-bait)
 are handled by `MODEL_SYNTHESIS`, the rest by the cheap `MODEL_ANALYSIS`.
 
 And it ranks by answerability.
+
+`reddit_evidence.py` selects excerpts from already fetched content. The budget
+is 3,600 characters per post including passage labels. Opening context is
+retained, including short previews of the first two root comments so elliptical
+answers without repeated query terms remain visible; relevant windows can come
+from later body paragraphs and comments
+up to eight reply levels deep (at most 300 visited comments). Selected
+comments bring bounded parent context and up to two direct responses when
+the bundle fits, so a suggestion is not deliberately separated from its
+immediate correction. This is lexical passage selection, not another LLM call
+or a replacement for semantic judgement. It cannot recover comments Reddit
+did not return. The heuristic comment/anchor signals use the same selector.
+
+The judge returns a quote and an excerpt ID. The quote must match text in one
+shown excerpt of that same post; only HTML entities, Unicode normalization
+and whitespace are normalized. There is no fuzzy/paraphrase matching. Missing
+excerpt IDs remain compatible when the quote can be located in a shown
+excerpt; an explicitly supplied wrong ID fails validation. Finite scores in
+0–1 and unique candidate IDs are checked independently. Omitted candidates
+in a partial valid batch are marked `invalid_rating`; only wholly unavailable
+judging retains the disclosed fallback.
+
+A judged post without matching evidence is excluded by the confidence gate,
+even if engagement would otherwise lift its combined score above threshold.
+`evidence_status` distinguishes `verified` (text match, not verified technical
+truth), `missing`, `invalid_rating`, `unavailable` and `unrated`. The verified
+selection excerpts are carried into synthesis, with their surrounding context,
+so later body/comment trimming cannot remove the evidence that admitted a
+source. Their size is deducted from the ordinary per-source context budget.
 
 ### Step 7. Confidence Filter
 
@@ -389,10 +470,10 @@ In `backend/src/config.py`:
 - `REDDIT_SYNTH_MAX_TOKENS` — synthesis output budget; on finish_reason=length, one automatic re-request with a 2x budget
 - `REDDIT_EVIDENCE_GATE_ENABLED` / `REDDIT_NO_EVIDENCE_MAX_SCORE` (default
   true / 0.35) — the rerank judge must quote a verbatim span from the
-  post/comments as answer evidence; a rating without a quotable span is
-  hard-capped, killing hallucinated relevance. Unrated posts (LLM parse
-  fallback) keep the neutral 0.5 so an outage degrades ranking instead of
-  fabricating an abstain.
+  post/comments as answer evidence. An unmatched quote caps the AI component
+  and independently disqualifies a judged post from selection. Unrated posts
+  on an LLM failure retain the explicitly disclosed neutral-score fallback;
+  see Step 6 for text-match semantics and evidence statuses.
 - `REDDIT_REFLECTION_RETRY_ENABLED` (default true) — when the confidence filter keeps 0 posts, the judge's rejection reasons feed ONE bounded replan (`reflection_retry` strategy) + retrieval pass before an honest abstain
 - `REDDIT_TELEMETRY_ENABLED` / `REDDIT_TELEMETRY_PATH` — JSONL decision log (query, strategy counts, winners, near-misses, abstain reasons) powering periodic strategy-effectiveness review instead of gut-feel tuning
 - `REDDIT_ENRICH_CACHE_TTL_S` / `REDDIT_ENRICH_CACHE_MAX` — in-memory LRU for /details enrichment results, so iterative research sessions do not re-fetch the same threads
@@ -431,8 +512,9 @@ The harness writes:
 
 ## Agent-facing API (`POST /api/v1/agent/reddit-search`)
 
-**Status:** implemented (verified by contract tests locally/in CI); production
-smoke — after an explicit `выкатывай` (release) command from the owner.
+**Status:** implemented; production availability follows the normal code-release
+workflow. Check the deployed revision and run an authenticated smoke to verify
+the live endpoint.
 
 ### Purpose
 
@@ -513,8 +595,8 @@ Content-Type: application/json
 | Query validation error | 422 | — | global validation handler (`error=validation_error`) |
 | Token missing/invalid | 403 | — | same semantics as the Agent Context token |
 
-A technical error is never returned as `200 + status="failed"`; the future CLI
-maps such responses onto its own `failed` state and a non-zero exit code.
+A technical error is never returned as `200 + status="failed"`; the installed CLI
+returns a non-zero exit code for technical failures.
 
 The response contains none of: chain-of-thought/hidden prompts, tokens/credentials/env,
 internal stack traces, results from the experts/Telegram pipeline,
@@ -564,15 +646,23 @@ python -m src.cli.reddit_search --doctor --api-url http://127.0.0.1:8000/api/v1/
   `docs/guides/reddit-search-generic-client.md`.
 - The global Codex skill is not part of the production deploy: it is a local
   user-side installation on top of the already published API.
+- On VM or Mac, `scripts/install_reddit_search_skill.sh` installs the skill
+  and runner into the user's home directory. `reddit-search --doctor` confirms
+  API reachability and reports whether a token is accessible in the current
+  process; it does not prove that an authenticated search succeeds. On macOS,
+  a Keychain item may exist but remain inaccessible in a noninteractive SSH
+  session until the login Keychain is unlocked. Do not print or copy its value
+  to work around that state.
 
 ### Verification
 
 - Contract tests: `backend/tests/test_agent_reddit_search.py` (auth, query
   boundaries, completed/abstained, upstream timeout/error, absence of stack
   traces/secrets, proof that the shared logic is used).
-- Production proof after `выкатывай` (release): authenticated production smoke
-  (real Reddit links) + smoke of the old Panel Reddit flow + confirmation that
-  the production DB was not updated.
+- Release proof: successful deploy workflow and `/health`, then authenticated
+  production smoke through the installed `reddit-search` command. The command
+  invokes the same V2 entry point as the Panel. A code release does not update
+  the production DB.
 
 ---
 
