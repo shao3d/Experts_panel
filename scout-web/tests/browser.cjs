@@ -66,7 +66,8 @@ const assert = require('node:assert/strict');
         'acidcrunch:550': {url: 'https://t.me/AcidCrunch/550', label: 'Acid Crunch · пост 550'},
         'video_hub:353': {url: 'https://www.youtube.com/watch?v=test&t=353s', label: 'Youri van Hofwegen · 9 FREE Prompts to Make AI Videos that Look Real (Cinematic AI) · 5:53'}
       });
-      return {labels: [...root.querySelectorAll('a')].map(a => a.textContent), text: root.textContent};
+      return {labels: [...root.querySelectorAll('a')].map(a => a.textContent), text: root.textContent,
+        content: root.querySelector('[id^="sources-"]').textContent};
     });
     assert.deepEqual(formatted.labels, [
       'Acid Crunch · пост 550 · 23.03.2025',
@@ -74,7 +75,17 @@ const assert = require('node:assert/strict');
     ]);
     assert.equal(formatted.text.match(/Acid Crunch/g)?.length, 1);
     assert.equal(formatted.text.match(/05:53/g)?.length, 1);
+    assert.equal(formatted.content, ': 1) Acid Crunch · пост 550 · 23.03.2025; 2) Youri van Hofwegen · 9 FREE Prompts to Make AI Videos that Look Real (Cinematic AI) · 25.09.2026 · 05:53');
     assert.ok(formatted.text.trim().endsWith('Пояснение остаётся.'));
+    const numbering = await page.evaluate(() => [1, 3].map(count => {
+      const root = document.createElement('div');
+      root.innerHTML = DOMPurify.sanitize(marked.parse(Array.from({length: count}, (_, i) => `\`acidcrunch:${550 + i}\``).join('; ')));
+      foldSources(root);
+      linkSources(root, Object.fromEntries(Array.from({length: count}, (_, i) =>
+        [`acidcrunch:${550 + i}`, {url: `https://t.me/AcidCrunch/${550 + i}`, label: `Acid Crunch · пост ${550 + i}`}])));
+      return root.querySelector('[id^="sources-"]').textContent;
+    }));
+    assert.deepEqual(numbering, [': Acid Crunch · пост 550', ': 1) Acid Crunch · пост 550; 2) Acid Crunch · пост 551; 3) Acid Crunch · пост 552']);
     await page.locator('#password').fill('test-password');
     await page.locator('#login button').click();
     await page.locator('#question').fill('Длинный вопрос\nсо второй строкой\nи третьей строкой\nи четвёртой строкой');

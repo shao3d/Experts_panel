@@ -194,7 +194,7 @@ function linkSources(root, sources = {}) {
         if (candidates.length) dates.set(candidates[0].item.link.href, match[0]);
         else if (unique.length === 1) dates.set(unique[0].link.href, match[0]);
       }
-      content.replaceChildren(': — ');
+      content.replaceChildren(': ');
       unique.forEach(({key, source, link}, index) => {
         let label = source.label || key;
         const time = label.match(/ · (\d{1,2}:\d{2}(?::\d{2})?)$/);
@@ -204,6 +204,7 @@ function linkSources(root, sources = {}) {
         if (time) label += ` · ${time[1].padStart(5, '0')}`;
         link.textContent = label; link.title = key; link.dataset.sourceKey = key;
         if (index) content.append('; ');
+        if (unique.length > 1) content.append(`${index + 1}) `);
         content.append(link);
       });
       return;
