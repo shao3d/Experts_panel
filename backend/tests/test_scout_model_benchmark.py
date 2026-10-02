@@ -93,8 +93,11 @@ def test_runtime_fast_keeps_low_reasoning_and_is_scoped_to_invocation():
     assert not any('service_tier' in arg for arg in bench.codex_command('sol'))
 
 
-@pytest.mark.skipif(not shutil.which("bun"), reason="Bun is required by the existing Scout plugin")
 def test_mcp_reuses_schema_and_rejects_invalid_calls_without_corpus_access():
+    if not shutil.which("bun"):
+        if os.getenv("CI"):
+            pytest.fail("CI must install Bun for the Scout MCP contract test")
+        pytest.skip("Bun is required by the existing Scout plugin")
     requests = [
         {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}},
         {"jsonrpc": "2.0", "id": 2, "method": "tools/list"},

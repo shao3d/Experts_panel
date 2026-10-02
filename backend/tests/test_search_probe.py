@@ -1,6 +1,6 @@
 """Search probe regression tests (fixture-based, verified ground truth).
 
-Fast checks always run; the network probe (embedding API) is gated by
+Fixture shape and mocked lookup checks always run; corpus and network checks are gated by
 SEARCH_PROBE=1 and measures recall/MRR against the baseline snapshot.
 
 Run the full probe explicitly:
@@ -64,6 +64,7 @@ def test_key_lookup_failure_is_not_absence(monkeypatch):
         probe.keys_exist(['video_hub:1'])
 
 
+@pytest.mark.skipif(os.getenv("SEARCH_PROBE") != "1", reason="set SEARCH_PROBE=1 to validate the real corpus")
 def test_fixture_keys_exist_in_corpus():
     """Every expected_key must exist right now (guards against ghost ground truth)."""
     all_keys = sorted({k for f in fixtures for k in f["expected_keys"]})

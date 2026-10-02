@@ -95,7 +95,22 @@ jobs:
           fi
         done
 
+    - name: Set up Node.js for Scout dependencies
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Set up Bun for Scout MCP contract tests
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: '1.4.2'
+
+    - name: Install Scout plugin dependencies
+      run: npm ci --prefix .opencode --ignore-scripts
+
     - name: Run backend tests
+      env:
+        CI: 'true'
       run: |
         cd backend
         python -m pytest tests -q --tb=short
@@ -297,6 +312,8 @@ jobs:
 
     steps:
     - name: CI Summary
+      env:
+        VALIDATION_RESULTS: ${{ join(needs.*.result, ' ') }}
       run: |
         echo "## 🚀 Experts Panel CI Summary" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
@@ -337,5 +354,10 @@ jobs:
         fi
 
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### 🐳 Ready for Railway Deployment" >> $GITHUB_STEP_SUMMARY
-        echo "If all checks pass, the project is ready for production deployment!" >> $GITHUB_STEP_SUMMARY
+        for result in $VALIDATION_RESULTS; do
+          if [ "$result" != "success" ]; then
+            echo "One or more required validations did not pass." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+        done
+        echo "All required validations passed." >> $GITHUB_STEP_SUMMARY

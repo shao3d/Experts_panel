@@ -85,35 +85,56 @@ def test_digest_caps_are_bounded(scout):
     assert scout.MAX_DIGEST_CHARS <= 20000
 
 
-def test_digest_walks_small_expert_completely(scout, tmp_path):
-    """Integration: a small expert must be fully walkable via pages (real corpus)."""
-    import subprocess
-    import sys as _sys
+@pytest.fixture
+def synthetic_corpus(scout, tmp_path, monkeypatch):
+    """Exercise real read-only SQL without a deployment corpus or credentials."""
+    backend = tmp_path / "backend"
+    (backend / "data").mkdir(parents=True)
+    with sqlite3.connect(backend / "data" / "experts.db") as conn:
+        conn.executescript("""
+            CREATE TABLE expert_metadata (expert_id TEXT);
+            CREATE TABLE posts (
+                post_id INTEGER PRIMARY KEY, expert_id TEXT,
+                telegram_message_id INTEGER, channel_username TEXT,
+                created_at TEXT, author_name TEXT, author_id TEXT,
+                message_text TEXT, reply_count INTEGER, view_count INTEGER,
+                media_metadata TEXT
+            );
+            CREATE TABLE comments (
+                post_id INTEGER, comment_text TEXT, author_name TEXT,
+                author_id TEXT, created_at TEXT
+            );
+            CREATE TABLE links (source_post_id INTEGER, target_post_id INTEGER);
+        """)
+        for expert in ("fixture_author", "other_author"):
+            conn.execute("INSERT INTO expert_metadata VALUES (?)", (expert,))
+            for number in range(1, 24):
+                conn.execute(
+                    "INSERT INTO posts VALUES (NULL, ?, ?, ?, ?, ?, NULL, ?, 0, 0, NULL)",
+                    (expert, number, expert, f"2026-01-{number:02d} 00:00:00",
+                     "Test author", "Synthetic source text. " * 40),
+                )
+    monkeypatch.setattr(scout, "_load_backend", lambda: backend)
+    return backend
 
-    proc = subprocess.run(
-        [
-            _sys.executable,
-            str(Path(scout.__file__)),
-            "digest",
-            "--experts",
-            "vlad_kooklev",
-            "--window",
-            "30",
-            "--page",
-            "0",
-            "--json",
-        ],
-        capture_output=True,
-        text=True,
-        timeout=60,
-    )
-    assert proc.returncode == 0, proc.stderr
-    payload = __import__("json").loads(proc.stdout)
-    assert payload["scope"] == ["vlad_kooklev"]
-    assert payload["has_more"] is False
-    assert len(payload["posts"]) >= 20
-    assert all(p["source_key"].startswith("vlad_kooklev:") for p in payload["posts"])
-    assert all(len(p["text"]) <= scout.MAX_DIGEST_TEXT for p in payload["posts"])
+
+def test_digest_walks_small_expert_completely(scout, synthetic_corpus, capsys):
+    """Every fixture post is reachable across pages, without scope leakage."""
+    keys = []
+    for page, size in enumerate((10, 10, 3)):
+        args = scout.build_parser().parse_args([
+            "digest", "--experts", "fixture_author", "--window", "10",
+            "--page", str(page), "--json",
+        ])
+        assert scout.cmd_digest(args) == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["scope"] == ["fixture_author"]
+        assert payload["has_more"] is (page < 2)
+        assert payload["next_cursor"] == ((page + 1) * 10 if page < 2 else None)
+        assert len(payload["posts"]) == size
+        assert all(len(post["text"]) <= scout.MAX_DIGEST_TEXT for post in payload["posts"])
+        keys.extend(post["source_key"] for post in payload["posts"])
+    assert keys == [f"fixture_author:{number}" for number in range(23, 0, -1)]
 
 
 def test_parse_now_is_optional_and_validated(scout):
@@ -146,32 +167,21 @@ def test_diversify_caps_monoculture_but_keeps_order(scout):
     assert scout.diversify(ids, mono, top_k=10) == ids
 
 
-def test_show_expand_fetches_adjacent_posts(scout):
-    """Improvement: --expand stitches local context (adjacent posts, same expert)."""
-    import subprocess
-    import sys as _sys
-
+def test_show_expand_fetches_adjacent_posts(scout, synthetic_corpus, capsys):
+    """Expansion is capped, excludes the center and cannot cross experts."""
     assert scout.MAX_EXPAND_NEIGHBORS <= 5
-    proc = subprocess.run(
-        [
-            _sys.executable,
-            str(Path(scout.__file__)),
-            "show",
-            "acidcrunch:1335",
-            "--expand",
-            "99",
-            "--json",
-        ],
-        capture_output=True,
-        text=True,
-        timeout=60,
-    )
-    assert proc.returncode == 0, proc.stderr
-    item = __import__("json").loads(proc.stdout)[0]
-    neighbors = item.get("neighbors", [])
-    assert 1 <= len(neighbors) <= 2 * scout.MAX_EXPAND_NEIGHBORS
-    assert all(n["source_key"].startswith("acidcrunch:") for n in neighbors)
-    assert "acidcrunch:1335" not in {n["source_key"] for n in neighbors}
+    args = scout.build_parser().parse_args([
+        "show", "fixture_author:12", "--expand", "99", "--json",
+    ])
+    assert scout.cmd_show(args) == 0
+    item = json.loads(capsys.readouterr().out)[0]
+    neighbors = item["neighbors"]
+    assert len(neighbors) == 2 * scout.MAX_EXPAND_NEIGHBORS
+    assert {post["source_key"] for post in neighbors} == {
+        f"fixture_author:{number}"
+        for number in range(12 - scout.MAX_EXPAND_NEIGHBORS, 13 + scout.MAX_EXPAND_NEIGHBORS)
+        if number != 12
+    }
 
 
 def test_cutoff_iso_format(scout):

@@ -1,7 +1,7 @@
 # Experts Panel operations
 
 Status: Active
-Last updated: 2026-10-01
+Last updated: 2026-10-02
 
 Актуальная операторская схема для ИИ-агента. Все команды разработки и
 maintenance выполняются из VM checkout `/home/ubuntu/apps/experts-panel/dev`.
@@ -17,6 +17,20 @@ Production checkout `app` вручную не редактируется.
    `reddit-proxy`, затем проверяет `/health`.
 5. Дождись успешного workflow и проверь production health. Обычный code release
    не меняет production DB.
+
+## Общий CI
+
+Общий CI (`.github/workflows/ci.yml`) независим от deploy workflow. Backend
+проверяется на чистом runner с фиктивными ключами и пустой тестовой БД:
+`python -m pytest tests -q --tb=short` из `backend`. Обычные Scout-тесты
+используют искусственные данные; проверка настоящих fixture keys и поисковых
+метрик требует отдельного `SEARCH_PROBE=1` и рабочего dev-корпуса
+([поисковый стенд](guides/expert-scout.md)). Не копируй рабочую БД в CI.
+
+Для MCP contract test CI устанавливает Bun 1.4.2 и зависимости `.opencode`
+через `npm ci --prefix .opencode --ignore-scripts`. В CI отсутствие Bun —
+ошибка, а не незаметный пропуск проверки. Итоговое задание CI завершается
+успешно только при успехе всех пяти проверочных заданий.
 
 ## Веб-Скаут
 

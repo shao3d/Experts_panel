@@ -126,38 +126,45 @@ def test_detect_loops_flags_three_identical_calls(verifier, tmp_path):
     assert verifier.detect_loops(path) == []
 
 
-def test_real_key_and_quote_pass(tmp_path):
-    """Integration: verified positive on the real corpus via the read-only helper."""
+@pytest.mark.parametrize("matching_quote", [True, False])
+def test_fixture_key_and_quote_validation(verifier, tmp_path, monkeypatch, capsys, matching_quote):
+    """CLI validation accepts source text and rejects a fabricated quote offline."""
+    quote = "Exact synthetic source words about camera movement"
+    source_text = quote if matching_quote else "A different primary source about lighting"
+    calls = []
+
+    def lookup(command, **kwargs):
+        calls.append(command)
+        return subprocess.CompletedProcess(command, 0, json.dumps([
+            {"source_key": "fixture_author:1", "content": source_text},
+        ]), "")
+
+    monkeypatch.setattr(verifier.subprocess, "run", lookup)
     answer = tmp_path / "answer.md"
-    answer.write_text(
-        "Находка: **`acidcrunch:1335`** — дословно «Extreme zoom in x 100 (ну и можешь написать куда зумить)».",
-        encoding="utf-8",
-    )
-    proc = subprocess.run(
-        [sys.executable, str(VERIFY_PATH), "--answer", str(answer), "--json"],
-        capture_output=True,
-        text=True,
-        timeout=120,
-    )
-    assert proc.returncode == 0, proc.stdout + proc.stderr
-    report = json.loads(proc.stdout)
+    answer.write_text(f"Source fixture_author:1 — «{quote}».", encoding="utf-8")
+    monkeypatch.setattr(sys, "argv", ["verify", "--answer", str(answer), "--json"])
+    assert verifier.main() == (0 if matching_quote else 1)
+    report = json.loads(capsys.readouterr().out)
     assert report["keys_missing"] == []
-    assert report["quotes_unverified"] == []
+    assert report["quotes_unverified"] == ([] if matching_quote else [quote])
+    assert len(calls) == 1
+    assert calls[0][2:] == ["show", "fixture_author:1", "--comments-limit", "0", "--json"]
 
 
-def test_hallucinated_key_fails_and_annotates(tmp_path):
-    """Integration: invented key must fail the check and annotate the answer."""
+def test_hallucinated_key_fails_and_annotates(verifier, tmp_path, monkeypatch, capsys):
+    """A missing source must fail and annotate the answer without a live DB."""
+    def lookup(command, **kwargs):
+        assert command[2:] == ["show", "video_hub:47", "--comments-limit", "0", "--json"]
+        return subprocess.CompletedProcess(command, 0, json.dumps([
+            {"source_key": "video_hub:47", "error": "not_found"},
+        ]), "")
+
+    monkeypatch.setattr(verifier.subprocess, "run", lookup)
     answer = tmp_path / "answer.md"
     original = "Ключ `video_hub:47` я выдумал."
     answer.write_text(original, encoding="utf-8")
-    proc = subprocess.run(
-        [sys.executable, str(VERIFY_PATH), "--answer", str(answer), "--annotate"],
-        capture_output=True,
-        text=True,
-        timeout=120,
-    )
-    assert proc.returncode == 1
-    report_line = proc.stdout
-    assert "MISSING KEY: video_hub:47" in report_line
+    monkeypatch.setattr(sys, "argv", ["verify", "--answer", str(answer), "--annotate"])
+    assert verifier.main() == 1
+    assert "MISSING KEY: video_hub:47" in capsys.readouterr().out
     text = answer.read_text(encoding="utf-8")
     assert text.startswith("# WARNING:") and original in text

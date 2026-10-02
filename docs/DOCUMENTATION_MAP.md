@@ -23,6 +23,7 @@ Last updated: 2026-10-02
 
 | Задача | Сначала читать | Потом, если нужно |
 | --- | --- | --- |
+| Ремонт общего CI: независимые от корпуса Scout-тесты и честный итог, 2026-10-02 | `docs/quality/2026-10-02-ci-repair.md` | `docs/operations.md` (общий CI); `docs/guides/expert-scout.md` (отдельный поисковый стенд) |
 | Yapper: онбординг музыкального клипа `mbEo8tn2BZA`, проверка конвейера и Скаута, 2026-10-02 | `docs/quality/2026-10-02-yapper-music-video-onboarding.md` | `docs/guides/video-hub-operator.md`; статус приёмки и выпуска — в отчёте |
 | Scout: ремонт надёжности, компактные карточки и проверка лишних чтений, 2026-10-02 | `docs/quality/2026-10-02-scout-reliability-fixes.md` | `docs/guides/expert-scout.md`; статус локальных проверок и ограничения исторического baseline — в отчёте |
 | **VideoHub и Скаут: Dan опубликован, стенд обновлён; проверки и ограничения** | `docs/quality/2026-09-30-videohub-scout-fixes.md` | `docs/guides/video-hub-operator.md`, `docs/guides/expert-scout.md`; история передачи: `docs/archive/2026-09-30-videohub-scout-handoff-starter.md` |
