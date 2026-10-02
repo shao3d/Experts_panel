@@ -59,8 +59,11 @@ technical failure.)
 Владелец явно разрешил отдельный контур: агент-«скаут» может **только читать**
 локальный dev-корпус `backend/data/experts.db` через
 `backend/scripts/expert_scout.py` (открытие `mode=ro`, `PRAGMA query_only=ON`,
-изоляция по `expert_id`, без записи, копирования и печати секретов). Это узкое
-исключение к запрету на чтение баз данных из раздела ниже — только для скаута.
+изоляция по `expert_id`, без записи, копирования и печати секретов), а также
+опубликованные личные уроки из приватного `data/personal_lessons/` через
+read-only команды того же хелпера. Это узкое исключение к запрету на чтение
+баз данных и личных уроков из раздела ниже — только для скаута. Уроки владельца
+в ответе отделяются от материалов внешних экспертов.
 
 Запуск с Мака одной командой:
 
@@ -72,8 +75,9 @@ expert-scout "<вопрос>"
 `.codex/skills/expert-scout/` (установка: `scripts/install_expert_scout_skill.sh`,
 на Маке — с `--with-shim`).
 
-По умолчанию вызов Скаута ищет в Telegram-группе `visual` и отдельно в
-`video_hub`. Явно заданная узкая область сохраняется; общий состав групп не
+По умолчанию вызов Скаута ищет в Telegram-группе `visual`, отдельно в
+`video_hub` и в опубликованных личных уроках. Явно заданная узкая область
+сохраняется; общий состав групп не
 меняется. SSOT области и запуска — `docs/guides/expert-scout.md`.
 
 Под капотом: Mac-shim (`~/.local/bin/expert-scout`) → SSH на VM →
@@ -99,8 +103,9 @@ read-only `scout` из плагина `.opencode/plugins/expert-scout-tools.ts`,
 (готовый дайджест); это третий, «сырой» канал.
 
 (Expert Scout rule: the owner authorized a narrow read-only exception — the
-scout agent may read the local dev corpus through `backend/scripts/expert_scout.py`
-only. The agent has no shell access: its single tool is the read-only `scout`
+scout agent may read the local dev corpus and published private owner lessons
+through `backend/scripts/expert_scout.py` only. The agent has no shell access:
+its single tool is the read-only `scout`
 plugin tool (`.opencode/plugins/expert-scout-tools.ts`) which spawns the
 helper with an argv array, no shell. Never write to the corpus, never touch
 the production DB, never copy or dump the database, never print secrets. Run

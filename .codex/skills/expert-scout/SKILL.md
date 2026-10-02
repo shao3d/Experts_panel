@@ -1,11 +1,11 @@
 ---
 name: expert-scout
-description: Use when the user explicitly asks to involve Scout / expert-scout / «Скаут» / «задействуй Скаута» / «сырой поиск по экспертам» for read-only search over visual Telegram experts and VideoHub by default. Runs the no-shell scout and returns findings with source_key citations and honest gaps. Not for Reddit (reddit-search) and not for the Panex digest (panex ask).
+description: Use when the user explicitly asks to involve Scout / expert-scout / «Скаут» / «задействуй Скаута» / «сырой поиск по экспертам» for read-only search over visual Telegram experts, VideoHub, and published owner lessons by default. Runs the no-shell scout and returns findings with source_key citations and honest gaps. Not for Reddit (reddit-search) and not for the Panex digest (panex ask).
 ---
 
 # Expert Scout
 
-Read-only agentic search over visual Telegram experts and VideoHub by default.
+Read-only agentic search over visual Telegram experts, VideoHub, and published owner lessons by default.
 Unlike Panex (a ready compact digest) and `reddit-search` (community sentiment),
 Scout iteratively searches the corpus, reads primary sources, and returns
 findings with `source_key` citations and explicit gaps.
@@ -53,13 +53,13 @@ the helper outside the sanctioned wrapper or the no-shell `scout` plugin tool.
 
 ## Expert scope
 
-Default scope is **visual Telegram channels plus VideoHub**, including an ordinary
+Default scope is **visual Telegram channels plus VideoHub plus published owner lessons**, including an ordinary
 "давай спросим у Скаута" or "по визуалам" request. No extra scope confirmation
 is needed. The VM agent searches both `group=visual` and `experts=video_hub`
 separately; VideoHub is not a member of the canonical visual group.
 
 Keep explicit scope requests: a named expert, tech/tech_business, only Telegram,
-only VideoHub, a specific video, or the whole corpus overrides the default.
+only VideoHub, only experts, only owner lessons, a specific video, or the whole corpus overrides the default.
 Do not silently broaden such requests. Group membership is resolved on the VM;
 do not hardcode member IDs or translate the default into visual-only search.
 
@@ -81,6 +81,7 @@ says "спросим у Скаута" and there is no question in context, ask w
   concrete techniques, gaps, and the list of queries it ran. Deliver it and do
   not add a second interpretation layer.
 - Preserve `source_key` values so the user can ask follow-ups.
+- Label `lesson:<id>` findings as Андрей's project lessons, not outside expert advice.
 - An honest "в корпусе нет сигнала" is a valid result; never replace it with
   general knowledge.
 - Exit codes: `0` — completed answer with verified reads/citations; `3` — missing final answer; `4` — incomplete or unverified evidence; `124` — engine timeout; other non-zero — operational failure. Report a partial answer or technical failure honestly, never as absence of signal.

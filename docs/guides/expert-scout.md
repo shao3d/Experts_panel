@@ -3,10 +3,51 @@
 Status: Active (owner-approved read-only contour)
 Last updated: 2026-10-02
 
-Expert Scout — «сырой» канал поиска по Telegram-экспертам и VideoHub. В отличие
+Expert Scout — «сырой» канал поиска по Telegram-экспертам, VideoHub и личным
+урокам владельца. В отличие
 от Панэкса (готовый дайджест) и `reddit-search` (сообщество), скаут сам
 итеративно ищет по локальному dev-корпусу, читает первоисточники и приносит
 находки с `source_key`, датами и честными пробелами.
+
+## Личные уроки владельца
+
+Опубликованные уроки хранятся в отдельном **приватном** Git-репозитории
+`shao3d/personal-lessons`. На VM его рабочая копия лежит в игнорируемом
+`data/personal_lessons/`; публичный Experts Panel хранит только код чтения.
+Исходный `docs/LESSONS.md` внутри проекта на Маке остаётся рабочим документом.
+Опубликованная копия с неизменяемыми ключами `lesson:<id>` фиксируется в
+приватном репозитории.
+
+Скаут по умолчанию проверяет три независимых области: Telegram `visual`,
+`video_hub`, личные уроки (`lesson_search`). Явный узкий скоуп сохраняется.
+Это относится и к Веб-Скауту: доступ к его паролю даёт доступ к ответам по
+личным урокам. Ссылки `lesson:<id>` остаются текстовыми ключами, поскольку
+приватный Git-репозиторий не имеет публичных URL для источников.
+`lesson_search` — локальный FTS5 по заголовкам и содержимому Markdown, без
+эмбеддингов и доступа к произвольным файлам. `show lesson:<id>` возвращает
+точный текст урока и состояния чтения для общего верификатора. Скаут помечает
+такой материал как опыт Андрея в конкретном проекте; гипотеза не становится
+универсальным фактом или мнением эксперта.
+
+Для нового проекта агент по поручению владельца проверяет `LESSONS.md` на
+секреты и пригодность, передаёт **только этот файл** на VM, вызывает
+`scripts/import_owner_lessons.py --project <slug> --date YYYY-MM-DD` со stdin,
+проверяет новые ключи и коммитит/отправляет только приватный репозиторий. Старые
+ID никогда не переиспользуются; импортёр откажется от удаления опубликованных
+меток. Уроки не попадают в публичный Git, production DB и data release.
+Относительные ссылки в Markdown указывают на Mac-проект и **не** означают, что
+свидетельство скопировано или проверено на VM. Для сохранения свидетельств нужен
+отдельный отбор текстовых файлов без медиа, логов и секретов.
+
+Восстановление VM: клонировать приватный репозиторий обратно в
+`data/personal_lessons/` и запустить `lesson_search` / `show` как smoke test.
+Копии сейчас находятся в исходном Mac-проекте, VM и приватном GitHub-репозитории.
+Если Mac и VM потеряны, опубликованные уроки можно вернуть из GitHub; локальные
+правки после последней публикации при этом не восстановятся. Дополнительный
+Git-bundle от 2026-10-02 положен в Mac iCloud Drive и проверен по SHA-256;
+фактическая выгрузка в облако не подтверждена, поэтому гарантированной
+независимой удалённой копией сейчас считается приватный GitHub-репозиторий.
+При каждой новой публикации агент обновляет и проверяет этот архив.
 
 Веб-интерфейс, доступ и публикация: [Веб-Скаут](scout-web.md). Он использует
 тот же CLI и проверку источников.
@@ -32,12 +73,12 @@ bash-команду.
 `expert-scout`, который маршрутизирует такие запросы на команду:
 триггеры — «Скаут», «expert-scout», «задействуй Скаута», «сырой поиск по
 экспертам», «давай спросим у Скаута». По умолчанию, в том числе для «по визуалам»,
-проверяются две области: Telegram-группа `visual` и отдельно `video_hub`.
+проверяются три области: Telegram-группа `visual`, отдельно `video_hub` и личные уроки.
 ВидеоХаб не входит в каноническую Telegram-группу. Агент делает отдельные
-поиски по обеим областям перед ответом; состав visual получает из инструмента
+поиски по этим областям перед ответом; состав visual получает из инструмента
 `experts`, который использует `backend/src/expert_groups.py`.
 
-Явный запрос «только Telegram», «только ВидеоХаб», конкретный эксперт/ролик,
+Явный запрос «только Telegram», «только ВидеоХаб», «только эксперты», «только мои уроки», конкретный эксперт/ролик,
 группа tech/tech_business или весь корпус переопределяет область по умолчанию.
 Это правило закреплено и в глобальном скилле, и в общем промпте агента на VM.
 Сам helper без фильтров по-прежнему допускает весь корпус: scope задаёт агент.
@@ -62,8 +103,9 @@ Mac: ~/.local/bin/expert-scout "вопрос"
   -> headless Codex: gpt-6.1-sol / low / fast
   -> scripts/expert_scout_mcp.ts (тот же инструмент)
   -> plugin tool `scout` (argv-массив, без shell)
-  -> backend/scripts/expert_scout.py   (read-only: experts / videos / search / digest / show)
+  -> backend/scripts/expert_scout.py   (read-only: experts / videos / search / lesson_search / digest / show)
   -> backend/data/experts.db           (mode=ro, query_only=ON)
+  -> data/personal_lessons/            (private Git working copy, read-only to Scout)
   -> scripts/expert_scout_filter.py    (сборка финального ответа)
   -> backend/scripts/verify_citations.py (целостность: ключи/цитаты/повторы)
 ```
@@ -127,6 +169,7 @@ cd .opencode && npm ci
 backend/.venv/bin/python backend/scripts/expert_scout.py experts
 backend/.venv/bin/python backend/scripts/expert_scout.py videos [--video-id ID] [--cursor N] [--limit N]
 backend/.venv/bin/python backend/scripts/expert_scout.py search "<запрос>" [--experts a,b | --group visual] [--recent-days N] [--limit N] [--cursor N] [--no-vector] [--freshness tool|craft|any] [--diversity] [--now ISO] [--json]
+backend/.venv/bin/python backend/scripts/expert_scout.py lesson_search "<запрос>" [--limit N] [--cursor N] [--json]
 backend/.venv/bin/python backend/scripts/expert_scout.py digest --experts a,b | --group visual [--video-id ID] [--window N] [--page N | --cursor N] [--recent-days N] [--json]
 backend/.venv/bin/python backend/scripts/expert_scout.py show <expert:message_id> [...] [--comments-limit N] [--expand N] [--content-offset N] [--max-chars N] [--json]
 ```
@@ -307,7 +350,9 @@ HTTP timeout 15 секунд и максимум две попытки. Это �
   корпус и не меняет репозиторий.
 - **Без shell**: у агента нет bash; `scout`-инструмент вызывает хелпер напрямую
   через argv-массив, инъекция команд через аргументы невозможна.
-- **Только dev-корпус** `backend/data/experts.db`; production DB не трогается.
+- **Только dev-корпус** `backend/data/experts.db` и опубликованные личные уроки
+  `data/personal_lessons/`; production DB не трогается. Агент не видит другие
+  проекты и файлы на Маке напрямую.
 - Изоляция по `expert_id` сохраняется; возвращаются только реальные материалы
   экспертов.
 - Секреты, `.env`, токены не печатаются; `.env` читается только приложением для

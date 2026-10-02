@@ -17,17 +17,17 @@ export const ExpertScoutTools: Plugin = async () => {
     tool: {
       scout: tool({
         description:
-          "Read-only corpus: experts roster; videos catalog; search hybrid FTS5+vector; digest paged source previews (not full reading); show source text with explicit continuation and comments. Video keyframes are navigation points, not segment boundaries.",
+          "Read-only corpus: experts and VideoHub; private owner lessons via lesson_search; show source text with explicit continuation. Owner lessons are separate from expert claims.",
         args: {
           command: tool.schema
-            .enum(["experts", "videos", "search", "digest", "show"])
+            .enum(["experts", "videos", "search", "lesson_search", "digest", "show"])
             .describe(
-              "experts = roster; videos = VideoHub catalog; search = hybrid search; digest = previews with next_cursor; show = source text with next_content_offset",
+              "experts = roster; videos = VideoHub catalog; search = expert hybrid search; lesson_search = owner lesson text search; digest = previews; show = full source",
             ),
           query: tool.schema
             .string()
             .optional()
-            .describe("Search query; required when command=search"),
+            .describe("Search query; required for search and lesson_search"),
           experts: tool.schema
             .string()
             .optional()
@@ -117,11 +117,15 @@ export const ExpertScoutTools: Plugin = async () => {
           const argv: string[] = [helper, args.command]
           if (args.experts && args.group) throw new Error("experts and group are mutually exclusive")
           if (args.video_id && !["videos", "digest"].includes(args.command)) throw new Error("video_id is supported by videos and digest")
-          if (args.command === "search") {
+          if (args.command === "search" || args.command === "lesson_search") {
             if (!args.query || !args.query.trim()) {
-              throw new Error("command=search requires a non-empty query")
+              throw new Error("search requires a non-empty query")
             }
             argv.push(args.query)
+            if (args.command === "lesson_search") {
+              if (args.limit) argv.push("--limit", String(args.limit))
+              if (args.cursor !== undefined) argv.push("--cursor", String(args.cursor))
+            } else {
             if (args.experts) argv.push("--experts", args.experts)
             if (args.group) argv.push("--group", args.group)
             if (args.recent_days) argv.push("--recent-days", String(args.recent_days))
@@ -130,6 +134,7 @@ export const ExpertScoutTools: Plugin = async () => {
             if (args.diversity) argv.push("--diversity")
             if (args.freshness) argv.push("--freshness", String(args.freshness))
             if (args.cursor !== undefined) argv.push("--cursor", String(args.cursor))
+            }
           } else if (args.command === "digest") {
             if (!args.experts && !args.group) {
               throw new Error("command=digest requires --experts or --group scope")

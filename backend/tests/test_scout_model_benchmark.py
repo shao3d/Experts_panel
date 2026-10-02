@@ -110,7 +110,9 @@ def test_mcp_reuses_schema_and_rejects_invalid_calls_without_corpus_access():
     results = [json.loads(line)["result"] for line in proc.stdout.splitlines()]
     tool = results[1]["tools"][0]
     assert tool["name"] == "scout"
-    assert tool["inputSchema"]["properties"]["command"]["enum"] == ["experts", "videos", "search", "digest", "show"]
+    assert tool["inputSchema"]["properties"]["command"]["enum"] == [
+        "experts", "videos", "search", "lesson_search", "digest", "show"
+    ]
     assert results[2]["isError"] and results[3]["isError"]
 
 

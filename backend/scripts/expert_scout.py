@@ -897,17 +897,26 @@ def cmd_digest(args: argparse.Namespace) -> int:
 
 
 def cmd_show(args: argparse.Namespace) -> int:
-    backend_dir = _load_backend()
-    db_path = _resolve_db_path(backend_dir, args.db)
     comments_limit = max(0, min(args.comments_limit, MAX_COMMENTS_LIMIT))
     if len(args.source_keys) > MAX_SHOW_KEYS:
         print(f"error: show accepts at most {MAX_SHOW_KEYS} keys; split into batches", file=sys.stderr)
         return 2
 
-    with _connect(db_path) as conn:
-        payload = _collect_show_payload(
-            conn, args.source_keys, comments_limit, expand=getattr(args, "expand", 0)
-        )
+    lesson_keys = [key for key in args.source_keys if key.startswith("lesson:")]
+    expert_keys = [key for key in args.source_keys if not key.startswith("lesson:")]
+    results = []
+    if lesson_keys:
+        from owner_lessons import show as show_lessons
+        results.extend(show_lessons(lesson_keys))
+    if expert_keys:
+        backend_dir = _load_backend()
+        db_path = _resolve_db_path(backend_dir, args.db)
+        with _connect(db_path) as conn:
+            results.extend(_collect_show_payload(
+                conn, expert_keys, comments_limit, expand=getattr(args, "expand", 0)
+            ))
+    by_key = {item["source_key"]: item for item in results}
+    payload = [by_key[key] for key in args.source_keys]
     offset = max(0, getattr(args, "content_offset", 0))
     length = max(1, min(getattr(args, "max_chars", MAX_SHOW_CHARS), MAX_SHOW_CHARS))
     for item in payload:
@@ -926,7 +935,7 @@ def cmd_show(args: argparse.Namespace) -> int:
             if "error" in item:
                 print(f"# {item['source_key']}: {item['error']}")
                 continue
-            print(f"=== {item['source_key']} [{item['created_at']}] @{item['channel_username']} ===")
+            print(f"=== {item['source_key']} [{item['created_at']}] @{item.get('channel_username', item.get('project', ''))} ===")
             if item.get("video_link"):
                 print(f"video: {item['video_link']}")
             print(f"AUTHOR: {item.get('author_name')}")
@@ -937,15 +946,15 @@ def cmd_show(args: argparse.Namespace) -> int:
                 print(f"--- neighbors ({len(item['neighbors'])}) ---")
                 for neighbor in item["neighbors"]:
                     print(f"  {neighbor['source_key']} [{neighbor['created_at']}]: {neighbor['excerpt']}")
-            author_comments = [c for c in item["comments"] if c["is_author"]]
-            community_comments = [c for c in item["comments"] if not c["is_author"]]
+            author_comments = [c for c in item.get("comments", []) if c["is_author"]]
+            community_comments = [c for c in item.get("comments", []) if not c["is_author"]]
             print(f"--- author comments ({len(author_comments)}) ---")
             for comment in author_comments:
                 print(f"  [{comment['created_at']}] {comment['text']}")
             print(f"--- community comments ({len(community_comments)}) ---")
             for comment in community_comments:
                 print(f"  [{comment['created_at']}] {comment['author']}: {comment['text']}")
-            if item["linked_context"]:
+            if item.get("linked_context"):
                 print(f"--- linked context ({len(item['linked_context'])}) ---")
                 for link in item["linked_context"]:
                     print(f"  {link['source_key']} [{link['created_at']}]: {link['excerpt']}")
@@ -997,6 +1006,12 @@ def build_parser() -> argparse.ArgumentParser:
     search.add_argument("--json", action="store_true", help="Machine-readable JSON output")
     search.add_argument("--cursor", type=int, default=0, help="Continue the same query using next_cursor")
 
+    lesson_search = subparsers.add_parser("lesson_search", help="Search the private owner lessons")
+    lesson_search.add_argument("query")
+    lesson_search.add_argument("--limit", type=int, default=20)
+    lesson_search.add_argument("--cursor", type=int, default=0)
+    lesson_search.add_argument("--json", action="store_true")
+
     digest = subparsers.add_parser(
         "digest",
         help="Windowed exhaustive read of a scoped collection (expert/group), no retrieval",
@@ -1031,6 +1046,14 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_videos(args)
     if args.command == "search":
         return cmd_search(args)
+    if args.command == "lesson_search":
+        from owner_lessons import search as search_lessons
+        try:
+            result = search_lessons(args.query, limit=args.limit, cursor=args.cursor)
+        except (FileNotFoundError, ValueError) as exc:
+            result = {"status": "error", "error": "lesson_store_unavailable", "message": str(exc)}
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 0 if result["status"] == "completed" else 2
     if args.command == "digest":
         return cmd_digest(args)
     if args.command == "show":
