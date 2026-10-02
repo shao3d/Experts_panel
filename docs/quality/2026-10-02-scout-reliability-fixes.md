@@ -1,14 +1,19 @@
 # Scout: надёжность и лишнее чтение, 2026-10-02
 
-Status: Locally validated; not released
+Status: Released; known baseline and CI limitations recorded
 Last updated: 2026-10-02
 
 ## Scope
 
 Ремонт Scout после проверки выросшего корпуса: 20 видео, 458 записей VideoHub.
-Новые видео, включая Yapper, не добавляются. Runtime остаётся GPT-6.1-Sol,
+На этапе этого ремонта новые видео не добавлялись. Runtime остаётся GPT-6.1-Sol,
 low reasoning, Fast. Текущее поведение — в [руководстве](../guides/expert-scout.md).
-База и production не менялись; commit/push/data release в этой задаче не выполнялись.
+Ремонт выпущен коммитом `b9331e4`: `deploy-oracle.yml` №37004513273
+завершился успешно; backend `/health` и публичный `/scout-api/health` проверены.
+Этот code release не изменял содержимое production DB.
+Отдельный CI/CD №37004513176 завершился ошибкой на Backend Validation /
+Run backend tests; причина этой ошибки пока не установлена. Успешный deploy
+не означает, что весь CI зелёный.
 
 ## Изменения
 
@@ -130,5 +135,6 @@ integrity; `agent-final-first-five.json` — повтор первых пяти 
   для восстановления контекста и дочитывания длинных источников нельзя.
 - Эффект отдельно на Bunny/MiMo/других моделях не измерялся; инструкции общие,
   приёмка выполнена на текущем Sol low/Fast.
-- Готово к code release по команде владельца. Data release не нужен.
-  Основной pipeline Панели, UI, production и содержимое VideoHub не менялись.
+- Code release выполнен по команде владельца (см. Scope). Для этих правок
+  data release не требовался. Основной pipeline Панели, UI и содержимое
+  VideoHub этим ремонтом не менялись.

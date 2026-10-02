@@ -178,6 +178,16 @@ backend/.venv/bin/python backend/scripts/ingest_video.py \
 - Caps per chunk: `--max-windows-per-chunk`, `--max-dense-frames-per-chunk`; artifacts are review-only.
 - Reuse `--transcript <json>` / `--skip-asr` for re-runs.
 
+При повторном использовании ASR сверь его интервалы с длительностью исходного
+медиа. Сохраняй оригинал; в отдельной подготовленной копии убирай только
+записи за концом файла и явно отмечай обрезанный последний интервал.
+Повторяющийся или подозрительный текст внутри видео требует проверки по
+источнику, а не автоматического признания полезной речью.
+
+Лимиты dense frames могут удалить окна. Это ограничение объёма кадров,
+а не подтверждение полноты разметки: просмотри coarse sheets всего чанка
+и извлеки дополнительные native-кадры для пропущенных промптов или цифр.
+
 ### 0.3 Stage 2 — LLM pass per chunk
 Read one chunk (transcript slice + sheets + native frames), write
 `chunks/chunk_NN/segments.json` with the extended schema (`visual`, `frames`),

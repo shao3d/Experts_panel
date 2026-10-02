@@ -4,7 +4,12 @@
 **Status:** Active Roadmap (query-time side; P2/P3/P5/P4/N2 closed — see the
 priority table and "Review fixes")
 **Last updated:** 2026-10-02
-**Current State (2026-10-02):** staging and production contain **20 videos / 458 segments**.
+**Current State (2026-10-02):** staging and production contain **21 videos / 484 segments**.
+Yapper `mbEo8tn2BZA` принят: 26 сегментов, 49 ссылок на кадры,
+семь подтверждённых ячеек, receipt `searchable` (26/26), каталог и Матрица
+пересобраны. Четыре проверки Скаута пройдены; scoped visual data release
+завершён 2026-10-02 в 12:40 UTC с healthy production. Подробности — в
+[отчёте онбординга](../quality/2026-10-02-yapper-music-video-onboarding.md).
 Исправленная разметка новой тройки промоутирована через scoped visual data release
 2026-10-02; проверка целостности БД и production `/health` прошли.
 Current inventory: [generated index](../video-hub-index.md). Введены 2026-10-02:
@@ -79,7 +84,9 @@ scoped visual data release выполнен 2026-10-01.
 ### Каналы на радаре (free-roam 2026-09-29; дополнения 2026-10-02)
 
 **Добавлены владельцем 2026-10-02 и отсканированы (окно 30 дней):**
-- **Yapper AI** (`@yapper_so`) — введён `cCDn0Z6AdmM`; в окне ещё `mbEo8tn2BZA` (AI music video + промты) — кандидат light-пробы.
+- **Yapper AI** (`@yapper_so`) — введены `cCDn0Z6AdmM` и `mbEo8tn2BZA`
+  (music video: 26 принятых сегментов, `searchable`, production; проверка выпуска —
+  в [отчёте](../quality/2026-10-02-yapper-music-video-onboarding.md)).
 - **Bla Bla about AI** (`@BlaBlaProAi`, RU) — `TgCp6SuVnJw` (Blender dummy) отсеян пробой: overlap с `3d_previz_pipeline` + реклама; ждать новые ролики.
 - **Tao Prompts** (`@taoprompts`) — ранее помечен «не пробовать» за липсинк; отсканирован по указанию владельца: `TggVh3WCwxg` (4-Step Workflow, 2026-09-30) и `EcxvHRccXnc` (Level Up с Opus 5.5) — в окне, не пробованы (слоты заняты сильнейшими); липсинк-ролики остаются в отсеве.
 

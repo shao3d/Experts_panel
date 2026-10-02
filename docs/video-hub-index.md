@@ -54,6 +54,7 @@
 
 | YouTube ID | Название | Сегментов | Опубликовано |
 |---|---|---:|---|
+| `mbEo8tn2BZA` | I Tried The Viral AI Music Video Trend (I Show Every Prompt) | 26 | 2026-09-25 |
 | `cCDn0Z6AdmM` | I Made a 5M View Live Action Naruto Film on a Budget | 21 | 2026-09-18 |
 
 ## Youri van Hofwegen
@@ -64,4 +65,4 @@
 | `H8WDehuVams` | How to Create Realistic AI Avatars (Full Guide) | 25 | 2026-09-24 |
 | `2b3Z4rW5VJc` | STOP Wasting Credits & Master Seedance 2.5 | 11 | 2026-08-21 |
 
-Итого: **20** видео, **458** сегментов.
+Итого: **21** видео, **484** сегментов.
