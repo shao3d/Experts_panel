@@ -40,7 +40,8 @@ const assert = require('node:assert/strict');
         `[4:23](${url}), [Видео](${url})`,
         `\`video_hub:789\`, [4:23](${url})`,
         `[Видео · 4:23](${url}), [4:23](${url}), \`video_hub:789\``,
-        `[Видео · 4:23](${url}), [14:35](https://www.youtube.com/watch?v=qwGIwxZFc2I&t=875s)`
+        `[Видео · 4:23](${url}), [14:35](https://www.youtube.com/watch?v=qwGIwxZFc2I&t=875s)`,
+        `\`video_hub:789\`, \`missing:123\``
       ];
       return cases.map(markdown => {
         const root = document.createElement('div');
@@ -56,6 +57,24 @@ const assert = require('node:assert/strict');
       assert.equal(result.links[0].href, 'https://www.youtube.com/watch?v=qwGIwxZFc2I&t=263s');
     }
     assert.equal(duplicateCases[4].links.length, 2, 'Different moments of the same video must remain clickable');
+    assert.ok(duplicateCases[5].text.includes('missing:123'), 'Unknown citations must remain visible');
+    const formatted = await page.evaluate(() => {
+      const root = document.createElement('div');
+      root.innerHTML = DOMPurify.sanitize(marked.parse('(Источники: — Acid Crunch, 23.03.2025, `acidcrunch:550`; Youri van Hofwegen, 25.09.2026, `video_hub:353` · [05:53](https://www.youtube.com/watch?v=test&t=353s)). Пояснение остаётся.'));
+      foldSources(root);
+      linkSources(root, {
+        'acidcrunch:550': {url: 'https://t.me/AcidCrunch/550', label: 'Acid Crunch · пост 550'},
+        'video_hub:353': {url: 'https://www.youtube.com/watch?v=test&t=353s', label: 'Youri van Hofwegen · 9 FREE Prompts to Make AI Videos that Look Real (Cinematic AI) · 5:53'}
+      });
+      return {labels: [...root.querySelectorAll('a')].map(a => a.textContent), text: root.textContent};
+    });
+    assert.deepEqual(formatted.labels, [
+      'Acid Crunch · пост 550 · 23.03.2025',
+      'Youri van Hofwegen · 9 FREE Prompts to Make AI Videos that Look Real (Cinematic AI) · 25.09.2026 · 05:53'
+    ]);
+    assert.equal(formatted.text.match(/Acid Crunch/g)?.length, 1);
+    assert.equal(formatted.text.match(/05:53/g)?.length, 1);
+    assert.ok(formatted.text.trim().endsWith('Пояснение остаётся.'));
     await page.locator('#password').fill('test-password');
     await page.locator('#login button').click();
     await page.locator('#question').fill('Длинный вопрос\nсо второй строкой\nи третьей строкой\nи четвёртой строкой');
@@ -99,7 +118,7 @@ const assert = require('node:assert/strict');
     assert.equal(await sources.first().getAttribute('aria-expanded'),'true');
     assert.equal(await page.locator('#answer a:visible').count(),2);
     assert.equal(await page.locator('#answer a[title="video_hub:123"]').getAttribute('href'),'https://www.youtube.com/watch?v=qwGIwxZFc2I&t=875s');
-    assert.ok((await page.locator('#answer').innerText()).includes('Higgsfield AI, 28.08.2026, 18:06'));
+    assert.ok((await page.locator('#answer').innerText()).includes('28.08.2026 · 18:06'));
     assert.ok((await page.locator('#answer').innerText()).includes('Длинное название видео'));
     const videoPopup = await Promise.all([page.waitForEvent('popup'), page.locator('#answer a[title="video_hub:123"]').click()]);
     await videoPopup[0].waitForLoadState();
@@ -110,7 +129,7 @@ const assert = require('node:assert/strict');
     assert.equal(await sources.first().getAttribute('aria-expanded'),'false');
     assert.equal(await page.locator('#answer a:visible').count(),0);
     await sources.nth(1).click();
-    assert.ok((await page.locator('#answer').innerText()).includes('Acid Crunch, 26.06.2026, 01:02–01:18'));
+    assert.ok((await page.locator('#answer').innerText()).includes('Acid Crunch · пост 2511 · 26.06.2026'));
     const telegramPopup = await Promise.all([page.waitForEvent('popup'), page.locator('#answer a[title="acidcrunch:2511"]').click()]);
     await telegramPopup[0].waitForLoadState();
     assert.equal(telegramPopup[0].url(),'https://t.me/AcidCrunch/2511');

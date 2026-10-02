@@ -173,6 +173,41 @@ function linkSources(root, sources = {}) {
         if (original && provider(original) === provider(target)) link.href = target.href;
       });
     }
+    // Rebuild verified citations as complete links instead of mixing model
+    // metadata with generated labels. Unknown citations retain their original text.
+    const content = wrapper.querySelector('[id^="sources-"]');
+    const links = [...wrapper.querySelectorAll('a[href]')];
+    const resolved = links.map(link => {
+      const entry = Object.entries(sources).find(([key, source]) =>
+        key === link.dataset.sourceKey || publicUrl(source.url)?.href === link.href);
+      return entry && {key: entry[0], source: entry[1], link};
+    });
+    if (content && links.length && resolved.every(Boolean) && !content.querySelector('code')) {
+      const text = content.textContent;
+      const unique = [...new Map(resolved.map(item => [item.link.href, item])).values()];
+      const dates = new Map();
+      for (const match of text.matchAll(/\b(?:\d{2}\.\d{2}\.\d{4}|\d{4}-\d{2}-\d{2})\b/g)) {
+        const segmentStart = text.lastIndexOf(';', match.index) + 1;
+        const beforeDate = text.slice(segmentStart, match.index);
+        const candidates = unique.map(item => ({item, position: beforeDate.lastIndexOf((item.source.label || item.key).split(' · ')[0])}))
+          .filter(candidate => candidate.position >= 0).sort((a, b) => b.position - a.position);
+        if (candidates.length) dates.set(candidates[0].item.link.href, match[0]);
+        else if (unique.length === 1) dates.set(unique[0].link.href, match[0]);
+      }
+      content.replaceChildren(': — ');
+      unique.forEach(({key, source, link}, index) => {
+        let label = source.label || key;
+        const time = label.match(/ · (\d{1,2}:\d{2}(?::\d{2})?)$/);
+        if (time) label = label.slice(0, time.index);
+        const date = dates.get(link.href);
+        if (date) label += ` · ${date}`;
+        if (time) label += ` · ${time[1].padStart(5, '0')}`;
+        link.textContent = label; link.title = key; link.dataset.sourceKey = key;
+        if (index) content.append('; ');
+        content.append(link);
+      });
+      return;
+    }
     // Show each destination once, including model-written timestamp links.
     const seen = new Map();
     wrapper.querySelectorAll('a[href]').forEach(link => {
