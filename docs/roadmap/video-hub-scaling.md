@@ -3,8 +3,12 @@
 **Created:** 2026-03-28
 **Status:** Active Roadmap (query-time side; P2/P3/P5/P4/N2 closed — see the
 priority table and "Review fixes")
-**Last updated:** 2026-10-02
-**Current State (2026-10-02):** staging and production contain **21 videos / 484 segments**.
+**Last updated:** 2026-10-04
+**Current State (2026-10-04):** **24 видео / 595 сегментов** после ремонта
+тройки MiMo; scoped visual data release завершён, production healthy.
+Приёмка, границы проверки и выпуск — в [отчёте](../quality/2026-10-04-mimo-trio-repair.md).
+
+История предыдущего выпуска (2026-10-02):
 Yapper `mbEo8tn2BZA` принят: 26 сегментов, 49 ссылок на кадры,
 семь подтверждённых ячеек, receipt `searchable` (26/26), каталог и Матрица
 пересобраны. Четыре проверки Скаута пройдены; scoped visual data release
@@ -53,18 +57,33 @@ Dan включён после подтверждения `searchable`.
 `output/video_admission/candidate_probe_journal.json`. Это SSOT по «какие
 видео рассматривать дальше»: если здесь чего-то нет — кандидата нет.
 
-### Что рассматривать дальше (приоритетный порядок, 2026-10-02)
+### Что рассматривать дальше (приоритетный порядок, 2026-10-03)
 
-Скан 2026-10-02 (окно 30 дней: 2026-09-02..2026-10-02, 10 каналов) завершён; введены
-`AgUATWAOaKY`, `cCDn0Z6AdmM`, `FJfMTvZvX7w` (см. «Недавно введены»). Остатки watchlist:
+Скан 2026-10-03 (инкремент к окну 2026-10-02, 10 каналов, через WARP на VM)
+нашёл 4 новых загрузки: `xZx5940qoKE`, `kOoC3yhUyDQ`, `OQdyw2vVXq4`
+(2026-10-02) и `gVPZU1btFA8` (2026-10-03). Одновременно закрыты 11 видео
+окна 2026-10-02, остававшихся без вердикта (транскрипт-пробы ASR на VM +
+scout-чеки read-only хелпером; полный журнал проб —
+`output/video_admission/candidate_probe_journal.json`, скан-артефакты —
+`output/video_admission/channel_scan_2026-10-03/`). Тройка ниже уже онбордирована,
+отремонтирована и промоутирована в production 2026-10-04. Повторный онбординг не нужен:
+
+| # | Видео | Автор | Ценность для матрицы | Статус |
+|---|-------|-------|----------------------|--------|
+| 1 | `CAWnlOJbSX4` I Turned My Boring Hometown Into A Movie With AI VFX (2026-08-12) | River Cody | durable-крафт: 5 слоёв продакшена (композиция→свет→цвет→фон→динамика), elements → Claude-переводчик → storyboard-кадр → Seedance → композитинг оригинала назад; риск дубля с levels-фреймворком `5y20tE7zo40` снят (структуры разные) | **production**, 35 сегментов; ремонт 2026-10-04 |
+| 2 | `xZx5940qoKE` How to Storyboard Realistic AI Videos with Google Flow (2026-10-02) | Youri van Hofwegen | last-frame chaining (скриншот последнего кадра → старт следующей сцены), сторибординг-план в чате до генерации, one-at-a-time; scout-чеки 2026-10-03: пусто в корпусе (RU+EN); та же техника независимо у `9sMkvSIgq7s` | **production**, 38 сегментов; ремонт 2026-10-04 |
+| 3 | `0d8pqU8JRrY` How to Make 3D Animations With GPT 6 Astra (2026-09-19) | Youri van Hofwegen | named parts → раздельный тайминг + assembly deadline + hold; рендер по scene camera vs viewport; одна анимация → 3 стиля; принцип «камера отдельно от актёра» уже покрыт `neyrograph:4667`, конкретика 3D Jutso — нет | **production**, 38 сегментов; ремонт 2026-10-04 |
+
+Следом: `kOoC3yhUyDQ` GPT-6 Astra Finally Solves AI Video Editing (Higgsfield
+AI, 2026-10-02) — **recommend ingest_scoped** ~4:50–9:00 (style-context
+«прошлые проекты+шрифты+skill-файл», батч-нарезка шортсов, AE-скрипт с
+альфа-экспортом; ядро монтажа покрыто `AgUATWAOaKY`). Остатки waitlist:
 
 | # | Видео | Автор | Ценность для матрицы | Статус |
 |---|-------|-------|----------------------|--------|
 | 1 | `3LekYT1rKoc` Can AI Color Grade Better Than A Human? (2026-09-16) | River Cody | film-reference prompting для грейдинга, cost breakdown; ядро Astra+Resolve покрыто `qwGIwxZFc2I` | **waitlist** (проба 2026-10-02) |
 | 2 | `gr9fEEKrO5Y` Video Editors Are Dead? Opus Edited This (2026-09-29) | AI Samson | word-by-word animation, selects-labels; code-animation покрыта (Remotion/Three.js/Python) | waitlist |
-| 3 | `CAWnlOJbSX4` I Turned My Boring Hometown Into A Movie With AI VFX (2026-08-12) | River Cody | резерв №1 вне окна 30 дней — по решению владельца 2026-10-02 в окно не тянули | резерв |
-
-| `0d8pqU8JRrY` How to Make 3D Animations With GPT 6 Astra (2026-09-19) | Youri van Hofwegen | вне окна не брался; пробить по запросу владельца | резерв |
+| 3 | `OQdyw2vVXq4` Kling 4 Flash vs Seedance 2.5 (2026-10-02, RU) | Bla Bla about AI | свежие RU-факты: русский липсинк 20с, цена с итерациями в рублях, цензура; микробиты уже у `neyrograph:4669`, compare-клетка с 3 видео; возможен ingest_scoped (цена 2:13–2:50, липсинк 7:31–9:10, мульт 17:16–18:30) | waitlist (проба 2026-10-03) |
 
 `qwGIwxZFc2I` больше не кандидат: онбординг в dev и проверка поиска завершены;
 scoped visual data release выполнен 2026-10-01.
@@ -80,8 +99,21 @@ scoped visual data release выполнен 2026-10-01.
 | `UQDM-ZigvGo` Anerneq, `IAl240xpSGM` The Trigger | Higgsfield AI/Originals | шоукейс-фильмы без техники |
 | `M73BrFnVPA8`, `9Pbg-_ptBcE`, `rwVeovA805k` | разные | продуктовые тизеры без техники (reject_low_value по пробам) |
 | `eUFdtZLDOo8` 50+ Ways to Use GPT-6, `_cbq1SJ_vP0` Opus 5.5 use cases | AI Samson | рейтинги/хайп и юзкейсы LLM вне видео-крафта |
+| `gVPZU1btFA8` GPT-6 Astra Changed Meta Ads Forever! (2026-10-03) | Higgsfield AI | маркетинг/реклама (PROOF/QUEST, лидген, CPL) — не видео-крафт (транскрипт-проба 2026-10-03) |
+| `2OwMjg5As2g` Claude Fable 5.1 + Higgsfield Motion Graphics | Higgsfield AI | locked-text моушн и one-to-one recreation узкие; AE/моушн-угол перегружен, денежная подача (проба 2026-10-03) |
+| `lCly-zH6A78` CapCut AI Tools, `eoSCoD--npk` UGC Ads with AI | Youri van Hofwegen | sheet-техника уже покрыта (cCDn0Z6AdmM/xZx5940qoKE); уникальное узкое: порядок captions-после-склеек, 10-панельный turn-around продукта (пробы 2026-10-03) |
+| `chNPqmJx0fY` GPT 6 Astra Come to Life, `QwzVmGov9ec` Astra Editing (Tao) | Youri / Tao Prompts | третий-четвёртый workflow «монтаж/оркестрация агентом» — территория AgUATWAOaKY + kOoC3yhUyDQ (пробы 2026-10-03) |
+| `9sMkvSIgq7s` Flow Plant Growth Workflow | AI Video Studio | тот же last-frame chaining, что в xZx5940qoKE — дублирует механику кандидата №2 (проба 2026-10-03) |
+| `7SZ76s-nqpQ`, `wJc0jnX49R0`, `dZBAJNdFxzo`, `I9EvujHJm3o`, `yRM1df108G0` | разные | правило-отсевы 2026-10-03: деньги/бизнес, тур фичи, API-сетап, free-generators, identity+voice overlap (детали в journal) |
 
-### Каналы на радаре (free-roam 2026-09-29; дополнения 2026-10-02)
+### Каналы на радаре (free-roam 2026-09-29; дополнения 2026-10-02, 2026-10-03)
+
+**Дополнение 2026-10-03:** все 10 радар/корпусных каналов отсканированы повторно
+(инкремент к окну 2026-10-02; артефакты —
+`output/video_admission/channel_scan_2026-10-03/`). Новые загрузки только у
+Higgsfield AI (2), Youri (1) и Bla Bla about AI (1) — все пробработаны, см.
+«Что рассматривать дальше». Полный breakdown Passport Rush (Higgsfield
+Animation) по-прежнему не вышел — проверено 2026-10-03.
 
 **Добавлены владельцем 2026-10-02 и отсканированы (окно 30 дней):**
 - **Yapper AI** (`@yapper_so`) — введены `cCDn0Z6AdmM` и `mbEo8tn2BZA`
@@ -101,7 +133,7 @@ scoped visual data release выполнен 2026-10-01.
   Channels», Haapoja, интернет): Curious Refuge (тренды + туториалы
   Seedance/Kling/Runway), AI Filmmaking Academy (AI VFX), Roboverse
   (аватары/UGC), Planet AI, Nour Art, Creating with Conor, Theoretically Media
-  (production breakdown с цифрами), GenAI+ (Flow prompt-document), Beriky
+(production breakdown с цифрами), GenAI+ (Flow prompt-document), Beriky
   Studios (постмортемы короткометражек). Tao Prompts — липсинк/музыкальные
   клипы, тема перекрыта корпусом (не пробовать).
 - Источники discovery: reddit-search (1 релевантный тред r/comfyui, в основном

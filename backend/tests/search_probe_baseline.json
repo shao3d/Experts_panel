@@ -4,17 +4,17 @@
  "summary": {
   "fixtures": 30,
   "hit_fixtures": 28,
-  "mean_recall@10": 0.2733,
-  "mean_recall@20": 0.396,
-  "mean_recall@40": 0.515,
+  "mean_recall@10": 0.275,
+  "mean_recall@20": 0.3965,
+  "mean_recall@40": 0.5156,
   "mean_mrr@10": 0.1911,
   "hidden_keys_total": 24,
-  "outside_keys_total": 63,
+  "outside_keys_total": 64,
   "experts_in_top10_unscoped": 2.46,
   "legs": {
    "queries": 34,
    "dead_leg_queries": 0,
-   "mean_jaccard": 0.1422
+   "mean_jaccard": 0.1419
   },
   "craft_mode": {
    "fixtures": [
@@ -730,7 +730,7 @@
   },
   {
    "id": "grid_prompting",
-   "fixture_signature": "eff060e0b0b7f2a4421b2187cbeab6873bbfe2ac754765617d75c8ea78908c58",
+   "fixture_signature": "a64f1635f6813efda53184262f2e56187f2123385479c0d58e3a40e5784e42b3",
    "kind": "hit",
    "tags": [
     "broad"
@@ -742,14 +742,16 @@
     "strangedalle:1348",
     "video_hub:531461744",
     "video_hub:102636863",
-    "video_hub:619811946"
+    "video_hub:619811946",
+    "video_hub:119251081",
+    "video_hub:403371283"
    ],
    "per_query": [
     {
      "query": "Grid prompting for AI video: creating a single image with a 3x3 grid of nine film stills (nine equal panels) and then animating between the panels sequentially in one long video generation to get a multi-shot sequence with consistency. Also: first-frame plus last-frame interpolation to control the start and end of a shot while the model decides the middle. Do practitioners use these techniques? Give sources with source_key.",
-     "recall@10": 0.2857142857142857,
-     "recall@20": 0.42857142857142855,
-     "recall@40": 0.42857142857142855,
+     "recall@10": 0.3333333333333333,
+     "recall@20": 0.4444444444444444,
+     "recall@40": 0.4444444444444444,
      "mrr@10": 0.25,
      "hidden_keys": [
       "video_hub:619811946"
@@ -758,36 +760,39 @@
       "acidcrunch:2044",
       "iideyalogiya:1304",
       "iideyalogiya:1388",
-      "strangedalle:1348"
+      "strangedalle:1348",
+      "video_hub:403371283"
      ],
      "experts_in_top10": 1,
      "returned@10": [
-      "video_hub:56232167",
       "video_hub:471071063",
+      "video_hub:56232167",
       "video_hub:366181511",
       "video_hub:102636863",
-      "video_hub:531461744",
       "video_hub:643325874",
+      "video_hub:531461744",
       "video_hub:293918715",
       "video_hub:718546572",
       "video_hub:119251081",
-      "video_hub:163751293"
+      "video_hub:180821357"
      ]
     }
    ],
-   "recall@10": 0.2857,
-   "recall@20": 0.4286,
-   "recall@40": 0.4286,
+   "recall@10": 0.3333,
+   "recall@20": 0.4444,
+   "recall@40": 0.4444,
    "mrr@10": 0.25,
    "hidden_total": 1,
-   "outside_total": 4,
+   "outside_total": 5,
    "experts_in_top10": 1.0,
    "legs": {
     "queries": 1,
-    "mean_overlap": 22.0,
-    "mean_jaccard": 0.2037,
+    "mean_overlap": 21.0,
+    "mean_jaccard": 0.1927,
     "dead_leg_queries": 0
-   }
+   },
+   "measured_at": "2026-10-04 10:02:54",
+   "baseline_note": "2026-10-04: align with gold reviewed 2026-10-02; reuse saved search-probe.json row. Two source-reviewed first/last-frame alternatives added; no other fixture rebased."
   },
   {
    "id": "character_likeness_longform",
@@ -1860,5 +1865,5 @@
    }
   }
  ],
- "baseline_note": "Added two paired agent questions (plain language and false premise), and allowed explicitly bounded context in NGS abstention. All 28 existing retrieval metric rows unchanged; source evidence reused from reviewed originals. Aggregate changes reflect new questions, not runtime changes."
+ "baseline_note": "Added two paired agent questions (plain language and false premise), and allowed explicitly bounded context in NGS abstention. All 28 existing retrieval metric rows unchanged; source evidence reused from reviewed originals. Aggregate changes reflect new questions, not runtime changes. 2026-10-04: only grid_prompting refreshed from saved 2026-10-04 10:02:54 run to match source-reviewed gold; other 29 rows and search_as_of unchanged. Summary recomputed for this mixed-date reference; see per-row measured_at and docs/guides/expert-scout.md."
 }

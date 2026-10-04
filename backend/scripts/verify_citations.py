@@ -128,6 +128,17 @@ def bound_quote_status(answer: str, sources: dict[str, str], reads: dict | None 
         line_end = len(answer) if line_end < 0 else line_end
         if answer[line_start:line_end].strip().startswith('|'):
             start, end = line_start, line_end
+        else:
+            # Adjacent Markdown list items are separate citation scopes even
+            # without blank lines; indented continuation belongs to its item.
+            items = list(re.finditer(r'(?m)^[ \t]*(?:[-+*]|\d+[.)])[ \t]+', answer[start:end]))
+            preceding = [item for item in items if start + item.start() <= match.start()]
+            if preceding:
+                item_start = start + preceding[-1].start()
+                following = [start + item.start() for item in items
+                             if start + item.start() > match.end()]
+                end = following[0] if following else end
+                start = item_start
         candidates = list(KEY_RE.finditer(answer, start, end))
         if not candidates:
             results[quote] = "unbound"

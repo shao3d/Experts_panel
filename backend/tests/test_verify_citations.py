@@ -74,6 +74,20 @@ def test_table_quote_is_bound_to_its_row_not_closer_neighbor(verifier):
     assert verifier.bound_quote_status(wrong,sources)[quote]=='unverified'
 
 
+@pytest.mark.parametrize('marker', ['-', '*', '+', '1.', '1)'])
+def test_list_quote_is_bound_to_its_item(verifier, marker):
+    quote = 'Exact camera path and lighting instruction'
+    sources = {'video_hub:1': 'Different source', 'video_hub:2': quote}
+    answer = (f'{marker} Previous item video_hub:1\n'
+              f'{marker} “{quote}” with a long explanation of the source limitations.\n'
+              '  Continuation with its citation: video_hub:2')
+    assert verifier.bound_quote_status(answer, sources)[quote] == 'ok'
+    wrong = answer.replace('video_hub:2', 'video_hub:1')
+    assert verifier.bound_quote_status(wrong, sources)[quote] == 'unverified'
+    unbound = answer.replace('video_hub:2', '') + '\n- Next item video_hub:2'
+    assert verifier.bound_quote_status(unbound, sources)[quote] == 'unbound'
+
+
 @pytest.mark.parametrize('returncode,output', [(1,'[]'),(0,'invalid'),(0,'[]')])
 def test_source_lookup_cannot_silently_drop_keys(verifier, monkeypatch, returncode, output):
     monkeypatch.setattr(verifier.subprocess,'run',lambda *args,**kwargs: subprocess.CompletedProcess([],returncode,output,''))

@@ -2,13 +2,15 @@
 """Search probe: measure retrieval quality against verified fixture keys.
 
 Runs the read-only expert_scout.py helper (search) over fixture questions and
-computes recall@10 / recall@20 / recall@40 / MRR + hidden-key counts. A baseline snapshot guards regressions;
+computes recall@10 / recall@20 / recall@40 / MRR + hidden-key counts.
+This diagnoses source ranking, not agent-answer correctness. A baseline snapshot guards regressions;
 improvements raise the numbers and the baseline is updated deliberately.
 
 Usage:
   backend/.venv/bin/python backend/scripts/search_probe.py --run [--json-out PATH]
   backend/.venv/bin/python backend/scripts/search_probe.py --write-baseline
   backend/.venv/bin/python backend/scripts/search_probe.py --check-baseline
+  backend/.venv/bin/python backend/scripts/search_probe.py --check-saved saved-probe.json
 
 Fixture self-check (no network): --check-keys
 """
@@ -326,8 +328,11 @@ def main() -> int:
     parser.add_argument("--write-baseline", action="store_true")
     parser.add_argument("--baseline-note", help="Required explanation when replacing the baseline")
     parser.add_argument("--check-baseline", action="store_true", help="run + compare with baseline")
+    parser.add_argument("--check-saved", type=Path, help="compare a saved retrieval report with baseline; no corpus/network/model calls")
     parser.add_argument("--json-out", help="write full probe JSON here")
     args = parser.parse_args()
+    if args.check_saved and (args.run or args.check_keys or args.write_baseline or args.check_baseline):
+        parser.error('--check-saved cannot be combined with live checks or baseline writes')
     if args.write_baseline and not (args.baseline_note or "").strip():
         parser.error("--write-baseline requires --baseline-note explaining the reviewed change")
 
@@ -341,9 +346,13 @@ def main() -> int:
             print("  MISSING:", k)
         return 1 if bad else 0
 
-    if args.run or args.write_baseline or args.check_baseline:
-        probe = run_probe()
-        print(f"== search probe {probe['generated_at']} ==")
+    if args.run or args.write_baseline or args.check_baseline or args.check_saved:
+        probe = json.loads(args.check_saved.read_text(encoding='utf-8')) if args.check_saved else run_probe()
+        print(f"== retrieval diagnostic {probe['generated_at']} ==")
+        print('Scope: known-source ranking, not Scout answer quality. '
+              'Corpus growth can change ranks; assess answers with agent_probe and its rubrics.')
+        if args.check_saved:
+            print(f'Saved report: {args.check_saved}; no new search performed.')
         for r in probe["results"]:
             print(
                 f"  {r['id']:<32} kind={r['kind']:<15} "
@@ -356,14 +365,14 @@ def main() -> int:
             probe["baseline_note"] = args.baseline_note
             BASELINE_PATH.write_text(json.dumps(probe, ensure_ascii=False, indent=1), encoding="utf-8")
             print("baseline written:", BASELINE_PATH)
-        if args.check_baseline:
+        if args.check_baseline or args.check_saved:
             problems = compare_to_baseline(probe)
             if problems:
-                print("BASELINE CHECK FAILED:")
+                print("RETRIEVAL BASELINE DIFFERENCES (not an agent-answer verdict):")
                 for p in problems:
                     print("  -", p)
                 return 1
-            print("baseline check: OK (no regressions)")
+            print("retrieval baseline check: OK (no ranking regressions; answer quality not assessed)")
         return 0
 
     parser.print_help()

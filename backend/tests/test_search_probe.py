@@ -112,6 +112,44 @@ def test_rebaseline_keeps_original_search_date(tmp_path, monkeypatch):
     assert probe._probe_now() == '2026-09-29T12:00:00'
 
 
+@pytest.mark.parametrize('recall,exit_code', [(1.0, 0), (0.5, 1)])
+def test_saved_comparison_is_offline_and_preserves_failure(tmp_path, monkeypatch, capsys, recall, exit_code):
+    baseline = tmp_path / 'baseline.json'
+    saved = tmp_path / 'saved.json'
+    row = {'id': 'x', 'kind': 'hit', 'fixture_signature': 'same',
+           'recall@10': 1.0, 'recall@20': 1.0, 'recall@40': 1.0,
+           'mrr@10': 1.0, 'hidden_total': 0}
+    report = {'generated_at': '2026-10-04', 'summary': {}, 'results': [row]}
+    baseline.write_text(json.dumps(report))
+    row['recall@10'] = recall
+    saved.write_text(json.dumps(report))
+    original = baseline.read_bytes()
+    monkeypatch.setattr(probe, 'BASELINE_PATH', baseline)
+    monkeypatch.setattr(probe, 'run_probe', lambda: pytest.fail('must not run live search'))
+    monkeypatch.setattr(sys, 'argv', ['search_probe.py', '--check-saved', str(saved)])
+    assert probe.main() == exit_code
+    output = capsys.readouterr().out
+    assert 'no new search performed' in output
+    assert 'not Scout answer quality' in output
+    assert baseline.read_bytes() == original
+
+
+def test_saved_report_cannot_be_used_to_silently_overwrite_baseline(monkeypatch):
+    monkeypatch.setattr(sys, 'argv', ['search_probe.py', '--check-saved', 'unused.json',
+                                   '--write-baseline', '--baseline-note', 'invalid combination'])
+    with pytest.raises(SystemExit) as exc:
+        probe.main()
+    assert exc.value.code == 2
+
+
+def test_grid_baseline_matches_reviewed_contract():
+    baseline = json.loads(probe.BASELINE_PATH.read_text())
+    row = next(r for r in baseline['results'] if r['id'] == 'grid_prompting')
+    fixture = next(f for f in fixtures if f['id'] == 'grid_prompting')
+    assert row['fixture_signature'] == probe.fixture_signature(fixture)
+    assert row['expected'] == fixture['expected_keys']
+
+
 def test_reviewed_agent_gold_has_evidence():
     for fixture in fixtures:
         assert 0 <= fixture['min_hits'] <= len(fixture['expected_keys'])

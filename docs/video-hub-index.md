@@ -48,6 +48,7 @@
 
 | YouTube ID | Название | Сегментов | Опубликовано |
 |---|---|---:|---|
+| `CAWnlOJbSX4` | I Turned My Boring Hometown Into A Movie With AI VFX | 35 | 2026-08-12 |
 | `3I2jj6HA3p0` | I Mixed AI With Real Footage… and I'm Kinda Scared (3 VFX Tricks) | 14 | 2026-01-27 |
 
 ## Yapper AI
@@ -61,8 +62,10 @@
 
 | YouTube ID | Название | Сегментов | Опубликовано |
 |---|---|---:|---|
+| `xZx5940qoKE` | How to Storyboard Realistic AI Videos with Google Flow | 38 | 2026-10-02 |
 | `y8PJ3B38S2o` | 9 FREE Prompts to Make AI Videos that Look Real (Cinematic AI) | 17 | 2026-09-25 |
 | `H8WDehuVams` | How to Create Realistic AI Avatars (Full Guide) | 25 | 2026-09-24 |
+| `0d8pqU8JRrY` | How to Make 3D Animations With GPT 6 Astra (No Blender Needed) | 38 | 2026-09-19 |
 | `2b3Z4rW5VJc` | STOP Wasting Credits & Master Seedance 2.5 | 11 | 2026-08-21 |
 
-Итого: **21** видео, **484** сегментов.
+Итого: **24** видео, **595** сегментов.

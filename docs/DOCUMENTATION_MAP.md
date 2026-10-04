@@ -1,7 +1,7 @@
 # Карта Документации
 
 Status: Active
-Last updated: 2026-10-02
+Last updated: 2026-10-04
 
 Это навигационный слой проекта Experts Panel. Он должен отвечать на вопрос
 "куда смотреть?", а не пересказывать содержимое всех документов.
@@ -23,6 +23,7 @@ Last updated: 2026-10-02
 
 | Задача | Сначала читать | Потом, если нужно |
 | --- | --- | --- |
+| VideoHub: ремонт тройки MiMo и привязки цитат в списках Скаута, 2026-10-04 (`CAWnlOJbSX4`, `xZx5940qoKE`, `0d8pqU8JRrY`) | `docs/quality/2026-10-04-mimo-trio-repair.md` | Исходный self-review: `docs/archive/2026-10-04-mimo-trio-self-review.md`; handoff: `docs/archive/2026-10-03-videohub-trio-onboarding-starter.md`; процедура: `docs/guides/video-hub-operator.md` |
 | Ремонт общего CI: независимые от корпуса Scout-тесты и честный итог, 2026-10-02 | `docs/quality/2026-10-02-ci-repair.md` | `docs/operations.md` (общий CI); `docs/guides/expert-scout.md` (отдельный поисковый стенд) |
 | Yapper: онбординг музыкального клипа `mbEo8tn2BZA`, проверка конвейера и Скаута, 2026-10-02 | `docs/quality/2026-10-02-yapper-music-video-onboarding.md` | `docs/guides/video-hub-operator.md`; статус приёмки и выпуска — в отчёте |
 | Scout: ремонт надёжности, компактные карточки и проверка лишних чтений, 2026-10-02 | `docs/quality/2026-10-02-scout-reliability-fixes.md` | `docs/guides/expert-scout.md`; статус локальных проверок и ограничения исторического baseline — в отчёте |
@@ -51,7 +52,7 @@ Last updated: 2026-10-02
 | Agentic read-only поиск по корпусу (Expert Scout) | `docs/guides/expert-scout.md` | `backend/scripts/expert_scout.py` (experts/videos/search/lesson_search/digest/show), `backend/src/expert_groups.py`, `.opencode/agents/expert-scout.md`, `.opencode/plugins/expert-scout-tools.ts`, `.codex/skills/expert-scout/`, `scripts/expert_scout.sh`, `scripts/install_expert_scout_skill.sh` |
 | Личные уроки владельца для Скаута: публикация, поиск, восстановление | `docs/guides/expert-scout.md` (раздел «Личные уроки владельца») | `scripts/import_owner_lessons.py`, `backend/scripts/owner_lessons.py`; приватная рабочая копия `data/personal_lessons/` |
 | Веб-Скаут: GitHub Pages, вход, API, прогресс и публикация | `docs/guides/scout-web.md` | `scout-web/`, `scripts/scout_web_api.py`, `scripts/scout-web.service` |
-| Замеры качества Скаута (стенды и верификатор) | `docs/guides/expert-scout.md` (разделы «Измерение качества», «Отклонённые и opt-in эксперименты», «Что уже улучшено») | `backend/scripts/search_probe.py`, `backend/scripts/agent_probe.py`, `backend/scripts/verify_citations.py`, фикстуры и baseline: `backend/tests/search_probe_fixtures.py`, `backend/tests/search_probe_baseline.json` |
+| Замеры качества Скаута (стенды и верификатор) | `docs/guides/expert-scout.md` (разделы «Измерение качества», «Когда запускать», «Отклонённые и opt-in эксперименты», «Что уже улучшено») | `backend/scripts/search_probe.py`, `backend/scripts/agent_probe.py`, `backend/scripts/verify_citations.py`, фикстуры и baseline: `backend/tests/search_probe_fixtures.py`, `backend/tests/search_probe_baseline.json` |
 | Правки после аудита VideoHub/Скаута: проверки, ограничения Bunny, ремонт 16 исторических видео, MiMo drift, visual data release и пересмотр тестовых вопросов | `docs/quality/2026-09-30-videohub-scout-fixes.md` | Текущее поведение — в профильных SSOT; сравнение моделей — `backend/scripts/benchmark_scout_models.py`; результаты ремонта — `output/video_review/2026-09-30/summary.json` |
 | Аудит VideoHub, Матрицы и Скаута; сравнение Bunny, Luna max и Sol low | `docs/quality/2026-09-30-videohub-scout-audit.md` | Воспроизведение сравнения: `backend/scripts/benchmark_scout_models.py`; действующее поведение — в профильных SSOT выше |
 | Языки / перевод RU-EN | `docs/architecture/multilingual-support.md` | `backend/src/utils/language_utils.py`, `backend/src/services/translation_service.py` |
@@ -200,7 +201,7 @@ Quality docs - evidence snapshots and guardrails, not current API specs.
 | Панэкс CLI/API/subagent behavior | `docs/guides/panex-usage.md`, `docs/architecture/agent-context-api.md`, repo-local agent files, global Codex agent |
 | Expert Scout behavior / boundaries | `docs/guides/expert-scout.md`, `AGENTS.md`, `.codex/skills/expert-scout/SKILL.md` |
 | Личные уроки Скаута: хранение, импорт, источник цитат | `docs/guides/expert-scout.md`, `AGENTS.md`, `.codex/skills/expert-scout/SKILL.md`; приватное содержимое только в `data/personal_lessons/` |
-| Expert Scout retrieval tuning (пул, свежесть, digest, соседи) и целостность ответов | `docs/guides/expert-scout.md`; замер обязателен: `backend/scripts/search_probe.py` (`--check-baseline`), агентные прогоны — `backend/scripts/agent_probe.py`; правка без замера = не завершена |
+| Expert Scout retrieval tuning (пул, свежесть, digest, соседи) и целостность ответов | `docs/guides/expert-scout.md` («Когда запускать»): сопоставимые поисковые замеры для retrieval, профильные тесты и агентные вопросы для цитирования; исторический baseline — диагностический ориентир |
 | New env var | `.env.example`, `backend/CLAUDE.md`, relevant architecture doc |
 | Expert roster/groups | `docs/architecture/current-expert-roster.md`, `docs/guides/add-expert.md`, frontend config if UI changes |
 | Expert admission doctrine / matrix workflow | `docs/architecture/expert-admission-control.md`; this map only if navigation changes |
