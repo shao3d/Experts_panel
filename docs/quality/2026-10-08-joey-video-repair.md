@@ -1,6 +1,6 @@
 # Проверка и ремонт JOEY `fMU7Ku8ma4A`
 
-Status: Evidence snapshot — production data released; visual drift follow-up pending
+Status: Evidence snapshot — production data released
 Last updated: 2026-10-08
 
 ## Результат
@@ -35,6 +35,6 @@ Last updated: 2026-10-08
 
 ## Выпуск данных
 
-Владелец явно поручил `обнови базу по визуалам` 2026-10-08. Scoped Telegram-синк пяти визуальных экспертов и индексация новых постов прошли. Штатный анализ дрифта через MiMo остановился на `quota exhausted`; индивидуальные повторы остановлены до записи ошибочных вердиктов. Подготовленная staging-БД затем перенесена в production штатным `DB_UPLOAD_ONLY=1 ./scripts/update_production_db.sh`: скрипт проверил SQLite, создал резервную копию, атомарно заменил БД, перезапустил `panel` и подтвердил `/health` в 21:55 UTC. В production доступны исправленный JOEY и новые визуальные посты; дрифт новых комментариев пока остаётся незавершённой отдельной задачей. Владелец поручил её субагенту Sol 6.1 medium. После успешной записи дрифта в staging нужен ещё один data release, чтобы доставить именно результаты дрифта в production. Code release документации выполняется отдельно.
+Владелец явно поручил `обнови базу по визуалам` 2026-10-08. Scoped Telegram-синк пяти визуальных экспертов и индексация новых постов прошли. Штатный анализ дрифта через MiMo остановился на `quota exhausted`; индивидуальные повторы остановлены до записи ошибочных вердиктов. Подготовленная staging-БД затем перенесена в production штатным `DB_UPLOAD_ONLY=1 ./scripts/update_production_db.sh`: скрипт проверил SQLite, создал резервную копию, атомарно заменил БД, перезапустил `panel` и подтвердил `/health` в 21:55 UTC. В production доступны исправленный JOEY и новые визуальные посты. Затем владелец поручил разовый ручной разбор дрифта субагенту Sol 6.1 medium; его проверенные результаты выпущены вторым data release в 22:05 UTC. Итоги и три честно оставленных pending-группы — в [отчёте о дрифте](2026-10-08-visual-drift-repair.md).
 
 Source artifacts: `output/video_ingest/fMU7Ku8ma4A/` и `output/video_review/2026-10-08-joey/repair_manifest.json`. Исторический снимок до ремонта — `docs/archive/2026-10-08-joey-mimo-self-review.md`.

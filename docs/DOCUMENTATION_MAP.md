@@ -23,6 +23,7 @@ Last updated: 2026-10-08
 
 | Задача | Сначала читать | Потом, если нужно |
 | --- | --- | --- |
+| Visual drift 2026-10-08: MiMo quota, разовый ручной разбор Sol и выпуск результатов | `docs/quality/2026-10-08-visual-drift-repair.md` | Текущий автоматический рантайм: `docs/guides/drift-analysis.md` |
 | VideoHub: независимая приёмка и выпуск JOEY `fMU7Ku8ma4A`, 2026-10-08 | `docs/quality/2026-10-08-joey-video-repair.md` | `docs/guides/video-hub-operator.md`; исторический отчёт MiMo: `docs/archive/2026-10-08-joey-mimo-self-review.md` |
 | VideoHub: ремонт тройки MiMo и привязки цитат в списках Скаута, 2026-10-04 (`CAWnlOJbSX4`, `xZx5940qoKE`, `0d8pqU8JRrY`) | `docs/quality/2026-10-04-mimo-trio-repair.md` | Исходный self-review: `docs/archive/2026-10-04-mimo-trio-self-review.md`; handoff: `docs/archive/2026-10-03-videohub-trio-onboarding-starter.md`; процедура: `docs/guides/video-hub-operator.md` |
 | Ремонт общего CI: независимые от корпуса Scout-тесты и честный итог, 2026-10-02 | `docs/quality/2026-10-02-ci-repair.md` | `docs/operations.md` (общий CI); `docs/guides/expert-scout.md` (отдельный поисковый стенд) |
@@ -175,7 +176,8 @@ Generated artifacts лучше регенерировать скриптами, 
 | `docs/quality/panex-portable-runner-dogfood-2026-05-07.md` | Portable runner dogfood snapshot. |
 | `docs/quality/2026-09-30-videohub-scout-fixes.md` | Внедрённые локальные правки, тесты и честные ограничения модельного качества. |
 | `docs/quality/2026-09-30-videohub-scout-audit.md` | Дефекты и приоритеты ремонта VideoHub/Скаута, синтетические проверки и живое сравнение трёх моделей. |
-| `docs/quality/2026-10-08-joey-video-repair.md` | Независимая приёмка JOEY, выпуск данных и проверки Скаута; визуальный дрифт в работе. |
+| `docs/quality/2026-10-08-joey-video-repair.md` | Независимая приёмка JOEY, выпуск данных и проверки Скаута. |
+| `docs/quality/2026-10-08-visual-drift-repair.md` | Разовый ручной разбор visual drift через Sol 6.1 medium после квоты MiMo и повторное продвижение данных. |
 
 Quality docs - evidence snapshots and guardrails, not current API specs.
 
