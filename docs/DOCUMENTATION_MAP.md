@@ -1,7 +1,7 @@
 # Карта Документации
 
 Status: Active
-Last updated: 2026-10-04
+Last updated: 2026-10-08
 
 Это навигационный слой проекта Experts Panel. Он должен отвечать на вопрос
 "куда смотреть?", а не пересказывать содержимое всех документов.
@@ -23,6 +23,7 @@ Last updated: 2026-10-04
 
 | Задача | Сначала читать | Потом, если нужно |
 | --- | --- | --- |
+| VideoHub: независимая приёмка и выпуск JOEY `fMU7Ku8ma4A`, 2026-10-08 | `docs/quality/2026-10-08-joey-video-repair.md` | `docs/guides/video-hub-operator.md`; исторический отчёт MiMo: `docs/archive/2026-10-08-joey-mimo-self-review.md` |
 | VideoHub: ремонт тройки MiMo и привязки цитат в списках Скаута, 2026-10-04 (`CAWnlOJbSX4`, `xZx5940qoKE`, `0d8pqU8JRrY`) | `docs/quality/2026-10-04-mimo-trio-repair.md` | Исходный self-review: `docs/archive/2026-10-04-mimo-trio-self-review.md`; handoff: `docs/archive/2026-10-03-videohub-trio-onboarding-starter.md`; процедура: `docs/guides/video-hub-operator.md` |
 | Ремонт общего CI: независимые от корпуса Scout-тесты и честный итог, 2026-10-02 | `docs/quality/2026-10-02-ci-repair.md` | `docs/operations.md` (общий CI); `docs/guides/expert-scout.md` (отдельный поисковый стенд) |
 | Yapper: онбординг музыкального клипа `mbEo8tn2BZA`, проверка конвейера и Скаута, 2026-10-02 | `docs/quality/2026-10-02-yapper-music-video-onboarding.md` | `docs/guides/video-hub-operator.md`; статус приёмки и выпуска — в отчёте |
@@ -174,6 +175,7 @@ Generated artifacts лучше регенерировать скриптами, 
 | `docs/quality/panex-portable-runner-dogfood-2026-05-07.md` | Portable runner dogfood snapshot. |
 | `docs/quality/2026-09-30-videohub-scout-fixes.md` | Внедрённые локальные правки, тесты и честные ограничения модельного качества. |
 | `docs/quality/2026-09-30-videohub-scout-audit.md` | Дефекты и приоритеты ремонта VideoHub/Скаута, синтетические проверки и живое сравнение трёх моделей. |
+| `docs/quality/2026-10-08-joey-video-repair.md` | Независимая приёмка JOEY, выпуск данных и проверки Скаута; визуальный дрифт в работе. |
 
 Quality docs - evidence snapshots and guardrails, not current API specs.
 
