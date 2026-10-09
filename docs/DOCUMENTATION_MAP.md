@@ -1,7 +1,7 @@
 # Карта Документации
 
 Status: Active
-Last updated: 2026-10-08
+Last updated: 2026-10-09
 
 Это навигационный слой проекта Experts Panel. Он должен отвечать на вопрос
 "куда смотреть?", а не пересказывать содержимое всех документов.
@@ -23,6 +23,7 @@ Last updated: 2026-10-08
 
 | Задача | Сначала читать | Потом, если нужно |
 | --- | --- | --- |
+| VideoHub: ремонт, приёмка и выпуск JOEY Genjutsu `yNMPr6oBozg`, 2026-10-09 | `docs/quality/2026-10-09-joey-genjutsu-repair.md` | `docs/guides/video-hub-operator.md`; пределы подтверждений и visual drift через Codex — в отчёте |
 | Visual drift 2026-10-08: MiMo quota, разовый ручной разбор Sol и выпуск результатов | `docs/quality/2026-10-08-visual-drift-repair.md` | Текущий автоматический рантайм: `docs/guides/drift-analysis.md` |
 | VideoHub: независимая приёмка и выпуск JOEY `fMU7Ku8ma4A`, 2026-10-08 | `docs/quality/2026-10-08-joey-video-repair.md` | `docs/guides/video-hub-operator.md`; исторический отчёт MiMo: `docs/archive/2026-10-08-joey-mimo-self-review.md` |
 | VideoHub: ремонт тройки MiMo и привязки цитат в списках Скаута, 2026-10-04 (`CAWnlOJbSX4`, `xZx5940qoKE`, `0d8pqU8JRrY`) | `docs/quality/2026-10-04-mimo-trio-repair.md` | Исходный self-review: `docs/archive/2026-10-04-mimo-trio-self-review.md`; handoff: `docs/archive/2026-10-03-videohub-trio-onboarding-starter.md`; процедура: `docs/guides/video-hub-operator.md` |
@@ -178,6 +179,7 @@ Generated artifacts лучше регенерировать скриптами, 
 | `docs/quality/2026-09-30-videohub-scout-audit.md` | Дефекты и приоритеты ремонта VideoHub/Скаута, синтетические проверки и живое сравнение трёх моделей. |
 | `docs/quality/2026-10-08-joey-video-repair.md` | Независимая приёмка JOEY, выпуск данных и проверки Скаута. |
 | `docs/quality/2026-10-08-visual-drift-repair.md` | Разовый ручной разбор visual drift через Sol 6.1 medium после квоты MiMo и повторное продвижение данных. |
+| `docs/quality/2026-10-09-joey-genjutsu-repair.md` | Staging-ремонт Genjutsu: отбор полезного, реальные workflow-ячейки, пределы экранных доказательств и приёмка Скаутом. |
 
 Quality docs - evidence snapshots and guardrails, not current API specs.
 

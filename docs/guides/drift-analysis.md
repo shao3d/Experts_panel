@@ -1,11 +1,37 @@
-# Анализ Дрифта (headless OpenCode)
+# Анализ дрифта: Codex и автоматический OpenCode-путь
 
 Status: Active
 Last updated: 2026-10-09
 
 Руководство по анализу «дрейфа тем» в комментариях Telegram-постов.
 
-**Текущий рантайм:** drift выполняется только через headless opencode
+## Режим работы агента Codex
+
+По указанию владельца 2026-10-09 смысловой анализ в агентских задачах выполняют
+ведущий Codex и его субагенты через подписку Codex. **Не вызывать MiMo/OpenCode
+generation в этих задачах**, если владелец отдельно не поручил другой режим.
+Для последнего выпуска использован Sol 6.1 medium; это самостоятельный разбор
+источников, а не автоматическая подстановка другой модели в runtime.
+
+Используй staging-only adapter штатного `DriftSchedulerService`: прочитай пост и
+все комментарии, при необходимости открой исходное медиа, перед записью сверь
+fingerprint источников и дословные цитаты тем. Сохраняй решение через
+`update_group_status` с меткой `drift_checked_sol61_manual` или отдельной честной
+меткой фактического проверяющего. При наличии дрифта embedding создаётся
+существующим сервисом; повторное чтение проверяет JSON, 768 измерений, конечные
+значения и единичную норму. Запросы к embedding-сервису — индексация, а не
+смысловой анализ. Временный adapter не коммитить; после проверки удалить его.
+Результат и оставшиеся ограничения сохранить в отчёте.
+
+Для выпуска уже подготовленной базы использовать upload-only по
+[operations](../operations.md); он не вызывает анализатор. Полный
+`update_production_db.sh` по-прежнему содержит автоматический OpenCode-шаг,
+поэтому не запускать его вслепую в режиме Codex. Изменение постоянного
+автоматического backend в этом поручении не выполнялось.
+
+## Автоматический путь, сохранённый в коде
+
+**Автоматический runtime:** drift выполняется через headless opencode
 (`DRIFT_BACKEND=opencode`) на **MiMo-V2.6-Pro**, провайдер **Xiaomi Token Plan (Singapore)**.
 Точный ID: `xiaomi-token-plan-sgp/mimo-v2.6-pro`. Выбор хранится в
 `backend/src/services/opencode_drift_client.py` (`OPENCODE_MODEL`) и применяется
@@ -36,7 +62,7 @@ attach-вызов возвращал `Unexpected server error`. После пр�
 сессий сервис `opencode-serve.service` перезапущен на установленной версии 1.18.33.
 Ключи и авторизация остаются в OpenCode; в репозитории хранится только ID модели.
 
-## Рантайм-путь (рекомендуется)
+## Запуск автоматического пути (только при явном выборе этого режима)
 
 ```bash
 backend/.venv/bin/python backend/run_drift_service.py
@@ -102,18 +128,19 @@ Telegram и вложение, затем сопоставь с полным на
 
 ### 5. Запись в базу (SQL)
 
-**Важно:** при ручной записи используй метку `muse-manual` (не `gemini-*`).
+**Важно:** SQL-примеры ниже предназначены оператору. Агент Codex использует
+service-based adapter выше. Метка должна отражать фактический способ проверки.
 
 Пример (дрейф есть):
 
 ```bash
-sqlite3 backend/data/experts.db "UPDATE comment_group_drift SET has_drift = 1, drift_topics = '<JSON_СТРОКОЙ>', analyzed_by = 'muse-manual', analyzed_at = datetime('now') WHERE post_id = <ID>;"
+sqlite3 backend/data/experts.db "UPDATE comment_group_drift SET has_drift = 1, drift_topics = '<JSON_СТРОКОЙ>', analyzed_by = 'manual-source-review', analyzed_at = datetime('now') WHERE post_id = <ID>;"
 ```
 
 Пример (дрейфа нет):
 
 ```bash
-sqlite3 backend/data/experts.db "UPDATE comment_group_drift SET has_drift = 0, drift_topics = NULL, analyzed_by = 'muse-manual', analyzed_at = datetime('now') WHERE post_id = <ID>;"
+sqlite3 backend/data/experts.db "UPDATE comment_group_drift SET has_drift = 0, drift_topics = NULL, analyzed_by = 'manual-source-review', analyzed_at = datetime('now') WHERE post_id = <ID>;"
 ```
 
 ---

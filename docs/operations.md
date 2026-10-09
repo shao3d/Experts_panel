@@ -1,7 +1,7 @@
 # Experts Panel operations
 
 Status: Active
-Last updated: 2026-10-02
+Last updated: 2026-10-09
 
 Актуальная операторская схема для ИИ-агента. Все команды разработки и
 maintenance выполняются из VM checkout `/home/ubuntu/apps/experts-panel/dev`.
@@ -41,6 +41,13 @@ Production checkout `app` вручную не редактируется.
 
 ## Data release: `обнови базу`
 
+Для агентской работы текущий режим анализа задаёт
+[drift guide](guides/drift-analysis.md#режим-работы-агента-codex). Полный скрипт
+ниже включает вызов OpenCode; в режиме Codex подготовку и смысловую проверку
+выполняй под контролем агента, а завершённую staging-БД публикуй upload-only.
+Этот режим не повторяет sync, migrations, embeddings и анализ: они должны быть
+завершены и проверены до продвижения базы.
+
 Запускай только после явной команды владельца и только на `oracle-work`:
 
 ```bash
@@ -58,6 +65,14 @@ cd /home/ubuntu/apps/experts-panel/dev
 release. Перед стартом проверь наличие `dev/backend/.env`, Python 3.11 venv,
 staging-БД, свободное место и отсутствие второго DB update процесса. Не выводи
 содержимое `.env`.
+
+Перед каждым data release сверь весь staging-каталог VideoHub через read-only
+`backend/.venv/bin/python backend/scripts/expert_scout.py videos --json` с
+предыдущим выпущенным составом. Проверь приёмку новых или отремонтированных
+роликов и соответствие их финальных файлов receipt. Даже scoped visual и
+upload-only переносят всю staging-БД: незавершённый соседний онбординг также
+попадёт в production. `searchable` подтверждает индексы, но не заменяет
+содержательную приёмку.
 
 Безопасная read-only проверка готовности:
 
