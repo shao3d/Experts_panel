@@ -43,6 +43,7 @@
 | YouTube ID | Название | Сегментов | Опубликовано |
 |---|---|---:|---|
 | `yNMPr6oBozg` | Stop Stealing Movie Scenes with AI. Do This Instead. (Claude skills for better prompting) | 14 | 2026-09-25 |
+| `5dWgZDka3Ww` | Prompt Like a Director, Not a Prompt Engineer (updated Claude Skills for better prompting) | 22 | 2026-08-18 |
 | `fMU7Ku8ma4A` | the AI video explainer you were looking for (claude skills for better prompting in description) | 44 | 2026-08-02 |
 
 ## Max Novak
@@ -75,4 +76,4 @@
 | `0d8pqU8JRrY` | How to Make 3D Animations With GPT 6 Astra (No Blender Needed) | 38 | 2026-09-19 |
 | `2b3Z4rW5VJc` | STOP Wasting Credits & Master Seedance 2.5 | 11 | 2026-08-21 |
 
-Итого: **26** видео, **653** сегментов.
+Итого: **27** видео, **675** сегментов.

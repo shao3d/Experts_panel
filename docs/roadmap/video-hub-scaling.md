@@ -3,8 +3,12 @@
 **Created:** 2026-03-28
 **Status:** Active Roadmap (query-time side; P2/P3/P5/P4/N2 closed — see the
 priority table and "Review fixes")
-**Last updated:** 2026-10-04
-**Current State (2026-10-04):** **24 видео / 595 сегментов** после ремонта
+**Last updated:** 2026-10-09
+**Current State (2026-10-09):** актуальный состав — в
+[генерируемом индексе](../video-hub-index.md); последняя приёмка и статус
+выпуска JOEY Director — в [отчёте](../quality/2026-10-09-joey-director-repair.md).
+
+История выпуска 2026-10-04: **24 видео / 595 сегментов** после ремонта
 тройки MiMo; scoped visual data release завершён, production healthy.
 Приёмка, границы проверки и выпуск — в [отчёте](../quality/2026-10-04-mimo-trio-repair.md).
 

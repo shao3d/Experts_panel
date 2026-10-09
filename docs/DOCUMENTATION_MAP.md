@@ -23,6 +23,7 @@ Last updated: 2026-10-09
 
 | Задача | Сначала читать | Потом, если нужно |
 | --- | --- | --- |
+| VideoHub: ремонт, приёмка и выпуск JOEY Director `5dWgZDka3Ww`, 2026-10-09 | `docs/quality/2026-10-09-joey-director-repair.md` | `docs/guides/video-hub-operator.md`; visual sync и drift через Codex — в отчёте |
 | VideoHub: ремонт, приёмка и выпуск JOEY Genjutsu `yNMPr6oBozg`, 2026-10-09 | `docs/quality/2026-10-09-joey-genjutsu-repair.md` | `docs/guides/video-hub-operator.md`; пределы подтверждений и visual drift через Codex — в отчёте |
 | Visual drift 2026-10-08: MiMo quota, разовый ручной разбор Sol и выпуск результатов | `docs/quality/2026-10-08-visual-drift-repair.md` | Текущий автоматический рантайм: `docs/guides/drift-analysis.md` |
 | VideoHub: независимая приёмка и выпуск JOEY `fMU7Ku8ma4A`, 2026-10-08 | `docs/quality/2026-10-08-joey-video-repair.md` | `docs/guides/video-hub-operator.md`; исторический отчёт MiMo: `docs/archive/2026-10-08-joey-mimo-self-review.md` |
