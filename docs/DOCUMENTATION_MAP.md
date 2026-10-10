@@ -1,7 +1,7 @@
 # Карта Документации
 
 Status: Active
-Last updated: 2026-10-09
+Last updated: 2026-10-10
 
 Это навигационный слой проекта Experts Panel. Он должен отвечать на вопрос
 "куда смотреть?", а не пересказывать содержимое всех документов.
@@ -23,6 +23,7 @@ Last updated: 2026-10-09
 
 | Задача | Сначала читать | Потом, если нужно |
 | --- | --- | --- |
+| VideoHub: ремонт и приёмка JOEY Claude skills `4TXaAnittHs`, 2026-10-10 | `docs/quality/2026-10-10-joey-skills-review.md` | `docs/guides/video-hub-operator.md`; исправленные экранные инструкции, canonical receipt и проверки Скаута |
 | VideoHub: ремонт, приёмка и выпуск JOEY Director `5dWgZDka3Ww`, 2026-10-09 | `docs/quality/2026-10-09-joey-director-repair.md` | `docs/guides/video-hub-operator.md`; visual sync и drift через Codex — в отчёте |
 | VideoHub: ремонт, приёмка и выпуск JOEY Genjutsu `yNMPr6oBozg`, 2026-10-09 | `docs/quality/2026-10-09-joey-genjutsu-repair.md` | `docs/guides/video-hub-operator.md`; пределы подтверждений и visual drift через Codex — в отчёте |
 | Visual drift 2026-10-08: MiMo quota, разовый ручной разбор Sol и выпуск результатов | `docs/quality/2026-10-08-visual-drift-repair.md` | Текущий автоматический рантайм: `docs/guides/drift-analysis.md` |

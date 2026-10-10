@@ -2,7 +2,7 @@
 
 **Role:** Expert Digital Twin Creator
 **Status:** Active Workflow (scripted extraction + agent annotation and review)
-**Last updated:** 2026-10-09
+**Last updated:** 2026-10-10
 **Owner:** Project owner
 
 ---
@@ -225,6 +225,13 @@ backend/.venv/bin/python backend/scripts/embed_posts.py --continuous --receipt /
 только итогового файла потеряется при пересборке. Финальный import/receipt
 должен соответствовать именно принятому файлу; повторный combine не должен
 менять его содержимое.
+
+Финальный импорт выполняй из постоянного `output/video_ingest/<id>/segments.json`
+(или из точного `segments_path` admission-записи), затем подтверждай индексацию
+по receipt рядом с этим файлом. Копирование JSON и receipt из `/tmp` само по
+себе не переносит подтверждение: Матрица проверяет и SHA256, и точный путь
+источника. Одинаковые байты при разных путях не подтверждают постоянный
+артефакт. Receipt вручную не переписывать — получить его штатным импортом.
 
 Для scoped ingest сохраняй `video_metadata.scope` и `scope_range_s` (границы на исходной шкале YouTube). `timestamp_seconds` — навигационный keyframe; `start_seconds`/`end_seconds` добавляй только при проверенных границах. Импорт эти поля сохраняет, но не выдумывает отсутствующее покрытие.
 
