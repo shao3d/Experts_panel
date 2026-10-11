@@ -2,7 +2,7 @@
 
 **Role:** Expert Digital Twin Creator
 **Status:** Active Workflow (scripted extraction + agent annotation and review)
-**Last updated:** 2026-10-10
+**Last updated:** 2026-10-11
 **Owner:** Project owner
 
 ---
@@ -234,6 +234,14 @@ backend/.venv/bin/python backend/scripts/embed_posts.py --continuous --receipt /
 артефакт. Receipt вручную не переписывать — получить его штатным импортом.
 
 Для scoped ingest сохраняй `video_metadata.scope` и `scope_range_s` (границы на исходной шкале YouTube). `timestamp_seconds` — навигационный keyframe; `start_seconds`/`end_seconds` добавляй только при проверенных границах. Импорт эти поля сохраняет, но не выдумывает отсутствующее покрытие.
+
+`scope` объявляй для **каждого** ingested-ролика, а не только для scoped: полный приём — `"full"` (`scope_range_s: null`), частичный — `"ingest_scoped"` с `scope_range_s`. Поле живёт в метаданных каждого чанка, поэтому правку вноси в chunk JSON и проходи `--combine`; без объявления корпус отдаёт `coverage = unknown`, и Скаут не знает заявленного объёма приёма. После импорта проверяй вывод:
+
+```bash
+backend/.venv/bin/python backend/scripts/expert_scout.py videos --json
+```
+
+У каждого ingested-видео должно быть непустое `scope` и `coverage = declared_scope`. Пример ремонта отсутствующего `scope` — `docs/quality/2026-10-11-higgsfield-onboarding-and-scope-repair.md`.
 
 Phase 1: до импорта сопоставь реальные сегменты с ячейками таксономии: `matrix_cells: ["domain/subdomain/intent"]` у каждого подтверждающего сегмента. Это лёгкая разметка, не отдельный тяжёлый паспорт. В `admission_log.json` сохраняй выбранные cells и `segments_path`, если источник лежит вне стандартного ingest-каталога.
 

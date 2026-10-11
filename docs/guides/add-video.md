@@ -1,7 +1,7 @@
 # Adding New Videos (The "Video Hub" Pipeline)
 
 **Status:** Active
-**Last updated:** 2026-10-01
+**Last updated:** 2026-10-11
 **Scope:** VideoHub onboarding; query-time behavior is documented in `docs/architecture/video-hub-service.md`.
 **Деплой: Oracle VM (Fly.io-процесс удалён 24.08.2026)**
 
@@ -104,6 +104,12 @@ are copied to `backend/data/video_frames/<video_hash>/`. `published_at` drives
 (the Stage-2 prompt requires it); the importer normalizes any accepted shape to
 canonical `YYYY-MM-DD HH:MM:SS`. Missing or unparsable `published_at` aborts
 the import; import time is never a substitute for the video publication date.
+
+Объявляй `video_metadata.scope` для каждого ролика: `"full"` при полном приёме
+(`scope_range_s: null`) или `"ingest_scoped"` с `scope_range_s` на шкале YouTube.
+Без него корпус отдаёт `coverage = unknown`. Проверка после импорта —
+`expert_scout.py videos --json`; подробности в
+[operator guide](video-hub-operator.md) (шаг 0.4).
 
 ## 🛠️ What the script does
 

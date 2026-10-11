@@ -1,7 +1,7 @@
 # Карта Документации
 
 Status: Active
-Last updated: 2026-10-10
+Last updated: 2026-10-11
 
 Это навигационный слой проекта Experts Panel. Он должен отвечать на вопрос
 "куда смотреть?", а не пересказывать содержимое всех документов.
@@ -23,6 +23,7 @@ Last updated: 2026-10-10
 
 | Задача | Сначала читать | Потом, если нужно |
 | --- | --- | --- |
+| VideoHub: приёмка JOEY higgsfield `sVib0X-PvsY` и ремонт `scope`-метаданных корпуса (4 ролика), 2026-10-11 | `docs/quality/2026-10-11-higgsfield-onboarding-and-scope-repair.md` | `docs/guides/video-hub-operator.md` (шаг 0.4: объявление `scope` и проверка `videos`), `docs/architecture/video-hub-service.md` (`coverage` semantics), `docs/video-hub-index.md` |
 | VideoHub: ремонт и приёмка JOEY Claude skills `4TXaAnittHs`, 2026-10-10 | `docs/quality/2026-10-10-joey-skills-review.md` | `docs/guides/video-hub-operator.md`; исправленные экранные инструкции, canonical receipt и проверки Скаута |
 | VideoHub: ремонт, приёмка и выпуск JOEY Director `5dWgZDka3Ww`, 2026-10-09 | `docs/quality/2026-10-09-joey-director-repair.md` | `docs/guides/video-hub-operator.md`; visual sync и drift через Codex — в отчёте |
 | VideoHub: ремонт, приёмка и выпуск JOEY Genjutsu `yNMPr6oBozg`, 2026-10-09 | `docs/quality/2026-10-09-joey-genjutsu-repair.md` | `docs/guides/video-hub-operator.md`; пределы подтверждений и visual drift через Codex — в отчёте |
@@ -182,6 +183,7 @@ Generated artifacts лучше регенерировать скриптами, 
 | `docs/quality/2026-10-08-joey-video-repair.md` | Независимая приёмка JOEY, выпуск данных и проверки Скаута. |
 | `docs/quality/2026-10-08-visual-drift-repair.md` | Разовый ручной разбор visual drift через Sol 6.1 medium после квоты MiMo и повторное продвижение данных. |
 | `docs/quality/2026-10-09-joey-genjutsu-repair.md` | Staging-ремонт Genjutsu: отбор полезного, реальные workflow-ячейки, пределы экранных доказательств и приёмка Скаутом. |
+| `docs/quality/2026-10-11-higgsfield-onboarding-and-scope-repair.md` | Приёмка JOEY higgsfield-ролика, ремонт объявленного `scope` для четырёх видео корпуса и статус staging/production. |
 
 Quality docs - evidence snapshots and guardrails, not current API specs.
 
@@ -215,6 +217,7 @@ Quality docs - evidence snapshots and guardrails, not current API specs.
 | Expert admission doctrine / matrix workflow | `docs/architecture/expert-admission-control.md`; this map only if navigation changes |
 | Add/remove expert scripts | `docs/guides/add-expert.md` |
 | Video Hub behavior | `docs/architecture/video-hub-service.md`, `docs/guides/video-hub-operator.md` |
+| VideoHub metadata contract: `scope` / `scope_range_s` / `coverage` semantics | `docs/architecture/video-hub-service.md`, `docs/guides/video-hub-operator.md` (0.4), `docs/guides/add-video.md` |
 | VideoHub admission gate / video matrix | `docs/architecture/expert-admission-control.md` (§16), `docs/guides/video-hub-operator.md` (0.0b, 0.4); матрицу пересобирать `backend/scripts/build_video_matrix.py`, не править руками |
 | Reddit behavior | `docs/architecture/reddit-service.md` |
 | Frontend layout/state / UI shell | `frontend/CLAUDE.md`, `docs/design-system/refero-say-briefly/UX_INVARIANTS.md` |
