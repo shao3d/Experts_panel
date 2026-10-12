@@ -54,6 +54,9 @@ elif [[ "$SCOUT_ENGINE" == glm ]]; then
 else
   ENGINE_COMMAND=("$OPENCODE_BIN" run --agent expert-scout --variant max --format json)
 fi
+if [[ "${SCOUT_WEB_PROGRESS:-0}" == 1 ]]; then
+  ENGINE_COMMAND=("$PYTHON_BIN" "$REPO_DIR/scripts/scout_web_progress.py" "${ENGINE_COMMAND[@]}" --)
+fi
 timeout "$TIMEOUT_SECONDS" "${ENGINE_COMMAND[@]}" "$@" \
   > "$RUN_DIR/events.jsonl" || ENGINE_EXIT=$?
 DURATION=$(( $(date +%s) - START_EPOCH ))

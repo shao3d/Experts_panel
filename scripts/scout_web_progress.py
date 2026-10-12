@@ -1,42 +1,117 @@
 #!/usr/bin/env python3
-"""Relay Codex output unchanged and emit safe, human-readable progress."""
+"""Relay Scout engine JSONL unchanged and emit safe, human-readable progress."""
 import json
 import os
+import signal
 import subprocess
 import sys
 
 
+def _tool_progress(args, completed=False):
+    command = args.get("command")
+    if completed:
+        return {
+            "search": "Просматриваю найденные материалы…",
+            "show": "Сопоставляю источники…",
+            "digest": "Отбираю подходящие фрагменты…",
+            "videos": "Проверяю каталог видео…",
+            "lesson_search": "Просматриваю найденные уроки…",
+            "experts": "Выбираю область поиска…",
+        }.get(command)
+    if command == "search":
+        return "Ищу в ВидеоХабе…" if args.get("experts") == "video_hub" else "Ищу в Telegram…"
+    return {
+        "show": "Читаю первоисточники…",
+        "digest": "Просматриваю материалы…",
+        "videos": "Сверяю каталог ВидеоХаба…",
+        "lesson_search": "Ищу в опубликованных уроках…",
+        "experts": "Определяю область поиска…",
+    }.get(command)
+
+
 def progress(event):
+    if not isinstance(event, dict):
+        return None
+    event_type = event.get("type")
+    if event_type in {"step_start", "step.started"}:
+        return "Скаут разбирает вопрос…"
+
+    # OpenCode (the web Scout's GLM engine) reports MCP calls as tool_use.
+    if event_type == "tool_use":
+        part = event.get("part", {})
+        if part.get("tool") != "scout":
+            return None
+        state = part.get("state", {})
+        args = state.get("input") or {}
+        if state.get("status") in {"running", "pending"}:
+            return _tool_progress(args)
+        if state.get("status") == "completed":
+            return _tool_progress(args, completed=True)
+        return None
+    if event_type in {"item.started", "item.updated", "item.completed"}:
+        item = event.get("item", {})
+        if item.get("type") != "mcp_tool_call":
+            return "Собираю ответ…" if item.get("type") == "agent_message" and event_type == "item.completed" else None
+        if event_type == "item.started":
+            return _tool_progress(item.get("arguments") or {})
+        if event_type == "item.completed":
+            return _tool_progress(item.get("arguments") or {}, completed=True)
+        return None
+    if event_type == "step_finish" and event.get("part", {}).get("reason") == "stop":
+        return "Проверяю ответ…"
+    if event_type == "error":
+        return "Скаут завершает поиск с ошибкой…"
+
+    # Keep compatibility with Codex JSON events used by the optional Sol engine.
     item = event.get("item", {})
     if item.get("type") == "agent_message":
         return "Собираю ответ…"
     if item.get("type") != "mcp_tool_call":
         return None
-    args = item.get("arguments", {})
-    command = args.get("command")
-    if command == "search":
-        if event.get("type") == "item.completed":
-            return "Просматриваю найденные материалы…"
-        return "Ищу в ВидеоХабе…" if args.get("experts") == "video_hub" else "Ищу в Telegram…"
-    if command == "show" and event.get("type") == "item.completed":
-        return "Сопоставляю источники…"
-    return {"show": "Читаю источники…", "digest": "Просматриваю материалы…",
-            "videos": "Проверяю каталог видео…", "experts": "Проверяю область поиска…"}.get(command)
+    return _tool_progress(
+        item.get("arguments", {}),
+        event_type == "item.completed" or item.get("status") == "completed",
+    )
 
 
 def main():
-    child = subprocess.Popen([os.environ["SCOUT_WEB_CODEX_BIN"], *sys.argv[1:]],
-                             stdout=subprocess.PIPE, text=True)
-    for line in child.stdout:
-        sys.stdout.write(line)
-        sys.stdout.flush()
-        try:
-            message = progress(json.loads(line))
-        except (ValueError, TypeError):
-            message = None
-        if message:
-            print("SCOUT_PROGRESS " + json.dumps(message, ensure_ascii=False), file=sys.stderr, flush=True)
-    return child.wait()
+    arguments = sys.argv[1:]
+    try:
+        separator = arguments.index("--")
+    except ValueError:
+        print("usage: scout_web_progress.py <engine> [args...] -- <question>", file=sys.stderr)
+        return 2
+    command, question = arguments[:separator], arguments[separator + 1:]
+    if not command or not question:
+        print("usage: scout_web_progress.py <engine> [args...] -- <question>", file=sys.stderr)
+        return 2
+
+    print("SCOUT_PROGRESS " + json.dumps("Скаут подключился. Разбираю вопрос…", ensure_ascii=False),
+          file=sys.stderr, flush=True)
+    child = subprocess.Popen([*command, *question], stdout=subprocess.PIPE, text=True, bufsize=1)
+
+    def forward_signal(signum, _frame):
+        if child.poll() is None:
+            child.send_signal(signum)
+        raise SystemExit(128 + signum)
+
+    signal.signal(signal.SIGTERM, forward_signal)
+    signal.signal(signal.SIGINT, forward_signal)
+    try:
+        for line in child.stdout:
+            sys.stdout.write(line)
+            sys.stdout.flush()
+            try:
+                message = progress(json.loads(line))
+            except (ValueError, TypeError):
+                message = None
+            if message:
+                print("SCOUT_PROGRESS " + json.dumps(message, ensure_ascii=False), file=sys.stderr, flush=True)
+        return child.wait()
+    finally:
+        if child.poll() is None:
+            child.terminate()
+            child.wait()
 
 
 if __name__ == "__main__":

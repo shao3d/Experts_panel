@@ -75,12 +75,70 @@ async def test_old_saved_answers_get_links_without_rerunning_model(monkeypatch, 
     assert calls == ['Совет — cgevent:42']
 
 
-def test_progress_does_not_expose_content_or_internal_reasoning():
-    assert progress({'item': {'type': 'reasoning', 'text': 'private'}}) is None
-    assert progress({'item': {'type': 'mcp_tool_call', 'arguments': {
+def test_progress_handles_live_and_finished_opencode_tool_events_without_leaking_queries():
+    assert progress({'type': 'reasoning', 'text': 'private'}) is None
+    assert progress({'type': 'tool_use', 'part': {'tool': 'scout', 'state': {
+        'status': 'running', 'input': {'command': 'search', 'experts': 'video_hub', 'query': 'private question'}}}}) == 'Ищу в ВидеоХабе…'
+    assert progress({'type': 'tool_use', 'part': {'tool': 'scout', 'state': {
+        'status': 'completed', 'input': {'command': 'search', 'group': 'visual', 'query': 'private question'}}}}) == 'Просматриваю найденные материалы…'
+    assert progress({'type': 'tool_use', 'part': {'tool': 'scout', 'state': {
+        'status': 'running', 'input': {'command': 'show', 'source_keys': ['private:123']}}}}) == 'Читаю первоисточники…'
+    assert progress({'type': 'tool_use', 'part': {'tool': 'scout', 'state': {
+        'status': 'running', 'input': {'command': 'lesson_search', 'query': 'private question'}}}}) == 'Ищу в опубликованных уроках…'
+    assert progress({'type': 'item.started', 'item': {'type': 'mcp_tool_call', 'arguments': {
         'command': 'search', 'experts': 'video_hub', 'query': 'private question'}}}) == 'Ищу в ВидеоХабе…'
-    assert progress({'item': {'type': 'mcp_tool_call', 'arguments': {
-        'command': 'search', 'group': 'visual'}}}) == 'Ищу в Telegram…'
+    assert progress({'type': 'item.completed', 'item': {'type': 'mcp_tool_call', 'arguments': {
+        'command': 'show', 'source_keys': ['private:123']}}}) == 'Сопоставляю источники…'
+    assert progress({'type': 'step_finish', 'part': {'reason': 'stop'}}) == 'Проверяю ответ…'
+    assert progress({'type': 'tool_use', 'part': {'tool': 'other', 'state': {'input': {'query': 'secret'}}}}) is None
+
+
+def test_detect_language_uses_majority_of_letters():
+    assert api.detect_language('How do I keep a character consistent across scenes?') == 'English'
+    assert api.detect_language('Как сохранить персонажа между сценами?') == 'Russian'
+    assert api.detect_language('How сохранить character consistency?') == 'English'
+    assert api.detect_language('Какие camera moves сохранить?') == 'Russian'
+    assert api.detect_language('123?!') == 'English'
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(("question", "expected"), [
+    ("How to keep a character consistent?", "English"),
+    ("Как сохранить персонажа?", "Russian"),
+])
+async def test_job_runner_prompts_in_detected_language_and_streams_progress(monkeypatch, tmp_path, question, expected):
+    jobs = api.Jobs(tmp_path)
+    original_spawn = asyncio.create_subprocess_exec
+    commands = []
+
+    async def spawn(*args, **kwargs):
+        commands.append((args, kwargs))
+        script = "import json,sys; print('Answer in the requested language'); print('SCOUT_PROGRESS ' + json.dumps('Searching…', ensure_ascii=False), file=sys.stderr)"
+        return await original_spawn(sys.executable, '-c', script,
+                                    stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
+                                    start_new_session=True)
+
+    async def empty_sources(_answer):
+        return {}
+
+    monkeypatch.setattr(asyncio, 'create_subprocess_exec', spawn)
+    monkeypatch.setattr(api, 'ROOT', tmp_path)
+    monkeypatch.setattr(api, 'resolve_sources', empty_sources)
+    job = {'id': 'c'*32, 'question': question, 'status': 'running', 'started_at': 0,
+           'answer': '', 'message': 'Starting', 'elapsed': 0}
+    jobs.active, jobs.current = job['id'], job
+    await jobs.run(job)
+
+    sent_question = commands[0][0][-1]
+    assert f"Answer entirely in {expected}" in sent_question
+    assert question in sent_question
+    assert job['question'] == question
+    assert job['status'] == 'completed'
+    assert job['answer'] == 'Answer in the requested language\n'
+    saved = jobs.get(job['id'])
+    assert saved['question'] == question
+    assert saved['status'] == 'completed'
+    assert 'SCOUT_WEB_PASSWORD_HASH' not in commands[0][1]['env']
 
 
 def test_auth_cors_and_private_results(monkeypatch, tmp_path):
@@ -147,15 +205,24 @@ async def test_completed_partial_and_failed_runs_are_distinct(monkeypatch, tmp_p
     commands = []
     async def spawn(*args, **kwargs):
         commands.append((args, kwargs))
-        source = "import sys; print('Answer'); print('SCOUT_PROGRESS \\\"Читаю источники…\\\"', file=sys.stderr); sys.exit(" + str(code) + ")"
+        progress_json = json.dumps('Читаю первоисточники…', ensure_ascii=False)
+        source = "import sys; print('Answer'); print('SCOUT_PROGRESS ' + " + repr(progress_json) + ", file=sys.stderr); sys.exit(" + str(code) + ")"
         return await original(sys.executable, '-c', source,
                               stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
                               start_new_session=True)
     monkeypatch.setattr(asyncio, 'create_subprocess_exec', spawn)
-    job = await jobs.start('$(not a shell command)')
-    await jobs.task
+    monkeypatch.setattr(api, 'ROOT', tmp_path)
+    monkeypatch.setattr(api, 'resolve_sources', lambda answer: asyncio.sleep(0, result={}))
+    monkeypatch.setattr(api, 'detect_language', lambda question: 'English')
+    job = {'id': 'b'*32, 'question': 'How to keep the character consistent?', 'status': 'running',
+           'started_at': 0, 'answer': '', 'message': 'Starting', 'elapsed': 0}
+    jobs.active = job['id']
+    jobs.current = job
+    await jobs.run(job)
     result = jobs.get(job['id'])
     assert result['status'] == status
     assert 'Answer' in result['answer']
-    assert commands[0][0][-1] == '$(not a shell command)'
+    assert result['message'] == ('Готово' if status == 'completed' else 'Ответ не прошёл полную проверку' if status == 'partial' else 'Поиск не завершился. Можно повторить вопрос.')
+    assert 'Answer entirely in English' in commands[0][0][-1]
+    assert 'How to keep the character consistent?' in commands[0][0][-1]
     assert 'SCOUT_WEB_PASSWORD_HASH' not in commands[0][1]['env']

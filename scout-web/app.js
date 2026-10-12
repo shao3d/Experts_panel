@@ -7,7 +7,7 @@ let answer = '';
 let stoppedPolling = false;
 const terminal = new Set(['completed', 'partial', 'error', 'stopped']);
 
-function foldSources(root) {
+function foldSources(root, language = 'Russian') {
   const key = /^[a-z][a-z0-9_]*:\d+$/i;
   // Plain source keys occur alongside Markdown links as well as inside code.
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
@@ -59,7 +59,8 @@ function foldSources(root) {
       siblings.push(next);
     }
     const text = siblings.map(item => item.textContent).join('');
-    const match = text.match(/^[\s,;·—–-]+(?:[^,;\n().!?]{1,100},\s*)?(?:\d{2}\.\d{2}\.\d{4}|\d{4}-\d{2}-\d{2})(?:\s*[,·]\s*\d{1,2}:\d{2}(?::\d{2})?(?:\s*[–—-]\s*\d{1,2}:\d{2}(?::\d{2})?)?)?/);
+    const metadata = /^[\s,;·—–-]+(?:(?:[^,;\n().!?]{1,100},\s*)?(?:\d{2}\.\d{2}\.\d{4}|\d{4}-\d{2}-\d{2})(?:\s*[,·]\s*\d{1,2}:\d{2}(?::\d{2})?(?:\s*[–—-]\s*\d{1,2}:\d{2}(?::\d{2})?)?)?|t\s*[≈~]\s*\d+(?:[.,]\d+)?\s*s)(?:\s*[,;·]\s*t\s*[≈~]\s*\d+(?:[.,]\d+)?\s*s)*/i;
+    const match = text.match(metadata);
     if (!match) return [];
     return citationFragment(siblings, 0, match[0].length);
   }
@@ -70,7 +71,7 @@ function foldSources(root) {
       siblings.unshift(before);
     }
     const text = siblings.map(item => item.textContent).join('');
-    const match = text.match(/(?:Источник:\s*[^;\n]{1,300}|[—–]\s*[^,;\n.!?—–]{1,100}),\s*(?:\d{2}\.\d{2}\.\d{4}|\d{4}-\d{2}-\d{2}),\s*$/i);
+    const match = text.match(/(?:Источник:\s*[^;\n]{1,300}|[—–]\s*[^,;\n.!?—–]{1,100}),\s*(?:\d{2}\.\d{2}\.\d{4}|\d{4}-\d{2}-\d{2}),\s*$|t\s*[≈~]\s*\d+(?:[.,]\d+)?\s*s\s*[,;·]?\s*$/i);
     return match ? citationFragment(siblings, match.index, match[0].length) : [];
   }
   let number = 0;
@@ -112,22 +113,42 @@ function foldSources(root) {
       }
       const wrapper = document.createElement('span'); wrapper.className = 'sources';
       const toggle = document.createElement('button');
-      toggle.type = 'button'; toggle.className = 'source-toggle'; toggle.textContent = 'источники';
+      toggle.type = 'button'; toggle.className = 'source-toggle'; toggle.textContent = language === 'English' ? 'sources' : 'источники';
       toggle.setAttribute('aria-expanded', 'false');
       const content = document.createElement('span'); content.hidden = true;
       content.id = `sources-${++number}`;
       toggle.setAttribute('aria-controls', content.id);
-      toggle.setAttribute('aria-label', 'Показать источники');
+      toggle.setAttribute('aria-label', language === 'English' ? 'Show sources' : 'Показать источники');
       node.before(wrapper);
       content.append(': ', ...nodes);
+      const contentWalker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT);
+      const contentTexts = [];
+      while (contentWalker.nextNode()) contentTexts.push(contentWalker.currentNode);
+      contentTexts.forEach(text => {
+        text.textContent = text.textContent.replace(/\s*[,;·]?\s*t\s*[≈~]\s*\d+(?:[.,]\d+)?\s*s\b/gi, '');
+      });
       const label = document.createElement('span'); label.className = 'source-label';
       label.append('(', toggle);
       wrapper.append(label, content, ')');
+      // Keep model-estimated t≈... durations only out of the visible citation,
+      // including the common case where they sit just outside its parentheses.
+      for (const adjacent of [wrapper.previousSibling, wrapper.nextSibling]) {
+        if (adjacent?.nodeType === Node.TEXT_NODE) {
+          adjacent.textContent = adjacent.textContent.replace(/\s*[,;·)]?\s*t\s*[≈~]\s*\d+(?:[.,]\d+)?\s*s\b/gi, '');
+        }
+      }
+      for (const adjacent of [wrapper.previousSibling, wrapper.nextSibling]) {
+        if (adjacent?.nodeType === Node.TEXT_NODE) {
+          adjacent.textContent = adjacent.textContent.replace(/(^|\s)[.,;·)]?\s*t\s*[≈~]\s*\d+(?:[.,]\d+)?\s*s\b/gi, '$1');
+        }
+      }
       toggle.addEventListener('click', () => {
         content.hidden = !content.hidden;
         wrapper.classList.toggle('is-open', !content.hidden);
         toggle.setAttribute('aria-expanded', String(!content.hidden));
-        toggle.setAttribute('aria-label', content.hidden ? 'Показать источники' : 'Свернуть источники');
+        toggle.setAttribute('aria-label', content.hidden
+          ? (language === 'English' ? 'Show sources' : 'Показать источники')
+          : (language === 'English' ? 'Hide sources' : 'Свернуть источники'));
       });
       node = wrapper.nextSibling;
     }
@@ -232,6 +253,15 @@ function linkSources(root, sources = {}) {
   });
 }
 
+function detectLanguage(text) {
+  let cyrillic = 0, latin = 0;
+  for (const char of text) {
+    if (char >= '\u0400' && char <= '\u04FF') cyrillic++;
+    else if (/[a-z]/i.test(char)) latin++;
+  }
+  return cyrillic > latin ? 'Russian' : 'English';
+}
+
 async function request(path, options = {}) {
   const response = await fetch(API + path, {...options, cache: 'no-store', headers: {
     'Content-Type': 'application/json', 'X-Scout-Password': password, ...options.headers
@@ -264,8 +294,21 @@ function display(data) {
   if (answer) {
     $('answer').innerHTML = DOMPurify.sanitize(marked.parse(answer), {FORBID_TAGS: ['img', 'form', 'input', 'style']});
     $('answer').querySelectorAll('a').forEach(a => { a.target = '_blank'; a.rel = 'noopener noreferrer'; });
-    foldSources($('answer'));
+    foldSources($('answer'), detectLanguage(data.question));
     linkSources($('answer'), data.sources);
+    // Remove model-estimated timing artifacts only next to folded source citations.
+    const textNodes = document.createTreeWalker($('answer'), NodeFilter.SHOW_TEXT);
+    const citationText = [];
+    while (textNodes.nextNode()) {
+      if (textNodes.currentNode.parentElement.closest('.sources')) continue;
+      citationText.push(textNodes.currentNode);
+    }
+    citationText.forEach(node => {
+      const adjacentToSources = node.previousSibling?.matches?.('.sources') || node.nextSibling?.matches?.('.sources');
+      if (adjacentToSources) {
+        node.textContent = node.textContent.replace(/\s*[,;·]?\s*t\s*[≈~]\s*\d+(?:[.,]\d+)?\s*s\b/gi, '');
+      }
+    });
     $('answer').querySelectorAll('table').forEach(table => {
       const wrapper = document.createElement('div'); wrapper.className = 'table-wrap';
       table.before(wrapper); wrapper.append(table);

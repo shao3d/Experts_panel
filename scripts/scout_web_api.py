@@ -6,7 +6,6 @@ import json
 import os
 from pathlib import Path
 import secrets
-import shutil
 import signal
 import time
 import re
@@ -90,6 +89,13 @@ class Question(BaseModel):
     question: str = Field(min_length=1, max_length=6000)
 
 
+def detect_language(question):
+    """Simple script-based detection for the Scout's Russian/English UI."""
+    cyrillic = sum("\u0400" <= char <= "\u04ff" for char in question)
+    latin = sum("a" <= char.lower() <= "z" for char in question)
+    return "Russian" if cyrillic > latin else "English"
+
+
 def authorize(x_scout_password: str = Header(default="")):
     expected = os.environ.get("SCOUT_WEB_PASSWORD_HASH", "")
     actual = hashlib.sha256(x_scout_password.encode()).hexdigest()
@@ -140,7 +146,7 @@ class Jobs:
             for path in paths[:-19]:
                 path.unlink()
             job = dict(id=secrets.token_hex(16), question=question, status="running",
-                       message="Подключаю Скаута…", started_at=time.time(), answer="", elapsed=0)
+                       message="Запускаю поиск…", started_at=time.time(), answer="", elapsed=0)
             self.active = job["id"]
             self.current = job
             self.save(job)
@@ -148,9 +154,13 @@ class Jobs:
             return job
 
     async def run(self, job):
-        env = dict(os.environ, CODEX_BIN=str(ROOT / "scripts/scout_web_progress.py"),
-                   SCOUT_WEB_CODEX_BIN=shutil.which("codex") or "/usr/bin/codex",
-                   EXPERT_SCOUT_ENGINE="glm", SCOUT_WEB_PROGRESS="1")
+        env = dict(os.environ, EXPERT_SCOUT_ENGINE="glm", SCOUT_WEB_PROGRESS="1")
+        # Give the agent an explicit language derived from the user's question.
+        # The original question remains untouched in the saved/displayed job.
+        language = detect_language(job["question"])
+        question = (f"Answer entirely in {language}, the language of the user's question. "
+                    "Preserve source titles and exact quotations.\n\n"
+                    f"User question:\n{job['question']}")
         # The password verifier is not an input to the agent or its tools.
         env.pop("SCOUT_WEB_PASSWORD_HASH", None)
         reader = None
@@ -159,7 +169,7 @@ class Jobs:
                 if job["status"] == "stopped":
                     return
                 self.process = await asyncio.create_subprocess_exec(
-                    "bash", str(ROOT / "scripts/expert_scout.sh"), job["question"],
+                    "bash", str(ROOT / "scripts/expert_scout.sh"), question,
                     cwd=ROOT, env=env, stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.PIPE, start_new_session=True,
                     limit=1024 * 1024)

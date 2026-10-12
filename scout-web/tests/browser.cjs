@@ -32,6 +32,35 @@ const assert = require('node:assert/strict');
       await route.fulfill({json:result,headers:{'access-control-allow-origin':'*'}});
     });
     await page.goto(process.env.SCOUT_PAGE || 'http://127.0.0.1:8767');
+    const languageLabels = await page.evaluate(() => {
+      const cases = [
+        ['How to keep characters consistent?', 'English', 'sources'],
+        ['Как сохранить единый образ персонажа?', 'Russian', 'источники'],
+        ['How сохранить character consistency?', 'English', 'sources'],
+        ['Какие camera moves сохранить?', 'Russian', 'источники']
+      ];
+      return cases.map(([question, language, label]) => {
+        const root = document.createElement('div');
+        root.innerHTML = DOMPurify.sanitize(marked.parse('Advice ([Creator — Video](https://www.youtube.com/watch?v=clip)), t≈295s. More prose.'));
+        foldSources(root, language);
+        linkSources(root, {'video_hub:123': {url: 'https://www.youtube.com/watch?v=clip&t=295s', label: 'Creator · Video · 4:55'}});
+        const visible = root.querySelector('.source-toggle').textContent;
+        const before = root.textContent;
+        const toggle = root.querySelector('.source-toggle');
+        toggle.click();
+        return {question, label, visible, before, expanded: root.textContent, aria: toggle.getAttribute('aria-label')};
+      });
+    });
+    assert.deepEqual(languageLabels.map(item => item.visible), ['sources', 'источники', 'sources', 'источники']);
+    assert.deepEqual(languageLabels.map(item => item.aria), ['Hide sources', 'Свернуть источники', 'Hide sources', 'Свернуть источники']);
+    for (const item of languageLabels) {
+      assert.ok(!item.expanded.includes('t≈'), JSON.stringify(item));
+      assert.ok(!item.expanded.includes('expert:123'), JSON.stringify(item));
+      assert.ok(!item.before.includes('t≈295s'), JSON.stringify(item));
+      assert.ok(item.expanded.includes('More prose.'), JSON.stringify(item));
+    }
+    const englishHeading = await page.locator('header h1').textContent();
+    assert.equal(englishHeading, 'Scout');
     const duplicateCases = await page.evaluate(() => {
       const url = 'https://www.youtube.com/watch?v=qwGIwxZFc2I&t=263s';
       const sources = {'video_hub:789': {url, label: 'Dan Kieft · AI workflow · 4:23'}};
