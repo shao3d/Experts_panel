@@ -159,7 +159,8 @@ class Jobs:
         # The original question remains untouched in the saved/displayed job.
         language = detect_language(job["question"])
         question = (f"Answer entirely in {language}, the language of the user's question. "
-                    "Preserve source titles and exact quotations.\n\n"
+                    "Quote only text copied verbatim from an opened source; "
+                    "paraphrase everything else without quotation marks.\n\n"
                     f"User question:\n{job['question']}")
         # The password verifier is not an input to the agent or its tools.
         env.pop("SCOUT_WEB_PASSWORD_HASH", None)
