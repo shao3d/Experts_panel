@@ -97,14 +97,54 @@ function foldSources(root) {
       if (prefix.length) { nodes.unshift(...prefix); node = prefix[0]; }
       const before = node.previousSibling;
       const after = end.nextSibling;
-      // Reuse existing parentheses rather than adding a second pair.
+      // Reuse existing parentheses rather than adding a second pair. The model
+      // may also wrap the citation in parentheses with free-form metadata
+      // inside; fold the whole parenthetical into the sources instead of
+      // leaving its tail visible next to the toggle.
       const opening = before?.nodeType === Node.TEXT_NODE &&
         before.textContent.match(/\(\s*(?:(?:Источники?|Ключи?|Sources?|source_keys?)\s*:\s*)?$/i);
-      if (opening && after?.nodeType === Node.TEXT_NODE && /^\s*\)/.test(after.textContent)) {
+      let trailing = null, folded = false;
+      if (opening) {
+        const introText = before.textContent.slice(opening.index + 1);
+        before.textContent = before.textContent.slice(0, opening.index);
+        const intro = introText ? document.createTextNode(introText) : null;
+        if (intro) node.before(intro);
+        const group = [];
+        let depth = 1, closed = false;
+        for (let next = intro || node; next; next = next.nextSibling) {
+          const text = next.textContent;
+          let close = -1;
+          for (let i = 0; i < text.length; i++) {
+            if (text[i] === '(') depth++;
+            else if (text[i] === ')' && --depth === 0) { close = i; break; }
+          }
+          if (close < 0) { group.push(next); continue; }
+          if (next.nodeType === Node.TEXT_NODE) {
+            const tail = text.slice(close + 1);
+            next.textContent = text.slice(0, close);
+            if (next.textContent) group.push(next);
+            if (tail) trailing = document.createTextNode(tail);
+          } else if (close === text.length - 1) {
+            group.push(next);
+          }
+          closed = true;
+          break;
+        }
+        if (closed && group.length) {
+          nodes.length = 0;
+          group.forEach(item => { if (item.textContent) nodes.push(item); });
+          node = nodes[0];
+          folded = true;
+        } else {
+          if (intro) intro.remove();
+          before.textContent = before.textContent + '(' + introText;
+        }
+      }
+      if (!folded && opening && after?.nodeType === Node.TEXT_NODE && /^\s*\)/.test(after.textContent)) {
         before.textContent = before.textContent.slice(0, opening.index) + opening[0].replace(/^\(\s*/, '');
         after.textContent = after.textContent.replace(/^\s*\)/, '');
       }
-      if (before?.nodeType === Node.TEXT_NODE) {
+      if (!folded && before?.nodeType === Node.TEXT_NODE) {
         const label = before.textContent.match(/(^|[\s(])(?:Источники?|Ключи?|Sources?|source_keys?)\s*:\s*$/i);
         if (label) {
           const suffix = before.splitText(label.index + label[1].length);
@@ -130,6 +170,7 @@ function foldSources(root) {
       const label = document.createElement('span'); label.className = 'source-label';
       label.append('(', toggle);
       wrapper.append(label, content, ')');
+      if (trailing) wrapper.after(trailing);
       // Keep model-estimated t≈... durations only out of the visible citation,
       // including the common case where they sit just outside its parentheses.
       for (const adjacent of [wrapper.previousSibling, wrapper.nextSibling]) {
