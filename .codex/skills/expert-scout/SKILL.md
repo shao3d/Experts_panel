@@ -44,7 +44,7 @@ On the VM, from the repository root (or use the absolute path):
 /home/ubuntu/apps/experts-panel/dev/scripts/expert_scout.sh "<bounded question>"
 ```
 
-The wrapper defaults to headless GPT-6.1-Sol with low reasoning and Fast tier requested. It uses only the existing read-only scout tool through its MCP adapter. OpenCode/Bunny is available solely as an explicit comparison override; there is no automatic fallback. Runtime SSOT: `docs/guides/expert-scout.md`.
+The wrapper runs the expert-scout agent headless via OpenCode on Command Code GLM-5.3 Flash (`commandcode/z-ai/glm-5.3-flash`). Engine overrides for explicit comparison: `EXPERT_SCOUT_ENGINE=sol` (Codex GPT-6.1-Sol low/Fast) and `EXPERT_SCOUT_ENGINE=bunny`; there is no automatic fallback. Runtime SSOT: `docs/guides/expert-scout.md`.
 
 A run takes roughly 15 seconds to a few minutes. If the harness asks for a
 command timeout, allow up to 900 seconds; raise it with `EXPERT_SCOUT_TIMEOUT`

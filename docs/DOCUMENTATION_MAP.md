@@ -23,6 +23,7 @@ Last updated: 2026-10-11
 
 | Задача | Сначала читать | Потом, если нужно |
 | --- | --- | --- |
+| Скаут: переключение дефолт-движка на GLM-5.3 Flash, чек-лист ответов и Sol-инцидент, 2026-10-12 | `docs/quality/2026-10-12-scout-glm-switch.md` | `docs/guides/expert-scout.md` (SSOT рантайма), `docs/guides/scout-web.md` (веб-контур); стенд: `backend/scripts/benchmark_scout_models.py` |
 | VideoHub: приёмка JOEY higgsfield `sVib0X-PvsY` и ремонт `scope`-метаданных корпуса (4 ролика), 2026-10-11 | `docs/quality/2026-10-11-higgsfield-onboarding-and-scope-repair.md` | `docs/guides/video-hub-operator.md` (шаг 0.4: объявление `scope` и проверка `videos`), `docs/architecture/video-hub-service.md` (`coverage` semantics), `docs/video-hub-index.md` |
 | VideoHub: ремонт и приёмка JOEY Claude skills `4TXaAnittHs`, 2026-10-10 | `docs/quality/2026-10-10-joey-skills-review.md` | `docs/guides/video-hub-operator.md`; исправленные экранные инструкции, canonical receipt и проверки Скаута |
 | VideoHub: ремонт, приёмка и выпуск JOEY Director `5dWgZDka3Ww`, 2026-10-09 | `docs/quality/2026-10-09-joey-director-repair.md` | `docs/guides/video-hub-operator.md`; visual sync и drift через Codex — в отчёте |
@@ -184,6 +185,7 @@ Generated artifacts лучше регенерировать скриптами, 
 | `docs/quality/2026-10-08-visual-drift-repair.md` | Разовый ручной разбор visual drift через Sol 6.1 medium после квоты MiMo и повторное продвижение данных. |
 | `docs/quality/2026-10-09-joey-genjutsu-repair.md` | Staging-ремонт Genjutsu: отбор полезного, реальные workflow-ячейки, пределы экранных доказательств и приёмка Скаутом. |
 | `docs/quality/2026-10-11-higgsfield-onboarding-and-scope-repair.md` | Приёмка JOEY higgsfield-ролика, ремонт объявленного `scope` для четырёх видео корпуса и статус staging/production. |
+| `docs/quality/2026-10-12-scout-glm-switch.md` | Переключение дефолт-движка Скаута на GLM-5.3 Flash, механический чек-лист ответов, результаты стенда и Sol-инцидент. |
 
 Quality docs - evidence snapshots and guardrails, not current API specs.
 

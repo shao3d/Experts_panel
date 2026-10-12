@@ -6,7 +6,10 @@ set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OPENCODE_BIN="${OPENCODE_BIN:-$HOME/.opencode/bin/opencode}"
-SCOUT_ENGINE="${EXPERT_SCOUT_ENGINE:-sol}"
+# Default engine: glm (Command Code GLM-5.3 Flash via headless OpenCode).
+# sol (Codex GPT-6.1-Sol) and bunny stay available as explicit overrides.
+SCOUT_ENGINE="${EXPERT_SCOUT_ENGINE:-glm}"
+SCOUT_MODEL="${EXPERT_SCOUT_MODEL:-commandcode/z-ai/glm-5.3-flash}"
 CODEX_BIN="${CODEX_BIN:-$(command -v codex || true)}"
 PYTHON_BIN="$REPO_DIR/backend/.venv/bin/python"
 TIMEOUT_SECONDS="${EXPERT_SCOUT_TIMEOUT:-900}"
@@ -17,15 +20,15 @@ if [[ $# -lt 1 || -z "${1// }" ]]; then
   exit 2
 fi
 
-if [[ "$SCOUT_ENGINE" != sol && "$SCOUT_ENGINE" != bunny ]]; then
-  echo "Error: EXPERT_SCOUT_ENGINE must be sol or bunny" >&2
+if [[ "$SCOUT_ENGINE" != sol && "$SCOUT_ENGINE" != bunny && "$SCOUT_ENGINE" != glm ]]; then
+  echo "Error: EXPERT_SCOUT_ENGINE must be sol, bunny or glm" >&2
   exit 2
 fi
 if [[ "$SCOUT_ENGINE" == sol && ! -x "$CODEX_BIN" ]]; then
   echo "Error: codex not found" >&2
   exit 1
 fi
-if [[ "$SCOUT_ENGINE" == bunny && ! -x "$OPENCODE_BIN" ]]; then
+if [[ "$SCOUT_ENGINE" != sol && ! -x "$OPENCODE_BIN" ]]; then
   echo "Error: opencode not found at $OPENCODE_BIN" >&2
   exit 1
 fi
@@ -46,6 +49,8 @@ ENGINE_EXIT=0
 if [[ "$SCOUT_ENGINE" == sol ]]; then
   export CODEX_BIN
   ENGINE_COMMAND=("$PYTHON_BIN" "$REPO_DIR/scripts/expert_scout_codex.py")
+elif [[ "$SCOUT_ENGINE" == glm ]]; then
+  ENGINE_COMMAND=("$OPENCODE_BIN" run --agent expert-scout --model "$SCOUT_MODEL" --format json)
 else
   ENGINE_COMMAND=("$OPENCODE_BIN" run --agent expert-scout --variant max --format json)
 fi
@@ -80,6 +85,8 @@ INTEGRITY_SUMMARY="$(tail -n 1 "$RUN_DIR/integrity.log" 2>/dev/null || true)"
   printf 'engine: %s\n' "$SCOUT_ENGINE"
   if [[ "$SCOUT_ENGINE" == sol ]]; then
     printf 'model: gpt-6.1-sol\nreasoning: low\nservice_tier_requested: fast\n'
+  elif [[ "$SCOUT_ENGINE" == glm ]]; then
+    printf 'model: %s\n' "$SCOUT_MODEL"
   fi
   printf 'tool_calls: %s\n' "$TOOL_CALLS"
   printf 'integrity_exit: %s\n' "$INTEGRITY_EXIT"

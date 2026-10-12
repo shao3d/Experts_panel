@@ -140,6 +140,28 @@ def test_mimo_uses_drift_connection_but_scout_agent(monkeypatch):
     assert result['run_completed'] is True
 
 
+def test_glm_engine_runs_commandcode_model_through_sanctioned_wrapper(monkeypatch):
+    commands = []
+    environments = []
+
+    def run_process(command, env, timeout):
+        commands.append(command)
+        environments.append(env)
+        return subprocess.CompletedProcess(command, 0, 'Answer text', '')
+
+    monkeypatch.setattr(bench, 'run_process', run_process)
+    result = bench.run('glm', 'test', 30, question='Test question')
+    command = commands[0]
+    assert command[0] == 'bash'
+    assert command[1].endswith('scripts/expert_scout.sh')
+    assert command[-1] == 'Test question'
+    assert environments[0]['EXPERT_SCOUT_ENGINE'] == 'glm'
+    assert environments[0]['SCOUT_EVAL_ENGINE_BIN'].endswith('.opencode/bin/opencode')
+    assert environments[0]['OPENCODE_BIN'].endswith('opencode-proxy')
+    assert result['engine'] == 'glm'
+    assert result['answer'] == 'Answer text'
+
+
 def test_codex_finds_bun_in_nonlogin_ssh_environment(monkeypatch, tmp_path):
     from src.utils import scout_codex
     bun = tmp_path / '.bun/bin/bun'

@@ -98,7 +98,7 @@ scripts/install_expert_scout_skill.sh --with-shim  # + Mac-мостик
 Mac: ~/.local/bin/expert-scout "вопрос"
   -> SSH (ubuntu@82.70.251.73)
   -> VM: scripts/expert_scout.sh
-  -> headless Codex: gpt-6.1-sol / low / fast
+  -> OpenCode headless: GLM-5.3 Flash (Command Code)
   -> scripts/expert_scout_mcp.ts (тот же инструмент)
   -> plugin tool `scout` (argv-массив, без shell)
   -> backend/scripts/expert_scout.py   (read-only: experts / videos / search / lesson_search / digest / show)
@@ -108,9 +108,10 @@ Mac: ~/.local/bin/expert-scout "вопрос"
   -> backend/scripts/verify_citations.py (целостность: ключи/цитаты/повторы)
 ```
 
-- По умолчанию wrapper запускает **GPT-6.1-Sol, reasoning low, Fast** через `scripts/expert_scout_codex.py`. Общая конфигурация runtime и модельных замеров — `backend/src/utils/scout_codex.py`: `service_tier="fast"`, `features.fast_mode=true`, строгая проверка конфигурации. Настройки действуют только на этот запуск; глобальный конфиг Codex не меняется. Fast запрашивается явно; фактически обслуженный tier не выводится CLI в используемый поток, поэтому это не независимое подтверждение SLA или скорости сервера. Официальное описание: [Codex Fast mode](https://learn.chatgpt.com/docs/agent-configuration/speed).
+- По умолчанию wrapper запускает **GLM-5.3 Flash (Command Code)** через headless OpenCode: агент `.opencode/agents/expert-scout.md`, модель `commandcode/z-ai/glm-5.3-flash` (ID переопределяется `EXPERT_SCOUT_MODEL`). Профиль `sol` — явная опция сравнения: Codex GPT-6.1-Sol, reasoning low, Fast через `scripts/expert_scout_codex.py`. Общая конфигурация Sol-профиля — `backend/src/utils/scout_codex.py`: `service_tier="fast"`, `features.fast_mode=true`, строгая проверка конфигурации. Настройки действуют только на этот запуск; глобальный конфиг Codex не меняется. Fast запрашивается явно; фактически обслуженный tier не выводится CLI в используемый поток, поэтому это не независимое подтверждение SLA или скорости сервера. Официальное описание: [Codex Fast mode](https://learn.chatgpt.com/docs/agent-configuration/speed).
 - Для SSH-запуска Bun разрешается через PATH, затем через исполняемый `~/.bun/bin/bun`. Если оба варианта недоступны, запуск прекращается с понятной ошибкой до обращения к модели. Это устраняет зависимость от PATH интерактивного shell. Mac-мостик передаёт таймаут 900 секунд по умолчанию.
-- Общий промпт остаётся в теле `.opencode/agents/expert-scout.md`. Его frontmatter с Bunny используется только для явного OpenCode-сравнения: `EXPERT_SCOUT_ENGINE=bunny ./scripts/expert_scout.sh "<вопрос>"`. Автоматического отката на Bunny нет. Runtime-default Sol задан в wrapper; при смене модели обновлять этот SSOT и обзор.
+- Общий промпт остаётся в теле `.opencode/agents/expert-scout.md`. Его frontmatter с Bunny используется только для явного OpenCode-сравнения: `EXPERT_SCOUT_ENGINE=bunny ./scripts/expert_scout.sh "<вопрос>"`. Автоматического отката на Bunny нет. Runtime-default GLM-5.3 Flash задан в wrapper; при смене модели обновлять этот SSOT и обзор.
+- Профиль `glm` запускает тот же агент через OpenCode на модели Command Code `commandcode/z-ai/glm-5.3-flash` (ID переопределяется `EXPERT_SCOUT_MODEL`): `EXPERT_SCOUT_ENGINE=glm ./scripts/expert_scout.sh "<вопрос>"`. Это профиль сравнения; default wrapper не меняется, автоматического отката нет.
 - У Codex отключены shell, файлы изображений, веб, приложения, другие плагины и подагенты; единственный инструмент — read-only `scout` через MCP-адаптер существующего `.opencode/plugins/expert-scout-tools.ts`. Adapter повторно использует схему и исполнение плагина, который запускает helper argv-массивом без shell. Общий runtime не загружает пользовательские/проектные инструкции, способные добавить другие инструменты.
 - Хелпер — `backend/scripts/expert_scout.py`: гибрид FTS5 + vector
   (soft-freshness + RRF, как в `HybridRetrievalService`), точное раскрытие
@@ -210,7 +211,7 @@ HTTP timeout 15 секунд и максимум две попытки. Это �
 
 Видео возвращают исходного автора, название, дату, deep-link и `timestamp_kind=keyframe`. Keyframe — точка навигации, а не начало/конец смыслового интервала. При отсутствии явно сохранённых границ `coverage=unknown`: расстояние между таймкодами не доказывает пропуск. `editorial_context_bridge` — редакторская связка, не подтверждение покрытия. Основной текст `show` отделён от TITLE/SUMMARY; экранные заметки остаются в блоке `VISUAL:`.
 
-Парное сравнение моделей: `benchmark_scout_models.py --engine runtime|bunny|luna|sol --case <case>`. Codex headless использует Luna/max или Sol/low через MCP-адаптер существующего инструмента; новые права и отдельный retrieval не вводятся. Все модели проходят одинаковую проверку чтений/цитат по живым событиям. Действующая модель — Sol low/fast; результаты аудита и проверок см. в карте документации.
+Парное сравнение моделей: `benchmark_scout_models.py --engine runtime|bunny|glm|luna|sol --case <case>`. Codex headless использует Luna/max или Sol/low через MCP-адаптер существующего инструмента; новые права и отдельный retrieval не вводятся. Все модели проходят одинаковую проверку чтений/цитат по живым событиям. Действующая модель — GLM-5.3 Flash (движок glm); результаты аудита и проверок см. в карте документации.
 
 ## Измерение качества (стенды)
 
@@ -320,10 +321,13 @@ HTTP timeout 15 секунд и максимум две попытки. Это �
   backend/.venv/bin/python backend/scripts/agent_probe.py --compare /tmp/before.json /tmp/after.json
   ```
 
-  Для одинакового экзамена разным моделям поддержан `--engine runtime|sol|luna|bunny|mimo`
+  Для одинакового экзамена разным моделям поддержан `--engine runtime|sol|luna|bunny|glm|mimo`
   через существующий `benchmark_scout_models.py`. Default `runtime` — текущая
-  Sol low/Fast; `sol` — прямой профиль Sol low, `luna` — Luna max, `bunny` —
-  существующий профиль OpenCode. `mimo` берёт бинарник, attach URL и ID модели
+  GLM-5.3 Flash через wrapper; `sol` — прямой профиль Sol low, `luna` — Luna
+  max, `bunny` — существующий профиль OpenCode. `glm` — тот же OpenCode-контур
+  на Command Code `commandcode/z-ai/glm-5.3-flash` (`EXPERT_SCOUT_MODEL`
+  переопределяет ID).
+  `mimo` берёт бинарник, attach URL и ID модели
   из drift-клиента (см. [анализ дрифта](drift-analysis.md)), но запускает
   `--agent expert-scout` в dev-каталоге с его read-only инструментом.
   Профиль стенда не переключает рабочую модель Скаута. В отчёте фиксируется engine. Остальные модели

@@ -150,7 +150,7 @@ class Jobs:
     async def run(self, job):
         env = dict(os.environ, CODEX_BIN=str(ROOT / "scripts/scout_web_progress.py"),
                    SCOUT_WEB_CODEX_BIN=shutil.which("codex") or "/usr/bin/codex",
-                   EXPERT_SCOUT_ENGINE="sol", SCOUT_WEB_PROGRESS="1")
+                   EXPERT_SCOUT_ENGINE="glm", SCOUT_WEB_PROGRESS="1")
         # The password verifier is not an input to the agent or its tools.
         env.pop("SCOUT_WEB_PASSWORD_HASH", None)
         reader = None

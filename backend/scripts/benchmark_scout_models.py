@@ -2,7 +2,7 @@
 """Paired headless Scout evaluation without reading run logs or the database.
 
 Luna and Sol use Codex exec and the MCP adapter of the existing Scout plugin.
-Runtime Sol/low/fast and Space Bunny use the sanctioned wrapper; a subprocess proxy streams events
+Runtime (wrapper default: GLM-5.3 Flash), Space Bunny and GLM-5.3 Flash use the sanctioned wrapper; a subprocess proxy streams events
 to this evaluator in memory while preserving the wrapper's normal output.
 The evaluator checks completed source reads and exact quotes, and emits the
 answers for human assessment. Scores do not establish semantic entailment.
@@ -115,14 +115,17 @@ def run(engine: str, case: str, timeout: int, *, question: str | None = None) ->
         else:
             proxy = Path(work) / "opencode-proxy"
             proxy.write_text(PROXY); proxy.chmod(0o700)
-            if engine == "bunny":
-                env["EXPERT_SCOUT_ENGINE"] = "bunny"
+            if engine in ("bunny", "glm"):
+                env["EXPERT_SCOUT_ENGINE"] = engine
                 env["SCOUT_EVAL_ENGINE_BIN"] = str(Path.home() / ".opencode/bin/opencode")
                 env["OPENCODE_BIN"] = str(proxy)
-            else:
+            elif engine == "sol":
                 env["EXPERT_SCOUT_ENGINE"] = "sol"
                 env["SCOUT_EVAL_ENGINE_BIN"] = shutil.which("codex")
                 env["CODEX_BIN"] = str(proxy)
+            else:  # runtime: exercise the wrapper default engine (OpenCode)
+                env["SCOUT_EVAL_ENGINE_BIN"] = str(Path.home() / ".opencode/bin/opencode")
+                env["OPENCODE_BIN"] = str(proxy)
             env["EXPERT_SCOUT_TIMEOUT"] = str(timeout)
             command = ["bash", str(ROOT / "scripts/expert_scout.sh"), question]
         proc = run_process(command, env, timeout + 90)
@@ -159,7 +162,7 @@ def run(engine: str, case: str, timeout: int, *, question: str | None = None) ->
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--engine", choices=["luna", "sol", "bunny", "runtime", "mimo"], required=True)
+    parser.add_argument("--engine", choices=["luna", "sol", "bunny", "runtime", "mimo", "glm"], required=True)
     parser.add_argument("--case", choices=QUESTIONS, required=True)
     parser.add_argument("--timeout", type=int, default=900)
     args = parser.parse_args()

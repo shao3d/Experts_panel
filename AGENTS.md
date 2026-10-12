@@ -81,7 +81,7 @@ expert-scout "<вопрос>"
 меняется. SSOT области и запуска — `docs/guides/expert-scout.md`.
 
 Под капотом: Mac-shim (`~/.local/bin/expert-scout`) → SSH на VM →
-`scripts/expert_scout.sh` → headless Codex → MCP-адаптер существующего `scout` → read-only хелпер. Текущая модель и режимы — в `docs/guides/expert-scout.md`.
+`scripts/expert_scout.sh` → headless OpenCode (GLM-5.3 Flash, Command Code) → plugin tool `scout` → read-only хелпер. Профиль `sol` (Codex/MCP-адаптер) — только явное сравнение. Текущая модель и режимы — в `docs/guides/expert-scout.md`.
 У агента нет shell (bash запрещён полностью): единственный инструмент —
 read-only `scout` из плагина `.opencode/plugins/expert-scout-tools.ts`,
 который запускает хелпер argv-массивом без shell, поэтому инъекции команд
