@@ -72,7 +72,7 @@ Defined in `.env`, loaded in `config.py`.
 - `MODEL_ANALYSIS`: `google/gemini-3.1-flash-lite`
 - `MODEL_MEDIUM_SCORING`: `google/gemini-3.1-flash-lite`
 - `MODEL_COMMENT_GROUPS`: `google/gemini-3.1-flash-lite`
-- `MODEL_DRIFT_ANALYSIS`: `google/gemini-3-flash-preview` (legacy; no longer used for drift — drift runs through `OPENCODE_DRIFT_MODEL`)
+- `MODEL_DRIFT_ANALYSIS`: `google/gemini-3-flash-preview` (legacy; no longer used for drift — drift runs through the hardcoded `OPENCODE_MODEL` in `src/services/opencode_drift_client.py`)
 - `MODEL_SCOUT`: `google/gemini-3.1-flash-lite` (AI Scout / FTS5)
 - `MODEL_META_SYNTHESIS`: `google/gemini-3-flash-preview` (Cross-expert unified analysis)
 - `MODEL_EMBEDDING`: `google/gemini-embedding-001` (Hybrid Retrieval embeddings)
@@ -130,7 +130,7 @@ Defined in `.env`, loaded in `config.py`.
 - `OPENCODE_SYNTH_HEADSTART_S`: 20 (`auto` mode: free model runs alone this long, then Gemini joins the race; first complete answer wins)
 - `OPENCODE_SYNTH_CONCURRENCY`: 2 (serve is shared with drift workers)
 - `DRIFT_BACKEND`: `opencode` (only allowed value) - drift analysis runs via headless opencode; Gemini/OpenRouter drift generation is disabled, and an unreachable serve leaves groups `pending` instead of falling back
-- `OPENCODE_DRIFT_MODEL`: `opencode-go/muse-spark-1.3-contributor` - drift model on the OpenCode Go subscription
+- `OPENCODE_DRIFT_MODEL`: deprecated and not read — drift model is hardcoded as `OPENCODE_MODEL = commandcode/z-ai/glm-5.3-flash` in `src/services/opencode_drift_client.py` (versioned selection; stale env must not restore Muse/MiMo; SSOT: `docs/guides/drift-analysis.md`)
 - `OPENCODE_DRIFT_BATCH_SIZE`: 12 - groups per batched opencode drift call
 - `DRIFT_CONCURRENCY`: 3 - parallel opencode batch workers (serve budget shared with Reddit synthesis)
 - Manual A/B check: `app/backend/manual/manual_reddit_opencode_ab.py`

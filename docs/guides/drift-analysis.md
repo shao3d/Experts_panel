@@ -1,7 +1,7 @@
 # Анализ дрифта: Codex и автоматический OpenCode-путь
 
 Status: Active
-Last updated: 2026-10-09
+Last updated: 2026-10-12
 
 Руководство по анализу «дрейфа тем» в комментариях Telegram-постов.
 
@@ -32,13 +32,19 @@ fingerprint источников и дословные цитаты тем. Со
 ## Автоматический путь, сохранённый в коде
 
 **Автоматический runtime:** drift выполняется через headless opencode
-(`DRIFT_BACKEND=opencode`) на **MiMo-V2.6-Pro**, провайдер **Xiaomi Token Plan (Singapore)**.
-Точный ID: `xiaomi-token-plan-sgp/mimo-v2.6-pro`. Выбор хранится в
+(`DRIFT_BACKEND=opencode`) на **GLM-5.3 Flash**, провайдер **Commandcode**.
+Точный ID: `commandcode/z-ai/glm-5.3-flash`. Выбор хранится в
 `backend/src/services/opencode_drift_client.py` (`OPENCODE_MODEL`) и применяется
 к пакетному и одиночному анализу. Старый `OPENCODE_DRIFT_MODEL` из окружения
-больше не переопределяет выбор: это предотвращает возврат на Muse после релиза. Генерация дрифта через
+больше не переопределяет выбор: это предотвращает возврат на Muse или MiMo после
+релиза. Генерация дрифта через
 Gemini/Vertex/OpenRouter **отключена**: если opencode serve недоступен, группы
 остаются `pending`, а не уходят в Gemini.
+
+История переключений: до 30.09.2026 — Muse (`opencode-go/muse-spark-1.3-contributor`),
+30.09.2026–12.10.2026 — MiMo-V2.6-Pro (`xiaomi-token-plan-sgp/mimo-v2.6-pro`),
+с 12.10.2026 — GLM-5.3 Flash. Живой смоук-тест и первый scoped-релиз
+visual-группы на GLM-5.3 Flash прошли 2026-10-12 (23/23 групп без ошибок).
 
 Разовая ручная проверка по явному поручению владельца 2026-10-08 через Sol 6.1
 medium описана в [отчёте](../quality/2026-10-08-visual-drift-repair.md). Она не
