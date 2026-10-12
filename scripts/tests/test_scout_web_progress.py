@@ -20,8 +20,8 @@ def test_opencode_search_progress_hides_private_query_and_changes_on_completion(
             "command": "search", "experts": "video_hub", "query": "private question"}}},
     }
 
-    assert progress_module.progress(started) == "Ищу в ВидеоХабе…"
-    assert progress_module.progress(completed) == "Просматриваю найденные материалы…"
+    assert progress_module.progress(started) == "Searching VideoHub…"
+    assert progress_module.progress(completed) == "Looking through found materials…"
     assert "private question" not in progress_module.progress(started)
 
 
@@ -30,22 +30,22 @@ def test_opencode_reports_real_stages_for_all_sources():
         return {"type": "tool_use", "part": {"tool": "scout", "state": {
             "status": status, "input": {"command": command, **arguments}}}}
 
-    assert progress_module.progress(event("search", experts="video_hub")) == "Ищу в ВидеоХабе…"
-    assert progress_module.progress(event("digest", group="visual")) == "Просматриваю материалы…"
-    assert progress_module.progress(event("show", source_keys=["secret:1"])) == "Читаю первоисточники…"
-    assert progress_module.progress(event("lesson_search", query="private")) == "Ищу в опубликованных уроках…"
-    assert progress_module.progress(event("experts")) == "Определяю область поиска…"
-    assert progress_module.progress(event("videos")) == "Сверяю каталог ВидеоХаба…"
-    assert progress_module.progress(event("show", status="completed")) == "Сопоставляю источники…"
+    assert progress_module.progress(event("search", experts="video_hub")) == "Searching VideoHub…"
+    assert progress_module.progress(event("digest", group="visual")) == "Looking through materials…"
+    assert progress_module.progress(event("show", source_keys=["secret:1"])) == "Reading primary sources…"
+    assert progress_module.progress(event("lesson_search", query="private")) == "Searching published lessons…"
+    assert progress_module.progress(event("experts")) == "Determining the search scope…"
+    assert progress_module.progress(event("videos")) == "Checking the VideoHub catalog…"
+    assert progress_module.progress(event("show", status="completed")) == "Matching sources…"
 
 
 def test_codex_progress_and_private_reasoning_are_handled_safely():
     assert progress_module.progress({"type": "reasoning", "text": "do not show"}) is None
-    assert progress_module.progress({"type": "step_start"}) == "Скаут разбирает вопрос…"
+    assert progress_module.progress({"type": "step_start"}) == "Scout is parsing the question…"
     assert progress_module.progress({"type": "item.started", "item": {
-        "type": "mcp_tool_call", "arguments": {"command": "search", "experts": "video_hub"}}}) == "Ищу в ВидеоХабе…"
+        "type": "mcp_tool_call", "arguments": {"command": "search", "experts": "video_hub"}}}) == "Searching VideoHub…"
     assert progress_module.progress({"type": "item.completed", "item": {
-        "type": "mcp_tool_call", "arguments": {"command": "show"}}}) == "Сопоставляю источники…"
-    assert progress_module.progress({"type": "step_finish", "part": {"reason": "stop"}}) == "Проверяю ответ…"
+        "type": "mcp_tool_call", "arguments": {"command": "show"}}}) == "Matching sources…"
+    assert progress_module.progress({"type": "step_finish", "part": {"reason": "stop"}}) == "Checking the answer…"
     assert progress_module.progress({"type": "tool_use", "part": {
         "tool": "another-tool", "state": {"input": {"query": "secret"}}}}) is None

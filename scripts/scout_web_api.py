@@ -38,7 +38,7 @@ def source_link(item):
         query = [(name, value) for name, value in parse_qsl(url.query, keep_blank_values=True)
                  if name not in {"t", "start", "time_continue"}]
         seconds = item.get("video_timestamp_s")
-        label = " · ".join(str(value) for value in (item.get("author_name"), item.get("video_title")) if value) or "Видео"
+        label = " · ".join(str(value) for value in (item.get("author_name"), item.get("video_title")) if value) or "Video"
         if isinstance(seconds, int) and not isinstance(seconds, bool) and seconds >= 0:
             query.append(("t", f"{seconds}s"))
             minutes, secs = divmod(seconds, 60)
@@ -50,7 +50,7 @@ def source_link(item):
     if not re.fullmatch(r"[a-zA-Z][a-zA-Z0-9_]{3,31}", channel) or not message_id.isdigit():
         return None
     label = item.get("author_name") or f"@{channel}"
-    return {"url": f"https://t.me/{channel}/{message_id}", "label": f"{label} · пост {message_id}"}
+    return {"url": f"https://t.me/{channel}/{message_id}", "label": f"{label} · post {message_id}"}
 
 
 async def resolve_sources(answer):
@@ -100,7 +100,7 @@ def authorize(x_scout_password: str = Header(default="")):
     expected = os.environ.get("SCOUT_WEB_PASSWORD_HASH", "")
     actual = hashlib.sha256(x_scout_password.encode()).hexdigest()
     if not expected or not secrets.compare_digest(actual, expected):
-        raise HTTPException(401, "Неверный пароль")
+        raise HTTPException(401, "Wrong password")
 
 
 class Jobs:
@@ -116,7 +116,7 @@ class Jobs:
         for path in self.directory.glob("*.json"):
             job = json.loads(path.read_text())
             if job["status"] not in TERMINAL:
-                job.update(status="error", message="Сервис перезапущен. Повтори вопрос.")
+                job.update(status="error", message="Service restarted. Ask the question again.")
                 self.save(job)
 
     def save(self, job):
@@ -128,25 +128,25 @@ class Jobs:
 
     def get(self, job_id):
         if len(job_id) != 32 or any(c not in "0123456789abcdef" for c in job_id):
-            raise HTTPException(404, "Поиск не найден")
+            raise HTTPException(404, "Search not found")
         path = self.directory / (job_id + ".json")
         if not path.exists():
-            raise HTTPException(404, "Поиск не найден")
+            raise HTTPException(404, "Search not found")
         return json.loads(path.read_text())
 
     async def start(self, question):
         question = question.strip()
         if not question:
-            raise HTTPException(422, "Напиши вопрос")
+            raise HTTPException(422, "Write a question")
         async with self.lock:
             if self.active:
-                raise HTTPException(409, "Скаут уже занят. Дождись ответа или останови поиск.")
+                raise HTTPException(409, "Scout is busy. Wait for the answer or stop the search.")
             # Keep a bounded collection of completed results, not a second database.
             paths = sorted(self.directory.glob("*.json"), key=lambda p: p.stat().st_mtime)
             for path in paths[:-19]:
                 path.unlink()
             job = dict(id=secrets.token_hex(16), question=question, status="running",
-                       message="Запускаю поиск…", started_at=time.time(), answer="", elapsed=0)
+                       message="Starting the search…", started_at=time.time(), answer="", elapsed=0)
             self.active = job["id"]
             self.current = job
             self.save(job)
@@ -185,17 +185,17 @@ class Jobs:
             await reader
             job["answer"] = answer.decode(errors="replace")
             if job["status"] != "stopped" and job["answer"]:
-                job["message"] = "Подготавливаю ссылки на источники…"
+                job["message"] = "Preparing source links…"
                 self.save(job)
                 job["sources"] = await resolve_sources(job["answer"])
             if job["status"] != "stopped":
                 job["status"] = "completed" if code == 0 else "partial" if code in (3, 4) and job["answer"] else "error"
-                job["message"] = {"completed": "Готово", "partial": "Ответ не прошёл полную проверку",
-                                  "error": "Поиск не завершился. Можно повторить вопрос."}[job["status"]]
+                job["message"] = {"completed": "Done", "partial": "Answer did not pass full verification",
+                                  "error": "Search did not finish. You can ask again."}[job["status"]]
         except asyncio.CancelledError:
             raise
         except Exception:
-            job.update(status="error", message="Не удалось запустить поиск. Можно повторить вопрос.")
+            job.update(status="error", message="Could not start the search. You can ask again.")
         finally:
             if reader and not reader.done():
                 reader.cancel()
@@ -212,7 +212,7 @@ class Jobs:
             if self.active != job_id:
                 return job
             job = self.current
-            job.update(status="stopped", message="Поиск остановлен")
+            job.update(status="stopped", message="Search stopped")
             self.save(job)
             process, task = self.process, self.task
         if process and process.returncode is None:
@@ -227,7 +227,7 @@ class Jobs:
         if task:
             await task
         job = self.get(job_id)
-        job.update(status="stopped", message="Поиск остановлен", answer="")
+        job.update(status="stopped", message="Search stopped", answer="")
         self.save(job)
         return job
 

@@ -7,7 +7,7 @@ let answer = '';
 let stoppedPolling = false;
 const terminal = new Set(['completed', 'partial', 'error', 'stopped']);
 
-function foldSources(root, language = 'Russian') {
+function foldSources(root) {
   const key = /^[a-z][a-z0-9_]*:\d+$/i;
   // Plain source keys occur alongside Markdown links as well as inside code.
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
@@ -113,12 +113,12 @@ function foldSources(root, language = 'Russian') {
       }
       const wrapper = document.createElement('span'); wrapper.className = 'sources';
       const toggle = document.createElement('button');
-      toggle.type = 'button'; toggle.className = 'source-toggle'; toggle.textContent = language === 'English' ? 'sources' : 'источники';
+      toggle.type = 'button'; toggle.className = 'source-toggle'; toggle.textContent = 'sources';
       toggle.setAttribute('aria-expanded', 'false');
       const content = document.createElement('span'); content.hidden = true;
       content.id = `sources-${++number}`;
       toggle.setAttribute('aria-controls', content.id);
-      toggle.setAttribute('aria-label', language === 'English' ? 'Show sources' : 'Показать источники');
+      toggle.setAttribute('aria-label', 'Show sources');
       node.before(wrapper);
       content.append(': ', ...nodes);
       const contentWalker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT);
@@ -146,9 +146,7 @@ function foldSources(root, language = 'Russian') {
         content.hidden = !content.hidden;
         wrapper.classList.toggle('is-open', !content.hidden);
         toggle.setAttribute('aria-expanded', String(!content.hidden));
-        toggle.setAttribute('aria-label', content.hidden
-          ? (language === 'English' ? 'Show sources' : 'Показать источники')
-          : (language === 'English' ? 'Hide sources' : 'Свернуть источники'));
+        toggle.setAttribute('aria-label', content.hidden ? 'Show sources' : 'Hide sources');
       });
       node = wrapper.nextSibling;
     }
@@ -253,15 +251,6 @@ function linkSources(root, sources = {}) {
   });
 }
 
-function detectLanguage(text) {
-  let cyrillic = 0, latin = 0;
-  for (const char of text) {
-    if (char >= '\u0400' && char <= '\u04FF') cyrillic++;
-    else if (/[a-z]/i.test(char)) latin++;
-  }
-  return cyrillic > latin ? 'Russian' : 'English';
-}
-
 async function request(path, options = {}) {
   const response = await fetch(API + path, {...options, cache: 'no-store', headers: {
     'Content-Type': 'application/json', 'X-Scout-Password': password, ...options.headers
@@ -274,7 +263,7 @@ async function request(path, options = {}) {
       $('ask').hidden = true;
       $('shortcut').hidden = true;
     }
-    throw new Error(typeof data.detail === 'string' ? data.detail : 'Не удалось выполнить запрос.');
+    throw new Error(typeof data.detail === 'string' ? data.detail : 'Request failed.');
   }
   return data;
 }
@@ -284,7 +273,7 @@ function display(data) {
   const running = !terminal.has(data.status);
   $('message').textContent = data.message;
   document.querySelector('.status').classList.toggle('running', running);
-  $('action').textContent = running ? 'Остановить' : 'Отправить';
+  $('action').textContent = running ? 'Stop' : 'Send';
   $('question').readOnly = running;
   $('question').value = data.question;
   resizeQuestion();
@@ -294,7 +283,7 @@ function display(data) {
   if (answer) {
     $('answer').innerHTML = DOMPurify.sanitize(marked.parse(answer), {FORBID_TAGS: ['img', 'form', 'input', 'style']});
     $('answer').querySelectorAll('a').forEach(a => { a.target = '_blank'; a.rel = 'noopener noreferrer'; });
-    foldSources($('answer'), detectLanguage(data.question));
+    foldSources($('answer'));
     linkSources($('answer'), data.sources);
     // Remove model-estimated timing artifacts only next to folded source citations.
     const textNodes = document.createTreeWalker($('answer'), NodeFilter.SHOW_TEXT);
@@ -328,9 +317,9 @@ async function poll() {
       failures = 0;
     } catch (error) {
       if (stoppedPolling || job.id !== id) return;
-      $('message').textContent = 'Связь прервалась. Восстанавливаю…';
+      $('message').textContent = 'Connection lost. Reconnecting…';
       if (++failures >= 5) {
-        $('message').textContent = 'Связь прервалась. Обнови страницу: поиск сохранён.';
+        $('message').textContent = 'Connection lost. Refresh the page: the search is saved.';
         break;
       }
     }
@@ -383,8 +372,8 @@ $('ask').addEventListener('submit', async event => {
   finally { $('action').disabled = false; }
 });
 $('copy').addEventListener('click', async () => {
-  try { await navigator.clipboard.writeText(answer); $('copy').textContent = 'Скопировано'; }
-  catch { $('copy').textContent = 'Выдели ответ и скопируй'; }
-  setTimeout(() => { $('copy').textContent = 'Скопировать'; }, 2000);
+  try { await navigator.clipboard.writeText(answer); $('copy').textContent = 'Copied'; }
+  catch { $('copy').textContent = 'Select the answer and copy it'; }
+  setTimeout(() => { $('copy').textContent = 'Copy'; }, 2000);
 });
-if (password) login().catch(() => { $('message').textContent = 'Введи пароль Скаута'; });
+if (password) login().catch(() => { $('message').textContent = 'Enter the Scout password'; });

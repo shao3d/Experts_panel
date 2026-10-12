@@ -11,21 +11,21 @@ def _tool_progress(args, completed=False):
     command = args.get("command")
     if completed:
         return {
-            "search": "Просматриваю найденные материалы…",
-            "show": "Сопоставляю источники…",
-            "digest": "Отбираю подходящие фрагменты…",
-            "videos": "Проверяю каталог видео…",
-            "lesson_search": "Просматриваю найденные уроки…",
-            "experts": "Выбираю область поиска…",
+            "search": "Looking through found materials…",
+            "show": "Matching sources…",
+            "digest": "Selecting relevant fragments…",
+            "videos": "Checking the video catalog…",
+            "lesson_search": "Looking through found lessons…",
+            "experts": "Choosing the search scope…",
         }.get(command)
     if command == "search":
-        return "Ищу в ВидеоХабе…" if args.get("experts") == "video_hub" else "Ищу в Telegram…"
+        return "Searching VideoHub…" if args.get("experts") == "video_hub" else "Searching Telegram…"
     return {
-        "show": "Читаю первоисточники…",
-        "digest": "Просматриваю материалы…",
-        "videos": "Сверяю каталог ВидеоХаба…",
-        "lesson_search": "Ищу в опубликованных уроках…",
-        "experts": "Определяю область поиска…",
+        "show": "Reading primary sources…",
+        "digest": "Looking through materials…",
+        "videos": "Checking the VideoHub catalog…",
+        "lesson_search": "Searching published lessons…",
+        "experts": "Determining the search scope…",
     }.get(command)
 
 
@@ -34,7 +34,7 @@ def progress(event):
         return None
     event_type = event.get("type")
     if event_type in {"step_start", "step.started"}:
-        return "Скаут разбирает вопрос…"
+        return "Scout is parsing the question…"
 
     # OpenCode (the web Scout's GLM engine) reports MCP calls as tool_use.
     if event_type == "tool_use":
@@ -51,21 +51,21 @@ def progress(event):
     if event_type in {"item.started", "item.updated", "item.completed"}:
         item = event.get("item", {})
         if item.get("type") != "mcp_tool_call":
-            return "Собираю ответ…" if item.get("type") == "agent_message" and event_type == "item.completed" else None
+            return "Assembling the answer…" if item.get("type") == "agent_message" and event_type == "item.completed" else None
         if event_type == "item.started":
             return _tool_progress(item.get("arguments") or {})
         if event_type == "item.completed":
             return _tool_progress(item.get("arguments") or {}, completed=True)
         return None
     if event_type == "step_finish" and event.get("part", {}).get("reason") == "stop":
-        return "Проверяю ответ…"
+        return "Checking the answer…"
     if event_type == "error":
-        return "Скаут завершает поиск с ошибкой…"
+        return "Scout is finishing with an error…"
 
     # Keep compatibility with Codex JSON events used by the optional Sol engine.
     item = event.get("item", {})
     if item.get("type") == "agent_message":
-        return "Собираю ответ…"
+        return "Assembling the answer…"
     if item.get("type") != "mcp_tool_call":
         return None
     return _tool_progress(
@@ -86,7 +86,7 @@ def main():
         print("usage: scout_web_progress.py <engine> [args...] -- <question>", file=sys.stderr)
         return 2
 
-    print("SCOUT_PROGRESS " + json.dumps("Скаут подключился. Разбираю вопрос…", ensure_ascii=False),
+    print("SCOUT_PROGRESS " + json.dumps("Scout connected. Parsing the question…", ensure_ascii=False),
           file=sys.stderr, flush=True)
     child = subprocess.Popen([*command, *question], stdout=subprocess.PIPE, text=True, bufsize=1)
 

@@ -14,17 +14,17 @@ const assert = require('node:assert/strict');
       if (path.endsWith('/auth')) result={status:'ok'};
       else if (route.request().method()==='POST') {
         submissions++;
-        job={id:'a'.repeat(32),question:JSON.parse(route.request().postData()).question,status:'running',message:'Ищу в Telegram…',started_at:Date.now()/1000,elapsed:0,answer:''}; result=job;
+        job={id:'a'.repeat(32),question:JSON.parse(route.request().postData()).question,status:'running',message:'Searching Telegram…',started_at:Date.now()/1000,elapsed:0,answer:''}; result=job;
       } else if (route.request().method()==='DELETE') {
-        job={...job,status:'stopped',message:'Поиск остановлен',elapsed:1}; result=job;
+        job={...job,status:'stopped',message:'Search stopped',elapsed:1}; result=job;
       } else {
-        if (finish) job={...job,status:'completed',message:'Готово',elapsed:42,
+        if (finish) job={...job,status:'completed',message:'Done',elapsed:42,
           sources:{
             'video_hub:123':{url:'https://www.youtube.com/watch?v=qwGIwxZFc2I&t=875s',label:'Dan Kieft · AI workflow · 14:35'},
             'video_hub:456':{url:'https://www.youtube.com/watch?v=qwGIwxZFc2I&t=1086s',label:'Higgsfield AI · Длинное название видео с подробным объяснением · 18:06'},
             'video_hub:789':{url:'https://www.youtube.com/watch?v=qwGIwxZFc2I&t=263s',label:'Dan Kieft · AI workflow · 4:23'},
-            'acidcrunch:2511':{url:'https://t.me/AcidCrunch/2511',label:'Acid Crunch · пост 2511'},
-            'cgevent:42':{url:'https://t.me/cgevent/42',label:'CGEVENT · пост 42'}
+            'acidcrunch:2511':{url:'https://t.me/AcidCrunch/2511',label:'Acid Crunch · post 2511'},
+            'cgevent:42':{url:'https://t.me/cgevent/42',label:'CGEVENT · post 42'}
           },
           answer:'**Редактируемые слои** — не live text.\n\n[Dan Kieft · 14:35](https://www.youtube.com/watch?v=qwGIwxZFc2I&t=875s) · `video_hub:123`, Higgsfield AI, 28.08.2026, 18:06. Ключи: `video_hub:456`\n\nСохраняй референс ([Пост](https://t.me/AcidCrunch/2511) · acidcrunch:2511, **Acid Crunch**, *26.06.2026*, 01:02–01:18). Это важное пояснение.\n\nЕщё совет: **[Разбор](https://www.youtube.com/watch?v=example)**. Не потерять текст после ссылки.\n\nПроверенный совет — важная деталь. — Dan Kieft, 01.09.2026, [04:23](https://www.youtube.com/watch?v=example&t=263s), `video_hub:789`.\n\nКлюч: `cgevent:42`.\n\n```\ncgevent:43\n```\n\n<script>window.compromised=true</script><img src=x onerror="window.compromised=true">\n\n| Приём | Ограничение |\n|---|---|\n| Слои AE | Контуры букв (Источник: [Источник](https://t.me/cgevent/42)) |'};
         result=job;
@@ -34,25 +34,25 @@ const assert = require('node:assert/strict');
     await page.goto(process.env.SCOUT_PAGE || 'http://127.0.0.1:8767');
     const languageLabels = await page.evaluate(() => {
       const cases = [
-        ['How to keep characters consistent?', 'English', 'sources'],
-        ['Как сохранить единый образ персонажа?', 'Russian', 'источники'],
-        ['How сохранить character consistency?', 'English', 'sources'],
-        ['Какие camera moves сохранить?', 'Russian', 'источники']
+        'How to keep characters consistent?',
+        'Как сохранить единый образ персонажа?',
+        'How сохранить character consistency?',
+        'Какие camera moves сохранить?'
       ];
-      return cases.map(([question, language, label]) => {
+      return cases.map(question => {
         const root = document.createElement('div');
         root.innerHTML = DOMPurify.sanitize(marked.parse('Advice ([Creator — Video](https://www.youtube.com/watch?v=clip)), t≈295s. More prose.'));
-        foldSources(root, language);
+        foldSources(root);
         linkSources(root, {'video_hub:123': {url: 'https://www.youtube.com/watch?v=clip&t=295s', label: 'Creator · Video · 4:55'}});
         const visible = root.querySelector('.source-toggle').textContent;
         const before = root.textContent;
         const toggle = root.querySelector('.source-toggle');
         toggle.click();
-        return {question, label, visible, before, expanded: root.textContent, aria: toggle.getAttribute('aria-label')};
+        return {question, visible, before, expanded: root.textContent, aria: toggle.getAttribute('aria-label')};
       });
     });
-    assert.deepEqual(languageLabels.map(item => item.visible), ['sources', 'источники', 'sources', 'источники']);
-    assert.deepEqual(languageLabels.map(item => item.aria), ['Hide sources', 'Свернуть источники', 'Hide sources', 'Свернуть источники']);
+    assert.deepEqual(languageLabels.map(item => item.visible), ['sources', 'sources', 'sources', 'sources']);
+    assert.deepEqual(languageLabels.map(item => item.aria), ['Hide sources', 'Hide sources', 'Hide sources', 'Hide sources']);
     for (const item of languageLabels) {
       assert.ok(!item.expanded.includes('t≈'), JSON.stringify(item));
       assert.ok(!item.expanded.includes('expert:123'), JSON.stringify(item));
@@ -92,29 +92,29 @@ const assert = require('node:assert/strict');
       root.innerHTML = DOMPurify.sanitize(marked.parse('(Источники: — Acid Crunch, 23.03.2025, `acidcrunch:550`; Youri van Hofwegen, 25.09.2026, `video_hub:353` · [05:53](https://www.youtube.com/watch?v=test&t=353s)). Пояснение остаётся.'));
       foldSources(root);
       linkSources(root, {
-        'acidcrunch:550': {url: 'https://t.me/AcidCrunch/550', label: 'Acid Crunch · пост 550'},
+        'acidcrunch:550': {url: 'https://t.me/AcidCrunch/550', label: 'Acid Crunch · post 550'},
         'video_hub:353': {url: 'https://www.youtube.com/watch?v=test&t=353s', label: 'Youri van Hofwegen · 9 FREE Prompts to Make AI Videos that Look Real (Cinematic AI) · 5:53'}
       });
       return {labels: [...root.querySelectorAll('a')].map(a => a.textContent), text: root.textContent,
         content: root.querySelector('[id^="sources-"]').textContent};
     });
     assert.deepEqual(formatted.labels, [
-      'Acid Crunch · пост 550 · 23.03.2025',
+      'Acid Crunch · post 550 · 23.03.2025',
       'Youri van Hofwegen · 9 FREE Prompts to Make AI Videos that Look Real (Cinematic AI) · 25.09.2026 · 05:53'
     ]);
     assert.equal(formatted.text.match(/Acid Crunch/g)?.length, 1);
     assert.equal(formatted.text.match(/05:53/g)?.length, 1);
-    assert.equal(formatted.content, ': 1) Acid Crunch · пост 550 · 23.03.2025; 2) Youri van Hofwegen · 9 FREE Prompts to Make AI Videos that Look Real (Cinematic AI) · 25.09.2026 · 05:53');
+    assert.equal(formatted.content, ': 1) Acid Crunch · post 550 · 23.03.2025; 2) Youri van Hofwegen · 9 FREE Prompts to Make AI Videos that Look Real (Cinematic AI) · 25.09.2026 · 05:53');
     assert.ok(formatted.text.trim().endsWith('Пояснение остаётся.'));
     const numbering = await page.evaluate(() => [1, 3].map(count => {
       const root = document.createElement('div');
       root.innerHTML = DOMPurify.sanitize(marked.parse(Array.from({length: count}, (_, i) => `\`acidcrunch:${550 + i}\``).join('; ')));
       foldSources(root);
       linkSources(root, Object.fromEntries(Array.from({length: count}, (_, i) =>
-        [`acidcrunch:${550 + i}`, {url: `https://t.me/AcidCrunch/${550 + i}`, label: `Acid Crunch · пост ${550 + i}`}])));
+        [`acidcrunch:${550 + i}`, {url: `https://t.me/AcidCrunch/${550 + i}`, label: `Acid Crunch · post ${550 + i}`}])));
       return root.querySelector('[id^="sources-"]').textContent;
     }));
-    assert.deepEqual(numbering, [': Acid Crunch · пост 550', ': 1) Acid Crunch · пост 550; 2) Acid Crunch · пост 551; 3) Acid Crunch · пост 552']);
+    assert.deepEqual(numbering, [': Acid Crunch · post 550', ': 1) Acid Crunch · post 550; 2) Acid Crunch · post 551; 3) Acid Crunch · post 552']);
     await page.locator('#password').fill('test-password');
     await page.locator('#login button').click();
     await page.locator('#question').fill('Длинный вопрос\nсо второй строкой\nи третьей строкой\nи четвёртой строкой');
@@ -130,16 +130,16 @@ const assert = require('node:assert/strict');
     assert.ok((await page.locator('#question').inputValue()).includes('\n'));
     const beforeSearch = await page.locator('#ask').boundingBox();
     await page.locator('#question').press('Shift+Enter');
-    await page.waitForFunction(()=>document.querySelector('#action').textContent==='Остановить');
+    await page.waitForFunction(()=>document.querySelector('#action').textContent==='Stop');
     assert.equal(submissions,1);
     await page.locator('#question').press('Shift+Enter');
     assert.equal(submissions,1);
     assert.match(await page.locator('#message').textContent(), /Telegram/);
     assert.equal((await page.locator('#ask').boundingBox()).y,beforeSearch.y);
     await page.reload();
-    await page.waitForFunction(()=>document.querySelector('#action').textContent==='Остановить');
+    await page.waitForFunction(()=>document.querySelector('#action').textContent==='Stop');
     finish=true;
-    await page.waitForFunction(()=>document.querySelector('#message').textContent==='Готово');
+    await page.waitForFunction(()=>document.querySelector('#message').textContent==='Done');
     assert.equal(await page.evaluate(()=>Boolean(window.compromised)),false);
     assert.equal(await page.locator('#answer img').count(),0);
     assert.equal(await page.locator('#answer a').first().getAttribute('rel'),'noopener noreferrer');
@@ -153,7 +153,7 @@ const assert = require('node:assert/strict');
     assert.ok((await page.locator('#answer').innerText()).includes('Это важное пояснение.'));
     assert.ok((await page.locator('#answer').innerText()).includes('Проверенный совет — важная деталь.'));
     assert.ok((await page.locator('#answer').innerText()).includes('Не потерять текст после ссылки.'));
-    assert.ok(!(await page.locator('#answer').innerText()).includes('((источники'));
+    assert.ok(!(await page.locator('#answer').innerText()).includes('((sources'));
     await sources.first().click();
     assert.equal(await sources.first().getAttribute('aria-expanded'),'true');
     assert.equal(await page.locator('#answer a:visible').count(),2);
@@ -169,7 +169,7 @@ const assert = require('node:assert/strict');
     assert.equal(await sources.first().getAttribute('aria-expanded'),'false');
     assert.equal(await page.locator('#answer a:visible').count(),0);
     await sources.nth(1).click();
-    assert.ok((await page.locator('#answer').innerText()).includes('Acid Crunch · пост 2511 · 26.06.2026'));
+    assert.ok((await page.locator('#answer').innerText()).includes('Acid Crunch · post 2511 · 26.06.2026'));
     const telegramPopup = await Promise.all([page.waitForEvent('popup'), page.locator('#answer a[title="acidcrunch:2511"]').click()]);
     await telegramPopup[0].waitForLoadState();
     assert.equal(telegramPopup[0].url(),'https://t.me/AcidCrunch/2511');
@@ -192,9 +192,9 @@ const assert = require('node:assert/strict');
     finish=false;
     await page.locator('#question').fill('Другой вопрос');
     await page.locator('#action').click();
-    await page.waitForFunction(()=>document.querySelector('#action').textContent==='Остановить');
+    await page.waitForFunction(()=>document.querySelector('#action').textContent==='Stop');
     await page.locator('#action').click();
-    await page.waitForFunction(()=>document.querySelector('#message').textContent==='Поиск остановлен');
+    await page.waitForFunction(()=>document.querySelector('#message').textContent==='Search stopped');
     await page.close();
     console.log(`PASS ${viewport.width}: login, submit, progress, reload, safe Markdown, folded sources, clipboard, layout, stop`);
   }

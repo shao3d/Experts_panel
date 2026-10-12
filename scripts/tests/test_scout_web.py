@@ -15,7 +15,7 @@ from scripts.scout_web_progress import progress
 
 def test_source_links_use_real_channel_and_segment_timestamp():
     assert api.source_link({"source_key": "acidcrunch:2511", "channel_username": "@AcidCrunch", "author_name": "Acid Crunch"}) == {
-        "url": "https://t.me/AcidCrunch/2511", "label": "Acid Crunch · пост 2511"}
+        "url": "https://t.me/AcidCrunch/2511", "label": "Acid Crunch · post 2511"}
     link = api.source_link({"source_key": "video_hub:900000123", "video_url": "https://www.youtube.com/watch?v=qwGIwxZFc2I&t=1s&start=2#t=3",
                             "video_timestamp_s": 875, "author_name": "Dan Kieft", "video_title": "AI workflow"})
     assert link == {"url": "https://www.youtube.com/watch?v=qwGIwxZFc2I&t=875s", "label": "Dan Kieft · AI workflow · 14:35"}
@@ -64,7 +64,7 @@ async def test_old_saved_answers_get_links_without_rerunning_model(monkeypatch, 
     calls = []
     async def resolve(answer):
         calls.append(answer)
-        return {'cgevent:42': {'url': 'https://t.me/cgevent/42', 'label': 'CGEVENT · пост 42'}}
+        return {'cgevent:42': {'url': 'https://t.me/cgevent/42', 'label': 'CGEVENT · post 42'}}
     monkeypatch.setattr(api, 'resolve_sources', resolve)
     with TestClient(api.app) as client:
         api.app.state.jobs.save({'id': 'a'*32, 'status': 'completed', 'answer': 'Совет — cgevent:42'})
@@ -78,18 +78,18 @@ async def test_old_saved_answers_get_links_without_rerunning_model(monkeypatch, 
 def test_progress_handles_live_and_finished_opencode_tool_events_without_leaking_queries():
     assert progress({'type': 'reasoning', 'text': 'private'}) is None
     assert progress({'type': 'tool_use', 'part': {'tool': 'scout', 'state': {
-        'status': 'running', 'input': {'command': 'search', 'experts': 'video_hub', 'query': 'private question'}}}}) == 'Ищу в ВидеоХабе…'
+        'status': 'running', 'input': {'command': 'search', 'experts': 'video_hub', 'query': 'private question'}}}}) == 'Searching VideoHub…'
     assert progress({'type': 'tool_use', 'part': {'tool': 'scout', 'state': {
-        'status': 'completed', 'input': {'command': 'search', 'group': 'visual', 'query': 'private question'}}}}) == 'Просматриваю найденные материалы…'
+        'status': 'completed', 'input': {'command': 'search', 'group': 'visual', 'query': 'private question'}}}}) == 'Looking through found materials…'
     assert progress({'type': 'tool_use', 'part': {'tool': 'scout', 'state': {
-        'status': 'running', 'input': {'command': 'show', 'source_keys': ['private:123']}}}}) == 'Читаю первоисточники…'
+        'status': 'running', 'input': {'command': 'show', 'source_keys': ['private:123']}}}}) == 'Reading primary sources…'
     assert progress({'type': 'tool_use', 'part': {'tool': 'scout', 'state': {
-        'status': 'running', 'input': {'command': 'lesson_search', 'query': 'private question'}}}}) == 'Ищу в опубликованных уроках…'
+        'status': 'running', 'input': {'command': 'lesson_search', 'query': 'private question'}}}}) == 'Searching published lessons…'
     assert progress({'type': 'item.started', 'item': {'type': 'mcp_tool_call', 'arguments': {
-        'command': 'search', 'experts': 'video_hub', 'query': 'private question'}}}) == 'Ищу в ВидеоХабе…'
+        'command': 'search', 'experts': 'video_hub', 'query': 'private question'}}}) == 'Searching VideoHub…'
     assert progress({'type': 'item.completed', 'item': {'type': 'mcp_tool_call', 'arguments': {
-        'command': 'show', 'source_keys': ['private:123']}}}) == 'Сопоставляю источники…'
-    assert progress({'type': 'step_finish', 'part': {'reason': 'stop'}}) == 'Проверяю ответ…'
+        'command': 'show', 'source_keys': ['private:123']}}}) == 'Matching sources…'
+    assert progress({'type': 'step_finish', 'part': {'reason': 'stop'}}) == 'Checking the answer…'
     assert progress({'type': 'tool_use', 'part': {'tool': 'other', 'state': {'input': {'query': 'secret'}}}}) is None
 
 
@@ -222,7 +222,7 @@ async def test_completed_partial_and_failed_runs_are_distinct(monkeypatch, tmp_p
     result = jobs.get(job['id'])
     assert result['status'] == status
     assert 'Answer' in result['answer']
-    assert result['message'] == ('Готово' if status == 'completed' else 'Ответ не прошёл полную проверку' if status == 'partial' else 'Поиск не завершился. Можно повторить вопрос.')
+    assert result['message'] == ('Done' if status == 'completed' else 'Answer did not pass full verification' if status == 'partial' else 'Search did not finish. You can ask again.')
     assert 'Answer entirely in English' in commands[0][0][-1]
     assert 'How to keep the character consistent?' in commands[0][0][-1]
     assert 'SCOUT_WEB_PASSWORD_HASH' not in commands[0][1]['env']

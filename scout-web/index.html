@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -11,21 +11,21 @@
   <script src="app.js" defer></script>
 </head>
 <body>
-  <header><h1>Scout</h1><p>Telegram визуалов + ВидеоХаб</p></header>
+  <header><h1>Scout</h1><p>Telegram visuals + VideoHub</p></header>
   <main>
     <form id="login" class="composer">
-      <label class="sr-only" for="password">Пароль Скаута</label>
-      <input id="password" type="password" autocomplete="current-password" placeholder="Пароль Скаута" required>
-      <button>Войти</button>
+      <label class="sr-only" for="password">Scout password</label>
+      <input id="password" type="password" autocomplete="current-password" placeholder="Scout password" required>
+      <button>Sign in</button>
     </form>
     <form id="ask" class="composer" hidden>
-      <label class="sr-only" for="question">Вопрос Скауту</label>
-      <textarea id="question" rows="2" maxlength="6000" placeholder="Задай вопрос…" aria-describedby="shortcut" required></textarea>
-      <button id="action">Отправить</button>
+      <label class="sr-only" for="question">Question for Scout</label>
+      <textarea id="question" rows="2" maxlength="6000" placeholder="Ask a question…" aria-describedby="shortcut" required></textarea>
+      <button id="action">Send</button>
     </form>
-    <div class="status"><span id="message" role="status" aria-live="polite"></span><span id="shortcut" hidden>Shift + Enter — отправить</span></div>
-    <article id="answer" aria-label="Ответ Скаута" hidden></article>
-    <button id="copy" class="quiet" hidden>Скопировать</button>
+    <div class="status"><span id="message" role="status" aria-live="polite"></span><span id="shortcut" hidden>Shift + Enter — send</span></div>
+    <article id="answer" aria-label="Scout answer" hidden></article>
+    <button id="copy" class="quiet" hidden>Copy</button>
   </main>
 </body>
 </html>
