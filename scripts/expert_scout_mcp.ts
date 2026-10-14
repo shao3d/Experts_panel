@@ -1,18 +1,38 @@
 /** Stdio MCP adapter for the existing no-shell Scout tool.
  * The schema and execution are reused verbatim from the OpenCode plugin so
  * model comparisons do not introduce a second retrieval implementation.
+ * OpenCode 2 plugin shape: the plugin registers via ctx.tool.transform, the
+ * tool input is already JSON Schema, and execute(input, context) returns
+ * { content } instead of a bare string.
  */
 import readline from "node:readline"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
-import { z } from "../.opencode/node_modules/zod/index.js"
-import { ExpertScoutTools } from "../.opencode/plugins/expert-scout-tools.ts"
+import pluginModule from "../.opencode/plugins/expert-scout-tools.ts"
 
 const directory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
-const plugin = await ExpertScoutTools({} as any)
-const scout = plugin.tool!.scout
-const schema = z.object(scout.args).strict()
-const inputSchema = z.toJSONSchema(schema)
+
+const registered: any[] = []
+const editor = {
+  add: (tool: any) => registered.push(tool),
+  namespace: () => {},
+  update: () => {},
+  remove: () => {},
+}
+const pluginContext = {
+  location: { directory },
+  tool: {
+    transform: async (callback: (editor: any) => void) => {
+      callback(editor)
+      return { dispose: async () => {} }
+    },
+  },
+}
+await (pluginModule as any).setup(pluginContext)
+const scout = registered.find((tool) => tool.name === "scout")
+if (!scout) throw new Error("scout tool not registered by the plugin")
+const inputSchema = scout.input
+const commandEnum: string[] = scout.input?.properties?.command?.enum ?? []
 
 function reply(id: unknown, result: unknown) {
   process.stdout.write(JSON.stringify({ jsonrpc: "2.0", id, result }) + "\n")
@@ -24,7 +44,7 @@ async function handle(message: any) {
     reply(message.id, {
       protocolVersion: "2024-11-05",
       capabilities: { tools: {} },
-      serverInfo: { name: "expert-scout", version: "0.1.0" },
+      serverInfo: { name: "expert-scout", version: "0.2.0" },
     })
   } else if (message.method === "ping") {
     reply(message.id, {})
@@ -38,14 +58,10 @@ async function handle(message: any) {
   } else if (message.method === "tools/call") {
     try {
       if (message.params?.name !== "scout") throw new Error("Unknown tool")
-      const args = schema.parse(message.params.arguments ?? {})
-      const text = await scout.execute(args, {
-        agent: "expert-scout", directory, worktree: directory,
-        sessionID: "headless-scout", messageID: String(message.id),
-        abort: new AbortController().signal,
-        metadata() {},
-        async ask() { throw new Error("Scout does not request permissions") },
-      } as any)
+      const args = message.params.arguments ?? {}
+      if (!commandEnum.includes(args?.command)) throw new Error("Unknown scout command")
+      const result = await scout.execute(args, { agent: "expert-scout" })
+      const text = typeof result === "string" ? result : String(result?.content ?? result)
       let isError = false
       try { isError = JSON.parse(text).status === "error" } catch {}
       reply(message.id, { content: [{ type: "text", text }], ...(isError ? { isError: true } : {}) })

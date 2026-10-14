@@ -34,12 +34,39 @@ def test_wrapper_preserves_failure_status(tmp_path,engine_exit,finished,integrit
                       f'raise SystemExit({engine_exit})\n')
     engine.chmod(0o700)
     proc=subprocess.run(['bash',str(scripts/'expert_scout.sh'),'Synthetic question'],env={**os.environ,'EXPERT_SCOUT_ENGINE':engine_name,'OPENCODE_BIN':str(engine),'CODEX_BIN':str(engine)},capture_output=True,text=True)
+    # OpenCode 2 streams end with the answer text and no terminal event; the
+    # wrapper normalizes that to a completed turn (ensure_turn_completed), so
+    # the v1 "unfinished" failure only applies to explicit-terminal engines.
+    if engine_name!='sol' and (engine_exit,finished,integrity_exit)==(0,False,0):
+        expected=0
     assert proc.returncode==expected,proc.stderr
     assert 'Test answer' in proc.stdout
     assert ('status=completed' in proc.stderr)==(expected==0)
     if engine_name=='glm':
         args=(tmp_path/'engine-args.txt').read_text()
         assert '--model' in args and 'commandcode/z-ai/glm-5.3-flash' in args
+
+
+def test_wrapper_openv2_stream_without_answer_still_unfinished(tmp_path):
+    """A clean OpenCode 2 exit with no answer text must stay a failure."""
+    scripts=tmp_path/'scripts'; scripts.mkdir()
+    backend=tmp_path/'backend'; (backend/'scripts').mkdir(parents=True)
+    (backend/'.venv/bin').mkdir(parents=True)
+    (backend/'.venv/bin/python').symlink_to(shutil.which('python3'))
+    shutil.copy(ROOT/'scripts/expert_scout.sh',scripts/'expert_scout.sh')
+    shutil.copy(ROOT/'scripts/expert_scout_filter.py',scripts/'expert_scout_filter.py')
+    shutil.copytree(ROOT/'backend/src/utils',backend/'src/utils',ignore=shutil.ignore_patterns('__pycache__'))
+    (tmp_path/'.opencode/agents').mkdir(parents=True)
+    shutil.copy(ROOT/'.opencode/agents/expert-scout.md',tmp_path/'.opencode/agents/expert-scout.md')
+    (backend/'scripts/verify_citations.py').write_text('raise SystemExit(0)\n')
+    engine=tmp_path/'engine'
+    engine.write_text('#!/usr/bin/env python3\n'
+                      'print(\'{"type":"step_start","part":{}}\')\n'
+                      'raise SystemExit(0)\n')
+    engine.chmod(0o700)
+    proc=subprocess.run(['bash',str(scripts/'expert_scout.sh'),'Synthetic question'],env={**os.environ,'EXPERT_SCOUT_ENGINE':'glm','OPENCODE_BIN':str(engine)},capture_output=True,text=True)
+    assert proc.returncode==3,proc.stderr
+    assert 'empty answer' in proc.stderr
 
 
 def test_wrapper_default_engine_is_glm(tmp_path):

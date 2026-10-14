@@ -61,6 +61,32 @@ timeout "$TIMEOUT_SECONDS" "${ENGINE_COMMAND[@]}" "$@" \
   > "$RUN_DIR/events.jsonl" || ENGINE_EXIT=$?
 DURATION=$(( $(date +%s) - START_EPOCH ))
 
+# OpenCode 2 ends the JSON event stream with the final text part and never
+# emits turn.completed / step_finish(reason=stop). A clean engine exit with a
+# trailing answer is a completed turn, so mark it as one; killed or failed
+# runs stay unfinished for the integrity gate.
+if [[ "$ENGINE_EXIT" -eq 0 ]]; then
+  "$PYTHON_BIN" - "$RUN_DIR/events.jsonl" <<'PYEOF' || ENGINE_EXIT=1
+import json, sys
+from pathlib import Path
+sys.path.insert(0, str(Path.cwd() / "backend"))
+from src.utils.scout_evidence import ensure_turn_completed
+path = Path(sys.argv[1])
+lines = []
+for ln in path.read_text(encoding="utf-8").splitlines():
+    if not ln.strip():
+        continue
+    try:
+        lines.append(json.loads(ln))
+    except ValueError:
+        pass
+out = ensure_turn_completed(lines)
+if len(out) > len(lines):
+    with path.open("a", encoding="utf-8") as fh:
+        fh.write(json.dumps(out[-1]) + "\n")
+PYEOF
+fi
+
 TOOL_CALLS="$("$PYTHON_BIN" -c 'import json,sys; from pathlib import Path; sys.path.insert(0,str(Path.cwd()/"backend")); from src.utils.scout_evidence import tool_calls; print(len(tool_calls([json.loads(line) for line in sys.stdin if line.strip()])))' < "$RUN_DIR/events.jsonl")"
 
 FILTER_EXIT=0

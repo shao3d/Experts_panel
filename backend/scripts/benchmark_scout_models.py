@@ -24,7 +24,7 @@ import time
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "backend"))
-from src.utils.scout_evidence import sources_from_output, read_evidence, tool_calls, finished
+from src.utils.scout_evidence import sources_from_output, read_evidence, tool_calls, finished, ensure_turn_completed
 _spec = importlib.util.spec_from_file_location("scout_integrity_for_benchmark", ROOT / "backend/scripts/verify_citations.py")
 _integrity = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_integrity)
@@ -138,6 +138,13 @@ def run(engine: str, case: str, timeout: int, *, question: str | None = None) ->
             events.append(json.loads(line))
         except ValueError:
             pass
+    if engine in ("bunny", "glm", "runtime"):
+        # The proxy tees the raw engine stream, so OpenCode 2 runs need the
+        # same completion normalization the wrapper applies to events.jsonl.
+        events = ensure_turn_completed(
+            events,
+            timed_out=proc.returncode == 124 and "# scout-eval-timeout" in proc.stderr,
+        )
     if engine in ("luna", "sol"):
         answers = [e.get("item", {}).get("text", "") for e in events
                    if e.get("type") == "item.completed"

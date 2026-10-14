@@ -98,8 +98,8 @@ scripts/install_expert_scout_skill.sh --with-shim  # + Mac-мостик
 Mac: ~/.local/bin/expert-scout "вопрос"
   -> SSH (ubuntu@82.70.251.73)
   -> VM: scripts/expert_scout.sh
-  -> OpenCode headless: GLM-5.3 Flash (Command Code)
-  -> scripts/expert_scout_mcp.ts (тот же инструмент)
+  -> OpenCode 2 headless (2.0.29): GLM-5.3 Flash (Command Code)
+  -> scripts/expert_scout_mcp.ts (тот же инструмент, только для профиля sol)
   -> plugin tool `scout` (argv-массив, без shell)
   -> backend/scripts/expert_scout.py   (read-only: experts / videos / search / lesson_search / digest / show)
   -> backend/data/experts.db           (mode=ro, query_only=ON)
@@ -153,14 +153,23 @@ Mac: ~/.local/bin/expert-scout "вопрос"
 
 ## Окружение плагина
 
-`scout`-инструмент — плагин opencode, который импортирует `@opencode-ai/plugin`
-(версия зафиксирована в `.opencode/package.json` и `package-lock.json`). Если
-`.opencode/node_modules` отсутствует или пересобран, плагин не загрузится и
-`scout` исчезнет. Восстановление:
+`scout`-инструмент — плагин opencode под **OpenCode 2** (проверено на 2.0.29):
+`Plugin.define` + `ctx.tool.transform`, вход через JSON Schema,
+`options: { codemode: false }` — прямые `tool_use`-вызовы, иначе Code Mode
+прячет аргументы `scout` внутри `execute`-кода и integrity-чекер слепнет.
+Пакет `@opencode/plugin` зафиксирован в `.opencode/package.json` и
+`package-lock.json`. Если `.opencode/node_modules` отсутствует или пересобран,
+плагин не загрузится и `scout` исчезнет. Восстановление:
 
 ```bash
 cd .opencode && npm ci
 ```
+
+Хвост потока `opencode run --format json` в OpenCode 2 не содержит
+терминального события; wrapper при чистом выходе движка дописывает
+синтетический `turn.completed` (общий хелпер `ensure_turn_completed` в
+`backend/src/utils/scout_evidence.py`, используется также benchmark-стендом),
+иначе integrity помечает завершённые прогоны как `unfinished_run`.
 
 ## Хелпер: команды
 

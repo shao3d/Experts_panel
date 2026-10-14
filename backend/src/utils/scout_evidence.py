@@ -106,3 +106,20 @@ def finished(events: list[dict]) -> bool:
     return any(e.get("type") == "turn.completed" or
                (e.get("type") == "step_finish" and e.get("part", {}).get("reason") == "stop")
                for e in events) and not any(e.get("type") in {"error", "turn.failed"} for e in events)
+
+
+def ensure_turn_completed(events: list[dict], *, timed_out: bool = False) -> list[dict]:
+    """Normalize OpenCode 2 event streams for the completion check.
+
+    OpenCode 2 ends the `run --format json` stream with the final text part and
+    never emits turn.completed / step_finish(reason=stop). A captured stream
+    that ends in a non-empty answer text is a completed turn, so append a
+    synthetic marker; killed or failed runs stay unfinished for the gate.
+    OpenCode 1 streams already carry a terminal event and pass through intact.
+    """
+    if timed_out or not events or finished(events):
+        return events
+    last = events[-1]
+    if last.get("type") == "text" and ((last.get("part") or {}).get("text") or "").strip():
+        return events + [{"type": "turn.completed", "synthetic": True}]
+    return events
