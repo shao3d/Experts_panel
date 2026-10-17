@@ -1,7 +1,7 @@
 # Карта Документации
 
 Status: Active
-Last updated: 2026-10-11
+Last updated: 2026-10-17
 
 Это навигационный слой проекта Experts Panel. Он должен отвечать на вопрос
 "куда смотреть?", а не пересказывать содержимое всех документов.
@@ -23,6 +23,7 @@ Last updated: 2026-10-11
 
 | Задача | Сначала читать | Потом, если нужно |
 | --- | --- | --- |
+| VideoHub: полный онбординг JOEY `LOUEH3DzLro` (Claude skills v2, staging; независимая перепроверка и ремонт кадров 1016), 2026-10-17 | `docs/quality/2026-10-17-loueh3dzlro-onboarding-report.md` | `docs/guides/video-hub-operator.md` (шаги 0.1a–0.4), `output/video_ingest/LOUEH3DzLro/segments.json` (разметка), `output/video_admission/admission_log.json` (запись LOUEH3DzLro); гейт: `docs/architecture/expert-admission-control.md` §16 |
 | Скаут: переключение дефолт-движка на GLM-5.3 Flash, чек-лист ответов и Sol-инцидент, 2026-10-12 | `docs/quality/2026-10-12-scout-glm-switch.md` | `docs/guides/expert-scout.md` (SSOT рантайма), `docs/guides/scout-web.md` (веб-контур); стенд: `backend/scripts/benchmark_scout_models.py` |
 | Скаут: миграция плагина и рантайма на OpenCode 2, 2026-10-14 | `docs/quality/2026-10-14-opencode-v2-scout-migration.md` | `docs/guides/expert-scout.md` (SSOT рантайма: V2-плагин, `codemode: false`, маркер `turn.completed`); `scripts/expert_scout_mcp.ts` (MCP-адаптер sol) |
 | VideoHub: приёмка JOEY higgsfield `sVib0X-PvsY` и ремонт `scope`-метаданных корпуса (4 ролика), 2026-10-11 | `docs/quality/2026-10-11-higgsfield-onboarding-and-scope-repair.md` | `docs/guides/video-hub-operator.md` (шаг 0.4: объявление `scope` и проверка `videos`), `docs/architecture/video-hub-service.md` (`coverage` semantics), `docs/video-hub-index.md` |

@@ -48,6 +48,12 @@
 | `4TXaAnittHs` | these new Claude skills are saving me hundreds (skills and prompts in description) | 18 | 2026-05-27 |
 | `sVib0X-PvsY` | i burned 7,000 higgsfield credits so you don't have to (Free Prompt Guide) | 7 | 2026-04-21 |
 
+## JOEY (noisygroup)
+
+| YouTube ID | Название | Сегментов | Опубликовано |
+|---|---|---:|---|
+| `LOUEH3DzLro` | How We Make AI Videos In A Day (4 free Claude skills & how to use them) | 27 | 2026-10-14 |
+
 ## Max Novak
 
 | YouTube ID | Название | Сегментов | Опубликовано |
@@ -78,4 +84,4 @@
 | `0d8pqU8JRrY` | How to Make 3D Animations With GPT 6 Astra (No Blender Needed) | 38 | 2026-09-19 |
 | `2b3Z4rW5VJc` | STOP Wasting Credits & Master Seedance 2.5 | 11 | 2026-08-21 |
 
-Итого: **29** видео, **700** сегментов.
+Итого: **30** видео, **727** сегментов.
