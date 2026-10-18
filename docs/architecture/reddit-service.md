@@ -21,6 +21,11 @@
 > automatic cross-engine fallback: a `dsh` failure is reported as degradation,
 > never hidden behind a second provider. OpenRouter/Gemini code paths remain in
 > the repository behind `REDDIT_LLM_BACKEND=gemini` for rollback.
+>
+> Runtime dependency: the panel image ships the pinned CLI and the `headless`
+> profile (`Dockerfile` + `backend/deploy/dsh/profile-headless/`), and the
+> gateway key arrives as `COMMANDCODE_API_KEY`. Release prerequisite,
+> post-release check and rollback: `docs/operations.md`.
 
 > **Isolated judge experiment:** `backend/scripts/replay_reddit_rerank.py`
 > with `--transport codex` can replay an authorized frozen corpus through the local
@@ -52,7 +57,7 @@ The current version, Reddit Search V2, prefers to:
 ```mermaid
 graph LR
     User[User Query] --> Backend[FastAPI Backend]
-    Backend -- "1. Formulate Reddit EN query" --> QueryForm[Inline Gemini Prompt]
+    Backend -- "1. Formulate Reddit EN query" --> QueryForm[Query formulation prompt]
     QueryForm -- "2. Search plan" --> Scout[AI Scout v2]
 
     Scout -- "queries + subreddit hints + keywords" --> Retrieval[Precision-First Retrieval]
@@ -63,7 +68,7 @@ graph LR
 
     Retrieval -- "top candidates" --> Enrich[Early /details enrichment]
     Enrich -- "post body + comments" --> Ranker[Answerability Rerank]
-    Ranker -- "high-confidence posts only" --> Gemini[Reddit Synthesis]
+    Ranker -- "high-confidence posts only" --> Synth[Reddit Synthesis]
 ```
 
 ---
@@ -123,7 +128,7 @@ Now top candidates go through early enrichment via `POST /details`, so the final
 
 ### 4. Answerability-first rerank
 
-Gemini evaluates not just "topically similar" but:
+The judge (DeepSeek V4.1 Flash via `dsh`) evaluates not just "topically similar" but:
 
 - whether the thread answers the user's question
 - whether there is config / setup / fix / benchmark / trade-off
@@ -259,7 +264,7 @@ query cannot masquerade as "Google found nothing".
 ### Synthesis (`backend/src/services/reddit_synthesis_service.py`)
 
 Takes the already cleaned shortlist and assesses whether it can answer the
-user's question, in the same Gemini call that produces the synthesis. The
+user's question, in the same call that produces the synthesis. The
 model first lists explicit question requirements with supported/unsupported
 flags, then returns JSON with `coverage`, `gap`, cited `findings` and `actions`.
 The service requests JSON output at temperature 0; models and the ordinary
@@ -419,7 +424,8 @@ The best candidates receive `full_content` and top comments even before the fina
 
 ### Step 6. AI Rerank
 
-The Gemini rerank receives:
+The judge (DeepSeek V4.1 Flash via `dsh`; `REDDIT_LLM_BACKEND=gemini` switches it
+back to OpenRouter) receives:
 
 - title
 - a bounded selection of query-relevant body and comment excerpts, including

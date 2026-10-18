@@ -1,5 +1,10 @@
 # Reddit Retrieval Beyond OAuth Search — Channels, Arctic Shift, and Ranking (2025–2026)
 
+**Дата анализа:** 2026-10-18 · **Статус:** evidence, не SSOT (текущее поведение — `docs/architecture/reddit-service.md`).
+
+**Что подтвердилось нашими замерами (18.10.2026, `docs/roadmap/2026-10-18-reddit-search-v2-fix-plan.md`):**
+Serper отвечает и авторизуется штатно (канал крутится в проде; «UNVERIFIED» ниже снят), а формулировка запроса к нему измерена в 0.6.1; Arctic Shift жив, но требует ограниченного окна времени и ключевых слов, и отдача у него низкая (0.5); RSS-обход Reddit отклонён как обход границы.
+
 **Method.** `web_search` was unavailable (no API key), so this is built from `web_fetch` against primary sources plus **live HTTP calls I made on 2026-10-18**. Status codes are from my own calls; anything I could not verify from a primary source is marked **UNVERIFIED**.
 
 ---

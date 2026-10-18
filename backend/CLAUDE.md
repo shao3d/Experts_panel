@@ -25,8 +25,8 @@ The backend implements a sophisticated 10-phase query processing system. It uses
 | `comment_group_map_service.py` | **6. Comments** | `google/gemini-3.1-flash-lite` | Drift scoring runs **parallel** with Reduce. `score_drift_groups()` + `merge_with_main_sources()`. |
 | `comment_synthesis_service.py` | **7. Synthesis** | `gemini-3-flash-preview` | Extracts insights into 4 sections (Expert/Community). Runs after Reduce + Drift complete. |
 | `video_hub_service.py` | **Video Sidecar** | `gemini-3.1-pro-preview` | **Digital Twin**. 4-phase video analysis (Map -> Resolve -> Synthesis -> Validation). |
-| `reddit_enhanced_service.py` | **8. Reddit** | `MODEL_ANALYSIS` (lite) rerank; `MODEL_SYNTHESIS` for comparison-intent + HTTP Proxy | **Sidecar Orchestrator**. Reddit Search V2 runs precision-first candidate generation, early comment enrichment, and answerability-first reranking. |
-| `reddit_synthesis_service.py` | **Synthesis** | `gemini-3-flash-preview` | **Staff Engineer Persona**. Finds Hidden Gems & Minority Reports. No Fluff. |
+| `reddit_enhanced_service.py` | **8. Reddit** | DeepSeek V4.1 Flash via local `dsh` (`REDDIT_LLM_BACKEND`, default `dsh`) + HTTP Proxy | **Sidecar Orchestrator**. Reddit Search V2 runs precision-first candidate generation, early comment enrichment, and answerability-first reranking. |
+| `reddit_synthesis_service.py` | **Synthesis** | `dsh` (default) \| `gemini` \| `opencode` (`REDDIT_SYNTH_BACKEND`) | **Staff Engineer Persona**. Finds Hidden Gems & Minority Reports. No Fluff. |
 | `meta_synthesis_service.py` | **Meta-Synthesis** | `gemini-3-flash-preview` | Cross-expert unified analysis. Runs parallel with Reddit after all experts complete (≥2). |
 
 ### Infrastructure
@@ -55,7 +55,7 @@ The backend implements a sophisticated 10-phase query processing system. It uses
     - **Tiny Targeted Channel**: For narrow `how_to` / `troubleshooting` / `comparison` intents, backend may add a very small targeted retrieval on the strongest subreddit hints, while keeping global search active.
     - **Smaller Candidate Set**: Backend favors literal query + scout query + freshness/quality channels instead of many additive search hacks.
     - **Early Enrichment**: Top candidates fetch comments before final rerank so answer-bearing comments can influence ranking.
-    - **Answerability Rerank**: Gemini scores "does this answer the question?" rather than mere topical similarity. On rerank LLM failure (outage, provider 402) candidates fall back to heuristic scoring with a neutral AI component — ranking degrades, results never collapse to a false "nothing found".
+    - **Answerability Rerank**: the judge (DeepSeek V4.1 Flash via `dsh`) scores "does this answer the question?" rather than mere topical similarity. On rerank LLM failure (outage, provider 402) candidates fall back to heuristic scoring with a neutral AI component — ranking degrades, results never collapse to a false "nothing found".
     - **Stronger Comparison Gate**: `comparison` queries prefer direct title/body matches and explicit comparison markers instead of comment-only overlaps.
     - **Confidence Thresholds**: Low-confidence Reddit results are dropped instead of filling the UI with adjacent noise.
     - **Coverage Scope**: the synthesizer reserves `coverage=insufficient` (the canonical abstain) for a question's CENTRAL request; an unsupported secondary constraint (version, region, price, extra example) makes the answer `partial` instead, which renders the explicit "The evidence supports only a partial answer." plus "Not established by the sources:". `partial` carries up to `REDDIT_SYNTH_PARTIAL_MAX_FINDINGS` findings and never any actions.
