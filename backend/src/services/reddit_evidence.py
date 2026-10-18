@@ -176,20 +176,90 @@ def select_evidence_passages(
     return selected
 
 
-def match_evidence(
-    evidence: Any, passages: list[EvidencePassage], source_key: Any = None
-) -> EvidencePassage | None:
-    """Verify one quote in one shown passage of the current post."""
+@dataclass(frozen=True)
+class EvidenceMatch:
+    """A verified quote plus how it matched and what the judge claimed."""
+
+    passage: EvidencePassage
+    kind: str  # "verified" | "verified_normalized"
+    cited_key: str | None  # the excerpt label the judge named (may differ)
+
+
+# A quote shorter than this is too generic to accept on the fuzzy tier: the
+# strict tier has no minimum because an exact match is proof by itself.
+# 24 characters keeps practical short spans ("GPU: 24GB is enough for 4K")
+# while rejecting coincidences like a bare model number.
+MIN_NORMALIZED_QUOTE_CHARS = 24
+
+# Second tier: same words, tolerant of markdown emphasis and typographic
+# punctuation. The judge is asked to copy a span verbatim, but models
+# routinely strip `**`, swap en-dashes or straighten quotes; treating that as
+# a fabrication discards the evidence the gate exists to protect.
+_LOOSE_MAP = {
+    "\u2010": "-",
+    "\u2011": "-",
+    "\u2012": "-",
+    "\u2013": "-",
+    "\u2014": "-",
+    "\u2212": "-",
+    "\u2018": "'",
+    "\u2019": "'",
+    "\u201c": '"',
+    "\u201d": '"',
+    "\u2026": "...",
+}
+_LOOSE_DROP = str.maketrans("", "", "*`_")
+
+
+def _loose_evidence(text: str) -> str:
+    for source, target in _LOOSE_MAP.items():
+        text = text.replace(source, target)
+    return " ".join(text.translate(_LOOSE_DROP).split())
+
+
+def match_evidence_ex(
+    evidence: Any,
+    passages: list[EvidencePassage],
+    source_key: Any = None,
+    *,
+    allow_normalized: bool = True,
+) -> EvidenceMatch | None:
+    """Verify one quote against the passages shown for THIS post.
+
+    Priority is strict: an exact match on the named excerpt wins, then an
+    exact match on another shown excerpt (a wrong label is a labeling error,
+    not a fabrication), and only then the normalized tier. A normalized match
+    never overrides an exact one, and it is reported with its own kind so the
+    pipeline can keep the trust level visible.
+    """
     if not isinstance(evidence, str):
         return None
     quote = normalize_evidence(evidence)
     if not quote or len(quote) > 300:
         return None
-    if source_key is not None and not isinstance(source_key, str):
-        return None
+    cited = source_key if isinstance(source_key, str) else None
+    loose_quote = _loose_evidence(quote)
+    fallback: EvidenceMatch | None = None
     for passage in passages:
-        if source_key is not None and source_key != passage.key:
-            continue
-        if quote in normalize_evidence(passage.text):
-            return passage
-    return None
+        text = normalize_evidence(passage.text)
+        if quote in text:
+            match = EvidenceMatch(passage, "verified", cited)
+            if cited is None or cited == passage.key:
+                return match
+            fallback = fallback or match  # right quote, wrong label
+        elif (
+            allow_normalized
+            and fallback is None
+            and len(loose_quote) >= MIN_NORMALIZED_QUOTE_CHARS
+            and loose_quote in _loose_evidence(text)
+        ):
+            fallback = EvidenceMatch(passage, "verified_normalized", cited)
+    return fallback
+
+
+def match_evidence(
+    evidence: Any, passages: list[EvidencePassage], source_key: Any = None
+) -> EvidencePassage | None:
+    """Verify one quote in one shown passage of the current post."""
+    match = match_evidence_ex(evidence, passages, source_key)
+    return match.passage if match else None

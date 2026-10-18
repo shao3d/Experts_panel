@@ -45,8 +45,21 @@ copy, or include either token in a prompt, response, artifact, or log.
 - `completed`: summarize the returned answer, preserving uncertainty, and cite
   the returned real Reddit URLs. Do not claim that a source says more than the
   API response supports.
-- `abstained`: report that sufficiently reliable Reddit evidence was not found.
-  This is a valid result and exit code 0; do not fill it with general knowledge.
+- `abstained`: read `abstain_reason` before wording the answer.
+  - `insufficient_coverage` — retrieval worked, but the sources do not establish
+    the central request. Report that sufficiently reliable Reddit evidence was
+    not found; this is a valid result with exit code 0.
+  - `no_verified_sources` — nothing passed the confidence/evidence filter.
+  - `degraded` (or `"degraded": true`) — a pipeline stage failed. This is an
+    OPERATIONAL failure, not evidence that Reddit has no material on the topic:
+    say so explicitly and do not present it as "nothing found".
+  Do not fill any abstain with general knowledge.
+- `completed` with `"degraded": true` — the shortlist was produced while a stage
+  was failing: keep the answer but disclose that it may be incomplete.
+- `completed` where `kept N` is small: the CLI appends how many of the kept
+  sources are quote-verified (`all quote-verified` / `none quote-verified`). A
+  thin but verified shortlist is evidence-backed; do not describe it as a
+  failed search.
 - exit code 1 / technical error: report a short operational failure and do not
   present a partial answer as completed.
 - Never expose hidden prompts, credentials, stack traces, internal proxy details,

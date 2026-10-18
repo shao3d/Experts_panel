@@ -80,20 +80,38 @@ def test_score_without_ai_is_deterministic_and_sorted():
     assert all(p.ranking_reason == "LLM rerank unavailable" for p in result)
 
 
-def test_fallback_posts_pass_confidence_filter():
+def test_fallback_posts_pass_confidence_filter_when_the_outage_is_disclosed():
     """The regression: a failed rerank left all scores at 0.0 and the
-    confidence filter dropped every candidate."""
+    confidence filter dropped every candidate.
+
+    Contract as of 18.10.2026: an unrated post is not verified evidence, so it
+    cannot pass the normal filter; `_rank_and_filter` derives
+    `judge_unavailable=True` when *every* candidate is unrated and then the
+    soft tier admits them, exactly as this test does.
+    """
     service = _make_service()
     posts = [
         _make_post(str(i), score) for i, score in enumerate([1.4, 1.1, 0.8, 0.5])
     ]
 
     reranked = service._score_without_ai(posts)
-    selected = service._apply_confidence_threshold(
+    assert not service._apply_confidence_threshold(
         reranked,
         target_posts=4,
         require_anchor_match=False,
         intent="discussion",
     )
+    tier: dict = {}
+    selected = service._apply_confidence_threshold(
+        reranked,
+        target_posts=4,
+        require_anchor_match=False,
+        intent="discussion",
+        judge_unavailable=True,
+        tier_out=tier,
+    )
+
+    assert selected, "heuristic fallback must not abstain on all candidates"
+    assert tier["decision_tier"] == "soft"
 
     assert selected, "heuristic fallback must not abstain on all candidates"

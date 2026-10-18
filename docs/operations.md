@@ -1,7 +1,7 @@
 # Experts Panel operations
 
 Status: Active
-Last updated: 2026-10-09
+Last updated: 2026-10-18
 
 Актуальная операторская схема для ИИ-агента. Все команды разработки и
 maintenance выполняются из VM checkout `/home/ubuntu/apps/experts-panel/dev`.
@@ -17,6 +17,42 @@ Production checkout `app` вручную не редактируется.
    `reddit-proxy`, затем проверяет `/health`.
 5. Дождись успешного workflow и проверь production health. Обычный code release
    не меняет production DB.
+
+Перед релизом, который трогает Reddit-роли, проверь предусловие движка `dsh`
+(см. «Reddit Search V2: движок `dsh` в контейнере панели» ниже): без него
+сборка пройдёт, а Reddit-поиск в проде будет деградировать.
+
+## Reddit Search V2: движок `dsh` в контейнере панели
+
+Все Reddit-роли (формулировка запроса, Scout-план, answerability-судья,
+reflection-репланер, синтез) идут через локальный CLI `dsh --profile headless`.
+Автофолбэка между движками нет: если `dsh` или ключ недоступны, поиск
+деградирует (судья без оценок, синтез может отказать), а не переключается молча
+на Gemini. Поэтому у образа панели есть жёсткие предусловия:
+
+| Что | Где живёт | Как попадает |
+| --- | --- | --- |
+| CLI `dsh` (пинованный) | образ панели | `Dockerfile`: `ARG DSH_VERSION`, npm-пакет `@deepseek-ai/dsh` |
+| профиль `headless` | образ панели | `backend/deploy/dsh/profile-headless/` → `$DSH_HOME/profiles/headless` |
+| tool-free оверлей | образ панели | `backend/deploy/dsh/reddit-llm.patch.yml` (в образе `/app/deploy/dsh/reddit-llm.patch.yml`, путь в `DSH_PATCH_PATH`) |
+| ключ CommandCode | `.env.panel` на VM | `COMMANDCODE_API_KEY=…` — тот же ключ, что лежит в `~/.dsh/.credentials.yaml` |
+
+Версия CLI меняется только через `ARG DSH_VERSION` в `Dockerfile` и повторный
+деплой; файлы профиля в репозитории — копия слоя, который создаёт сам CLI, и
+должны оставаться совместимыми с этой версией.
+
+Проверка после релиза (ключ не печатается, значение читает сам `dsh`):
+
+```bash
+cd ~/apps/experts-panel
+sudo docker compose -f docker-compose.vm.yml --env-file .env.panel exec panel sh -lc \
+  'printf "%s" "{\"task\":\"Reply with exactly: OK\"}" | dsh --profile headless --patch "$DSH_PATCH_PATH" --json - | tail -2'
+```
+
+Ожидаемый вывод — событие `final` со словом `OK`. Если `dsh: not found` или
+ошибка ключа — в проде Reddit Search V2 работать не будет; быстрый откат:
+`REDDIT_LLM_BACKEND=gemini` и `REDDIT_SYNTH_BACKEND=gemini` в `.env.panel` +
+`docker compose ... up -d` (возвращает прежний движок без отката образа).
 
 ## Общий CI
 

@@ -203,6 +203,9 @@ def test_practitioner_discovery_rejects_job_solicitation():
             intent="practitioner_examples",
         )
         post.final_score = 0.9
+        # Both carry verified evidence: the only thing separating them here is
+        # the job-solicitation rule, not the quote gate.
+        post.evidence_status = "verified"
 
     assert useful.heuristic_score > job.heuristic_score
     assert service._apply_confidence_threshold(
@@ -487,6 +490,67 @@ async def test_plan_reflection_retry_returns_none_on_no_coverage(monkeypatch):
     assert await service._plan_reflection_retry(
         "seedance 2.5 truck", ["No Reddit coverage of this topic"], ["seedance"]
     ) is None
+
+
+@pytest.mark.parametrize(
+    "trace,expected",
+    [
+        ({"judge_unavailable": True}, True),
+        ({"judge_unavailable": False, "strategy_results": {"only": {"error": "boom"}}}, True),
+        ({"strategy_results": {"ok": {"count": 4}, "bad": {"error": "boom"}}}, False),
+        ({"strategy_results": {}}, False),
+        ({}, False),
+    ],
+)
+def test_degradation_detection_separates_outage_from_empty_result(trace, expected):
+    """C1: only a failed judge or a total channel outage makes an abstain lean."""
+    from src.api.simplified_query_endpoint import _reddit_result_is_degraded
+
+    assert _reddit_result_is_degraded(SimpleNamespace(debug_trace=trace)) is expected
+    assert _reddit_result_is_degraded(None) is False
+    assert _reddit_result_is_degraded(SimpleNamespace()) is False
+
+
+@pytest.mark.parametrize("kept,expected", [(0, "empty"), (1, "thin")])
+def test_reflection_retry_triggers_on_thin_shortlist(kept, expected):
+    """A4: one post is as expensive as none (32% abstain at one post)."""
+    service = object.__new__(RedditEnhancedService)
+    selected = [object() for _ in range(kept)]
+    assert service._should_try_reflection_retry(selected, [object()]) == expected
+
+
+def test_reflection_retry_respects_threshold_flag_and_empty_pool(monkeypatch):
+    from src import config
+
+    service = object.__new__(RedditEnhancedService)
+    assert service._should_try_reflection_retry([object(), object()], [object()]) is None
+    assert service._should_try_reflection_retry([], []) is None
+    monkeypatch.setattr(config, "REDDIT_REFLECTION_MIN_POSTS", 1)
+    assert service._should_try_reflection_retry([], [object()]) == "empty"
+    monkeypatch.setattr(config, "REDDIT_REFLECTION_RETRY_ENABLED", False)
+    assert service._should_try_reflection_retry([], [object()]) is None
+
+
+def test_best_tier_reports_the_stronger_pass():
+    """A4: the merged shortlist must not be described by the weaker pass."""
+    assert RedditEnhancedService._best_tier("abstain", "soft") == "soft"
+    assert RedditEnhancedService._best_tier("soft", "strict") == "strict"
+    assert RedditEnhancedService._best_tier("abstain", "abstain") == "abstain"
+    assert RedditEnhancedService._best_tier(None, "soft") == "soft"
+    assert RedditEnhancedService._best_tier(None, None) is None
+
+
+def test_retry_selection_never_drops_a_post_that_passed_the_gate():
+    kept = SimpleNamespace(id="kept", final_score=0.5)
+    stronger = SimpleNamespace(id="stronger", final_score=0.7)
+    weaker = SimpleNamespace(id="weaker", final_score=0.2)
+    merged = RedditEnhancedService._merge_retry_selection(
+        [kept], [stronger, weaker]
+    )
+    assert [post.id for post in merged] == ["stronger", "kept", "weaker"]
+    # Same id on both sides keeps the post that was already accepted.
+    duplicate = SimpleNamespace(id="kept", final_score=0.9)
+    assert RedditEnhancedService._merge_retry_selection([kept], [duplicate]) == [kept]
 
 
 @pytest.mark.asyncio

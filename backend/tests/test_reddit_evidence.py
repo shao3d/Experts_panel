@@ -15,6 +15,7 @@ from src.services.reddit_evidence import (
     EvidencePassage,
     RERANK_CONTEXT_CHAR_BUDGET,
     match_evidence,
+    match_evidence_ex,
     select_evidence_passages,
 )
 from src.services.reddit_synthesis_service import RedditSynthesisService
@@ -108,11 +109,51 @@ def test_evidence_must_exist_in_shown_passage(quote):
 
 
 def test_quote_normalization_is_narrow_and_source_specific():
+    """A paraphrase never verifies, and a quote is bound to one shown excerpt.
+
+    Contract as of 18.10.2026: an exact match always wins; a wrong excerpt
+    label no longer discards an otherwise verbatim quote (the quote still has
+    to be shown for THIS post — see the cross-post test below); a match after
+    stripping markdown emphasis is recorded as its own tier.
+    """
     passages = [EvidencePassage("comment:2:0", "Set A &amp; B.\nDo not enable C.")]
     assert match_evidence("Set A & B. Do not enable C.", passages)
+    # A rewritten or negated quote is not evidence, in either tier.
     assert not match_evidence("Set A & B. Do enable C.", passages)
-    assert not match_evidence("Set A & B.", passages, "body:0")
-    assert not match_evidence("Set A & B.", passages, 1)
+    assert not match_evidence_ex("Set A & B. Do enable C.", passages)
+    assert not match_evidence_ex("Enable C instead of A and B entirely.", passages)
+
+
+def test_wrong_excerpt_label_is_a_labeling_error_not_a_fabrication():
+    passages = [EvidencePassage("comment:2:0", "Set A & B.\nDo not enable C.")]
+    match = match_evidence_ex("Set A & B. Do not enable C.", passages, "body:0")
+    assert match is not None
+    assert match.kind == "verified"
+    assert match.passage.key == "comment:2:0"
+    assert match.cited_key == "body:0"  # the claim is preserved for logging
+
+    # A non-string label is treated as "unspecified", not as a mismatch.
+    assert match_evidence("Set A & B. Do not enable C.", passages, 1)
+
+
+def test_markdown_noise_verifies_on_the_normalized_tier_only():
+    passages = [EvidencePassage("comment:1:0", "- GPU: **24GB** is enough for 4K.")]
+    match = match_evidence_ex("GPU: 24GB is enough for 4K.", passages)
+    assert match is not None
+    assert match.kind == "verified_normalized"
+    # Exact copy stays on the strict tier.
+    assert match_evidence_ex("GPU: **24GB** is enough for 4K.", passages).kind == "verified"
+    # The tier can be switched off for a strict run.
+    assert match_evidence_ex(
+        "GPU: 24GB is enough for 4K.", passages, allow_normalized=False
+    ) is None
+    # A short quote is only rejected on the fuzzy tier: below the length floor
+    # a normalized match is too coincidental to count as evidence.
+    short = [EvidencePassage("comment:2:0", "- CPU \u2014 8 cores.")]
+    assert match_evidence_ex("CPU - 8 cores", short) is None
+    # ...while the same length verifies exactly, because an exact copy is
+    # proof by itself.
+    assert match_evidence_ex("CPU \u2014 8 cores", short).kind == "verified"
 
 
 @pytest.mark.asyncio
@@ -172,14 +213,27 @@ async def test_verified_nested_answer_survives_into_synthesis():
 
 
 @pytest.mark.asyncio
-async def test_unavailable_judge_is_explicit_and_keeps_existing_fallback():
+async def test_unavailable_judge_is_degraded_not_confirmed_and_not_an_abstain():
+    """A judge outage must be disclosed, not sold as relevance or as absence.
+
+    Contract as of 18.10.2026: an unrated post cannot pass the normal filter,
+    but a *wholly* unavailable judge is a degradation, so the soft tier admits
+    it and synthesis says so in plain words.
+    """
     s = service([])
     p = post(evidence_status="verified", evidence_span="Old quote", evidence_context="Old context")
     s._llm_client.chat_completions_create.side_effect = RuntimeError("offline")
     ranked = await s._ai_rerank_posts("depth export", [p])
     assert p.evidence_status == "unavailable"
     assert p.evidence_span == p.evidence_context == p.evidence_source == ""
-    assert s._apply_confidence_threshold(ranked, 4)
+    # Unrated posts never pass as verified evidence...
+    assert not s._apply_confidence_threshold(ranked, 4)
+    # ...but a total outage still returns candidates, flagged as degraded.
+    tier: dict = {}
+    degraded = s._apply_confidence_threshold(ranked, 4, judge_unavailable=True, tier_out=tier)
+    assert degraded
+    assert tier["decision_tier"] == "soft"
+    assert not s._apply_confidence_threshold(ranked, 4, tier_out={})
     synth = object.__new__(RedditSynthesisService)
     assert "Ranking degraded" in synth._build_context(SimpleNamespace(posts=ranked), 10)
 

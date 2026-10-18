@@ -102,6 +102,31 @@ def _is_explicit_reddit_synthesis_abstention(text: str) -> bool:
     return RedditSynthesisService.is_explicit_abstention(text)
 
 
+def _reddit_result_is_degraded(reddit_result: Any) -> bool:
+    """Did a pipeline stage fail, making an empty shortlist inconclusive?
+
+    Two cases matter: the answerability judge was unavailable (every candidate
+    then stays unrated and fails the quote gate closed, so nothing can pass),
+    and every retrieval channel errored (there was nothing to rank). One flaky
+    channel among several is reported in telemetry but is not degradation of
+    the answer.
+    """
+    trace = getattr(reddit_result, "debug_trace", None)
+    if not isinstance(trace, dict):
+        return False
+    if trace.get("judge_unavailable"):
+        return True
+    strategies = trace.get("strategy_results")
+    if not isinstance(strategies, dict) or not strategies:
+        return False
+    failed = [
+        name
+        for name, meta in strategies.items()
+        if isinstance(meta, dict) and meta.get("error")
+    ]
+    return bool(failed) and len(failed) == len(strategies)
+
+
 def _sanitize_reddit_source_citations(
     text: str,
     *,
@@ -1060,7 +1085,15 @@ class RedditSearchV2Outcome:
     - status "failed": a technical error occurred (proxy down, timeout, ...).
     """
 
-    __slots__ = ("status", "response", "error", "near_misses")
+    __slots__ = (
+        "status",
+        "response",
+        "error",
+        "near_misses",
+        "abstain_reason",
+        "degraded",
+        "verified_count",
+    )
 
     def __init__(
         self,
@@ -1068,11 +1101,22 @@ class RedditSearchV2Outcome:
         response: Optional[RedditResponse] = None,
         error: Optional[str] = None,
         near_misses: Optional[List[Dict[str, Any]]] = None,
+        abstain_reason: Optional[str] = None,
+        degraded: bool = False,
+        verified_count: int = 0,
     ) -> None:
         self.status = status
         self.response = response
         self.error = error
         self.near_misses = near_misses or []
+        # Why an abstain happened: "no_verified_sources" (retrieval kept
+        # nothing), "insufficient_coverage" (the sources did not establish the
+        # central request) or "degraded" (a stage failed, so the empty result
+        # is not evidence of absence). None on a completed run.
+        self.abstain_reason = abstain_reason
+        self.degraded = degraded
+        # Kept posts whose answerability judgement quoted a verbatim span.
+        self.verified_count = verified_count
 
 
 async def run_reddit_search_v2(
@@ -1105,7 +1149,12 @@ async def run_reddit_search_v2(
         return RedditSearchV2Outcome(status="failed", error=str(e))
 
     if response is not None:
-        return RedditSearchV2Outcome(status="completed", response=response)
+        return RedditSearchV2Outcome(
+            status="completed",
+            response=response,
+            degraded=bool(outcome_context.get("degraded")),
+            verified_count=int(outcome_context.get("verified_count") or 0),
+        )
 
     # process_reddit_pipeline returns None both for "no posts found" (abstain)
     # and for "no synthesis produced". V2 treats an empty shortlist as an
@@ -1114,6 +1163,8 @@ async def run_reddit_search_v2(
     return RedditSearchV2Outcome(
         status="abstained",
         near_misses=outcome_context.get("near_misses", []),
+        abstain_reason=outcome_context.get("abstain_reason"),
+        degraded=bool(outcome_context.get("degraded")),
     )
 
 
@@ -1245,10 +1296,33 @@ Output one JSON object only:
             must_keep_terms=query_plan["must_keep"],
         )
 
+        if outcome_context is not None:
+            # Recorded on every path: a completed answer can be degraded too
+            # (one retrieval channel down), and the caller has to see that.
+            outcome_context["degraded"] = _reddit_result_is_degraded(reddit_result)
+            # "kept 1 of 134" reads like a failure even when the one kept post
+            # carries a verbatim quote. Count how many kept posts passed the
+            # evidence gate, so the summary can say what was actually verified.
+            outcome_context["verified_count"] = sum(
+                1
+                for post in getattr(reddit_result, "posts", None) or []
+                if getattr(post, "evidence_status", "")
+                in config.EVIDENCE_GATE_ALLOWED_STATUSES
+            )
+
         # Check if we found anything relevant
         if not reddit_result or not reddit_result.posts:
             logger.info(f"No Reddit posts found for query: {search_query}")
             if outcome_context is not None:
+                # Distinguish "Reddit has nothing" from "a stage failed, so the
+                # absence proves nothing": the judge being down caps every
+                # candidate below the gate closed, and a total channel outage
+                # leaves nothing to rank. Both look like an honest empty result.
+                outcome_context["abstain_reason"] = (
+                    "degraded"
+                    if outcome_context.get("degraded")
+                    else "no_verified_sources"
+                )
                 outcome_context["near_misses"] = [
                     {
                         "title": post.title or "Untitled",
@@ -1356,6 +1430,10 @@ Output one JSON object only:
         if _is_explicit_reddit_synthesis_abstention(synthesis):
             logger.info("Reddit synthesis explicitly abstained after relevance check")
             if outcome_context is not None:
+                # Retrieval worked here (posts reached synthesis), so the
+                # abstain is a coverage verdict, not an outage — unless a
+                # stage was already degraded while producing that shortlist.
+                outcome_context["abstain_reason"] = "insufficient_coverage"
                 # The shortlist passed ranking but the synthesis rejected it
                 # as collectively not answering; expose it as near-misses.
                 outcome_context["near_misses"] = [

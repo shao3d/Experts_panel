@@ -1052,6 +1052,29 @@ class AgentRedditSearchResponse(BaseModel):
         default=0,
         description="Wall-clock time the full V2 pipeline took",
     )
+    abstain_reason: Optional[str] = Field(
+        default=None,
+        description=(
+            "Why an abstain happened: 'no_verified_sources' (retrieval kept "
+            "nothing), 'insufficient_coverage' (the sources did not establish "
+            "the central request), or 'degraded' (a pipeline stage failed, so "
+            "an abstain is not evidence of absence). Null when completed."
+        ),
+    )
+    degraded: bool = Field(
+        default=False,
+        description=(
+            "A pipeline stage failed and the result is a disclosed fallback "
+            "rather than an ordinary answer or an ordinary abstain"
+        ),
+    )
+    verified_count: int = Field(
+        default=0,
+        description=(
+            "Kept sources whose answerability judgement quoted a verbatim span "
+            "from the post; the rest were kept by the heuristic fallback"
+        ),
+    )
 
 
 class MultiExpertQueryResponse(BaseModel):

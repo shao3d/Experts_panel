@@ -45,7 +45,8 @@ The backend implements a sophisticated 10-phase query processing system. It uses
 
 ## Reddit Integration
 - **Active Client**: `src/services/reddit_enhanced_service.py` (Proxy Client).
-- **Synthesis backends**: `reddit_synthesis_service.py` dispatches on `REDDIT_SYNTH_BACKEND` - Gemini (default) or free headless opencode serve via pure-HTTP `opencode_synth_client.py` (no binary needed; works from the panel container and any host reaching the VM). opencode failures/timeouts always fall back to Gemini; `shadow` mode runs both and logs `[shadow]` telemetry without delaying the user.
+- **LLM engine**: все Reddit-роли (формулировка, Scout-план, answerability-судья, reflection, синтез) идут через **DeepSeek V4.1 Flash локальным `dsh` CLI** (`src/services/dsh_client.py`, `dsh --profile headless`), выбор — `REDDIT_LLM_BACKEND` (default `dsh`). Tool-free оверлей профиля: `backend/deploy/dsh/reddit-llm.patch.yml`. Автофолбэка между движками нет: сбой `dsh` — деградация. OpenRouter/Gemini остаётся только для отката (`REDDIT_LLM_BACKEND=gemini`). Контейнер панели везёт `dsh` с собой: `Dockerfile` (`ARG DSH_VERSION`, npm-пакет `@deepseek-ai/dsh`) плюс профиль `headless` из `backend/deploy/dsh/profile-headless/`; ключ приходит переменной `COMMANDCODE_API_KEY`. Предусловие и проверка после релиза — `docs/operations.md`, раздел про движок `dsh`.
+- **Synthesis backends**: `reddit_synthesis_service.py` dispatches on `REDDIT_SYNTH_BACKEND` - `dsh` (default, DeepSeek через локальный CLI), `gemini` (OpenRouter, откат), или free headless opencode serve via pure-HTTP `opencode_synth_client.py` (no binary needed; works from the panel container and any host reaching the VM). opencode failures/timeouts always fall back to Gemini; `shadow` mode runs both and logs `[shadow]` telemetry without delaying the user.
 - **Architecture**: Hybrid Sidecar.
     - **Search**: via Proxy `POST /search` (direct Reddit OAuth API inside the sidecar).
     - **Details**: via Proxy `POST /details` (deep fetch of 100 comments / depth 5).
@@ -57,6 +58,8 @@ The backend implements a sophisticated 10-phase query processing system. It uses
     - **Answerability Rerank**: Gemini scores "does this answer the question?" rather than mere topical similarity. On rerank LLM failure (outage, provider 402) candidates fall back to heuristic scoring with a neutral AI component — ranking degrades, results never collapse to a false "nothing found".
     - **Stronger Comparison Gate**: `comparison` queries prefer direct title/body matches and explicit comparison markers instead of comment-only overlaps.
     - **Confidence Thresholds**: Low-confidence Reddit results are dropped instead of filling the UI with adjacent noise.
+    - **Coverage Scope**: the synthesizer reserves `coverage=insufficient` (the canonical abstain) for a question's CENTRAL request; an unsupported secondary constraint (version, region, price, extra example) makes the answer `partial` instead, which renders the explicit "The evidence supports only a partial answer." plus "Not established by the sources:". `partial` carries up to `REDDIT_SYNTH_PARTIAL_MAX_FINDINGS` findings and never any actions.
+    - **Disclosed Degradation**: `abstain_reason` (`no_verified_sources` / `insufficient_coverage` / `degraded`), `degraded` and `verified_count` are returned by the agent API; the CLI prints `kept N of M ranked candidates, all quote-verified` and `status: abstained [reason]`, so an outage is never paraphrased as "Reddit has nothing".
     - **Debug Trace**: Optional structured trace via `REDDIT_SEARCH_DEBUG=true`.
 - **Logic**: 
     - **Scout as Hint, not Gate**: topic detection shapes retrieval, but global search always remains available.
@@ -116,14 +119,28 @@ Defined in `.env`, loaded in `config.py`.
 - `PANEX_ARTIFACT_DIR`: optional local Panex CLI artifact directory
 - `PANEX_ARTIFACT_TTL_DAYS`: 7
 - `REDDIT_SEARCH_DEBUG`: false
-- `REDDIT_RERANK_CANDIDATES`: 18
+- `REDDIT_RERANK_CANDIDATES`: 18 (median search has ~134 unique candidates, so this cut decides what the judge can see)
+- `REDDIT_RERANK_DIVERSITY_SLOTS`: 0 (reserve that many rerank slots for strategies/subreddits the heuristic top misses; 0 = plain heuristic cut)
+- `REDDIT_COMPARISON_ENTITY_PAIR`: true (adds the `comparison_entity_pair` channel for `comparison` intent — the compared products as the query, e.g. "GLM-5.3 Flash DeepSeek V4.1 Flash", instead of the anchor pair "glm-5.3 v4.1 benchmark". Additive: the anchor channel keeps running. Measured 2026-10-18: 2x candidate precision, 1.7–2.2x judged selection among its own posts; roadmap 0.6, probe `scripts/reddit_comparison_entities_probe.py`)
+- `REDDIT_SERPER_ENTITY_QUERY`: true (`comparison` intent sends a quoted entity pair to Serper instead of the plan query: 59% vs 36% of returned threads mention both products; empty result retries once with the plan query)
+- `ARCTIC_SHIFT_ENABLED`: true — archive channel (complete per-subreddit index). Keyword search needs a subreddit, is AND-based, times out (HTTP 422) without a bounded window, and is unsupported on very active subreddits
+- `ARCTIC_WINDOW_DAYS` / `ARCTIC_NARROW_WINDOW_DAYS`: 30 / 7 (bounded window, narrowed after a timeout)
+- `ARCTIC_LIMIT_PER_SUB`: 12 (clamped to ≤25), `ARCTIC_MAX_REQUESTS`: 4 per search, `ARCTIC_REQUEST_PAUSE_S`: 0.5 (free service, load-dependent limits)
+- `ARCTIC_MAX_SUBSCRIBERS`: 1000000 (skip keyword search on bigger subreddits; cached per process), `ARCTIC_429_MAX_WAIT_S`: 20 (honors `X-RateLimit-Reset` once)
 - `REDDIT_PRE_RERANK_ENRICH_LIMIT`: 18 (aligned with RERANK_CANDIDATES; undated Serper discovery candidates are force-enriched on top)
 - `REDDIT_MIN_CONFIDENCE`: 0.52
 - `REDDIT_SOFT_CONFIDENCE`: 0.44
 - `REDDIT_SYNTH_COMMENT_TOP_K`: 12 (top-scored comment roots per source in synthesis context)
 - `REDDIT_SYNTH_SOURCE_CHAR_CAP`: 15000 (per-source char cap shared between body and comment tree)
 - `REDDIT_SYNTH_MAX_TOKENS`: 4096 (synthesis output cap; finish_reason=length triggers ONE automatic retry at 2x)
-- `REDDIT_SYNTH_BACKEND`: `gemini` (default) | `opencode` | `auto` | `shadow` - Reddit synthesis backend; free headless-opencode path with Gemini fallback
+- `REDDIT_REFLECTION_MIN_POSTS`: 2 (retry when the confidence filter keeps fewer posts than this; `1` restores the zero-only trigger — synthesis abstains on 32% of one-post shortlists)
+- `REDDIT_SYNTH_PARTIAL_MAX_FINDINGS`: 5 (findings on the partial-coverage branch; the 600-char budget and the ban on actions stay)
+- `REDDIT_SYNTH_GAP_FORCES_PARTIAL`: false (`true` restores the older "any non-empty gap downgrades coverage to partial")
+- `REDDIT_LLM_BACKEND`: `dsh` (default) | `gemini` — движок всех Reddit-ролей; `gemini` оставлен только для отката
+- `REDDIT_SYNTH_BACKEND`: `dsh` (default) | `gemini` | `opencode` | `auto` | `shadow` - Reddit synthesis backend
+- `DSH_PATCH_PATH`: путь к tool-free оверлею профиля (в репозитории: `backend/deploy/dsh/reddit-llm.patch.yml`)
+- `REDDIT_DSH_BIN` / `REDDIT_DSH_PROFILE`: `dsh` / `headless` (имена с префиксом намеренно: харнесс экспортирует `DSH_PROFILE` и `DSH_SESSION_ID` в каждый дочерний процесс, и их наследование поднимает интерактивный TUI-профиль)
+- `REDDIT_DSH_TIMEOUT_S`: 90 (таймаут одного вызова dsh), `REDDIT_DSH_CONCURRENCY`: 2 (вызов = отдельный процесс)
 - `OPENCODE_URL`: `http://127.0.0.1:4096` (headless opencode serve on the VM; from docker use `host.docker.internal:4096` via extra_hosts host-gateway)
 - `OPENCODE_SYNTH_MODEL`: `opencode/x-preview-f-free`
 - `OPENCODE_SYNTH_TIMEOUT_S`: 60 (budget before falling back to Gemini)

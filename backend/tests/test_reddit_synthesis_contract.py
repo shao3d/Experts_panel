@@ -63,11 +63,24 @@ def test_partial_renders_gap_and_observations_but_never_actions_or_free_prose():
     assert "Actions supported" not in answer
 
 
-def test_gap_cannot_be_overridden_by_sufficient_label():
+def test_stray_gap_no_longer_forces_partial():
+    """A sufficient answer with an advisory gap stays sufficient (B2)."""
     data = payload()
-    data.update(gap="Untested on Russian", actions=[finding("Use this for Russian")])
+    data.update(gap="Untested on Russian", actions=[finding("Use this offline")])
     text = render_synthesis(json.dumps(data), "English", 1)
-    assert "partial answer" in text and "Use this" not in text
+    assert "partial answer" not in text
+    assert "Use this offline" in text
+    assert "Untested on Russian" not in text
+
+
+def test_gap_forces_partial_flag_restores_old_behaviour(monkeypatch):
+    from src import config
+
+    monkeypatch.setattr(config, "REDDIT_SYNTH_GAP_FORCES_PARTIAL", True)
+    data = payload()
+    data.update(gap="Untested on Russian", actions=[finding("Use this offline")])
+    text = render_synthesis(json.dumps(data), "English", 1)
+    assert "partial answer" in text and "Use this offline" not in text
 
 
 @pytest.mark.parametrize("source_ids", [[0], [2], [True], ["1"], [], None])
@@ -108,14 +121,21 @@ def test_invalid_contract_is_technical_failure_not_abstention(raw):
 
 
 def test_partial_requires_gap_and_has_bounded_observations():
+    from src import config
+
     data = payload("partial")
     with pytest.raises(SynthesisContractError):
         render_synthesis(json.dumps(data), "English", 1)
     data.update(
-        gap="Missing direct comparison", findings=[finding(str(i)) for i in range(8)]
+        gap="Missing direct comparison",
+        findings=[finding(str(i)) for i in range(8)],
+        actions=[finding("UNSUPPORTED_ACTION_SENTINEL")],
     )
     text = render_synthesis(json.dumps(data), "English", 1)
-    assert text.count("[S1]") == 3
+    assert text.count("[S1]") == config.REDDIT_SYNTH_PARTIAL_MAX_FINDINGS
+    # Still bounded below the full budget, and partial still renders no actions.
+    assert config.REDDIT_SYNTH_PARTIAL_MAX_FINDINGS < 8
+    assert "UNSUPPORTED_ACTION_SENTINEL" not in text
 
 
 @pytest.mark.asyncio
@@ -187,6 +207,38 @@ def test_all_requirements_missing_cannot_produce_adjacent_answer():
     assert RedditSynthesisService.is_explicit_abstention(
         render_synthesis(json.dumps(data), "English", 1)
     )
+
+
+def test_unsupported_secondary_requirement_renders_partial_not_abstain():
+    """B1: the abstain is reserved for the central request, not for extras."""
+    data = payload()
+    data["requirements"] = [
+        dict(requirement="Fix the mouse copy-mode binding", supported=True),
+        dict(requirement="Behaviour on Russian prose", supported=False),
+    ]
+    data["actions"] = [finding("UNSUPPORTED_ACTION_SENTINEL")]
+    text = render_synthesis(json.dumps(data), "English", 1)
+    assert "partial answer" in text
+    assert "Behaviour on Russian prose" in text
+    assert not RedditSynthesisService.is_explicit_abstention(text)
+    assert "UNSUPPORTED_ACTION_SENTINEL" not in text
+
+
+def test_synthesis_prompt_reserves_insufficient_for_central_requirement():
+    """B1 lives in the prompt; the guard against sufficient must survive it."""
+    from src import config
+
+    service = object.__new__(RedditSynthesisService)
+    messages = service._create_synthesis_prompt("query", "context", "English")
+    prompt = "\n".join(message["content"] for message in messages)
+    assert "CENTRAL request" in prompt
+    assert "makes the answer partial,\nnot insufficient" in prompt
+    assert "If ANY requirement is unsupported, coverage cannot be sufficient." in prompt
+    assert (
+        f"at most {config.REDDIT_SYNTH_PARTIAL_MAX_FINDINGS} brief observations"
+        in prompt
+    )
+
 
 
 @pytest.mark.asyncio

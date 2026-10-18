@@ -1,7 +1,7 @@
 # Карта Документации
 
 Status: Active
-Last updated: 2026-10-17
+Last updated: 2026-10-18
 
 Это навигационный слой проекта Experts Panel. Он должен отвечать на вопрос
 "куда смотреть?", а не пересказывать содержимое всех документов.
@@ -23,6 +23,8 @@ Last updated: 2026-10-17
 
 | Задача | Сначала читать | Потом, если нужно |
 | --- | --- | --- |
+| Reddit Search V2: почему отказывает (32% при одном посте) и план правок фазами A–D, включая перевод этапов на DeepSeek Harness, 2026-10-18 | `docs/roadmap/2026-10-18-reddit-search-v2-fix-plan.md` | Причина в коде: `backend/src/services/reddit_evidence.py`, `reddit_synthesis_contract.py`; исходный аудит: `docs/quality/2026-10-02-reddit-v2-audit.md` |
+| Reddit: какие каналы сбора существуют вне OAuth-поиска (Arctic Shift, PullPush, Brave, Exa, дампы) и что из этого мертво, 2026-10-18 | `docs/research/2026-10-18-reddit-retrieval-channels.md` | План и замер по каналам: `docs/roadmap/2026-10-18-reddit-search-v2-fix-plan.md` (раздел 0.5) |
 | VideoHub: полный онбординг JOEY `LOUEH3DzLro` (Claude skills v2, staging; независимая перепроверка и ремонт кадров 1016), 2026-10-17 | `docs/quality/2026-10-17-loueh3dzlro-onboarding-report.md` | `docs/guides/video-hub-operator.md` (шаги 0.1a–0.4), `output/video_ingest/LOUEH3DzLro/segments.json` (разметка), `output/video_admission/admission_log.json` (запись LOUEH3DzLro); гейт: `docs/architecture/expert-admission-control.md` §16 |
 | Скаут: переключение дефолт-движка на GLM-5.3 Flash, чек-лист ответов и Sol-инцидент, 2026-10-12 | `docs/quality/2026-10-12-scout-glm-switch.md` | `docs/guides/expert-scout.md` (SSOT рантайма), `docs/guides/scout-web.md` (веб-контур); стенд: `backend/scripts/benchmark_scout_models.py` |
 | Скаут: миграция плагина и рантайма на OpenCode 2, 2026-10-14 | `docs/quality/2026-10-14-opencode-v2-scout-migration.md` | `docs/guides/expert-scout.md` (SSOT рантайма: V2-плагин, `codemode: false`, маркер `turn.completed`); `scripts/expert_scout_mcp.ts` (MCP-адаптер sol) |
@@ -197,6 +199,7 @@ Quality docs - evidence snapshots and guardrails, not current API specs.
 | Файл/папка | Статус |
 | --- | --- |
 | `docs/roadmap/2026-09-system-review.md` | Active roadmap: ценностные фичи и техздоровье по большому обзору 09.2026, со статусами (сделано/осталось). Начинай отсюда при планировании следующих шагов. |
+| `docs/roadmap/2026-10-18-reddit-search-v2-fix-plan.md` | Active plan: развязка evidence-гейта и синтеза Reddit Search V2 фазами A–D с диффами и тестами. Перевод этапов на DeepSeek Harness и фазы A, B, C (включая A4) внедрены и замерены (разделы 0.1–0.4); остались B4 (резерв слотов на разнообразие) и задержка. Не SSOT рантайма — текущее поведение в `docs/architecture/reddit-service.md`. |
 | `docs/concepts/ai-architect-mode.md` | Product concept, not runtime behavior. |
 | `docs/concepts/expert-lens-global-skill.md` | Draft concept for a global Codex skill that turns Panex evidence into bounded source-grounded expert-lens critique packets. |
 | `docs/roadmap/video-hub-scaling.md` | Active scaling roadmap for larger Video Hub usage. |

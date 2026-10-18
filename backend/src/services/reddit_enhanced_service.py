@@ -24,9 +24,9 @@ import httpx
 
 from .. import config
 from .reddit_service import RedditServiceError, CircuitBreaker
-from .vertex_llm_client import get_vertex_llm_client
+from .dsh_client import get_reddit_llm_client
 from .reddit_evidence import (
-    match_evidence,
+    match_evidence_ex,
     normalize_evidence,
     select_evidence_passages,
 )
@@ -148,6 +148,18 @@ PRACTITIONER_DISCOVERY_INTENTS = {
     "practitioner_examples",
 }
 
+# Arctic Shift keyword search is AND-based, so filler words only shrink the
+# result set (and long queries are the ones that time out server-side).
+_ARCTIC_STOPWORDS = {
+    "a", "about", "an", "and", "any", "are", "as", "at", "be", "best", "by",
+    "can", "did", "do", "does", "for", "from", "get", "has", "have", "how",
+    "i", "if", "in", "is", "it", "its", "me", "my", "of", "on", "or", "our",
+    "should", "so", "some", "than", "that", "the", "their", "them", "then",
+    "there", "these", "they", "this", "to", "use", "using", "was", "we",
+    "were", "what", "when", "where", "which", "who", "why", "will", "with",
+    "you", "your",
+}
+
 # Unambiguous solicitation/job-board patterns. Do not treat "I built ..." as
 # spam: first-person build reports are often the best practitioner evidence.
 JOB_SOLICITATION_PATTERNS = [
@@ -261,6 +273,272 @@ def _anchor_specificity(token: str) -> float:
     return score
 
 
+# Words that look generic but are part of a product's NAME: dropping them
+# turned "DeepSeek Harness" into "DeepSeek" and "Claude Code" into "Claude",
+# which on Google/Serper produced off-topic threads (measured 2026-10-18: the
+# "DeepSeek Harness" questions lost every relevant result).
+_ENTITY_PRODUCT_TAILS = {
+    "harness", "code", "cli", "tui", "app", "desktop", "studio", "labs",
+    "agent", "gateway", "server", "cloud", "terminal", "client", "engine",
+}
+
+# Model-tier suffixes: "GLM-5.3 Flash", "GPT-5.6 Sol", "Qwen 3.8 Max" name ONE
+# entity. Without this the run builder glues two competing products into a
+# single phrase ("GLM-5.3 Flash GPT-5.6"), which is exactly the conjunction a
+# comparison search must not send.
+_MODEL_TIER_SUFFIXES = {
+    "flash", "pro", "max", "mini", "plus", "ultra", "turbo", "lite", "air",
+    "nano", "base", "instruct", "chat", "preview", "sol", "opus", "sonnet",
+    "haiku", "reasoner", "coder", "vl", "omni", "instant", "flash-lite",
+}
+
+# Shape of a brand+version compound that can open a new entity: "glm-5.3",
+# "gpt-5.6", "kimi-k3", "qwen3.8".
+_BRAND_VERSION_RE = re.compile(r"^[a-z]{2,}[-_.]?\d+(?:\.\d+)*$", re.IGNORECASE)
+# Bare version token that attaches to the entity before it: "2.6", "v4.1".
+_VERSION_ONLY_RE = re.compile(r"^v?\d+(?:\.\d+)*$", re.IGNORECASE)
+
+# Tokens that look like names but never are: they describe the answer or the
+# medium, not the compared things.
+_COMPARISON_GENERIC_TOKENS = {
+    "best", "worst", "value", "model", "models", "plan", "plans", "review",
+    "reviews", "comparison", "comparisons", "compare", "compared", "option",
+    "options", "pricing", "price", "good", "better", "worse", "quota", "usage",
+    "experience", "impressions", "recommendation", "recommendations", "test",
+    "tests", "testing", "benchmark", "benchmarks", "reddit", "users", "user",
+    "developers", "developer", "people", "which", "what", "is", "are", "the",
+    "and", "for", "with", "about", "latency", "quality", "performance",
+    "speed", "cost", "worth", "limits", "limit", "how", "does", "do", "in",
+    "on", "of", "to", "a", "an", "it", "its", "this", "that", "current",
+    "reports", "report", "say", "says", "practitioners", "tool", "tools",
+    "app", "apps", "desktop", "terminal", "client", "native", "official",
+    "harness", "code", "coding", "agentic", "research", "cli", "llm", "llms",
+    "api", "tui", "gpu", "cpu", "ai", "ui", "sdk", "os", "versus", "vs",
+    "more", "less", "than", "any", "all", "real", "actual", "evidence",
+}
+
+# Sentence openers that happen to be capitalized: a lone one of these at the
+# start of a question is never an entity ("There is a project called ...").
+_SENTENCE_START_STOPWORDS = {
+    "there", "this", "that", "these", "those", "what", "which", "who", "how",
+    "why", "when", "where", "is", "are", "was", "were", "does", "do", "did",
+    "can", "could", "should", "would", "will", "if", "any", "anyone", "anybody",
+    "hello", "hey", "so", "and", "but", "for", "with", "about", "my", "our",
+    "your", "their", "his", "her", "its", "it", "we", "i", "you", "they",
+    "looking", "searching", "trying", "need", "want", "comparing", "compare",
+}
+
+# The compared pair usually sits on either side of one of these.
+_COMPARISON_SPLIT_RE = re.compile(
+    r"\s+(?:vs\.?|versus|compared?\s+(?:to|with)|against)\s+", re.IGNORECASE
+)
+
+_ENTITY_TOKEN_RE = re.compile(r"[A-Za-z][A-Za-z0-9_+.#-]*|\d+(?:\.\d+)*")
+
+
+def _entity_name_like(token: str) -> bool:
+    """Is this token shaped like a product/model/person name?"""
+    low = token.lower().strip("'\"()[]{}.,:;!?")
+    if not low or low in _COMPARISON_GENERIC_TOKENS:
+        return False
+    if _VERSION_ONLY_RE.match(low) or _BRAND_VERSION_RE.match(low):
+        return True
+    if any(c.isdigit() for c in low) and any(c.isalpha() for c in low):
+        return True
+    if token.isupper() and len(low) >= 2:
+        return True
+    return token[:1].isupper() and len(low) >= 3
+
+
+def _entity_runs(
+    text: str, max_words: int = 4, drop_leading_single: bool = False
+) -> List[List[str]]:
+    """Group adjacent name-like tokens into candidate entity phrases.
+
+    ``drop_leading_single`` drops a lone sentence-opener at the very start of
+    the text: that is where sentence capitalization lives ("There is a project
+    called 'dsh-cli'" produced the "entity" *There*), while a single capital
+    word after "vs" is a real name and is kept.
+    """
+    runs: List[Tuple[List[str], bool]] = []
+    cur: List[str] = []
+    cur_starts_text = False
+    first_pos: Optional[int] = None
+
+    def start(raw: str, pos: int) -> None:
+        nonlocal cur, cur_starts_text
+        cur = [raw]
+        cur_starts_text = first_pos is not None and pos == first_pos
+
+    def flush() -> None:
+        nonlocal cur, cur_starts_text
+        if cur:
+            runs.append((cur[:max_words], cur_starts_text))
+            cur = []
+            cur_starts_text = False
+
+    for match in _ENTITY_TOKEN_RE.finditer(text):
+        raw = match.group(0)
+        low = raw.lower().strip("'\"()[]{}.,:;!?")
+        if first_pos is None:
+            first_pos = match.start()
+        if _VERSION_ONLY_RE.match(low):
+            # "V2.6", "3.8", "5.3" never stand alone; they complete the
+            # entity before them ("DeepSeek V4.1").
+            if cur:
+                cur.append(raw)
+            continue
+        if _BRAND_VERSION_RE.match(low):
+            # "glm-5.3", "gpt-5.6" open a NEW entity: two of them in one
+            # phrase would send the conjunction a comparison must not send.
+            flush()
+            start(raw, match.start())
+            continue
+        if not _entity_name_like(raw):
+            # A product noun may COMPLETE the name ("DeepSeek Harness",
+            # "Claude Code"); any other non-name token ends the run.
+            if cur and len(cur) < 2 and low in _ENTITY_PRODUCT_TAILS:
+                cur.append(raw)
+                continue
+            flush()
+            continue
+        if not cur:
+            start(raw, match.start())
+            continue
+        prev = cur[-1].lower().strip("'\"()[]{}.,:;!?")
+        if low in _MODEL_TIER_SUFFIXES:
+            cur.append(raw)
+        elif _BRAND_VERSION_RE.match(cur[0].lower()):
+            # A brand+version token is a complete entity: "GLM-5.3 Kimi"
+            # would weld two competing products together.
+            flush()
+            start(raw, match.start())
+        elif prev in _MODEL_TIER_SUFFIXES:
+            # "GPT-5.6 Sol" is complete — the next name is a new entity.
+            flush()
+            start(raw, match.start())
+        elif (
+            len(cur) >= 2
+            and any(c.isdigit() for c in prev)
+            and any(c.isalpha() for c in prev)
+        ):
+            # "Kimi K3" is complete: the next name starts the other side
+            # ("Qwen 3.8 Max"). A pure version ("GPT Image 2.5") does not
+            # close the name, so its head still attaches.
+            flush()
+            start(raw, match.start())
+        elif len(cur) < max_words:
+            cur.append(raw)
+        else:
+            flush()
+            start(raw, match.start())
+    flush()
+
+    # A generic word may trail a name ("Codex CLI", "DeepSeek Harness") but
+    # never closes the entity: strip it so the query carries the name only.
+    cleaned: List[List[str]] = []
+    for run, starts_text in runs:
+        words = list(run)
+        while (
+            len(words) > 1
+            and words[-1].lower().strip("'\"()[]{}.,:;!?") in _COMPARISON_GENERIC_TOKENS
+            and words[-1].lower().strip("'\"()[]{}.,:;!?") not in _ENTITY_PRODUCT_TAILS
+        ):
+            words.pop()
+        if not words:
+            continue
+        if len(words) == 1 and words[0].lower() in _MODEL_TIER_SUFFIXES:
+            continue
+        if (
+            drop_leading_single
+            and starts_text
+            and len(words) == 1
+            and words[0].lower() in _SENTENCE_START_STOPWORDS
+        ):
+            continue
+        cleaned.append(words)
+    return cleaned
+
+
+def _entity_key(phrase: str) -> str:
+    """Normalize an entity for duplicate detection ("GLM 5.3" == "GLM-5.3")."""
+    return re.sub(r"[^a-z0-9]+", "", phrase.lower())
+
+
+def _rank_entity_runs(runs: List[List[str]]) -> List[str]:
+    """Prefer versioned, longer, earlier phrases; drop substring duplicates."""
+    ranked = sorted(
+        enumerate(runs),
+        key=lambda item: (
+            -int(any(c.isdigit() for c in " ".join(item[1]))),
+            -len(item[1]),
+            item[0],
+        ),
+    )
+    phrases: List[str] = []
+    keys: List[str] = []
+    for _, run in ranked:
+        phrase = " ".join(run).strip()
+        if len(phrase) < 3:
+            continue
+        key = _entity_key(phrase)
+        if any(key != other and key in other for other in keys):
+            continue
+        phrases.append(phrase)
+        keys.append(key)
+    return phrases
+
+
+def _extract_comparison_entities(query: str, max_entities: int = 3) -> List[str]:
+    """Extract the compared things (products/models) from a comparison query.
+
+    Measured 2026-10-18: the anchor-based pair query
+    (``anchor_terms[0] anchor_terms[1] benchmark``) picks whatever the
+    specificity heuristic ranks first, which for real owner questions produced
+    "5.3 good benchmark", "deepseek intel benchmark" and "code benchmark" —
+    strings that miss one or both compared products. Reddit relevance search is
+    OR-ish, so those queries return topically adjacent noise.
+
+    Structural, no domain word list: name-shaped runs, split at the comparison
+    marker when there is one, so each side of "X vs Y" contributes its own
+    entity.
+    """
+    text = (query or "").strip()
+    if not text:
+        return []
+
+    marker = _COMPARISON_SPLIT_RE.search(text)
+    phrases: List[str] = []
+    if marker:
+        # One entity from each side of "X vs Y" is guaranteed (that is the
+        # comparison); further slots go to the best remaining names, which
+        # keeps multi-model questions ("GLM-5.3, Kimi K3, Qwen 3.8 Max")
+        # from spending both slots on the left-hand prose.
+        left = _rank_entity_runs(_entity_runs(text[: marker.start()]))
+        right = _rank_entity_runs(_entity_runs(text[marker.end():]))
+        if left and right:
+            phrases = [left[0], right[0]]
+            phrases += _rank_entity_runs(
+                _entity_runs(text[: marker.start()])
+                + _entity_runs(text[marker.end():])
+                + _entity_runs(text, drop_leading_single=True)
+            )
+        else:
+            phrases = left + right
+    if len(phrases) < 2:
+        phrases = _rank_entity_runs(_entity_runs(text, drop_leading_single=True))
+
+    seen: Set[str] = set()
+    result: List[str] = []
+    for phrase in phrases:
+        key = _entity_key(phrase)
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        result.append(phrase)
+    return result[:max_entities]
+
+
 def _write_search_telemetry(record: Dict[str, Any]) -> None:
     """Append one decision record to the Reddit search JSONL telemetry log.
 
@@ -362,11 +640,15 @@ class RedditEnhancedService:
         self.max_retries = max_retries
         self._circuit_breaker = CircuitBreaker()
         self._client: Optional[httpx.AsyncClient] = None
-        self._llm_client = get_vertex_llm_client()
+        self._llm_client = get_reddit_llm_client()
         # post_id -> (timestamp, full_content, top_comments, created_utc);
         # bounded LRU so iterative research sessions do not re-fetch the same
         # threads through /details on every related query.
         self._enrich_cache: "OrderedDict[str, tuple]" = OrderedDict()
+        # subreddit -> subscriber count (-1 = unknown); keyword search on the
+        # archive is unsupported for very active subreddits, and the lookup is
+        # itself load-dependent, so answers are cached for the process.
+        self._arctic_sub_cache: Dict[str, int] = {}
     
     async def _get_client(self) -> httpx.AsyncClient:
         """Get or create HTTP client."""
@@ -874,6 +1156,7 @@ Output JSON structure:
         search_plan: Dict[str, Any],
         subreddits: Optional[List[str]],
         anchor_terms: Optional[List[str]] = None,
+        comparison_entities: Optional[List[str]] = None,
     ) -> (List[Any], Dict[str, Any]):
         """Create a small, high-recall candidate set without over-constraining Reddit."""
         intent = search_plan.get("intent", "discussion")
@@ -1053,6 +1336,19 @@ Output JSON structure:
                     limit=18,
                 )
 
+            # Name the compared products instead of the anchors (owner
+            # decision 2026-10-18, on by default). Space-joined on purpose:
+            # measured, the "A vs B" form returned 0 posts on 8 of 14
+            # questions while "A B" returned 18.
+            if config.REDDIT_COMPARISON_ENTITY_PAIR and len(comparison_entities or []) >= 2:
+                add_strategy(
+                    "comparison_entity_pair",
+                    " ".join(comparison_entities[:3]),
+                    sort="relevance",
+                    time="year",
+                    limit=18,
+                )
+
         return sort_tasks, strategy_meta
 
     def _apply_confidence_threshold(
@@ -1061,16 +1357,32 @@ Output JSON structure:
         target_posts: int,
         require_anchor_match: bool = False,
         intent: str = "discussion",
+        judge_unavailable: bool = False,
+        tier_out: Optional[Dict[str, Any]] = None,
     ) -> List[RedditPost]:
-        """Prefer abstaining over returning noisy Reddit results."""
-        def is_allowed(post: RedditPost, threshold: float) -> bool:
+        """Prefer abstaining over returning noisy Reddit results.
+
+        ``judge_unavailable`` marks a disclosed degradation: the judge produced
+        no rating at all, so heuristic ranking is all there is. Those posts may
+        pass only the soft tier, and the caller records the fact — a provider
+        outage must never be presented as confirmed relevance, and it must not
+        be presented as "nothing on Reddit" either.
+        """
+        def is_allowed(
+            post: RedditPost, threshold: float, *, allow_unavailable: bool
+        ) -> bool:
             if not math.isfinite(post.final_score) or post.final_score < threshold:
                 return False
-            if (
-                config.REDDIT_EVIDENCE_GATE_ENABLED
-                and post.evidence_status in {"missing", "invalid_rating"}
-            ):
-                return False
+            if config.REDDIT_EVIDENCE_GATE_ENABLED:
+                if allow_unavailable and post.evidence_status == "unavailable":
+                    # Disclosed degradation: heuristic ranking only, and the
+                    # caller records judge_unavailable for the response.
+                    pass
+                elif (
+                    post.evidence_status
+                    not in config.EVIDENCE_GATE_ALLOWED_STATUSES
+                ):
+                    return False
             if intent in PRACTITIONER_DISCOVERY_INTENTS and any(
                 pattern.search(post.title or "")
                 for pattern in JOB_SOLICITATION_PATTERNS
@@ -1087,18 +1399,90 @@ Output JSON structure:
             return True
 
         strict = [
-            post for post in posts if is_allowed(post, config.REDDIT_MIN_CONFIDENCE)
+            post
+            for post in posts
+            if is_allowed(
+                post, config.REDDIT_MIN_CONFIDENCE, allow_unavailable=False
+            )
         ]
         if strict:
+            if tier_out is not None:
+                tier_out["decision_tier"] = "strict"
             return strict[:target_posts]
 
         soft = [
-            post for post in posts if is_allowed(post, config.REDDIT_SOFT_CONFIDENCE)
+            post
+            for post in posts
+            if is_allowed(
+                post,
+                config.REDDIT_SOFT_CONFIDENCE,
+                allow_unavailable=judge_unavailable,
+            )
         ]
         if soft:
+            if tier_out is not None:
+                tier_out["decision_tier"] = "soft"
             return soft[: min(target_posts, 4)]
 
+        if tier_out is not None:
+            tier_out["decision_tier"] = "abstain"
         return []
+
+    @staticmethod
+    def _split_rerank_candidates(
+        posts: List[RedditPost], limit: int, reserved: int
+    ) -> tuple[List[RedditPost], List[RedditPost]]:
+        """Split a heuristic-sorted pool into (judged, dropped) with a reserve.
+
+        The heuristic score rewards anchor-word overlap, so the plain top-N can
+        be dominated by one strategy or one subreddit while other channels'
+        best finds never reach the judge — and judging 18 of ~134 candidates
+        means the cut, not the judge, decides what the answer can rest on. With
+        `reserved > 0` that many slots go to the best posts from strategies and
+        subreddits the top does not already represent; the rest stays plain
+        heuristic order. `reserved = 0` reproduces the previous behaviour
+        exactly.
+        """
+        limit = max(1, limit)
+        if reserved <= 0 or len(posts) <= limit:
+            return posts[:limit], posts[limit:]
+
+        reserved = min(reserved, limit - 1)
+        head = posts[: limit - reserved]
+        tail = posts[limit - reserved :]
+        head_ids = {post.id for post in head}
+        strategies = {p.found_by_strategy for p in head if p.found_by_strategy}
+        subreddits = {p.subreddit for p in head if p.subreddit}
+
+        picked: List[RedditPost] = []
+        picked_ids: set[str] = set()
+        for key in ("found_by_strategy", "subreddit"):
+            if len(picked) >= reserved:
+                break
+            known = strategies if key == "found_by_strategy" else subreddits
+            for post in tail:
+                if len(picked) >= reserved:
+                    break
+                if post.id in picked_ids or post.id in head_ids:
+                    continue
+                value = getattr(post, key, None)
+                if value and value not in known:
+                    picked.append(post)
+                    picked_ids.add(post.id)
+                    known.add(value)
+
+        # Unused reserve falls back to the heuristic tail, so a pool whose
+        # strategies are already covered behaves exactly like the plain cut.
+        for post in tail:
+            if len(picked) >= reserved:
+                break
+            if post.id not in picked_ids and post.id not in head_ids:
+                picked.append(post)
+                picked_ids.add(post.id)
+
+        judged = head + picked
+        dropped = [post for post in tail if post.id not in picked_ids]
+        return judged, dropped
 
     async def _rank_and_filter(
         self,
@@ -1140,12 +1524,24 @@ Output JSON structure:
             post for post in remaining_posts if post.id not in reranked_ids
         ]
 
+        # A wholly unavailable judge (provider outage / unparsable answer) is a
+        # disclosed degradation, not a relevance verdict: without this flag the
+        # outage path would either look like confirmed relevance or produce a
+        # false "nothing found".
+        judge_unavailable = bool(reranked_candidates) and all(
+            post.evidence_status == "unavailable" for post in reranked_candidates
+        )
+        tier_info: Dict[str, Any] = {"judge_unavailable": judge_unavailable}
         selected_posts = self._apply_confidence_threshold(
             final_sorted,
             target_posts,
             require_anchor_match=bool(anchor_terms),
             intent=search_plan.get("intent", "discussion"),
+            judge_unavailable=judge_unavailable,
+            tier_out=tier_info,
         )
+        debug_trace["judge_unavailable"] = judge_unavailable
+        debug_trace["decision_tier"] = tier_info.get("decision_tier")
 
         if include_comments and selected_posts:
             missing_context = [
@@ -1195,6 +1591,51 @@ Output JSON structure:
             )
         ]
         return selected_posts, final_sorted, post_rank, top_reject_reasons
+
+    @staticmethod
+    def _should_try_reflection_retry(
+        selected_posts: List[RedditPost], unique_posts: List[RedditPost]
+    ) -> Optional[str]:
+        """Decide whether ONE bounded reflection retry is worth spending.
+
+        Returns "empty" (nothing was kept) or "thin" (fewer posts than
+        REDDIT_REFLECTION_MIN_POSTS), else None. Synthesis abstains on 32% of
+        searches that reach it with one post, so a one-post shortlist is as
+        expensive as a dead end. Set REDDIT_REFLECTION_MIN_POSTS=1 to restore
+        the older zero-only behaviour.
+        """
+        if not unique_posts or not config.REDDIT_REFLECTION_RETRY_ENABLED:
+            return None
+        if len(selected_posts) >= config.REDDIT_REFLECTION_MIN_POSTS:
+            return None
+        return "empty" if not selected_posts else "thin"
+
+    @staticmethod
+    def _best_tier(*tiers: Optional[str]) -> Optional[str]:
+        """The stronger of two gate verdicts (strict > soft > abstain)."""
+        rank = {"strict": 2, "soft": 1, "abstain": 0}
+        known = [tier for tier in tiers if tier in rank]
+        if not known:
+            return None
+        return max(known, key=lambda tier: rank[tier])
+
+    @staticmethod
+    def _merge_retry_selection(
+        selected_posts: List[RedditPost], retry_selected: List[RedditPost]
+    ) -> List[RedditPost]:
+        """Union of both passes, best final_score first.
+
+        The retry must never downgrade a thin shortlist: a post already kept
+        passed the same gate, so it stays unless the retry beats it on score.
+        """
+        merged = {post.id: post for post in selected_posts}
+        for post in retry_selected:
+            merged.setdefault(post.id, post)
+        return sorted(
+            merged.values(),
+            key=lambda post: getattr(post, "final_score", 0.0),
+            reverse=True,
+        )
 
     async def _plan_reflection_retry(
         self,
@@ -1373,24 +1814,38 @@ show the topic simply has no Reddit coverage, output exactly: NONE
 
         debug_trace["soft_target_subreddits"] = soft_target_subreddits or []
 
+        comparison_entities = (
+            _extract_comparison_entities(original_query)
+            if search_plan.get("intent") == "comparison"
+            else []
+        )
+        debug_trace["comparison_entities"] = comparison_entities
+
         sort_tasks, strategy_meta = self._build_search_tasks_v2(
             plan_query,
             expanded_query,
             search_plan,
             soft_target_subreddits,
             anchor_terms=anchor_terms,
+            comparison_entities=comparison_entities,
         )
 
         # Google SERP discovery via Serper.dev (site:reddit.com).
         if config.SERPER_API_KEY:
+            serper_query = self._serper_query(plan_query, comparison_entities)
             strategy_meta["serp_google_discovery"] = {
-                "query": plan_query,
+                "query": serper_query,
                 "source": "serper",
+                "fallback_query": plan_query if serper_query != plan_query else None,
             }
             sort_tasks.append(
                 (
                     "serp_google_discovery",
-                    self._search_serper(plan_query, recent_only=recent_only),
+                    self._search_serper(
+                        serper_query,
+                        recent_only=recent_only,
+                        fallback_query=plan_query if serper_query != plan_query else None,
+                    ),
                 )
             )
         else:
@@ -1410,6 +1865,7 @@ show the topic simply has no Reddit coverage, output exactly: NONE
                         plan_query,
                         soft_target_subreddits,
                         recent_only=recent_only,
+                        keywords=anchor_terms,
                     ),
                 )
             )
@@ -1609,8 +2065,19 @@ show the topic simply has no Reddit coverage, output exactly: NONE
             heuristic_sorted = [p for p in heuristic_sorted if (p.created_utc or 0) >= cutoff_ts]
             unique_posts = [p for p in unique_posts if (p.created_utc or 0) >= cutoff_ts]
 
-        candidates_for_rerank = heuristic_sorted[: config.REDDIT_RERANK_CANDIDATES]
-        remaining_posts = heuristic_sorted[config.REDDIT_RERANK_CANDIDATES :]
+        candidates_for_rerank, remaining_posts = self._split_rerank_candidates(
+            heuristic_sorted,
+            limit=config.REDDIT_RERANK_CANDIDATES,
+            reserved=config.REDDIT_RERANK_DIVERSITY_SLOTS,
+        )
+        debug_trace["rerank_diversity"] = {
+            "reserved": config.REDDIT_RERANK_DIVERSITY_SLOTS,
+            "pool": len(heuristic_sorted),
+            "judged": len(candidates_for_rerank),
+            "strategies_judged": sorted(
+                {p.found_by_strategy for p in candidates_for_rerank if p.found_by_strategy}
+            ),
+        }
 
         (
             selected_posts,
@@ -1630,17 +2097,17 @@ show the topic simply has no Reddit coverage, output exactly: NONE
             debug_trace,
         )
 
-        # Reflection retry: when the confidence filter kept nothing, the
-        # judge's top rejection reasons ("lacks Z-depth steps", "camera bugs
-        # not clay workflow") feed one bounded replan + retrieval pass. This
-        # turns a dead end into a smarter second question instead of an
-        # abstain that could have been salvaged.
+        # Reflection retry: when the confidence filter kept too little to answer
+        # from, the judge's top rejection reasons ("lacks Z-depth steps",
+        # "camera bugs not clay workflow") feed one bounded replan + retrieval
+        # pass. A dead end and a one-post shortlist are the same problem seen
+        # from two sides: synthesis abstains on 32% of searches that reach it
+        # with a single post and on none of the four-post ones. One pass only.
         reflection_used = False
-        if (
-            not selected_posts
-            and unique_posts
-            and config.REDDIT_REFLECTION_RETRY_ENABLED
-        ):
+        reflection_trigger = self._should_try_reflection_retry(
+            selected_posts, unique_posts
+        )
+        if reflection_trigger:
             retry_query = await self._plan_reflection_retry(
                 plan_query,
                 debug_trace.get("top_reject_reasons", []),
@@ -1649,6 +2116,7 @@ show the topic simply has no Reddit coverage, output exactly: NONE
             )
             if retry_query:
                 reflection_used = True
+                debug_trace["reflection_retry_trigger"] = reflection_trigger
                 debug_trace["reflection_retry_query"] = retry_query
                 known_ids = {p.id for p in all_posts.values()}
                 retry_tasks = [
@@ -1719,10 +2187,14 @@ show the topic simply has no Reddit coverage, output exactly: NONE
                     retry_pool.sort(
                         key=lambda p: p.heuristic_score, reverse=True
                     )
+                    # A dedicated trace for the retry pass: it must not
+                    # overwrite the first pass's decision_tier/judge_unavailable,
+                    # because those describe the shortlist it started from.
+                    retry_trace: Dict[str, Any] = {}
                     (
                         retry_selected,
                         _retry_final,
-                        debug_trace["reflection_post_rank"],
+                        retry_rank,
                         _ignored_reasons,
                     ) = await self._rank_and_filter(
                         retry_pool,
@@ -1734,12 +2206,26 @@ show the topic simply has no Reddit coverage, output exactly: NONE
                         search_plan,
                         original_user_query,
                         must_keep_terms,
-                        debug_trace,
+                        retry_trace,
+                    )
+                    debug_trace["reflection_post_rank"] = retry_rank
+                    debug_trace["reflection_decision_tier"] = retry_trace.get(
+                        "decision_tier"
                     )
                     if retry_selected:
-                        selected_posts = retry_selected
+                        debug_trace["reflection_retry_before"] = len(selected_posts)
+                        selected_posts = self._merge_retry_selection(
+                            selected_posts, retry_selected
+                        )
                         for post in retry_selected:
                             all_posts[post.id] = post
+                        debug_trace["reflection_retry_kept"] = len(selected_posts)
+                        # The returned shortlist is now the union of both passes,
+                        # so the recorded tier has to describe the stronger one.
+                        debug_trace["decision_tier"] = self._best_tier(
+                            debug_trace.get("decision_tier"),
+                            retry_trace.get("decision_tier"),
+                        )
 
         if recent_only:
             selected_posts = [p for p in selected_posts if (p.created_utc or 0) >= cutoff_ts]
@@ -1800,6 +2286,17 @@ show the topic simply has no Reddit coverage, output exactly: NONE
                 "unique_posts": len(unique_posts),
                 "selected_posts": len(selected_posts),
                 "reflection_retry_used": reflection_used,
+                # Which gate decided, and how the judge rated the pool: without
+                # these two, a strictness regression is invisible in the log.
+                "decision_tier": debug_trace.get("decision_tier"),
+                "judge_unavailable": debug_trace.get("judge_unavailable"),
+                "evidence_status_counts": {
+                    status: sum(
+                        1 for post in final_sorted[:25]
+                        if post.evidence_status == status
+                    )
+                    for status in {post.evidence_status for post in final_sorted[:25]}
+                },
                 "top_reject_reasons": debug_trace.get("top_reject_reasons", []),
                 "winners": [
                     {
@@ -2104,14 +2601,23 @@ Output JSON format ONLY:
                     ai_score = 0.0
                     post.evidence_status = "invalid_rating"
                 if rating is not None:
-                    passage = match_evidence(
+                    match = match_evidence_ex(
                         rating.get('evidence'), passages_by_index[i],
                         rating.get('evidence_source'),
+                        allow_normalized=config.REDDIT_EVIDENCE_LOOSE_MATCH_ENABLED,
                     )
-                    post.evidence_status = "verified" if passage else "missing"
-                    if passage:
+                    passage = match.passage if match else None
+                    post.evidence_status = match.kind if match else "missing"
+                    if match:
                         post.evidence_span = normalize_evidence(rating['evidence'])
                         post.evidence_source = passage.key
+                        if match.cited_key and match.cited_key != passage.key:
+                            # A wrong excerpt label is a labeling error, not a
+                            # fabrication: the quote was shown for this post.
+                            logger.info(
+                                "Evidence label corrected for post %s: %s -> %s",
+                                post.id, match.cited_key, passage.key,
+                            )
                         # Preserve all shown excerpts, including parents and
                         # objections, when normal synthesis trimming would
                         # otherwise lose the evidence that admitted this post.
@@ -2206,8 +2712,30 @@ Output JSON format ONLY:
         cleaned = html.unescape(re.sub(r"<[^>]+>", " ", text))
         return re.sub(r"\s+", " ", cleaned).strip()
 
+    @staticmethod
+    def _serper_query(query: str, comparison_entities: Optional[List[str]]) -> str:
+        """Pick the Google query form for a search.
+
+        Measured 2026-10-18 on 12 comparison questions (three runs, Serper is
+        deterministic): the current plan query put both compared products in
+        the title/snippet for 36% of returned threads, while a QUOTED pair
+        ("GLM-5.3 Flash" "DeepSeek V4.1 Flash") reached 59% and doubled the
+        results that explicitly compare them (p < 0.005). Google honours
+        quotes; Reddit's own search does not (there the plain pair wins).
+        """
+        if (
+            config.REDDIT_SERPER_ENTITY_QUERY
+            and comparison_entities
+            and len(comparison_entities) >= 2
+        ):
+            return f'"{comparison_entities[0]}" "{comparison_entities[1]}"'
+        return query
+
     async def _search_serper(
-        self, query: str, recent_only: bool = False
+        self,
+        query: str,
+        recent_only: bool = False,
+        fallback_query: Optional[str] = None,
     ) -> List[RedditPost]:
         """Google SERP discovery via Serper.dev (site:reddit.com).
 
@@ -2215,30 +2743,54 @@ Output JSON format ONLY:
         Reddit search lacks. Returns snippet-only candidates; created_utc is
         unknown (exempt from the recent_only post-filter, same as CSE).
         Silently returns [] when SERPER_API_KEY is not configured.
+
+        ``fallback_query``: a quoted entity pair is the measured best form for
+        comparison questions, but over-quoting can return nothing at all
+        (observed on one question in twelve), so an empty result retries once
+        with the plain query. Worth the extra credit: a silent empty channel is
+        indistinguishable from "Google found nothing".
         """
         if not config.SERPER_API_KEY:
             return []
 
-        payload: Dict[str, Any] = {
-            "q": f"{query} site:reddit.com",
-            # <=10 results keeps the call at 1 credit
-            "num": max(1, min(config.SERPER_RESULTS, 10)),
-        }
         try:
             client = await self._get_client()
-            resp = await client.post(
-                config.SERPER_ENDPOINT,
-                json=payload,
-                headers={"X-API-KEY": config.SERPER_API_KEY},
-            )
-            if resp.status_code != 200:
-                logger.warning(
-                    f"Serper error {resp.status_code}: {resp.text[:200]}"
-                )
-                raise RedditServiceError(f"Serper HTTP {resp.status_code}")
-            items = (resp.json() or {}).get("organic") or []
         except Exception as e:
+            # A transport outage must surface as a channel failure, not as
+            # "Google found nothing" (same contract as before the fallback).
             raise RedditServiceError("Serper retrieval failed") from e
+        attempts = [query] + (
+            [fallback_query] if fallback_query and fallback_query != query else []
+        )
+        items: List[Dict[str, Any]] = []
+        for attempt, attempt_query in enumerate(attempts):
+            payload: Dict[str, Any] = {
+                "q": f"{attempt_query} site:reddit.com",
+                # <=10 results keeps the call at 1 credit
+                "num": max(1, min(config.SERPER_RESULTS, 10)),
+            }
+            try:
+                resp = await client.post(
+                    config.SERPER_ENDPOINT,
+                    json=payload,
+                    headers={"X-API-KEY": config.SERPER_API_KEY},
+                )
+                if resp.status_code != 200:
+                    logger.warning(
+                        f"Serper error {resp.status_code}: {resp.text[:200]}"
+                    )
+                    raise RedditServiceError(f"Serper HTTP {resp.status_code}")
+                items = (resp.json() or {}).get("organic") or []
+            except RedditServiceError:
+                raise
+            except Exception as e:
+                raise RedditServiceError("Serper retrieval failed") from e
+            if items or attempt == len(attempts) - 1:
+                break
+            logger.info(
+                "Serper: quoted entity query returned nothing, retrying with "
+                f"'{attempt_query[:60]}'"
+            )
 
         posts: List[RedditPost] = []
         for item in items:
@@ -2274,16 +2826,25 @@ Output JSON format ONLY:
         query: str,
         subreddits: List[str],
         recent_only: bool = False,
+        keywords: Optional[List[str]] = None,
     ) -> List[RedditPost]:
-        """Exhaustive full-text recall within scout-suggested subreddits.
+        """Exhaustive per-subreddit archive recall (Arctic Shift).
 
-        Arctic Shift is a free community mirror with live ingestion (minutes
-        of lag, verified 2026-08) and a COMPLETE per-subreddit index — unlike
-        native search it does not miss existing threads due to ranking quirks.
-        Limitation (by design): text search requires a subreddit scope.
+        Arctic Shift is a free community mirror with a COMPLETE per-subreddit
+        index; unlike native search it does not lose existing threads to
+        ranking quirks. Its keyword search is AND-based, requires a subreddit
+        scope and — measured 2026-10-18 — times out server-side on unbounded
+        or expensive queries (HTTP 422 "Timeout. Maybe slow down a bit"), and
+        is "not supported with very active subreddits" (r/ChatGPT fails even
+        on a 7-day window while r/seedance answers a 365-day one).
 
-        Strategy: title-match on the top scout subreddits, newest first.
-        recent_only maps to Arctic's human-readable `after` window.
+        So every request is bounded, paced and small:
+          * a 30-day window by default, narrowed to 7 days after a timeout;
+          * at most `ARCTIC_LIMIT_PER_SUB` results, `title` first (cheap and
+            precise), then `query` (title+selftext, broader) if nothing came;
+          * requests are serialized and the channel gives up early instead of
+            stalling the whole search; a single subreddit failing is not a
+            channel failure.
         """
         if not config.ARCTIC_SHIFT_ENABLED:
             return []
@@ -2291,66 +2852,87 @@ Output JSON format ONLY:
             s.strip() for s in (subreddits or [])[: config.ARCTIC_TARGET_SUBREDDITS]
             if s.strip()
         ]
-        clean_query = (query or "").strip()
-        if not subs or not clean_query:
+        words = self._arctic_keywords(query, keywords)
+        if not subs or not words:
             return []
 
-        async def fetch_one(sub: str, field: str) -> List[Dict[str, Any]]:
-            params: Dict[str, Any] = {
-                "subreddit": sub,
-                field: clean_query,
-                "limit": max(1, min(config.ARCTIC_LIMIT_PER_SUB, 100)),
-                "sort": "desc",
-            }
-            if recent_only:
-                params["after"] = f"{REDDIT_RECENT_WINDOW_DAYS}d"
-            client = await self._get_client()
-            resp = await client.get(config.ARCTIC_SHIFT_ENDPOINT, params=params)
-            if resp.status_code != 200:
-                logger.warning(
-                    f"Arctic Shift error {resp.status_code} for r/{sub}: "
-                    f"{resp.text[:150]}"
-                )
-                raise RedditServiceError(f"Arctic Shift HTTP {resp.status_code}")
-            return (resp.json() or {}).get("data") or []
-
-        try:
-            # Title matches are high-precision; selftext widens recall for
-            # questions whose answer lives in the post body, not the title.
-            results = await asyncio.gather(
-                *[fetch_one(s, f) for s in subs for f in ("title", "selftext")],
-                return_exceptions=True,
-            )
-        except Exception as e:  # pragma: no cover - gather rarely raises here
-            raise RedditServiceError("Arctic Shift retrieval failed") from e
-
-        if results and all(isinstance(result, Exception) for result in results):
-            raise RedditServiceError("All Arctic Shift requests failed")
-
+        budget = max(1, config.ARCTIC_MAX_REQUESTS)
+        wide_window = (
+            config.ARCTIC_NARROW_WINDOW_DAYS if recent_only else config.ARCTIC_WINDOW_DAYS
+        )
+        narrow_window = min(config.ARCTIC_NARROW_WINDOW_DAYS, wide_window)
+        request_count = 0
+        transport_errors = 0
         posts_by_id: Dict[str, RedditPost] = {}
-        for result in results:
-            if isinstance(result, Exception):
-                logger.warning(f"Arctic Shift channel failed: {result}")
-                continue
-            for p in result:
-                pid = p.get("id")
-                if not pid or pid in posts_by_id:
-                    continue
-                permalink = p.get("permalink") or ""
-                posts_by_id[str(pid)] = RedditPost(
-                    id=str(pid),
-                    title=(p.get("title") or "").strip(),
-                    url=f"https://reddit.com{permalink}",
-                    permalink=f"https://reddit.com{permalink}",
-                    score=int(p.get("score") or 0),
-                    num_comments=int(p.get("num_comments") or 0),
-                    subreddit=p.get("subreddit") or "",
-                    author=p.get("author") or "",
-                    created_utc=int(p.get("created_utc") or 0),
-                    selftext=(p.get("selftext") or "")[:4000],
-                    found_by_strategy="arctic_targeted_archive",
-                    strategy_hits=["arctic_targeted_archive"],
+        failed_subs: List[str] = []
+
+        for sub in subs:
+            if request_count >= budget:
+                break
+            if await self._arctic_subreddit_too_big(sub):
+                logger.info(
+                    f"Arctic Shift: skipping r/{sub} "
+                    f"(keyword search is unsupported on very active subreddits)"
                 )
+                continue
+            attempts: List[Dict[str, Any]] = [
+                {"title": " ".join(words[:2]), "after": f"{wide_window}d"},
+            ]
+            if narrow_window < wide_window:
+                attempts.append(
+                    {"title": " ".join(words[:2]), "after": f"{narrow_window}d"}
+                )
+            attempts.append(
+                {"query": " OR ".join(words[:3]), "after": f"{narrow_window}d"}
+            )
+
+            sub_posts = 0
+            for attempt in attempts:
+                if request_count >= budget or sub_posts:
+                    break
+                request_count += 1
+                status: Optional[int] = None
+                rows: List[Dict[str, Any]] = []
+                try:
+                    status, rows = await self._arctic_request(
+                        {
+                            "subreddit": sub,
+                            "limit": config.ARCTIC_LIMIT_PER_SUB,
+                            "sort": "desc",
+                            **attempt,
+                        }
+                    )
+                except Exception as exc:
+                    # A dead transport is an outage; a 422/429 is the archive
+                    # telling us this query is too expensive. Only the former
+                    # is escalated, and only when every attempt hit it.
+                    transport_errors += 1
+                    logger.warning(f"Arctic Shift request failed for r/{sub}: {exc}")
+                if status == 200:
+                    for payload in rows:
+                        post = self._arctic_post(payload)
+                        if post is not None and post.id not in posts_by_id:
+                            posts_by_id[post.id] = post
+                            sub_posts += 1
+                elif status is not None:
+                    logger.info(
+                        f"Arctic Shift: r/{sub} attempt {sorted(attempt)} -> HTTP {status}"
+                    )
+                # Pace every attempt, not just the successful ones: a timeout
+                # loop must not turn into hammering a free service.
+                if config.ARCTIC_REQUEST_PAUSE_S:
+                    await asyncio.sleep(config.ARCTIC_REQUEST_PAUSE_S)
+            if not sub_posts:
+                failed_subs.append(sub)
+
+        if not posts_by_id and request_count and transport_errors == request_count:
+            raise RedditServiceError("All Arctic Shift requests failed")
+        if len(failed_subs) == len(subs) and not posts_by_id:
+            logger.warning(
+                "Arctic Shift channel yielded nothing: no subreddit answered "
+                f"({', '.join('r/' + s for s in failed_subs)})"
+            )
+            return []
 
         if posts_by_id:
             logger.info(
@@ -2358,6 +2940,111 @@ Output JSON format ONLY:
                 f"r/{', r/'.join(subs)} for '{query[:50]}'"
             )
         return list(posts_by_id.values())
+
+    @staticmethod
+    def _arctic_post(payload: Dict[str, Any]) -> Optional[RedditPost]:
+        """Map one archive row onto RedditPost (the archive omits some fields)."""
+        pid = payload.get("id")
+        if not pid:
+            return None
+        permalink = payload.get("permalink") or ""
+        if not permalink:
+            permalink = f"/r/{payload.get('subreddit') or 'reddit'}/comments/{pid}/"
+        return RedditPost(
+            id=str(pid),
+            title=(payload.get("title") or "").strip(),
+            url=f"https://reddit.com{permalink}",
+            permalink=f"https://reddit.com{permalink}",
+            score=int(payload.get("score") or 0),
+            num_comments=int(payload.get("num_comments") or 0),
+            subreddit=payload.get("subreddit") or "",
+            author=payload.get("author") or "",
+            created_utc=int(payload.get("created_utc") or 0),
+            selftext=(payload.get("selftext") or "")[:4000],
+            found_by_strategy="arctic_targeted_archive",
+            strategy_hits=["arctic_targeted_archive"],
+        )
+
+    @staticmethod
+    def _arctic_keywords(
+        query: str, anchor_terms: Optional[List[str]] = None
+    ) -> List[str]:
+        """Two or three distinctive keywords for an AND keyword search.
+
+        A natural-language question is close to useless here: with AND
+        semantics every extra word shrinks the result set, and long queries are
+        also the ones that time out. Anchors are the query's own salient terms,
+        so they come first; the plan query is only a fallback.
+        """
+        words: List[str] = []
+        for term in anchor_terms or []:
+            cleaned = " ".join(str(term or "").split())
+            if len(cleaned) >= 2 and cleaned.lower() not in {w.lower() for w in words}:
+                words.append(cleaned)
+        if len(words) < 2:
+            for token in re.findall(r"[A-Za-z0-9][A-Za-z0-9.+#_-]{1,}", query or ""):
+                if token.lower() in _ARCTIC_STOPWORDS:
+                    continue
+                if token.lower() in {w.lower() for w in words}:
+                    continue
+                words.append(token)
+        return words[:3]
+
+    async def _arctic_request(
+        self, params: Dict[str, Any]
+    ) -> tuple[int, List[Dict[str, Any]]]:
+        """One archive request, honoring its dynamic rate limit once."""
+        client = await self._get_client()
+        resp = await client.get(config.ARCTIC_SHIFT_ENDPOINT, params=params)
+        if resp.status_code == 429:
+            reset = (resp.headers or {}).get("X-RateLimit-Reset")
+            try:
+                wait = min(float(reset), config.ARCTIC_429_MAX_WAIT_S)
+            except (TypeError, ValueError):
+                wait = min(5.0, config.ARCTIC_429_MAX_WAIT_S)
+            logger.info(f"Arctic Shift rate limited; waiting {wait:.0f}s before retry")
+            await asyncio.sleep(wait)
+            resp = await client.get(config.ARCTIC_SHIFT_ENDPOINT, params=params)
+        if resp.status_code != 200:
+            return resp.status_code, []
+        try:
+            return 200, (resp.json() or {}).get("data") or []
+        except ValueError:
+            return 0, []
+
+    async def _arctic_subreddit_too_big(self, subreddit: str) -> bool:
+        """Is keyword search hopeless here? Cache the answer per process.
+
+        The archive documents keyword search as unsupported on very active
+        subreddits. The membership endpoint is itself load-dependent, so an
+        unknown answer means "try anyway" — the search path narrows and skips.
+        """
+        if config.ARCTIC_MAX_SUBSCRIBERS <= 0:
+            return False
+        cache = getattr(self, "_arctic_sub_cache", None)
+        if cache is None:  # object.__new__ construction (tests, manual probes)
+            cache = self._arctic_sub_cache = {}
+        cached = cache.get(subreddit)
+        if cached is None:
+            endpoint = config.ARCTIC_SHIFT_ENDPOINT.replace(
+                "/posts/search", "/subreddits/search"
+            )
+            cached = -1
+            if endpoint != config.ARCTIC_SHIFT_ENDPOINT:
+                try:
+                    client = await self._get_client()
+                    resp = await client.get(
+                        endpoint, params={"subreddit": subreddit, "limit": 1}
+                    )
+                    if resp.status_code == 200:
+                        rows = (resp.json() or {}).get("data") or []
+                        if rows:
+                            cached = int(rows[0].get("subscribers") or 0)
+                except Exception as exc:  # never let the guard break the search
+                    logger.debug(f"Arctic Shift subscriber lookup failed: {exc}")
+            cache[subreddit] = cached
+        return cached > config.ARCTIC_MAX_SUBSCRIBERS
+
 
     async def _search_with_sort(
         self,

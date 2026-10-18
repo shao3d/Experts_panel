@@ -281,6 +281,66 @@ def test_reddit_search_abstained_is_not_masked_as_error(monkeypatch):
     assert "failed" not in payload["status"]
 
 
+def test_abstain_reason_distinguishes_causes(monkeypatch):
+    """C1: an outage and an honest "no material" must not look identical."""
+    from src.api.main import app
+
+    async def fake_abstain(query, recent_only=False):
+        return RedditSearchV2Outcome(
+            status="abstained",
+            abstain_reason="degraded",
+            degraded=True,
+        )
+
+    monkeypatch.setattr(
+        "src.api.agent_context_endpoint.run_reddit_search_v2", fake_abstain
+    )
+
+    with TestClient(app) as client:
+        response = client.post(
+            _ENDPOINT, headers=_auth_headers(), json={"query": "Seedance 2.5 trucks"}
+        )
+
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["status"] == "abstained"
+    assert payload["abstain_reason"] == "degraded"
+    assert payload["degraded"] is True
+
+
+def test_completed_response_carries_verification_counts(monkeypatch):
+    """C2 data contract: the CLI can say what was actually quote-verified."""
+    from src.api.main import app
+
+    async def fake_completed(query, recent_only=False):
+        return RedditSearchV2Outcome(
+            status="completed",
+            response=SimpleNamespace(
+                synthesis="Grounded answer",
+                sources=[],
+                found_count=23,
+            ),
+            degraded=False,
+            verified_count=1,
+        )
+
+    monkeypatch.setattr(
+        "src.api.agent_context_endpoint.run_reddit_search_v2", fake_completed
+    )
+
+    with TestClient(app) as client:
+        response = client.post(
+            _ENDPOINT, headers=_auth_headers(), json={"query": "How to bind a hook"}
+        )
+
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["status"] == "completed"
+    assert payload["verified_count"] == 1
+    assert payload["degraded"] is False
+    assert payload["abstain_reason"] is None
+
+
 # ---------------------------------------------------------------------------
 # Technical failures
 # ---------------------------------------------------------------------------

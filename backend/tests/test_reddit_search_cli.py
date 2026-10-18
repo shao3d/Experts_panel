@@ -93,6 +93,60 @@ def test_abstained_summary_exit_0(capsys):
     assert "no reliable results" in out
 
 
+def test_completed_summary_says_what_was_quote_verified(capsys):
+    # "kept 1 of 134" reads like a failure; the verified count says whether the
+    # one kept post is evidence-backed or a heuristic fallback.
+    payload = _completed_payload()
+    payload["found_count"] = 134
+    payload["sources"] = payload["sources"][:1]
+    payload["verified_count"] = 1
+    assert cli.print_summary(payload) == 0
+    assert "kept 1 of 134 ranked candidates, all quote-verified" in capsys.readouterr().out
+
+    payload["verified_count"] = 0
+    assert cli.print_summary(payload) == 0
+    assert "none quote-verified" in capsys.readouterr().out
+
+
+def test_completed_summary_discloses_degradation(capsys):
+    payload = _completed_payload()
+    payload["degraded"] = True
+    assert cli.print_summary(payload) == 0
+    out = capsys.readouterr().out
+    assert "a pipeline stage failed" in out
+
+
+def test_abstained_summary_shows_reason_and_degradation_note(capsys):
+    assert (
+        cli.print_summary(
+            {
+                "status": "abstained",
+                "abstain_reason": "insufficient_coverage",
+                "message": "no reliable results",
+            }
+        )
+        == 0
+    )
+    out = capsys.readouterr().out
+    assert "abstained [insufficient_coverage]" in out
+    assert "not evidence that Reddit has no material" not in out
+
+    assert (
+        cli.print_summary(
+            {
+                "status": "abstained",
+                "abstain_reason": "degraded",
+                "degraded": True,
+                "message": "no reliable results",
+            }
+        )
+        == 0
+    )
+    out = capsys.readouterr().out
+    assert "abstained [degraded]" in out
+    assert "not evidence that Reddit has no material" in out
+
+
 def test_unknown_status_exit_1(capsys):
     code = cli.print_summary({"status": "weird"})
     assert code == 1

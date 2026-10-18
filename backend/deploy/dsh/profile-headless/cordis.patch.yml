@@ -1,0 +1,45 @@
+# Committed copy of the `headless` dsh profile layer (source of truth for the
+# image: Dockerfile copies this directory into $DSH_HOME/profiles/headless).
+# The CommandCode key is never stored here — the profile references the
+# COMMANDCODE_API_KEY environment variable, supplied by the deployment.
+#
+# Your patch layer for this dsh profile, applied after every bundle layer:
+# a top-level YAML array of loader patch entries (id-targeted config
+# overrides, disables, and insert lists; `!!js` expressions allowed).
+#
+# Route all model traffic through the CommandCode gateway (DeepSeek V4.1 Flash).
+# The API key itself lives in $DSH_HOME/.credentials.yaml as COMMANDCODE_API_KEY.
+
+# Fresh sessions (and the TUI's launchpad) start on DeepSeek V4.1 Flash.
+- id: agent-default-model
+  config:
+    provider: commandcode
+    model: deepseek/deepseek-v4.1-flash
+    reasoningEffort: high
+
+# The pi-ai multi-provider adapter ships mounted but dormant: this supplies its
+# provider profile, so the "commandcode" route registers on boot.
+- id: llm-pi-ai
+  config:
+    providers:
+      commandcode:
+        displayName: CommandCode
+        apiKeyEnv: COMMANDCODE_API_KEY
+        api: openai-completions
+        baseURL: https://api.commandcode.ai/provider/v1
+        defaultContextWindow: 1000000
+        defaultMaxTokens: 64000
+        compat:
+          thinkingFormat: deepseek
+          supportsReasoningEffort: true
+        models:
+          - id: deepseek/deepseek-v4.1-flash
+            name: DeepSeek V4.1 Flash
+            contextWindow: 1000000
+            maxTokens: 64000
+            input: [text, image]
+            reasoningEfforts:
+              off: null
+              low: low
+              high: high
+              max: max

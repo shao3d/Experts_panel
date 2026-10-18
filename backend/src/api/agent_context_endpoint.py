@@ -612,6 +612,8 @@ async def reddit_search(request: AgentRedditSearchRequest) -> AgentRedditSearchR
             message=None,
             found_count=response.found_count,
             processing_time_ms=int((time.perf_counter() - start_time) * 1000),
+            degraded=bool(getattr(outcome, "degraded", False)),
+            verified_count=int(getattr(outcome, "verified_count", 0) or 0),
         )
 
     if outcome.status == "failed":
@@ -641,4 +643,6 @@ async def reddit_search(request: AgentRedditSearchRequest) -> AgentRedditSearchR
         ],
         found_count=0,
         processing_time_ms=int((time.perf_counter() - start_time) * 1000),
+        abstain_reason=getattr(outcome, "abstain_reason", None),
+        degraded=bool(getattr(outcome, "degraded", False)),
     )

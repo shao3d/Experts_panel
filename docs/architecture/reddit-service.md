@@ -3,14 +3,24 @@
 **Status:** Production (Precision-First V2)  
 **Architecture:** Sidecar Proxy Pattern  
 **Logic:** AI Scout v2 + Precision-First Retrieval + Answerability Rerank  
-**Last updated:** 2026-10-02
+**Last updated:** 2026-10-18
 
 > **Current code:** query-aware judge excerpts, source-local evidence validation,
 > reliability fixes and the synthesis scope contract described below are part
-> of Reddit V2. Gemini routing remains unchanged. The broader ranking
-> experiment was rejected; the final synthesis change was evaluated separately
-> on identical shortlists. Acceptance measurements are tracked in
+> of Reddit V2. The broader ranking experiment was rejected; the final synthesis
+> change was evaluated separately on identical shortlists. Acceptance
+> measurements are tracked in
 > [the evidence improvement report](../quality/2026-10-02-reddit-v2-evidence-fixes.md).
+
+> **LLM engine (2026-10-18):** every Reddit role — query formulation, Scout
+> plan, answerability judge, reflection replanner and synthesis — runs on
+> **DeepSeek V4.1 Flash via the local `dsh` CLI** (`backend/src/services/dsh_client.py`,
+> `dsh --profile headless`), selected once by `REDDIT_LLM_BACKEND`. The profile
+> overlay `backend/deploy/dsh/reddit-llm.patch.yml` disables the agent tools so
+> the model returns the requested JSON instead of browsing. There is no
+> automatic cross-engine fallback: a `dsh` failure is reported as degradation,
+> never hidden behind a second provider. OpenRouter/Gemini code paths remain in
+> the repository behind `REDDIT_LLM_BACKEND=gemini` for rollback.
 
 > **Isolated judge experiment:** `backend/scripts/replay_reddit_rerank.py`
 > with `--transport codex` can replay an authorized frozen corpus through the local
@@ -201,15 +211,29 @@ Google results, programmatically).
 
 ### Archive discovery (`arctic_targeted_archive`)
 
-The Arctic Shift channel (a free mirror with live ingestion, lag of ~minutes): exhaustive
-full-text search over `title` + `selftext` inside the Scout's top subreddits — it surfaces threads
-that native search misses due to ranking quirks. Service limitation: text
-search requires a subreddit. Freshness for `use_recent_only` is via the `after=90d` parameter.
-Enabled by default (`ARCTIC_SHIFT_ENABLED`). Channel errors are recorded and
-other available channels continue. If every retrieval channel and the final
-native fallback fail, the request raises a technical failure rather than
-returning an empty success. A successfully executed empty search remains a
-valid no-results outcome.
+The Arctic Shift channel (a free community mirror with a complete per-subreddit
+index): keyword search over `title`, then `query` (title+selftext), inside the
+Scout's top subreddits — it should surface threads that native search misses due
+to ranking quirks. Service limitations, measured live on 2026-10-18:
+
+- keyword search **requires a subreddit scope** and is **AND-based**, so a
+  natural-language question is near-useless (and expensive) as a query;
+- it **times out server-side** (HTTP 422 `Timeout. Maybe slow down a bit`) on
+  unbounded or wide time windows: `after=30d` answered, `after=90d` did not;
+- it is **not supported on very active subreddits**: r/ChatGPT (9M members)
+  failed even at 7 days while r/seedance (16) answered a 365-day window;
+- there is a separate, real rate limit (HTTP 429 with `X-RateLimit-Reset`) and
+  **no cursor pagination** — deeper history means time-window slicing.
+
+The channel therefore sends a bounded window on every request (30 days, 7 after
+a timeout), a keyword string instead of the whole question, `limit` ≤ 25, paces
+its requests (`ARCTIC_REQUEST_PAUSE_S`) within a per-search request budget
+(`ARCTIC_MAX_REQUESTS`), honors a 429 once, and skips subreddits above
+`ARCTIC_MAX_SUBSCRIBERS` (cached per process). One unsupported subreddit no
+longer fails the channel; a transport outage still raises a technical failure.
+Enabled by default (`ARCTIC_SHIFT_ENABLED`). Measured yield is low (0–1 posts
+per search on the owner's niche questions), so the budget stays tight — see the
+roadmap's channel table before spending more on it.
 
 ### Google ranking (`serp_google_discovery`)
 
@@ -222,6 +246,15 @@ deduplication and again after enrichment, including reflection retries and
 the final selected set. Undated discovery placeholders cannot suppress a
 known-fresh same-title post. ≤10 results per call = 1 credit
 (~$1/1000 queries, 2500 free tier). Without a `SERPER_API_KEY` the channel sleeps.
+
+Query form: for `comparison` intent the channel sends a QUOTED entity pair
+(`"GLM-5.3 Flash" "DeepSeek V4.1 Flash"`), not the plan query — Google honours
+quotes, and measured 2026-10-18 (three runs, 12 comparison questions) this put
+both compared products in the title/snippet for 59% of returned threads versus
+36% for the plan query, with twice as many explicit comparisons (p < 0.005).
+An empty quoted result retries once with the plan query, so an over-quoted
+query cannot masquerade as "Google found nothing".
+`REDDIT_SERPER_ENTITY_QUERY=false` restores the plain plan query.
 
 ### Synthesis (`backend/src/services/reddit_synthesis_service.py`)
 
@@ -266,7 +299,11 @@ advice from actual tests, and avoiding extrapolation into missing conclusions.
 
 **Synthesis backends (`REDDIT_SYNTH_BACKEND`):**
 
-- `gemini` (default) — OpenRouter `MODEL_SYNTHESIS`, as before.
+- `dsh` (default) — DeepSeek V4.1 Flash through the local `dsh` CLI, with the
+  tool-free overlay and `reasoningEffort: high` for this role. Same JSON scope
+  contract and renderer as every other backend; a contract failure is a
+  technical error, not a silent abstain.
+- `gemini` — OpenRouter `MODEL_SYNTHESIS`, rollback only (requires credits).
 - `opencode` — headless opencode serve on the VM (`OPENCODE_URL`, systemd unit
   `opencode-serve.service`), free model `OPENCODE_SYNTH_MODEL`
   (`opencode/x-preview-f-free`). The client `opencode_synth_client.py` speaks plain
@@ -461,7 +498,23 @@ Compared to the old scheme:
 In `backend/src/config.py`:
 
 - `REDDIT_SEARCH_DEBUG`
-- `REDDIT_RERANK_CANDIDATES`
+- `REDDIT_RERANK_CANDIDATES` — how many candidates reach the answerability
+  judge. The median search has ~134 unique candidates, so this cut decides what
+  an answer can rest on; the roadmap's channel table shows the measured loss.
+- `REDDIT_RERANK_DIVERSITY_SLOTS` (default 0) — that many of the rerank slots
+  are reserved for the best posts from strategies and subreddits the heuristic
+  top does not already cover. 0 keeps the plain heuristic cut (shipped state;
+  `backend/scripts/reddit_rerank_diversity_probe.py` measures the alternative)
+- `REDDIT_COMPARISON_ENTITY_PAIR` (default true) — adds the
+  `comparison_entity_pair` channel for `comparison` intent: the compared
+  products themselves as the query ("GLM-5.3 Flash DeepSeek V4.1 Flash")
+  instead of the anchor-pair heuristic ("glm-5.3 v4.1 benchmark", which real
+  owner questions turned into "5.3 good benchmark" / "about agent benchmark").
+  The anchor channel stays active — the flag adds a probe, it does not replace
+  one. Measured 2026-10-18 on 12 comparison questions: 15.0–27.2% of returned
+  posts mention both products versus 6.9–7.6% for the anchor query, and their
+  judged selection rate is 1.7–2.2x higher (small sample; see roadmap 0.6 and
+  `backend/scripts/reddit_comparison_entities_probe.py`)
 - `REDDIT_PRE_RERANK_ENRICH_LIMIT`
 - `REDDIT_MIN_CONFIDENCE`
 - `REDDIT_SOFT_CONFIDENCE`
@@ -474,10 +527,32 @@ In `backend/src/config.py`:
   and independently disqualifies a judged post from selection. Unrated posts
   on an LLM failure retain the explicitly disclosed neutral-score fallback;
   see Step 6 for text-match semantics and evidence statuses.
-- `REDDIT_REFLECTION_RETRY_ENABLED` (default true) — when the confidence filter keeps 0 posts, the judge's rejection reasons feed ONE bounded replan (`reflection_retry` strategy) + retrieval pass before an honest abstain
+- `REDDIT_REFLECTION_RETRY_ENABLED` (default true) — when the confidence filter
+  keeps fewer posts than `REDDIT_REFLECTION_MIN_POSTS`, the judge's rejection
+  reasons feed ONE bounded replan (`reflection_retry` strategy) + retrieval pass
+  before an honest abstain. The retry result is merged with what was already
+  kept (union by id, sorted by `final_score`), so a retry can never drop a post
+  that passed the same gate
+- `REDDIT_REFLECTION_MIN_POSTS` (default 2) — shortlist size below which the
+  retry is worth spending. Synthesis abstains on 32% of searches that reach it
+  with one post and on none of the four-post ones; `1` restores the older
+  zero-only trigger
+- `REDDIT_SYNTH_PARTIAL_MAX_FINDINGS` (default 5) — findings rendered on the
+  partial-coverage branch (was hardcoded to 3). The 600-character per-finding
+  budget and the ban on actions in partial are unchanged
+- `REDDIT_SYNTH_GAP_FORCES_PARTIAL` (default false) — `false` keeps a
+  `coverage=sufficient` answer sufficient when it also carries an advisory gap
+  sentence (logged, not rendered); `true` restores the older "any gap
+  downgrades to partial" behaviour
 - `REDDIT_TELEMETRY_ENABLED` / `REDDIT_TELEMETRY_PATH` — JSONL decision log (query, strategy counts, winners, near-misses, abstain reasons) powering periodic strategy-effectiveness review instead of gut-feel tuning
 - `REDDIT_ENRICH_CACHE_TTL_S` / `REDDIT_ENRICH_CACHE_MAX` — in-memory LRU for /details enrichment results, so iterative research sessions do not re-fetch the same threads
-- `REDDIT_SYNTH_BACKEND` — synthesis backend: gemini | opencode | auto | shadow (see the Synthesis section)
+- `REDDIT_LLM_BACKEND` — engine for all Reddit LLM roles: `dsh` (default,
+  DeepSeek V4.1 Flash through the local `dsh` CLI) or `gemini` (OpenRouter,
+  rollback only)
+- `REDDIT_SYNTH_BACKEND` — synthesis backend: dsh | gemini | opencode | auto | shadow (see the Synthesis section)
+- `DSH_PATCH_PATH` — tool-free profile overlay (repo copy: `backend/deploy/dsh/reddit-llm.patch.yml`)
+- `REDDIT_DSH_BIN` / `REDDIT_DSH_PROFILE` — dsh binary and profile (defaults `dsh` / `headless`); namespaced because the harness exports `DSH_PROFILE`/`DSH_SESSION_ID` into every child process, and inheriting them boots the interactive TUI profile
+- `REDDIT_DSH_TIMEOUT_S` / `REDDIT_DSH_CONCURRENCY` — per-call timeout and parallel-call cap (one process per call)
 - `OPENCODE_URL`, `OPENCODE_SYNTH_MODEL`, `OPENCODE_SYNTH_TIMEOUT_S`, `OPENCODE_SYNTH_CONCURRENCY` — headless opencode serve parameters
 
 Practical meaning:
@@ -507,6 +582,25 @@ The harness writes:
 - returned high-confidence posts
 - debug trace
 - top results with heuristic / ai / final score
+
+Contract experiments run on **frozen** pools, so a prompt change is never
+confused with retrieval drift:
+
+```bash
+# judge decisions vs the recorded Gemini winners (frozen candidate pools)
+python3 backend/scripts/ab_reddit_dsh_vs_gemini.py --replay --repeats 2
+
+# synthesis coverage scope (phase B): rebuild the same shortlists offline from
+# that report, then replay both contracts on them
+python3 backend/scripts/replay_reddit_synthesis_scope.py --from-report
+python3 backend/scripts/replay_reddit_synthesis_scope.py --replay --arm both \
+  --shortlists output/ab_reddit/shortlists_from_report.jsonl
+```
+
+`--arm old` restores the previous prompt plus `REDDIT_SYNTH_GAP_FORCES_PARTIAL`
+and `REDDIT_SYNTH_PARTIAL_MAX_FINDINGS`, so the two arms differ only in the
+contract under test. `--capture [N]` freezes live shortlists instead (one full
+search per question, including the reflection retry).
 
 ---
 
@@ -570,7 +664,10 @@ Content-Type: application/json
   ],
   "message": null,
   "found_count": 23,
-  "processing_time_ms": 12345
+  "processing_time_ms": 12345,
+  "verified_count": 2,
+  "degraded": false,
+  "abstain_reason": null
 }
 ```
 
@@ -578,6 +675,21 @@ Content-Type: application/json
 - `found_count` — the number of unique candidates that reached ranking
   (before the confidence filter); therefore it can be (and usually is) larger
   than the number of `sources`.
+- `verified_count` — how many of the returned `sources` carry a judge-quoted
+  verbatim span from their own text. The CLI renders it as
+  `kept 1 of 134 ranked candidates, all quote-verified`, so a thin but
+  evidence-backed shortlist no longer reads like a failure.
+- `degraded` — a pipeline stage failed and the result is a disclosed fallback
+  rather than an ordinary answer. Set when the answerability judge was
+  unavailable (every candidate then fails the quote gate closed) or when all
+  retrieval channels errored. One flaky channel out of several is recorded in
+  telemetry but does not mark the answer degraded.
+- `abstain_reason` — why an abstain happened:
+  `no_verified_sources` (retrieval kept nothing),
+  `insufficient_coverage` (the sources did not establish the central request),
+  or `degraded` (a stage failed, so the empty result is **not** evidence that
+  Reddit has no material). `null` on a completed run. Agents must not report
+  `degraded` as "nothing found".
 - `near_misses` (abstain only) — up to three closest-but-rejected threads
   with their final score. Low confidence by definition: they did NOT pass
   the confidence filter or the synthesis rejected them. Provided for

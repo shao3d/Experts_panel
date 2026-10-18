@@ -168,6 +168,36 @@ REDDIT_SEARCH_DEBUG: bool = (
     os.getenv("REDDIT_SEARCH_DEBUG", "false").lower() == "true"
 )
 REDDIT_RERANK_CANDIDATES: int = int(os.getenv("REDDIT_RERANK_CANDIDATES", "18"))
+# Candidate-cut diversity: this many of the rerank slots are reserved for the
+# best posts from strategies and subreddits the heuristic top does not already
+# cover. Measured 2026-10-18: the median search has 134 unique candidates and
+# only REDDIT_RERANK_CANDIDATES of them are ever judged, so the cut decides
+# what the answer can possibly be based on. 0 keeps the plain heuristic top.
+REDDIT_RERANK_DIVERSITY_SLOTS: int = int(
+    os.getenv("REDDIT_RERANK_DIVERSITY_SLOTS", "0")
+)
+# Google/Serper query form for comparison searches: a QUOTED pair of the
+# compared products (Google honours quotes) instead of the plan query. Three
+# measured runs on 12 comparison questions: 59% of returned threads mention
+# both products versus 36% for the plan query, and twice as many explicitly
+# compare them (p < 0.005). Falls back to the plan query when the quoted form
+# returns nothing at all.
+REDDIT_SERPER_ENTITY_QUERY: bool = (
+    os.getenv("REDDIT_SERPER_ENTITY_QUERY", "true").lower() == "true"
+)
+# For comparison intent, ALSO send the compared products themselves as the
+# query ("GLM-5.3 Flash DeepSeek V4.1 Flash") instead of relying only on the
+# anchor pair heuristic ("glm-5.3 v4.1 benchmark"). Measured 2026-10-18 on the
+# owner's own comparison questions: the anchor pair names one product at best
+# ("5.3 good benchmark", "2.5 codex benchmark", "about agent benchmark"),
+# while the entity query returned 2-3x more posts that mention both compared
+# products and its posts were selected by the judge 1.7-2.2x more often.
+# Additive on purpose: the anchor channel keeps running, because it wins where
+# the anchors already happen to be the product names. Owner decision
+# 2026-10-18: on by default. Set false to restore the previous plan.
+REDDIT_COMPARISON_ENTITY_PAIR: bool = (
+    os.getenv("REDDIT_COMPARISON_ENTITY_PAIR", "true").lower() == "true"
+)
 # Aligned with RERANK_CANDIDATES so every rerank candidate can carry
 # full content + comments into the AI scoring pass.
 REDDIT_PRE_RERANK_ENRICH_LIMIT: int = int(
@@ -177,12 +207,39 @@ REDDIT_MIN_CONFIDENCE: float = float(
     os.getenv("REDDIT_MIN_CONFIDENCE", "0.52")
 )
 
+# --- Reddit LLM engine: DeepSeek Harness (dsh) ---
+# dsh    - local `dsh --profile headless` subprocess (DeepSeek V4.1 Flash);
+#          the only engine the Reddit roles use, see services/dsh_client.py
+# gemini - OpenRouter (legacy; requires credits, kept selectable for rollback)
+# There is deliberately NO automatic cross-engine fallback: a dsh failure is
+# reported as degradation instead of being hidden behind a second provider.
+REDDIT_LLM_BACKEND: str = os.getenv("REDDIT_LLM_BACKEND", "dsh").lower()
+if REDDIT_LLM_BACKEND not in {"dsh", "gemini"}:
+    REDDIT_LLM_BACKEND = "dsh"
+# Tool-free profile overlay; disables bash/fs/web/subagent tools so the model
+# answers instead of browsing. Repo copy: backend/deploy/dsh/reddit-llm.patch.yml
+DSH_PATCH_PATH: str = os.getenv("DSH_PATCH_PATH", "")
+# Namespaced on purpose: the harness exports DSH_PROFILE/DSH_SESSION_ID into
+# every process it starts, and inheriting them boots the interactive TUI
+# profile instead of `headless` (see services/dsh_client.py).
+DSH_BIN: str = os.getenv("REDDIT_DSH_BIN", "dsh")
+DSH_PROFILE: str = os.getenv("REDDIT_DSH_PROFILE", "headless")
+# One dsh call boots the whole plugin stack (~3 s), so calls are serialized.
+REDDIT_DSH_TIMEOUT_S: float = float(os.getenv("REDDIT_DSH_TIMEOUT_S", "90"))
+REDDIT_DSH_CONCURRENCY: int = int(os.getenv("REDDIT_DSH_CONCURRENCY", "2"))
+
 # --- Reddit Search V2: reflection retry, telemetry, enrichment cache ---
 # One reflection retry fires only when the confidence filter left 0 posts:
 # the judge's top rejection reasons feed a short LLM replanner, whose query
 # gets one bounded second retrieval pass.
 REDDIT_REFLECTION_RETRY_ENABLED: bool = (
     os.getenv("REDDIT_REFLECTION_RETRY_ENABLED", "true").lower() == "true"
+)
+# The retry is worth spending on a thin shortlist, not only on a dead end:
+# synthesis abstains on 32% of searches that reach it with a single post and
+# on 0% of those with four or more, so one post is the expensive case.
+REDDIT_REFLECTION_MIN_POSTS: int = int(
+    os.getenv("REDDIT_REFLECTION_MIN_POSTS", "2")
 )
 # Evidence-span judge gate: the reranker must quote a verbatim span from the
 # post/comments that answers the question; a rating without a quotable span
@@ -193,6 +250,21 @@ REDDIT_EVIDENCE_GATE_ENABLED: bool = (
 )
 REDDIT_NO_EVIDENCE_MAX_SCORE: float = float(
     os.getenv("REDDIT_NO_EVIDENCE_MAX_SCORE", "0.35")
+)
+# Statuses that can carry a post into the answer: exactly the two quote-verified
+# tiers. The gate is an allowlist on purpose — "unrated" (never reached the
+# judge) and any future status fail closed instead of leaking an unverified
+# post into an answer.
+EVIDENCE_GATE_ALLOWED_STATUSES = frozenset({"verified", "verified_normalized"})
+# Kept for callers that need the complement (telemetry, diagnostics).
+EVIDENCE_GATE_BLOCKED_STATUSES = frozenset(
+    {"missing", "invalid_rating", "unavailable", "unrated"}
+)
+# Second, separately recorded tier of quote verification: identical words
+# after stripping markdown emphasis and unifying typographic punctuation.
+# Disabling it restores the strict exact-substring behaviour.
+REDDIT_EVIDENCE_LOOSE_MATCH_ENABLED: bool = (
+    os.getenv("REDDIT_EVIDENCE_LOOSE_MATCH_ENABLED", "true").lower() == "true"
 )
 # JSONL decision log (query, strategies, winners, abstain reason). Powers
 # periodic strategy/subreddit effectiveness review instead of gut-feel tuning.
@@ -223,14 +295,26 @@ REDDIT_SYNTH_SOURCE_CHAR_CAP: int = int(
 # Synthesis output budget; finish_reason=length triggers one automatic
 # retry with a doubled budget (see reddit_synthesis_service).
 REDDIT_SYNTH_MAX_TOKENS: int = int(os.getenv("REDDIT_SYNTH_MAX_TOKENS", "4096"))
-# Reddit synthesis backend: gemini | opencode | auto | shadow.
-#   gemini  - OpenRouter MODEL_SYNTHESIS only (current default, safe)
+# Findings rendered on the partial branch. "Partial" must stay useful: three
+# observations read as an empty answer even when the sources carry more.
+REDDIT_SYNTH_PARTIAL_MAX_FINDINGS: int = int(
+    os.getenv("REDDIT_SYNTH_PARTIAL_MAX_FINDINGS", "5")
+)
+# A stray advisory gap sentence next to coverage=sufficient is a prompt
+# discipline issue, not a reason to relabel a sufficient answer as partial.
+# true restores the previous "any gap downgrades" behaviour.
+REDDIT_SYNTH_GAP_FORCES_PARTIAL: bool = (
+    os.getenv("REDDIT_SYNTH_GAP_FORCES_PARTIAL", "false").lower() == "true"
+)
+# Reddit synthesis backend: dsh | gemini | opencode | auto | shadow.
+#   dsh     - DeepSeek Harness via REDDIT_LLM_BACKEND (current default)
+#   gemini  - OpenRouter MODEL_SYNTHESIS only (legacy; needs credits)
 #   opencode - headless opencode serve first, Gemini as failure fallback
 #   auto    - opencode within OPENCODE_SYNTH_TIMEOUT_S, else Gemini
 #   shadow  - both run concurrently; user gets Gemini, opencode logged for A/B
-REDDIT_SYNTH_BACKEND: str = os.getenv("REDDIT_SYNTH_BACKEND", "gemini").lower()
-if REDDIT_SYNTH_BACKEND not in {"gemini", "opencode", "auto", "shadow"}:
-    REDDIT_SYNTH_BACKEND = "gemini"
+REDDIT_SYNTH_BACKEND: str = os.getenv("REDDIT_SYNTH_BACKEND", "dsh").lower()
+if REDDIT_SYNTH_BACKEND not in {"dsh", "gemini", "opencode", "auto", "shadow"}:
+    REDDIT_SYNTH_BACKEND = "dsh"
 OPENCODE_URL: str = os.getenv("OPENCODE_URL", "http://127.0.0.1:4096")
 OPENCODE_SYNTH_MODEL: str = os.getenv("OPENCODE_SYNTH_MODEL", "opencode/x-preview-f-free")
 OPENCODE_SYNTH_TIMEOUT_S: float = float(os.getenv("OPENCODE_SYNTH_TIMEOUT_S", "60"))
@@ -241,7 +325,7 @@ OPENCODE_SYNTH_CONCURRENCY: int = int(os.getenv("OPENCODE_SYNTH_CONCURRENCY", "2
 REDDIT_PROXY_URL: str = os.getenv("REDDIT_PROXY_URL", "http://reddit-proxy:3000")
 
 # --- Arctic Shift (exhaustive per-subreddit archive search) ---
-# Free community mirror with live ingestion; full-text search requires a
+# Free community mirror with live ingestion; keyword search requires a
 # subreddit scope, so it complements scout-targeted retrieval only.
 ARCTIC_SHIFT_ENABLED: bool = (
     os.getenv("ARCTIC_SHIFT_ENABLED", "true").lower() == "true"
@@ -251,7 +335,32 @@ ARCTIC_SHIFT_ENDPOINT: str = os.getenv(
     "https://arctic-shift.photon-reddit.com/api/posts/search",
 )
 ARCTIC_TARGET_SUBREDDITS: int = int(os.getenv("ARCTIC_TARGET_SUBREDDITS", "2"))
-ARCTIC_LIMIT_PER_SUB: int = int(os.getenv("ARCTIC_LIMIT_PER_SUB", "12"))
+# The archive times out server-side (HTTP 422 "Timeout. Maybe slow down a bit")
+# on unbounded or expensive keyword queries; measured 2026-10-18: a 30-day
+# window answers, a 90-day one does not, and r/ChatGPT fails even at 7 days.
+# So every request carries a bounded window and the limit stays small.
+ARCTIC_LIMIT_PER_SUB: int = int(
+    min(25, max(1, int(os.getenv("ARCTIC_LIMIT_PER_SUB", "12"))))
+)
+ARCTIC_WINDOW_DAYS: int = int(os.getenv("ARCTIC_WINDOW_DAYS", "30"))
+ARCTIC_NARROW_WINDOW_DAYS: int = int(
+    os.getenv("ARCTIC_NARROW_WINDOW_DAYS", "7")
+)
+# "Not supported with very active users or subreddits": r/ChatGPT (9M members)
+# times out even on a 7-day window, so subscriber count gates the channel.
+# 0 disables the check (the endpoint that reports counts is itself flaky).
+ARCTIC_MAX_SUBSCRIBERS: int = int(
+    os.getenv("ARCTIC_MAX_SUBSCRIBERS", "1000000")
+)
+# This is a free service with load-dependent limits; requests are serialized
+# and paced. Measured 2026-10-18, a 30-day window was refused (422) on every
+# probed mid/large subreddit while a 7-day one answered, so the budget is kept
+# small: two attempts per subreddit, no more.
+ARCTIC_REQUEST_PAUSE_S: float = float(
+    os.getenv("ARCTIC_REQUEST_PAUSE_S", "0.5")
+)
+ARCTIC_MAX_REQUESTS: int = int(os.getenv("ARCTIC_MAX_REQUESTS", "4"))
+ARCTIC_429_MAX_WAIT_S: float = float(os.getenv("ARCTIC_429_MAX_WAIT_S", "20"))
 
 # --- Serper.dev (Google SERP discovery: site:reddit.com via real Google) ---
 # Optional; without a key the channel is silently skipped.

@@ -6,7 +6,12 @@ unrestricted answer or action plan through extra response fields.
 """
 
 import json
+import logging
 import re
+
+from .. import config
+
+logger = logging.getLogger(__name__)
 
 
 class SynthesisContractError(ValueError):
@@ -80,9 +85,16 @@ def render_synthesis(raw: str, language: str, source_count: int) -> str:
         gap = missing_notice + (". " + gap if gap else "")
     if coverage == "partial" and not gap:
         raise SynthesisContractError("Partial coverage requires an evidence gap")
-    # A model cannot declare complete coverage while also declaring a gap.
-    if gap:
-        coverage = "partial"
+    # A model cannot declare complete coverage while also declaring a gap —
+    # but a stray advisory gap sentence is a prompt-discipline issue, not a
+    # reason to relabel a sufficient answer. Logged, then dropped.
+    # A declared `partial` keeps its gap: that branch cannot render without it.
+    if coverage == "sufficient" and gap:
+        if config.REDDIT_SYNTH_GAP_FORCES_PARTIAL:
+            coverage = "partial"
+        else:
+            logger.info("Sufficient synthesis carried a non-empty gap; ignored")
+            gap = ""
 
     def entries(value, limit):
         if not isinstance(value, list) or len(value) > 8:
@@ -128,7 +140,10 @@ def render_synthesis(raw: str, language: str, source_count: int) -> str:
             rendered.append(f"- **{labels[kind]}:** {claim} {refs}")
         return rendered
 
-    findings = entries(data.get("findings"), 3 if coverage == "partial" else 8)
+    findings = entries(
+        data.get("findings"),
+        config.REDDIT_SYNTH_PARTIAL_MAX_FINDINGS if coverage == "partial" else 8,
+    )
     if not findings:
         raise SynthesisContractError("Non-abstaining synthesis requires findings")
     if coverage == "partial":

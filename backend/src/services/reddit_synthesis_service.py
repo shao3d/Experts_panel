@@ -16,7 +16,8 @@ from .. import config
 from ..utils.language_utils import detect_query_language
 from .reddit_service import RedditSearchResult
 from .reddit_synthesis_contract import render_synthesis, SynthesisContractError
-from .vertex_llm_client import get_vertex_llm_client, VertexLLMError
+from .vertex_llm_client import VertexLLMError
+from .dsh_client import get_reddit_llm_client
 from .opencode_synth_client import (
     OpenCodeSynthesisError,
     synthesize_markdown,
@@ -53,7 +54,7 @@ class RedditSynthesisService:
         # FIX: Use MODEL_SYNTHESIS (gemini-3-flash-preview) for high-quality Reddit analysis
         # This matches the main synthesis model for expert responses
         self.model = model or config.MODEL_SYNTHESIS or DEFAULT_SYNTHESIS_MODEL
-        self._client = get_vertex_llm_client()
+        self._client = get_reddit_llm_client()
         # Strong references to in-flight shadow runs (prevents task GC)
         self._shadow_tasks: set = set()
 
@@ -120,10 +121,12 @@ class RedditSynthesisService:
         started_at = time.time()
         source_count = min(len(reddit_result.posts if hasattr(reddit_result, "posts") else reddit_result.sources), max_sources_in_context)
 
-        if backend == "gemini":
+        if backend in {"gemini", "dsh"}:
+            # Both names share one client-based routine; which provider serves
+            # it is decided once by REDDIT_LLM_BACKEND (services/dsh_client.py).
             return await self._synthesize_gemini(
                 query, messages, reddit_result, query_language,
-                max_sources_in_context, backend="gemini",
+                max_sources_in_context, backend=backend,
             )
 
         if backend == "shadow":
@@ -529,7 +532,12 @@ class RedditSynthesisService:
         budget_capped_sources = 0
         for i, src in enumerate(sources, 1):
             selection_evidence = ""
-            if getattr(src, 'evidence_status', '') == 'verified':
+            if getattr(src, 'evidence_status', '') in {
+                'verified',
+                # Identical words after stripping markdown emphasis; still a
+                # source-local quote, so the synthesizer keeps the excerpts.
+                'verified_normalized',
+            }:
                 selection_evidence = (
                     "\n   - Selection excerpts (quote matched source text; "
                     "this does not establish technical correctness):\n"
@@ -637,10 +645,14 @@ requested comparisons, named target context, and requested evidence type.
 For each mark supported=true only if the supplied sources establish it.
 A comparison of two settings is one requirement: testing only one setting
 means supported=false, even if their supported values or defaults are listed.
-If ANY requirement is unsupported, coverage cannot be sufficient. If all are
-unsupported, coverage is insufficient. Do not omit a requirement to justify
-an answer. For general how-to questions do not demand a controlled experiment
-unless the user requested one.
+If ANY requirement is unsupported, coverage cannot be sufficient. Reserve
+coverage=insufficient for the case where the sources do not establish the
+question's CENTRAL request (the comparison, decision or fix the user actually
+asked for): an unsupported secondary constraint (a version, region, price
+point, extra example or an additional named tool) makes the answer partial,
+not insufficient. If all are unsupported, coverage is insufficient. Do not
+omit a requirement to justify an answer. For general how-to questions do not
+demand a controlled experiment unless the user requested one.
 
 COVERAGE (evaluate the user's decisive constraints before any synthesis):
 - sufficient: sources directly answer the requested question in the requested
@@ -649,7 +661,8 @@ COVERAGE (evaluate the user's decisive constraints before any synthesis):
   not mandatory. Do not require proof beyond what the user asked for.
 - partial: sources answer a genuine separable part of the question, but not
   its central comparison/conclusion. State exactly what is unknown in gap.
-  Give at most 3 brief observations, each <=600 characters. NO recommendations,
+  Give at most {config.REDDIT_SYNTH_PARTIAL_MAX_FINDINGS} brief observations,
+  each <=600 characters. NO recommendations,
   winner, action plan, prices/cost projections, or extrapolation to fill the gap.
   For general requests for practical techniques, useful experience with another
   tool can be partial, explicitly labeled transferable and naming that tool.

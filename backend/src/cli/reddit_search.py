@@ -177,7 +177,22 @@ def print_summary(payload: dict[str, Any]) -> int:
         found = payload.get("found_count")
         if not isinstance(found, int) or found < kept:
             found = kept
-        print(f"status: completed (kept {kept} of {found} ranked candidates)")
+        verified = payload.get("verified_count")
+        if isinstance(verified, int) and kept:
+            if verified >= kept:
+                suffix = ", all quote-verified"
+            elif verified:
+                suffix = f", {verified} of them quote-verified"
+            else:
+                suffix = ", none quote-verified"
+        else:
+            suffix = ""
+        print(f"status: completed (kept {kept} of {found} ranked candidates{suffix})")
+        if payload.get("degraded"):
+            print(
+                "note: a pipeline stage failed while producing this answer; "
+                "treat the shortlist as incomplete."
+            )
         print(payload.get("answer") or "")
         print()
         print("sources:")
@@ -186,7 +201,19 @@ def print_summary(payload: dict[str, Any]) -> int:
             print(f"    {src.get('url', '')}")
         return 0
     if status == "abstained":
-        print(f"status: abstained — {payload.get('message') or 'no reliable results'}")
+        reason = payload.get("abstain_reason")
+        label = f" [{reason}]" if reason else ""
+        print(
+            f"status: abstained{label} — "
+            f"{payload.get('message') or 'no reliable results'}"
+        )
+        if payload.get("degraded") or reason == "degraded":
+            # An outage is not a verdict about Reddit. Agents paraphrase this
+            # line to the user, so it has to say what the abstain does NOT mean.
+            print(
+                "note: a pipeline stage failed, so this is not evidence that "
+                "Reddit has no material on the topic."
+            )
         near_misses = payload.get("near_misses") or []
         if near_misses:
             print("closest discussions (LOW confidence — not verified answers):")
