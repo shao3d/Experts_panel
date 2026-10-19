@@ -151,8 +151,8 @@ MODEL_MEDIUM_SCORING: str = os.getenv("MODEL_MEDIUM_SCORING", "google/gemini-3.1
 
 MODEL_COMMENT_GROUPS: str = os.getenv("MODEL_COMMENT_GROUPS", "google/gemini-3.1-flash-lite")
 
-MODEL_DRIFT_ANALYSIS: str = os.getenv("MODEL_DRIFT_ANALYSIS", "google/gemini-3-flash-preview")
-
+# Drift analysis has no panel-side generation model: the engine is headless
+# OpenCode with the hardcoded OPENCODE_MODEL in src/services/opencode_drift_client.py.
 # --- Meta-Synthesis (Cross-Expert Analysis) ---
 MODEL_META_SYNTHESIS: str = os.getenv("MODEL_META_SYNTHESIS", "google/gemini-3-flash-preview")
 META_SYNTHESIS_TIMEOUT_SECONDS: float = float(
@@ -455,7 +455,6 @@ def get_runtime_config_log_lines() -> list[str]:
             f"  Синтез:            {MODEL_SYNTHESIS}",
             f"  Анализ:            {MODEL_ANALYSIS}",
             f"  AI Scout:          {MODEL_SCOUT}",
-            f"  Drift Analysis:    {MODEL_DRIFT_ANALYSIS}",
             f"  Meta-Synthesis:    {MODEL_META_SYNTHESIS}",
             f"  Meta Timeout:      {META_SYNTHESIS_TIMEOUT_SECONDS:g}s",
             "--- Loaded limits configuration ---",

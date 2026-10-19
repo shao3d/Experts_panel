@@ -145,7 +145,6 @@ class HealthProbeService:
             config.MODEL_SCOUT,
             config.MODEL_MEDIUM_SCORING,
             config.MODEL_COMMENT_GROUPS,
-            config.MODEL_DRIFT_ANALYSIS,
             config.MODEL_META_SYNTHESIS,
         )
         self._cached_summary = self._build_empty_summary()

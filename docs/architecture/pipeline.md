@@ -153,7 +153,7 @@ The system processes user queries through an **ten-phase pipeline** using a **Ge
 | Scoring | `MODEL_MEDIUM_SCORING` | `google/gemini-3.1-flash-lite` | Faster, newer structured scoring. |
 | Comments | `MODEL_COMMENT_GROUPS` | `google/gemini-3.1-flash-lite` | Faster, newer structured scoring. |
 | Validation | `MODEL_ANALYSIS` | `google/gemini-3.1-flash-lite` | Translation and language validation. |
-| Drift (Offline) | `MODEL_DRIFT_ANALYSIS` | `google/gemini-3-flash-preview` | Deep offline analysis. |
+| Drift (Offline) | — | headless OpenCode (`OPENCODE_MODEL` = `commandcode/z-ai/glm-5.3-flash`, hardcoded) | SSOT: `guides/drift-analysis.md`. |
 | AI Scout | `MODEL_SCOUT` | `google/gemini-3.1-flash-lite` | Entity-centric FTS5 query expansion. |
 | Meta-Synthesis | `MODEL_META_SYNTHESIS` | `google/gemini-3-flash-preview` | Cross-expert unified analysis (≥2 experts). |
 | Embedding | `MODEL_EMBEDDING` | `google/gemini-embedding-001` | Same 768-dimension vector space for KNN search. |

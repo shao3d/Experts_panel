@@ -75,7 +75,7 @@ Defined in `.env`, loaded in `config.py`.
 - `MODEL_ANALYSIS`: `google/gemini-3.1-flash-lite`
 - `MODEL_MEDIUM_SCORING`: `google/gemini-3.1-flash-lite`
 - `MODEL_COMMENT_GROUPS`: `google/gemini-3.1-flash-lite`
-- `MODEL_DRIFT_ANALYSIS`: `google/gemini-3-flash-preview` (legacy; no longer used for drift — drift runs through the hardcoded `OPENCODE_MODEL` in `src/services/opencode_drift_client.py`)
+- Drift analysis has no separate model env: engine is headless OpenCode with hardcoded `OPENCODE_MODEL` (`commandcode/z-ai/glm-5.3-flash`) in `src/services/opencode_drift_client.py`; SSOT — `docs/guides/drift-analysis.md`.
 - `MODEL_SCOUT`: `google/gemini-3.1-flash-lite` (AI Scout / FTS5)
 - `MODEL_META_SYNTHESIS`: `google/gemini-3-flash-preview` (Cross-expert unified analysis)
 - `MODEL_EMBEDDING`: `google/gemini-embedding-001` (Hybrid Retrieval embeddings)
