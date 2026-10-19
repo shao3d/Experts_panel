@@ -176,7 +176,7 @@ The system processes user queries through an **ten-phase pipeline** using a **Ge
 When enabled (UI checkbox):
 1.  **Map**: Only loads posts from last 3 months.
 2.  **Resolve**: Only follows links to posts from last 3 months.
-3.  **Comments**: Only analyzes drift groups from last 3 months.
+3.  **Comments**: Only analyzes drift groups from last 3 months when enabled. When disabled (default), all groups are scored, including legacy Gemini-era rows that are kept in the corpus (see `guides/drift-analysis.md` → «Legacy-строки и фильтр «Recent Only»»).
 
 ### Expert Isolation
 All database queries are strictly filtered by `expert_id`. No data leakage between experts.
