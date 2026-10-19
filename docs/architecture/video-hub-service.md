@@ -1,7 +1,7 @@
 # Video Hub Sidecar: Architecture & Integration
 
 **Status:** Stable / Production-Ready (query-time branch dormant in the UI, see "Current Operating Mode")
-**Last updated:** 2026-10-11
+**Last updated:** 2026-10-19
 **Role:** Parallel pipeline for deep video transcript analysis using the "Digital Twin" approach.
 **Date:** 2026-04-12 (operating-mode note 2026-09-17; review passes 2026-09-17,
 2026-09-24; admission-gate pointer 2026-09-28; scope/coverage semantics 2026-10-11)

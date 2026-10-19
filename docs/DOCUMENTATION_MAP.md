@@ -1,7 +1,7 @@
 # Карта Документации
 
 Status: Active
-Last updated: 2026-10-18
+Last updated: 2026-10-19
 
 Это навигационный слой проекта Experts Panel. Он должен отвечать на вопрос
 "куда смотреть?", а не пересказывать содержимое всех документов.
@@ -25,6 +25,7 @@ Last updated: 2026-10-18
 | --- | --- | --- |
 | Reddit Search V2: почему отказывал, что внедрено и выкачено 18.10.2026 (dsh-движок всех ролей, фазы A–C, точность сравнений; замеры и открытые хвосты) | `docs/roadmap/2026-10-18-reddit-search-v2-fix-plan.md` | Причина в коде: `backend/src/services/reddit_evidence.py`, `reddit_synthesis_contract.py`; исходный аудит: `docs/quality/2026-10-02-reddit-v2-audit.md` |
 | Reddit: какие каналы сбора существуют вне OAuth-поиска (Arctic Shift, PullPush, Brave, Exa, дампы) и что из этого мертво, 2026-10-18 | `docs/research/2026-10-18-reddit-retrieval-channels.md` | План и замер по каналам: `docs/roadmap/2026-10-18-reddit-search-v2-fix-plan.md` (раздел 0.5) |
+| VideoHub: октябрьская волна (пробация 47 роликов, онбординг LOUE/0trU/5HYY, батч-ремонт 604 кадров Stage 1), 2026-10-19 | `docs/quality/2026-10-19-video-hub-october-wave-and-frame-repair.md` | Вердикты: `output/video_admission/admission_log.json` + `output/video_admission/PROBE_REPORT_2026-10-17.md`; порядок и процедуры: `docs/guides/video-hub-operator.md`, `docs/architecture/expert-admission-control.md` §16; актуальный watchlist: `docs/roadmap/video-hub-scaling.md` |
 | VideoHub: полный онбординг JOEY `LOUEH3DzLro` (Claude skills v2, staging; независимая перепроверка и ремонт кадров 1016), 2026-10-17 | `docs/quality/2026-10-17-loueh3dzlro-onboarding-report.md` | `docs/guides/video-hub-operator.md` (шаги 0.1a–0.4), `output/video_ingest/LOUEH3DzLro/segments.json` (разметка), `output/video_admission/admission_log.json` (запись LOUEH3DzLro); гейт: `docs/architecture/expert-admission-control.md` §16 |
 | Скаут: переключение дефолт-движка на GLM-5.3 Flash, чек-лист ответов и Sol-инцидент, 2026-10-12 | `docs/quality/2026-10-12-scout-glm-switch.md` | `docs/guides/expert-scout.md` (SSOT рантайма), `docs/guides/scout-web.md` (веб-контур); стенд: `backend/scripts/benchmark_scout_models.py` |
 | Скаут: миграция плагина и рантайма на OpenCode 2, 2026-10-14 | `docs/quality/2026-10-14-opencode-v2-scout-migration.md` | `docs/guides/expert-scout.md` (SSOT рантайма: V2-плагин, `codemode: false`, маркер `turn.completed`); `scripts/expert_scout_mcp.ts` (MCP-адаптер sol) |

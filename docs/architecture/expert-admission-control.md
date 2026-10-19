@@ -1,7 +1,7 @@
 # Expert Admission Control
 
 **Status:** Active admission doctrine and matrix workflow
-**Last updated:** 2026-10-01
+**Last updated:** 2026-10-19
 **Haft context:** `prob-20260509-71223b41`, `sol-20260509-ae57b368`
 
 This document defines the decision process for admitting new Telegram experts
@@ -1419,6 +1419,10 @@ verdict caveat for owner review; it does not justify silently dropping a block.
 Verdicts: `ingest` / `ingest_scoped` / `waitlist` / `reject_duplicate` /
 `reject_low_value` / `reject_off_topic` (panel mapping: accept / limited_scope /
 reject).
+  Owner policy (2026-10-17): showcase films/premieres and official music videos
+  (screen evidence without a teaching process — Higgsfield Originals, official M/V)
+  are NOT kept on the waitlist; they get `reject_low_value` directly
+  (precedents: `IAl240xpSGM`, `UQDM-ZigvGo`, `VGDHR_U3r5k`).
 
 `ingest_scoped` (gap-scoped ingest): when overlap dominates but gaps localize
 to time ranges, cut one contiguous ffmpeg range on the VM (one offset; overlap

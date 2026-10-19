@@ -3,7 +3,7 @@
 **Created:** 2026-03-28
 **Status:** Active Roadmap (query-time side; P2/P3/P5/P4/N2 closed — see the
 priority table and "Review fixes")
-**Last updated:** 2026-10-10
+**Last updated:** 2026-10-19
 **Current State (2026-10-10):** актуальный состав — в
 [генерируемом индексе](../video-hub-index.md); последняя приёмка и статус
 выпуска JOEY Claude skills — в [отчёте](../quality/2026-10-10-joey-skills-review.md).
@@ -60,6 +60,29 @@ Dan включён после подтверждения `searchable`.
 (транскрипты, scout-прогоны, аргументация, `decision`-поля) —
 `output/video_admission/candidate_probe_journal.json`. Это SSOT по «какие
 видео рассматривать дальше»: если здесь чего-то нет — кандидата нет.
+
+### Октябрьская волна 2026-10-16–19 (актуальный SSOT-уточняющий раздел)
+
+SSOT по кандидатам волны — журнал `output/video_admission/admission_log.json`
+(82 записи) и отчёт `output/video_admission/PROBE_REPORT_2026-10-17.md`:
+47 новых длинных роликов девяти каналов оценены транскрипт-пробой, 16 — Scout-пробами
+RU (4 финалиста и «Claude Motion» — ещё и EN). Вердикты: 6 `ingest` / 21 `ingest_scoped` /
+4 `waitlist` / 16 `reject_*` — показательные фильмы и официальные клипы решением владельца
+2026-10-17 выведены из вейтлиста в `reject_low_value` совсем.
+
+Одобрено владельцем, втянуто и подтверждено `searchable` (staging, прод не тронут):
+`LOUEH3DzLro` (27 сегментов), `0trUwzli5G0` (31), `5HYYXYYCrL4` (46). Дальше одобренный
+порядок: `8TEOTQ7R7q0` → `kFKpcCHkuPI` → `ysway-8WY-I`.
+
+Волна уточнила вердикты прежних кандидатов (без инджеста): `3LekYT1rKoc` и
+`gr9fEEKrO5Y` теперь `ingest_scoped` (P3) вместо waitlist; `kOoC3yhUyDQ` подтверждён
+в `ingest_scoped`. Разделы ниже («Скан 2026-10-03») — история окна 2026-10-02/03;
+для кандидатов волны SSOT — `admission_log.json`, `candidate_probe_journal.json`
+остаётся журналом скана 2026-10-03 и старше.
+
+Ремонт кадров 19.10: систематический сдвиг подписи кадров Stage 1 (коммиты
+`7998639`, `642dbf8`) вычищен во всех 12 старых инджестах — 604 ссылки заменены
+native-кадрами (0 ссылок на старые сетки), receipts все `searchable`.
 
 ### Что рассматривать дальше (приоритетный порядок, 2026-10-03)
 
