@@ -24,6 +24,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import re
 import shutil
 import subprocess
 import sys
@@ -176,24 +177,64 @@ def extract_frames(
     fps: float,
     prefix: str,
 ) -> list[dict]:
+    """Extract frames on a 1/fps grid, labelled by their real source PTS.
+
+    Frames are picked by ``select`` (which keeps the source timestamps) instead
+    of the ``fps`` filter: ``fps`` emits the frame from the *middle* of each
+    output interval, so the former ``start + index/fps`` labelling named frames
+    up to half a period earlier than their picture (measured 2026-10-18: about
+    +0.5 s for the 1 fps dense pass and +2.0-2.5 s for the 5 s coarse grid,
+    depending on the window). Here the timestamps come from ``showinfo`` and
+    therefore always describe the frame that was actually written.
+    """
     out_dir.mkdir(parents=True, exist_ok=True)
     for stale in out_dir.glob(f"{prefix}_*.jpg"):
         stale.unlink()
     duration = max(0.5, end_s - start_s)
-    run_ffmpeg(
-        [
-            "-y", "-ss", f"{start_s:.3f}", "-t", f"{duration:.3f}", "-i", str(video),
-            "-vf", f"fps={fps}", "-q:v", "3", str(out_dir / f"{prefix}_%06d.jpg"),
-        ],
-        f"frames {prefix}",
+    period = 1.0 / fps
+    expression = (
+        "select='isnan(prev_selected_t)+gte(t-prev_selected_t,"
+        f"{period:.6f})',showinfo"
     )
+    result = subprocess.run(
+        [
+            "ffmpeg", "-hide_banner", "-y", "-copyts",
+            "-ss", f"{start_s:.3f}", "-t", f"{duration:.3f}", "-i", str(video),
+            "-vf", expression, "-vsync", "0", "-q:v", "3",
+            str(out_dir / f"{prefix}_%06d.jpg"),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(f"ffmpeg failed (frames {prefix}): {result.stderr[-400:]}")
+    times = [
+        float(match.group(1))
+        for match in re.finditer(r"pts_time:([0-9]+(?:\.[0-9]+)?)", result.stderr)
+    ]
+    files = sorted(out_dir.glob(f"{prefix}_*.jpg"))
+    if len(times) != len(files):
+        raise RuntimeError(
+            f"frame timestamps mismatch ({prefix}): {len(files)} files, "
+            f"{len(times)} pts_time entries"
+        )
     frames: list[dict] = []
-    for index, path in enumerate(sorted(out_dir.glob(f"{prefix}_*.jpg")), start=1):
-        time_s = start_s + (index - 1) / fps
-        target = out_dir / f"{prefix}_{_frame_token(time_s)}.jpg"
-        if path.name != target.name:
+    used: set[str] = set()
+    for path, raw_time in zip(files, times):
+        # имя кадра = секунды x 10, поэтому время квантуется к десятым долям:
+        # имя файла и time_s всегда описывают один и тот же кадр
+        time_s = round(round(raw_time * 10) / 10, 2)
+        token = _frame_token(time_s)
+        target = out_dir / f"{prefix}_{token}.jpg"
+        if target.name in used:
+            suffix = 2
+            while f"{prefix}_{token}-{suffix}.jpg" in used:
+                suffix += 1
+            target = out_dir / f"{prefix}_{token}-{suffix}.jpg"
+        used.add(target.name)
+        if path != target:
             path.rename(target)
-        frames.append({"file": target.name, "time_s": round(time_s, 2)})
+        frames.append({"file": target.name, "time_s": time_s})
     return frames
 
 

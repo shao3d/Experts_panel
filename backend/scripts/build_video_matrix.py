@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -60,6 +61,42 @@ VERSION_LOCK_ORDER = {
     "moderate-high": 3,
     "high": 4,
 }
+
+NUMERIC_RE = re.compile(r"-?[0-9]+(?:[.,][0-9]+)?")
+
+# Атрибуты Phase 0 иногда записаны прозой («high — фича дня релиза»,
+# «~0.4 — выживает методика»). Такие значения не должны ломать карту:
+# берём ведущий токен/число, а нераспознанное честно перечисляем в отчёте.
+ATTRIBUTE_WARNINGS: list[str] = []
+
+
+def normalize_version_lock(value: Any) -> str | None:
+    if value is None:
+        return None
+    text = str(value).strip()
+    if not text:
+        return None
+    if text in VERSION_LOCK_ORDER:
+        return text
+    for token in sorted(VERSION_LOCK_ORDER, key=len, reverse=True):
+        if text.startswith(token):
+            return token
+    ATTRIBUTE_WARNINGS.append(f"version_lock: нераспознанное значение {text[:60]!r}")
+    return text
+
+
+def normalize_durable_share(value: Any) -> float | None:
+    if value is None:
+        return None
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return float(value)
+    match = NUMERIC_RE.search(str(value))
+    if not match:
+        ATTRIBUTE_WARNINGS.append(
+            f"durable_share: нераспознанное значение {str(value)[:60]!r}"
+        )
+        return None
+    return float(match.group(0).replace(",", "."))
 
 
 def read_json(path: Path) -> Any:
@@ -189,11 +226,18 @@ def entry_attributes(entry: dict[str, Any]) -> dict[str, Any]:
 
 
 def decay_payload(videos: list[dict[str, Any]]) -> dict[str, Any]:
-    version_locks = [entry_attributes(video).get("version_lock") for video in videos]
-    durable_shares = [
-        entry_attributes(video).get("durable_share") for video in videos
+    version_locks = [
+        normalize_version_lock(entry_attributes(video).get("version_lock"))
+        for video in videos
     ]
-    known_shares = [float(value) for value in durable_shares if value is not None]
+    known_shares = [
+        share
+        for share in (
+            normalize_durable_share(entry_attributes(video).get("durable_share"))
+            for video in videos
+        )
+        if share is not None
+    ]
     best, worst = version_lock_bounds(version_locks)
     return {
         "level": decay_level(worst),
@@ -529,6 +573,8 @@ def main() -> int:
         )
         print(f"written: {md_path}")
         print(f"written: {json_path}")
+        for warning in dict.fromkeys(ATTRIBUTE_WARNINGS):
+            print(f"warning: {warning}")
     return 0
 
 
