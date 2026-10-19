@@ -2,7 +2,7 @@
 """Headless opencode client for drift analysis.
 
 Ports the Live Navigator ingestion pattern to Experts Panel:
-task file -> `opencode run --attach` -> poll session by title -> strip JSON.
+task file -> `opencode run --server` -> poll session by title -> strip JSON.
 
 Contract matches DriftSchedulerService.analyze_drift_async():
 analyze(post_text, comments) -> dict  with keys has_drift/confidence/drift_topics.
@@ -127,17 +127,46 @@ def _extract_json(text_response: str) -> Dict[str, Any]:
     return parsed
 
 
-def _session_id_by_title(title: str) -> Optional[str]:
+def _api_curl(path: str, *, method: str = "GET") -> Optional[str]:
+    """Call the OpenCode v2 API (``/api/...``) with Basic auth.
+
+    The v2 server protects ``/api`` with ``opencode:<OPENCODE_PASSWORD>``;
+    the password is generated at server start and exported by the runner.
+    """
+    cmd = ["curl", "-s", "--max-time", "5"]
+    password = os.getenv("OPENCODE_PASSWORD")
+    if password:
+        cmd += ["-u", f"opencode:{password}"]
+    if method != "GET":
+        cmd += ["-X", method]
+    cmd.append(f"{OPENCODE_URL}/api{path}")
     try:
-        out = subprocess.run(
-            ["curl", "-s", "--max-time", "5", f"{OPENCODE_URL}/session"],
-            capture_output=True, text=True, timeout=10,
-        ).stdout
-        for s in json.loads(out):
-            if s.get("title") == title:
-                return s.get("id")
+        return subprocess.run(cmd, capture_output=True, text=True, timeout=10).stdout
     except Exception:
         return None
+
+
+def _api_payload(path: str, *, method: str = "GET") -> Any:
+    """Return the JSON payload, unwrapping the v2 ``{"data": ...}`` envelope."""
+    raw = _api_curl(path, method=method)
+    if not raw:
+        return None
+    try:
+        data = json.loads(raw)
+    except ValueError:
+        return None
+    if isinstance(data, dict):
+        return data.get("data")
+    return data
+
+
+def _session_id_by_title(title: str) -> Optional[str]:
+    sessions = _api_payload("/session")
+    if not isinstance(sessions, list):
+        return None
+    for session in sessions:
+        if isinstance(session, dict) and session.get("title") == title:
+            return session.get("id")
     return None
 
 
@@ -151,41 +180,27 @@ def _cleanup_session_by_title(title: str) -> None:
     sid = _session_id_by_title(title)
     if not sid:
         return
-    for method, path in (("POST", f"/session/{sid}/abort"), ("DELETE", f"/session/{sid}")):
-        try:
-            subprocess.run(
-                ["curl", "-s", "--max-time", "5", "-X", method,
-                 f"{OPENCODE_URL}{path}"],
-                capture_output=True, text=True, timeout=10,
-            )
-        except Exception:
-            pass
+    _api_curl(f"/session/{sid}/abort", method="POST")
+    _api_curl(f"/session/{sid}", method="DELETE")
 
 
 def _fetch_assistant_text(session_id: str) -> Tuple[Optional[str], Optional[str]]:
-    """Returns (text, error). Mirrors live-navigator fetch_messages."""
-    try:
-        out = subprocess.run(
-            ["curl", "-s", "--max-time", "5",
-             f"{OPENCODE_URL}/session/{session_id}/message"],
-            capture_output=True, text=True, timeout=10,
-        ).stdout
-        msgs = json.loads(out)
-    except Exception as e:
-        return None, f"fetch failed: {e}"
+    """Returns (text, error) from the v2 message list."""
+    messages = _api_payload(f"/session/{session_id}/message")
+    if not isinstance(messages, list):
+        return None, "fetch failed: no message list"
 
     last_text = None
-    for m in msgs:
-        info = m.get("info", {})
-        if info.get("role") != "assistant":
+    for message in messages:
+        if not isinstance(message, dict) or message.get("type") != "assistant":
             continue
-        err = info.get("error")
-        if err:
-            detail = err.get("data", {}).get("message", "") if isinstance(err.get("data"), dict) else str(err)
-            return None, detail or str(err)
-        for p in reversed(m.get("parts", [])):
-            if p.get("type") == "text" and p.get("text", "").strip():
-                last_text = p["text"]
+        error = message.get("error")
+        if error:
+            detail = error.get("data", {}).get("message", "") if isinstance(error.get("data"), dict) else str(error)
+            return None, detail or str(error)
+        for block in reversed(message.get("content") or []):
+            if isinstance(block, dict) and block.get("type") == "text" and (block.get("text") or "").strip():
+                last_text = block["text"]
     return last_text, None
 
 
@@ -201,7 +216,7 @@ def _run_once(post_text: str, comments: List[Dict[str, str]]) -> Tuple[Optional[
     try:
         cmd = (
             f'export PATH="$PATH:$HOME/.opencode/bin" && '
-            f"{OPENCODE_BIN} run --attach {OPENCODE_URL} "
+            f"{OPENCODE_BIN} run --server {OPENCODE_URL} "
             f"--model {OPENCODE_MODEL} --agent {DRIFT_AGENT} "
             f"--title {title} "
             f"'Выполни анализ дрейфа из прикреплённого файла. Верни ТОЛЬКО валидный JSON.' "
@@ -294,7 +309,7 @@ def analyze_batch(groups: List[Dict[str, Any]]) -> Dict[int, Dict[str, Any]]:
 
         cmd = (
             f'export PATH="$PATH:$HOME/.opencode/bin" && '
-            f"{OPENCODE_BIN} run --attach {OPENCODE_URL} "
+            f"{OPENCODE_BIN} run --server {OPENCODE_URL} "
             f"--model {OPENCODE_MODEL} --agent {DRIFT_AGENT} "
             f"--title {title} "
             f"'Выполни пакетный анализ дрейфа из прикреплённого файла. Верни ТОЛЬКО валидный JSON-массив.' "
@@ -382,12 +397,6 @@ def analyze(post_text: str, comments: List[Dict[str, str]]) -> Dict[str, Any]:
 
 
 def check_serve_health() -> bool:
-    """True when the local opencode serve answers."""
-    try:
-        out = subprocess.run(
-            ["curl", "-s", "--max-time", "5", f"{OPENCODE_URL}/session"],
-            capture_output=True, text=True, timeout=10,
-        )
-        return out.returncode == 0 and out.stdout.strip().startswith("[")
-    except Exception:
-        return False
+    """True when the local opencode serve answers with a session list."""
+    sessions = _api_payload("/session")
+    return isinstance(sessions, list)
