@@ -838,7 +838,7 @@ async def process_expert_pipeline(
 
     if request.include_comment_groups:
         # PARALLEL PATH: Reduce chain + Drift Scoring
-        cg_service = CommentGroupMapService(model=config.MODEL_COMMENT_GROUPS)
+        cg_service = CommentGroupMapService()
 
         async def cg_progress(data: dict):
             if progress_callback:

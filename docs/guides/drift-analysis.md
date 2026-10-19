@@ -1,7 +1,7 @@
 # Анализ дрифта: Codex и автоматический OpenCode-путь
 
 Status: Active
-Last updated: 2026-10-12
+Last updated: 2026-10-19
 
 Руководство по анализу «дрейфа тем» в комментариях Telegram-постов.
 
@@ -33,11 +33,9 @@ fingerprint источников и дословные цитаты тем. Со
 
 **Автоматический runtime:** drift выполняется через headless opencode
 (`DRIFT_BACKEND=opencode`) на **GLM-5.3 Flash**, провайдер **Commandcode**.
-Точный ID: `commandcode/z-ai/glm-5.3-flash`. Выбор хранится в
+Точный ID: `commandcode/z-ai/glm-5.3-flash`. Выбор захардкожен в
 `backend/src/services/opencode_drift_client.py` (`OPENCODE_MODEL`) и применяется
-к пакетному и одиночному анализу. Старый `OPENCODE_DRIFT_MODEL` из окружения
-больше не переопределяет выбор: это предотвращает возврат на Muse или MiMo после
-релиза. Генерация дрифта через
+к пакетному и одиночному анализу; env-переопределения нет. Генерация дрифта через
 Gemini/Vertex/OpenRouter **отключена**: если opencode serve недоступен, группы
 остаются `pending`, а не уходят в Gemini.
 
@@ -55,8 +53,10 @@ medium описана в [отчёте](../quality/2026-10-08-visual-drift-repai
    комментариев.
 2. Рантайм-скрипты (`backend/run_drift_service.py`,
    `backend/analyze_specific_drift.py`) подхватывают `backend/.env` и ходят в
-   opencode serve (`OPENCODE_URL`, по умолчанию `http://127.0.0.1:4096`).
-   Убедись, что serve поднят.
+   opencode serve **v2** (`OPENCODE_URL`, по умолчанию `http://127.0.0.1:4096`).
+   Клиент вызывает `opencode run --server` и авторизуется Basic-auth
+   `opencode:<OPENCODE_PASSWORD>`; пароль генерируется при старте сервера и
+   передаётся в окружение раннера. Убедись, что serve поднят на v2.
 3. Прямые чтение/изменение БД агентом запрещены правилами проекта. Примеры
    ручного SQL ниже предназначены оператору; агент использует штатный pipeline.
 
@@ -67,6 +67,9 @@ medium описана в [отчёте](../quality/2026-10-08-visual-drift-repai
 attach-вызов возвращал `Unexpected server error`. После проверки отсутствия активных
 сессий сервис `opencode-serve.service` перезапущен на установленной версии 1.18.33.
 Ключи и авторизация остаются в OpenCode; в репозитории хранится только ID модели.
+Сейчас клиент работает с v2 API (`/api/session`, `--server`, Basic-auth). Старый
+v1-процесс в памяти, даже при новом бинарнике на диске, не отдаёт v2-health —
+сервис нужно перезапустить.
 
 ## Запуск автоматического пути (только при явном выборе этого режима)
 
@@ -77,6 +80,10 @@ backend/.venv/bin/python backend/run_drift_service.py
 Он обрабатывает все группы `analyzed_by = 'pending'`, пишет результат и
 эмбеддинг темы (`drift_embedding`, модель `gemini-embedding-001` через
 OpenRouter). Метка результата — `drift_checked_opencode`.
+
+Query-time в панели: `CommentGroupMapService.score_drift_groups()` не вызывает
+LLM — он сравнивает `drift_embedding` с эмбеддингом запроса (cosine). Группы без
+эмбеддинга пропускаются с предупреждением; Gemini-фолбэка больше нет.
 
 Проверка прогресса:
 

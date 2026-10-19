@@ -149,8 +149,6 @@ MODEL_SCOUT: str = os.getenv("MODEL_SCOUT", "google/gemini-3.1-flash-lite")
 
 MODEL_MEDIUM_SCORING: str = os.getenv("MODEL_MEDIUM_SCORING", "google/gemini-3.1-flash-lite")
 
-MODEL_COMMENT_GROUPS: str = os.getenv("MODEL_COMMENT_GROUPS", "google/gemini-3.1-flash-lite")
-
 # Drift analysis has no panel-side generation model: the engine is headless
 # OpenCode with the hardcoded OPENCODE_MODEL in src/services/opencode_drift_client.py.
 # --- Meta-Synthesis (Cross-Expert Analysis) ---

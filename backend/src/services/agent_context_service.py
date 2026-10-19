@@ -1062,7 +1062,7 @@ class AgentContextService:
         source_by_message_id = {
             source.telegram_message_id: source for source in main_sources
         }
-        comment_service = CommentGroupMapService(model=config.MODEL_COMMENT_GROUPS)
+        comment_service = CommentGroupMapService()
         comment_groups = comment_service.merge_with_main_sources(
             scored_drift_groups=[],
             db=self.db,

@@ -13,15 +13,14 @@ import pytest
 
 from src.services.comment_group_map_service import (
     CommentGroupMapService,
-    _all_drift_groups_have_embeddings,
     _normalize_embedding_to_blob,
     build_drift_text,
 )
 
 
 def _make_service() -> CommentGroupMapService:
-    """Create service for tests. LLM client init is defensive and tolerates None."""
-    return CommentGroupMapService(model="gemini-2.5-flash")
+    """Create the embedding-only service (no LLM client is initialized)."""
+    return CommentGroupMapService()
 
 
 def _group_with_embedding(
@@ -269,34 +268,37 @@ def test_build_drift_text_rejects_topics_that_is_not_list():
     assert build_drift_text('{"drift_topics": null}') == ""
 
 
-# --- _all_drift_groups_have_embeddings (dispatch predicate) ---
+# --- score_drift_groups: skip groups without embeddings ---
 
 
-def test_all_drift_groups_have_embeddings_true_for_empty():
-    """Empty group list → vacuously True (no LLM fallback)."""
-    assert _all_drift_groups_have_embeddings([]) is True
+@pytest.mark.asyncio
+async def test_score_drift_groups_skips_groups_without_embedding(monkeypatch):
+    """The retired Gemini fallback is gone: unembedded groups are skipped.
 
+    Drift is produced offline (OpenCode) with an embedding per group; a row
+    without one must not trigger an LLM call and must not reach scoring.
+    """
+    service = _make_service()
+    with_embedding = _group_with_embedding(1, _aligned_unit_vec(0, axis=0))
+    without_embedding = _group_with_embedding(2, _aligned_unit_vec(0, axis=0))
+    without_embedding["drift_embedding"] = None
 
-def test_all_drift_groups_have_embeddings_true_when_all_present():
-    g1 = _group_with_embedding(1, _aligned_unit_vec(0, axis=0))
-    g2 = _group_with_embedding(2, _aligned_unit_vec(0, axis=0))
-    assert _all_drift_groups_have_embeddings([g1, g2]) is True
+    monkeypatch.setattr(
+        service, "_load_drift_groups", lambda *args, **kwargs: [with_embedding, without_embedding]
+    )
 
+    scored_ids: list[int] = []
 
-def test_all_drift_groups_have_embeddings_false_when_one_missing():
-    """The critical dispatch contract: ONE missing embedding → fallback to LLM."""
-    g1 = _group_with_embedding(1, _aligned_unit_vec(0, axis=0))
-    g2 = _group_with_embedding(2, _aligned_unit_vec(0, axis=0))
-    g2["drift_embedding"] = None  # simulate legacy row
-    assert _all_drift_groups_have_embeddings([g1, g2]) is False
+    def fake_score(groups, query_embedding, expert_id, t_start):
+        scored_ids.extend(g["anchor_post"]["telegram_message_id"] for g in groups)
+        return []
 
+    monkeypatch.setattr(service, "_score_by_embedding", fake_score)
+    await service.score_drift_groups(
+        "query", None, "expert", query_embedding=[1.0, 0.0]
+    )
 
-def test_all_drift_groups_have_embeddings_false_when_all_missing():
-    g1 = _group_with_embedding(1, _aligned_unit_vec(0, axis=0))
-    g1["drift_embedding"] = None
-    g2 = _group_with_embedding(2, _aligned_unit_vec(0, axis=0))
-    g2["drift_embedding"] = None
-    assert _all_drift_groups_have_embeddings([g1, g2]) is False
+    assert scored_ids == [1]
 
 
 # --- _normalize_embedding_to_blob helpers ---

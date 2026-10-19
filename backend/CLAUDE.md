@@ -22,7 +22,7 @@ The backend implements a sophisticated 10-phase query processing system. It uses
 | `simple_resolve_service.py` | **3. Resolve** | *None (DB)* | Expands HIGH posts context (Depth 1). Bypassed for Medium posts. |
 | `reduce_service.py` | **4. Reduce** | `gemini-3-flash-preview` | Synthesizes final answer. Max 50 posts context. Validates references. |
 | `language_validation_service.py` | **5. Validate** | `google/gemini-3.1-flash-lite` | Ensures response language matches query (RU/EN). |
-| `comment_group_map_service.py` | **6. Comments** | `google/gemini-3.1-flash-lite` | Drift scoring runs **parallel** with Reduce. `score_drift_groups()` + `merge_with_main_sources()`. |
+| `comment_group_map_service.py` | **6. Comments** | — (cosine over offline drift embeddings) | Drift scoring runs **parallel** with Reduce; no LLM call. `score_drift_groups()` + `merge_with_main_sources()`. |
 | `comment_synthesis_service.py` | **7. Synthesis** | `gemini-3-flash-preview` | Extracts insights into 4 sections (Expert/Community). Runs after Reduce + Drift complete. |
 | `video_hub_service.py` | **Video Sidecar** | `gemini-3.1-pro-preview` | **Digital Twin**. 4-phase video analysis (Map -> Resolve -> Synthesis -> Validation). |
 | `reddit_enhanced_service.py` | **8. Reddit** | DeepSeek V4.1 Flash via local `dsh` (`REDDIT_LLM_BACKEND`, default `dsh`) + HTTP Proxy | **Sidecar Orchestrator**. Reddit Search V2 runs precision-first candidate generation, early comment enrichment, and answerability-first reranking. |
@@ -74,8 +74,7 @@ Defined in `.env`, loaded in `config.py`.
 - `MODEL_SYNTHESIS`: `google/gemini-3-flash-preview`
 - `MODEL_ANALYSIS`: `google/gemini-3.1-flash-lite`
 - `MODEL_MEDIUM_SCORING`: `google/gemini-3.1-flash-lite`
-- `MODEL_COMMENT_GROUPS`: `google/gemini-3.1-flash-lite`
-- Drift analysis has no separate model env: engine is headless OpenCode with hardcoded `OPENCODE_MODEL` (`commandcode/z-ai/glm-5.3-flash`) in `src/services/opencode_drift_client.py`; SSOT — `docs/guides/drift-analysis.md`.
+- Drift analysis has no separate model env: engine is headless OpenCode with hardcoded `OPENCODE_MODEL` (`commandcode/z-ai/glm-5.3-flash`) in `src/services/opencode_drift_client.py`; SSOT — `docs/guides/drift-analysis.md`. Query-time drift scoring uses only the stored `drift_embedding` (cosine) and never calls an LLM.
 - `MODEL_SCOUT`: `google/gemini-3.1-flash-lite` (AI Scout / FTS5)
 - `MODEL_META_SYNTHESIS`: `google/gemini-3-flash-preview` (Cross-expert unified analysis)
 - `MODEL_EMBEDDING`: `google/gemini-embedding-001` (Hybrid Retrieval embeddings)
@@ -147,7 +146,7 @@ Defined in `.env`, loaded in `config.py`.
 - `OPENCODE_SYNTH_HEADSTART_S`: 20 (`auto` mode: free model runs alone this long, then Gemini joins the race; first complete answer wins)
 - `OPENCODE_SYNTH_CONCURRENCY`: 2 (serve is shared with drift workers)
 - `DRIFT_BACKEND`: `opencode` (only allowed value) - drift analysis runs via headless opencode; Gemini/OpenRouter drift generation is disabled, and an unreachable serve leaves groups `pending` instead of falling back
-- `OPENCODE_DRIFT_MODEL`: deprecated and not read — drift model is hardcoded as `OPENCODE_MODEL = commandcode/z-ai/glm-5.3-flash` in `src/services/opencode_drift_client.py` (versioned selection; stale env must not restore Muse/MiMo; SSOT: `docs/guides/drift-analysis.md`)
+- Drift model is hardcoded as `OPENCODE_MODEL = commandcode/z-ai/glm-5.3-flash` in `src/services/opencode_drift_client.py` (no env override; SSOT: `docs/guides/drift-analysis.md`)
 - `OPENCODE_DRIFT_BATCH_SIZE`: 12 - groups per batched opencode drift call
 - `DRIFT_CONCURRENCY`: 3 - parallel opencode batch workers (serve budget shared with Reddit synthesis)
 - Manual A/B check: `app/backend/manual/manual_reddit_opencode_ab.py`

@@ -1,27 +1,20 @@
 """Comment Group Map service for finding relevant comment groups."""
 
-import asyncio
 import json
 from typing import List, Dict, Any, Optional, Callable
 from datetime import datetime
 import re
 import logging
-from pathlib import Path
-from string import Template
 
 import numpy as np
 from sqlalchemy.orm import Session
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
-import httpx
 
 from ..models.post import Post
 from ..models.comment import Comment
 from ..models.database import comment_group_drift
-from .vertex_llm_client import get_vertex_llm_client, VertexLLMError
 from .embedding_service import get_embedding_service
 from .. import config
 from ..api.models import get_channel_username
-from ..utils.language_utils import prepare_prompt_with_language_instruction
 
 logger = logging.getLogger(__name__)
 
@@ -83,19 +76,6 @@ def build_drift_text(drift_topics_json: str) -> str:
     return " ".join(parts).strip()
 
 
-def _all_drift_groups_have_embeddings(groups: List[Dict[str, Any]]) -> bool:
-    """True if every group carries a non-null ``drift_embedding`` BLOB.
-
-    Used as the dispatch predicate in ``score_drift_groups``: when True, the
-    fast cosine-similarity path is used; otherwise we fall back to the legacy
-    LLM chunked scoring. Empty list is treated as vacuously True so an empty
-    result short-circuits without an unnecessary fallback.
-    """
-    if not groups:
-        return True
-    return all(g.get("drift_embedding") is not None for g in groups)
-
-
 def _normalize_embedding_to_blob(vec: Any) -> bytes:
     """Normalize a numpy embedding to unit-length and serialize as float32 bytes.
 
@@ -129,66 +109,16 @@ def _normalize_embedding_to_blob(vec: Any) -> bytes:
 
 
 class CommentGroupMapService:
-    """Service for finding relevant GROUPS of comments using Gemini on Vertex AI.
+    """Load and score precomputed comment-group drift.
 
-    Analyzes groups of Telegram comments to find discussions relevant to the query.
-    Strategy: use the shared Vertex-backed Gemini client.
+    Drift itself is determined offline by ``DriftSchedulerService`` through the
+    headless OpenCode backend (GLM-5.3 Flash); every drift group is stored with
+    a 768-dim ``drift_embedding``. Query-time scoring is a cosine comparison
+    against the query embedding — the retired Gemini/OpenRouter path is gone.
     """
 
-    DEFAULT_CHUNK_SIZE = 20  # Groups per chunk
-    DEFAULT_MAX_PARALLEL = 5  # Rate limiting for API calls
-
-    def __init__(
-        self,
-        model: str,
-        chunk_size: int = DEFAULT_CHUNK_SIZE,
-        max_parallel: int = DEFAULT_MAX_PARALLEL
-    ):
-        """Initialize CommentGroupMapService.
-
-        Args:
-            model: Model to use (Gemini)
-            chunk_size: Number of comment groups per chunk
-            max_parallel: Maximum parallel API calls
-        """
-        # Initialize the shared OpenRouter LLM client.
-        self.llm_client = None
-        try:
-            self.llm_client = get_vertex_llm_client()
-            if self.llm_client:
-                logger.info("CommentGroupMapService: OpenRouter LLM client initialized.")
-        except Exception as e:
-            logger.warning(f"CommentGroupMapService: Could not initialize OpenRouter LLM client: {e}")
-
-        self.chunk_size = chunk_size
-        self.primary_model = model
-        self.max_parallel = max_parallel
-        self._prompt_template = self._load_prompt_template()
-
-        logger.info(f"CommentGroupMapService Config: Model={self.primary_model}")
-
-    def _load_prompt_template(self) -> Template:
-        """Load the comment group drift prompt template."""
-        try:
-            prompt_dir = Path(__file__).parent.parent.parent / "prompts"
-            prompt_path = prompt_dir / "comment_group_drift_prompt.txt"
-
-            if not prompt_path.resolve().is_relative_to(prompt_dir.resolve()):
-                raise ValueError(f"Invalid prompt path: {prompt_path}")
-
-            if prompt_path.stat().st_mode & 0o002:
-                raise PermissionError("Unsafe prompt file permissions")
-
-            with open(prompt_path, "r", encoding="utf-8") as f:
-                content = f.read()
-
-            if "$query" not in content or "$groups" not in content:
-                raise ValueError("Prompt template missing required placeholders")
-
-            return Template(content)
-        except FileNotFoundError:
-            logger.error(f"Comment group map prompt template not found at {prompt_path}")
-            raise
+    def __init__(self) -> None:
+        logger.info("CommentGroupMapService: embedding-only drift scoring")
 
     def _load_main_source_author_comments(
         self,
@@ -426,136 +356,6 @@ class CommentGroupMapService:
 
         return groups
 
-    def _chunk_groups(self, groups: List[Dict[str, Any]]) -> List[List[Dict[str, Any]]]:
-        """Split comment groups into chunks."""
-        chunks = []
-        for i in range(0, len(groups), self.chunk_size):
-            chunks.append(groups[i:i + self.chunk_size])
-        return chunks
-
-    def _format_groups_for_prompt(self, groups: List[Dict[str, Any]]) -> str:
-        """Format drift groups for inclusion in the prompt."""
-        formatted_groups = []
-        for group in groups:
-            formatted_groups.append({
-                "parent_telegram_message_id": group["anchor_post"]["telegram_message_id"],
-                "drift_topics": group["drift_topics"],
-                "comments_count": group["comments_count"]
-            })
-
-        return json.dumps(formatted_groups, ensure_ascii=False, indent=2)
-
-    async def _call_llm(self, model_name: str, messages: List[Dict[str, str]]):
-        """Call the shared OpenRouter LLM client."""
-        if self.llm_client:
-            return await self.llm_client.chat_completions_create(
-                model=model_name,
-                messages=messages,
-                temperature=0.2,
-                response_format={"type": "json_object"},
-                max_tokens=4096,  # Group-mapping JSON; 402 guard
-            )
-        raise ValueError("OpenRouter LLM client not initialized")
-
-    def _validate_llm_client_availability(self) -> bool:
-        """Check whether the shared OpenRouter LLM client is initialized."""
-        return self.llm_client is not None
-
-    @retry(
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=2, min=4, max=60),
-        retry=retry_if_exception_type((httpx.HTTPStatusError, json.JSONDecodeError, ValueError)),
-        reraise=True
-    )
-    async def _process_chunk(
-        self,
-        chunk: List[Dict[str, Any]],
-        query: str,
-        chunk_index: int,
-        progress_callback: Optional[Callable] = None
-    ) -> Dict[str, Any]:
-        """Process a single chunk of comment groups with Gemini."""
-        try:
-            if progress_callback:
-                await progress_callback({
-                    "event_type": "progress",
-                    "phase": "comment_groups",
-                    "chunk": chunk_index,
-                    "status": "processing",
-                    "message": f"Analyzing comment groups chunk {chunk_index + 1}"
-                })
-
-            # Format the prompt
-            groups_formatted = self._format_groups_for_prompt(chunk)
-
-            # Create base prompt
-            base_prompt = self._prompt_template.substitute(
-                query=query,
-                groups=groups_formatted
-            )
-
-            # Apply language instruction based on query language
-            prompt = prepare_prompt_with_language_instruction(base_prompt, query)
-
-            messages = [
-                {"role": "system", "content": "You are analyzing comment groups from Telegram."},
-                {"role": "user", "content": prompt}
-            ]
-
-            response = None
-
-            # Direct call to the shared Vertex model
-            response = await self._call_llm(self.primary_model, messages)
-            logger.info(f"CommentGroups: Successfully used model {self.primary_model}")
-
-            # Parse response
-            result = json.loads(response.choices[0].message.content)
-
-            # Add anchor_post and comments back to each group from original chunk data
-            chunk_map = {
-                group["anchor_post"]["telegram_message_id"]: {
-                    "anchor_post": group["anchor_post"],
-                    "comments": group["comments"],
-                    "comments_count": group["comments_count"]
-                }
-                for group in chunk
-            }
-
-            for group in result.get("relevant_groups", []):
-                telegram_msg_id = group.get("parent_telegram_message_id")
-                if telegram_msg_id and telegram_msg_id in chunk_map:
-                    group["anchor_post"] = chunk_map[telegram_msg_id]["anchor_post"]
-                    group["comments"] = chunk_map[telegram_msg_id]["comments"]
-                    group["comments_count"] = chunk_map[telegram_msg_id]["comments_count"]
-
-            # Add chunk metadata
-            result["chunk_index"] = chunk_index
-            result["groups_processed"] = len(chunk)
-
-            if progress_callback:
-                await progress_callback({
-                    "event_type": "progress",
-                    "phase": "comment_groups",
-                    "chunk": chunk_index,
-                    "status": "completed",
-                    "message": f"Comment groups chunk {chunk_index + 1} completed",
-                    "relevant_found": len(result.get("relevant_groups", []))
-                })
-
-            return result
-
-        except Exception as e:
-            logger.error(f"Error processing comment groups chunk {chunk_index}: {str(e)}")
-            if progress_callback:
-                await progress_callback({
-                    "event_type": "error",
-                    "phase": "comment_groups",
-                    "chunk": chunk_index,
-                    "status": "error",
-                    "message": f"Error in chunk {chunk_index + 1}: {str(e)}"
-                })
-            raise
-
     async def score_drift_groups(
         self,
         query: str,
@@ -566,15 +366,13 @@ class CommentGroupMapService:
         progress_callback: Optional[Callable] = None,
         query_embedding: Optional[List[float]] = None,
     ) -> List[Dict[str, Any]]:
-        """Load drift groups and score them. Does NOT need main_sources.
+        """Load drift groups and score them by embedding cosine similarity.
 
-        Fast path: when all groups have pre-computed ``drift_embedding`` BLOBs,
-        uses cosine similarity with the query embedding (~1ms per expert).
-
-        Fallback: if any group lacks an embedding, falls back to the legacy
-        LLM-chunked path (~80-130s per expert). This state is expected only
-        during the rollout window (between migration 024 and the backfill
-        script run).
+        Drift topics and their 768-dim embeddings are produced offline by the
+        OpenCode drift scheduler — the same pipeline the visual group uses.
+        This method never calls an LLM: groups without a stored embedding are
+        skipped with a warning instead of falling back to the retired Gemini
+        chunked path.
 
         Returns:
             List of HIGH-relevance scored drift groups, sorted by date.
@@ -583,87 +381,25 @@ class CommentGroupMapService:
         t_start = time.time()
 
         all_groups = self._load_drift_groups(db, expert_id, exclude_post_ids, cutoff_date=cutoff_date)
-
         if not all_groups:
             logger.info(f"[{expert_id}] Drift scoring: no drift groups found")
             return []
 
-        # Fast path: cosine similarity on pre-computed embeddings
-        all_have_embeddings = _all_drift_groups_have_embeddings(all_groups)
-        if all_have_embeddings:
-            if query_embedding is None:
-                embedding_service = get_embedding_service()
-                query_embedding = await embedding_service.embed_query(query)
-            return self._score_by_embedding(
-                all_groups, query_embedding, expert_id, t_start
+        missing = [g for g in all_groups if g.get("drift_embedding") is None]
+        if missing:
+            logger.warning(
+                f"[{expert_id}] Drift scoring: skipping {len(missing)}/{len(all_groups)} "
+                "groups without drift_embedding (offline analysis/backfill missing)"
             )
+            all_groups = [g for g in all_groups if g.get("drift_embedding") is not None]
+            if not all_groups:
+                return []
 
-        # Fallback to LLM chunked path (any group without embedding triggers full LLM)
-        missing_count = sum(1 for g in all_groups if g.get("drift_embedding") is None)
-        logger.info(
-            f"[{expert_id}] Drift scoring: {missing_count}/{len(all_groups)} groups without "
-            f"drift_embedding, falling back to LLM chunked path (run backfill to enable fast path)"
-        )
+        if query_embedding is None:
+            embedding_service = get_embedding_service()
+            query_embedding = await embedding_service.embed_query(query)
 
-        chunks = self._chunk_groups(all_groups)
-        total_chunks = len(chunks)
-
-        logger.info(
-            f"[{expert_id}] Drift Scoring START: {len(all_groups)} groups in "
-            f"{total_chunks} chunks using {self.primary_model}"
-        )
-
-        if progress_callback:
-            await progress_callback({
-                "event_type": "phase_start",
-                "phase": "comment_groups",
-                "status": "starting",
-                "message": f"Drift scoring: {len(all_groups)} groups in {total_chunks} chunks",
-                "total_chunks": total_chunks,
-            })
-
-        # Process chunks in parallel
-        parallel_limit = self.max_parallel if self.max_parallel is not None else total_chunks
-        semaphore = asyncio.Semaphore(parallel_limit)
-
-        async def process_with_semaphore(chunk, index):
-            async with semaphore:
-                return await self._process_chunk(chunk, query, index, progress_callback)
-
-        tasks = [
-            process_with_semaphore(chunk, i)
-            for i, chunk in enumerate(chunks)
-        ]
-
-        chunk_results = await asyncio.gather(*tasks, return_exceptions=True)
-
-        # Aggregate results
-        all_relevant_groups = []
-        for i, result in enumerate(chunk_results):
-            if isinstance(result, Exception):
-                logger.error(f"Drift scoring chunk {i} failed: {result}")
-            else:
-                for group in result.get("relevant_groups", []):
-                    if group.get("anchor_post"):
-                        all_relevant_groups.append(group)
-
-        # Filter HIGH relevance only
-        relevant_groups = [
-            g for g in all_relevant_groups if g.get("relevance") == "HIGH"
-        ]
-
-        # Sort: date descending, then relevance (stable sort)
-        relevant_groups.sort(
-            key=lambda x: x["anchor_post"].get("created_at", ""), reverse=True
-        )
-
-        duration_ms = int((time.time() - t_start) * 1000)
-        logger.info(
-            f"[{expert_id}] Drift Scoring END: {duration_ms}ms, "
-            f"{len(all_groups)} groups -> {len(relevant_groups)} HIGH"
-        )
-
-        return relevant_groups
+        return self._score_by_embedding(all_groups, query_embedding, expert_id, t_start)
 
     def _score_by_embedding(
         self,
