@@ -58,6 +58,11 @@ def _video_id(url: str) -> str:
     return url.rsplit("v=", 1)[-1] if "v=" in url else url
 
 
+def _md_cell(text: str) -> str:
+    # маркдаун-таблица: вертикальная черта в названии ломает строку таблицы
+    return str(text).replace("|", "\\|")
+
+
 def render_index(videos: dict[str, dict], db_path: Path) -> str:
     lines = [
         "# VideoHub Index",
@@ -79,7 +84,7 @@ def render_index(videos: dict[str, dict], db_path: Path) -> str:
         ]
         for url, rec in sorted(by_author[author], key=lambda item: item[1]["published"], reverse=True):
             lines.append(
-                f"| `{_video_id(url)}` | {rec['title']} | {rec['segments']} | {rec['published']} |"
+                f"| `{_video_id(url)}` | {_md_cell(rec['title'])} | {rec['segments']} | {rec['published']} |"
             )
         lines.append("")
     total = sum(rec["segments"] for rec in videos.values())

@@ -31,6 +31,7 @@
 
 | YouTube ID | Название | Сегментов | Опубликовано |
 |---|---|---:|---|
+| `5HYYXYYCrL4` | Claude Opus 5.5 + Higgsfield Make Insane Motion Graphics! (Claude Motion) | 46 | 2026-10-13 |
 | `reFzEtCG_m8` | How To Animate a Short Film with Blender + Higgsfield (Full Breakdown) | 33 | 2026-09-23 |
 | `vUYq38wC_xI` | GPT Astra 6 + Blender + Higgsfield Builds The Craziest Cinematic Scenes! | 38 | 2026-09-12 |
 | `NuvA32_dmtg` | GPT-6 Astra + Higgsfield MCP Made This ENTIRE Video in One Chat | 17 | 2026-09-06 |
@@ -58,6 +59,7 @@
 
 | YouTube ID | Название | Сегментов | Опубликовано |
 |---|---|---:|---|
+| `0trUwzli5G0` | Animate ANY Reference Image with a Video \| WAN 2.2 ANIMATE ComfyUI (+workflow) | 31 | 2025-10-03 |
 | `yUiTmO8AjJc` | The Easiest Way for Filmmakers to Start Using Blender (with Switchlight AI!) | 20 | 2025-03-03 |
 
 ## River Cody
@@ -84,4 +86,4 @@
 | `0d8pqU8JRrY` | How to Make 3D Animations With GPT 6 Astra (No Blender Needed) | 38 | 2026-09-19 |
 | `2b3Z4rW5VJc` | STOP Wasting Credits & Master Seedance 2.5 | 11 | 2026-08-21 |
 
-Итого: **30** видео, **727** сегментов.
+Итого: **32** видео, **804** сегментов.
