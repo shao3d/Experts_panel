@@ -7,6 +7,13 @@ let answer = '';
 let stoppedPolling = false;
 const terminal = new Set(['completed', 'partial', 'error', 'stopped']);
 
+function normalizeCitationLinks(text) {
+  // The model may dress a citation in Markdown link syntax no renderer can
+  // parse. Keep its parenthesised metadata: the folder consumes the whole
+  // parenthetical, leaving one sources toggle instead of raw [(sources)].
+  return text.replace(/\[\(\s*sources?\s*\)\]\(\s*([^)]*)\)/gi, '($1)');
+}
+
 function foldSources(root) {
   const key = /^[a-z][a-z0-9_]*:\d+$/i;
   // Plain source keys occur alongside Markdown links as well as inside code.
@@ -318,7 +325,7 @@ function display(data) {
   $('question').readOnly = running;
   $('question').value = data.question;
   resizeQuestion();
-  answer = data.answer || '';
+  answer = normalizeCitationLinks(data.answer || '');
   $('answer').hidden = !answer;
   $('copy').hidden = !answer;
   if (answer) {

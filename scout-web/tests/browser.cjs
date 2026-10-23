@@ -61,6 +61,39 @@ const assert = require('node:assert/strict');
     }
     const englishHeading = await page.locator('header h1').textContent();
     assert.equal(englishHeading, 'Scout');
+    const linkFormCases = await page.evaluate(() => {
+      // The model wrapped a key and its pipe metadata in Markdown link syntax
+      // that marked cannot parse. The normaliser must reduce it to the same
+      // parenthesised citation the folder already consumes.
+      const cases = [
+        'A single reference is not enough. [(sources)](video_hub:123 | AI Video Studio | *I Tested 3 AI Video Generators* | 2026-05-26 | t≈62s) More prose.',
+        'Bare form: [(sources)](video_hub:123). Next sentence.',
+        'Uppercase: [(Sources)](video_hub:456 | Higgsfield AI | 2026-05-26 | t≈62s) end.'
+      ];
+      const sources = {
+        'video_hub:123': {url: 'https://www.youtube.com/watch?v=clip&t=62s', label: 'AI Video Studio · I Tested 3 AI Video Generators · 1:02'},
+        'video_hub:456': {url: 'https://www.youtube.com/watch?v=clip&t=1086s', label: 'Higgsfield AI · 18:06'}
+      };
+      return cases.map(markdown => {
+        const root = document.createElement('div');
+        root.innerHTML = DOMPurify.sanitize(marked.parse(normalizeCitationLinks(markdown)));
+        foldSources(root); linkSources(root, sources);
+        const visible = (() => {
+          const clone = root.cloneNode(true);
+          clone.querySelectorAll('.sources').forEach(node => node.remove());
+          return clone.textContent;
+        })();
+        return {toggles: root.querySelectorAll('.source-toggle').length, text: root.textContent, visible,
+          href: root.querySelector('a')?.href, raw: root.innerHTML.includes('[(sources)]')};
+      });
+    });
+    for (const result of linkFormCases) {
+      assert.equal(result.toggles, 1, JSON.stringify(result));
+      assert.ok(!result.raw, JSON.stringify(result));
+      assert.ok(!result.visible.includes('|'), JSON.stringify(result));
+      assert.ok(result.visible.includes('More prose.') && result.visible.includes('Next sentence.'), JSON.stringify(result));
+    }
+    assert.equal(linkFormCases[0].href, 'https://www.youtube.com/watch?v=clip&t=62s', JSON.stringify(linkFormCases[0]));
     const duplicateCases = await page.evaluate(() => {
       const url = 'https://www.youtube.com/watch?v=qwGIwxZFc2I&t=263s';
       const sources = {'video_hub:789': {url, label: 'Dan Kieft · AI workflow · 4:23'}};
