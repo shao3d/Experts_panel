@@ -190,3 +190,5 @@ output/
 .haft/
 sessions/
 .gemini-clipboard/
+.mimocode/
+learn/

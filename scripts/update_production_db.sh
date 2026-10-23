@@ -48,6 +48,7 @@ RESTART_HEALTH_TIMEOUT="${RESTART_HEALTH_TIMEOUT:-180}" # seconds to wait for /h
 
 # UPLOAD_WORK_DIR is set at runtime and cleaned by the EXIT trap.
 UPLOAD_WORK_DIR=""
+trap '[ -z "$UPLOAD_WORK_DIR" ] || rm -rf "$UPLOAD_WORK_DIR"' EXIT
 
 sha256_file() {
     if command -v sha256sum >/dev/null 2>&1; then
