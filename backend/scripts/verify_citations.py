@@ -5,6 +5,9 @@
    verbatim quote (>= 25 chars) must appear in its locally cited, fully read
    source (ordered ellipses supported). No LLM is involved — LLM-based citation
    grading is unreliable (see docs/guides/expert-scout.md).
+   A catalog-only run (experts/videos calls, no content commands) answers a
+   roster/catalog question from the tool's own listing: it legitimately has no
+   source keys, so a keyless answer is accepted there.
 2. Tool loops: identical tool calls repeated back-to-back are flagged (a
    production failure mode: 94+ errors / 800 runs in the wild).
 
@@ -199,13 +202,18 @@ def assess_answer(answer: str, events: list[dict] | None = None, *, lookup_unrea
     abstain = bool(re.search(r'не (?:наш[её]л|найден|удалось найти)|нет (?:сигнала|подтверждений)|not found|no signal',answer[:600],re.I))
     search_queries = {c['args'].get('query','').strip() for c in completed if c['args'].get('command')=='search'} - {''}
     protocol = abstain and len(search_queries)>=3 and any(c['args'].get('command')=='digest' for c in completed)
-    uncited = not keys and not protocol
+    # Roster/catalog answers (experts, videos) are grounded in the tool's own
+    # listing, so they carry no source keys by design. Any content command
+    # (search/digest/show/lesson_search) restores the strict rule.
+    catalog_only = bool(completed) and {c['args'].get('command') for c in completed} <= {'experts', 'videos'}
+    uncited = not keys and not protocol and not catalog_only
     unfinished = events is not None and not finished(events)
     problems = bool(missing or unread or incomplete or unverified or loops or verification_error or uncited or unfinished)
     return {'keys_total':len(keys),'keys_missing':missing,'keys_unread':unread,
             'keys_incomplete':incomplete,'quotes_total':len(quotes),'quotes_unverified':unverified,
             'tool_loops':loops,'verification_error':verification_error,'uncited_answer':uncited,
-            'unfinished_run':unfinished,'status':'error' if verification_error else 'partial' if problems else 'completed'}
+            'catalog_only_run':catalog_only,'unfinished_run':unfinished,
+            'status':'error' if verification_error else 'partial' if problems else 'completed'}
 
 
 def main() -> int:

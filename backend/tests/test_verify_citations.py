@@ -118,6 +118,22 @@ def test_absence_needs_successful_searches_and_finished_run(verifier):
     assert verifier.assess_answer(answer,events,lookup_unread=False)['status']=='partial'
 
 
+def test_roster_catalog_run_allows_keyless_answer(verifier):
+    """Roster/catalog answers (experts/videos tools) carry no source keys."""
+    def event(command):
+        return {'type':'tool_use','part':{'tool':'scout','state':{'status':'completed','input':{'command':command},'output':'{}'}}}
+    stop = {'type':'step_finish','part':{'reason':'stop'}}
+    roster = 'В корпусе 28 источников-экспертов: acidcrunch, cgevent и другие.'
+    events = [event('experts'), stop]
+    report = verifier.assess_answer(roster, events, lookup_unread=False)
+    assert report['status'] == 'completed'
+    assert report['catalog_only_run'] is True and report['uncited_answer'] is False
+    # Any content command restores the strict rule: corpus claims need citations.
+    events = [event('experts'), event('search'), stop]
+    strict = verifier.assess_answer(roster, events, lookup_unread=False)
+    assert strict['status'] == 'partial' and strict['catalog_only_run'] is False
+
+
 def test_detect_loops_flags_three_identical_calls(verifier, tmp_path):
     def ev(args, typ="tool_use"):
         return {"type": typ, "part": {"type": "tool", "tool": "scout", "state": {"input": args}}}
