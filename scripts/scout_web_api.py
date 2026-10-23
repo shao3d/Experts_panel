@@ -166,24 +166,36 @@ class Jobs:
         env.pop("SCOUT_WEB_PASSWORD_HASH", None)
         reader = None
         try:
-            async with self.lock:
-                if job["status"] == "stopped":
-                    return
-                self.process = await asyncio.create_subprocess_exec(
-                    "bash", str(ROOT / "scripts/expert_scout.sh"), question,
-                    cwd=ROOT, env=env, stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.PIPE, start_new_session=True,
-                    limit=1024 * 1024)
-            async def consume_progress():
-                async for raw in self.process.stderr:
-                    line = raw.decode(errors="replace")
-                    if line.startswith("SCOUT_PROGRESS "):
-                        job["message"] = json.loads(line.removeprefix("SCOUT_PROGRESS "))
-                        self.save(job)
-            reader = asyncio.create_task(consume_progress())
-            answer = await self.process.stdout.read()
-            code = await self.process.wait()
-            await reader
+            # Wrapper exit 4 = the run finished, produced an answer, and the
+            # citation gate rejected it. Citation discipline is nondeterministic,
+            # so one fresh attempt usually beats shipping a partial answer.
+            # Engine/filter failures and timeouts keep their own exit codes and
+            # are never retried here.
+            for attempt in (1, 2):
+                async with self.lock:
+                    if job["status"] == "stopped":
+                        return
+                    self.process = await asyncio.create_subprocess_exec(
+                        "bash", str(ROOT / "scripts/expert_scout.sh"), question,
+                        cwd=ROOT, env=env, stdout=asyncio.subprocess.PIPE,
+                        stderr=asyncio.subprocess.PIPE, start_new_session=True,
+                        limit=1024 * 1024)
+                async def consume_progress():
+                    async for raw in self.process.stderr:
+                        line = raw.decode(errors="replace")
+                        if line.startswith("SCOUT_PROGRESS "):
+                            job["message"] = json.loads(line.removeprefix("SCOUT_PROGRESS "))
+                            self.save(job)
+                reader = asyncio.create_task(consume_progress())
+                answer = await self.process.stdout.read()
+                code = await self.process.wait()
+                await reader
+                if attempt == 1 and code == 4 and job["status"] != "stopped":
+                    job["retries"] = 1
+                    job["message"] = "First answer did not pass full verification; searching again…"
+                    self.save(job)
+                    continue
+                break
             job["answer"] = answer.decode(errors="replace")
             if job["status"] != "stopped" and job["answer"]:
                 job["message"] = "Preparing source links…"

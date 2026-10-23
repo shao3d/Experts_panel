@@ -198,8 +198,8 @@ async def test_stop_before_process_starts(tmp_path):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize('code,status', [(0, 'completed'), (4, 'partial'), (1, 'error')])
-async def test_completed_partial_and_failed_runs_are_distinct(monkeypatch, tmp_path, code, status):
+@pytest.mark.parametrize(("code", "status", "spawns"), [(0, "completed", 1), (4, "partial", 2), (1, "error", 1)])
+async def test_completed_partial_and_failed_runs_are_distinct(monkeypatch, tmp_path, code, status, spawns):
     jobs = api.Jobs(tmp_path)
     original = asyncio.create_subprocess_exec
     commands = []
@@ -226,3 +226,35 @@ async def test_completed_partial_and_failed_runs_are_distinct(monkeypatch, tmp_p
     assert 'Answer entirely in English' in commands[0][0][-1]
     assert 'How to keep the character consistent?' in commands[0][0][-1]
     assert 'SCOUT_WEB_PASSWORD_HASH' not in commands[0][1]['env']
+    assert len(commands) == spawns
+
+
+@pytest.mark.asyncio
+async def test_verification_failure_gets_one_retry_and_reports_it(monkeypatch, tmp_path):
+    """Exit 4 (answer exists, citation gate rejected) is retried once."""
+    jobs = api.Jobs(tmp_path)
+    original = asyncio.create_subprocess_exec
+    commands = []
+
+    async def spawn(*args, **kwargs):
+        commands.append((args, kwargs))
+        code = 4 if len(commands) == 1 else 0
+        return await original(sys.executable, '-c', f"import sys; print('Answer'); sys.exit({code})",
+                              stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
+                              start_new_session=True)
+
+    monkeypatch.setattr(asyncio, 'create_subprocess_exec', spawn)
+    monkeypatch.setattr(api, 'ROOT', tmp_path)
+    monkeypatch.setattr(api, 'resolve_sources', lambda answer: asyncio.sleep(0, result={}))
+    monkeypatch.setattr(api, 'detect_language', lambda question: 'English')
+    job = {'id': 'd'*32, 'question': 'How to keep the character consistent?', 'status': 'running',
+           'started_at': 0, 'answer': '', 'message': 'Starting', 'elapsed': 0}
+    jobs.active = job['id']
+    jobs.current = job
+    await jobs.run(job)
+    result = jobs.get(job['id'])
+    assert len(commands) == 2
+    assert commands[0][0] == commands[1][0]
+    assert result['status'] == 'completed'
+    assert result['retries'] == 1
+    assert result['message'] == 'Done'
