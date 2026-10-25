@@ -1,7 +1,7 @@
 # Карта Документации
 
 Status: Active
-Last updated: 2026-10-19
+Last updated: 2026-10-24
 
 Это навигационный слой проекта Experts Panel. Он должен отвечать на вопрос
 "куда смотреть?", а не пересказывать содержимое всех документов.
@@ -54,7 +54,8 @@ Last updated: 2026-10-19
 | Добавить/удалить эксперта | `docs/guides/add-expert.md` | `scripts/add_new_expert.sh`, `scripts/update_production_db.sh` |
 | Drift analysis / выбор модели headless OpenCode | `docs/guides/drift-analysis.md` | drift scripts in `backend/scripts/` |
 | Video Hub | `docs/architecture/video-hub-service.md` | `docs/guides/video-hub-operator.md`, `docs/video-hub-index.md` (авто-индекс корпуса) |
-| VideoHub: что дальше / кандидаты на ingest (watchlist) | `docs/roadmap/video-hub-scaling.md` (раздел «Кандидаты на ingest») | пробы и `decision`: `output/video_admission/candidate_probe_journal.json`; матрица: `output/video_admission/video_matrix/video_matrix.md` |
+| VideoHub: что дальше / кандидаты на ingest (watchlist) | `docs/roadmap/video-hub-scaling.md` (раздел «Кандидаты на ingest») | SSOT решений: `output/video_admission/admission_log.json`; журнал проб и сканов: `output/video_admission/candidate_probe_journal.json`; матрица: `output/video_admission/video_matrix/video_matrix.md` |
+| VideoHub: наведение порядка по автору JOEY (лейбл, два журнала, очередь из 5 одобренных), 2026-10-24 | `docs/plans/2026-10-24-joey-author-cleanup-starter.md` | аудит канала: `output/video_admission/JOEY_CHANNEL_AUDIT_2026-10-24.md`; журналы: `output/video_admission/admission_log.json`, `output/video_admission/candidate_probe_journal.json`; процедуры: `docs/guides/video-hub-operator.md` |
 | VideoHub Knowledge Matrix (гейт до ingest, gap-scoped) | `docs/architecture/expert-admission-control.md` (§16 VideoHub Sidecar Admission) | чек-лист 0.0b и шаг 0.4 в `docs/guides/video-hub-operator.md`, `output/video_admission/admission_log.json`, `output/video_admission/video_matrix/video_matrix.md` (генерация: `backend/scripts/build_video_matrix.py`); история решения: `docs/archive/2026-09-20-videohub-knowledge-matrix-proposal.md` |
 | Reddit sidecar | `docs/architecture/reddit-service.md` | service code under `services/reddit-proxy/` |
 | Ревью качества Reddit V2 и предложения по моделям, 2026-10-02 | `docs/quality/2026-10-02-reddit-v2-audit.md` | Воспроизведённые дефекты evidence, свежести и контекста; live smoke и ограничения сравнения с Sol 6.1 low |

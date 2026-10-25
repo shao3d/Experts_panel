@@ -3,10 +3,11 @@
 **Created:** 2026-03-28
 **Status:** Active Roadmap (query-time side; P2/P3/P5/P4/N2 closed — see the
 priority table and "Review fixes")
-**Last updated:** 2026-10-19
-**Current State (2026-10-10):** актуальный состав — в
-[генерируемом индексе](../video-hub-index.md); последняя приёмка и статус
-выпуска JOEY Claude skills — в [отчёте](../quality/2026-10-10-joey-skills-review.md).
+**Last updated:** 2026-10-24
+**Current State (2026-10-24):** актуальный состав — в
+[генерируемом индексе](../video-hub-index.md) (34 видео / 829 сегментов);
+разбор автора JOEY, чистка лейбла и очередь — в
+[плане](../plans/2026-10-24-joey-author-cleanup-starter.md).
 
 История выпуска 2026-10-04: **24 видео / 595 сегментов** после ремонта
 тройки MiMo; scoped visual data release завершён, production healthy.
@@ -58,13 +59,16 @@ Dan включён после подтверждения `searchable`.
 Решение по каждому — владелец; порядок — по ценности для матрицы
 (`output/video_admission/video_matrix/video_matrix.md`). Полные пробы
 (транскрипты, scout-прогоны, аргументация, `decision`-поля) —
-`output/video_admission/candidate_probe_journal.json`. Это SSOT по «какие
-видео рассматривать дальше»: если здесь чего-то нет — кандидата нет.
+`output/video_admission/candidate_probe_journal.json`. С 2026-10-24 правило
+такое: **решения** по видео живут в `admission_log.json` (включая
+`queue_status`), а `candidate_probe_journal.json` — журнал сканов и проб;
+кандидат без записи в журнале решений считается неразобранным, а не
+«отсутствующим».
 
 ### Октябрьская волна 2026-10-16–19 (актуальный SSOT-уточняющий раздел)
 
 SSOT по кандидатам волны — журнал `output/video_admission/admission_log.json`
-(82 записи) и отчёт `output/video_admission/PROBE_REPORT_2026-10-17.md`:
+(89 записей) и отчёт `output/video_admission/PROBE_REPORT_2026-10-17.md`:
 47 новых длинных роликов девяти каналов оценены транскрипт-пробой, 16 — Scout-пробами
 RU (4 финалиста и «Claude Motion» — ещё и EN). Вердикты: 6 `ingest` / 21 `ingest_scoped` /
 4 `waitlist` / 16 `reject_*` — показательные фильмы и официальные клипы решением владельца
@@ -73,6 +77,11 @@ RU (4 финалиста и «Claude Motion» — ещё и EN). Вердикт�
 Одобрено владельцем, втянуто и подтверждено `searchable` (staging, прод не тронут):
 `LOUEH3DzLro` (27 сегментов), `0trUwzli5G0` (31), `5HYYXYYCrL4` (46). Дальше одобренный
 порядок: `8TEOTQ7R7q0` → `kFKpcCHkuPI` → `ysway-8WY-I`.
+
+JOEY, 2026-10-24: втянуты `r2UTG2ZyZTU` (15 сегментов, scoped 0–1174 с) и
+`ZkI0ffqr6-0` (10 сегментов, full); три ранее одобренных (`yb0RWQ0mbXg`,
+`Sd1MpkDUNzo`, `5HQwoEZ41G8`) отложены владельцем до отдельной команды.
+Разбор и журнал — в [плане](../plans/2026-10-24-joey-author-cleanup-starter.md).
 
 Волна уточнила вердикты прежних кандидатов (без инджеста): `3LekYT1rKoc` и
 `gr9fEEKrO5Y` теперь `ingest_scoped` (P3) вместо waitlist; `kOoC3yhUyDQ` подтверждён

@@ -2,7 +2,7 @@
 
 **Role:** Expert Digital Twin Creator
 **Status:** Active Workflow (scripted extraction + agent annotation and review)
-**Last updated:** 2026-10-11
+**Last updated:** 2026-10-24
 **Owner:** Project owner
 
 ---
@@ -84,6 +84,26 @@ title, segment count, publication date. Re-process an already imported video
 only with the owner's explicit consent, and then only with `--replace-video`
 at import time (0.4).
 
+### 0.0a Channel sweep (2026-10-24)
+
+"Is there anything new from this author?" is answered by `channel_id`, not by
+the author label: one channel may sit in the corpus under two labels (`JOEY`
+vs `JOEY (noisygroup)`), and a label-based "latest video" check then lies.
+Read-only audit — uploads x staging corpus x `admission_log.json`:
+
+```bash
+backend/.venv/bin/python backend/scripts/channel_audit.py UCG0sRL6J1x62Y-FQTrJmP1w          # RSS window (15 latest)
+backend/.venv/bin/python backend/scripts/channel_audit.py UCG0sRL6J1x62Y-FQTrJmP1w --ytdlp  # full /videos tab (WARP)
+backend/.venv/bin/python backend/scripts/channel_audit.py --channel <id> --strict           # exit 2 when a video has no verdict
+```
+
+Known channel ids: JOEY — `UCG0sRL6J1x62Y-FQTrJmP1w`. Author labels are
+canonicalised on import via `backend/src/utils/video_authors.py`; old rows are
+repaired with `backend/scripts/normalize_video_authors.py --dry-run|--apply`.
+A new video from a known channel still goes through 0.0 and 0.0b before ingest;
+the sweep only answers "what is on the channel vs what we have".
+at import time (0.4).
+
 ### 0.0b Knowledge-matrix gate (MANDATORY, механика: `docs/architecture/expert-admission-control.md` §16)
 
 Перед любым ingest нового видео — гейт ценности ДО скачивания медиа.
@@ -110,6 +130,10 @@ at import time (0.4).
    второго offset), Stage 1/2 только на срезе. **Грабля:** таймкоды ASR —
    относительно среза; при разметке сегментов прибавлять offset, иначе
    deep-links будут вести не туда (`expert-admission-control.md` §16.3).
+
+Свежий пример полного прогона (2026-10-24): `r2UTG2ZyZTU` (scoped 0–1174 с)
+и `ZkI0ffqr6-0` (full) — разбор и журнал в
+[плане](../plans/2026-10-24-joey-author-cleanup-starter.md).
 
 Пример полного прогона: `OiULPvTJ-0E` (2026-09-20) — ядро overlap, вердикт
 `ingest_scoped`, импортировано 8 сегментов хвоста 10:25–19:42, gap-темы
@@ -192,6 +216,17 @@ backend/.venv/bin/python backend/scripts/ingest_video.py \
 Read one chunk (transcript slice + sheets + native frames), write
 `chunks/chunk_NN/segments.json` with the extended schema (`visual`, `frames`),
 then forget the frames. Disk is the memory.
+
+Выходной чек-лист чанка (без него разметку возвращают на ремонт):
+
+- `visual` есть у **каждого** сегмента: `kind`, `app`/`model`, `settings`,
+  `observed`, `prompt_verbatim` где применимо. Корпусной стандарт — проверь
+  после импорта: `message_text like '%VISUAL:%'` должен давать все сегменты.
+- `[НА ЭКРАНЕ, N с: …]` — в каждом сегменте, где на экране есть читаемое
+  (промт, панель, настройки, кадр результата). Чистый talking head маркера не
+  требует.
+- `frames` — только проверенные кадры; `time_s` и путь сверены с исходником.
+- `matrix_cells` — у каждого подтверждающего сегмента, строго `domain/subdomain/intent`.
 
 Number `segment_id` **continuously across chunks** (do not restart from 1001 in
 each chunk): `--combine` fails on duplicates, and duplicate virtual IDs would
@@ -378,6 +413,10 @@ Coarse-кадры с шагом в несколько секунд дают пр
   импортом новой разметки; используется только при разрешённой пересегментации.
 - **Readiness and Matrix:** следуй шагу 0.4; receipt не подтверждает
   содержательную полноту и не заменяет приёмку ведущим.
+- **Channel sweep:** `backend/scripts/channel_audit.py <channel_id|@handle>` — что
+  на канале против корпуса и журнала (шаг 0.0a).
+- **Author labels:** `backend/src/utils/video_authors.py` (канон при импорте) и
+  `backend/scripts/normalize_video_authors.py --dry-run|--apply` (ремонт старых строк).
 - **Production:** правила и команды живут в [operations](../operations.md).
   `scripts/deploy_video.sh` — старый wrapper импорта **с production promotion**,
   а не безопасный staging-only шаг. Он не входит в обычный онбординг;
