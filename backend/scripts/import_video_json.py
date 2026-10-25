@@ -37,6 +37,7 @@ from src.cli.bootstrap import (  # noqa: E402
     set_default_sqlite_database_url,
 )
 from src.utils.video_identity import canonical_video_url, youtube_id as _extract_youtube_id, write_receipt  # noqa: E402
+from src.utils.video_authors import canonical_author_by_id  # noqa: E402
 
 BACKEND_DIR, logger = bootstrap_cli(
     __file__,
@@ -278,6 +279,11 @@ def import_video_json(
     video_title = meta.get("title", "Untitled Video")
     author_name = meta.get("author", meta.get("channel", "Unknown Expert"))
     author_id = slugify(author_name)
+    # One channel must land under one label: JOEY/@noisygroup used to arrive as
+    # both "JOEY" and "JOEY (noisygroup)", which split the corpus catalog.
+    _canonical_author = canonical_author_by_id(author_id)
+    if _canonical_author:
+        author_name, author_id = _canonical_author
     # Normalize the publication date once, up front: any accepted shape
     # (date-only, ISO with T, offsets) becomes canonical text so freshness
     # ranking and date filters see one format. Unparsable dates abort the
